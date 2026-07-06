@@ -1,6 +1,6 @@
 # PHANTOM — Predictive Haptic ANTicipation with Occlusion-robust Manipulation: Full Pipeline (v2)
 
-Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`), single local RTX 5090 for inference, cloud 8× H100 for training.
+Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption.
 
 Module names used throughout:
 
@@ -24,7 +24,7 @@ Module names used throughout:
 
 **Tactile.** Two DM-Tac W2L sensors (Daimon Robotics), one per fingertip. Confirmed spec (official W2L documentation, received directly from Daimon): vision-based optical-tactile, **36×27 mm perceived area, 120 Hz sampling, 640×480 internal camera, 384×288 perceptual resolution** (110,592 points), USB 2.0.
 
-**Sensor reality — RESOLVED (official SDK docs + `dmrobotics` Python library in hand).** The full API surface (per sensor, `Sensor(SensorOptions(dev_id))`):
+**Sensor reality — RESOLVED (SDK v1.2.10 source + manuals in hand; distilled reference: docs/sensor_sdk.md).** Verified beyond the API table below: every field getter returns `(fid, data)` and images return `(fid, DMTacImage)` (pixels at `.img`, uint8 grayscale); **all `SensorOptions` channel enables default to False** (the manual wrongly says True — the driver sets them explicitly); `setEnableFlags` has no force argument; `getForce` units are documented (Fx,Fy,Fz in N; Mx,My,Mz in 1e-2 N·m) — only the distributed-force units remain a bench item; **offline field recompute from raw frames is a documented vendor path** (`process()` + `setBaseFrame` + `gen_feat_hdf5.py`), so the recording plan archives raw grayscale (~37 MB/s/sensor) and derives fields offline; fields are computed host-side (USB carries ~4.5 MB/s/sensor; 120 Hz needs a ≥RTX4060-class GPU on the recording host); the vendor ships a `TactileSlipDetector` reference (threshold 0.35) as a baseline for our derived slip; **the W2 pad's force ceiling is 30 N total** — the Robotiq (235 N max) is force-clamped in software; the vendor CAD pack includes ready **Robotiq 2F finger adapters for the W2L** (no custom mount). The full API surface (per sensor, `Sensor(SensorOptions(dev_id))`):
 
 | SDK call | Returns | Shape / dtype |
 |---|---|---|
@@ -400,8 +400,8 @@ each reported overall **and under occlusion**.
 
 ## Verification checklist before building (week 1 — these are blockers, not pre-submission items)
 
-1. **DM-Tac W2L SDK bench — reduced scope (API enumeration RESOLVED via official Daimon docs; §1 table now definitive on names/shapes/dtypes).** Remaining half-day items: (a) `getForce`/`getDistributeForce` **units** (N / N·mm vs a.u.) — decides whether HID-S runs on calibrated force or the deformation fallback; (b) `getRawImg`/`getInferImg` channel counts and true per-stream rates under concurrent polling; (c) numpy (H, W) ordering of the 384×288 grid; (d) sustained multi-stream disk throughput at the chosen downsampling; (e) whether `getBaseFrame`-referenced field inference can be replayed offline from archived raw images.
-2. **Confirm the arm generation**: e-Series (built-in 500 Hz wrist F/T) vs CB3 (order a Robotiq FT-300S now — ACC depends on it).
+1. **DM-Tac W2L SDK bench — reduced further (SDK source + manuals fully read 2026-07-06; docs/sensor_sdk.md).** `getForce` units CONFIRMED (N / 1e-2 N·m → config 1.0/0.01); raw image confirmed grayscale; offline replay confirmed documented (vendor `gen_feat_hdf5.py`). Remaining half-day items: (a) `getDistributeForce` units only — decides whether HID-S runs on calibrated force or the deformation fallback; (b) `getInferImg` size/channels + true per-stream rates under concurrent dual-sensor polling; (c) numpy (H, W) ordering of the 384×288 grid; (d) sustained multi-stream disk throughput; (e) offline-recompute bit-parity on the rig (then flip `recording.archive_raw_img` + `offline_recompute_ok`).
+2. **Confirm the arm generation** (likely a UR5-class arm; read the model plate): e-Series (built-in 500 Hz wrist F/T) vs CB3 (order a Robotiq FT-300S now — ACC depends on it).
 3. **5090 smoke test**: PyTorch ≥2.7 cu128 (Docker recommended), flash-attn source-built for sm_120 or SDPA fallback; load `Cosmos-Predict2.5-2B/robot/action-cond`, run one LoRA step at target resolution, **measure the actual VRAM footprint** (official numbers span 20–80 GB purely on resolution/sequence length).
 4. Check Hugging Face for a manipulation-domain Cosmos-Predict2.5 post-train newer than `robot/action-cond`/`robot/policy` at implementation time.
 5. Settle the model name (PHANTOM is a placeholder; "WHAM" is off the table — Microsoft collision).

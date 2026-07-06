@@ -28,7 +28,13 @@ pip install -e .
 ## Manual (non-pip) steps
 
 **5090 box only:**
-1. `dmrobotics` SDK (DM-Tac W2L) — vendor install per Daimon's instructions.
+1. `dmrobotics` SDK (DM-Tac W2L) — **needs Python 3.8–3.11 and numpy<2**.
+   The tactile worker processes are spawned from the phantom process and
+   inherit its interpreter, so the WHOLE 5090 venv must be py3.11 with
+   numpy<2 (torch is fine with that). Install the SDK into the same venv from
+   the vendor `SDK_Publish_1.2.10/`: `pip install .[gpu]`, then build the
+   TensorRT engines once per machine: `dmrobotics trt rebuild`.
+   Verified API + gotchas: [../docs/sensor_sdk.md](../docs/sensor_sdk.md).
 2. librealsense udev rules (RealSense without root).
 3. `sudo apt install libhidapi-hidraw0 libhidapi-libusb0` + 3Dconnexion udev
    rule for the SpaceMouse.

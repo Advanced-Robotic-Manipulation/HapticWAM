@@ -1,0 +1,85 @@
+# DM-Tac W2L / `dmrobotics` SDK — verified facts
+
+Distilled from the vendor package (`SDK_Publish_1.2.10` source + the official
+manuals v2.0, 2026-04/05) — **not** from marketing pages. This is the ground
+truth `phantom/drivers/real/dmtac.py` is written against. Items marked BENCH
+still need one measurement on the physical unit (see hardware_bench_day1.md).
+
+## Sensor (W2L)
+
+| Property | Value |
+|---|---|
+| Sensing area | 36 × 27 mm |
+| Internal camera | 640 × 480, **grayscale** out of the SDK |
+| Perceptual grid | 384 × 288 → numpy arrays are **(H=288, W=384)** |
+| Max rate | 120 Hz (fields are computed **host-side**; vendor table: i7 CPU ~30 Hz, RTX 3050 ~90 Hz, RTX 4060 ~120 Hz with TensorRT) |
+| USB | USB 2.0, ~4.5 MB/s per sensor — up to 5 sensors per port |
+| **Force ceiling** | **30 N total** on the pad — the Robotiq (max 235 N) MUST be force-clamped in software (`safety.py` + gripper command path) |
+| Gel layer | replaceable; no solvents (alcohol/acetone), no sharp edges, −10…50 °C |
+
+## Python SDK (`dmrobotics`, pip install from the vendor package)
+
+- **Python 3.8–3.11 ONLY** (compiled per-version bundles; PyArmor-encrypted
+  core), **linux_x86_64 + windows_x86_64 only — no macOS**. Needs numpy<2 →
+  the recording/deploy box venv is **py3.11 with numpy<2 overall** (the
+  tactile workers are spawned from the phantom process and share its
+  interpreter; torch coexists with numpy 1.26 fine).
+- Backends: `"cpu" | "cuda" | "flux"` (lowercase). GPU path: `pip install
+  .[gpu]` then build TensorRT engines once per machine: `dmrobotics trt rebuild`.
+- ⚠ **Every `SensorOptions` channel enable defaults to `False`**
+  (`enable_raw/deformation/depth/shear/force`) — the manual wrongly says True.
+  A driver that doesn't set them reads nothing.
+- ⚠ `setEnableFlags(raw, deformation, depth, shear)` has **no force argument**
+  (manual shows one — doc drift).
+- Connect by **serial string** (`dev_id="X26040565"`, yellow cable label) for
+  multi-sensor rigs; int index only for quick single-sensor tests.
+
+### Data API — every field getter returns `(fid, data)`
+
+| Call | Returns | Units |
+|---|---|---|
+| `getRawImg()` / `getInferImg()` | `(fid, DMTacImage)` — pixels at `.img` (uint8), serial at `.serial` | — |
+| `getDeformation2D()` | `(fid, ndarray (H,W,2) f32)` | mm |
+| `getDepth()` | `(fid, ndarray (H,W) f32)` | mm |
+| `getShear()` | `(fid, ndarray (H,W,2) f32)` | mm |
+| `getDistributeForce()` | `(fid, ndarray (H,W,3) f32)` per manual; `(fid, fx, fy, fz)` in some snippets — **driver handles both** | BENCH (unverified) |
+| `getForce()` | `(fid, ndarray (1,6) f32)` | **Fx,Fy,Fz in N; Mx,My,Mz in 10⁻² N·m** (confirmed) |
+| `getContactArea()` | bare `float` | mm² |
+
+Sync / lifecycle: `wait_for_new(last_fid, timeout_ms)` (blocks for a new
+frame), `getDevStatus()` (0 OK / 1 RESETTING / 2 DISCONNECTED),
+`reset()` (re-zero reference — keep the pad untouched), `disconnect()`,
+`listConnectedDevIDs()`, `getEvents()` (device log).
+
+### Offline recompute (the storage plan)
+
+`sensor.process(raw_img, getdepth=, getshear=, getforce=, getdistforce=)` +
+`setBaseFrame(first_frame)` recompute all fields from recorded **raw
+grayscale** frames offline (vendor example `gen_feat_hdf5.py`; HDF5 helpers
+`init_h5/append_h5/read_h5` in `dmrobotics.utils`). So the recording plan can
+archive raw @ ~37 MB/s/sensor instead of the full field stack (~62 MB/s in
+fp16 at ds-resolution, ~425 MB/s at full res/fp32) and derive fields offline.
+BENCH item (e): verify bit-parity on the rig, then set
+`recording.archive_raw_img: true` + `offline_recompute_ok: true`.
+
+### Extras in the vendor package
+
+- `TactileSlipDetector` (`dmrobotics.extensions`, `slip_threshold=0.35`,
+  needs `enable_deformation`) → SLIP/SAFE + coherence + valid-vector count —
+  a vendor baseline for our derived slip score.
+- Reference scripts: `demo.py` (viewer), `main.py` / `main_mp.py`
+  (single/multi-sensor high-rate capture), `save_img.py`, `gen_feat_hdf5.py`,
+  `get_force.py`, `slip_detection.py`, `gen_trt.py`.
+- CAD in the full zip: sensor STEP models **and ready Robotiq 2F finger
+  adapters per sensor size** (also Franka Panda) — the W2L one is in the
+  "大号连接件" (Large) folder. No custom mount design needed.
+- Visualization UI builds for Linux + Windows (device connect by serial,
+  calibrate button = keep pad untouched).
+
+## Remaining bench items (half a day with the unit)
+
+(a) `getDistributeForce` units → `tactile.dist_force_unit_to_N`;
+(b) true concurrent dual-sensor rates + `getInferImg` size/channels;
+(c) numpy (H, W) ordering of the 384×288 grid → `tactile.hw_order`;
+(d) sustained multi-stream disk throughput;
+(e) offline-recompute bit-parity (then flip the two config flags).
