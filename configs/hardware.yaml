@@ -57,9 +57,12 @@ gripper:
 
 tactile:
   sdk: dmrobotics
+  sdk_backend: cuda            # SDK inference backend on the recording host: cpu | cuda | flux.
+                               #   120 Hz needs >=RTX4060-class GPU (vendor table); cpu ~30 Hz.
+  sdk_mode: high               # standard | high (high = more accurate, more compute; cuda only)
   rate_hz: 120.0               # BENCH (b): true concurrent dual-sensor rate
-  raw_img:   {h: 480, w: 640, c: 1}   # BENCH (b): channel count unverified
-  infer_img: {h: 480, w: 640, c: 1}   # BENCH (b): size AND channel count unverified
+  raw_img:   {h: 480, w: 640, c: 1}   # getRawImg = uint8 GRAYSCALE (SDK-confirmed)
+  infer_img: {h: 480, w: 640, c: 1}   # BENCH (b): size unverified (getInferImg = sensing-area crop)
   field:     {h: 288, w: 384}         # BENCH (c): which side numpy axis-0 is — see hw_order
   hw_order: hw                 # BENCH (c): hw = numpy axis0 is field.h; wh = transposed by SDK.
                                #   Real driver transposes at the boundary; downstream code
@@ -70,14 +73,17 @@ tactile:
     shear: 2                   # getShear
     dist_force: 3              # getDistributeForce (fx, fy, fz)
   wrench_dim: 6                # getForce, rank-fixed
-  force_unit_to_N: 0.0         # BENCH (a): getForce SDK-unit -> Newton scale.
-                               #   0.0 = UNCALIBRATED sentinel: forces depth-based contact
-                               #   detection + deformation fallback everywhere (pipeline.md §5).
-  dist_force_unit_to_N: 0.0    # BENCH (a): getDistributeForce SDK-unit -> Newton scale (same sentinel)
-  offline_recompute_ok: false  # BENCH (e): can fields be recomputed offline from raw images?
-  sensors:
-    - {name: left,  dev_id: 0}   # BENCH: dev ids
-    - {name: right, dev_id: 1}   # BENCH
+  force_unit_to_N: 1.0         # getForce Fx,Fy,Fz are in NEWTONS (dev manual v2.0, §1.2.2.8)
+  torque_unit_to_Nm: 0.01      # getForce Mx,My,Mz are in 1e-2 N*m (dev manual v2.0, §1.2.2.8)
+  dist_force_unit_to_N: 0.0    # BENCH (a): getDistributeForce units NOT documented -> UNCALIBRATED
+                               #   sentinel: keeps depth-based contact detection + deformation
+                               #   fallback for safety/HID-S until benched (pipeline.md §5).
+  offline_recompute_ok: false  # BENCH (e): sensor.process(raw,...) offline replay is documented
+                               #   (gen_feat_hdf5.py) — flip to true after verifying bit-parity on the rig.
+  sensors:                     # BENCH: replace with the real serials from the yellow cable labels,
+                               #   e.g. {name: left, dev_id: "X26040565"} (str = stable across replug)
+    - {name: left,  dev_id: 0}
+    - {name: right, dev_id: 1}
 
 cameras:
   scene:

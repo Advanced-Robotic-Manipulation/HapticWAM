@@ -125,7 +125,19 @@ class GripperConfig(_Frozen):
 
 class TactileSensorEntry(_Frozen):
     name: str
-    dev_id: int = Field(ge=0)
+    # int = SDK device index (quick single-sensor tests); str = device serial
+    # ("识别码", e.g. "X26040565", printed on the yellow cable label) —
+    # vendor-recommended for multi-sensor rigs (stable across replug).
+    dev_id: int | str
+
+    @field_validator("dev_id")
+    @classmethod
+    def _dev_id_valid(cls, v: int | str) -> int | str:
+        if isinstance(v, int) and v < 0:
+            raise ValueError("dev_id index must be >= 0")
+        if isinstance(v, str) and not v.strip():
+            raise ValueError("dev_id serial must be non-empty")
+        return v
 
 
 class TactileFieldChannels(_Frozen):
@@ -149,6 +161,10 @@ class TactileFieldChannels(_Frozen):
 
 class TactileConfig(_Frozen):
     sdk: Literal["dmrobotics"] = "dmrobotics"
+    # SDK runtime options (SDK_Publish_1.2.10: backends are lowercase; channel
+    # enable flags default to False in the real SDK — the driver sets them).
+    sdk_backend: Literal["cpu", "cuda", "flux"] = "cuda"
+    sdk_mode: Literal["standard", "high"] = "high"
     rate_hz: float = Field(gt=0)
     raw_img: ImageShape
     infer_img: ImageShape
@@ -156,8 +172,9 @@ class TactileConfig(_Frozen):
     hw_order: Literal["hw", "wh"] = "hw"
     field_channels: TactileFieldChannels
     wrench_dim: Literal[6] = 6
-    force_unit_to_N: float = Field(ge=0)       # 0.0 = UNCALIBRATED sentinel
-    dist_force_unit_to_N: float = Field(ge=0)  # 0.0 = UNCALIBRATED sentinel
+    force_unit_to_N: float = Field(ge=0)       # 0.0 = UNCALIBRATED sentinel (getForce F, manual: N -> 1.0)
+    torque_unit_to_Nm: float = Field(ge=0)     # 0.0 = UNCALIBRATED sentinel (getForce M, manual: 1e-2 N*m -> 0.01)
+    dist_force_unit_to_N: float = Field(ge=0)  # 0.0 = UNCALIBRATED sentinel (getDistributeForce, units unverified)
     offline_recompute_ok: bool = False
     sensors: tuple[TactileSensorEntry, ...]
 
@@ -166,7 +183,14 @@ class TactileConfig(_Frozen):
         return self.field_channels.total
 
     @property
+    def wrench_calibrated(self) -> bool:
+        """Resultant 6-axis wrench (getForce) is in SI units after driver scaling."""
+        return self.force_unit_to_N > 0 and self.torque_unit_to_Nm > 0
+
+    @property
     def force_calibrated(self) -> bool:
+        """Full force calibration incl. the distributed field (gates fz-based
+        contact/safety paths and the calibrated HID-S penalty)."""
         return self.force_unit_to_N > 0 and self.dist_force_unit_to_N > 0
 
     @field_validator("sensors")
@@ -407,8 +431,10 @@ def load_hardware(path: str | Path | None = None, *, quiet: bool = False) -> Har
             )
         if not cfg.tactile.force_calibrated:
             log.info(
-                "tactile force units UNCALIBRATED (force_unit_to_N=0): running on depth-based "
-                "contact + deformation fallback (pipeline.md §5)."
+                "tactile distributed-force units UNCALIBRATED (dist_force_unit_to_N=0, "
+                "bench item a): running on depth-based contact + deformation fallback "
+                "(pipeline.md §5). Resultant wrench calibrated: %s.",
+                cfg.tactile.wrench_calibrated,
             )
         per_sensor = cfg.field_bytes_per_s() / 1e6
         log.info(

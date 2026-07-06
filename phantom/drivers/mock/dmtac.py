@@ -87,7 +87,9 @@ class MockTactileSensor(TactileSensor):
         super().__init__(cfg, sensor)
         self.scenario = scenario
         self.finger_index = finger_index
-        self._rng = np.random.default_rng(1000 + sensor.dev_id)
+        dev_seed = sensor.dev_id if isinstance(sensor.dev_id, int) \
+            else int.from_bytes(str(sensor.dev_id).encode(), "little") % 100_000
+        self._rng = np.random.default_rng(1000 + dev_seed)
         self._connected = False
         self._t0 = 0.0
         self._seq = 0

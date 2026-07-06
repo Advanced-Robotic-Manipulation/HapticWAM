@@ -1,15 +1,33 @@
-"""Real DM-Tac W2L driver over the `dmrobotics` Python SDK.
+"""Real DM-Tac W2L driver over the `dmrobotics` Python SDK (verified v1.2.10).
 
 Boundary rules (so downstream code never thinks about SDK quirks):
+ - every SDK field getter returns ``(fid, data)`` — the fid is unpacked HERE;
+ - ``getRawImg``/``getInferImg`` return ``(fid, DMTacImage)`` — pixels live at
+   ``DMTacImage.img`` (uint8 grayscale) and are extracted HERE;
  - hw_order transpose happens HERE: downstream always sees (field.h, field.w);
- - wrench is scaled by force_unit_to_N HERE (left in SDK units while the
-   0.0 UNCALIBRATED sentinel is set — consumers check tactile.force_calibrated);
- - one read() = one coherent grab of all field getters.
+ - the wrench is scaled to SI HERE (Fx,Fy,Fz * force_unit_to_N; Mx,My,Mz *
+   torque_unit_to_Nm — the SDK reports torques in 1e-2 N*m) while the 0.0
+   UNCALIBRATED sentinel is unset (consumers check tactile.wrench_calibrated);
+ - one read() = one coherent grab of all enabled field getters, paced by
+   ``wait_for_new`` (frame-id sync) with a sleep fallback.
+
+SDK facts this file is written against (from SDK_Publish_1.2.10 source + the
+official dev manual v2.0):
+ - ``SensorOptions`` channel enables ALL default to **False** — they must be
+   set explicitly or every getter returns nothing;
+ - ``SensorOptions(dev_id=...)`` accepts an int device index or a str serial
+   ("识别码", e.g. "X26040565"); str is recommended for multi-sensor rigs;
+ - ``getDistributeForce()`` is documented as ``(fid, ndarray(H, W, 3))`` in the
+   manual but shown as ``(fid, fx, fy, fz)`` in vendor snippets — both layouts
+   are handled;
+ - ``getDevStatus()``: 0 OK / 1 RESETTING / 2 DISCONNECTED — reads are guarded;
+ - backends: "cpu" | "cuda" | "flux" (lowercase in the real SDK).
 
 `dmrobotics` is imported lazily inside connect() so this module imports fine
-on machines without the SDK.
+on machines without the SDK (macOS dev boxes: the SDK ships linux/windows
+x86_64 binaries for Python 3.8-3.11 only).
 
-BENCH day-1 (docs/hardware_bench_day1.md) verifies: getForce/getDistributeForce
+BENCH day-1 (docs/hardware_bench_day1.md) still verifies: getDistributeForce
 units (a), image channel counts + true concurrent rates (b), numpy (H, W)
 ordering (c), sustained throughput (d), offline recompute (e).
 """
@@ -23,34 +41,74 @@ import numpy as np
 from phantom.config.hardware import TactileConfig, TactileSensorEntry
 from phantom.drivers.base import TactileFrame, TactileSensor
 
+_STATUS_OK = 0
+_STATUS_RESETTING = 1
+_STATUS_DISCONNECTED = 2
+
 
 class DmTacSensor(TactileSensor):
     def __init__(self, cfg: TactileConfig, sensor: TactileSensorEntry):
         super().__init__(cfg, sensor)
         self._sdk = None
         self._seq = 0
+        self._last_fid = -1
         self._last_read_t = 0.0
 
+    # ------------------------------------------------------------------
     def connect(self) -> None:
         try:
-            from dmrobotics import Sensor, SensorOptions  # lazy: rig machines only
+            from dmrobotics import Mode, Sensor, SensorOptions  # lazy: rig machines only
         except ImportError as e:
             raise RuntimeError(
-                "dmrobotics SDK not installed — install it on the rig machine, or set "
+                "dmrobotics SDK not installed — install it on the rig machine (Python "
+                "3.8-3.11, linux/windows x86_64 only), or set "
                 "mode.overrides.tactile: mock in configs/hardware.yaml") from e
-        self._sdk = Sensor(SensorOptions(self.sensor.dev_id))
+        opt = SensorOptions(
+            dev_id=self.sensor.dev_id,
+            backend=self.cfg.sdk_backend,
+            mode=Mode.HIGH if self.cfg.sdk_mode == "high" else Mode.STANDARD,
+            max_fps=int(round(self.cfg.rate_hz)),
+            # enables default to False in the real SDK — set every channel we consume
+            enable_raw=True,           # raw grayscale archive -> offline recompute path
+            enable_deformation=True,
+            enable_depth=True,
+            enable_shear=True,
+            enable_force=True,
+        )
+        self._sdk = Sensor(opt)
+        self._verify_identity()
         self.reset_reference()
         self._seq = 0
+        self._last_fid = -1
+
+    def _verify_identity(self) -> None:
+        """When configured by serial, assert we actually connected to that unit."""
+        if not isinstance(self.sensor.dev_id, str):
+            return
+        got = str(self._sdk.getDevID())
+        want = self.sensor.dev_id
+        if not (got == want or got.endswith(want) or want.endswith(got)):
+            raise RuntimeError(
+                f"tactile[{self.sensor.name}] connected to serial {got!r}, "
+                f"configured {want!r} — check yellow cable labels / hardware.yaml")
 
     def disconnect(self) -> None:
         sdk, self._sdk = self._sdk, None
-        if sdk is not None and hasattr(sdk, "release"):
-            sdk.release()
+        if sdk is not None:
+            sdk.disconnect()
 
     def reset_reference(self) -> None:
         if self._sdk is None:
             raise RuntimeError("reset_reference() before connect()")
-        self._sdk.getBaseFrame()
+        # getBaseFrame() returns the current reference frame; calling reset()
+        # re-zeros it. Keep the pad untouched during reset (vendor requirement).
+        self._sdk.reset()
+        deadline = time.perf_counter() + 5.0
+        while self._sdk.getDevStatus() == _STATUS_RESETTING:
+            if time.perf_counter() > deadline:
+                raise RuntimeError(
+                    f"tactile[{self.sensor.name}] stuck RESETTING >5s — pad touched during reset?")
+            time.sleep(0.02)
 
     # ------------------------------------------------------------------
     def _canon(self, arr: np.ndarray) -> np.ndarray:
@@ -61,32 +119,67 @@ class DmTacSensor(TactileSensor):
             arr = np.swapaxes(arr, 0, 1)
         return np.ascontiguousarray(arr, dtype=np.float32)
 
+    def _unpack_field(self, ret) -> np.ndarray:
+        """SDK field getters return (fid, ndarray)."""
+        _fid, arr = ret
+        return self._canon(arr)
+
+    def _unpack_dist_force(self, ret) -> np.ndarray:
+        """(fid, ndarray(H,W,3)) per the manual, or (fid, fx, fy, fz) per snippets."""
+        if len(ret) == 2:
+            return self._canon(ret[1])
+        _fid, fx, fy, fz = ret
+        return np.stack([self._canon(fx), self._canon(fy), self._canon(fz)], axis=-1)
+
+    @staticmethod
+    def _unpack_image(ret) -> np.ndarray:
+        """(fid, DMTacImage) -> uint8 pixel array (grayscale)."""
+        _fid, im = ret
+        return np.asarray(im.img)
+
+    def _wait_ready(self) -> None:
+        """Block until the device is OK and a new frame id is available."""
+        deadline = time.perf_counter() + 2.0
+        while True:
+            st = self._sdk.getDevStatus()
+            if st == _STATUS_OK:
+                break
+            if st == _STATUS_DISCONNECTED:
+                raise RuntimeError(f"tactile[{self.sensor.name}] DISCONNECTED")
+            if time.perf_counter() > deadline:
+                raise RuntimeError(f"tactile[{self.sensor.name}] not ready (status={st}) >2s")
+            time.sleep(0.005)
+        try:
+            self._sdk.wait_for_new(self._last_fid, timeout_ms=int(2000.0 / self.cfg.rate_hz) + 50)
+        except Exception:
+            # fallback: sleep-pace to the configured rate
+            period = 1.0 / self.cfg.rate_hz
+            wait = self._last_read_t + period - time.perf_counter()
+            if wait > 0:
+                time.sleep(wait)
+
     def read(self) -> TactileFrame:
         if self._sdk is None:
             raise RuntimeError("read() before connect()")
-        # pace to the configured rate (SDK getters return the latest processed frame)
-        period = 1.0 / self.cfg.rate_hz
-        now = time.perf_counter()
-        wait = self._last_read_t + period - now
-        if wait > 0:
-            time.sleep(wait)
+        self._wait_ready()
         t_host = time.perf_counter()
         self._last_read_t = t_host
 
-        deformation = self._canon(self._sdk.getDeformation2D())   # (H, W, 2)
-        depth = self._canon(self._sdk.getDepth())                 # (H, W)
-        shear = self._canon(self._sdk.getShear())                 # (H, W, 2)
-        dist_force = self._sdk.getDistributeForce()
-        # SDK may return a (fx, fy, fz) tuple of (H, W) arrays or one (H, W, 3)
-        if isinstance(dist_force, (tuple, list)):
-            dist_force = np.stack([self._canon(a) for a in dist_force], axis=-1)
-        else:
-            dist_force = self._canon(dist_force)
-        wrench = np.asarray(self._sdk.getForce(), dtype=np.float32).reshape(-1)
-        if self.cfg.force_calibrated:
-            wrench = wrench * self.cfg.force_unit_to_N
+        fid, deform_arr = self._sdk.getDeformation2D()
+        self._last_fid = fid
+        deformation = self._canon(deform_arr)                                   # (H, W, 2)
+        depth = self._unpack_field(self._sdk.getDepth())                        # (H, W)
+        shear = self._unpack_field(self._sdk.getShear())                        # (H, W, 2)
+        dist_force = self._unpack_dist_force(self._sdk.getDistributeForce())    # (H, W, 3)
+
+        _fid, force_arr = self._sdk.getForce()                                  # (1, 6)
+        wrench = np.asarray(force_arr, dtype=np.float32).reshape(-1)
+        if self.cfg.wrench_calibrated:
+            wrench = wrench * np.array(
+                [self.cfg.force_unit_to_N] * 3 + [self.cfg.torque_unit_to_Nm] * 3,
+                dtype=np.float32)
         area = float(self._sdk.getContactArea())
-        infer_img = np.asarray(self._sdk.getInferImg())
+        infer_img = self._unpack_image(self._sdk.getInferImg())
 
         frame = TactileFrame(
             t_host=t_host, seq=self._seq,
@@ -99,7 +192,7 @@ class DmTacSensor(TactileSensor):
         return frame
 
     def read_raw_img(self) -> np.ndarray:
-        """Full raw camera frame (archive path, bench item (e))."""
+        """Full raw grayscale camera frame (archive path, bench item (e))."""
         if self._sdk is None:
             raise RuntimeError("read_raw_img() before connect()")
-        return np.asarray(self._sdk.getRawImg())
+        return self._unpack_image(self._sdk.getRawImg())
