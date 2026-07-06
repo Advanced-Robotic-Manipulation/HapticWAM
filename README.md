@@ -85,6 +85,8 @@ docs/               the documentation set below
 
 | Doc | Read it when |
 |---|---|
+| [docs/STATUS.md](docs/STATUS.md) | **first** — what is done, what remains, exact next actions |
+| [docs/sensor_sdk.md](docs/sensor_sdk.md) | anything touches the DM-Tac sensors or the `dmrobotics` SDK |
 | [docs/code_structure.md](docs/code_structure.md) | you want the module-by-module map and the design rules |
 | [docs/launch_guide.md](docs/launch_guide.md) | you need the exact command for any stage, on any machine |
 | [docs/hardware_bench_day1.md](docs/hardware_bench_day1.md) | the sensors/arm arrive — fills the `BENCH:` fields |

@@ -124,6 +124,15 @@ class MockTactileSensor(TactileSensor):
         self._check_first_frame(frame)
         return frame
 
+    def read_raw_img(self) -> np.ndarray:
+        """Synthesized raw camera frame (press-modulated noise, like infer)."""
+        st = self.scenario.state(time.perf_counter() - self._t0)
+        if self.cfg.raw_img.c == 1:
+            shape = (self.cfg.raw_img.h, self.cfg.raw_img.w)
+        else:
+            shape = self.cfg.raw_img.hwc
+        return (self._rng.random(shape) * 30 + st.press_depth * 200).astype(np.uint8)
+
     def read(self) -> TactileFrame:
         if not self._connected:
             raise RuntimeError("read() before connect()")

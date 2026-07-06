@@ -33,6 +33,8 @@ def _stream_map(hw: HardwareConfig) -> list[tuple[str, str, str]]:
         m.append((f"tactile_{s.name}_kf", "keyframe", tactile_stream(s.name, "keyframes")))
         if hw.recording.save_infer_img:
             m.append((f"tactile_{s.name}_img", "infer_img", tactile_stream(s.name, "infer_img")))
+        if hw.recording.archive_raw_img:
+            m.append((f"tactile_{s.name}_raw", "raw_img", tactile_stream(s.name, "raw_img")))
     m += [("arm", "q", STREAM_ARM_Q), ("arm", "qd", STREAM_ARM_QD),
           ("arm", "tcp_pose", STREAM_ARM_TCP_POSE),
           ("arm", "tcp_speed", STREAM_ARM_TCP_SPEED), ("arm", "ft", STREAM_ARM_FT),
