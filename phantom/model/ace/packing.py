@@ -43,6 +43,24 @@ _CH_WRENCH1 = 14
 _CH_WRIST = 15
 
 
+def sigma_group_channels(n_fingers: int) -> dict[str, list[int]]:
+    """Packed-contact-frame channels per SigmaHead group — lets the
+    heteroscedastic NLL supervise each sigma channel against ITS OWN
+    residual (the speed governor consumes per-group sigma, so per-group
+    calibration must be earned, not averaged)."""
+    ch = {"d_disp": [], "d_fz": [], "mask": []}
+    for f in range(n_fingers):
+        base = f * _PER_FINGER_CH
+        ch["d_disp"] += [base, base + 1, base + 2]
+        ch["d_fz"].append(base + 3)
+        ch["mask"].append(base + 4)
+    ch["cop"] = [_CH_COP]
+    ch["slip"] = [_CH_SLIP]
+    ch["wrench"] = [_CH_WRENCH0, _CH_WRENCH1][:max(1, n_fingers)]
+    ch["wrist"] = [_CH_WRIST]
+    return ch
+
+
 @dataclass
 class ContactPackage:
     """Structured contact package for T_c future steps (pipeline.md §2/§4).
