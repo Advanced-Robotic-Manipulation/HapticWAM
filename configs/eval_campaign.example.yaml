@@ -1,0 +1,15 @@
+# Example evaluation campaign (pipeline.md §8) — copy, fill checkpoints, run:
+#   python -m phantom.scripts.run_eval --campaign configs/eval_campaign.yaml
+name: main_eval
+tasks: [fragile_grasp, slippery_place, insertion, wipe, regrasp]
+systems: [teacher, student, vision_only, no_distill, drop_tactile]
+seeds: [0, 1, 2]
+trials_per_cell: 20
+occlusion_tasks: [fragile_grasp, slippery_place]
+max_replans: 30
+checkpoints:
+  teacher: runs/teacher/teacher/teacher_050000.pt
+  student: runs/hid/hid_r2/student_030000.pt
+  vision_only: ""          # teacher-arch checkpoint trained without tactile (ablation)
+  no_distill: ""           # student-arch trained from scratch (critical control)
+  drop_tactile: ""         # distilled, vision+proprio only

@@ -1,0 +1,88 @@
+"""ACE grouped training objective (pipeline.md §4):
+
+    L = lambda_a L_act + lambda_v L_vid + lambda_c (L_evt + L_delta)
+        + lambda_w L_F/T + L_ACC
+
+realized on the joint rectified-flow denoiser as per-frame-group losses:
+  VIDEO_GEN  — velocity MSE (small weight; guidance, not fidelity)
+  CONTACT    — heteroscedastic NLL on the x0 prediction (sigma from SigmaHead)
+               + event CE from EventReadout
+  ACTION     — velocity MSE (what actually executes)
+  wrist term — the wrist channel region of the CONTACT frames (lambda_w)
+  ACC aux    — gate BCE (contact-within-Δ) + event CE at t+1
+"""
+
+from __future__ import annotations
+
+import torch
+import torch.nn.functional as F
+
+from phantom.config.model import LossWeights
+from phantom.model.ace.heads import SIGMA_GROUPS
+from phantom.model.acc import AccOutput
+from phantom.model.sequence import FrameGroup, SequenceLayout
+
+
+def group_velocity_mse(v_pred: torch.Tensor, v_target: torch.Tensor,
+                       layout: SequenceLayout, group: FrameGroup) -> torch.Tensor:
+    sl = layout.frame_slice(group)
+    return F.mse_loss(v_pred[:, :, sl].float(), v_target[:, :, sl].float())
+
+
+def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
+                       log_sigma_B_Tc_K: torch.Tensor,
+                       layout: SequenceLayout) -> torch.Tensor:
+    """Per-step scalar variance per group: d/sigma^2 + log sigma^2 on the
+    CONTACT frames' x0 (single group aggregate; the packed frame mixes groups
+    spatially, so we apply the mean sigma over groups per step — the honest
+    scalar-variance version)."""
+    sl = layout.frame_slice(FrameGroup.CONTACT)
+    d = (x0_pred[:, :, sl].float() - x0_target[:, :, sl].float()) ** 2
+    d_B_Tc = d.mean(dim=(1, 3, 4))                       # (B, Tc)
+    log_var = 2.0 * log_sigma_B_Tc_K.mean(-1)            # (B, Tc)
+    return (d_B_Tc / log_var.exp() + log_var).mean()
+
+
+def wrist_region_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor,
+                     layout: SequenceLayout, wrist_channel: int) -> torch.Tensor:
+    """lambda_w term: the wrist-F/T channel of the CONTACT frames."""
+    sl = layout.frame_slice(FrameGroup.CONTACT)
+    return F.mse_loss(x0_pred[:, wrist_channel, sl].float(),
+                      x0_target[:, wrist_channel, sl].float())
+
+
+def event_ce(event_logits_B_Tc_E: torch.Tensor, events_B_Tc: torch.Tensor) -> torch.Tensor:
+    return F.cross_entropy(event_logits_B_Tc_E.flatten(0, 1),
+                           events_B_Tc.flatten(0, 1))
+
+
+def acc_losses(acc: AccOutput, gate_label_B: torch.Tensor,
+               event_next_B: torch.Tensor, alpha_entropy_weight: float = 0.0) -> dict:
+    out = {
+        "acc_gate_bce": F.binary_cross_entropy(acc.g.clamp(1e-6, 1 - 1e-6).float(),
+                                               gate_label_B.float()),
+        "acc_event_ce": F.cross_entropy(acc.event_logits.float(), event_next_B),
+    }
+    if alpha_entropy_weight > 0:
+        a = acc.alpha.clamp(1e-6, 1 - 1e-6)
+        out["acc_alpha_entropy"] = alpha_entropy_weight * (
+            a * a.log() + (1 - a) * (1 - a).log()).mean()
+    return out
+
+
+def total_loss(parts: dict[str, torch.Tensor], w: LossWeights) -> torch.Tensor:
+    total = (w.action * parts["action_v_mse"]
+             + w.contact * parts["contact_nll"]
+             + w.event * parts["event_ce"]
+             + w.wrist * parts["wrist_mse"]
+             + w.gate_bce * parts.get("acc_gate_bce", torch.zeros(())).to(
+                 parts["action_v_mse"].device)
+             + w.event * parts.get("acc_event_ce", torch.zeros(())).to(
+                 parts["action_v_mse"].device)
+             + w.sigma_reg * parts.get("sigma_reg", torch.zeros(())).to(
+                 parts["action_v_mse"].device))
+    if "video_v_mse" in parts:
+        total = total + w.video * parts["video_v_mse"]
+    if "acc_alpha_entropy" in parts:
+        total = total + parts["acc_alpha_entropy"]
+    return total

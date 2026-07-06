@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phantom-robot"
+version = "0.1.0"
+description = "PHANTOM: Predictive Haptic ANTicipation with Occlusion-robust Manipulation (ICRA 2027)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pydantic>=2.5",
+    "PyYAML>=6.0",
+    "zarr>=2.16,<3",
+    "numcodecs<0.16",
+    "einops>=0.7",
+]
+
+[project.optional-dependencies]
+# Model/training stack (needs a CUDA box for real runs; CPU ok for tiny smoke tests)
+train = [
+    "torch>=2.7",
+    "peft>=0.11",
+    "safetensors",
+    "tensorboard",
+]
+# Real hardware drivers (recording rig / deployment box only)
+hw = [
+    "ur-rtde>=1.5",
+    "pyrealsense2",
+    "pyspacemouse",
+    "opencv-python",
+]
+dev = [
+    "pytest>=8",
+    "pytest-timeout",
+]
+
+[tool.setuptools.packages.find]
+include = ["phantom*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 300

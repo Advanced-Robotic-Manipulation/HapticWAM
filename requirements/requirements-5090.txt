@@ -1,0 +1,62 @@
+# ============================================================================
+# PHANTOM — RTX 5090 box (Ubuntu 22.04, wired to the UR3)
+# Data collection, deployment, DAgger rollouts, evaluation.
+#
+# Install (fresh machine, Python 3.10-3.12 venv recommended):
+#     python -m venv ~/venvs/phantom && source ~/venvs/phantom/bin/activate
+#     pip install -r requirements/requirements-5090.txt
+#     pip install -e .                      # from the repo root
+#
+# NON-PIP steps (do these too):
+#   1. dmrobotics SDK (DM-Tac W2L) — vendor install per Daimon's instructions;
+#      verify with:  python -c "import dmrobotics"
+#   2. librealsense udev rules (RealSense over USB without root):
+#      https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+#   3. SpaceMouse: sudo apt install libhidapi-hidraw0 libhidapi-libusb0
+#      + a udev rule for the 3Dconnexion vendor id (or run pyspacemouse as root once to test)
+#   4. Add your user to dialout for serial access: sudo usermod -aG dialout $USER
+#   5. NVIDIA driver >= 570 (Blackwell/sm_120 support)
+#
+# Verify sequence after install (see docs/launch_guide.md):
+#     pytest tests/ && python -m phantom.scripts.mock_smoke
+#     python -m phantom.scripts.smoke_test --synthetic --device cuda   # VRAM measurement
+#     python -m phantom.scripts.verify_backbone --save-ref ref_shim.pt
+# ============================================================================
+
+# --- PyTorch: Blackwell (sm_120) REQUIRES >= 2.7 built for CUDA 12.8 --------
+# Known-good tested pair: torch 2.7.1 + torchvision 0.22.1
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch>=2.7,<2.9
+torchvision>=0.22,<0.24
+
+# --- phantom core ------------------------------------------------------------
+numpy>=1.24
+pydantic>=2.5
+PyYAML>=6.0
+zarr>=2.16,<3
+numcodecs<0.16
+einops>=0.7
+
+# --- cosmos-predict2.5 import chain (imported as a library from paths.yaml) --
+loguru
+omegaconf>=2.3
+attrs
+nvidia-ml-py          # provides the `pynvml` module cosmos imports
+boto3
+iopath
+multi-storage-client  # linux-only wheel deps (xattr); shimmed on Windows dev boxes
+
+# --- model / inference --------------------------------------------------------
+peft>=0.11
+safetensors
+tensorboard
+
+# --- hardware drivers (this box only) -----------------------------------------
+ur-rtde>=1.5
+pyrealsense2
+pyspacemouse
+opencv-python
+
+# --- verification -------------------------------------------------------------
+pytest>=8
+pytest-timeout
