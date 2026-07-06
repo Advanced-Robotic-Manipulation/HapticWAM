@@ -1,0 +1,22 @@
+# ============================================================================
+# PHANTOM paths configuration — where the Cosmos-Predict2.5 repository and the
+# Cosmos-Predict2.5-2B weights live, plus data/output roots.
+#
+# Per-machine values: create configs/paths.local.yaml (gitignored) with any
+# subset of these keys; it is merged over this file at load time.
+# ============================================================================
+
+# Cloned official cosmos-predict2.5 repository (imported as a library).
+cosmos_repo: c:/skoltech/research/icra2027/cosmos-predict2.5
+
+# Downloaded Cosmos-Predict2.5-2B weights root.
+cosmos_weights_root: c:/skoltech/research/icra2027/cosmos-predict2.5-2b
+
+# Relative to cosmos_weights_root:
+cosmos_checkpoint: robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt
+cosmos_empty_text_embedding: robot/action-cond/cr1_empty_string_text_embeddings.pt
+cosmos_tokenizer: tokenizer.pth
+
+# Data + run outputs (created on demand).
+data_root: c:/skoltech/research/icra2027/data
+runs_root: c:/skoltech/research/icra2027/runs

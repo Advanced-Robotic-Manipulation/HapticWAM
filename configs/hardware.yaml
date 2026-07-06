@@ -1,0 +1,145 @@
+# ============================================================================
+# PHANTOM hardware configuration — THE single source of truth for every
+# hardware-related hyperparameter in the codebase.
+#
+# Fields marked "# BENCH:" carry UNVERIFIED defaults that must be measured and
+# overwritten during the day-1 hardware bench (see docs/hardware_bench_day1.md,
+# which names the procedure for each field). The *rank* of every shape is fixed
+# by the schema (an image is always h/w[/c]); only the VALUES here may change.
+#
+# No shape, rate, unit scale, or threshold may be hardcoded anywhere in
+# phantom/ — everything derives from this file via phantom.config.hardware.
+# ============================================================================
+
+meta:
+  schema_version: 1
+  rig_name: skoltech-ur-rig
+  bench_verified: false        # flip to true after completing docs/hardware_bench_day1.md
+
+mode:
+  drivers: mock                # mock | real (global default)
+  overrides: {}                # per-device override, e.g. {arm: real, tactile: mock}
+
+arm:
+  model: UR3                   # BENCH: informational free string (UR3 / UR3e / ...)
+  generation: e-series         # BENCH: e-series | cb3 — THE hardware fork (pipeline.md §1).
+                               #   e-series: built-in 500 Hz wrist F/T. cb3: external FT-300S needed.
+  ip: 192.168.1.10             # BENCH: robot controller IP
+  rtde_receive_hz: 500.0       # BENCH: e-series up to 500; cb3 max 125 (validated)
+  rtde_control_hz: 500.0       # BENCH: same constraint
+  dof: 6
+  tcp_offset_m: [0.0, 0.0, 0.180, 0.0, 0.0, 0.0]   # BENCH: measure with gripper+sensors mounted
+  payload_kg: 1.2              # BENCH: gripper + 2x W2L
+  limits:
+    joint_speed_rad_s: 1.0
+    tcp_speed_m_s: 0.25
+    tcp_accel_m_s2: 0.5
+  servoj:
+    lookahead_time_s: 0.1
+    gain: 300
+
+wrist_ft:
+  source: ur_internal          # BENCH: ur_internal (e-series) | ft300s (cb3 + Robotiq FT-300S)
+  rate_hz: 500.0               # BENCH: 500 (e-series) / 100 (FT-300S)
+  dim: 6                       # rank-fixed
+  window_s: 0.25               # F/T window length fed to the WristTCN / ACC
+  bias_on_episode_start: true
+  bias_window_s: 0.5
+
+gripper:
+  type: robotiq_2f85           # BENCH: robotiq_2f85 | robotiq_2f140
+  interface: urcap_socket
+  port: 63352
+  stroke_mm: 85.0              # BENCH: 140.0 if 2F-140
+  feedback_rate_hz: 100.0
+  default_speed: 0.5           # normalized 0..1 at the API boundary
+  default_force: 0.3
+
+tactile:
+  sdk: dmrobotics
+  rate_hz: 120.0               # BENCH (b): true concurrent dual-sensor rate
+  raw_img:   {h: 480, w: 640, c: 1}   # BENCH (b): channel count unverified
+  infer_img: {h: 480, w: 640, c: 1}   # BENCH (b): size AND channel count unverified
+  field:     {h: 288, w: 384}         # BENCH (c): which side numpy axis-0 is — see hw_order
+  hw_order: hw                 # BENCH (c): hw = numpy axis0 is field.h; wh = transposed by SDK.
+                               #   Real driver transposes at the boundary; downstream code
+                               #   always sees canonical (field.h, field.w).
+  field_channels:              # channel stack [D_t || F_t]; must sum to 8 (validated)
+    deformation2d: 2           # getDeformation2D (in-plane displacement xy)
+    depth: 1                   # getDepth (normal indentation z)
+    shear: 2                   # getShear
+    dist_force: 3              # getDistributeForce (fx, fy, fz)
+  wrench_dim: 6                # getForce, rank-fixed
+  force_unit_to_N: 0.0         # BENCH (a): getForce SDK-unit -> Newton scale.
+                               #   0.0 = UNCALIBRATED sentinel: forces depth-based contact
+                               #   detection + deformation fallback everywhere (pipeline.md §5).
+  dist_force_unit_to_N: 0.0    # BENCH (a): getDistributeForce SDK-unit -> Newton scale (same sentinel)
+  offline_recompute_ok: false  # BENCH (e): can fields be recomputed offline from raw images?
+  sensors:
+    - {name: left,  dev_id: 0}   # BENCH: dev ids
+    - {name: right, dev_id: 1}   # BENCH
+
+cameras:
+  scene:
+    enabled: true
+    serial: ""                 # BENCH: RealSense serial (empty = first device)
+    color: {h: 480, w: 640, c: 3}
+    fps: 30.0
+    depth_enabled: false
+  wrist:
+    enabled: false
+    serial: ""
+    color: {h: 480, w: 640, c: 3}
+    fps: 30.0
+    depth_enabled: false
+
+derived:                       # thresholds for phantom/data/derived.py (pipeline.md §1)
+  tau_contact_depth: 0.05      # BENCH: contact mask threshold on |depth| (SDK depth units)
+  tau_contact_fz: 0.10         # BENCH: contact mask threshold on |fz| in N (used only when calibrated)
+  contact_source: depth        # depth | fz — which channel gates the contact mask
+  tau_slip: 0.5                # BENCH: slip-score threshold (blended statistic)
+  slip_flow_weight: 0.5        # blend: w*flow_stat + (1-w)*cone_ratio (cone term used only when calibrated)
+  friction_cone_mu: 0.8        # BENCH: stick-slip ratio ||(fx,fy)||/fz threshold
+  cop_min_contact_cells: 10    # CoP undefined below this many contact cells
+  area_crosscheck_tol: 0.30    # |ourArea - getContactArea| relative tolerance (bench sanity)
+  cpk_downsample: 8            # contact-package field res = field / this (default 36x48)
+  event_lookahead_s: 0.5       # Δ for the ACC gate BCE label "contact within (t, t+Δ)"
+  event_min_hold_ticks: 2      # debounce for onset/release transitions (field-rate ticks)
+
+recording:
+  field_ds: {h: 72, w: 96}     # downsampled field resolution stored at full rate
+                               #   (must divide field h,w exactly — validated)
+  field_ds_rate_hz: 120.0      # <= tactile.rate_hz
+  keyframe_rate_hz: 10.0       # full-res field keyframes
+  field_dtype: float16         # float16 | float32 on disk
+  save_infer_img: true
+  infer_img_rate_hz: 30.0
+  archive_raw_img: false       # flip if bench (e) proves offline recompute works
+  ring_seconds: 5.0            # per-stream ring buffer capacity
+  zarr_chunk_frames: 120       # ~1 s per chunk at field rate
+  drain_interval_s: 0.25
+
+control:
+  model_tick_hz: 4.0           # Cosmos robot/action-cond native 4 fps
+  action_rate_hz: 10.0         # action-chunk grid AND teleop command rate
+  action_dim: 7                # Δ-EE pose (6) + gripper (1) — schema constant, rank-fixed
+  chunk_horizon: 16            # H, number of actions per generated chunk
+  executor_rate_hz: 500.0      # must equal arm.rtde_control_hz (validated)
+  replan_min_lead_s: 0.3       # executor must have >= this much chunk left at swap
+  chunk_blend_s: 0.1
+
+safety:
+  wrench_limit_N: 40.0         # hard stop on wrist |F|
+  wrench_limit_Nm: 8.0         # hard stop on wrist |T|
+  tactile_fz_limit_N: 5.0      # BENCH: e-stop on peak fingertip normal force (teacher mode;
+                               #   only active when force units are calibrated)
+  tactile_depth_limit: 0.6     # BENCH: e-stop on peak indentation (uncalibrated fallback)
+  workspace_m:                 # BENCH: measure at the rig
+    x: [-0.4, 0.4]
+    y: [-0.7, -0.2]
+    z: [0.02, 0.5]
+  governor:
+    sigma_lo: 0.1              # sigma <= lo -> full speed
+    sigma_hi: 1.0              # sigma >= hi -> min_scale
+    min_scale: 0.15
+  stale_plan_timeout_s: 1.0    # decelerate + hold if no fresh chunk within this
