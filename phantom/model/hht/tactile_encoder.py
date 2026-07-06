@@ -50,7 +50,14 @@ class TactileFieldEncoder(nn.Module):
         self.out_ch = chans[-1]
         self.out_dim = out_dim
         self.head = nn.Linear(self.out_ch, out_dim)
+        # FiLM is zero-init so it is an exact no-op at step 0: SSL-pretrained
+        # features pass through unchanged until fine-tuning learns the
+        # conditioning (the SSL objective never trains this layer — it is
+        # absent from TactilePretrainModel and skipped by load_pretrained_tactile).
         self.film = nn.Linear(film_dim, 2 * self.out_ch) if film_dim else None
+        if self.film is not None:
+            nn.init.zeros_(self.film.weight)
+            nn.init.zeros_(self.film.bias)
         self._stages = stages
 
     # ------------------------------------------------------------------

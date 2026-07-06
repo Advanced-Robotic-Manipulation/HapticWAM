@@ -24,6 +24,19 @@ train = [
     "safetensors",
     "tensorboard",
 ]
+# Import-time deps of the cosmos-predict2.5 submodule (imported as a library;
+# CUDA-only packages like transformer-engine are shimmed by backbone/compat.py)
+cosmos = [
+    "loguru",
+    "omegaconf",
+    "attrs",
+    "iopath",
+    "nvidia-ml-py",
+    "boto3",
+    "imageio",
+    "pandas",
+    "torchvision",
+]
 # Real hardware drivers (recording rig / deployment box only)
 hw = [
     "ur-rtde>=1.5",

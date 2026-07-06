@@ -57,10 +57,20 @@ class HHT(nn.Module):
 
     # ------------------------------------------------------------------
     def load_pretrained_tactile(self, ckpt_path: Path) -> None:
-        """Load contact-play SSL weights (train/pretrain_tactile.py output)."""
+        """Load contact-play SSL weights (train/pretrain_tactile.py output).
+
+        The SSL model has no FiLM layer (film_dim=None), while this encoder
+        does — load non-strict and assert the ONLY missing keys are film.*
+        (which stay at their zero-init no-op, see TactileFieldEncoder)."""
         assert not self.student, "student HHT has no tactile encoder"
         payload = torch.load(str(ckpt_path), map_location="cpu", weights_only=True)
-        self.phantom_tactile_enc.load_state_dict(payload["encoder"])
+        missing, unexpected = self.phantom_tactile_enc.load_state_dict(
+            payload["encoder"], strict=False)
+        bad_missing = [k for k in missing if not k.startswith("film.")]
+        if bad_missing or unexpected:
+            raise RuntimeError(
+                f"SSL tactile checkpoint mismatch: missing={bad_missing} "
+                f"unexpected={list(unexpected)} ({ckpt_path})")
 
     # ------------------------------------------------------------------
     def obs_frames(self, batch: dict) -> dict[FrameGroup, torch.Tensor]:
