@@ -66,6 +66,11 @@ def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, Shared
                          else t.infer_img.hwc)
             make(f"tactile_{s.name}_img", r.infer_img_rate_hz,
                  {"infer_img": (img_shape, "uint8")})
+        if r.archive_raw_img:
+            raw_shape = ((t.raw_img.h, t.raw_img.w) if t.raw_img.c == 1
+                         else t.raw_img.hwc)
+            make(f"tactile_{s.name}_raw", t.rate_hz,
+                 {"raw_img": (raw_shape, "uint8")})
     make("arm", hw.arm.rtde_receive_hz, {
         "q": ((hw.arm.dof,), "float64"), "qd": ((hw.arm.dof,), "float64"),
         "tcp_pose": ((6,), "float64"), "tcp_speed": ((6,), "float64"),
@@ -105,6 +110,8 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
     ring_kf = SharedRingBuffer.attach(ring_specs[f"tactile_{sensor_name}_kf"])
     ring_img = (SharedRingBuffer.attach(ring_specs[f"tactile_{sensor_name}_img"])
                 if r.save_infer_img else None)
+    ring_raw = (SharedRingBuffer.attach(ring_specs[f"tactile_{sensor_name}_raw"])
+                if r.archive_raw_img else None)
 
     ds_h, ds_w = r.field_ds.hw
     fh, fw = t.field.h // ds_h, t.field.w // ds_w
@@ -124,10 +131,16 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
                 ring_kf.push(frame.t_host, keyframe=stack.astype(f_dtype))
             if ring_img is not None and frame.infer_img is not None and i % img_every == 0:
                 ring_img.push(frame.t_host, infer_img=frame.infer_img)
+            if ring_raw is not None:
+                # raw grayscale at full rate -> offline field recompute
+                # (docs/sensor_sdk.md; enable after bench item (e))
+                ring_raw.push(frame.t_host, raw_img=driver.read_raw_img())
             i += 1
     finally:
         driver.disconnect()
         ring.close(); ring_kf.close()
+        if ring_raw is not None:
+            ring_raw.close()
         if ring_img is not None:
             ring_img.close()
 

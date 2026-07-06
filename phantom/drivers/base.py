@@ -105,6 +105,11 @@ class TactileSensor(ABC):
     def reset_reference(self) -> None:
         """Re-zero the no-contact reference (getBaseFrame)."""
 
+    def read_raw_img(self) -> np.ndarray:
+        """Full raw camera frame (uint8 grayscale) — the offline-recompute
+        archive path (recording.archive_raw_img; docs/sensor_sdk.md)."""
+        raise NotImplementedError(f"{type(self).__name__} does not provide raw frames")
+
     @property
     def field_shape(self) -> tuple[int, int]:
         return self.cfg.field.hw
