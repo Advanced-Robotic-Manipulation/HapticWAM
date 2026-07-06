@@ -27,7 +27,8 @@ from phantom.config.hardware import HardwareConfig
 from phantom.config.model import PhantomModelConfig
 from phantom.model.ace import losses as L
 from phantom.model.ace.heads import EventReadout, SigmaHead
-from phantom.model.ace.packing import _CH_WRIST, ActionPacker, ContactPackage, ContactPacker
+from phantom.model.ace.packing import (_CH_WRIST, ActionPacker, ContactPackage,
+                                       ContactPacker, sigma_group_channels)
 from phantom.model.acc import AccInputs, AccOutput
 from phantom.model.sequence import FrameGroup, SequenceLayout
 
@@ -129,11 +130,26 @@ class PhantomRectifiedFlow(nn.Module):
     def _acc_inputs_train(self, batch: dict, gt_cpk: ContactPackage,
                           obs_batch: dict) -> AccInputs:
         """Training-time self-anticipation per mc.acc.self_anticipation:
+
         'gt_noised' — GT package + noise stands in for the previous replan's
-        prediction (documented approximation)."""
+        prediction (fast proxy; the gate sees leaked GT — never report gate
+        lead-time from a gt_noised-trained model);
+        'two_pass'  — a no-grad short sample() produces the model's OWN
+        predicted package, exactly like deployment's prev_cpk (the inner pass
+        falls back to the noised-GT summary to terminate the recursion — the
+        one-level approximation of an infinite replan history)."""
         dev, dt = self.device, self.dtype
-        summary = self.c_pack.flatten_summary(gt_cpk).to(dt)
-        if self.mc.acc.self_anticipation == "gt_noised":
+        mode = self.mc.acc.self_anticipation
+        if mode == "two_pass" and not getattr(self, "_in_anticipation_pass", False):
+            self._in_anticipation_pass = True
+            try:
+                with torch.no_grad():
+                    pred = self.sample(batch, nfe=max(2, self.mc.nfe // 2))
+                summary = self.c_pack.flatten_summary(pred.cpk.detach()).to(dt)
+            finally:
+                self._in_anticipation_pass = False
+        else:
+            summary = self.c_pack.flatten_summary(gt_cpk).to(dt)
             noise = torch.randn(summary.shape, generator=self._gen) \
                 .to(dev, dt) * self.mc.acc.gt_noise_scale
             summary = summary + noise
@@ -208,7 +224,9 @@ class PhantomRectifiedFlow(nn.Module):
         parts: dict[str, torch.Tensor] = {
             "action_v_mse": L.group_velocity_mse(v_pred, v_target, layout,
                                                  FrameGroup.ACTION),
-            "contact_nll": L.contact_hetero_nll(x0_pred, x0, log_sigma, layout),
+            "contact_nll": L.contact_hetero_nll(
+                x0_pred, x0, log_sigma, layout,
+                group_channels=sigma_group_channels(self.hw.n_fingers)),
             "event_ce": L.event_ce(event_logits, batch["events"].to(dev)),
             "wrist_mse": L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST),
             "sigma_reg": (log_sigma ** 2).mean(),

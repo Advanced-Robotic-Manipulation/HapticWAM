@@ -31,16 +31,29 @@ def group_velocity_mse(v_pred: torch.Tensor, v_target: torch.Tensor,
 
 def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
                        log_sigma_B_Tc_K: torch.Tensor,
-                       layout: SequenceLayout) -> torch.Tensor:
-    """Per-step scalar variance per group: d/sigma^2 + log sigma^2 on the
-    CONTACT frames' x0 (single group aggregate; the packed frame mixes groups
-    spatially, so we apply the mean sigma over groups per step — the honest
-    scalar-variance version)."""
+                       layout: SequenceLayout,
+                       group_channels: dict[str, list[int]] | None = None) -> torch.Tensor:
+    """Heteroscedastic NLL d/sigma^2 + log sigma^2 on the CONTACT frames' x0,
+    PER SIGMA GROUP: each SigmaHead channel is supervised against the residual
+    of its own packed channels (sigma_group_channels), so the per-group sigma
+    the speed governor and HID confidence weights consume is individually
+    calibrated. Falls back to the scalar-aggregate version when no channel map
+    is given (legacy)."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
-    d = (x0_pred[:, :, sl].float() - x0_target[:, :, sl].float()) ** 2
-    d_B_Tc = d.mean(dim=(1, 3, 4))                       # (B, Tc)
-    log_var = 2.0 * log_sigma_B_Tc_K.mean(-1)            # (B, Tc)
-    return (d_B_Tc / log_var.exp() + log_var).mean()
+    d = (x0_pred[:, :, sl].float() - x0_target[:, :, sl].float()) ** 2  # (B,C,Tc,H,W)
+    if group_channels is None:
+        d_B_Tc = d.mean(dim=(1, 3, 4))                   # (B, Tc)
+        log_var = 2.0 * log_sigma_B_Tc_K.mean(-1)        # (B, Tc)
+        return (d_B_Tc / log_var.exp() + log_var).mean()
+    terms = []
+    for k, name in enumerate(SIGMA_GROUPS):
+        chans = group_channels.get(name)
+        if not chans:
+            continue
+        d_B_Tc = d[:, chans].mean(dim=(1, 3, 4))         # (B, Tc)
+        log_var = 2.0 * log_sigma_B_Tc_K[..., k]         # (B, Tc)
+        terms.append(d_B_Tc / log_var.exp() + log_var)
+    return torch.stack(terms, dim=-1).mean()
 
 
 def wrist_region_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor,

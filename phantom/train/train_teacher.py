@@ -73,6 +73,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     add_common_args(ap)
     ap.add_argument("--tactile-pretrain", default="", help="program-1 checkpoint")
+    ap.add_argument("--acc-two-pass", action="store_true",
+                    help="train ACC on the TRUE previous-replan prediction (two "
+                         "forward passes) instead of the gt_noised proxy. REQUIRED "
+                         "for the final teacher whose gate lead-time is reported "
+                         "(RQ2) — gt_noised trains the gate against leaked GT.")
     args = ap.parse_args(argv)
 
     hw = load_hardware(args.hardware)
@@ -82,7 +87,18 @@ def main(argv=None) -> int:
     out_dir = Path(cfg.out_dir) if cfg.out_dir else paths.runs_root / "teacher" / cfg.run_name
     dtype = torch.bfloat16 if (args.device == "cuda" and not args.tiny) else torch.float32
 
-    pm = build_model(hw, paths, student=False, tiny=cfg.tiny,
+    mc = None
+    if args.acc_two_pass:
+        from phantom.config.model import AccConfig, PhantomModelConfig
+        mc = PhantomModelConfig(student=False,
+                                acc=AccConfig(self_anticipation="two_pass"))
+    else:
+        log.warning(
+            "ACC self-anticipation = gt_noised (fast proxy). Do NOT report the "
+            "RQ2 gate lead-time from this run — retrain the final teacher with "
+            "--acc-two-pass so the gate never sees leaked GT contact.")
+
+    pm = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc,
                      load_base=not cfg.tiny, device=args.device, dtype=dtype)
     if args.tactile_pretrain:
         pm.rf.hht.load_pretrained_tactile(Path(args.tactile_pretrain))

@@ -38,8 +38,10 @@ class ChunkExecutor:
         self.record_action = record_action     # recorder.record_action hook
         self._plan: Plan | None = None
         self._prev_plan: Plan | None = None
+        self._prev_play_time = 0.0             # prev plan keeps playing during blend
         self._swap_t = 0.0
         self._play_time = 0.0                  # governed playback clock
+        self._last_action_k = -1               # last action index reported to record_action
         self._last_tick = 0.0
         self._lock = threading.Lock()
         self._stop = threading.Event()
@@ -56,9 +58,11 @@ class ChunkExecutor:
                 log.warning("plan rejected: does not cover replan_min_lead_s")
                 return False
             self._prev_plan = self._plan
+            self._prev_play_time = self._play_time
             self._plan = plan
             self._swap_t = time.perf_counter()
             self._play_time = 0.0
+            self._last_action_k = -1
             return True
 
     def active_plan(self) -> Plan | None:
@@ -108,6 +112,33 @@ class ChunkExecutor:
                 self._play_time += dt * scale
                 target, grip = self._pose_at(plan, self._play_time)
 
+                # chunk blending: the previous plan keeps playing on its own
+                # governed clock and the command is cross-faded over
+                # chunk_blend_s (documented contract; removes the swap jerk)
+                blend_s = hw.control.chunk_blend_s
+                since_swap = t0 - self._swap_t
+                with self._lock:
+                    prev_plan = self._prev_plan
+                if prev_plan is not None:
+                    if since_swap < blend_s:
+                        prev_scale = self.governor.scale_profile(prev_plan.sigma)
+                        self._prev_play_time += dt * prev_scale
+                        prev_target, _ = self._pose_at(prev_plan, self._prev_play_time)
+                        beta = since_swap / blend_s
+                        target = (1.0 - beta) * prev_target + beta * target
+                    else:
+                        with self._lock:
+                            self._prev_plan = None
+
+                # report each newly-entered action-grid step (DAgger rollout
+                # episodes need the executed STREAM_ACTIONS like teleop demos)
+                if self.record_action is not None:
+                    k = min(int(self._play_time * hw.control.action_rate_hz),
+                            plan.actions.shape[0] - 1)
+                    while self._last_action_k < k:
+                        self._last_action_k += 1
+                        self.record_action(t0, plan.actions[self._last_action_k])
+
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
                 self.stopped_reason = "protective_stop"
@@ -124,8 +155,6 @@ class ChunkExecutor:
             if grip is not None:
                 self.gripper.move(float(np.clip(grip, 0, 1)),
                                   hw.gripper.default_speed, hw.gripper.default_force)
-                if self.record_action is not None and not stale:
-                    pass  # planner records the chunk; per-tick logging is the trace's job
 
             wait = period - (time.perf_counter() - t0)
             if wait > 0:
