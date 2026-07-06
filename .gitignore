@@ -3,11 +3,12 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 configs/paths.local.yaml
-data/
-runs/
+/data/
+/runs/
 ref_shim.pt
 
 # Cosmos-Predict2.5-2B weights (~4.8 GB) — download separately from
 # https://huggingface.co/nvidia/Cosmos-Predict2.5-2B and point
 # configs/paths.yaml at the location (see requirements/README.md)
 cosmos-predict2.5-2b/
+.venv/
