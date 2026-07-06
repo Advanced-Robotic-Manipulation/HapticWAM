@@ -14,6 +14,7 @@ class RealSenseCamera(Camera):
     def __init__(self, cfg: CameraEntry, name: str):
         super().__init__(cfg, name)
         self._pipe = None
+        self._rs = None
         self._seq = 0
 
     def connect(self) -> None:
