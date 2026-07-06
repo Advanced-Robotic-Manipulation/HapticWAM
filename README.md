@@ -1,7 +1,7 @@
 # PHANTOM
 
 **P**redictive **H**aptic **ANT**icipation with **O**cclusion-robust **M**anipulation — the
-full research codebase for the ICRA 2027 pipeline specified in [pipeline.md](pipeline.md).
+full research codebase for the ICRA 2027 pipeline specified in [pipeline.md](pipeline.md) (updated from pipeline_v2.md based on DM-Tac W2L specs and Diamon Robotics docs).
 
 PHANTOM fine-tunes **Cosmos-Predict2.5-2B `robot/action-cond`** into a tactile
 world-action model (teacher), then **distills the fingertip sensors away**
