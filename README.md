@@ -12,7 +12,10 @@ reparametrization), **LFA** (latent-frame action injection), **HID / HID-S**
 (haptic-imagination distillation + force-safety fine-tune).
 
 Hardware: UR arm (RTDE) + Robotiq 2F gripper + 2× DM-Tac W2L optical-tactile
-sensors + RealSense. Training: 8×H100 (Linux). Inference: RTX 5090.
+sensors + RealSense. Compute: **single RTX 5090 for training (LoRA, 256–480p)
+and deployment** — an 8×H100 cloud run is a possible later upgrade, not an
+assumption. Sensor SDK facts (verified from the vendor package):
+[docs/sensor_sdk.md](docs/sensor_sdk.md).
 
 ## Two files you configure, nothing else
 
@@ -29,7 +32,8 @@ deployment/recording box, `requirements-h100.txt` for the training cluster).
 On a dev box:
 
 ```bash
-pip install -e .[dev,train]
+git submodule update --init cosmos-predict2.5   # the DiT code (imported as a library)
+pip install -e .[dev,train,cosmos]
 
 # end-to-end recording pipeline on mock drivers:
 #   mock rig -> 2 tactile worker processes -> ring buffers -> zarr episode

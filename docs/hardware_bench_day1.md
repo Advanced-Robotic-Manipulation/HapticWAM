@@ -31,8 +31,13 @@ refuses to load.
 
 `python -m phantom.scripts.bench_day1 --items b`
 
-- `getInferImg()` shape → `tactile.infer_img {h, w, c}`
-- `getRawImg()` shape → `tactile.raw_img`
+NOTE (SDK verified, docs/sensor_sdk.md): every field getter returns
+`(fid, data)`, and the image getters return `(fid, DMTacImage)` with pixels at
+`.img` (uint8 grayscale) — the driver unpacks these; the bench script reads
+through the driver, so shapes below are already canonical.
+
+- `getInferImg()` `.img` shape → `tactile.infer_img {h, w, c}`
+- `getRawImg()` `.img` shape → `tactile.raw_img` (expected 480×640 gray)
 - field getters' shapes → `tactile.field {h, w}` (interpret with item (c)!)
 - sustained dual-sensor concurrent rate over 5 s → `tactile.rate_hz`; if it
   lands below 120, also lower `recording.field_ds_rate_hz` accordingly.
@@ -55,9 +60,14 @@ SDK ordering.
 
 `python -m phantom.scripts.bench_day1 --items a`
 
+The resultant wrench units are ALREADY DOCUMENTED (dev manual §1.2.2.8):
+Fx,Fy,Fz in N (`force_unit_to_N: 1.0`), Mx,My,Mz in 1e-2 N*m
+(`torque_unit_to_Nm: 0.01`) — this item only SANITY-CHECKS them and measures
+the undocumented distributed-force units.
+
 Place a known mass (e.g. 100 g calibration weight → 0.981 N) flat on the gel:
 
-- `expected_N / median(getForce z)` → `tactile.force_unit_to_N`
+- `expected_N / median(getForce z)` ≈ 1.0 confirms the documented scale
 - `expected_N / median(sum getDistributeForce z)` → `tactile.dist_force_unit_to_N`
 
 Repeat with 2–3 masses; accept only if roughly linear. **If inconclusive,
