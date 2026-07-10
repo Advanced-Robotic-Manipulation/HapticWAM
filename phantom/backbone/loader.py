@@ -151,7 +151,13 @@ def load_base_weights(net, ckpt_path: Path, *, verify: BackboneConfig | None = N
     missing, unexpected = net.load_state_dict(clean, strict=False)
     bad_unexpected = [k for k in unexpected]
     assert not bad_unexpected, f"checkpoint keys not accepted by the net: {bad_unexpected[:10]}"
-    non_phantom_missing = [k for k in missing if not k.startswith("phantom_")]
+    # tolerated-missing: our new phantom_* modules AND the net's own
+    # bookkeeping buffers (accum_* sample/iteration counters) — the released
+    # EMA checkpoint doesn't carry them (we strip the same names from the
+    # checkpoint side above); zero-init is their correct value
+    non_phantom_missing = [k for k in missing
+                           if not k.startswith("phantom_")
+                           and not k.startswith("accum_")]
     assert not non_phantom_missing, (
         f"non-phantom parameters missing from checkpoint (naming rule violated or "
         f"config drift): {non_phantom_missing[:10]}")
