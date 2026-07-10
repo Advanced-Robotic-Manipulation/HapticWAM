@@ -44,6 +44,16 @@ class BackboneConfig:
     res_h: int = 256
     res_w: int = 320
     fps: float = 4.0
+    # position-table BOUNDS baked into the released checkpoint (NOT the
+    # operating resolution): the DiT sizes its pos tables from
+    # max_img_* // patch_spatial and saves them in the state dict
+    # (pos_embedder.seq = arange(max(len_h, len_w, len_t)) = 128 for the
+    # robot/action-cond .pt). Must match the checkpoint to load; only needs
+    # to be >= the ACTUAL patched-latent extent (res/16 = 16x20 here).
+    # First real-weights load on the 5090 (2026-07-10) caught this: we
+    # passed res_w=320 -> table 160 vs checkpoint 128.
+    max_img_h: int = 256
+    max_img_w: int = 256
 
     # --- VAE latent constants (Wan2.1) ---
     lat_ch: int = 16
