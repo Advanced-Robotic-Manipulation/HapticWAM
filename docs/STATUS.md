@@ -2,7 +2,14 @@
 
 > Update this file whenever a milestone lands. A fresh Claude/Opus session (or
 > a new teammate) should be able to read THIS + README.md and know exactly
-> where the project stands and what to do next. Last update: **2026-07-06**.
+> where the project stands and what to do next. Last update: **2026-07-10**.
+
+## Machines
+
+| Host | What | State |
+|---|---|---|
+| **compute3** (`ssh compute3`, user physicalai) | **RTX 5090 32 GB — THE paper box** (train + deploy) | **PROVISIONED 2026-07-10**: `~/phantom-icra-2027/` has repo+submodule, py3.11 venv (numpy<2, torch 2.13+cu130), dmrobotics SDK[gpu], Cosmos weights (4.6 GB), paths.local.yaml. 67/67 tests; `smoke_test --synthetic --device cuda` on REAL weights: **ALL STAGES PASSED, peak VRAM 20.32 GiB @ batch 1**. Shared lab box (root uvicorn:8000 + k3s — don't touch); 291 GB free. |
+| **compute2** (`ssh compute2`, user isr-lab-4) | RTX 4090 24 GB — robot/teleop box | Arm rig lives here: 2× UR3 (right 192.168.88.56 = ours, left .40), Robotiq 2F-85, RealSense, Echo exo leader. Their teleop = `Echo-Yolo/Echo/main11.py` (conda env `echo`) — vendored minimal copy in `third_party/echo_teleop/` (was untracked on their disk!). Root disk FULL — use /media/isr-lab-4/juniors (285 GB free) for anything new. |
 
 ## Where we are, one paragraph
 
@@ -30,31 +37,29 @@ left is hardware-side or a run, not code.
 
 ## NOT DONE (everything below needs the rig, a GPU box, or humans)
 
-1. **Weights download** (any GPU box, ~5 GB total — paths already match
-   `configs/paths.yaml`):
-   ```bash
-   HF_HUB_ENABLE_HF_TRANSFER=1 hf download nvidia/Cosmos-Predict2.5-2B \
-       robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt \
-       robot/action-cond/cr1_empty_string_text_embeddings.pt \
-       tokenizer.pth --local-dir /path/to/cosmos-predict2.5-2b
-   # then point configs/paths.local.yaml cosmos_weights_root at it
-   ```
-2. **5090/compute2 machine setup** — `requirements/README.md` (venv rule:
-   py3.11 + numpy<2, tactile workers share the interpreter). Verify with
-   `pytest`, `mock_smoke`, `smoke_test --synthetic --device cuda` (this also
-   measures real VRAM — decisive for batch/res choices), then
-   `verify_backbone --save-ref` (backbone parity, never yet run on GPU).
+1. ~~Weights download~~ **DONE on compute3** (anonymous HF download worked;
+   4.6 GB at `~/phantom-icra-2027/cosmos-predict2.5-2b`).
+2. ~~5090 machine setup~~ **DONE 2026-07-10 (compute3)** — real-weights GPU
+   smoke green, peak VRAM 20.32 GiB @ batch 1 (≈11 GiB headroom on 32 GB).
+   Still open: `verify_backbone --save-ref` parity ref + `dmrobotics trt
+   rebuild` (defer to when sensors arrive). compute2 (recording rig) still
+   needs its venv+SDK when sensors are mounted there.
 3. **Day-1 sensor bench** — `docs/hardware_bench_day1.md`. Reduced to 5 items:
    dist-force units, concurrent dual-sensor rates + infer_img size, (H,W)
    ordering, disk throughput, offline-recompute bit-parity (then flip
    `archive_raw_img` + `offline_recompute_ok`). Put real sensor SERIALS into
    `tactile.sensors` dev_ids.
-4. **Arm confirmation** — model plate: UR5e (built-in 500 Hz F/T) vs CB3 UR5
-   (buy Robotiq FT-300S). Set `arm.generation` + wrist_ft accordingly.
+4. **Arm confirmation** — the arms are **UR3s** (two, right=.56 is ours).
+   Generation (UR3e vs CB3) still unknown → read the pendant/plate; CB3 ⇒
+   order the Robotiq FT-300S (ACC needs a real wrist wrench). Update
+   `arm.model/generation/ip` + wrist_ft in configs/hardware.yaml.
 5. **Gripper mounts** — fabricate the vendor Robotiq-2F adapters from the CAD
    zip (Large folder for W2L); clamp gripper force ≤ pad's 30 N in config.
-6. **Teleop swap** — lab's own teleop replaces `phantom/teleop/*` (interface:
-   emit `TeleopCommand`s / call `recorder.record_action`).
+6. **Teleop swap** — the lab teleop is now KNOWN and vendored:
+   `third_party/echo_teleop/` (Echo exo leader → right UR3, see PROVENANCE.md).
+   Integration = write `phantom/teleop/echo.py` TeleopDevice wrapping
+   `echo_teleoperation.Echo` + settle joint-space vs Δ-EE action semantics
+   (notes in PROVENANCE.md §Integration).
 7. **Contact-play collection** (2–4 h) → `pretrain_tactile`.
 8. **Teleop dataset** (150 eps × 5 tasks + 20–30 failure eps per fragile task)
    → `postprocess_episodes` → `dump_norm_stats` — `docs/data_collection_sop.md`.
