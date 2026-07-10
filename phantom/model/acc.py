@@ -75,11 +75,14 @@ class AccGate(nn.Module):
 
     def forward(self, inp: AccInputs, z_vis_B_D: torch.Tensor) -> AccOutput:
         B = z_vis_B_D.shape[0]
+        # inputs arrive from mixed-precision producers (the trunk's embedding
+        # path emits fp32 z_vis under bf16 training) — normalize to our dtype
+        dt = self.vis_proj.weight.dtype
         e = self.phi(torch.cat([
-            self.wrist_proj(inp.wrist_feat_B_D),
-            self.vis_proj(z_vis_B_D),
-            self.intent_mlp(inp.intent_B_H_A.reshape(B, -1)),
-            self.cpk_mlp(inp.prev_cpk_summary_B_S),
+            self.wrist_proj(inp.wrist_feat_B_D.to(dt)),
+            self.vis_proj(z_vis_B_D.to(dt)),
+            self.intent_mlp(inp.intent_B_H_A.reshape(B, -1).to(dt)),
+            self.cpk_mlp(inp.prev_cpk_summary_B_S.to(dt)),
         ], dim=-1))
         event_logits = self.W_e(e)
         p_evt = F.softmax(event_logits, dim=-1)

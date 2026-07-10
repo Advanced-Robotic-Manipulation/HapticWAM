@@ -66,6 +66,11 @@ def build_model(hw: HardwareConfig, paths: PathsConfig, *,
     hht = HHT(hw, bb, mc, vae, student=student).to(device=device, dtype=dtype)
     rf = PhantomRectifiedFlow(net, hht, hw, bb, mc, layout, vae, text) \
         .to(device=device, dtype=dtype)
+    # the event/sigma readout heads deliberately compute in fp32 (their
+    # forward casts inputs with .float() — sigma feeds exp/NLL and the
+    # runtime speed governor) — keep their PARAMS fp32 under bf16 training too
+    rf.phantom_event_head.float()
+    rf.phantom_sigma_head.float()
     n_train = sum(p.numel() for p in rf.parameters() if p.requires_grad)
     log.info("PhantomRectifiedFlow built: %.1f M trainable params", n_train / 1e6)
     return PhantomModel(rf=rf, layout=layout, bb=bb, mc=mc, hw=hw)

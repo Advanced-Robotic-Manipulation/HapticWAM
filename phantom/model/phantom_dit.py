@@ -173,6 +173,13 @@ class PhantomDiT(ActionChunkConditionedMinimalV1LVGDiT):
     ) -> PhantomNetOutput:
         layout = layout or self.layout
         B = x_B_C_T_H_W.shape[0]
+        # normalize the input latent to the net's parameter dtype — callers on
+        # mixed-precision paths (sample() latents, VAE fp32 outputs) may hand
+        # us fp32 under bf16 training
+        net_dtype = self.x_embedder.proj[1].weight.dtype \
+            if hasattr(self.x_embedder, "proj") else next(self.parameters()).dtype
+        x_B_C_T_H_W = x_B_C_T_H_W.to(net_dtype)
+        crossattn_emb = crossattn_emb.to(net_dtype)
         device, in_dtype = x_B_C_T_H_W.device, x_B_C_T_H_W.dtype
         assert x_B_C_T_H_W.shape[2] == layout.t_total, (
             f"input T={x_B_C_T_H_W.shape[2]} != layout T={layout.t_total}")
