@@ -70,7 +70,7 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
     net = PhantomDiT(
         layout=layout, mc=mc, bb=bb, hw=hw,
         # ---- cosmos MiniTrainDIT kwargs (transcribed; see BackboneConfig) ----
-        max_img_h=bb.res_h, max_img_w=bb.res_w,
+        max_img_h=bb.max_img_h, max_img_w=bb.max_img_w,
         max_frames=max(layout.t_total, bb.t_video) * bb.patch_temporal,
         in_channels=bb.in_channels, out_channels=bb.out_channels,
         patch_spatial=bb.patch_spatial, patch_temporal=bb.patch_temporal,
