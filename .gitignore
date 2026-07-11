@@ -3,6 +3,7 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 configs/paths.local.yaml
+configs/compute.local.yaml
 /data/
 /runs/
 ref_shim.pt

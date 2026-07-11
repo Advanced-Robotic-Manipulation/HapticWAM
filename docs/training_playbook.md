@@ -8,6 +8,29 @@ Checkpoint format (all programs): never re-saves the frozen 2B base —
 `{lora, phantom_modules, ema, config snapshots (hardware shapes asserted on
 load), norm_stats, optimizer, step}`.
 
+## NEW — choosing the compute target (`configs/compute.yaml`)
+
+Training (and only training) is retargeted between machines by ONE file: set
+`target:` in `configs/compute.yaml`, or per-machine in the gitignored
+`configs/compute.local.yaml` (e.g. a single line `target: h100x8`), or one-off
+with `--compute <profile|yaml>` on any train program. Precedence per value:
+dataclass defaults < profile < explicit CLI flags.
+
+| target | you run | dtype | teacher/HID per-GPU batch×accum | effective batch |
+|---|---|---|---|---|
+| `rtx5090` (default) | `python -m phantom.train.<prog> …` | legacy rule | 1×8 | 8 — **bit-identical to before** |
+| `h100x8` | `torchrun --nproc_per_node 8 -m phantom.train.<prog> …` | bf16 | 1×1 (×8 ranks) | 8 |
+| `a100x8` | `torchrun --nproc_per_node 8 -m phantom.train.<prog> …` | bf16 | 1×1 (×8 ranks) | 8 |
+
+Effective batch is preserved on purpose — no automatic lr scaling; override
+lr/warmup in the profile explicitly if you scale batch. Under torchrun the
+programs shard data with a `DistributedSampler` (per-epoch reshuffle), build
+each rank's model on its own GPU, and checkpoint from rank 0 only.
+`pretrain_tactile` gets batch 4/GPU via the profile's `programs:` block
+(4×8 = the same effective 32) and stays fp32. Note: resuming a 5090 checkpoint
+on 8 GPUs works (weights + rank-0 optimizer state) but shifts the effective
+schedule semantics — prefer finishing a run on the target it started on.
+
 ---
 
 ## (1) `phantom.train.pretrain_tactile` — contact-play SSL
@@ -29,7 +52,7 @@ load), norm_stats, optimizer, step}`.
 | Objective | grouped RF: λ_a·MSE(v)[ACTION] + λ_v·MSE(v)[VIDEO] + λ_c·heteroNLL(x0)[CONTACT] + λ_w wrist + λ_evt event CE + ACC gate BCE (weights in `PhantomModelConfig.loss`) |
 | Data | all 5 tasks co-trained; `WindowSampler` windows; `norm_stats.json` beside the data (rerun `dump_norm_stats` after unit changes — raw force channels can be O(10³) in SDK units and the stats absorb that) |
 | Init | `--tactile-pretrain <program-1 ckpt>` |
-| Scale | 8×H100, batch 1–2/GPU + grad accum, bf16, activation checkpointing (cosmos SAC is on by default). Teacher sequence is 4160 tokens at full res — measure VRAM with `smoke_test --synthetic --device cuda` first |
+| Scale | single 5090 (default `rtx5090` target) or 8×H100 / 8×A100 (`configs/compute.yaml` target `h100x8`/`a100x8` + torchrun), batch 1–2/GPU + grad accum, bf16, activation checkpointing (cosmos SAC is on by default). Teacher sequence is 4160 tokens at full res — measure VRAM with `smoke_test --synthetic --device cuda` first |
 | Output | `runs/teacher/<run>/teacher_XXXXXX.pt` |
 
 ACC self-anticipation during training defaults to `"gt_noised"` (GT package +

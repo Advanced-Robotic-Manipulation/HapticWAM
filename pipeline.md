@@ -1,6 +1,6 @@
 # PHANTOM — Predictive Haptic ANTicipation with Occlusion-robust Manipulation: Full Pipeline (v2)
 
-Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption.
+Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 (or 8×A100) cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption — now a config flip: `configs/compute.yaml`.
 
 Module names used throughout:
 

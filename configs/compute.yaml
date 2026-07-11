@@ -1,0 +1,54 @@
+# ============================================================================
+# Compute target for TRAINING (all four programs + the DAgger driver).
+# THE file that defines which GPU / GPU cluster training runs on: set
+# `target:`. Deploy / eval / data collection are unaffected by this file.
+#
+# Per-machine override without editing this committed default: create
+# configs/compute.local.yaml (gitignored), e.g. a single line
+# `target: h100x8`. One-off override: `--compute <profile-or-yaml>` on any
+# train program.
+#
+# Precedence per value: dataclass defaults < profile (programs: sub-overrides
+# beat profile level) < explicit CLI flags. Absent fields override nothing —
+# `rtx5090` overrides nothing at all, so the historical single-GPU behavior
+# is reproduced exactly.
+#
+# Effective batch is preserved across targets ON PURPOSE (no automatic lr
+# scaling) — if you scale batch, set lr/warmup_steps here explicitly.
+# pretrain_tactile ignores `dtype` (5M-param conv SSL, always fp32).
+# ============================================================================
+
+target: rtx5090
+
+profiles:
+  rtx5090:
+    description: "single RTX 5090 32 GB (compute3, the paper box) — historical defaults"
+    launcher: python
+    nproc_per_node: 1
+    # no overrides on purpose: teacher/HID/HID-S keep batch 1 x accum 8,
+    # tactile pretrain keeps batch 32; dtype keeps the legacy rule
+    # (bf16 on cuda, fp32 on cpu/--tiny).
+
+  h100x8:
+    description: "8x H100 80 GB single node, torchrun DDP/NCCL — requirements/requirements-h100.txt"
+    launcher: torchrun
+    nproc_per_node: 8
+    dtype: bf16
+    batch_size: 1        # per GPU: 1 x accum 1 x 8 ranks = effective 8 (= 5090's 1 x 8)
+    grad_accum: 1
+    num_workers: 8
+    programs:
+      pretrain_tactile:
+        batch_size: 4    # 4 x 8 ranks = effective 32 (= single-GPU default 32)
+
+  a100x8:
+    description: "8x A100 80 GB single node, torchrun DDP/NCCL — requirements/requirements-a100.txt (sm_80 has native bf16)"
+    launcher: torchrun
+    nproc_per_node: 8
+    dtype: bf16
+    batch_size: 1
+    grad_accum: 1
+    num_workers: 8
+    programs:
+      pretrain_tactile:
+        batch_size: 4

@@ -6,11 +6,12 @@ Exact commands for every module, grouped by stage. Machines:
 - **[RIG]** — the recording machine wired to the robot (`pip install -e .[hw]` extra;
   `dmrobotics` SDK installed per Daimon's instructions)
 - **[5090]** — the Linux inference box (CUDA torch)
-- **[H100]** — the 8×H100 training node(s) (Linux, CUDA torch, NCCL)
+- **[H100|A100]** — the 8×H100 or 8×A100 training node(s) (Linux, CUDA torch, NCCL)
 
 Global flags on most entry points: `--hardware <yaml>` (defaults to
 `configs/hardware.yaml`), `--synthetic` (generated data), `--tiny` (small CPU
-backbone), `--device cuda|cpu`.
+backbone), `--device cuda|cpu`; train programs also take `--compute
+<profile|yaml>` (defaults to the `target:` in `configs/compute.yaml`).
 
 ---
 
@@ -84,7 +85,13 @@ python -m phantom.scripts.dump_norm_stats --data data/episodes/<date>
 Rerun `dump_norm_stats` whenever `tactile.force_unit_to_N` (or any unit scale)
 changes — the norm stats are what absorb unit changes for training.
 
-## 5. Training [H100]
+## 5. Training [H100 | A100 | 5090]
+
+**NEW:** pick the machine in `configs/compute.yaml` (or one gitignored line in
+`configs/compute.local.yaml`: `target: h100x8` / `a100x8`). With the default
+`target: rtx5090` drop the `torchrun --nproc_per_node 8` prefixes below and
+behavior is identical to the historical single-GPU path
+(docs/training_playbook.md has the full table).
 
 ```bash
 # (1) tactile encoder SSL pretrain (single GPU is fine)

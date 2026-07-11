@@ -26,8 +26,8 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 
+from phantom.config.compute import load_compute
 from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.config.training import HIDSConfig
@@ -127,13 +127,18 @@ def main(argv=None) -> int:
     ap.add_argument("--student-ckpt", default="")
     args = ap.parse_args(argv)
 
+    rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
+    profile = load_compute(args.compute)
+    profile.check_world(world)
+    comp = profile.for_program("finetune_hids")
+
     hw = load_hardware(args.hardware)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
-    cfg = apply_overrides(HIDSConfig(), args)
+    cfg = apply_overrides(HIDSConfig(), args, compute=comp)
     cfg = dataclasses.replace(cfg, student_ckpt=args.student_ckpt)
     out_dir = paths.runs_root / "hids" / cfg.run_name
-    dtype = torch.bfloat16 if (args.device == "cuda" and not args.tiny) else torch.float32
+    dtype = C.pick_dtype(args.device, args.tiny, comp)
 
     student = build_model(hw, paths, student=True, tiny=cfg.tiny,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
@@ -150,9 +155,7 @@ def main(argv=None) -> int:
     taus = calibrate_tau_per_task(data_root, hw, cfg.tau_quantile)
     sampler = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed)
     ds = C.WindowDataset(data_root, sampler)
-    loader = DataLoader(ds, batch_size=cfg.batch_size, shuffle=True,
-                        num_workers=0 if cfg.synthetic else cfg.num_workers,
-                        collate_fn=C.collate_windows, drop_last=True)
+    loader = C.make_loader(ds, cfg)
 
     running_mean = [0.0]
 

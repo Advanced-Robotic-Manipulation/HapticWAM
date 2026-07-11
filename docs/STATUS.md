@@ -74,9 +74,13 @@ left is hardware-side or a run, not code.
   the table: "Predictive Haptic ANTicipation withOut Measurement"; or DISTAL
   (distal = the fingertip end anatomically, contains "distill"). No deadline
   until paper writing.
-- **Compute**: assume single RTX 5090 (LoRA, 256–480p). If an 8×H100 window
-  materializes, the full-FT Cosmos-Policy recipe becomes an option — decide
-  only then (`requirements-h100.txt` is ready).
+- **Compute**: single RTX 5090 remains the default (`configs/compute.yaml`,
+  `target: rtx5090` — bit-identical legacy path). **NEW**: 8×H100 / 8×A100
+  training is now a config flip + torchrun (`h100x8`/`a100x8` profiles;
+  DDP-corrected loaders/sharding/device placement; `requirements-a100.txt`
+  added) — see docs/training_playbook.md. The remaining decision is only
+  whether to rent a node (full-FT Cosmos-Policy recipe would then be an
+  option).
 - ICRA 2027 deadline ~Sep 15, 2026 → data collection must start ASAP after
   the bench.
 

@@ -2,7 +2,11 @@
 frozen 2B DiT + all phantom modules (HHT, ACC, ACE heads, frame-type
 embeddings), joint grouped RF objective, all tasks co-trained.
 
-Launch (8xH100):
+Launch (single 5090 — the default configs/compute.yaml target):
+    python -m phantom.train.train_teacher --data <episodes_root> \
+        [--tactile-pretrain <ckpt>] [--run-name teacher_v1]
+Launch (8xH100 / 8xA100 — set target: h100x8|a100x8 in configs/compute.yaml
+or configs/compute.local.yaml, or pass --compute h100x8):
     torchrun --nproc_per_node 8 -m phantom.train.train_teacher --data <episodes_root> \
         [--tactile-pretrain <ckpt>] [--run-name teacher_v1]
 Smoke (any machine):
@@ -17,8 +21,8 @@ import logging
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader
 
+from phantom.config.compute import load_compute
 from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.config.training import TeacherTrainConfig
@@ -40,9 +44,15 @@ def add_common_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--batch-size", type=int, default=None)
     ap.add_argument("--grad-accum", type=int, default=None)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--compute", default=None,
+                    help="compute profile name in configs/compute.yaml, or a path "
+                         "to a compute yaml (default: the file's target:)")
 
 
-def apply_overrides(cfg, args):
+def apply_overrides(cfg, args, compute=None):
+    if compute is not None:
+        cfg = compute.apply_to(cfg)   # profile beats dataclass defaults;
+                                      # the CLI updates below beat the profile
     updates = {"synthetic": args.synthetic, "tiny": args.tiny, "device": args.device}
     if args.run_name:
         updates["run_name"] = args.run_name
@@ -80,12 +90,17 @@ def main(argv=None) -> int:
                          "(RQ2) — gt_noised trains the gate against leaked GT.")
     args = ap.parse_args(argv)
 
+    rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
+    profile = load_compute(args.compute)
+    profile.check_world(world)
+    comp = profile.for_program("train_teacher")
+
     hw = load_hardware(args.hardware)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
-    cfg = apply_overrides(TeacherTrainConfig(), args)
+    cfg = apply_overrides(TeacherTrainConfig(), args, compute=comp)
     out_dir = Path(cfg.out_dir) if cfg.out_dir else paths.runs_root / "teacher" / cfg.run_name
-    dtype = torch.bfloat16 if (args.device == "cuda" and not args.tiny) else torch.float32
+    dtype = C.pick_dtype(args.device, args.tiny, comp)
 
     mc = None
     if args.acc_two_pass:
@@ -112,9 +127,7 @@ def main(argv=None) -> int:
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     ds = C.WindowDataset(data_root, sampler)
     log.info("dataset: %d windows from %s", len(ds), data_root)
-    loader = DataLoader(ds, batch_size=cfg.batch_size, shuffle=True,
-                        num_workers=0 if cfg.synthetic else cfg.num_workers,
-                        collate_fn=C.collate_windows, drop_last=True)
+    loader = C.make_loader(ds, cfg)
 
     def step_fn(batch: dict) -> dict:
         return pm.rf.training_step(C.to_device(batch, args.device))
