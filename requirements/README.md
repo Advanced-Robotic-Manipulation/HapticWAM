@@ -4,13 +4,17 @@
 |---|---|---|
 | RTX 5090 box (Ubuntu 22.04, wired to the UR3) | [requirements-5090.txt](requirements-5090.txt) | data collection, deployment, DAgger rollouts, eval |
 | 8×H100 cloud cluster | [requirements-h100.txt](requirements-h100.txt) | all training / fine-tuning |
+| 8×A100 cloud cluster | [requirements-a100.txt](requirements-a100.txt) | all training / fine-tuning (H100 alternative) |
 | Windows/any dev box | `pip install -e .[dev,train]` from the repo root | code, tests, mock-mode smoke |
 
-Both Linux files pin the same PyTorch cu128 pair (Blackwell sm_120 *requires*
-≥2.7/cu128; the same wheels cover H100's sm_90), the phantom core, the
-pip-installable part of the cosmos-predict2.5 import chain, and the test
-stack. They differ only in the hardware drivers (5090) and the optional
-transformer_engine note (H100).
+All Linux files pin the same PyTorch cu128 pair (Blackwell sm_120 *requires*
+≥2.7/cu128; the same wheels cover H100's sm_90 and A100's sm_80), the phantom
+core, the pip-installable part of the cosmos-predict2.5 import chain, and the
+test stack. They differ only in the hardware drivers (5090) and the optional
+transformer_engine note (H100/A100). After installing on a cluster, select
+the training compute target with one gitignored line —
+`echo "target: h100x8" > configs/compute.local.yaml` (or `a100x8`) — see
+`configs/compute.yaml` and docs/training_playbook.md.
 
 ## Install on a fresh machine
 

@@ -16,8 +16,8 @@ import logging
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader
 
+from phantom.config.compute import load_compute
 from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.config.training import TactilePretrainConfig
@@ -39,11 +39,18 @@ def main(argv=None) -> int:
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--batch-size", type=int, default=None)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--compute", default=None, help="see configs/compute.yaml")
     args = ap.parse_args(argv)
+
+    rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
+    profile = load_compute(args.compute)
+    profile.check_world(world)
+    comp = profile.for_program("pretrain_tactile")
 
     hw = load_hardware(args.hardware)
     paths = load_paths()
     cfg = TactilePretrainConfig(synthetic=args.synthetic, device=args.device)
+    cfg = comp.apply_to(cfg)      # profile beats defaults; CLI lines below win
     if args.max_steps is not None:
         cfg = dataclasses.replace(cfg, max_steps=args.max_steps)
     if args.batch_size is not None:
@@ -64,9 +71,7 @@ def main(argv=None) -> int:
 
     ds = ContactPlayDataset(data_root, hw, norm)
     log.info("contact-play dataset: %d frames", len(ds))
-    loader = DataLoader(ds, batch_size=cfg.batch_size, shuffle=True,
-                        num_workers=0 if cfg.synthetic else cfg.num_workers,
-                        drop_last=True)
+    loader = C.make_loader(ds, cfg, collate_fn=None)   # plain tensors -> default_collate
 
     model = TactilePretrainModel(hw).to(args.device)
 

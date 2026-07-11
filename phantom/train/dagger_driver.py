@@ -36,6 +36,7 @@ def main(argv=None) -> int:
     ap.add_argument("--skip-relabel", action="store_true")
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--compute", default=None, help="forwarded to distill_hid")
     args = ap.parse_args(argv)
 
     hw = load_hardware(args.hardware)
@@ -58,6 +59,8 @@ def main(argv=None) -> int:
                     "--device", args.device]
     if args.max_steps is not None:
         distill_args += ["--max-steps", str(args.max_steps)]
+    if args.compute is not None:
+        distill_args += ["--compute", args.compute]
     return distill_hid.main(distill_args)
 
 

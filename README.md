@@ -13,7 +13,9 @@ reparametrization), **LFA** (latent-frame action injection), **HID / HID-S**
 
 Hardware: UR arm (RTDE) + Robotiq 2F gripper + 2× DM-Tac W2L optical-tactile
 sensors + RealSense. Compute: **single RTX 5090 for training (LoRA, 256–480p)
-and deployment** — an 8×H100 cloud run is a possible later upgrade, not an
+and deployment** — **NEW**: training (only) can retarget to 8×H100 / 8×A100
+via `configs/compute.yaml` (docs/training_playbook.md); the 5090 default is
+untouched. An 8×H100 cloud run is a possible later upgrade, not an
 assumption. Sensor SDK facts (verified from the vendor package):
 [docs/sensor_sdk.md](docs/sensor_sdk.md).
 
@@ -28,7 +30,8 @@ assumption. Sensor SDK facts (verified from the vendor package):
 
 For the two Linux target machines use the per-machine manifests in
 [requirements/](requirements/README.md) (`requirements-5090.txt` for the
-deployment/recording box, `requirements-h100.txt` for the training cluster).
+deployment/recording box, `requirements-h100.txt` / `requirements-a100.txt`
+for the training clusters).
 On a dev box:
 
 ```bash

@@ -31,18 +31,42 @@ CKPT_FORMAT_VERSION = 1
 # ---------------------------------------------------------------------------
 
 def setup_ddp() -> tuple[int, int]:
-    """(rank, world_size); initializes the process group under torchrun."""
+    """(rank, world_size); initializes the process group under torchrun.
+    Idempotent — call it EARLY in a program's main() so a bare "cuda" resolves
+    to this rank's device for model/loader construction (the VAE and the text
+    provider are unregistered attrs the loop's model.to() never moves), and
+    again (no-op) inside train_loop."""
+    if dist.is_initialized():
+        return dist.get_rank(), dist.get_world_size()
     if "RANK" in os.environ and int(os.environ.get("WORLD_SIZE", "1")) > 1:
-        dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
+        backend = ("nccl" if torch.cuda.is_available() and dist.is_nccl_available()
+                   else "gloo")
+        dist.init_process_group(backend=backend)
         rank, world = dist.get_rank(), dist.get_world_size()
         if torch.cuda.is_available():
-            torch.cuda.set_device(rank % torch.cuda.device_count())
+            local = int(os.environ.get("LOCAL_RANK",
+                                       rank % torch.cuda.device_count()))
+            torch.cuda.set_device(local)
+        if rank != 0:
+            logging.getLogger().setLevel(logging.WARNING)  # rank 0 keeps INFO
         return rank, world
     return 0, 1
 
 
 def is_main() -> bool:
     return not dist.is_initialized() or dist.get_rank() == 0
+
+
+def pick_dtype(device: str, tiny: bool, compute=None) -> torch.dtype:
+    """--tiny is always fp32 (CPU smoke, even with a cluster --compute); else
+    the compute profile's dtype if set; else the legacy rule (bf16 on cuda,
+    fp32 otherwise) — bit-identical to the historical inline expression when
+    no profile dtype is given."""
+    if tiny:
+        return torch.float32
+    if compute is not None and compute.dtype is not None:
+        return torch.bfloat16 if compute.dtype == "bf16" else torch.float32
+    return torch.bfloat16 if device == "cuda" else torch.float32
 
 
 # ---------------------------------------------------------------------------
@@ -215,14 +239,41 @@ def ensure_synthetic_dataset(root: Path, hw: HardwareConfig, n_episodes: int = 4
                              duration_s: float = 8.0, seed: int = 0) -> Path:
     """Generate (once per hardware-config hash) a synthetic episode set for
     --synthetic smoke runs. Episodes live under root/<hash>/ so that changing
-    hardware.yaml never silently reuses data generated under old values."""
+    hardware.yaml never silently reuses data generated under old values.
+    Under torchrun only rank 0 generates (the barrier holds the other ranks
+    until the episodes exist); identical behavior single-process."""
     from phantom.data.synthetic import SyntheticEpisodeGenerator
     root = Path(root) / hw.config_hash()[:10]
-    if not list(root.rglob("meta.json")):
+    if is_main() and not list(root.rglob("meta.json")):
         root.mkdir(parents=True, exist_ok=True)
         SyntheticEpisodeGenerator(hw, seed=seed).generate_dataset(
             root, n_episodes=n_episodes, duration_s=duration_s)
+    if dist.is_initialized():
+        dist.barrier()
     return root
+
+
+def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
+                collate_fn=collate_windows) -> DataLoader:
+    """The one training DataLoader for all four programs. world==1 reproduces
+    the historical construction exactly (shuffle=True, drop_last=True,
+    synthetic -> workers 0); under torchrun a DistributedSampler shards the
+    window index disjointly per rank (train_loop's re-iteration calls
+    set_epoch for the reshuffle). Construct AFTER any ds.index mutation
+    (distill_hid --extra-data) — the sampler snapshots len(ds)."""
+    rank, world = setup_ddp()          # idempotent
+    sampler = None
+    if world > 1:
+        from torch.utils.data.distributed import DistributedSampler
+        sampler = DistributedSampler(ds, num_replicas=world, rank=rank,
+                                     shuffle=True, seed=cfg.seed, drop_last=True)
+        assert len(sampler) >= cfg.batch_size, (
+            f"dataset too small to shard: {len(ds)} windows over {world} ranks "
+            f"gives {len(sampler)}/rank < batch_size {cfg.batch_size}")
+    return DataLoader(ds, batch_size=cfg.batch_size,
+                      shuffle=(sampler is None), sampler=sampler,
+                      num_workers=0 if cfg.synthetic else cfg.num_workers,
+                      collate_fn=collate_fn, drop_last=True)
 
 
 # ---------------------------------------------------------------------------
@@ -247,6 +298,7 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     np.random.seed(cfg.seed + rank)
 
     step, t0 = 0, time.perf_counter()
+    epoch = 0
     it = iter(loader)
     while step < cfg.max_steps:
         opt.zero_grad(set_to_none=True)
@@ -255,6 +307,9 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
             try:
                 batch = next(it)
             except StopIteration:
+                epoch += 1
+                if hasattr(getattr(loader, "sampler", None), "set_epoch"):
+                    loader.sampler.set_epoch(epoch)   # DistributedSampler reshuffle
                 it = iter(loader)
                 batch = next(it)
             parts = step_fn(batch)
@@ -268,10 +323,18 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
         sched.step()
         ema.update(model.module if world > 1 else model)
         step += 1
-        if is_main() and step % cfg.log_every == 0:
-            rate = step / (time.perf_counter() - t0)
-            log.info("step %d/%d  %s  (%.2f it/s)", step, cfg.max_steps,
-                     "  ".join(f"{k}={v:.4f}" for k, v in sorted(logs.items())), rate)
+        if step % cfg.log_every == 0:
+            if world > 1 and logs:
+                # true cross-rank mean; SUM/world (ReduceOp.AVG is NCCL-only)
+                keys = sorted(logs)
+                t = torch.tensor([logs[k] for k in keys],
+                                 device=device if device != "cpu" else None)
+                dist.all_reduce(t)
+                logs = {k: float(v) / world for k, v in zip(keys, t.tolist())}
+            if is_main():
+                rate = step / (time.perf_counter() - t0)
+                log.info("step %d/%d  %s  (%.2f it/s)", step, cfg.max_steps,
+                         "  ".join(f"{k}={v:.4f}" for k, v in sorted(logs.items())), rate)
         if is_main() and on_checkpoint and step % cfg.ckpt_every == 0:
             on_checkpoint(step, opt, sched, ema)
     if is_main() and on_checkpoint:
