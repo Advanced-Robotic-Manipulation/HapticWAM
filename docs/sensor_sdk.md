@@ -83,3 +83,34 @@ BENCH item (e): verify bit-parity on the rig, then set
 (c) numpy (H, W) ordering of the 384×288 grid → `tactile.hw_order`;
 (d) sustained multi-stream disk throughput;
 (e) offline-recompute bit-parity (then flip the two config flags).
+
+## Field notes from the Denmark rig (2026-07, incoming/DM-Tac-SDK)
+
+Facts observed on the OTHER team's working setup with our two units
+(their scripts are vendored read-only at `../incoming/DM-Tac-SDK/`; the most
+complete recording reference is
+`scripts/recording/get_force_record_with_gripper_npz_two.py`).
+
+- **Our unit serials: `L26050098` (their idx 0) and `L26190169` (their idx 2)**
+  — now set as `tactile.sensors.dev_id` in hardware.yaml. BENCH: confirm which
+  is mounted left vs right. USB identity: product token `N160MU2`, serial
+  regex `[LMSX]\d+` (2nd-gen gate: numeric part ≥ 2548).
+- **Network options are real and used** even with cpu/cuda backends:
+  `SensorOptions(remote_addr="192.168.127.10:50051" [2nd sensor :50052],
+  pc_host="192.168.127.100", pc_port=60001)`. The sensors live on their own
+  subnet `192.168.127.x` (robot subnet is `192.168.88.x`; one older script
+  used `10.42.0.x` — a different, earlier network regime). Threaded through
+  `TactileSensorEntry.remote_addr/pc_port` + `TactileConfig.pc_host`.
+- **Measured rate: ~10 Hz** (Δt ≈ 0.099 s) — but that run had `max_fps=10`
+  set, so it is a floor, not the ceiling; bench item (b) stands.
+- Their recordings enable only deformation+depth+force (`enable_shear=False`
+  everywhere; `getDistributeForce`/`getContactArea` never called) — our
+  driver reads the full set.
+- Their npz schema (for cross-checks / conversion): `time (N,)`,
+  `force (N,6)`, `depth (N,288,384)`, `deformation (N,288,384,2)`
+  [+ `force_i/depth_i/deformation_i` per sensor + `gripper_target/pos/force`
+  0-255 + row-aligned `cam_<id>.mp4` in the two-sensor gripper variant].
+- Gripper endpoint confirmed working: URCap socket `192.168.88.56:63352`
+  (right UR3 = ours) — matches `drivers/real/robotiq.py` + `arm.ip`.
+- SDK `sensor.process()` offline replay demo: `scripts/offline/gen_feat_hdf5.py`
+  (visual only); TensorRT engine rebuild one-liner: `scripts/offline/gen_trt.py`.

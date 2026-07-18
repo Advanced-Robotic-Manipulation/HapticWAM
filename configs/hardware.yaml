@@ -24,7 +24,9 @@ arm:
   model: UR3                   # BENCH: informational free string (UR3 / UR3e / ...)
   generation: e-series         # BENCH: e-series | cb3 — THE hardware fork (pipeline.md §1).
                                #   e-series: built-in 500 Hz wrist F/T. cb3: external FT-300S needed.
-  ip: 192.168.1.10             # BENCH: robot controller IP
+  ip: 192.168.88.56            # RIGHT UR3 = ours (left is .40) — verified from the lab's
+                               #   working teleop stack (third_party/echo_teleop/PROVENANCE.md)
+                               #   and the Denmark-rig gripper scripts (incoming/DM-Tac-SDK)
   rtde_receive_hz: 500.0       # BENCH: e-series up to 500; cb3 max 125 (validated)
   rtde_control_hz: 500.0       # BENCH: same constraint
   dof: 6
@@ -53,7 +55,12 @@ gripper:
   stroke_mm: 85.0              # BENCH: 140.0 if 2F-140
   feedback_rate_hz: 100.0
   default_speed: 0.5           # normalized 0..1 at the API boundary
-  default_force: 0.3
+  default_force: 0.04          # ≈ 28.6 N on the 2F-85 — UNDER the 30 N DM-Tac pad
+                               #   ceiling (was 0.3 ≈ 85 N — would crush the pads;
+                               #   validated against cmd_force_limit_N below)
+  force_range_N: [20.0, 235.0] # BENCH: FOR=0/255 grip force endpoints (2F-85 datasheet)
+  cmd_force_limit_N: 30.0      # DM-Tac pad ceiling — every move() force is clamped
+                               #   to this at the driver boundary (docs/sensor_sdk.md)
 
 tactile:
   sdk: dmrobotics
@@ -80,10 +87,13 @@ tactile:
                                #   fallback for safety/HID-S until benched (pipeline.md §5).
   offline_recompute_ok: false  # BENCH (e): sensor.process(raw,...) offline replay is documented
                                #   (gen_feat_hdf5.py) — flip to true after verifying bit-parity on the rig.
-  sensors:                     # BENCH: replace with the real serials from the yellow cable labels,
-                               #   e.g. {name: left, dev_id: "X26040565"} (str = stable across replug)
-    - {name: left,  dev_id: 0}
-    - {name: right, dev_id: 1}
+  pc_host: 192.168.127.100     # PC address the sensors stream to (SensorOptions pc_host —
+                               #   Denmark-rig value; sensor subnet 192.168.127.x, separate
+                               #   from the robot subnet 192.168.88.x)
+  sensors:                     # serials from the Denmark rig (incoming/DM-Tac-SDK scripts);
+                               #   BENCH: confirm which unit is mounted left vs right
+    - {name: left,  dev_id: "L26050098", remote_addr: "192.168.127.10:50051", pc_port: 60001}
+    - {name: right, dev_id: "L26190169", remote_addr: "192.168.127.10:50052", pc_port: 60002}
 
 cameras:
   scene:
@@ -133,6 +143,26 @@ control:
   executor_rate_hz: 500.0      # must equal arm.rtde_control_hz (validated)
   replan_min_lead_s: 0.3       # executor must have >= this much chunk left at swap
   chunk_blend_s: 0.1
+
+teleop:
+  echo:                        # Echo exoskeleton leader (right arm; facts from
+                               #   third_party/echo_teleop/PROVENANCE.md + main11.py)
+    vid: 1603                  # USB VID of the STM32 leader device
+    pid: 1868
+    baud: 115200
+    base_pose: [1.427e-03, -1.5621, 1.5880, 0.00954, 1.5737, -3.0957]
+                               # joint-space reference: q_target = base_pose + exo_offset/divisor
+    sensitivity_divisors: [1.0, 1.25, 1.75]   # indexed by the device sense_flag
+    gripper_open_tick: 5       # BENCH: calibrate raw exo gripper ticks at full open/close
+    gripper_closed_tick: 155   #   (defaults = the lab's binary-mode endpoint values)
+    # --- smoothing (teleop/filters.py + teleop/streamer.py) ---
+    control_rate_hz: 125.0     # high-rate servo streaming (CB3-safe), decoupled from
+                               #   control.action_rate_hz (recording stays on the grid)
+    filter_min_cutoff: 1.0     # one-euro: cutoff Hz at rest (lower = more tremor kill)
+    filter_beta: 0.3           # one-euro: + cutoff per rad/s (higher = less lag in motion)
+    joint_accel_rad_s2: 4.0    # tracker acceleration bound (vel bound = arm.limits)
+    gripper_ema_alpha: 0.2     # gripper tick EMA at device rate
+    gripper_deadband: 0.02     # min 0..1 change before a new socket command is sent
 
 safety:
   wrench_limit_N: 40.0         # hard stop on wrist |F|

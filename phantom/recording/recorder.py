@@ -55,7 +55,7 @@ class EpisodeRecorder:
         self._cursors: dict[str, int] = {}
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
-        self._action_buf: list[tuple[float, np.ndarray]] = []
+        self._action_bufs: dict[str, list[tuple[float, np.ndarray]]] = {}
         self._action_lock = threading.Lock()
         self._bytes_written = 0
         self._t_started = 0.0
@@ -82,10 +82,15 @@ class EpisodeRecorder:
         self._thread.start()
         return path
 
-    def record_action(self, t_host: float, action: np.ndarray) -> None:
-        """Called by teleop / the executor for every commanded action."""
+    def record_action(self, t_host: float, action: np.ndarray,
+                      stream: str = STREAM_ACTIONS) -> None:
+        """Called by teleop / the executor for every commanded action.
+
+        `stream` selects the episode stream (default the canonical Δ-EE
+        actions; the Echo record loop also pushes STREAM_ACTIONS_QTARGET)."""
         with self._action_lock:
-            self._action_buf.append((t_host, np.asarray(action, dtype=np.float32)))
+            self._action_bufs.setdefault(stream, []).append(
+                (t_host, np.asarray(action, dtype=np.float32)))
 
     # ------------------------------------------------------------------
     def _drain_once(self) -> None:
@@ -104,10 +109,10 @@ class EpisodeRecorder:
                 self._bytes_written += data[field].nbytes
             self._cursors[key] = nxt
         with self._action_lock:
-            buf, self._action_buf = self._action_buf, []
-        if buf:
+            bufs, self._action_bufs = self._action_bufs, {}
+        for stream, buf in bufs.items():
             ts = np.array([self.clock.host_to_master(t) for t, _ in buf])
-            w.append(STREAM_ACTIONS, ts, np.stack([a for _, a in buf]))
+            w.append(stream, ts, np.stack([a for _, a in buf]))
 
     def _drain_loop(self) -> None:
         interval = self.hw.recording.drain_interval_s

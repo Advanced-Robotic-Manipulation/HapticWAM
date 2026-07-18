@@ -13,3 +13,4 @@ ref_shim.pt
 # configs/paths.yaml at the location (see requirements/README.md)
 cosmos-predict2.5-2b/
 .venv/
+.gstack/

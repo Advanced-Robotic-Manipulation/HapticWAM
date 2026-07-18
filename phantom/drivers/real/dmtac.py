@@ -63,7 +63,7 @@ class DmTacSensor(TactileSensor):
                 "dmrobotics SDK not installed — install it on the rig machine (Python "
                 "3.8-3.11, linux/windows x86_64 only), or set "
                 "mode.overrides.tactile: mock in configs/hardware.yaml") from e
-        opt = SensorOptions(
+        kwargs = dict(
             dev_id=self.sensor.dev_id,
             backend=self.cfg.sdk_backend,
             mode=Mode.HIGH if self.cfg.sdk_mode == "high" else Mode.STANDARD,
@@ -75,11 +75,33 @@ class DmTacSensor(TactileSensor):
             enable_shear=True,
             enable_force=True,
         )
+        # Network streaming options (verified on the Denmark rig): pass only
+        # when configured so unset fields keep the SDK defaults.
+        if self.sensor.remote_addr is not None:
+            kwargs["remote_addr"] = self.sensor.remote_addr
+        if self.sensor.pc_port is not None:
+            kwargs["pc_port"] = self.sensor.pc_port
+        if self.cfg.pc_host is not None:
+            kwargs["pc_host"] = self.cfg.pc_host
+        opt = SensorOptions(**kwargs)
         self._sdk = Sensor(opt)
         self._verify_identity()
         self.reset_reference()
-        self._seq = 0
         self._last_fid = -1
+        self._warmup()
+        self._seq = 0
+
+    def _warmup(self, n: int = 5) -> None:
+        """Discard the first frames after reset. The SDK emits a transient for
+        a frame or two while the reconstruction nets prime — observed on real
+        L26xxx units as an all-zeros frame then a huge depth spike (peak ~2.0
+        vs settled ~0.09). Without this the first read() — and the safety
+        monitor that consumes it — sees a spurious high-indentation e-stop."""
+        for _ in range(n):
+            try:
+                self.read()
+            except Exception:
+                time.sleep(0.05)
 
     def _verify_identity(self) -> None:
         """When configured by serial, assert we actually connected to that unit."""

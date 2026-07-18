@@ -79,6 +79,9 @@ class URArm(Arm):
     def _require_ctrl(self):
         if self._ctrl is None:
             raise RuntimeError("control interface not connected (connect(control=True))")
+        if not self._ctrl.isConnected():
+            raise RuntimeError("RTDE control stream lost (robot rebooted / protective "
+                               "stop / network drop) — reconnect_control() after fixing")
         return self._ctrl
 
     # ------------------------------------------------------------------
@@ -86,6 +89,11 @@ class URArm(Arm):
         r = self._recv
         if r is None:
             raise RuntimeError("get_state() before connect()")
+        if not r.isConnected():
+            # fail LOUD instead of blocking the whole teleop loop forever —
+            # observed on the CB3 after a mid-motion RTDE stream drop
+            raise RuntimeError("RTDE receive stream lost — robot rebooted or "
+                               "network dropped; restart the session")
         st = ArmState(
             t_host=time.perf_counter(), seq=self._seq,
             t_rtde=float(r.getTimestamp()),
@@ -101,13 +109,24 @@ class URArm(Arm):
         return st
 
     def servo_j(self, q: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
-        self._require_ctrl().servoJ(list(np.asarray(q, dtype=float)), 0.0, 0.0,
-                                    dt, lookahead, gain)
+        ok = self._require_ctrl().servoJ(list(np.asarray(q, dtype=float)), 0.0, 0.0,
+                                         dt, lookahead, gain)
+        if ok is False:
+            # ur_rtde returns False SILENTLY when the control script is no
+            # longer running on the robot (a protective stop kills it) — the
+            # arm just stops following while everything else keeps working
+            raise RuntimeError("servoJ rejected — the RTDE control script is not "
+                               "running (clear the pendant popup / protective stop "
+                               "and restart the session)")
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
         ctrl = self._require_ctrl()
         q = ctrl.getInverseKinematics(list(np.asarray(tcp_pose, dtype=float)))
-        ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
+        ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
+        if ok is False:
+            raise RuntimeError("servoJ rejected — the RTDE control script is not "
+                               "running (clear the pendant popup / protective stop "
+                               "and restart the session)")
 
     def speed_l(self, xd: np.ndarray, accel: float, dt: float) -> None:
         self._require_ctrl().speedL(list(np.asarray(xd, dtype=float)), accel, dt)

@@ -42,7 +42,12 @@ hw = [
     "ur-rtde>=1.5",
     "pyrealsense2",
     "pyspacemouse",
+    "pyserial>=3.5",     # Echo exoskeleton leader (teleop/echo.py)
     "opencv-python",
+]
+# Live visualization: rerun.io stream + the web control panel's embedded view
+viz = [
+    "rerun-sdk>=0.20",
 ]
 dev = [
     "pytest>=8",

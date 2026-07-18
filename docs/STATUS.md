@@ -2,7 +2,7 @@
 
 > Update this file whenever a milestone lands. A fresh Claude/Opus session (or
 > a new teammate) should be able to read THIS + README.md and know exactly
-> where the project stands and what to do next. Last update: **2026-07-10**.
+> where the project stands and what to do next. Last update: **2026-07-17**.
 
 ## Machines
 
@@ -10,6 +10,7 @@
 |---|---|---|
 | **compute3** (`ssh compute3`, user physicalai) | **RTX 5090 32 GB — THE paper box** (train + deploy) | **PROVISIONED 2026-07-10**: `~/phantom-icra-2027/` has repo+submodule, py3.11 venv (numpy<2, torch 2.13+cu130), dmrobotics SDK[gpu], Cosmos weights (4.6 GB), paths.local.yaml. 67/67 tests; `smoke_test --synthetic --device cuda` on REAL weights: **ALL STAGES PASSED, peak VRAM 20.32 GiB @ batch 1**. Shared lab box (root uvicorn:8000 + k3s — don't touch); 291 GB free. |
 | **compute2** (`ssh compute2`, user isr-lab-4) | RTX 4090 24 GB — robot/teleop box | Arm rig lives here: 2× UR3 (right 192.168.88.56 = ours, left .40), Robotiq 2F-85, RealSense, Echo exo leader. Their teleop = `Echo-Yolo/Echo/main11.py` (conda env `echo`) — vendored minimal copy in `third_party/echo_teleop/` (was untracked on their disk!). Root disk FULL — use /media/isr-lab-4/juniors (285 GB free) for anything new. |
+| **nuc** (`ssh nuc@100.64.0.18`, tailscale) | Intel NUC, 8-core, **no NVIDIA GPU** — recording box | **FIELD-TESTED 2026-07-17**: `~/phantom-icra-2027` (py3.10 venv, torch CPU, rerun, dmrobotics SDK `--no-deps`). **Both DM-Tac sensors on local USB** (video6=L26050098, video8=L26190169); RealSense D435 (944523029596); WD Passport (data disk). Config `configs/hardware.nuc.yaml` (tactile:real, `sdk_backend: cpu`, 10 Hz — measured concurrent dual-sensor rate on CPU). `paths.local.yaml` → `/home/nuc/phantom-data`. Real episode recorded end-to-end via the web panel over tailscale (both sensors, real infer_img, no false safety trip). Robot NOT wired here (arm/gripper stay mock on this box). `nuc` user added to `video` group. |
 
 ## Where we are, one paragraph
 
@@ -34,6 +35,13 @@ left is hardware-side or a run, not code.
 | Eval: metrics (lead-time, event-F1), recovery/retention aggregation with 95% seed-bootstrap CIs | `phantom/eval/` |
 | Cosmos submodule integration (imports through compat shims; `[cosmos]` extra) | 92/92 modules import with submodule present |
 | Docs: sensor SDK truth, bench plan, SOPs, playbooks, launch guide | `docs/` |
+| **Echo teleop integrated** (2026-07-17): `teleop/echo.py` clean-room device, joint-space branch in `record_episodes`, Δ-EE derived from measured TCP (`data/derived.py pose_delta`), raw joint targets to new `actions_qtarget` stream, continuous gripper | `tests/test_echo.py`; scripted mock rehearsal: both streams written, Δ-EE nonzero |
+| **Teleop smoothing (SOTA pass, 2026-07-17)**: one-euro filter on the leader signal at device rate + `JointServoStreamer` @ `control_rate_hz` (125 Hz, kills the 10 Hz step-and-hold) + discrete-correct bounded vel/accel tracker with exact no-overshoot landing (`teleop/filters.py`, `teleop/streamer.py`); workspace hold + p-stop park moved into the streamer at control rate; gripper EMA + command deadband | 20 tests in `tests/test_echo.py` incl. noise attenuation, accel bounds, no-overshoot, streamer-on-mock; echo rehearsal green through the streamer |
+| **First real-hardware run (NUC, 2026-07-17)** — fixed 3 latent bugs that only surface with real single-open sensors: **(1) double-open** — `Rig.connect_all` opened tactile in the parent AND the SensorSession workers re-opened the same physical device → "occupied"; added `Rig.worker_owned_tactile` (recording path skips parent tactile open). **(2) reset transient** — first frame(s) after SDK reset spike to depth peak ~2.0 (vs settled ~0.09) and tripped the tactile e-stop; `DmTacSensor._warmup()` discards them. **(3) orphaned workers** — a hard-killed parent (kill -9/crash) left `daemon` tactile workers holding the device; added Linux `PR_SET_PDEATHSIG(SIGKILL)`. | `tests/test_rig.py` + updated suite (120 passed); real dual-sensor episode on the NUC verified clean (both wrench+fields+infer_img streams, safety silent), clean stop self-releases devices |
+| **Web-first collection (2026-07-17)**: `python -m phantom.scripts.panel` — the operator's entry point: session wizard in the browser (rig summary, pre-flight checklist, task/operator/device/target form, RU labels) → `SessionRunner` brings up the rig and runs the same `run_collection` path as the CLI; progress bar + episode log with outcomes, safety banners with recovery hints, session restart without process restart; `--teleop none` (NullTeleop) for contact-play/monitoring | 7 more panel tests (118 total); e2e wizard rehearsal: 2 full sessions incl. episode recording driven entirely over HTTP; both views screenshot-verified |
+| **Live viz + web control panel (2026-07-17)**: `phantom/viz/` — `RerunLogger` streams every session ring (cameras, tactile fields/wrench, arm, gripper, events) to an embedded rerun.io web viewer (verified on rerun 0.34, legacy fallbacks kept); stdlib-only dark-UI control panel (`--panel`, :8788) with SSE live status, wrench sparkline, and the full episode-control button set wired into the record loop as a third button source | `tests/test_panel.py` (6 tests); e2e: episode recorded start→success entirely via the web API; panel screenshot verified in a browser |
+| **Safety circuit closed over teleop (2026-07-17)**: `SafetyMonitor` (was deploy-only) now runs every teleop tick — wrist wrench, fingertip force/indentation e-stop, tactile staleness, workspace; STOP saves the episode as failure + parks the streamer; auto-resume via new `recovered()` hysteresis gate (0.8×limits + fresh tactile). **Gripper pad ceiling enforced**: `force_range_N`→N mapping + `cmd_force_limit_N: 30` in config, every `move()` clamps at the driver boundary; fixed real config bug — `default_force: 0.3` was ≈85 N on the 2F-85 (pad crush), now 0.04 ≈ 28.6 N, validator rejects regressions | `tests/test_safety.py` (11 tests — SafetyMonitor previously untested); e2e trip rehearsal: p-stop mid-episode → abort+hold → clear → auto-resume |
+| **DM-Tac Denmark-rig facts integrated** (2026-07-17): serials `L26050098`/`L26190169` + network fields (`remote_addr/pc_host/pc_port`) in config schema+yaml+driver; arm.ip = .56 confirmed; CLI `tactile_monitor`; latent bug fixed — `Rig.connect_all` never called `gripper.activate()` (real URCap rejects move() unactivated) | 89 passed / 6 skipped (skips = no cosmos submodule on the dev Mac); `mock_smoke` green; raw dump vendored read-only at `../incoming/DM-Tac-SDK/` |
 
 ## NOT DONE (everything below needs the rig, a GPU box, or humans)
 
@@ -47,19 +55,22 @@ left is hardware-side or a run, not code.
 3. **Day-1 sensor bench** — `docs/hardware_bench_day1.md`. Reduced to 5 items:
    dist-force units, concurrent dual-sensor rates + infer_img size, (H,W)
    ordering, disk throughput, offline-recompute bit-parity (then flip
-   `archive_raw_img` + `offline_recompute_ok`). Put real sensor SERIALS into
-   `tactile.sensors` dev_ids.
+   `archive_raw_img` + `offline_recompute_ok`). ~~Put real sensor SERIALS into
+   `tactile.sensors` dev_ids~~ **DONE 2026-07-17** (`L26050098`/`L26190169`
+   from the Denmark rig) — still confirm left-vs-right mounting. NEW small
+   item: calibrate `teleop.echo.gripper_open/closed_tick`.
 4. **Arm confirmation** — the arms are **UR3s** (two, right=.56 is ours).
    Generation (UR3e vs CB3) still unknown → read the pendant/plate; CB3 ⇒
    order the Robotiq FT-300S (ACC needs a real wrist wrench). Update
    `arm.model/generation/ip` + wrist_ft in configs/hardware.yaml.
 5. **Gripper mounts** — fabricate the vendor Robotiq-2F adapters from the CAD
    zip (Large folder for W2L); clamp gripper force ≤ pad's 30 N in config.
-6. **Teleop swap** — the lab teleop is now KNOWN and vendored:
-   `third_party/echo_teleop/` (Echo exo leader → right UR3, see PROVENANCE.md).
-   Integration = write `phantom/teleop/echo.py` TeleopDevice wrapping
-   `echo_teleoperation.Echo` + settle joint-space vs Δ-EE action semantics
-   (notes in PROVENANCE.md §Integration).
+6. ~~**Teleop swap**~~ **DONE 2026-07-17** — `phantom/teleop/echo.py`
+   (clean-room, NOT importing third_party) + `record_episodes --teleop echo`.
+   Semantics settled: control stays joint-space (the lab's proven path),
+   dataset actions stay Δ-EE derived from measured TCP, raw joint targets
+   additionally recorded to `actions_qtarget`. Remaining: first dry run on
+   the rig + gripper-tick calibration (bench doc).
 7. **Contact-play collection** (2–4 h) → `pretrain_tactile`.
 8. **Teleop dataset** (150 eps × 5 tasks + 20–30 failure eps per fragile task)
    → `postprocess_episodes` → `dump_norm_stats` — `docs/data_collection_sop.md`.

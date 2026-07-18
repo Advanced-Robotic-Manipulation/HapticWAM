@@ -121,14 +121,50 @@ class GripperConfig(_Frozen):
     feedback_rate_hz: float = Field(gt=0)
     default_speed: float = Field(ge=0, le=1)
     default_force: float = Field(ge=0, le=1)
+    # Normalized force command 0..1 -> physical grip force in N (linear over
+    # the FOR register; 2F-85 datasheet range). BENCH: verify endpoints.
+    force_range_N: tuple[float, float] = (20.0, 235.0)
+    # Hard ceiling on COMMANDED grip force — the DM-Tac pad crushes above
+    # 30 N total (docs/sensor_sdk.md). Enforced at the driver boundary:
+    # every move() clamps its force arg to max_force_cmd.
+    cmd_force_limit_N: float = Field(default=30.0, gt=0)
+    # Hard ceiling on the COMMANDED close position (0=open..1=closed). With
+    # tactile pads mounted on both fingers a full close presses pad into pad
+    # — the lab's proven grip position was 155/255 ≈ 0.61. Enforced at the
+    # driver boundary like the force clamp.
+    max_close_cmd: float = Field(default=1.0, gt=0, le=1)
+
+    @property
+    def max_force_cmd(self) -> float:
+        """Highest allowed normalized force command under cmd_force_limit_N."""
+        lo, hi = self.force_range_N
+        return max(0.0, min(1.0, (self.cmd_force_limit_N - lo) / (hi - lo)))
+
+    @model_validator(mode="after")
+    def _check_force(self) -> "GripperConfig":
+        lo, hi = self.force_range_N
+        if hi <= lo or lo < 0:
+            raise ValueError(f"gripper.force_range_N must be increasing and >= 0, got ({lo}, {hi})")
+        if self.default_force > self.max_force_cmd:
+            est = lo + self.default_force * (hi - lo)
+            raise ValueError(
+                f"gripper.default_force={self.default_force} ≈ {est:.0f} N exceeds the "
+                f"DM-Tac pad ceiling cmd_force_limit_N={self.cmd_force_limit_N} N "
+                f"(max normalized command {self.max_force_cmd:.3f}) — lower default_force")
+        return self
 
 
 class TactileSensorEntry(_Frozen):
     name: str
     # int = SDK device index (quick single-sensor tests); str = device serial
-    # ("识别码", e.g. "X26040565", printed on the yellow cable label) —
+    # ("识别码", e.g. "L26050098", printed on the yellow cable label) —
     # vendor-recommended for multi-sensor rigs (stable across replug).
     dev_id: int | str
+    # Network streaming options (SensorOptions fields, verified against the
+    # Denmark-rig scripts in incoming/DM-Tac-SDK — used there even with
+    # cpu/cuda backends). None = leave the SDK default.
+    remote_addr: str | None = None   # sensor's gRPC endpoint, e.g. "192.168.127.10:50051"
+    pc_port: int | None = None       # port on the PC this sensor streams frames to
 
     @field_validator("dev_id")
     @classmethod
@@ -176,6 +212,9 @@ class TactileConfig(_Frozen):
     torque_unit_to_Nm: float = Field(ge=0)     # 0.0 = UNCALIBRATED sentinel (getForce M, manual: 1e-2 N*m -> 0.01)
     dist_force_unit_to_N: float = Field(ge=0)  # 0.0 = UNCALIBRATED sentinel (getDistributeForce, units unverified)
     offline_recompute_ok: bool = False
+    # PC-side host address the sensors stream frames back to (SensorOptions
+    # pc_host; shared by all sensors on the rig). None = SDK default "0.0.0.0".
+    pc_host: str | None = None
     sensors: tuple[TactileSensorEntry, ...]
 
     @property
@@ -284,10 +323,12 @@ class WorkspaceBox(_Frozen):
                 raise ValueError(f"workspace {axis} bounds must be increasing, got ({lo}, {hi})")
         return self
 
-    def contains(self, p) -> bool:
-        return (self.x[0] <= p[0] <= self.x[1]
-                and self.y[0] <= p[1] <= self.y[1]
-                and self.z[0] <= p[2] <= self.z[1])
+    def contains(self, p, margin: float = 0.0) -> bool:
+        """margin > 0 expands the box — used as resume-hysteresis so a pose
+        frozen marginally outside the boundary still counts as back inside."""
+        return (self.x[0] - margin <= p[0] <= self.x[1] + margin
+                and self.y[0] - margin <= p[1] <= self.y[1] + margin
+                and self.z[0] - margin <= p[2] <= self.z[1] + margin)
 
 
 class SafetyConfig(_Frozen):
@@ -298,6 +339,48 @@ class SafetyConfig(_Frozen):
     workspace_m: WorkspaceBox
     governor: GovernorConfig
     stale_plan_timeout_s: float = Field(gt=0)
+
+
+class EchoTeleopConfig(_Frozen):
+    """Echo exoskeleton leader (STM32 over USB serial; protocol facts verified
+    against the lab's working stack, third_party/echo_teleop/PROVENANCE.md)."""
+    vid: int = 1603
+    pid: int = 1868
+    baud: int = 115200
+    # Joint-space reference: q_target = base_pose + exo_offset / divisor.
+    base_pose: tuple[float, float, float, float, float, float]
+    # Indexed by the device's sense_flag (0 / 1 / 2).
+    sensitivity_divisors: tuple[float, float, float] = (1.0, 1.25, 1.75)
+    # Raw exoskeleton gripper ticks mapped to 0 (open) .. 1 (closed).
+    # BENCH: calibrate on the rig (read ticks at full open / full close).
+    gripper_open_tick: int
+    gripper_closed_tick: int
+    # --- smoothing / control (teleop/filters.py + teleop/streamer.py) ------
+    # High-rate servo streaming, decoupled from control.action_rate_hz
+    # (recording stays on the action grid). 125 Hz is CB3-safe.
+    control_rate_hz: float = Field(default=125.0, gt=0)
+    # One-euro filter on the leader joint signal (applied at device rate):
+    # min_cutoff Hz at rest (lower = stronger tremor suppression), beta adds
+    # cutoff per rad/s of motion (higher = less lag when moving fast).
+    filter_min_cutoff: float = Field(default=1.0, gt=0)
+    filter_beta: float = Field(default=0.3, ge=0)
+    # Acceleration bound of the joint tracker (velocity bound comes from
+    # arm.limits.joint_speed_rad_s); turns steps/engage into smooth S-curves.
+    joint_accel_rad_s2: float = Field(default=4.0, gt=0)
+    # Gripper conditioning: EMA factor at device rate + command deadband
+    # (a new socket command is sent only when the change exceeds this).
+    gripper_ema_alpha: float = Field(default=0.2, gt=0, le=1)
+    gripper_deadband: float = Field(default=0.02, ge=0, le=1)
+
+    @model_validator(mode="after")
+    def _check_gripper_ticks(self) -> "EchoTeleopConfig":
+        if self.gripper_open_tick == self.gripper_closed_tick:
+            raise ValueError("gripper_open_tick and gripper_closed_tick must differ")
+        return self
+
+
+class TeleopConfig(_Frozen):
+    echo: EchoTeleopConfig | None = None
 
 
 class HardwareConfig(_Frozen):
@@ -312,6 +395,7 @@ class HardwareConfig(_Frozen):
     recording: RecordingConfig
     control: ControlConfig
     safety: SafetyConfig
+    teleop: TeleopConfig | None = None
 
     # ----- cross-section validation ---------------------------------------
 

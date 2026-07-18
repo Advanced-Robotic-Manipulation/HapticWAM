@@ -41,6 +41,36 @@ def channel_slices(tactile_cfg) -> dict[str, slice]:
     return out
 
 
+def rotvec_nearest(prev: np.ndarray, cur: np.ndarray) -> np.ndarray:
+    """Pick the rotation-vector representation of `cur` nearest to `prev`.
+
+    A rotation r (as an axis-angle vector) is also represented by
+    r * (1 - 2*pi/||r||) — same rotation, antipodal axis. UR TCP poses can flip
+    between the two across a reading, which would corrupt component-wise
+    deltas. Naive per-component +-2*pi unwrapping is WRONG for rotvecs; the
+    correct fix is choosing between these two equivalent representations.
+    """
+    prev = np.asarray(prev, dtype=np.float64)
+    cur = np.asarray(cur, dtype=np.float64)
+    angle = float(np.linalg.norm(cur))
+    if angle < _EPS:
+        return cur
+    alt = cur * (1.0 - 2.0 * np.pi / angle)
+    return alt if np.linalg.norm(alt - prev) < np.linalg.norm(cur - prev) else cur
+
+
+def pose_delta(prev_pose: np.ndarray, cur_pose: np.ndarray) -> np.ndarray:
+    """Component-wise delta between two (6,) TCP poses [x,y,z, rx,ry,rz],
+    with the rotvec continuity guard. Matches the executor's linear
+    cumsum-in-rotvec-space action model (deploy/executor.py _pose_at)."""
+    prev_pose = np.asarray(prev_pose, dtype=np.float64)
+    cur_pose = np.asarray(cur_pose, dtype=np.float64)
+    out = np.empty(6, dtype=np.float32)
+    out[:3] = cur_pose[:3] - prev_pose[:3]
+    out[3:] = rotvec_nearest(prev_pose[3:], cur_pose[3:]) - prev_pose[3:]
+    return out
+
+
 def _grid(h: int, w: int) -> tuple[np.ndarray, np.ndarray]:
     ys = np.linspace(-1.0, 1.0, h, dtype=np.float32)
     xs = np.linspace(-1.0, 1.0, w, dtype=np.float32)

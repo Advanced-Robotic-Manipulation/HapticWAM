@@ -15,6 +15,10 @@ class TeleopCommand:
     buttons: dict[str, bool] = field(default_factory=dict)
     # episode-control button semantics (any device maps its keys onto these):
     #   start_stop, success, fail, failure_tag, abort, zero_ft, quit
+    # Joint-space leaders (Echo exoskeleton) set q_target instead of dpose:
+    # the record loop then drives servo_j and derives the recorded Δ-EE action
+    # from consecutive measured TCP poses (data/derived.py pose_delta).
+    q_target: np.ndarray | None = None    # (dof,) absolute joint target, rad
 
 
 class TeleopDevice(ABC):
