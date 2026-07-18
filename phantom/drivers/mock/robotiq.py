@@ -43,8 +43,9 @@ class MockGripper(Gripper):
         if not self._activated:
             raise RuntimeError("move() before activate()")
         with self._lock:
-            self._target = float(np.clip(position, 0.0, 1.0))
+            self._target = self.clamp_position(position)   # pad-safe ceilings
             self._speed = float(np.clip(speed, 0.05, 1.0))
+            self.last_force = self.clamp_force(force)       # (+ test hooks)
 
     def _step(self) -> None:
         now = time.perf_counter()

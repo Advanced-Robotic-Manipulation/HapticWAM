@@ -188,7 +188,19 @@ class Gripper(ABC):
 
     @abstractmethod
     def move(self, position: float, speed: float, force: float) -> None:
-        """All args normalized 0..1; non-blocking."""
+        """All args normalized 0..1; non-blocking. Implementations MUST pass
+        force through clamp_force() — the pad-safe ceiling is enforced at
+        this boundary, not by callers."""
+
+    def clamp_force(self, force: float) -> float:
+        """Hard cap: commanded force never exceeds gripper.cmd_force_limit_N
+        (DM-Tac pads crush above 30 N — docs/sensor_sdk.md)."""
+        return min(max(float(force), 0.0), self.cfg.max_force_cmd)
+
+    def clamp_position(self, position: float) -> float:
+        """Hard cap on close: with pads on both fingers a full close is
+        pad-into-pad — never exceed gripper.max_close_cmd."""
+        return min(max(float(position), 0.0), self.cfg.max_close_cmd)
 
     @abstractmethod
     def get_state(self) -> GripperState: ...
@@ -228,20 +240,33 @@ class Rig:
     tactile: dict[str, TactileSensor] = field(default_factory=dict)
     cameras: dict[str, Camera] = field(default_factory=dict)
     control: bool = False
+    # In the recording/deploy path the tactile sensors are opened by the
+    # SensorSession's per-sensor WORKER PROCESSES (they need their own
+    # process for the heavy SDK inference). A real DM-Tac device is single-
+    # open, so the parent must NOT also open it here or the workers get
+    # "device is occupied". Set True for those paths; leave False when the
+    # parent reads tactile directly (tactile_monitor, tests).
+    worker_owned_tactile: bool = False
 
     def connect_all(self) -> None:
         self.arm.connect(control=self.control)
         self.gripper.connect()
-        for s in self.tactile.values():
-            s.connect()
+        # activation is part of bringing the rig up: the real URCap gripper
+        # rejects move() until activated (activate() is a no-op when the
+        # gripper is already active — GET STA returns 3 immediately)
+        self.gripper.activate()
+        if not self.worker_owned_tactile:
+            for s in self.tactile.values():
+                s.connect()
         for c in self.cameras.values():
             c.connect()
 
     def disconnect_all(self) -> None:
         for c in self.cameras.values():
             c.disconnect()
-        for s in self.tactile.values():
-            s.disconnect()
+        if not self.worker_owned_tactile:
+            for s in self.tactile.values():
+                s.disconnect()
         self.gripper.disconnect()
         self.arm.disconnect()
 

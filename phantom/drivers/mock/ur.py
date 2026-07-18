@@ -75,6 +75,11 @@ class MockArm(Arm):
             dq = np.clip(dq, -max_step, max_step)
             self._q = self._q + dq
             self._qd = dq / max(dt, 1e-9)
+            # crude fixed FK coupling: joint motion moves the mock TCP, so
+            # joint-space teleop (Echo) yields nonzero measured Δ-EE actions
+            # in mock rehearsals. Not a real Jacobian — magnitude only.
+            self._tcp[:3] += 0.1 * dq[:3]
+            self._tcp_speed[:3] = 0.1 * dq[:3] / max(dt, 1e-9)
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
         with self._lock:

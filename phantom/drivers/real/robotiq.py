@@ -21,6 +21,7 @@ class RobotiqGripper(Gripper):
         self._sock: socket.socket | None = None
         self._lock = threading.Lock()
         self._seq = 0
+        self._has_cur = True   # some URCap builds answer "CUR ?" — cached off
 
     # ------------------------------------------------------------------
     def connect(self) -> None:
@@ -43,6 +44,9 @@ class RobotiqGripper(Gripper):
         parts = resp.split()
         if len(parts) != 2 or parts[0] != var:
             raise RuntimeError(f"unexpected gripper response to GET {var}: {resp!r}")
+        if parts[1] == "?":
+            # this URCap build doesn't expose the variable (seen: CUR -> "?")
+            raise KeyError(f"gripper variable {var} unsupported by this URCap")
         return int(parts[1])
 
     def _set(self, **vals: int) -> None:
@@ -64,6 +68,8 @@ class RobotiqGripper(Gripper):
     def move(self, position: float, speed: float, force: float) -> None:
         def to255(x: float) -> int:
             return max(0, min(255, round(x * 255)))
+        force = self.clamp_force(force)          # pad-safe ceilings (base.Gripper)
+        position = self.clamp_position(position)
         # 'FOR' is a Python keyword so it can't go through _set kwargs
         resp = self._cmd(f"SET POS {to255(position)} SPE {to255(speed)} "
                          f"FOR {to255(force)} GTO 1")
@@ -73,7 +79,12 @@ class RobotiqGripper(Gripper):
     def get_state(self) -> GripperState:
         pos = self._get("POS") / 255.0
         obj = self._get("OBJ")           # 0 moving, 1/2 object detected, 3 at position
-        cur = self._get("CUR") / 255.0
+        cur = 0.0
+        if self._has_cur:
+            try:
+                cur = self._get("CUR") / 255.0
+            except KeyError:
+                self._has_cur = False    # not exposed by this URCap build
         st = GripperState(
             t_host=time.perf_counter(), seq=self._seq,
             position=pos, current=cur,

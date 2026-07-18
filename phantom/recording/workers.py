@@ -23,6 +23,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import multiprocessing as mp
+import sys
 import threading
 import time
 from dataclasses import dataclass
@@ -88,8 +89,27 @@ def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, Shared
 # tactile worker (child process)
 # ---------------------------------------------------------------------------
 
+def _set_pdeathsig() -> None:
+    """Linux: ask the kernel to SIGKILL this worker if its parent dies — so a
+    hard-killed parent (kill -9, crash, OOM) can't orphan a worker that still
+    holds the single-open tactile device and blocks the next session. The
+    daemon=True flag only covers CLEAN parent exit (atexit); this covers the
+    rest."""
+    if sys.platform != "linux":
+        return
+    try:
+        import ctypes
+        import signal
+        PR_SET_PDEATHSIG = 1
+        ctypes.CDLL("libc.so.6", use_errno=True).prctl(
+            PR_SET_PDEATHSIG, signal.SIGKILL, 0, 0, 0)
+    except Exception:
+        pass
+
+
 def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
                   session_t0: float, stop: mp.Event, finger_index: int) -> None:  # type: ignore[valid-type]
+    _set_pdeathsig()
     hw = HardwareConfig.model_validate(yaml.safe_load(hw_yaml))
     t, r = hw.tactile, hw.recording
     sensor_cfg = next(s for s in t.sensors if s.name == sensor_name)
@@ -119,8 +139,15 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
     kf_every = max(1, round(t.rate_hz / r.keyframe_rate_hz))
     img_every = max(1, round(t.rate_hz / r.infer_img_rate_hz))
     i = 0
+    import os
     try:
         while not stop.is_set():
+            # orphan watchdog: if the parent died hard (segfault, kill -9) we
+            # get reparented to init — exit and release the single-open device.
+            # (pdeathsig is armed too, but this check is unconditional.)
+            if os.getppid() == 1:
+                log.warning("tactile[%s] parent died — exiting", sensor_name)
+                break
             frame = driver.read()
             stack = frame.field_stack()                    # (H, W, 8) f32
             ds = stack.reshape(ds_h, fh, ds_w, fw, stack.shape[-1]).mean(axis=(1, 3))

@@ -106,6 +106,42 @@ class SafetyMonitor:
             log.warning("SAFETY %s value=%.3f -> %s", e.kind, e.value, e.action.value)
         return SafetyVerdict(action=action, events=events)
 
+    def recovered(self, frac: float = 0.8) -> bool:
+        """Hysteresis gate for resuming after a STOP_EPISODE: True when the
+        protective stop is clear and wrist wrench + fingertip peaks are all
+        below frac * their limits (avoids stop/resume chatter at the limit)."""
+        hw = self.hw
+        ts, arm = self.rings["arm"].latest(1)
+        if len(ts):
+            if arm["protective_stop"][0]:
+                return False
+            ft = arm["ft"][0]
+            if (np.linalg.norm(ft[:3]) > frac * hw.safety.wrench_limit_N
+                    or np.linalg.norm(ft[3:]) > frac * hw.safety.wrench_limit_Nm):
+                return False
+        from phantom.data.derived import channel_slices
+        ch = channel_slices(hw.tactile)
+        for s in hw.tactile.sensors:
+            ring = self.rings.get(f"tactile_{s.name}")
+            if ring is None:
+                continue
+            ts_t, tac = ring.latest(1)
+            if not len(ts_t):
+                continue
+            if time.perf_counter() - ts_t[0] > self._ring_stale_s:
+                return False   # dead/stale sensor: no resume without tactile safety
+            fields = np.asarray(tac["fields_ds"][0], dtype=np.float32)
+            if hw.tactile.force_calibrated:
+                peak = float(np.abs(fields[..., ch["dist_force"]][..., 2]).max()
+                             * hw.tactile.dist_force_unit_to_N)
+                limit = hw.safety.tactile_fz_limit_N
+            else:
+                peak = float(np.abs(fields[..., ch["depth"]]).max())
+                limit = hw.safety.tactile_depth_limit
+            if peak > frac * limit:
+                return False
+        return True
+
     def clamp_target(self, tcp_target: np.ndarray) -> np.ndarray:
         ws = self.hw.safety.workspace_m
         out = tcp_target.copy()

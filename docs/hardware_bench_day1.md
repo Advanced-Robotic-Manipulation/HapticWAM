@@ -101,6 +101,25 @@ temporarily), power-cycle the sensor, and check whether the SDK can rebuild
 `tactile.offline_recompute_ok: true` (enables the raw-archive recording plan
 as a disk-space fallback).
 
+## Echo teleop gripper-tick calibration (5 min, needs only the exoskeleton)
+
+The Echo leader now drives the gripper CONTINUOUSLY (teleop/echo.py). With the
+device on USB, read raw ticks at full open and full close of the exo gripper
+(quick check: `python -c "from phantom.teleop.echo import *; ..."` or watch
+`gripper` in a dry `record_episodes --teleop echo` run) and set
+`teleop.echo.gripper_open_tick` / `gripper_closed_tick` in hardware.yaml
+(defaults 5/155 are the lab's binary-mode endpoints, not a measurement).
+While there: sensor serials `L26050098`/`L26190169` are pre-filled in
+`tactile.sensors` from the Denmark rig — confirm which unit is mounted LEFT
+vs RIGHT and swap the two `name:` entries if needed.
+
+## Live monitor (handy for every item above)
+
+`python -m phantom.scripts.tactile_monitor` — one status line per sensor
+(|F|, Fz, peak depth, contact area, effective Hz), `r`+Enter re-zeros the
+reference. No GUI; the Denmark DearPyGui viewers remain in
+`../incoming/DM-Tac-SDK/scripts/` if plots are wanted.
+
 ## Derived-threshold calibration (after a–c)
 
 With one sensor live, run light/firm presses and slides while watching the

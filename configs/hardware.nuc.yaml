@@ -1,0 +1,194 @@
+meta:
+  schema_version: 1
+  rig_name: skoltech-ur-rig
+  bench_verified: false
+mode:
+  drivers: real          # ALL real on the NUC rig (arm+gripper+tactile+camera)
+  overrides: {}
+arm:
+  model: UR3
+  # ACTUAL hardware is CB3 (Polyscope 3.14.3, S/N 2018333547, dashboard-read
+  # 2026-07-17). Declared e-series because the schema hard-blocks
+  # cb3+ur_internal (the paper's ACC needs a real FT-300S wrist sensor —
+  # ORDER IT, then flip to generation: cb3 + wrist_ft.source: ft300s).
+  # The 125 Hz rates below are CB3-safe; wrist F/T is a current-based
+  # ESTIMATE on this arm — fine for teleop safety, not for ACC training.
+  generation: e-series
+  ip: 192.168.88.56
+  rtde_receive_hz: 125.0
+  rtde_control_hz: 125.0
+  dof: 6
+  tcp_offset_m:
+  - 0.0
+  - 0.0
+  - 0.18
+  - 0.0
+  - 0.0
+  - 0.0
+  payload_kg: 1.2
+  limits:
+    joint_speed_rad_s: 1.0
+    tcp_speed_m_s: 0.25
+    tcp_accel_m_s2: 0.5
+  servoj:
+    lookahead_time_s: 0.1
+    gain: 300
+wrist_ft:
+  source: ur_internal
+  rate_hz: 125.0
+  dim: 6
+  window_s: 0.25
+  bias_on_episode_start: true
+  bias_window_s: 0.5
+gripper:
+  type: robotiq_2f85
+  interface: urcap_socket
+  port: 63352
+  stroke_mm: 85.0
+  feedback_rate_hz: 100.0
+  default_speed: 0.5
+  default_force: 0.04
+  force_range_N:
+  - 20.0
+  - 235.0
+  cmd_force_limit_N: 30.0
+  max_close_cmd: 0.61      # 155/255 — lab's proven close with W2L pads mounted;
+                           #   full close would press pad into pad
+tactile:
+  sdk: dmrobotics
+  sdk_backend: cpu
+  sdk_mode: high
+  rate_hz: 10.0
+  raw_img:
+    h: 480
+    w: 640
+    c: 1
+  infer_img:
+    h: 288
+    w: 384
+    c: 1
+  field:
+    h: 288
+    w: 384
+  hw_order: hw
+  field_channels:
+    deformation2d: 2
+    depth: 1
+    shear: 2
+    dist_force: 3
+  wrench_dim: 6
+  force_unit_to_N: 1.0
+  torque_unit_to_Nm: 0.01
+  dist_force_unit_to_N: 0.0
+  offline_recompute_ok: false
+  sensors:
+  - name: left
+    dev_id: L26050098
+  - name: right
+    dev_id: L26190169
+cameras:
+  scene:
+    enabled: true
+    serial: '944622074411'   # RealSense D435 (librealsense serial; the USB
+                             #   descriptor shows a different one — 944523029596)
+    color:
+      h: 480
+      w: 640
+      c: 3
+    fps: 30.0
+    depth_enabled: false
+  wrist:
+    enabled: false
+    serial: ''
+    color:
+      h: 480
+      w: 640
+      c: 3
+    fps: 30.0
+    depth_enabled: false
+derived:
+  tau_contact_depth: 0.05
+  tau_contact_fz: 0.1
+  contact_source: depth
+  tau_slip: 0.5
+  slip_flow_weight: 0.5
+  friction_cone_mu: 0.8
+  cop_min_contact_cells: 10
+  area_crosscheck_tol: 0.3
+  cpk_downsample: 8
+  event_lookahead_s: 0.5
+  event_min_hold_ticks: 2
+recording:
+  field_ds:
+    h: 72
+    w: 96
+  field_ds_rate_hz: 10.0
+  keyframe_rate_hz: 5.0
+  field_dtype: float16
+  save_infer_img: true
+  infer_img_rate_hz: 5.0
+  archive_raw_img: false
+  ring_seconds: 5.0
+  zarr_chunk_frames: 120
+  drain_interval_s: 0.25
+control:
+  model_tick_hz: 4.0
+  action_rate_hz: 10.0
+  action_dim: 7
+  chunk_horizon: 16
+  executor_rate_hz: 125.0   # must equal arm.rtde_control_hz (CB3 cap)
+  replan_min_lead_s: 0.3
+  chunk_blend_s: 0.1
+teleop:
+  echo:
+    vid: 1603
+    pid: 1868
+    baud: 115200
+    base_pose:
+    - 0.001427
+    - -1.5621
+    - 1.588
+    - 0.00954
+    - 1.5737
+    - -3.0957
+    sensitivity_divisors:
+    - 1.0
+    - 1.25
+    - 1.75
+    gripper_open_tick: 5
+    gripper_closed_tick: 155
+    control_rate_hz: 125.0
+    filter_min_cutoff: 1.0
+    filter_beta: 0.3
+    joint_accel_rad_s2: 4.0
+    gripper_ema_alpha: 0.2
+    gripper_deadband: 0.02
+safety:
+  # CB3 has no F/T sensor: wrist "force" is a current-based ESTIMATE that
+  # spikes during normal accelerations (observed false wrench_limit trips at
+  # 40 N during teleop). 80/12 keeps it a crash detector, not a motion killer.
+  # Restore tighter limits when the FT-300S is mounted.
+  wrench_limit_N: 80.0
+  wrench_limit_Nm: 12.0
+  tactile_fz_limit_N: 5.0
+  tactile_depth_limit: 0.6
+  # Sized 2026-07-17 to cover: parked TCP (-0.29,-0.12,0.25), the teleop base
+  # pose TCP (-0.474,-0.112,0.295, FK-verified), AND the joint-space engage
+  # arc (its TCP transit peaked above z=0.55 and froze teleop at the old
+  # ceiling). z-ceiling is high — verify nothing hangs above the arm.
+  # CALIBRATE to the real table/collision geometry.
+  workspace_m:
+    x:
+    - -0.7
+    - 0.15
+    y:
+    - -0.5
+    - 0.3
+    z:
+    - 0.03
+    - 0.8
+  governor:
+    sigma_lo: 0.1
+    sigma_hi: 1.0
+    min_scale: 0.15
+  stale_plan_timeout_s: 1.0

@@ -84,3 +84,45 @@ def test_paths_config_loads():
     p = load_paths()
     assert p.cosmos_repo.name == "cosmos-predict2.5"
     assert p.cosmos_checkpoint.suffix == ".pt"
+
+
+def test_teleop_echo_section_loads(default_hw):
+    """The repo yaml carries the Echo leader config (Denmark-rig facts)."""
+    echo = default_hw.teleop.echo
+    assert echo is not None
+    assert (echo.vid, echo.pid, echo.baud) == (1603, 1868, 115200)
+    assert len(echo.base_pose) == 6
+    assert echo.sensitivity_divisors == (1.0, 1.25, 1.75)
+    assert echo.gripper_open_tick != echo.gripper_closed_tick
+
+
+def test_teleop_section_optional():
+    """Older / partial configs without a teleop section keep validating."""
+    raw_hw = make_hw()
+    import yaml
+    raw = yaml.safe_load(raw_hw.snapshot_yaml())
+    del raw["teleop"]
+    from phantom.config.hardware import HardwareConfig
+    hw = HardwareConfig.model_validate(raw)
+    assert hw.teleop is None
+
+
+def test_tactile_network_fields_roundtrip(default_hw):
+    """New network fields survive the spawn-worker snapshot_yaml path."""
+    import yaml
+    from phantom.config.hardware import HardwareConfig
+    hw2 = HardwareConfig.model_validate(yaml.safe_load(default_hw.snapshot_yaml()))
+    assert hw2 == default_hw
+    left = hw2.tactile.sensors[0]
+    assert left.dev_id == "L26050098"
+    assert left.remote_addr == "192.168.127.10:50051"
+    assert left.pc_port == 60001
+    assert hw2.tactile.pc_host == "192.168.127.100"
+
+
+def test_teleop_command_backward_compatible():
+    """TeleopCommand still constructs without q_target (keyboard/spacemouse)."""
+    import numpy as np
+    from phantom.teleop.base import TeleopCommand
+    cmd = TeleopCommand(dpose=np.zeros(6), gripper=0.5, buttons={})
+    assert cmd.q_target is None

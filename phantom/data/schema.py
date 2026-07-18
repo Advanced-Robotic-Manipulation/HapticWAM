@@ -24,6 +24,8 @@ import numpy as np
 # ---------------------------------------------------------------------------
 
 STREAM_ACTIONS = "actions"                    # (T, 7)  teleop / executor commands
+STREAM_ACTIONS_QTARGET = "actions_qtarget"    # (T, dof) raw joint-space teleop targets
+                                              #   (Echo leader; Δ-EE stays canonical)
 STREAM_ARM_Q = "arm_q"                        # (T, dof)
 STREAM_ARM_QD = "arm_qd"                      # (T, dof)
 STREAM_ARM_TCP_POSE = "arm_tcp_pose"          # (T, 6)
