@@ -551,13 +551,15 @@ class CollectApp:
                 # discard straight from recording: data kept on disk, aborted
                 panel.state.update(episode_phase="finalizing",
                                    episode_detail="discarding episode")
-                recorder.stop(abort=True)
+                # operator judgment — unlike the arm-fault abort, a discard
+                # SHOULD physically remove the take (explicit delete flag)
+                recorder.stop(abort=True, delete=True)
                 recording = False
                 ep_count = max(0, ep_count - 1)   # discarded: does not count
                 panel.state.add_episode(name=ep_name, outcome="discarded")
                 panel.state.update(episode_phase="idle", episode_detail="",
                                    ep_count=ep_count)
-                note("episode discarded (kept on disk as aborted)", "WARN")
+                note("episode discarded (deleted)", "WARN")
             elif recording and toggle:
                 # stop -> finalize WITHOUT a verdict; operator judges next
                 panel.state.update(episode_phase="finalizing",
