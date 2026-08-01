@@ -128,9 +128,21 @@ def newest_mtime(d: Path) -> float:
 
 
 def ep_names(d: Path) -> set:
-    """Episode dir names in a session copy (flat or one level nested)."""
-    return {p.name for p in d.glob("ep_*") if p.is_dir()} | \
-           {p.name for p in d.glob("*/ep_*") if p.is_dir()}
+    """Uploadable episode dir names in a session copy (flat or one level
+    nested). Aborted takes (arm faults, interrupted quits) stay on the rig's
+    local disk / drive but are NOT worth hub storage; an unreadable meta.json
+    keeps the episode (backup bias — never silently drop suspect data)."""
+    out = set()
+    for p in list(d.glob("ep_*")) + list(d.glob("*/ep_*")):
+        if not p.is_dir():
+            continue
+        try:
+            if json.loads((p / "meta.json").read_text()).get("status") == "aborted":
+                continue
+        except (OSError, json.JSONDecodeError):
+            pass
+        out.add(p.name)
+    return out
 
 
 def main() -> int:
