@@ -96,7 +96,8 @@ def recompute_episode(ep: Path, hw, *, overwrite: bool = False) -> bool:
                                              > hw.derived.tau_contact_depth).mean()))
                 if k % kf_every == 0:
                     kf_ts.append(ts[k])
-                    kf_rows.append(stack.astype(f_dtype))
+                    kf_rows.append(_pool_ds(stack, hw.recording.keyframe_ds.hw)
+                                   .astype(f_dtype))
             writer.append(out_stream, ts, np.stack(ds_rows))
             writer.append(tactile_stream(s.name, "wrench"), ts,
                           np.stack(wrench_rows))

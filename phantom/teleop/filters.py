@@ -10,7 +10,13 @@ and acceleration, critically-damped approach (sqrt deceleration profile,
 no overshoot). Turns any step in the target — including the engage jump
 when the operator dons the exoskeleton — into a smooth S-shaped move.
 The felt "jerk" of raw clamping comes from unbounded acceleration; this
-bounds it explicitly.
+bounds it explicitly. Used for BOTH the ENGAGE glide (arm pose -> leader) and
+the live TRACKING path: the sqrt braking law provably never overshoots, so it
+cannot ring — a plain vel+accel clamp (deadbeat v_des = err/dt) overshoots ~2x
+and oscillates on any step, which showed up on the rig as a ~1-2 Hz "wiggle"
+when the leader-dropout extrapolation snapped the target back. The only cost is
+a small steady-state tracking lag v^2/(2*a_max); a_max is picked to keep that
+lag low while staying under the CB3 C153A3 acceleration ceiling.
 """
 
 from __future__ import annotations

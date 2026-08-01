@@ -64,10 +64,14 @@ class MockGripper(Gripper):
             in_contact = (self.scenario is not None
                           and self.scenario.state(time.perf_counter() - self._t0).in_contact)
             detected = in_contact and self._pos > 0.3
+            # mirror the real gOBJ ordering: contact wins over motion, since on
+            # hardware a closing contact is what STOPS the fingers. 1 (contact
+            # while opening) is not modelled -- the scenario only produces
+            # closing contacts.
+            obj = 2.0 if detected else (0.0 if moving else 3.0)
             st = GripperState(
                 t_host=time.perf_counter(), seq=self._seq,
-                position=self._pos,
-                current=0.1 + (0.5 if detected else 0.0),
+                position=self._pos, obj=obj,
                 moving=moving, object_detected=detected,
             )
             self._seq += 1

@@ -1,5 +1,13 @@
 # Data collection SOP
 
+> This SOP documents the reference stack (`phantom.scripts.panel` +
+> `record_episodes.py` + `phantom.teleop.echo`/`streamer.py`). A second,
+> ground-up operator app — `python -m phantom.scripts.collect`
+> (`phantom.data_collect`) — targets the same Echo rig with a device-rate
+> teleop path, continuous gripper, a latched DM-Tac force safeguard, and
+> full/lite collection modes; see
+> [data_collect_app.md](data_collect_app.md) for that one specifically.
+
 Target (pipeline.md §7): **150 teleop episodes × 5 tasks = 750**, ~20–40 s
 each, all tasks co-trained; **+20–30 deliberate-failure episodes per fragile
 task**; **2–4 h of contact play** for the tactile SSL pretrain; later

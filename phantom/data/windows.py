@@ -95,10 +95,11 @@ class _EpisodeCache:
         return i if (ts[i] - t) < (t - ts[i - 1]) else i - 1
 
     def at(self, stream: str, t: float) -> np.ndarray:
-        return np.asarray(self.reader._g(stream)["data"][self.nearest_idx(stream, t)])
+        # reader.data() decodes JPEG camera streams transparently
+        return np.asarray(self.reader.data(stream)[self.nearest_idx(stream, t)])
 
     def rows(self, stream: str, idxs: list[int]) -> np.ndarray:
-        data = self.reader._g(stream)["data"]
+        data = self.reader.data(stream)
         return np.stack([np.asarray(data[i]) for i in idxs])
 
 

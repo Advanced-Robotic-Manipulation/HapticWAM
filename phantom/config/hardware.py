@@ -274,6 +274,13 @@ class DerivedConfig(_Frozen):
 class RecordingConfig(_Frozen):
     field_ds: FieldShape
     field_ds_rate_hz: float = Field(gt=0)
+    # Downsampled keyframe resolution (mirrors field_ds: must divide
+    # tactile.field exactly — validated). Keyframes used to be stored at the
+    # native tactile.field resolution, which TactileFieldEncoder immediately
+    # crushed down through several stride-2 stages anyway (nothing downstream
+    # consumes native res) — so keyframe_ds cuts keyframe bytes/compression
+    # cost (and the encoder's stage count) with no loss to any consumer.
+    keyframe_ds: FieldShape
     keyframe_rate_hz: float = Field(gt=0)
     field_dtype: Literal["float16", "float32"] = "float16"
     save_infer_img: bool = True
@@ -281,7 +288,19 @@ class RecordingConfig(_Frozen):
     archive_raw_img: bool = False
     ring_seconds: float = Field(gt=0)
     zarr_chunk_frames: int = Field(gt=0)
+    # Upper bound on ONE zarr chunk's uncompressed bytes. zarr rewrites the
+    # ENTIRE partially-filled chunk on every append, so append cost scales with
+    # chunk BYTES, not rows: a flat 120-frame chunk is 212 MB for the
+    # 288x384x8 keyframe stream, which drove drains to 5.8 s, overflowed the
+    # 5 s ring and SILENTLY dropped samples (ringbuffer.drain resumes from the
+    # oldest surviving row). Rows/chunk = min(zarr_chunk_frames,
+    # zarr_chunk_mb / row_bytes).
+    zarr_chunk_mb: float = Field(default=8.0, gt=0)
     drain_interval_s: float = Field(gt=0)
+    # Scene/camera RGB is JPEG-encoded on disk at this quality (0-100). Raw
+    # 640x480x3 @ 30 fps is ~1.6 GB/min; JPEG cuts that ~20-50x. Storage quality
+    # is kept above the rerun viz quality (90). Set 0 to store raw uint8 frames.
+    scene_jpeg_quality: int = Field(default=92, ge=0, le=100)
 
 
 class ControlConfig(_Frozen):
@@ -332,8 +351,16 @@ class WorkspaceBox(_Frozen):
 
 
 class SafetyConfig(_Frozen):
+    # ArmGuard crash detector. On the CB3 (no real F/T sensor) getActualTCPForce
+    # is a current-based ESTIMATE with a large, POSE-dependent static bias
+    # (~18 N / ~5 Nm measured at rest) — so these limits are NOT absolute, they
+    # are the allowed DEVIATION from a slow rolling baseline that tracks the
+    # bias out. A sudden, SUSTAINED deviation (held wrench_debounce_ticks
+    # consecutive checks) is a collision; brief acceleration spikes are ignored.
     wrench_limit_N: float = Field(gt=0)
     wrench_limit_Nm: float = Field(gt=0)
+    wrench_baseline_tau_s: float = Field(default=2.0, gt=0)   # rolling-baseline time constant
+    wrench_debounce_ticks: int = Field(default=3, ge=1)       # consecutive over-limit checks to trip
     tactile_fz_limit_N: float = Field(gt=0)
     tactile_depth_limit: float = Field(gt=0)
     workspace_m: WorkspaceBox
@@ -361,9 +388,13 @@ class EchoTeleopConfig(_Frozen):
     control_rate_hz: float = Field(default=125.0, gt=0)
     # One-euro filter on the leader joint signal (applied at device rate):
     # min_cutoff Hz at rest (lower = stronger tremor suppression), beta adds
-    # cutoff per rad/s of motion (higher = less lag when moving fast).
+    # cutoff per rad/s of motion (higher = less lag when moving fast), d_cutoff
+    # Hz smooths the SPEED estimate that drives beta (lower = the filter is
+    # slow to "open up" at motion onset -> mushy starts; raise for snappier
+    # engagement). See collect/config.py TeleopTuning for the tuned rig values.
     filter_min_cutoff: float = Field(default=1.0, gt=0)
     filter_beta: float = Field(default=0.3, ge=0)
+    filter_d_cutoff: float = Field(default=1.0, gt=0)
     # Acceleration bound of the joint tracker (velocity bound comes from
     # arm.limits.joint_speed_rad_s); turns steps/engage into smooth S-curves.
     joint_accel_rad_s2: float = Field(default=4.0, gt=0)
@@ -405,6 +436,11 @@ class HardwareConfig(_Frozen):
         if self.tactile.field.h % r.field_ds.h or self.tactile.field.w % r.field_ds.w:
             raise ValueError(
                 f"recording.field_ds {r.field_ds.hw} must divide tactile.field {t.field.hw} exactly"
+            )
+        if self.tactile.field.h % r.keyframe_ds.h or self.tactile.field.w % r.keyframe_ds.w:
+            raise ValueError(
+                f"recording.keyframe_ds {r.keyframe_ds.hw} must divide tactile.field "
+                f"{t.field.hw} exactly"
             )
         if r.field_ds_rate_hz > t.rate_hz or r.keyframe_rate_hz > t.rate_hz:
             raise ValueError("recording field/keyframe rates cannot exceed tactile.rate_hz")
@@ -453,7 +489,7 @@ class HardwareConfig(_Frozen):
 
     @property
     def ur_state_dim(self) -> int:
-        """qpos(dof) + qvel(dof) + tcp pose(6) + tcp speed(6) + gripper (pos, current)."""
+        """qpos(dof) + qvel(dof) + tcp pose(6) + tcp speed(6) + gripper (pos, obj)."""
         return 2 * self.arm.dof + 6 + 6 + 2
 
     @property
@@ -466,7 +502,7 @@ class HardwareConfig(_Frozen):
         r = self.recording
         itemsize = 2 if r.field_dtype == "float16" else 4
         ds = r.field_ds.h * r.field_ds.w * self.tactile.field_ch * itemsize * r.field_ds_rate_hz
-        kf = (self.tactile.field.h * self.tactile.field.w * self.tactile.field_ch
+        kf = (r.keyframe_ds.h * r.keyframe_ds.w * self.tactile.field_ch
               * itemsize * r.keyframe_rate_hz)
         return ds + kf
 
@@ -479,10 +515,11 @@ class HardwareConfig(_Frozen):
 
     def shape_relevant_fields(self) -> dict:
         """The subset of fields that change tensor shapes; checkpoint-compat is asserted on these."""
-        t = self.tactile
+        t, r = self.tactile, self.recording
         return {
             "field": t.field.hw,
             "field_ch": t.field_ch,
+            "keyframe_ds": r.keyframe_ds.hw,
             "n_fingers": self.n_fingers,
             "wrench_dim": t.wrench_dim,
             "wrist_ft_dim": self.wrist_ft.dim,

@@ -1,9 +1,11 @@
 """TactileFieldEncoder (~5M): the trained conv encoder over the 8-channel
 tactile field stack [D_t || F_t] (pipeline.md §6c) — one tensor, one encoder.
 
-Input (per finger): (C8, H, W) with (H, W) = hw.tactile.field — everything
-sized from the config. Downsamples by stride-2 stages until the spatial map is
-<= ~12x12, FiLM-conditioned on the contact-state embedding.
+Input (per finger): (C8, H, W) with (H, W) = hw.recording.keyframe_ds — the
+on-disk resolution of the "keyframes" stream this encoder actually consumes
+(recorded pre-downsampled; see recording/workers.py) — everything sized from
+the config. Downsamples by stride-2 stages until the spatial map is <= ~12x12,
+FiLM-conditioned on the contact-state embedding.
 
 Also defines the two SSL pretrain heads (masked reconstruction +
 cross-channel force-from-displacement prediction) used by
@@ -33,7 +35,7 @@ class TactileFieldEncoder(nn.Module):
         super().__init__()
         self.hw = hw
         C8 = hw.tactile.field_ch
-        H, W = hw.tactile.field.hw
+        H, W = hw.recording.keyframe_ds.hw
         stages = _n_stages(H, W)
         chans = [C8] + [min(256, 32 * 2 ** i) for i in range(stages)]
         blocks = []

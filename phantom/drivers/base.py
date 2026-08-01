@@ -67,7 +67,16 @@ class GripperState:
     t_host: float
     seq: int
     position: float                  # 0 (open) .. 1 (closed)
-    current: float                   # motor current, normalized
+    # Robotiq gOBJ status, raw 0..3: 0 moving, 1 contact while opening,
+    # 2 contact while closing (= holding an object), 3 at requested position.
+    # This replaced the motor-current channel on 2026-07-31: no route to a
+    # real current/force magnitude exists on this rig (GET CUR answers "?",
+    # the undocumented COU/MSC/PCO/DST registers stay 0 or carry only the
+    # same stall bit, and RTDE tool_output_current measured a flat 0.0 mA
+    # through a genuine 8 s motor stall). OBJ is the one contact-bearing
+    # gripper channel that actually responds, and it costs nothing extra --
+    # get_state() already queried it for the booleans below.
+    obj: float
     moving: bool
     object_detected: bool
 

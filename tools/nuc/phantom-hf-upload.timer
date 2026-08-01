@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly PHANTOM episode sync to HF
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

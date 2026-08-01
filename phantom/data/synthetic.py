@@ -80,7 +80,8 @@ class SyntheticEpisodeGenerator:
                 area_rows.append(fr["area_mm2"])
                 if t >= next_kf:
                     kf_ts.append(t)
-                    kf_rows.append(stack.astype(field_dtype))
+                    kf_rows.append(_pool_ds(stack, hw.recording.keyframe_ds.hw)
+                                   .astype(field_dtype))
                     next_kf += kf_period
             writer.append(tactile_stream(s.name, "fields_ds"), ts, np.stack(ds_rows))
             writer.append(tactile_stream(s.name, "wrench"), ts,
@@ -138,8 +139,11 @@ class SyntheticEpisodeGenerator:
         # first-order smoothing so it looks like a real gripper
         for i in range(1, len(pos)):
             pos[i] = pos[i - 1] + 0.2 * (pos[i] - pos[i - 1])
-        cur = 0.3 * pos + rng.normal(0, 0.01, len(pos)).astype(np.float32)
-        writer.append(STREAM_GRIPPER, ts_grip, np.stack([pos, cur], axis=-1))
+        # channel 1 is the gOBJ status (2 = holding, 3 = at requested position),
+        # not motor current — see GripperState in phantom/drivers/base.py
+        obj = np.array([2.0 if scenario.state(float(t)).in_contact else 3.0
+                        for t in ts_grip], dtype=np.float32)
+        writer.append(STREAM_GRIPPER, ts_grip, np.stack([pos, obj], axis=-1))
 
         # ---- scene camera: noise canvas + blob-tracking square
         cam = hw.cameras.scene

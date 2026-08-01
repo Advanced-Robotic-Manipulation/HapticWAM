@@ -15,6 +15,8 @@ the hardware config validators before this driver is ever constructed.
 from __future__ import annotations
 
 import logging
+import threading
+import sys
 import time
 
 import numpy as np
@@ -26,12 +28,33 @@ log = logging.getLogger(__name__)
 
 
 class URArm(Arm):
+    # A UR robot runs exactly ONE control script; two RTDEControlInterface
+    # objects pointed at it (an orphaned old session/thread overlapping a new
+    # one) fight for that script and segfault rtde_control.so. This process-wide
+    # count enforces the single-controller invariant across URArm instances:
+    # opening a second interface while one is live is REFUSED (a loud error the
+    # streamer surfaces) instead of crashing the server.
+    _live_ctrl_lock = threading.Lock()
+    _live_ctrl_count = 0
+    # Settle time between releasing the old control script and starting a new
+    # one on reconnect — the robot needs a moment to free the script, else the
+    # new RTDEControlInterface hits "Failed to start control script".
+    _reconnect_settle_s = 0.2
+
     def __init__(self, hw: HardwareConfig):
         super().__init__(hw)
         self._recv = None
         self._ctrl = None
         self._seq = 0
         self._want_control = False
+        # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
+        # disconnect(). The teleop streamer calls servo_j from its own thread
+        # while the record loop (zero_ft) and teardown (disconnect /
+        # reconnect_control) touch the same interface — a servoJ racing a
+        # disconnect is a use-after-free that segfaults inside rtde_control.so.
+        # Every control-interface call is serialized through this lock (the
+        # RECEIVE interface is separate and read-only, so it is not covered).
+        self._ctrl_lock = threading.RLock()
 
     # ------------------------------------------------------------------
     def connect(self, *, control: bool = False) -> None:
@@ -46,32 +69,204 @@ class URArm(Arm):
         if control:
             self._connect_control()
 
+    def _teardown_ctrl(self) -> None:
+        """Release self._ctrl (caller MUST hold _ctrl_lock). Drops the reference
+        FIRST so no concurrent locked call invokes a method on the object being
+        destroyed (use-after-free), fully stops the control script, and frees the
+        process-wide controller slot."""
+        old, self._ctrl = self._ctrl, None
+        if old is None:
+            return
+        for op in ("servoStop", "stopScript", "disconnect"):
+            try:
+                getattr(old, op)()
+            except Exception:
+                pass
+        del old
+        with URArm._live_ctrl_lock:
+            URArm._live_ctrl_count = max(0, URArm._live_ctrl_count - 1)
+
+    def _preflight_stop_old_script(self) -> None:
+        """Force the robot's old control script dead BEFORE constructing a new
+        RTDEControlInterface (dashboard 'stop' + wait for runtime_state
+        STOPPED). Best-effort: any failure just falls through to the existing
+        retry loop."""
+        try:
+            import dashboard_client
+            db = dashboard_client.DashboardClient(self.hw.arm.ip)
+            db.connect()
+            try:
+                db.stop()
+            finally:
+                db.disconnect()
+        except Exception as e:
+            log.debug("dashboard preflight stop unavailable: %s", e)
+        r = self._recv
+        if r is None:
+            return
+        deadline = time.perf_counter() + 5.0
+        while time.perf_counter() < deadline:
+            try:
+                if int(r.getRuntimeState()) != URArm._RT_PLAYING:
+                    break
+            except Exception:
+                break
+            time.sleep(0.1)
+        time.sleep(URArm._reconnect_settle_s)
+
+    def _probe_construct(self) -> None:
+        """Construct+release a control interface in a THROWAWAY subprocess.
+        If ur_rtde's constructor segfaults (dying-script race), only the probe
+        dies; we settle and let the in-process retry loop proceed. rc==0 in
+        the common case costs ~1-2 s per session start."""
+        import subprocess
+        code = ("import sys, rtde_control\n"
+                "c = rtde_control.RTDEControlInterface(sys.argv[1], frequency=float(sys.argv[2]))\n"
+                "c.disconnect()\n")
+        try:
+            rc = subprocess.run(
+                [sys.executable, "-c", code, str(self.hw.arm.ip),
+                 str(self.hw.arm.rtde_control_hz)],
+                timeout=20, capture_output=True).returncode
+        except Exception as e:
+            log.warning("probe construct errored (%s) - continuing", e)
+            return
+        if rc != 0:
+            log.warning("probe construct died rc=%s (segfault=-11 means the old "
+                        "script was still dying) - settling before real attempt", rc)
+            time.sleep(2.0)
+            self._preflight_stop_old_script()
+
     def _connect_control(self) -> None:
+        """Build a fresh control interface. Reserves the single process-wide
+        controller slot FIRST (refusing if one is already live — a second
+        controller on one robot segfaults), builds into a local, and publishes
+        to self._ctrl only once fully configured; any failure releases the slot
+        and any half-built C++ interface."""
         import rtde_control
-        self._ctrl = rtde_control.RTDEControlInterface(
-            self.hw.arm.ip, frequency=self.hw.arm.rtde_control_hz)
-        self._ctrl.setTcp(list(self.hw.arm.tcp_offset_m))
-        self._ctrl.setPayload(self.hw.arm.payload_kg, [0.0, 0.0, 0.05])
+        with URArm._live_ctrl_lock:
+            if URArm._live_ctrl_count > 0:
+                raise RuntimeError(
+                    "refusing to open a SECOND RTDE control interface in this "
+                    "process — a previous controller is still live (it would "
+                    "fight for the robot's control script and segfault). Fully "
+                    "stop the old session/streamer first.")
+            URArm._live_ctrl_count += 1        # reserve the slot
+        ctrl = None
+        try:
+            # ---- preflight (added 2026-08-01, segfix): the "1st session start
+            # after a fault fails, 2nd works" pattern was not a polite failure -
+            # kernel log shows the FIRST process SEGFAULTING inside
+            # rtde_control.so's asio thread while constructing against a robot
+            # whose previous control script is still dying (3x on 2026-08-01,
+            # identical offset). Deterministically kill the old script first
+            # (dashboard stop), wait until the runtime state is actually
+            # STOPPED, and probe-construct once in a sacrificial subprocess so
+            # a residual constructor crash can never take the recorder down.
+            self._preflight_stop_old_script()
+            self._probe_construct()
+            # "failed to start in 5s" right after a fault means the old
+            # control script has not finished dying; a retry succeeds (observed
+            # on this rig: 1st session start after a fault fails, 2nd works).
+            last = None
+            for attempt in range(3):
+                try:
+                    ctrl = rtde_control.RTDEControlInterface(
+                        self.hw.arm.ip, frequency=self.hw.arm.rtde_control_hz)
+                    break
+                except Exception as e:
+                    last, ctrl = e, None
+                    log.warning("RTDE control start failed (%d/3): %s",
+                                attempt + 1, e)
+                    time.sleep(2.0)
+            if ctrl is None:
+                raise RuntimeError(f"RTDE control would not start: {last}")
+            ctrl.setTcp(list(self.hw.arm.tcp_offset_m))
+            ctrl.setPayload(self.hw.arm.payload_kg, [0.0, 0.0, 0.05])
+        except Exception:
+            with URArm._live_ctrl_lock:
+                URArm._live_ctrl_count = max(0, URArm._live_ctrl_count - 1)
+            if ctrl is not None:
+                try:
+                    ctrl.disconnect()
+                except Exception:
+                    pass
+            raise
+        self._ctrl = ctrl
 
     def reconnect_control(self) -> None:
-        """After a protective stop has been manually cleared on the pendant."""
-        if self._ctrl is not None:
-            try:
-                self._ctrl.disconnect()
-            except Exception:
-                pass
-            self._ctrl = None
-        self._connect_control()
+        """Rebuild the control interface after a protective stop was cleared.
+
+        Single-flight and reference-safe (all under _ctrl_lock, so it can never
+        race a servo_j / disconnect). If another caller already reconnected while
+        this one waited, it returns without stacking a second control script. The
+        old interface is fully torn down and the robot given a moment to release
+        the control script BEFORE the new one starts."""
+        with self._ctrl_lock:
+            # DO NOT probe an interface whose control script may be dead.
+            # isProgramRunning()/reuploadScript() on such an interface
+            # SEGFAULTED the whole process (ec=139, observed 2026-07-27 the
+            # moment the operator pressed Re-engage) - rtde_control.so is not
+            # safe to poke once its script has gone.
+            #
+            # Equally, do NOT early-return on isConnected(): that is only the
+            # SOCKET, which stays up while the script is dead, and returning
+            # "already reconnected" there is what made every following servo_j
+            # get rejected in a 125 Hz reconnect/reject loop.
+            #
+            # Blind teardown -> settle -> fresh build is the only safe path.
+            # _connect_control() is itself the verification: ur_rtde raises
+            # "Failed to start control script" if the script does not come up.
+            self._teardown_ctrl()
+            time.sleep(URArm._reconnect_settle_s)   # let the robot free the script
+            self._connect_control()
+            log.info("RTDE control interface rebuilt (control script started)")
+
+    # UR RTDE runtime_state values (UR RTDE guide): 0 STOPPING, 1 STOPPED,
+    # 2 PLAYING, 3 PAUSING, 4 PAUSED, 5 RESUMING
+    _RT_STOPPED = 1
+    _RT_PLAYING = 2
+
+    def program_running(self) -> bool:
+        """Is the control SCRIPT actually running (not just the socket)?
+
+        Answered from the RECEIVE interface (read-only, thread-safe) — NEVER
+        by probing the control object: isProgramRunning() on an interface
+        whose script died SEGFAULTS the process (observed 2026-07-27; the
+        reconnect_control docstring documents it, this method used to do that
+        exact probe — fixed 2026-08-01)."""
+        r = self._recv
+        if r is None or self._ctrl is None:
+            return False
+        try:
+            return int(r.getRuntimeState()) == URArm._RT_PLAYING
+        except Exception:
+            return False
+
+    def is_ready_for_control(self) -> tuple[bool, str]:
+        """(ok, why_not) - may the control script be started right now?"""
+        r = self._recv
+        if r is None:
+            return False, "RTDE receive not connected"
+        try:
+            if r.isProtectiveStopped():
+                return False, ("robot is STILL protective-stopped - clear it on "
+                               "the pendant first")
+            mode, safety = int(r.getRobotMode()), int(r.getSafetyMode())
+        except Exception as e:
+            return False, f"cannot read robot state: {e}"
+        if mode != 7:
+            return False, (f"robot mode {mode} (need 7=RUNNING: power on and "
+                           "release the brakes on the pendant)")
+        if safety != 1:
+            return False, f"safety mode {safety} (need 1=NORMAL)"
+        return True, ''
 
     def disconnect(self) -> None:
-        if self._ctrl is not None:
-            try:
-                self._ctrl.servoStop()
-                self._ctrl.stopScript()
-            except Exception:
-                pass
-            self._ctrl.disconnect()
-            self._ctrl = None
+        # serialize against a concurrent servo_j (streamer thread) so we never
+        # free the control interface out from under an in-flight servoJ
+        with self._ctrl_lock:
+            self._teardown_ctrl()
         if self._recv is not None:
             self._recv.disconnect()
             self._recv = None
@@ -109,8 +304,9 @@ class URArm(Arm):
         return st
 
     def servo_j(self, q: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
-        ok = self._require_ctrl().servoJ(list(np.asarray(q, dtype=float)), 0.0, 0.0,
-                                         dt, lookahead, gain)
+        with self._ctrl_lock:
+            ok = self._require_ctrl().servoJ(list(np.asarray(q, dtype=float)), 0.0,
+                                             0.0, dt, lookahead, gain)
         if ok is False:
             # ur_rtde returns False SILENTLY when the control script is no
             # longer running on the robot (a protective stop kills it) — the
@@ -120,29 +316,34 @@ class URArm(Arm):
                                "and restart the session)")
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
-        ctrl = self._require_ctrl()
-        q = ctrl.getInverseKinematics(list(np.asarray(tcp_pose, dtype=float)))
-        ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
+        with self._ctrl_lock:
+            ctrl = self._require_ctrl()
+            q = ctrl.getInverseKinematics(list(np.asarray(tcp_pose, dtype=float)))
+            ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
         if ok is False:
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
                                "and restart the session)")
 
     def speed_l(self, xd: np.ndarray, accel: float, dt: float) -> None:
-        self._require_ctrl().speedL(list(np.asarray(xd, dtype=float)), accel, dt)
+        with self._ctrl_lock:
+            self._require_ctrl().speedL(list(np.asarray(xd, dtype=float)), accel, dt)
 
     def move_j(self, q: np.ndarray, speed: float, accel: float, blocking: bool = True) -> None:
-        self._require_ctrl().moveJ(list(np.asarray(q, dtype=float)), speed, accel,
-                                   not blocking)
+        with self._ctrl_lock:
+            self._require_ctrl().moveJ(list(np.asarray(q, dtype=float)), speed, accel,
+                                       not blocking)
 
     def stop(self, decel: float) -> None:
         try:
-            self._require_ctrl().stopL(decel)
+            with self._ctrl_lock:
+                self._require_ctrl().stopL(decel)
         except Exception:
             log.exception("stopL failed")
 
     def zero_ft(self) -> None:
-        self._require_ctrl().zeroFtSensor()
+        with self._ctrl_lock:
+            self._require_ctrl().zeroFtSensor()
 
     def is_protective_stopped(self) -> bool:
         if self._recv is None:
@@ -150,4 +351,5 @@ class URArm(Arm):
         return bool(self._recv.isProtectiveStopped())
 
     def servo_stop(self) -> None:
-        self._require_ctrl().servoStop()
+        with self._ctrl_lock:
+            self._require_ctrl().servoStop()

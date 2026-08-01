@@ -127,6 +127,10 @@ recording:
                                #   (must divide field h,w exactly — validated)
   field_ds_rate_hz: 120.0      # <= tactile.rate_hz
   keyframe_rate_hz: 10.0       # full-res field keyframes
+  keyframe_ds: {h: 144, w: 192}  # downsampled keyframe resolution (must divide
+                               #   field h,w exactly — validated); TactileFieldEncoder
+                               #   crushes native res down anyway, so store it
+                               #   pre-downsampled (4x less bytes at half-res each axis)
   field_dtype: float16         # float16 | float32 on disk
   save_infer_img: true
   infer_img_rate_hz: 30.0
