@@ -14,3 +14,4 @@ ref_shim.pt
 cosmos-predict2.5-2b/
 .venv/
 .gstack/
+configs/data_collect.local.yaml

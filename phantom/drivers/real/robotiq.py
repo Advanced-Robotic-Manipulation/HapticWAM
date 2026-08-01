@@ -6,12 +6,15 @@ wire protocol is already 0..255)."""
 
 from __future__ import annotations
 
+import logging
 import socket
 import threading
 import time
 
 from phantom.config.hardware import GripperConfig
 from phantom.drivers.base import Gripper, GripperState
+
+log = logging.getLogger(__name__)
 
 
 class RobotiqGripper(Gripper):
@@ -21,7 +24,6 @@ class RobotiqGripper(Gripper):
         self._sock: socket.socket | None = None
         self._lock = threading.Lock()
         self._seq = 0
-        self._has_cur = True   # some URCap builds answer "CUR ?" — cached off
 
     # ------------------------------------------------------------------
     def connect(self) -> None:
@@ -77,17 +79,18 @@ class RobotiqGripper(Gripper):
             raise RuntimeError(f"gripper SET not acked: {resp!r}")
 
     def get_state(self) -> GripperState:
+        """Two GETs per call, POS + OBJ. Motor current is NOT read: this URCap
+        build answers "CUR ?" (verified 2026-07-27), and the 2026-07-31 probe
+        sweep found no substitute anywhere -- COU/MSC/PCO/DST either sit at 0
+        forever or only re-encode the same stall bit OBJ already carries, and
+        the controller's own RTDE tool_output_current measured a flat 0.0 mA
+        straight through a genuine 8 s motor stall. So the second recorded
+        gripper channel carries OBJ instead of a constant-zero current."""
         pos = self._get("POS") / 255.0
         obj = self._get("OBJ")           # 0 moving, 1/2 object detected, 3 at position
-        cur = 0.0
-        if self._has_cur:
-            try:
-                cur = self._get("CUR") / 255.0
-            except KeyError:
-                self._has_cur = False    # not exposed by this URCap build
         st = GripperState(
             t_host=time.perf_counter(), seq=self._seq,
-            position=pos, current=cur,
+            position=pos, obj=float(obj),
             moving=(obj == 0), object_detected=(obj in (1, 2)),
         )
         self._seq += 1

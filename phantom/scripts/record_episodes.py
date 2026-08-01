@@ -35,7 +35,7 @@ from phantom.data.schema import STREAM_ACTIONS_QTARGET, EpisodeMeta
 from phantom.deploy.safety import SafetyAction, SafetyMonitor
 from phantom.drivers.factory import make_rig
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession
+from phantom.recording.workers import SensorSession, make_gripper_poller
 from phantom.timesync.clock import IdentityClock, MasterClock
 
 log = logging.getLogger("record")
@@ -103,6 +103,12 @@ def run_collection(hw, cfg, out_root: Path, *, panel=None, enable_viz: bool = Fa
         clock = (IdentityClock() if hw.mode.resolve("arm") == "mock"
                  else MasterClock.calibrate(rig.arm))
         session = SensorSession.start(hw, rig, session_id=str(int(time.time()) % 10_000_000))
+        # this script sends gripper.move() straight from _teleop_loop below
+        # (no GripperPilot), so a standalone poller thread for get_state()
+        # is safe here -- unlike collect.py's session.py, there's no second
+        # thread racing it for RobotiqGripper's socket lock.
+        gripper_poller = make_gripper_poller(rig.gripper, hw, session.rings["gripper"])
+        gripper_poller.start()
         recorder = EpisodeRecorder(session, clock, out_root)
         # same force-safety circuit as deployment (wrist wrench, fingertip
         # force/indentation e-stop, staleness, workspace) — teleop is when
@@ -140,6 +146,7 @@ def run_collection(hw, cfg, out_root: Path, *, panel=None, enable_viz: bool = Fa
                 motion.stop()
             if viz is not None:
                 viz.stop()
+            gripper_poller.stop()
             session.stop()
 
 

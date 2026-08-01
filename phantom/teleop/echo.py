@@ -69,9 +69,13 @@ class EchoTeleop(TeleopDevice):
         self._thread: threading.Thread | None = None
         # signal conditioning, applied at device rate in the reader thread
         self._filter = OneEuroFilter(min_cutoff=cfg.filter_min_cutoff,
-                                     beta=cfg.filter_beta)
+                                     beta=cfg.filter_beta,
+                                     d_cutoff=cfg.filter_d_cutoff)
         # latest sample (under _lock)
         self._q_target = np.asarray(cfg.base_pose, dtype=np.float64).copy()
+        self._q_target_v = np.zeros(6, dtype=np.float64)   # filtered joint velocity
+        self._q_target_t = 0.0                             # perf_counter of the sample
+        self._v_ema = np.zeros(6, dtype=np.float64)         # EMA'd output velocity
         self._gripper = 0.0
         self._start_level = False
         self._have_sample = False
@@ -130,20 +134,45 @@ class EchoTeleop(TeleopDevice):
                 data = self._port.read(_FRAME_LEN)
                 ticks, sense_flag, start_flag = parse_r2_frame(data)
             except (ValueError, OSError):
-                self._stop.wait(0.05)   # transient short read / USB hiccup
+                # The Echo firmware (DIY STM32) intermittently fails to answer
+                # r2 and read() times out (~100 ms) about twice a second. Retry
+                # IMMEDIATELY — the blocking read's own timeout paces the loop,
+                # and the streamer extrapolates the target across the gap
+                # (latest_target_stamped). The old fixed 50 ms wait only made
+                # each drop-out longer (~150 ms target freeze -> visible jump).
+                self._stop.wait(0.002)
                 continue
             divisor = divisors[sense_flag] if sense_flag < len(divisors) else divisors[0]
             offset = ticks[_RIGHT_ARM].astype(np.float64) * TICK_TO_RAD
             q_raw = base + offset / divisor
-            q_filt = self._filter.filter(q_raw, time.perf_counter())
+            now = time.perf_counter()
+            q_filt = self._filter.filter(q_raw, now)
+            # velocity of the FILTERED OUTPUT (not the one-euro's internal _dx,
+            # which is inflated by filter lag/dt): the true target speed, lightly
+            # EMA'd, so the streamer can extrapolate it across a serial drop-out
+            if self._have_sample and now > self._q_target_t:
+                v_inst = (q_filt - self._q_target) / (now - self._q_target_t)
+                self._v_ema += 0.2 * (v_inst - self._v_ema)
             grip_raw = self._gripper_01(float(ticks[_RIGHT_GRIPPER]))
             with self._lock:
                 self._q_target = q_filt
+                self._q_target_v = self._v_ema.copy()
+                self._q_target_t = now
                 self._gripper = (grip_raw if not self._have_sample
                                  else self._gripper + alpha * (grip_raw - self._gripper))
                 self._start_level = start_flag
                 self._have_sample = True
-            self._stop.wait(0.01)
+            # The "r2" protocol is request/response: reset_input_buffer + read()
+            # self-paces the loop at the device's true update rate — measured
+            # ~360 Hz on the rig (NOT the ~100 Hz the old docstring assumed;
+            # verified by a raw-tick capture, 0.3% of consecutive polls repeat).
+            # The old fixed 10 ms wait stacked on top of the round-trip, capping
+            # the reader near ~50 Hz and adding a straight latency tax. Yield
+            # only enough to stay interruptible; the blocking read paces us.
+            # NB: at 360 Hz each tick step is a dt~3 ms velocity spike, so the
+            # one-euro d_cutoff / beta must be moderate (see collect config) or
+            # rest jitter is amplified into command buzz.
+            self._stop.wait(0.001)
 
     # ------------------------------------------------------------------
     def latest_q_target(self) -> np.ndarray | None:
@@ -151,6 +180,16 @@ class EchoTeleop(TeleopDevice):
         (None until the first device sample)."""
         with self._lock:
             return self._q_target.copy() if self._have_sample else None
+
+    def latest_target_stamped(self) -> tuple[np.ndarray, np.ndarray, float] | None:
+        """(filtered q_target, filtered joint velocity, perf_counter timestamp)
+        of the most recent device sample, or None before the first one. The
+        streamer uses the timestamp to detect leader drop-outs and the velocity
+        to extrapolate the target across them (no freeze-then-jump)."""
+        with self._lock:
+            if not self._have_sample:
+                return None
+            return self._q_target.copy(), self._q_target_v.copy(), self._q_target_t
 
     def poll(self) -> TeleopCommand:
         with self._lock:

@@ -5,6 +5,7 @@ throughput watchdog against the config-derived estimate."""
 from __future__ import annotations
 
 import logging
+import shutil
 import threading
 import time
 from pathlib import Path
@@ -46,10 +47,15 @@ def _stream_map(hw: HardwareConfig) -> list[tuple[str, str, str]]:
 
 
 class EpisodeRecorder:
-    def __init__(self, session: SensorSession, clock: MasterClock, out_root: Path):
+    def __init__(self, session: SensorSession, clock: MasterClock, out_root: Path,
+                 *, stream_filter=None):
+        """stream_filter: optional predicate on the EPISODE stream name; streams
+        it rejects are not drained/recorded (collect's lite mode records only
+        the tactile wrench/area, skipping fields/keyframes/infer_img)."""
         self.session = session
         self.hw = session.hw
         self.clock = clock
+        self.stream_filter = stream_filter
         self.out_root = Path(out_root)
         self._writer: EpisodeWriter | None = None
         self._cursors: dict[str, int] = {}
@@ -59,6 +65,12 @@ class EpisodeRecorder:
         self._action_lock = threading.Lock()
         self._bytes_written = 0
         self._t_started = 0.0
+
+    def _map(self) -> list[tuple[str, str, str]]:
+        m = _stream_map(self.hw)
+        if self.stream_filter is not None:
+            m = [row for row in m if self.stream_filter(row[2])]
+        return m
 
     # ------------------------------------------------------------------
     def start(self, meta: EpisodeMeta, episode_name: str) -> Path:
@@ -70,7 +82,7 @@ class EpisodeRecorder:
         self._writer = EpisodeWriter(path, self.hw, meta)
         # start draining from 'now': skip everything already in the rings
         self._cursors = {}
-        for ring_name, field, _ in _stream_map(self.hw):
+        for ring_name, field, _ in self._map():
             ring = self.session.rings.get(ring_name)
             if ring is not None:
                 self._cursors[f"{ring_name}/{field}"] = ring.write_index
@@ -97,7 +109,7 @@ class EpisodeRecorder:
         w = self._writer
         if w is None:
             return
-        for ring_name, field, stream in _stream_map(self.hw):
+        for ring_name, field, stream in self._map():
             ring = self.session.rings.get(ring_name)
             if ring is None:
                 continue
@@ -141,7 +153,9 @@ class EpisodeRecorder:
         self._drain_once()   # final flush
         w, self._writer = self._writer, None
         if abort:
+            # discard from INSIDE a recording: mark, then remove the tree
             w.abort()
+            self._delete_episode(w.path)
             return None
         w.finalize(success=success, notes=notes)
         dur = time.perf_counter() - self._t_started
@@ -149,3 +163,47 @@ class EpisodeRecorder:
                  w.path.name, dur, self._bytes_written / 1e6,
                  self._bytes_written / 1e6 / max(dur, 1e-9))
         return w.path
+
+    def _delete_episode(self, path: Path) -> bool:
+        """Physically remove a discarded episode.
+
+        Confined to out_root: a discard must never be able to delete anything
+        outside the session staging dir. Returns True if the tree is gone."""
+        path = Path(path).resolve()
+        root = Path(self.out_root).resolve()
+        if path == root or root not in path.parents:
+            log.error("refusing to delete %s - outside the staging root %s",
+                      path, root)
+            return False
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            return True
+        except OSError:
+            log.exception("could not delete discarded episode %s", path)
+            return False
+        log.info("discarded episode DELETED: %s", path.name)
+        return True
+
+    def relabel(self, path: Path, *, success: bool | None = None,
+                discard: bool = False, notes: str = "") -> None:
+        """Apply an operator verdict to an ALREADY-finalized episode by
+        rewriting its meta.json — used for the stop-then-judge flow (the
+        episode is finalized without a verdict on stop, then marked
+        success/fail/discard). The recorded data is never touched; a discard
+        just flips the status to 'aborted' (kept on disk, skipped by listers,
+        same as an in-recording abort)."""
+        if discard:
+            # The operator asked for this episode to go away: DELETE it, do
+            # not merely mark it aborted. Leaving ~130 MB of zarr on disk got
+            # it offloaded to the external drive and looked like "discard
+            # still saves it".
+            self._delete_episode(path)
+            return
+        meta_path = Path(path) / "meta.json"
+        meta = EpisodeMeta.load(meta_path)
+        if success is not None:
+            meta.success = success
+        if notes:
+            meta.notes = notes
+        meta.save(meta_path)

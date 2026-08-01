@@ -1,0 +1,134 @@
+# ============================================================================
+# collect — THE operator-facing config for teleop + data collection.
+#
+# Everything a session needs that differs between rigs/machines lives HERE:
+# device ports/serials, the external offload drive, teleop feel, safeguard
+# defaults, the default collection mode. The hardware yaml named below stays
+# the source of truth for shapes/rates; collect patches its ports section in.
+#
+# Per-machine values that must not be committed (drive letters, serials) go
+# into the gitignored configs/data_collect.local.yaml (same structure, deep-merged
+# on top).
+# ============================================================================
+
+hardware: configs/hardware.nuc.yaml    # rig hardware config (base for this box)
+
+ports:
+  # DM-Tac W2L dev_ids: the serial printed on the yellow cable label
+  # (stable across replug/reboot; int index only for single-sensor bench).
+  dmtac_left: "L26050098"
+  dmtac_right: "L26190169"
+  realsense_serial: "944622074411"     # librealsense serial; "" = first device
+  echo_vid: 1603                       # Echo leader USB VID/PID
+  echo_pid: 1868                       #   (COM port is auto-discovered)
+
+storage:
+  staging_root: runs/collect           # local fast-disk staging during a session
+  external_drive: "D:/phantom_episodes"  # USB drive mount (Linux: /media/…)
+  min_free_gb: 20.0                    # refuse offload below this reserve
+  verify: size                         # size | sha256 (per-file check before local delete)
+  keep_local: false                    # true = keep the local copy after offload
+  require_separate_device: true        # refuse offload if the drive path is on the
+                                       #   local filesystem (unmounted-drive protection)
+
+teleop:
+  # Device-rate tracking bounds — a safety net ABOVE human joint speed
+  # (the reference stack's 1.0 rad/s cap was a major cause of the bad feel).
+  v_max_rad_s: 3.0
+  a_max_rad_s2: 10.0                   # ENGAGE glide accel (sqrt-braking, engage only)
+  track_a_max_rad_s2: 40.0            # TRACK-path sqrt-braking accel bound. Sets both
+                                       #   the steady lag v²/(2a) (~1.3° at 1.5 rad/s)
+                                       #   and the commanded-accel cap (<88 → C153A3-safe).
+                                       #   Was a deadbeat clamp at 20 that rang (wiggle).
+  engage_v_max_rad_s: 0.5              # slow glide on session start / resume
+  engage_eps_rad: 0.05
+  # Echo drop-out bridging: the DIY firmware stalls ~100 ms about 2x/s. Instead
+  # of freezing the target (then jumping when data returns), glide it forward at
+  # its last velocity for up to extrap_cap_s; a gap > stale_reengage_s re-glides
+  # via ENGAGE rather than chasing the accumulated delta.
+  extrap_cap_s: 0.12
+  stale_reengage_s: 0.4
+  # One-euro on the leader signal (Casiez CHI 2012) — near-transparent while
+  # moving, heavy at rest. History: (5.0/0.5) felt slow/over-smoothed; (3.0/10)
+  # fixed the lag but beta=10 passed the exo's ~0.5° rest jitter as high-freq
+  # BUZZ (88 rad/s² -> jerky + C153A3). These moderate beta so the command is
+  # smooth; the acceleration cap above is the hard jerk net.
+  filter_min_cutoff_hz: 1.5            # rest floor: smooths exo tremor / encoder noise
+  filter_beta: 3.0                     # opens with motion but does NOT amplify rest noise
+  filter_d_cutoff_hz: 1.5              # speed-estimate smoothing: rejects noise velocity-spikes
+
+gripper:
+  # Continuous (proportional) teleop — leader squeeze ticks -> 0..1 position.
+  # Calibrate from the panel (3 s squeeze cycle), then persist the values here.
+  open_tick: 18       # calibrated 2026-07-24 (panel squeeze cycle)
+  closed_tick: 223    # calibrated 2026-07-24
+  ema_alpha: 0.5
+  deadband: 0.008                      # ~2/255 counts — skip no-op socket commands
+  speed: 1.0                           # snappy (main11 used 255/255)
+  rate_hz: 50.0                        # URCap socket command cap
+  # NOTE grip force comes from the hardware yaml (gripper.default_force) and
+  # is clamped at the driver to the DM-Tac pad ceiling (cmd_force_limit_N=30).
+  # Force-limited grasp: stop closing FURTHER once tactile |F| (max of the two
+  # pads) reaches grasp_stop_n — squeeze the Echo leader fully without
+  # overgripping. Opening is always obeyed; a hold re-closes only after force
+  # drops below grasp_resume_frac*grasp_stop_n (anti-chatter). Stale tactile
+  # (> grasp_stale_s) -> plain proportional (never blocks on dead sensor data).
+  # Nests below the emergency limits: 10 N grasp < 15 N safeguard < 30 N pad.
+  grasp_stop_n: 10.0                   # working grip cap (N, resultant per pad, max over pads)
+  grasp_resume_frac: 0.7               # resume closing below 0.7*grasp_stop_n (=7 N)
+  grasp_stale_s: 0.3                   # tactile older than this -> transparent mode
+  # NOTE: the close is plain proportional at `speed`; overshoot past grasp_stop_n
+  # (gripper closes faster than ~10 Hz tactile) is accepted as natural dynamics.
+
+safeguard:
+  # DM-Tac pad protection: trip -> teleop freezes, gripper opens fully,
+  # episode saved as failure, panel shows RESUME. All runtime-editable in the
+  # panel; these are the session-start defaults.
+  enabled: false                       # 2026-07-24 operator default: OFF (toggle in panel)
+  # EMERGENCY overgrip/impact limit, NOT the working grip. Normal grasping is
+  # now bounded by the gripper force-limited grasp (gripper.grasp_stop_n=10 N),
+  # which stops closing at 10 N — a good grasp never reaches this guard. 15 N
+  # trips only on real overgrip/collision, still well under the 30 N pad ceiling.
+  # Limits nest: 10 N grasp < 15 N safeguard < 30 N pad. (Was 4 N — fired during
+  # ordinary grasps and fought the grasp-stop.)
+  force_limit_n: 15.0                  # per-sensor resultant |F| (getForce, N)
+  depth_limit: 0.5                     # indentation fallback (SDK units, uncalibrated)
+  release_gripper: true
+
+default_mode: full                     # full = all PHANTOM modalities | lite = wrench-only tactile
+
+panel:
+  host: 0.0.0.0                        # reachable from the rig tablet (trusted LAN!)
+  port: 8899
+
+rerun:
+  # "native" (default): local wgpu app window, ~0.3 core at full res — this is
+  # the on-by-default viewer for dataset collection. "web" browser WASM viewer
+  # was ~3.5 cores and starved teleop; avoid it. "off" is available if you ever
+  # need every last core back for a long campaign (the mode-aware logger keeps
+  # running either way, so a native/web viewer can still attach mid-session).
+  viewer: "native"
+  web_port: 9091
+  grpc_port: 9878
+  rate_hz: 10.0                         # tactile/arm/gripper poll rate (fields are
+                                        #   heavy; they self-decimate to arrival)
+  camera_rate_hz: 5.0                   # Kept at 5 Hz (down from 30) — the native
+                                        #   viewer window doesn't need full camera
+                                        #   rate to be useful for monitoring, and
+                                        #   this keeps its CPU draw low during
+                                        #   dataset collection.
+  camera_viz_downscale: 1               # full res. Field-tested downscale=2: NO effect
+                                        #   on the lag/spinner (identical at any res or
+                                        #   rate) -> per-frame cost isn't the bottleneck;
+                                        #   downscaling only hurt quality. Knob kept.
+  server_memory_limit: "512MB"          # cap the gRPC history buffer so the viewer
+                                        #   can't grow unbounded -> lag then hang
+                                        #   ("512MB" | "2GB" | "25%")
+  camera_jpeg_quality: 90               # max-quality preview for the native viewer
+                                        #   (75 was tuned for the WASM-era bandwidth)
+                                        # JPEG-compress the RealSense scene (~20x less
+                                        #   bandwidth than raw 640x480x3@10Hz). 0 = raw
+  blueprint_path: "configs/rerun_blueprint.rbl"  # operator-saved viewer layout (.rbl);
+                                        #   if present it is loaded on every session
+                                        #   start. See the panel note to capture it.
+

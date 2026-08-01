@@ -194,6 +194,80 @@ def test_one_euro_adaptive_lag():
     assert lag < 0.15                                   # beta keeps up with motion
 
 
+def _steady_lag_rad(min_cutoff, beta, d_cutoff, speed, dt=0.01, T=3.0):
+    """Steady-state spatial lag (rad) of a one-euro on a constant-velocity sweep."""
+    from phantom.teleop.filters import OneEuroFilter
+    f = OneEuroFilter(min_cutoff=min_cutoff, beta=beta, d_cutoff=d_cutoff)
+    t = np.arange(0, T, dt)
+    x = speed * t
+    y = np.array([f.filter(np.array([v]), ti)[0] for v, ti in zip(x, t)])
+    tail = slice(int(len(t) * 0.6), None)
+    return float(np.mean(x[tail] - y[tail]))
+
+
+def test_tuned_one_euro_opens_up_with_speed():
+    """The rig tuning (config default) must stay adaptive: the TIME lag must
+    DROP as motion gets faster (the one-euro opening up), which a fixed
+    low-pass cannot do. Uses the actual TeleopTuning defaults so the test
+    tracks the shipped feel, and stays clearly ahead of the old sluggish
+    (5, 0.5, 1) tuning that felt over-smoothed."""
+    from phantom.data_collect.config import TeleopTuning
+    tun = TeleopTuning()
+    mc, b, dc = (tun.filter_min_cutoff_hz, tun.filter_beta, tun.filter_d_cutoff_hz)
+    slow = _steady_lag_rad(mc, b, dc, 0.5)
+    fast = _steady_lag_rad(mc, b, dc, 3.0)
+    # time lag = spatial / speed; a plain low-pass keeps it constant, an
+    # adaptive one-euro shrinks it as the cutoff rises with speed
+    assert (fast / 3.0) < (slow / 0.5)     # filter demonstrably opens up
+    assert fast < np.deg2rad(2.0)          # bounded even at a fast 3 rad/s
+    # clearly better than the old fixed-low-pass tuning at high speed
+    old_fast = _steady_lag_rad(5.0, 0.5, 1.0, 3.0)
+    assert fast < 0.7 * old_fast
+
+
+def test_echo_output_velocity_tracks_true_speed():
+    """The reader's exported target velocity must be the FILTERED-OUTPUT
+    derivative (true target speed ~2 rad/s), NOT the one-euro internal _dx,
+    which is inflated by lag/dt and would overshoot extrapolation. Drives the
+    reader's velocity math directly with a clean 2 rad/s ramp."""
+    dev = EchoTeleop(_cfg())
+    dt = 1.0 / 300.0
+    now = 0.0
+    for i in range(1, 400):
+        q_filt = dev._filter.filter(np.array([2.0 * i * dt] * 6), i * dt)
+        now = i * dt
+        if dev._have_sample and now > dev._q_target_t:
+            v_inst = (q_filt - dev._q_target) / (now - dev._q_target_t)
+            dev._v_ema += 0.2 * (v_inst - dev._v_ema)
+        dev._q_target = q_filt
+        dev._q_target_t = now
+        dev._have_sample = True
+    assert abs(dev._v_ema[0] - 2.0) < 0.2                  # true speed, not 6.5
+
+
+def test_echo_latest_target_stamped_roundtrip():
+    """latest_target_stamped exposes (q, velocity, timestamp) for drop-out
+    bridging; None until the first sample."""
+    dev = EchoTeleop(_cfg())
+    assert dev.latest_target_stamped() is None
+    dev._q_target = np.arange(6, dtype=np.float64)
+    dev._q_target_v = np.full(6, 0.5)
+    dev._q_target_t = 1.23
+    dev._have_sample = True
+    q, v, t = dev.latest_target_stamped()
+    assert np.array_equal(q, np.arange(6)) and np.allclose(v, 0.5) and t == 1.23
+
+
+def test_echo_filter_uses_config_d_cutoff():
+    """d_cutoff must reach the filter (a slow speed-estimate cutoff = mushy
+    onset); regression guard for the config -> OneEuroFilter wiring."""
+    dev = EchoTeleop(_cfg(filter_min_cutoff=3.0, filter_beta=10.0,
+                          filter_d_cutoff=5.0))
+    assert dev._filter.min_cutoff == 3.0
+    assert dev._filter.beta == 10.0
+    assert dev._filter.d_cutoff == 5.0
+
+
 def test_tracker_no_overshoot_and_bounded():
     from phantom.teleop.filters import AccelLimitedTracker
     tr = AccelLimitedTracker(v_max=1.0, a_max=4.0)
@@ -215,6 +289,40 @@ def test_tracker_no_overshoot_and_bounded():
         assert np.abs(a[: settle - 3, j]).max() <= 4.0 + 1e-3
     assert qs[:, 0].max() <= target[0] + 1e-9                   # no overshoot
     assert qs[:, 1].min() >= target[1] - 1e-9
+
+
+def test_track_tracker_never_overshoots_or_rings():
+    """The TRACK-path tracker (sqrt-braking AccelLimitedTracker) must NOT
+    overshoot or oscillate on a target step — the regression that caused the
+    on-rig ~1-2 Hz "wiggle" when a deadbeat clamp rang on the dropout
+    extrapolation's snap-backs."""
+    from phantom.teleop.filters import AccelLimitedTracker
+    dt = 1.0 / 125.0
+    tr = AccelLimitedTracker(v_max=3.0, a_max=40.0)
+    tr.reset_to(np.zeros(1))
+    qs = np.array([tr.step(np.array([0.1]), dt)[0] for _ in range(200)])
+    assert qs.max() <= 0.1 + 1e-9                       # never past the target
+    v = np.diff(qs)
+    v = v[np.abs(v) > 1e-9]
+    sign_changes = int(np.sum(np.sign(v[1:]) != np.sign(v[:-1])))
+    assert sign_changes == 0                            # monotonic — no ringing
+    assert abs(qs[-1] - 0.1) < 1e-6                     # settles exactly
+
+
+def test_track_tracker_lag_is_small_and_bounded():
+    """Steady tracking lag at a_max=40 must stay small (the reason the deadbeat
+    clamp was tried) — v^2/(2a) ~ 1.3 deg at 1.5 rad/s, not the several degrees
+    of the old low a_max."""
+    from phantom.teleop.filters import AccelLimitedTracker
+    dt = 1.0 / 125.0
+    tr = AccelLimitedTracker(v_max=3.0, a_max=40.0)
+    tr.reset_to(np.zeros(1))
+    speed = 1.5
+    t = np.arange(0, 1.5, dt)
+    y = np.array([tr.step(np.array([speed * ti]), dt)[0] for ti in t])
+    steady = slice(int(len(t) * 0.6), None)
+    lag = np.rad2deg(np.mean(speed * t[steady] - y[steady]))
+    assert lag < 2.0                                    # < 2 deg at 1.5 rad/s
 
 
 def test_tracker_engage_is_smooth():

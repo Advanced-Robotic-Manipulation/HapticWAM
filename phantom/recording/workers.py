@@ -6,8 +6,27 @@ Process/thread split (throughput-driven):
    GIL/multi-instance behavior is unknown). The child constructs its driver
    itself from the pickled hardware config — mandatory for Windows spawn.
    Full-res frames never cross the IPC boundary except decimated keyframes.
- - arm / gripper / camera run as threads in the parent (their C extensions
-   release the GIL and the data volume is trivial).
+ - REAL arm state polling also runs in its own process (ArmStateWorker /
+   _arm_main below), for the same reason as tactile: measured 2026-07-31, the
+   in-parent ThreadPoller shared the GIL with the camera poller, the
+   recorder's drain thread and the panel HTTP server, and periodically
+   stalled 20-40 ms (~9 missed 125 Hz samples/episode). It opens its OWN
+   RTDEReceiveInterface — UR's RTDE protocol is designed for multiple
+   simultaneous client connections (the same one a live external monitor can
+   use alongside the control application), so this does not contend with the
+   RTDEControlInterface the streamer drives servoJ through, nor with the
+   parent's own receive interface (rig.arm._recv, used only for occasional
+   is_ready_for_control()/is_protective_stopped() checks). MOCK arm keeps the
+   old in-parent ThreadPoller — gaps are a real-hardware/GIL artifact that
+   does not matter for the deterministic mock, and it keeps mock-mode tests
+   unchanged.
+ - gripper state recording is NOT a separate poller at all any more: it was
+   merged into GripperPilot's own loop (phantom/data_collect/gripper.py) —
+   see that module's docstring. The old ThreadPoller raced GripperPilot's
+   move() calls for RobotiqGripper's single TCP socket/lock, which was the
+   actual cause of its stalls (not GIL contention).
+ - camera runs as a thread in the parent (its C extension releases the GIL
+   and the data volume is trivial).
 
 All rings store t_host (perf_counter — one machine-wide clock on both Windows
 QPC and Linux CLOCK_MONOTONIC, so parent + children agree); the recorder maps
@@ -60,7 +79,7 @@ def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, Shared
             "area": ((), "float32"),
         })
         make(f"tactile_{s.name}_kf", r.keyframe_rate_hz, {
-            "keyframe": ((t.field.h, t.field.w, t.field_ch), f_dtype),
+            "keyframe": ((r.keyframe_ds.h, r.keyframe_ds.w, t.field_ch), f_dtype),
         })
         if r.save_infer_img:
             img_shape = ((t.infer_img.h, t.infer_img.w) if t.infer_img.c == 1
@@ -78,6 +97,8 @@ def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, Shared
         "ft": ((6,), "float64"), "t_rtde": ((), "float64"),
         "protective_stop": ((), "uint8"),
     })
+    # (2,) = [position, obj] — see GripperState in phantom/drivers/base.py for
+    # why channel 1 is the gOBJ status and not motor current.
     make("gripper", hw.gripper.feedback_rate_hz, {"state": ((2,), "float32")})
     for cam_name, cam in (("scene", hw.cameras.scene), ("wrist", hw.cameras.wrist)):
         if cam.enabled:
@@ -135,10 +156,17 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
 
     ds_h, ds_w = r.field_ds.hw
     fh, fw = t.field.h // ds_h, t.field.w // ds_w
+    kf_ds_h, kf_ds_w = r.keyframe_ds.hw
+    kf_fh, kf_fw = t.field.h // kf_ds_h, t.field.w // kf_ds_w
     f_dtype = np.float16 if r.field_dtype == "float16" else np.float32
-    kf_every = max(1, round(t.rate_hz / r.keyframe_rate_hz))
-    img_every = max(1, round(t.rate_hz / r.infer_img_rate_hz))
-    i = 0
+    # Decimate by TIME, not by frame index. This loop free-runs at whatever
+    # the SDK actually delivers, which is NOT tactile.rate_hz (measured ~6 Hz
+    # against a declared 10). Dividing the DECLARED rate therefore pushed
+    # keyframes/gel images below their configured rate (3.0 Hz vs 5.0 asked).
+    # Wall-clock gating hits the configured rate for any source rate above it.
+    kf_period = 1.0 / r.keyframe_rate_hz
+    img_period = 1.0 / r.infer_img_rate_hz
+    next_kf = next_img = 0.0
     import os
     try:
         while not stop.is_set():
@@ -154,15 +182,23 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
             ring.push(frame.t_host, fields_ds=ds.astype(f_dtype),
                       wrench=frame.wrench.astype(np.float32),
                       area=np.float32(frame.contact_area_mm2))
-            if i % kf_every == 0:
-                ring_kf.push(frame.t_host, keyframe=stack.astype(f_dtype))
-            if ring_img is not None and frame.infer_img is not None and i % img_every == 0:
+            if frame.t_host >= next_kf:
+                # mean-pool the native field stack down to keyframe_ds — the
+                # encoder crushes native res through several stride-2 stages
+                # anyway (see model/hht/tactile_encoder.py), so nothing
+                # downstream loses information here (recording.keyframe_ds).
+                kf_ds = stack.reshape(kf_ds_h, kf_fh, kf_ds_w, kf_fw,
+                                      stack.shape[-1]).mean(axis=(1, 3))
+                ring_kf.push(frame.t_host, keyframe=kf_ds.astype(f_dtype))
+                next_kf = frame.t_host + kf_period
+            if (ring_img is not None and frame.infer_img is not None
+                    and frame.t_host >= next_img):
                 ring_img.push(frame.t_host, infer_img=frame.infer_img)
+                next_img = frame.t_host + img_period
             if ring_raw is not None:
                 # raw grayscale at full rate -> offline field recompute
                 # (docs/sensor_sdk.md; enable after bench item (e))
                 ring_raw.push(frame.t_host, raw_img=driver.read_raw_img())
-            i += 1
     finally:
         driver.disconnect()
         ring.close(); ring_kf.close()
@@ -170,6 +206,81 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
             ring_raw.close()
         if ring_img is not None:
             ring_img.close()
+
+
+def _arm_main(hw_yaml: str, ring_spec: dict, stop: mp.Event) -> None:  # type: ignore[valid-type]
+    """Dedicated process for REAL-arm state polling -> the `arm` ring. See the
+    module docstring for why this is a process rather than the ThreadPoller
+    mock arm still uses. Opens its own RTDEReceiveInterface (independent of
+    the parent's rig.arm._recv and of the RTDEControlInterface the streamer
+    drives servoJ through) and fails LOUD on any RTDE error, exactly like
+    URArm.get_state() — a dead worker aborts the in-progress episode
+    (SensorSession.all_alive() -> "worker_died") rather than silently
+    corrupting or gapping the stream."""
+    _set_pdeathsig()
+    hw = HardwareConfig.model_validate(yaml.safe_load(hw_yaml))
+    try:
+        import rtde_receive
+    except ImportError as e:
+        raise RuntimeError("ur_rtde not installed — pip install ur-rtde") from e
+    recv = rtde_receive.RTDEReceiveInterface(
+        hw.arm.ip, frequency=hw.arm.rtde_receive_hz)
+    ring = SharedRingBuffer.attach(ring_spec)
+    period = 1.0 / hw.arm.rtde_receive_hz
+    next_t = time.perf_counter()
+    import os
+    try:
+        while not stop.is_set():
+            if os.getppid() == 1:
+                log.warning("arm state worker: parent died — exiting")
+                break
+            if not recv.isConnected():
+                raise RuntimeError(
+                    "RTDE receive stream lost — robot rebooted or network dropped")
+            t_host = time.perf_counter()
+            ring.push(
+                t_host,
+                q=np.asarray(recv.getActualQ(), dtype=np.float64),
+                qd=np.asarray(recv.getActualQd(), dtype=np.float64),
+                tcp_pose=np.asarray(recv.getActualTCPPose(), dtype=np.float64),
+                tcp_speed=np.asarray(recv.getActualTCPSpeed(), dtype=np.float64),
+                ft=np.asarray(recv.getActualTCPForce(), dtype=np.float64),
+                t_rtde=np.float64(recv.getTimestamp()),
+                protective_stop=np.uint8(recv.isProtectiveStopped()))
+            next_t += period
+            wait = next_t - time.perf_counter()
+            if wait > 0:
+                time.sleep(wait)
+            else:
+                next_t = time.perf_counter()   # fell behind; don't burst
+    finally:
+        try:
+            recv.disconnect()
+        except Exception:
+            pass
+        ring.close()
+
+
+class ArmStateWorker:
+    def __init__(self, hw: HardwareConfig, ring: SharedRingBuffer):
+        ctx = mp.get_context("spawn")
+        self._stop = ctx.Event()
+        self._proc = ctx.Process(
+            target=_arm_main, args=(hw.snapshot_yaml(), ring.spec_dict(), self._stop),
+            daemon=True, name="arm-state")
+
+    def start(self) -> None:
+        self._proc.start()
+
+    def stop(self, timeout: float = 5.0) -> None:
+        self._stop.set()
+        self._proc.join(timeout)
+        if self._proc.is_alive():
+            log.warning("arm state worker did not exit; terminating")
+            self._proc.terminate()
+
+    def is_alive(self) -> bool:
+        return self._proc.is_alive()
 
 
 class TactileWorker:
@@ -242,6 +353,9 @@ class ThreadPoller:
 
 
 def make_arm_poller(arm, hw: HardwareConfig, ring: SharedRingBuffer) -> ThreadPoller:
+    """MOCK arm only in normal use (see ArmStateWorker for real hardware) —
+    kept generic (takes any `arm` with get_state()) so tests can still drive
+    it directly against a fake/mock arm."""
     def poll():
         st = arm.get_state()
         return st.t_host, dict(
@@ -252,9 +366,16 @@ def make_arm_poller(arm, hw: HardwareConfig, ring: SharedRingBuffer) -> ThreadPo
 
 
 def make_gripper_poller(gripper, hw: HardwareConfig, ring: SharedRingBuffer) -> ThreadPoller:
+    """NOT used by SensorSession.start() any more — the collect.py/session.py
+    path folds this into GripperPilot's own loop instead (see that module's
+    docstring: a separate poller thread here raced GripperPilot's move() calls
+    for RobotiqGripper's one TCP socket/lock). Kept as a standalone helper for
+    simpler callers with no GripperPilot-equivalent of their own (e.g.
+    scripts/record_episodes.py, which sends gripper.move() straight from its
+    single teleop loop and has no second thread to race)."""
     def poll():
         st = gripper.get_state()
-        return st.t_host, dict(state=np.array([st.position, st.current], dtype=np.float32))
+        return st.t_host, dict(state=np.array([st.position, st.obj], dtype=np.float32))
     return ThreadPoller("gripper", hw.gripper.feedback_rate_hz, poll, ring)
 
 
@@ -279,6 +400,9 @@ class SensorSession:
     rings: dict[str, SharedRingBuffer]
     tactile_workers: list[TactileWorker]
     pollers: list[ThreadPoller]
+    # None in mock-arm mode (where "arm" is still filled by a ThreadPoller in
+    # `pollers`, via make_arm_poller) — see module docstring.
+    arm_worker: "ArmStateWorker | None" = None
 
     @classmethod
     def start(cls, hw: HardwareConfig, rig, session_id: str) -> "SensorSession":
@@ -286,25 +410,38 @@ class SensorSession:
         session_t0 = getattr(rig.arm, "_t0", time.perf_counter())
         workers = [TactileWorker(hw, s.name, i, rings, session_t0)
                    for i, s in enumerate(hw.tactile.sensors)]
-        pollers = [make_arm_poller(rig.arm, hw, rings["arm"]),
-                   make_gripper_poller(rig.gripper, hw, rings["gripper"])]
+        pollers = []
+        arm_worker = None
+        if hw.mode.resolve("arm") == "mock":
+            pollers.append(make_arm_poller(rig.arm, hw, rings["arm"]))
+        else:
+            arm_worker = ArmStateWorker(hw, rings["arm"])
+        # NOTE: no gripper poller here any more — gripper state recording now
+        # happens inside GripperPilot's own loop (phantom/data_collect/
+        # gripper.py), which owns the ring reference directly.
         for name, cam in rig.cameras.items():
             pollers.append(make_camera_poller(cam, name, cam.cfg.fps,
                                               rings[f"camera_{name}"]))
         for w in workers:
             w.start()
+        if arm_worker is not None:
+            arm_worker.start()
         for p in pollers:
             p.start()
-        return cls(hw=hw, rings=rings, tactile_workers=workers, pollers=pollers)
+        return cls(hw=hw, rings=rings, tactile_workers=workers, pollers=pollers,
+                   arm_worker=arm_worker)
 
     def all_alive(self) -> bool:
         return (all(w.is_alive() for w in self.tactile_workers)
-                and all(p.is_alive() for p in self.pollers))
+                and all(p.is_alive() for p in self.pollers)
+                and (self.arm_worker is None or self.arm_worker.is_alive()))
 
     def stop(self) -> None:
         for p in self.pollers:
             p.stop()
         for w in self.tactile_workers:
             w.stop()
+        if self.arm_worker is not None:
+            self.arm_worker.stop()
         for ring in self.rings.values():
             ring.close()

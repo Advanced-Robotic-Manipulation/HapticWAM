@@ -168,6 +168,47 @@ maps spec → code.
   tick, priority over the governor, t_master-logged events.
 - `deploy/runtime.py` — wires one episode/trial end to end.
 
+## phantom/data_collect/
+
+Ground-up operator app for Echo teleop + data collection — see
+[data_collect_app.md](data_collect_app.md) for the why/how; entry point
+`phantom/scripts/collect.py`. Reuses `phantom.drivers`/`recording`/
+`teleop.echo`/`viz.rerun_logger` underneath; replaces only the application
+layer that drives them.
+
+- `config.py` — `configs/data_collect.yaml` schema (ports/serials, external
+  drive, teleop feel, safeguard defaults, mode); `load_collect()` patches the
+  hardware config's ports section before validation.
+- `teleop.py` — `DirectServoStreamer`: pulls the Echo reader's cached target
+  every `control_rate_hz` cycle (no 10 Hz hop), TRACK is a pure per-cycle
+  slew limit (transparent below `v_max`), `AccelLimitedTracker` glide kept
+  only for ENGAGE/resume; all phase transitions are compare-and-set so a
+  concurrent safeguard `hold()` always wins; workspace hold retreats to the
+  last safely-inside pose; protective-stop recovery reconnects the control
+  interface.
+- `gripper.py` — `GripperPilot`: continuous 0..1 position on its own thread,
+  pulling the leader's freshest squeeze value (device-rate, not the session
+  loop); pad-force/close clamps stay at the driver boundary.
+- `safeguard.py` — `TactileSafeguard` (latched trip on fingertip force /
+  indentation / stream staleness; runtime-editable thresholds; resume only
+  via an explicit call) + `ArmGuard` (wrench/protective-stop, auto-resume).
+- `session.py` — `CollectApp`: the main loop (episode lifecycle, absolute
+  `actions_abs` logging, safeguard/arm-guard bookkeeping) and `CollectEcho`
+  (adds live gripper-tick calibration to `phantom.teleop.echo.EchoTeleop`).
+- `panel.py` — stdlib SSE control panel (safeguard card, session wizard with
+  the full/lite mode switch, gripper calibration, offload card).
+- `rerun_view.py` — `CollectRerun(RerunLogger)`: mode-gated live view (full =
+  everything; lite = scene RGB + arm + gripper + tactile wrench only).
+- `offload.py` — verified move of staged episodes to the external drive
+  (per-file size/sha256 check before local delete; same-filesystem guard).
+- `playback.py` — episode playback + recording verification from the panel:
+  `verify_episode` (per-stream integrity report: presence vs the mode's
+  expected set, rates, monotonic ts, finite values), `EpisodePlayer`
+  (wall-clock-paced replay of every modality into the embedded rerun viewer
+  on a separate `t_episode` timeline; pause/stop/speed), and
+  `PlaybackController` (drive/staging scan, path confinement, mutual
+  exclusion with sessions/offloads). CLI: `phantom/scripts/play_episode.py`.
+
 ## phantom/dagger/ + eval/
 
 - `dagger/rollout.py` — student rollouts with full-sensor recording.
@@ -183,4 +224,7 @@ maps spec → code.
 
 `mock_smoke` · `smoke_test` · `verify_backbone` · `bench_day1` ·
 `record_episodes` · `postprocess_episodes` · `dump_norm_stats` · `run_deploy` ·
-`run_dagger_round` · `run_eval` — see [launch_guide.md](launch_guide.md).
+`run_dagger_round` · `run_eval` · `collect` (`phantom.data_collect`'s entry
+point — [data_collect_app.md](data_collect_app.md)) · `play_episode`
+(verify/replay a recorded episode without the panel) — see
+[launch_guide.md](launch_guide.md).

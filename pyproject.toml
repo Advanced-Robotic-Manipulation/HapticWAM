@@ -14,6 +14,7 @@ dependencies = [
     "zarr>=2.16,<3",
     "numcodecs<0.16",
     "einops>=0.7",
+    "pillow>=10",     # scene/camera JPEG storage codec (cv2 is the rig fast path)
 ]
 
 [project.optional-dependencies]

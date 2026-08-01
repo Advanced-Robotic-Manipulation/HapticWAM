@@ -25,13 +25,14 @@ import numpy as np
 
 STREAM_ACTIONS = "actions"                    # (T, 7)  teleop / executor commands
 STREAM_ACTIONS_QTARGET = "actions_qtarget"    # (T, dof) raw joint-space teleop targets
+STREAM_ACTIONS_ABS = "actions_abs"            # (T, 7)  ABSOLUTE action: q_target(6) + gripper cmd(1)
                                               #   (Echo leader; Δ-EE stays canonical)
 STREAM_ARM_Q = "arm_q"                        # (T, dof)
 STREAM_ARM_QD = "arm_qd"                      # (T, dof)
 STREAM_ARM_TCP_POSE = "arm_tcp_pose"          # (T, 6)
 STREAM_ARM_TCP_SPEED = "arm_tcp_speed"        # (T, 6)
 STREAM_ARM_FT = "arm_ft"                      # (T, 6)  wrist wrench
-STREAM_GRIPPER = "gripper"                    # (T, 2)  [pos, current]
+STREAM_GRIPPER = "gripper"                    # (T, 2)  [pos, obj 0..3]
 # camera streams follow f"camera_{name}_color" (recorder.py writes the literal)
 STREAM_CAMERA_SCENE = "camera_scene_color"    # (T, h, w, 3) uint8
 STREAM_CAMERA_WRIST = "camera_wrist_color"    # (T, h, w, 3) uint8

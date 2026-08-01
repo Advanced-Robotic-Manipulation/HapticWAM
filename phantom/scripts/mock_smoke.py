@@ -27,7 +27,7 @@ from phantom.data.schema import STREAM_ARM_FT, STREAM_CAMERA_SCENE, tactile_stre
 from phantom.drivers.factory import make_rig
 from phantom.recording.postprocess import postprocess_episode
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession
+from phantom.recording.workers import SensorSession, make_gripper_poller
 from phantom.data.schema import EpisodeMeta
 from phantom.timesync.clock import IdentityClock
 
@@ -54,6 +54,11 @@ def main(argv: list[str] | None = None) -> int:
     rig = make_rig(hw, control=False)
     with rig:
         session = SensorSession.start(hw, rig, session_id=str(int(time.time()) % 10_000_000))
+        # this smoke test has no GripperPilot (nothing sends gripper.move()),
+        # so exercise the standalone poller instead -- keeps the "gripper"
+        # stream covered by the smoke test's session.all_alive() check.
+        gripper_poller = make_gripper_poller(rig.gripper, hw, session.rings["gripper"])
+        gripper_poller.start()
         try:
             recorder = EpisodeRecorder(session, IdentityClock(), out_root)
             ep_path = recorder.start(EpisodeMeta(task="mock_smoke", text="smoke",
@@ -64,6 +69,7 @@ def main(argv: list[str] | None = None) -> int:
             assert session.all_alive(), "a stream worker died during recording"
             recorder.stop(success=True)
         finally:
+            gripper_poller.stop()
             session.stop()
 
     # ---- offline derived pass + verification ----

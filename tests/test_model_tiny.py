@@ -31,8 +31,8 @@ def tiny_models(tmp_path_factory):
                  "infer_img": {"h": 60, "w": 80, "c": 1}, "rate_hz": 30.0},
         cameras={"scene": {"color": {"h": 60, "w": 80, "c": 3}, "fps": 10.0}},
         recording={"field_ds": {"h": 24, "w": 32}, "field_ds_rate_hz": 30.0,
-                   "keyframe_rate_hz": 5.0, "infer_img_rate_hz": 10.0,
-                   "zarr_chunk_frames": 16},
+                   "keyframe_rate_hz": 5.0, "keyframe_ds": {"h": 24, "w": 32},
+                   "infer_img_rate_hz": 10.0, "zarr_chunk_frames": 16},
         derived={"cpk_downsample": 4},
         wrist_ft={"window_s": 0.1},
     )
