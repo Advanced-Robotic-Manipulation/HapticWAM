@@ -70,7 +70,7 @@ class StubPilot:
 class StubRecorder:
     def __init__(self):
         self.started = []
-        self.stopped = []          # (success, notes, abort)
+        self.stopped = []          # (success, notes, abort, delete)
         self.relabels = []         # (path, success, discard)
         self.actions = []          # (stream, action)
         self.recording = False
@@ -80,12 +80,13 @@ class StubRecorder:
         self.recording = True
         return Path(name)
 
-    def stop(self, *, success=None, notes="", abort=False):
+    def stop(self, *, success=None, notes="", abort=False, delete=False):
         if not self.recording:
             return None
         self.recording = False
-        self.stopped.append((success, notes, abort))
-        return Path(self.started[-1]) if self.started else None
+        self.stopped.append((success, notes, abort, delete))
+        return None if (abort and delete) else (
+            Path(self.started[-1]) if self.started else None)
 
     def relabel(self, path, *, success=None, discard=False, notes=""):
         self.relabels.append((Path(path), success, discard))
@@ -233,7 +234,7 @@ def test_safeguard_trip_flow(env):
     assert env.streamer.holds == 1 and env.pilot.opens == 1
     # loop bookkeeping: episode saved as failure, panel warns
     assert _settle(lambda: not env.recorder.recording)
-    success, notes, abort = env.recorder.stopped[-1]
+    success, notes, abort, _delete = env.recorder.stopped[-1]
     assert success is False and "safeguard" in notes and not abort
     snap = env.state.snapshot()
     assert snap["safeguard_tripped"] and "safeguard" in snap["safeguard_msg"].lower()
@@ -308,7 +309,7 @@ def test_worker_death_mid_episode_fails_the_episode(env):
     assert _settle(lambda: env.recorder.recording)
     env.session.alive = False
     assert _settle(lambda: not env.thread.is_alive())     # session fails loudly
-    success, notes, abort = env.recorder.stopped[-1]
+    success, notes, abort, _delete = env.recorder.stopped[-1]
     assert success is False and "worker_died" in notes
     assert env.state.snapshot()["episodes"][-1]["outcome"] == "worker_died"
 
