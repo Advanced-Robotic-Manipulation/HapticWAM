@@ -75,12 +75,18 @@ class EpisodeRecorder:
     # ------------------------------------------------------------------
     def start(self, meta: EpisodeMeta, episode_name: str) -> Path:
         assert self._writer is None, "episode already recording"
+        if self._thread is not None and self._thread.is_alive():
+            # a stale drain thread appending into a NEW episode's writer would
+            # interleave two episodes' data — never start over a live drain
+            raise RuntimeError("previous episode's drain thread still alive")
         meta.driver_modes = {"drivers": self.hw.mode.drivers,
                              **{k: v for k, v in self.hw.mode.overrides.items()}}
         meta.clock_calibration = dict(self.clock.calibration)
         path = self.out_root / episode_name
         self._writer = EpisodeWriter(path, self.hw, meta)
         # start draining from 'now': skip everything already in the rings
+        with self._action_lock:
+            self._action_bufs = {}   # stale actions must not leak into this episode
         self._cursors = {}
         for ring_name, field, _ in self._map():
             ring = self.session.rings.get(ring_name)
@@ -144,19 +150,32 @@ class EpisodeRecorder:
 
     # ------------------------------------------------------------------
     def stop(self, *, success: bool | None = None, notes: str = "",
-             abort: bool = False) -> Path | None:
+             abort: bool = False, delete: bool = False) -> Path | None:
         if self._writer is None:
             return None
         self._stop.set()
         if self._thread is not None:
-            self._thread.join(5.0)
+            # wait until the drain thread is REALLY dead: with a timed join a
+            # stalled drain and the final flush below would append to the same
+            # zarr arrays concurrently and desync data/ts
+            deadline_warn = time.perf_counter() + 5.0
+            while self._thread.is_alive():
+                self._thread.join(1.0)
+                if time.perf_counter() > deadline_warn:
+                    log.warning("recorder drain thread still flushing — waiting")
+                    deadline_warn = time.perf_counter() + 5.0
+            self._thread = None
         self._drain_once()   # final flush
         w, self._writer = self._writer, None
         if abort:
-            # discard from INSIDE a recording: mark, then remove the tree
+            # abort marks the episode and KEEPS its partial data on disk
+            # (arm faults, quits, teardown). Physical removal only on the
+            # explicit delete flag — data destruction must never be implicit.
             w.abort()
-            self._delete_episode(w.path)
-            return None
+            if delete:
+                self._delete_episode(w.path)
+                return None
+            return w.path
         w.finalize(success=success, notes=notes)
         dur = time.perf_counter() - self._t_started
         log.info("episode %s: %.1f s, %.1f MB written (%.1f MB/s)",

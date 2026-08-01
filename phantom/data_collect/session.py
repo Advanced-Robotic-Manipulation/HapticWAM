@@ -557,7 +557,7 @@ class CollectApp:
                 panel.state.add_episode(name=ep_name, outcome="discarded")
                 panel.state.update(episode_phase="idle", episode_detail="",
                                    ep_count=ep_count)
-                note("episode discarded (deleted)", "WARN")
+                note("episode discarded (kept on disk as aborted)", "WARN")
             elif recording and toggle:
                 # stop -> finalize WITHOUT a verdict; operator judges next
                 panel.state.update(episode_phase="finalizing",
@@ -586,8 +586,25 @@ class CollectApp:
                 note(f"episode {pending_name}: {outcome}")
                 pending_path, pending_name = None, ""
                 panel.state.update(episode_phase="idle", episode_detail="")
+                if (not end_discard and s.target_episodes
+                        and ep_count >= s.target_episodes):
+                    # target hit on an accepted verdict: close the session the
+                    # same way 'quit' does — the runner tears down, offloads,
+                    # and the panel is ready to configure the next session
+                    log.info("session target of %d episodes reached — closing",
+                             s.target_episodes)
+                    note(f"target {s.target_episodes}/{s.target_episodes} "
+                         "reached — saving session")
+                    return
             elif (not recording and pending_path is None and toggle
                   and not blocked):
+                if s.target_episodes and ep_count >= s.target_episodes:
+                    # never record past the target: the session is about to
+                    # close (or a discard just reopened headroom — then this
+                    # guard no longer matches and recording proceeds)
+                    note(f"session target ({s.target_episodes}) already "
+                         "reached — no further episodes", "WARN")
+                    continue
                 if not session.all_alive():
                     raise RuntimeError("a stream worker died — restart the session")
                 meta = EpisodeMeta(task=s.task, text=s.text or s.task,

@@ -60,11 +60,10 @@ def test_delete_is_confined_to_the_staging_root(tmp_path):
     assert r._delete_episode(tmp_path / "staging") is False
 
 
-def test_stop_abort_deletes(tmp_path, small_hw):
+def _abortable_recorder(tmp_path, small_hw, ep):
     import threading
     import types
     r = _recorder(tmp_path)
-    ep = _make_episode(tmp_path)
     r.hw = small_hw
     r.clock = None
     r.stream_filter = None
@@ -77,8 +76,24 @@ def test_stop_abort_deletes(tmp_path, small_hw):
     r._action_lock = threading.Lock()
     r._bytes_written = 0
     r._t_started = 0.0
-    assert r.stop(abort=True) is None
-    assert not ep.exists(), "abort-during-recording must delete too"
+    return r
+
+
+def test_stop_abort_keeps_partial_data(tmp_path, small_hw):
+    """abort marks the episode and KEEPS it on disk (arm faults / quits must
+    never destroy data — the panel says 'saved (aborted)' and means it)."""
+    ep = _make_episode(tmp_path)
+    r = _abortable_recorder(tmp_path, small_hw, ep)
+    assert r.stop(abort=True) == ep
+    assert ep.exists(), "aborted episode must stay on disk"
+
+
+def test_stop_abort_delete_flag_removes(tmp_path, small_hw):
+    """physical removal only on the explicit delete flag."""
+    ep = _make_episode(tmp_path)
+    r = _abortable_recorder(tmp_path, small_hw, ep)
+    assert r.stop(abort=True, delete=True) is None
+    assert not ep.exists(), "delete=True must remove the tree"
 
 
 # ------------------------------------------------- protective-stop survival
