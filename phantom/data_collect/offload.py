@@ -15,6 +15,7 @@ disk.
 from __future__ import annotations
 
 import hashlib
+import os
 import logging
 import shutil
 import time
@@ -52,11 +53,19 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _verify_copy(src: Path, dst: Path, mode: str) -> str | None:
-    """None if dst faithfully mirrors src, else a description of the mismatch."""
+def _verify_copy(src: Path, dst: Path, mode: str, *,
+                 allow_extra_dst: bool = False) -> str | None:
+    """None if dst faithfully mirrors src, else a description of the mismatch.
+
+    allow_extra_dst: accept a dst that is a SUPERSET of src (used to recognise
+    an already-complete drive copy when the local side is truncated remains of
+    an interrupted move)."""
     src_files = sorted(p.relative_to(src) for p in src.rglob("*") if p.is_file())
     dst_files = sorted(p.relative_to(dst) for p in dst.rglob("*") if p.is_file())
-    if src_files != dst_files:
+    if allow_extra_dst:
+        if not set(src_files) <= set(dst_files):
+            return f"dst is missing files under {dst.name}"
+    elif src_files != dst_files:
         return f"file list mismatch under {dst.name}"
     for rel in src_files:
         s, d = src / rel, dst / rel
@@ -65,6 +74,23 @@ def _verify_copy(src: Path, dst: Path, mode: str) -> str | None:
         if mode == "sha256" and _sha256(s) != _sha256(d):
             return f"sha256 mismatch: {rel}"
     return None
+
+
+def _flush_to_disk(root: Path) -> None:
+    """Best-effort fsync of every file under root, then a global sync barrier.
+
+    The drive is NTFS over FUSE where directory fsync is unreliable, so after
+    the per-file fsyncs a single os.sync() guarantees the copy is on the
+    platter before the local original may be deleted (a 'verified' copy that
+    exists only in the page cache dies with a power loss / yanked cable)."""
+    for p in root.rglob("*"):
+        if p.is_file():
+            try:
+                with open(p, "rb") as f:
+                    os.fsync(f.fileno())
+            except OSError:
+                pass
+    os.sync()
 
 
 def offload_session(staging_dir: Path, drive_root: Path, *,
@@ -119,18 +145,44 @@ def offload_session(staging_dir: Path, drive_root: Path, *,
         if progress is not None:
             progress(i, len(episodes), ep.name)
         dst = dest_root / ep.name
-        if dst.exists():           # partial earlier offload — redo cleanly
-            shutil.rmtree(dst)
+        part = dest_root / (ep.name + ".part")
+        if part.exists():          # stale interrupted copy — .part is never authoritative
+            shutil.rmtree(part)
+        if dst.exists():
+            # NEVER blind-delete an existing drive copy: it may be the COMPLETE
+            # episode from an earlier move whose local delete was interrupted
+            # (in which case the local side is truncated remains).
+            if _verify_copy(ep, dst, verify, allow_extra_dst=True) is None:
+                # drive copy is a faithful superset — it is authoritative;
+                # finish the interrupted move by clearing the local remains
+                log.info("offload: %s already complete on the drive — "
+                         "finishing the interrupted move", ep.name)
+                result.bytes_moved += _dir_bytes(dst)
+                result.moved.append(str(dst))
+                if not keep_local:
+                    shutil.rmtree(ep)
+                continue
+            aside = dest_root / f"{ep.name}.mismatch-{int(time.time())}"
+            dst.rename(aside)
+            log.error("offload: existing drive copy of %s does not match the "
+                      "local episode — set aside as %s for manual review",
+                      ep.name, aside.name)
         try:
-            shutil.copytree(ep, dst)
+            shutil.copytree(ep, part)
         except OSError as e:
+            shutil.rmtree(part, ignore_errors=True)
             return OffloadResult(ok=False, episodes=i, error=(
-                f"copy failed at {ep.name}: {e} — local episodes untouched"))
-        mismatch = _verify_copy(ep, dst, verify)
+                f"copy failed at {ep.name}: {e} — this and later episodes remain "
+                f"in local staging ({i} already moved)"))
+        _flush_to_disk(part)
+        mismatch = _verify_copy(ep, part, verify)
         if mismatch is not None:
+            shutil.rmtree(part, ignore_errors=True)
             return OffloadResult(ok=False, episodes=i, error=(
-                f"verification failed at {ep.name}: {mismatch} — local episodes "
-                "untouched; check the drive"))
+                f"verification failed at {ep.name}: {mismatch} — this and later "
+                f"episodes remain in local staging ({i} already moved); check "
+                "the drive"))
+        os.replace(part, dst)      # atomic within the drive filesystem
         result.bytes_moved += _dir_bytes(dst)
         result.moved.append(str(dst))
         if not keep_local:

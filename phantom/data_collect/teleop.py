@@ -215,6 +215,12 @@ class DirectServoStreamer:
         script, then glides in from the CURRENT measured pose (never a jump -
         the arm was probably re-positioned by hand on the pendant). The session
         keeps running: recording can continue with the next episode."""
+        with self._lock:
+            if self._phase is TrackPhase.HOLD:
+                # HOLD is the latched tactile-safeguard freeze: re-engaging
+                # here would move the arm with the e-stop latched and blind
+                return False, ("safeguard hold latched — press Resume "
+                               "collection to clear it first")
         ready = getattr(self.arm, "is_ready_for_control", None)
         if ready is not None:
             ok, why = ready()
@@ -231,6 +237,9 @@ class DirectServoStreamer:
         except Exception as e:
             return False, f"cannot read the arm pose: {e}"
         with self._lock:
+            if self._phase is TrackPhase.HOLD:
+                # a safeguard trip landed while we were reconnecting: HOLD wins
+                return False, "safeguard tripped during re-engage — arm stays held"
             self._ctl_lost = False
             self._hold_q = None
             self._phase = TrackPhase.ENGAGE
