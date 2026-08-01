@@ -65,10 +65,15 @@ class NativeViewer:
     server by the child) applies here too. Never raises: a launch failure just
     leaves no native window (operator can fall back to the web viewer)."""
 
-    def __init__(self, grpc_port: int, *, display: str = ":0"):
+    def __init__(self, grpc_port: int, *, display: str = ":0",
+                 memory_limit: str = "4GB"):
         # same proxy URI the browser uses; the native CLI connects to it.
         self.uri = f"rerun+http://127.0.0.1:{grpc_port}/proxy"
         self.display = display
+        # without an explicit limit the viewer defaults to 75% of system RAM
+        # and one long session swaps the whole rig (24 GB observed 2026-08-01);
+        # 4 GB keeps hours of scrub-back while old frames get evicted.
+        self.memory_limit = memory_limit
         self._proc: subprocess.Popen | None = None
 
     def start(self) -> None:
@@ -79,7 +84,8 @@ class NativeViewer:
         env.setdefault("XAUTHORITY", os.path.expanduser("~/.Xauthority"))
         try:
             self._proc = subprocess.Popen(
-                [sys.executable, "-m", "rerun", self.uri],
+                [sys.executable, "-m", "rerun",
+                 "--memory-limit", self.memory_limit, self.uri],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 env=env, start_new_session=True)
             log.info("native rerun viewer launched (pid=%s) on %s -> %s",
@@ -100,6 +106,7 @@ class NativeViewer:
         except Exception:
             try:
                 p.kill()
+                p.wait(1.0)     # reap — a killed-but-unwaited child is a zombie
             except Exception:
                 pass
 
