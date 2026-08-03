@@ -61,9 +61,14 @@ def main(argv=None) -> int:
             if r.has(stream):
                 _acc(sums, "area", np.asarray(r._g(stream)["data"][:], dtype=np.float32)[..., None])
         _acc(sums, "wrist_ft", r._g(STREAM_ARM_FT)["data"][:])
-        ur = np.concatenate([r._g(k)["data"][:] for k in
-                             (STREAM_ARM_Q, STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
-                              STREAM_ARM_TCP_SPEED, STREAM_GRIPPER)], axis=-1)
+        # each stream is drained independently, so real episodes end with row
+        # counts differing by a sample or two — truncate to the common length
+        # before the channel-wise concat (moments are unaffected)
+        arm = [np.asarray(r._g(k)["data"][:]) for k in
+               (STREAM_ARM_Q, STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
+                STREAM_ARM_TCP_SPEED, STREAM_GRIPPER)]
+        n_ur = min(len(a) for a in arm)
+        ur = np.concatenate([a[:n_ur] for a in arm], axis=-1)
         _acc(sums, "ur_state", ur)
         if r.has(STREAM_ACTIONS):
             _acc(sums, "action", r._g(STREAM_ACTIONS)["data"][:])
