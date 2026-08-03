@@ -61,15 +61,15 @@ def main(argv=None) -> int:
             if r.has(stream):
                 _acc(sums, "area", np.asarray(r._g(stream)["data"][:], dtype=np.float32)[..., None])
         _acc(sums, "wrist_ft", r._g(STREAM_ARM_FT)["data"][:])
-        # each stream is drained independently, so real episodes end with row
-        # counts differing by a sample or two — truncate to the common length
-        # before the channel-wise concat (moments are unaffected)
-        arm = [np.asarray(r._g(k)["data"][:]) for k in
-               (STREAM_ARM_Q, STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
-                STREAM_ARM_TCP_SPEED, STREAM_GRIPPER)]
-        n_ur = min(len(a) for a in arm)
-        ur = np.concatenate([a[:n_ur] for a in arm], axis=-1)
-        _acc(sums, "ur_state", ur)
+        # ur_state is a channel-wise concat of streams recorded at DIFFERENT
+        # rates (gripper ~100 Hz vs arm ~140 Hz), so truncating to the shortest
+        # would drop the tail of every episode (~25%) from the statistics and
+        # bias them toward early-episode poses. Per-channel moments do not need
+        # the streams aligned — accumulate each stream over its full length and
+        # concatenate the resulting per-channel stats in the same order.
+        for key in (STREAM_ARM_Q, STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
+                    STREAM_ARM_TCP_SPEED, STREAM_GRIPPER):
+            _acc(sums, f"ur_state::{key}", np.asarray(r._g(key)["data"][:]))
         if r.has(STREAM_ACTIONS):
             _acc(sums, "action", r._g(STREAM_ACTIONS)["data"][:])
 
@@ -79,6 +79,16 @@ def main(argv=None) -> int:
         var = np.maximum(s2 / n - mean ** 2, 1e-12)
         stats.mean[key] = mean.astype(np.float32)
         stats.std[key] = np.sqrt(var).astype(np.float32)
+    # recombine the per-stream ur_state moments into one channel vector, in the
+    # exact concat order WindowSampler packs them
+    ur_keys = [f"ur_state::{k}" for k in
+               (STREAM_ARM_Q, STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
+                STREAM_ARM_TCP_SPEED, STREAM_GRIPPER)]
+    if all(k in stats.mean for k in ur_keys):
+        stats.mean["ur_state"] = np.concatenate(
+            [stats.mean.pop(k) for k in ur_keys]).astype(np.float32)
+        stats.std["ur_state"] = np.concatenate(
+            [stats.std.pop(k) for k in ur_keys]).astype(np.float32)
     # delta-field stats approximated from the field stats (deltas are small):
     if "fields" in stats.mean:
         std = stats.std["fields"]

@@ -84,6 +84,7 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
         rope_h_extrapolation_ratio=bb.rope_h_extrapolation_ratio,
         rope_w_extrapolation_ratio=bb.rope_w_extrapolation_ratio,
         rope_t_extrapolation_ratio=bb.rope_t_extrapolation_ratio,
+        rope_enable_fps_modulation=bb.rope_enable_fps_modulation,
         use_wan_fp32_strategy=bb.use_wan_fp32_strategy,
         timestep_scale=bb.timestep_scale,
         action_dim=bb.action_dim,

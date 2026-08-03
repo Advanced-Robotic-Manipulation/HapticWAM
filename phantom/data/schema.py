@@ -150,3 +150,22 @@ class NormStats:
         d = json.loads(Path(path).read_text())
         return cls(mean={k: np.asarray(v, dtype=np.float32) for k, v in d["mean"].items()},
                    std={k: np.asarray(v, dtype=np.float32) for k, v in d["std"].items()})
+
+
+def is_failure_demo(meta: "EpisodeMeta") -> bool:
+    """True for a DELIBERATE failure demonstration (over-squeeze / induced slip).
+
+    Three encodings exist in the wild and any of them counts:
+      * an explicit failure verdict (`success is False`);
+      * the SOP tag `deliberate_failure`;
+      * a `<task>_fail` task name — how the rig actually recorded them, with
+        success=True meaning "the EPISODE succeeded at capturing the intended
+        failure", NOT that the manipulation succeeded.
+    These episodes are boundary examples for the contact/event/slip heads and
+    must never supervise action imitation.
+    """
+    if meta.success is False:
+        return True
+    if any("deliberate_failure" in str(t) for t in (meta.tags or [])):
+        return True
+    return str(meta.task or "").endswith("_fail")
