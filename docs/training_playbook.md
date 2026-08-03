@@ -111,3 +111,33 @@ bench → contact play → (1) pretrain_tactile
 | Vision-only WAM | program (2) with a layout that drops all tactile+F/T inputs (custom `PhantomModelConfig` variant) |
 | No-distillation control | student-layout model trained with program (2)'s objective from scratch (run `train_teacher` with `student=True` build — critical control) |
 | Drop-tactile-add-nothing | program (3) with the wrist-F/T path also removed |
+
+---
+
+## Launch checklist (2026-08-03 audit — do not skip)
+
+A pre-flight audit before the first real run found defects that would each
+have wasted the full multi-day run. They are fixed in code, but two of them
+depend on HOW the run is launched, so any machine must follow this:
+
+```bash
+python -m phantom.train.train_teacher \
+    --data <root>/tasks \
+    --hardware configs/hardware.nuc.yaml \   # the config the DATA was recorded under
+    --run-name <name> --max-steps 20000 \
+    --device cuda --acc-two-pass             # required for the RQ2 gate lead-time
+```
+
+* `--hardware` must name the config the episodes were **recorded** under, not
+  the repo default. Training under the wrong one changes window semantics and
+  produces a checkpoint the rig rejects on load (wrist window 125 vs 31). The
+  run now HARD-FAILS on config drift; `--allow-config-drift` overrides.
+* `--split` defaults to `train`, which honours `manifests/all.jsonl`. The
+  held-out `val` episodes are evaluated every `eval_every` steps — watch the
+  `EVAL step N val_*` lines, they are the only signal that the run is healthy.
+* Deliberate-failure demos (`<task>_fail`, or tagged `deliberate_failure`, or
+  `success=False`) are excluded from ACTION supervision automatically and keep
+  supervising contact/event/gate. Do not "clean" them out of the data root.
+* `rope_enable_fps_modulation` stays **False**: the released base was trained
+  without it, and enabling it drives the frozen backbone off its temporal
+  geometry.
