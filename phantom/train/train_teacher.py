@@ -82,6 +82,10 @@ def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     ap = argparse.ArgumentParser()
     add_common_args(ap)
+    ap.add_argument("--allow-config-drift", action="store_true",
+                    help="train even though episodes were recorded under a "
+                         "different hardware config (checkpoint may not load "
+                         "on the rig)")
     ap.add_argument("--split", default="train", choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default train; "
                          "'all' reproduces the pre-split behaviour)")
@@ -131,6 +135,21 @@ def main(argv=None) -> int:
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed)
     log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
+    # A training run under a config the data was NOT recorded under silently
+    # changes window semantics and produces a checkpoint the rig rejects on
+    # load (shape assert). Shapes are checked separately; this catches VALUE
+    # drift, which is the failure mode that survives to deployment.
+    if sampler.n_config_drift:
+        msg = (f"{sampler.n_config_drift}/{len(ds.index) // 8 or 1} episodes were "
+               f"recorded under a DIFFERENT hardware config than "
+               f"{args.hardware!r}. Pass the config the data was recorded with "
+               f"(e.g. --hardware configs/hardware.nuc.yaml) or the resulting "
+               f"checkpoint may not load on the rig.")
+        if args.allow_config_drift:
+            log.warning("CONFIG DRIFT (allowed): %s", msg)
+        else:
+            raise SystemExit(f"CONFIG DRIFT: {msg}\n"
+                             f"Re-run with --allow-config-drift to override.")
     loader = C.make_loader(ds, cfg)
 
     val_loader = None

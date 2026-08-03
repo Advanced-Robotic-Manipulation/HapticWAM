@@ -129,6 +129,7 @@ class WindowSampler:
         self.rng = np.random.default_rng(seed)
         self._cache: dict[Path, _EpisodeCache] = {}
         self._warned_hash: set[str] = set()
+        self.n_config_drift = 0        # episodes recorded under another config
 
     # ------------------------------------------------------------------
     @property
@@ -149,6 +150,7 @@ class WindowSampler:
             if meta.config_hash and cur and meta.config_hash != cur \
                     and path.name not in self._warned_hash:
                 self._warned_hash.add(path.name)
+                self.n_config_drift += 1
                 log.warning("%s recorded under a different hardware config hash "
                             "(values drifted — shapes are asserted separately)", path.name)
         return c
