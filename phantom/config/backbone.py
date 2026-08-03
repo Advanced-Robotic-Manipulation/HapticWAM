@@ -32,6 +32,12 @@ class BackboneConfig:
     rope_h_extrapolation_ratio: float = 3.0
     rope_w_extrapolation_ratio: float = 3.0
     rope_t_extrapolation_ratio: float = 1.0
+    # The released robot/action-cond checkpoint was trained WITHOUT fps
+    # modulation of the temporal RoPE. Leaving it on stretches temporal
+    # positions (~6x at our fps) and drives the frozen base off the geometry
+    # it learned — every gradient then fine-tunes an out-of-distribution
+    # backbone. Keep False unless a checkpoint is known to want otherwise.
+    rope_enable_fps_modulation: bool = False
     use_wan_fp32_strategy: bool = True
     timestep_scale: float = 0.001
     atten_backend: str = "torch"   # forced: SDPA (weight-free; required by the ACC bias hook)

@@ -209,19 +209,58 @@ def _norm_shape(v):
 # datasets
 # ---------------------------------------------------------------------------
 
+def manifest_split(data_root: Path, split: str) -> list[Path] | None:
+    """Episode dirs for `split` from manifests/all.jsonl, or None if absent.
+
+    The dataset ships a manifest next to the task folders (data_root is
+    <root>/tasks, so the manifest is ../manifests/all.jsonl). Without this the
+    training set silently includes the held-out episodes and no validation
+    number means anything."""
+    if split == "all":
+        return None
+    mf = Path(data_root).parent / "manifests" / "all.jsonl"
+    if not mf.exists():
+        log.warning("no manifest at %s — using every episode under %s "
+                    "(NO held-out set)", mf, data_root)
+        return None
+    eps: list[Path] = []
+    for line in mf.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("split") != split:
+            continue
+        p = Path(data_root).parent / r["path"]
+        if (p / "meta.json").exists():
+            eps.append(p)
+    log.info("manifest split %r: %d episodes", split, len(eps))
+    return eps
+
+
 class WindowDataset(Dataset):
     """Wraps WindowSampler over an episode root for DataLoader consumption."""
 
-    def __init__(self, root: Path, sampler, windows_per_episode: int = 8):
+    def __init__(self, root: Path, sampler, windows_per_episode: int = 8,
+                 episodes: list[Path] | None = None, resample: bool = True,
+                 seed: int = 0):
         self.sampler = sampler
-        self.index = sampler.build_index(root, windows_per_episode)
+        self.index = sampler.build_index(root, windows_per_episode, episodes)
+        # A frozen index replays the same anchors every epoch (~35x over a long
+        # run) — redraw t0 within the episode's admissible range on each access
+        # so the run keeps seeing fresh windows from the same episodes. Held-out
+        # sets pass resample=False to stay comparable across evals.
+        self.resample = resample
+        self._rng = np.random.default_rng(seed)
 
     def __len__(self) -> int:
         return len(self.index)
 
     def __getitem__(self, i: int) -> dict:
         wi = self.index[i]
-        return self.sampler.sample(wi.episode, wi.t0)
+        t0 = wi.t0
+        if self.resample and wi.hi > wi.lo:
+            t0 = float(self._rng.uniform(wi.lo, wi.hi))
+        return self.sampler.sample(wi.episode, t0)
 
 
 def collate_windows(items: list[dict]) -> dict:
@@ -254,7 +293,7 @@ def ensure_synthetic_dataset(root: Path, hw: HardwareConfig, n_episodes: int = 4
 
 
 def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
-                collate_fn=collate_windows) -> DataLoader:
+                collate_fn=collate_windows, shuffle: bool | None = None) -> DataLoader:
     """The one training DataLoader for all four programs. world==1 reproduces
     the historical construction exactly (shuffle=True, drop_last=True,
     synthetic -> workers 0); under torchrun a DistributedSampler shards the
@@ -271,7 +310,8 @@ def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
             f"dataset too small to shard: {len(ds)} windows over {world} ranks "
             f"gives {len(sampler)}/rank < batch_size {cfg.batch_size}")
     return DataLoader(ds, batch_size=cfg.batch_size,
-                      shuffle=(sampler is None), sampler=sampler,
+                      shuffle=((sampler is None) if shuffle is None else shuffle),
+                      sampler=sampler,
                       num_workers=0 if cfg.synthetic else cfg.num_workers,
                       collate_fn=collate_fn, drop_last=True)
 
@@ -280,10 +320,35 @@ def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
 # generic loop
 # ---------------------------------------------------------------------------
 
+def evaluate(model: torch.nn.Module, val_loader: DataLoader, step_fn,
+             max_batches: int = 24) -> dict[str, float]:
+    """Mean losses over a held-out loader (no grad). Keeps the run honest:
+    without this the only signal for days is the training loss."""
+    was_training = model.training
+    model.eval()
+    sums: dict[str, float] = {}
+    n = 0
+    with torch.no_grad():
+        for i, batch in enumerate(val_loader):
+            if i >= max_batches:
+                break
+            parts = step_fn(batch)
+            for k, v in parts.items():
+                sums[k] = sums.get(k, 0.0) + float(v)
+            n += 1
+    if was_training:
+        model.train()
+    return {k: v / max(n, 1) for k, v in sums.items()}
+
+
 def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoader,
-               step_fn, *, on_checkpoint=None) -> int:
+               step_fn, *, on_checkpoint=None, val_loader: DataLoader | None = None,
+               eval_step_fn=None) -> int:
     """step_fn(batch) -> dict with 'total' loss tensor. Handles grad accum,
-    clipping, EMA, logging; returns final step."""
+    clipping, EMA, logging; returns final step.
+
+    val_loader: optional held-out loader evaluated every cfg.eval_every steps
+    (eval_step_fn defaults to step_fn)."""
     rank, world = setup_ddp()
     device = cfg.device if torch.cuda.is_available() or cfg.device == "cpu" else "cpu"
     model = model.to(device)
@@ -335,6 +400,11 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                 rate = step / (time.perf_counter() - t0)
                 log.info("step %d/%d  %s  (%.2f it/s)", step, cfg.max_steps,
                          "  ".join(f"{k}={v:.4f}" for k, v in sorted(logs.items())), rate)
+        if (val_loader is not None and is_main() and cfg.eval_every
+                and step % cfg.eval_every == 0):
+            vm = evaluate(model, val_loader, eval_step_fn or step_fn)
+            log.info("EVAL step %d  %s", step,
+                     "  ".join(f"val_{k}={v:.4f}" for k, v in sorted(vm.items())))
         if is_main() and on_checkpoint and step % cfg.ckpt_every == 0:
             on_checkpoint(step, opt, sched, ema)
     if is_main() and on_checkpoint:

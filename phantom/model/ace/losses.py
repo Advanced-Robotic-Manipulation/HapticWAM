@@ -24,9 +24,21 @@ from phantom.model.sequence import FrameGroup, SequenceLayout
 
 
 def group_velocity_mse(v_pred: torch.Tensor, v_target: torch.Tensor,
-                       layout: SequenceLayout, group: FrameGroup) -> torch.Tensor:
+                       layout: SequenceLayout, group: FrameGroup,
+                       weights: torch.Tensor | None = None) -> torch.Tensor:
+    """Velocity MSE over one frame group.
+
+    `weights` (B,) optionally scales each sample's contribution — used to zero
+    the ACTION term on deliberate-failure demos while their contact/event
+    supervision is kept. A batch of only zero-weight samples yields no
+    gradient rather than a NaN."""
     sl = layout.frame_slice(group)
-    return F.mse_loss(v_pred[:, :, sl].float(), v_target[:, :, sl].float())
+    pred, tgt = v_pred[:, :, sl].float(), v_target[:, :, sl].float()
+    if weights is None:
+        return F.mse_loss(pred, tgt)
+    per_sample = ((pred - tgt) ** 2).flatten(1).mean(1)          # (B,)
+    w = weights.to(per_sample.device, per_sample.dtype).reshape(-1)
+    return (per_sample * w).sum() / w.sum().clamp_min(1e-6)
 
 
 def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,

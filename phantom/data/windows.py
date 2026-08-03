@@ -31,7 +31,8 @@ from phantom.data.episode_store import EpisodeReader, list_episodes
 from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
-                                 STREAM_GRIPPER, NormStats, tactile_stream)
+                                 STREAM_GRIPPER, NormStats, is_failure_demo,
+                                 tactile_stream)
 
 log = logging.getLogger(__name__)
 
@@ -67,6 +68,10 @@ def bilinear_resize(a: np.ndarray, hw: tuple[int, int]) -> np.ndarray:
 class WindowItem:
     episode: Path
     t0: float
+    # admissible anchor range for this episode, so a dataset can redraw t0
+    # instead of replaying one frozen anchor for the whole run
+    lo: float = 0.0
+    hi: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +98,17 @@ class _EpisodeCache:
         if i >= len(ts):
             return len(ts) - 1
         return i if (ts[i] - t) < (t - ts[i - 1]) else i - 1
+
+    def future_idx(self, stream: str, t: float) -> int:
+        """First sample at time >= t (strict-future lookup).
+
+        Targets must never resolve backwards: `nearest_idx` can return the
+        row BEFORE t, i.e. an action that already executed and whose effect is
+        already visible in the conditioning — the model would be rewarded for
+        'predicting' the past."""
+        ts = self.ts(stream)
+        i = int(np.searchsorted(ts, t, side="left"))
+        return min(i, len(ts) - 1)
 
     def at(self, stream: str, t: float) -> np.ndarray:
         # reader.data() decodes JPEG camera streams transparently
@@ -158,16 +174,23 @@ class WindowSampler:
                 f"(needs > {past + future:.1f}s of stream overlap, has {end - start:.1f}s)")
         return lo, hi
 
-    def build_index(self, root: Path, windows_per_episode: int = 8) -> list[WindowItem]:
+    def build_index(self, root: Path, windows_per_episode: int = 8,
+                    episodes: list[Path] | None = None) -> list[WindowItem]:
+        """Index of (episode, t0) windows.
+
+        `episodes` overrides filesystem enumeration (used to honour a manifest
+        train/val split). The t0 values are only the INITIAL draw — see
+        WindowDataset, which resamples t0 per access so a long run does not
+        replay one frozen set of windows."""
         items: list[WindowItem] = []
-        for ep in list_episodes(root):
+        for ep in (list_episodes(root) if episodes is None else episodes):
             try:
                 lo, hi = self.valid_range(ep)
             except (ValueError, KeyError, FileNotFoundError) as e:
                 log.warning("skipping %s: %s", ep.name, e)
                 continue
             for t0 in np.sort(self.rng.uniform(lo, hi, size=windows_per_episode)):
-                items.append(WindowItem(episode=ep, t0=float(t0)))
+                items.append(WindowItem(episode=ep, t0=float(t0), lo=lo, hi=hi))
         return items
 
     # ------------------------------------------------------------------
@@ -187,8 +210,10 @@ class WindowSampler:
         prev = np.asarray(data[i - 1], dtype=np.float32)
         return cur, prev, float(max(ts[i] - ts[i - 1], 1e-6))
 
-    def _action_grid(self, c: _EpisodeCache, times: np.ndarray) -> np.ndarray:
-        idxs = [c.nearest_idx(STREAM_ACTIONS, float(t)) for t in times]
+    def _action_grid(self, c: _EpisodeCache, times: np.ndarray, *,
+                     future: bool = False) -> np.ndarray:
+        pick = c.future_idx if future else c.nearest_idx
+        idxs = [pick(STREAM_ACTIONS, float(t)) for t in times]
         return c.rows(STREAM_ACTIONS, idxs).astype(np.float32)
 
     def _rgb_at(self, c: _EpisodeCache, t: float) -> np.ndarray:
@@ -246,7 +271,7 @@ class WindowSampler:
         # ---- action chunks on the action grid
         H = hw.control.chunk_horizon
         rate = hw.control.action_rate_hz
-        fut = self._action_grid(c, t0 + (np.arange(H) + 1.0) / rate)
+        fut = self._action_grid(c, t0 + (np.arange(H) + 1.0) / rate, future=True)
         prev = self._action_grid(c, t0 - (H - np.arange(H)) / rate)
         w["action_chunk"] = torch.from_numpy(np.asarray(norm.normalize("action", fut)))
         w["prev_chunk"] = torch.from_numpy(np.asarray(norm.normalize("action", prev)))
@@ -350,4 +375,13 @@ class WindowSampler:
                 w[k] = v.float()
         w["text"] = c.reader.meta.text
         w["task"] = c.reader.meta.task
+        # Deliberate-failure demos (controlled over-squeezes / induced slips)
+        # must supervise the contact, event and gate heads — that is what they
+        # were recorded for — but must NEVER supervise action imitation, or the
+        # teacher learns to reproduce the failure. They are marked three
+        # different ways in practice: an explicit failure verdict, the SOP tag,
+        # or (as recorded on this rig) a `<task>_fail` task name with
+        # success=True meaning "the episode successfully captured the intended
+        # failure". Any of the three disables the action loss for the window.
+        w["action_weight"] = 0.0 if is_failure_demo(c.reader.meta) else 1.0
         return w

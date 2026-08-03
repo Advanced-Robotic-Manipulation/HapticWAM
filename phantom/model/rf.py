@@ -221,9 +221,14 @@ class PhantomRectifiedFlow(nn.Module):
         event_logits = self.phantom_event_head(out.contact_hidden_B_Tc_S_D)
         log_sigma = self.phantom_sigma_head(out.contact_hidden_B_Tc_S_D)
 
+        # deliberate-failure demos supervise contact/event/gate but must not
+        # train action imitation (windows.py sets action_weight=0 for them)
+        act_w = batch.get("action_weight")
+        if act_w is not None:
+            act_w = torch.as_tensor(act_w, device=dev).reshape(-1)
         parts: dict[str, torch.Tensor] = {
             "action_v_mse": L.group_velocity_mse(v_pred, v_target, layout,
-                                                 FrameGroup.ACTION),
+                                                 FrameGroup.ACTION, act_w),
             "contact_nll": L.contact_hetero_nll(
                 x0_pred, x0, log_sigma, layout,
                 group_channels=sigma_group_channels(self.hw.n_fingers)),

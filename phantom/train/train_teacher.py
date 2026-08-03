@@ -82,6 +82,9 @@ def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     ap = argparse.ArgumentParser()
     add_common_args(ap)
+    ap.add_argument("--split", default="train", choices=["train", "val", "all"],
+                    help="episode subset from manifests/all.jsonl (default train; "
+                         "'all' reproduces the pre-split behaviour)")
     ap.add_argument("--tactile-pretrain", default="", help="program-1 checkpoint")
     ap.add_argument("--acc-two-pass", action="store_true",
                     help="train ACC on the TRUE previous-replan prediction (two "
@@ -125,9 +128,20 @@ def main(argv=None) -> int:
 
     data_root, norm = resolve_data(args, hw, paths)
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
-    ds = C.WindowDataset(data_root, sampler)
-    log.info("dataset: %d windows from %s", len(ds), data_root)
+    train_eps = C.manifest_split(data_root, args.split)
+    ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed)
+    log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
     loader = C.make_loader(ds, cfg)
+
+    val_loader = None
+    if args.split == "train":
+        val_eps = C.manifest_split(data_root, "val")
+        if val_eps:
+            # frozen anchors on the held-out set so successive evals compare
+            val_ds = C.WindowDataset(data_root, sampler, episodes=val_eps,
+                                     resample=False, seed=cfg.seed)
+            val_loader = C.make_loader(val_ds, cfg, shuffle=False)
+            log.info("val: %d windows from %d episodes", len(val_ds), len(val_eps))
 
     def step_fn(batch: dict) -> dict:
         return pm.rf.training_step(C.to_device(batch, args.device))
@@ -138,7 +152,8 @@ def main(argv=None) -> int:
             train_cfg=cfg, step=step, base_ckpt_path=str(paths.cosmos_checkpoint),
             norm_stats=norm, optimizer=opt, scheduler=sched, ema=ema)
 
-    C.train_loop(cfg, pm.rf, loader, step_fn, on_checkpoint=on_ckpt)
+    C.train_loop(cfg, pm.rf, loader, step_fn, on_checkpoint=on_ckpt,
+                 val_loader=val_loader)
     return 0
 
 
