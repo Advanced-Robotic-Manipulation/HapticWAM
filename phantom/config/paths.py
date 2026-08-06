@@ -28,6 +28,9 @@ class PathsConfig:
     cosmos_tokenizer: Path             # absolute
     data_root: Path
     runs_root: Path
+    # optional per-text embedding cache (embed_task_texts.py output); empty ->
+    # text conditioning stays on the cached empty-string embedding
+    cosmos_text_embedding_cache: str = ""
 
     def episodes_root(self) -> Path:
         return self.data_root / "episodes"
@@ -71,6 +74,7 @@ def load_paths(path: str | Path | None = None,
         cosmos_weights_root=weights_root,
         cosmos_checkpoint=weights_root / raw["cosmos_checkpoint"],
         cosmos_empty_text_embedding=weights_root / raw["cosmos_empty_text_embedding"],
+        cosmos_text_embedding_cache=str(raw.get("cosmos_text_embedding_cache", "") or ""),
         cosmos_tokenizer=weights_root / raw["cosmos_tokenizer"],
         data_root=Path(raw["data_root"]),
         runs_root=Path(raw["runs_root"]),

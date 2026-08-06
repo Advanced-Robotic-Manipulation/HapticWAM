@@ -95,3 +95,32 @@ def test_window_dataset_resamples_anchor():
     seen.clear()
     frozen[0], frozen[0]
     assert seen == [1.0, 1.0], "held-out anchors must stay comparable"
+
+
+def test_text_provider_cache_lookup(tmp_path):
+    """With a cache: per-sample lookup, unknown/empty fall back to the empty
+    embedding; without: historical expand-the-empty behavior."""
+    from types import SimpleNamespace
+    from phantom.backbone.text_embedding import TextEmbeddingProvider
+    from phantom.config.backbone import BackboneConfig
+
+    bb = BackboneConfig(text_emb_seq_len=4, text_emb_dim=8)
+    known = torch.ones(4, 8)
+    cache = {"wipe the whiteboard": known,
+             "__meta__": {"recipe": "test"}}
+    cp = tmp_path / "cache.pt"
+    torch.save(cache, cp)
+
+    # fake=True gives a deterministic random empty embedding; then attach cache
+    prov = TextEmbeddingProvider(bb, None, fake=True)
+    prov._cache = {"wipe the whiteboard": known}
+    out = prov.get(3, ["wipe the whiteboard", "unknown task", ""])
+    assert out.shape == (3, 4, 8)
+    assert torch.equal(out[0], known)
+    assert torch.equal(out[1], prov._emb[0])      # unknown -> empty
+    assert torch.equal(out[2], prov._emb[0])      # empty -> empty
+
+    # no cache: all rows are the empty embedding regardless of text
+    prov2 = TextEmbeddingProvider(bb, None, fake=True)
+    out2 = prov2.get(2, ["wipe the whiteboard", "x"])
+    assert torch.equal(out2[0], out2[1])
