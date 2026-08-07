@@ -20,3 +20,8 @@ cosmos_tokenizer: tokenizer.pth
 # Data + run outputs (created on demand).
 data_root: c:/skoltech/research/icra2027/data
 runs_root: c:/skoltech/research/icra2027/runs
+
+# Optional: per-text embedding cache written by phantom.scripts.embed_task_texts
+# (run its --verify gate first). Empty = text conditioning stays on the cached
+# empty-string embedding.
+cosmos_text_embedding_cache: ""
