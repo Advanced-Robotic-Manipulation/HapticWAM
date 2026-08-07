@@ -44,7 +44,8 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             norm = NormStats(
                 mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
                 std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
-    return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video)
+    return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
+                         task_text=(args.text or args.task))
 
 
 def main(argv=None) -> int:

@@ -55,7 +55,11 @@ class Plan:
 
 class PhantomPolicy:
     def __init__(self, pm: PhantomModel, norm: NormStats, *, nfe: int | None = None,
-                 drop_video: bool = False):
+                 drop_video: bool = False, task_text: str = ""):
+        # task_text: the per-episode instruction (pipeline.md input l). Must
+        # match a key of the text-embedding cache the teacher trained with;
+        # empty keeps the v2 empty-string conditioning.
+        self.task_text = task_text
         self.pm = pm
         self.rf = pm.rf
         self.hw = pm.hw
@@ -83,7 +87,9 @@ class PhantomPolicy:
                 self.norm.normalize("ur_state", obs.ur_state.astype(np.float32))
             ).unsqueeze(0),
             "reactive": torch.tensor([obs.reactive], dtype=torch.float32),
-            "text": [""],
+            # the instruction the teacher was conditioned on during training;
+            # empty -> the provider's empty-string embedding (v2-compatible)
+            "text": [self.task_text],
         }
         if prev_plan is not None and prev_plan.actions is not None:
             prev = self.norm.normalize("action", prev_plan.actions.astype(np.float32))

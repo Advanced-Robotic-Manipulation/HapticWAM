@@ -132,8 +132,8 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             mc: PhantomModelConfig, train_cfg: CommonTrainConfig,
                             step: int, base_ckpt_path: str = "",
                             norm_stats: NormStats | None = None,
-                            optimizer=None, scheduler=None, ema: EMA | None = None
-                            ) -> None:
+                            optimizer=None, scheduler=None, ema: EMA | None = None,
+                            text_conditioning: dict | None = None) -> None:
     lora, phantom = trainable_state_dicts(model)
     payload = {
         "format_version": CKPT_FORMAT_VERSION,
@@ -147,6 +147,7 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
             "backbone": bb.to_dict(),
             "model": mc.to_dict(),
             "train": train_cfg.to_dict(),
+            "text_conditioning": text_conditioning or {},
         },
         "norm_stats": ({"mean": {k: v.tolist() for k, v in norm_stats.mean.items()},
                         "std": {k: v.tolist() for k, v in norm_stats.std.items()}}
@@ -328,9 +329,15 @@ def evaluate(model: torch.nn.Module, val_loader: DataLoader, step_fn,
     model.eval()
     sums: dict[str, float] = {}
     n = 0
+    # stride so max_batches SPAN the whole ordered val set: the manifest is
+    # task-sorted, so taking the first N batches would silently measure only
+    # the first task's episodes and never see the rest
+    stride = max(1, len(val_loader) // max_batches)
     with torch.no_grad():
         for i, batch in enumerate(val_loader):
-            if i >= max_batches:
+            if i % stride != 0:
+                continue
+            if n >= max_batches:
                 break
             parts = step_fn(batch)
             for k, v in parts.items():

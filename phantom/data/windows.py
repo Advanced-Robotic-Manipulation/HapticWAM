@@ -375,7 +375,10 @@ class WindowSampler:
         for k, v in list(w.items()):
             if torch.is_tensor(v) and v.is_floating_point():
                 w[k] = v.float()
-        w["text"] = c.reader.meta.text
+        # mirror embed_task_texts.collect_texts: text falls back to the task
+        # name, so an episode with the optional instruction left blank still
+        # hits the cache instead of silently training unconditioned
+        w["text"] = c.reader.meta.text or c.reader.meta.task
         w["task"] = c.reader.meta.task
         # Deliberate-failure demos (controlled over-squeezes / induced slips)
         # must supervise the contact, event and gate heads — that is what they

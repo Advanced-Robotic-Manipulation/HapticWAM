@@ -165,11 +165,17 @@ def main(argv=None) -> int:
     def step_fn(batch: dict) -> dict:
         return pm.rf.training_step(C.to_device(batch, args.device))
 
+    tc_prov = {"cache_path": str(getattr(paths, "cosmos_text_embedding_cache", "") or ""),
+               "active": bool(getattr(pm.rf.text, "_cache", None))}
+    if tc_prov["active"]:
+        tc_prov["texts"] = sorted(pm.rf.text._cache.keys())
+
     def on_ckpt(step, opt, sched, ema):
         C.save_phantom_checkpoint(
             out_dir / f"teacher_{step:06d}.pt", pm.rf, hw=hw, bb=pm.bb, mc=pm.mc,
             train_cfg=cfg, step=step, base_ckpt_path=str(paths.cosmos_checkpoint),
-            norm_stats=norm, optimizer=opt, scheduler=sched, ema=ema)
+            norm_stats=norm, optimizer=opt, scheduler=sched, ema=ema,
+            text_conditioning=tc_prov)
 
     C.train_loop(cfg, pm.rf, loader, step_fn, on_checkpoint=on_ckpt,
                  val_loader=val_loader)
