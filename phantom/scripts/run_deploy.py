@@ -77,6 +77,13 @@ def main(argv=None) -> int:
         for i in range(args.episodes):
             if hw.mode.drivers == "real":
                 input(f"episode {i + 1}/{args.episodes}: reset scene, Enter to start...")
+                # RealSense auto-exposure needs seconds after the stream opens
+                # to settle; the first plans otherwise condition on dark frames
+                # (collection never hit this — its camera runs the whole
+                # session). Field-verified 2026-08-11: unsettled AE made the
+                # policy flail confidently and slam the table.
+                log.info("camera AE settle...")
+                time.sleep(5.0)
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
                                  policy_name=f"{args.system}")
