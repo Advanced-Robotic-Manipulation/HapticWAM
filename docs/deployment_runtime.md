@@ -82,11 +82,11 @@ denoise; a mock `run_deploy --tiny` for the loop overheads).
 
 | Stage | Budgeted | Measured (5090) |
 |---|---|---|
-| Snapshot build + HHT encode | 50–150 ms | |
-| `nfe`-step denoise (2B, extended layout) | 1–3 s | |
+| Snapshot build + HHT encode | 50–150 ms | (inside replan total) |
+| `nfe`-step denoise (2B, extended layout) | 1–3 s | 1.03–1.41 s whole replan (v3 ckpt, mock drivers, 2026-08-11) |
 | Plan transport + swap | ~ms | |
 | Executor tick jitter (std) | < 2 ms | |
-| Chunk duration (`H / action_rate_hz`) | 1.6 s @ H=16 | |
+| Chunk duration (`H / action_rate_hz`) | 1.6 s @ H=16 | 1.6 s — replan fits inside it |
 
 If measured denoise exceeds the chunk duration, raise
 `control.chunk_horizon` (config only — the layout adapts; keep it a multiple
@@ -98,3 +98,6 @@ of 4) or lower `nfe`; the stale-plan hold covers transients either way.
 # no hardware, no checkpoint, mock everything:
 python -m phantom.scripts.run_deploy --system teacher --tiny --task smoke --max-replans 3
 ```
+
+For a dry run with the REAL model and checkpoint (mock drivers, any CUDA
+box), see [inference.md](inference.md).
