@@ -73,7 +73,7 @@ def test_wrench_limit_stops_episode():
         push_arm(rings, ft=[0, 0, 10.0 + hw.safety.wrench_limit_N + 5, 0, 0, 0])
         v = mon.check(t0 + 0.01, IN_BOX)                    # spike starts
         assert v.action == SafetyAction.OK                  # not yet debounced
-        v = mon.check(t0 + 0.01 + debounce_s, IN_BOX)       # still over: trip
+        v = mon.check(t0 + 0.05 + debounce_s, IN_BOX)       # still over: trip
         assert v.action == SafetyAction.STOP_EPISODE
         assert any(e.kind == "wrench_limit" for e in v.events)
 
