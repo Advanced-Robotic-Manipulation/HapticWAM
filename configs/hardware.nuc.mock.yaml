@@ -1,0 +1,267 @@
+meta:
+  schema_version: 1
+  rig_name: skoltech-ur-rig
+  bench_verified: false
+mode:
+  drivers: mock          # ALL real on the NUC rig (arm+gripper+tactile+camera)
+  overrides: {}
+arm:
+  model: UR3
+  # ACTUAL hardware is CB3 (Polyscope 3.14.3, S/N 2018333547, dashboard-read
+  # 2026-07-17). Declared e-series because the schema hard-blocks
+  # cb3+ur_internal (the paper's ACC needs a real FT-300S wrist sensor —
+  # ORDER IT, then flip to generation: cb3 + wrist_ft.source: ft300s).
+  # The 125 Hz rates below are CB3-safe; wrist F/T is a current-based
+  # ESTIMATE on this arm — fine for teleop safety, not for ACC training.
+  generation: e-series
+  ip: 192.168.88.56
+  rtde_receive_hz: 125.0
+  rtde_control_hz: 125.0
+  dof: 6
+  tcp_offset_m:
+  - 0.0
+  - 0.0
+  - 0.18
+  - 0.0
+  - 0.0
+  - 0.0
+  payload_kg: 1.2
+  limits:
+    joint_speed_rad_s: 1.0
+    tcp_speed_m_s: 0.25
+    tcp_accel_m_s2: 0.5
+  servoj:
+    lookahead_time_s: 0.1
+    gain: 300
+wrist_ft:
+  source: ur_internal
+  rate_hz: 125.0
+  dim: 6
+  window_s: 0.25
+  bias_on_episode_start: true
+  bias_window_s: 0.5
+gripper:
+  type: robotiq_2f85
+  interface: urcap_socket
+  port: 63352
+  stroke_mm: 85.0
+  feedback_rate_hz: 100.0
+  default_speed: 0.5
+  default_force: 0.04
+  force_range_N:
+  - 20.0
+  - 235.0
+  cmd_force_limit_N: 30.0
+  max_close_cmd: 0.9      # 2026-07-24 field calibration on THIS rig's pad
+                           #   mounts: 0.61 ("lab proven"), 0.66 and 0.9 all
+                           #   still left a visible gap; 0.97 pressed pad into pad (too much); 0.92-0.95 squash the gels; 0.9 = just-touch (final). Grip force stays clamped to the
+                           #   30 N pad ceiling; trim down if pads visibly
+                           #   squash on an empty close.
+tactile:
+  sdk: dmrobotics
+  sdk_backend: cpu
+  sdk_mode: high
+  # THIS IS A HARD CAP, NOT A DECLARATION: drivers/real/dmtac.py passes it to
+  # the SDK as SensorOptions(max_fps=...). Measured on this NUC 2026-07-27
+  # (dual-sensor, sensors idle, CPU backend):
+  #     max_fps  6 -> 6.06 Hz | 10 -> 9.95 Hz   (the CAP is the limit)
+  #     max_fps 20 -> 13.2 Hz | 60 -> 13.8 Hz | 120 -> 13.0 Hz  (SDK is the limit)
+  #     two sensors concurrently -> 8.5-9.0 Hz each
+  # Cost is 100% inside the SDK's host-side reconstruction (wait_for_new
+  # ~74 ms); the seven getters together are ~3 ms, and Mode.STANDARD is no
+  # faster than HIGH (12.8 vs 13.0 Hz).
+  # Lowered 12 -> 8 on 2026-07-31: a full-pipeline production episode (both
+  # sensors, camera + recorder + rerun all running) measured only ~6-6.5 Hz
+  # achieved, never above 8 -- so 12 was giving zero headroom protection any
+  # more (the old "set ABOVE achievable" rationale assumed the idle-sensor
+  # bench numbers above, not full-session CPU load). 8 sits right above what
+  # this rig actually delivers under real load; if a future session recovers
+  # the idle-bench ~8.5-9 Hz dual-sensor rate, this WILL now clip it slightly
+  # -- raise it back if that's observed.
+  rate_hz: 8.0
+  raw_img:
+    h: 480
+    w: 640
+    c: 1
+  infer_img:
+    h: 288
+    w: 384
+    c: 1
+  field:
+    h: 288
+    w: 384
+  hw_order: hw
+  field_channels:
+    deformation2d: 2
+    depth: 1
+    shear: 2
+    dist_force: 3
+  wrench_dim: 6
+  force_unit_to_N: 1.0
+  torque_unit_to_Nm: 0.01
+  dist_force_unit_to_N: 0.0
+  offline_recompute_ok: false
+  sensors:
+  - name: left
+    dev_id: L26050098
+  - name: right
+    dev_id: L26190169
+cameras:
+  scene:
+    enabled: true
+    serial: '944622074411'   # RealSense D435 (librealsense serial; the USB
+                             #   descriptor shows a different one — 944523029596)
+    color:
+      h: 480
+      w: 640
+      c: 3
+    # WindowSampler feeds the backbone 13 frames on a 4 Hz grid (BackboneConfig
+    # .fps), bilinear-resized to 256x320 -- 30 fps was 7.5x oversampled. 15 fps
+    # is a native D435 mode, still ~4x the model grid (nearest-frame snap error
+    # <=33 ms), and halves the scene stream. Resolution stays 480x640: it is
+    # downsampled to 256x320 at training time and keeps headroom for a
+    # higher-res backbone later (you can downsample later, never upsample).
+    fps: 15.0
+    depth_enabled: false
+  wrist:
+    enabled: false
+    serial: ''
+    color:
+      h: 480
+      w: 640
+      c: 3
+    fps: 30.0
+    depth_enabled: false
+derived:
+  tau_contact_depth: 0.05
+  tau_contact_fz: 0.1
+  contact_source: depth
+  tau_slip: 0.5
+  slip_flow_weight: 0.5
+  friction_cone_mu: 0.8
+  cop_min_contact_cells: 10
+  area_crosscheck_tol: 0.3
+  cpk_downsample: 8
+  event_lookahead_s: 0.5
+  event_min_hold_ticks: 2
+recording:
+  field_ds:
+    h: 72
+    w: 96
+  # fields_ds drives the contact package (latent grid) AND the derived
+  # slip/mask/CoP temporal differences -- keep it at the full sensor rate.
+  # No decimation is applied to this stream: it lands at whatever the tactile
+  # loop achieves (~8.5 Hz dual-sensor measured). This value is the EXPECTED
+  # rate used by valid_range(), the safeguard staleness window and the
+  # recording verifier -- keep it near the achieved rate, not the cap.
+  field_ds_rate_hz: 8.0
+  # keyframes + gel are read ONCE per training window (at t0), so they only
+  # need enough density to bound the nearest-frame snap error; 3 Hz = +-167 ms.
+  # Held at 3.0 while the source rate goes 6 -> ~8.5 Hz: the wall-clock gate
+  # can now actually reach 3.0 (it landed at 2.4 when the source was only ~2x
+  # the target).
+  keyframe_rate_hz: 3.0
+  # Stored keyframe resolution (mirrors field_ds; must divide tactile.field
+  # exactly). TactileFieldEncoder crushes the native 288x384 down through 5
+  # stride-2 stages to ~9x12 before pooling anyway (the cpk_* targets are only
+  # 36x48) -- nothing downstream ever consumed the native resolution. Halving
+  # each axis (144x192) cuts keyframe bytes + zstd compression cost 4x with no
+  # loss to any consumer: episodes were dominated by keyframes (~70/104 MB) at
+  # the old native resolution. Changing this is a shape-relevant config change
+  # (config_hash bump; norm_stats.json must be regenerated after re-recording).
+  keyframe_ds:
+    h: 144
+    w: 192
+  field_dtype: float16
+  save_infer_img: true
+  # Was 3.0 (independently decimated): the gel image was read once per window
+  # at t0 with up to +-210 ms snap error vs contact_state's +-90 ms from the
+  # SAME t0 -- the teacher saw temporally inconsistent tactile. infer_img is
+  # only ~3.2 MB/episode uint8 (cheap to store/compress), so matching it to
+  # tactile.rate_hz (the sensor's declared cap; the achieved rate free-runs
+  # below it, same as field_ds_rate_hz) removes the decimation entirely and
+  # halves the staleness for ~4 MB/episode. Kept equal to tactile.rate_hz
+  # (12 -> 8 on 2026-07-31, same measurement) so it's still a no-op cap, not a
+  # new decimation.
+  infer_img_rate_hz: 8.0
+  archive_raw_img: false
+  # Headroom between a slow drain and SILENT sample loss: ringbuffer.drain()
+  # resumes from the oldest surviving row when the reader falls behind, so a
+  # drain longer than ring_seconds drops data with no error. 5 s was routinely
+  # exceeded (drains reached 5.8 s); 20 s is the safety margin.
+  ring_seconds: 20.0
+  zarr_chunk_frames: 120
+  # Real bound on chunk size -- see RecordingConfig.zarr_chunk_mb. Measured on
+  # this NUC: worst-case drain 2.24 s -> 0.13 s for the full recording plan.
+  zarr_chunk_mb: 8.0
+  drain_interval_s: 0.25
+control:
+  model_tick_hz: 4.0
+  action_rate_hz: 10.0
+  action_dim: 7
+  chunk_horizon: 16
+  executor_rate_hz: 125.0   # must equal arm.rtde_control_hz (CB3 cap)
+  replan_min_lead_s: 0.3
+  chunk_blend_s: 0.1
+teleop:
+  echo:
+    vid: 1603
+    pid: 1868
+    baud: 115200
+    base_pose:
+    - 0.001427
+    - -1.5621
+    - 1.588
+    - 0.00954
+    - 1.5737
+    - -3.0957
+    sensitivity_divisors:
+    - 1.0
+    - 1.25
+    - 1.75
+    gripper_open_tick: 18       # calibrated 2026-07-24
+    gripper_closed_tick: 223    # calibrated 2026-07-24
+    control_rate_hz: 125.0
+    filter_min_cutoff: 1.0
+    filter_beta: 0.3
+    joint_accel_rad_s2: 4.0
+    gripper_ema_alpha: 0.2
+    gripper_deadband: 0.02
+safety:
+  # CB3 has no F/T sensor: wrist "force" is a current-based ESTIMATE with a
+  # large pose-dependent static bias (~18 N / ~5 Nm measured at rest) plus
+  # acceleration spikes. ArmGuard no longer compares the RAW estimate to these
+  # numbers — as of 2026-07-22 they are the allowed DEVIATION from a slow
+  # rolling baseline (wrench_baseline_tau_s) that tracks the bias out, and a
+  # trip needs the deviation held for wrench_debounce_ticks consecutive checks.
+  # That killed the false trips that had forced the guard to 500/100 (disabled)
+  # while restoring real collision protection at a low limit. 60/15 clears
+  # normal teleop deviation (accel spikes ~20-30 N, rejected by the debounce)
+  # and catches a sudden sustained crash. If it false-trips in the field, set
+  # both to 500 to disable (one line). Retune toward ~40/8 with the FT-300S.
+  wrench_limit_N: 60.0
+  wrench_limit_Nm: 15.0
+  wrench_baseline_tau_s: 2.0     # rolling-baseline time constant (tracks pose/bias drift out)
+  wrench_debounce_ticks: 3       # consecutive over-limit checks (~300 ms @ 10 Hz) to trip
+  tactile_fz_limit_N: 5.0
+  tactile_depth_limit: 0.6
+  # Sized 2026-07-17 to cover: parked TCP (-0.29,-0.12,0.25), the teleop base
+  # pose TCP (-0.474,-0.112,0.295, FK-verified), AND the joint-space engage
+  # arc (its TCP transit peaked above z=0.55 and froze teleop at the old
+  # ceiling). z-ceiling is high — verify nothing hangs above the arm.
+  # CALIBRATE to the real table/collision geometry.
+  workspace_m:
+    x:
+    - -0.7
+    - 0.15
+    y:
+    - -0.5
+    - 0.3
+    z:
+    - 0.03
+    - 0.8
+  governor:
+    sigma_lo: 0.1
+    sigma_hi: 1.0
+    min_scale: 0.15
+  stale_plan_timeout_s: 1.0

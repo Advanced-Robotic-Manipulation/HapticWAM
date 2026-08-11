@@ -32,6 +32,24 @@ from phantom.timesync.clock import IdentityClock, MasterClock
 log = logging.getLogger(__name__)
 
 
+def _wait_rings_warm(snapshots: SnapshotBuilder, timeout_s: float = 10.0) -> None:
+    """Block until every ring the snapshot reads has its first sample.
+
+    The real rig streams long before an operator starts an episode, but the
+    first episode right after connect — and any mock-driver dry run, where
+    the session and the episode start together — races the workers' first
+    frames."""
+    deadline = time.monotonic() + timeout_s
+    while True:
+        try:
+            snapshots.build()
+            return
+        except (AssertionError, IndexError):
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.05)
+
+
 @dataclass
 class EpisodeResult:
     episode_path: Path | None
@@ -82,6 +100,7 @@ class DeploymentRuntime:
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
                                  record_action=self.recorder.record_action)
         snapshots = SnapshotBuilder(hw, self.session, self.mode)
+        _wait_rings_warm(snapshots)
         trace: list = []
         planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace)
 
