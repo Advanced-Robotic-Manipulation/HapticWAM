@@ -45,6 +45,20 @@ class SafetyMonitor:
         self.log_events: list[SafetyEvent] = []
         self._ring_stale_s = 3.0 / min(hw.recording.field_ds_rate_hz,
                                        hw.cameras.scene.fps)
+        # Wrench guard state — same scheme as data_collect.safeguard.ArmGuard:
+        # the CB3 "wrench" is a current-based estimate with a large pose-
+        # dependent static bias plus acceleration spikes, so the raw value vs
+        # an absolute limit false-trips on ordinary motion. Track a slow
+        # rolling baseline (EMA, wrench_baseline_tau_s) and trip only on a
+        # DEVIATION from it sustained for the debounce window
+        # (wrench_debounce_ticks / control.action_rate_hz seconds — the ticks
+        # are defined at the record-loop rate, while check() runs at the much
+        # faster executor tick, so the debounce is time-based here). The
+        # baseline is frozen while over-limit so a real collision is never
+        # absorbed into it.
+        self._wrench_base: np.ndarray | None = None
+        self._wrench_over_since: float | None = None
+        self._wrench_last_t: float | None = None
 
     # ------------------------------------------------------------------
     def check(self, t_now: float, tcp_target: np.ndarray) -> SafetyVerdict:
@@ -59,13 +73,29 @@ class SafetyMonitor:
                 events.append(SafetyEvent(t_now, "protective_stop", 1.0,
                                           SafetyAction.PROTECTIVE_STOP))
                 action = SafetyAction.PROTECTIVE_STOP
-            ft = arm["ft"][0]
-            f_mag = float(np.linalg.norm(ft[:3]))
-            t_mag = float(np.linalg.norm(ft[3:]))
+            ft = np.asarray(arm["ft"][0], dtype=np.float64).reshape(-1)
+            if self._wrench_base is None:
+                self._wrench_base = ft.copy()   # episode starts at rest: bias
+            dev = ft - self._wrench_base
+            f_mag = float(np.linalg.norm(dev[:3]))
+            t_mag = float(np.linalg.norm(dev[3:]))
+            dt = (t_now - self._wrench_last_t) if self._wrench_last_t is not None else 0.0
+            self._wrench_last_t = t_now
+            debounce_s = (hw.safety.wrench_debounce_ticks
+                          / hw.control.action_rate_hz)
             if f_mag > hw.safety.wrench_limit_N or t_mag > hw.safety.wrench_limit_Nm:
-                events.append(SafetyEvent(t_now, "wrench_limit", max(f_mag, t_mag),
-                                          SafetyAction.STOP_EPISODE))
-                action = _max(action, SafetyAction.STOP_EPISODE)
+                if self._wrench_over_since is None:
+                    self._wrench_over_since = t_now
+                if t_now - self._wrench_over_since >= debounce_s:
+                    events.append(SafetyEvent(t_now, "wrench_limit", max(f_mag, t_mag),
+                                              SafetyAction.STOP_EPISODE))
+                    action = _max(action, SafetyAction.STOP_EPISODE)
+            else:
+                self._wrench_over_since = None
+                # adapt the baseline ONLY when calm — never track an event in
+                if dt > 0.0:
+                    alpha = min(1.0, dt / hw.safety.wrench_baseline_tau_s)
+                    self._wrench_base += alpha * (ft - self._wrench_base)
 
         # fingertip force / indentation e-stop (teacher rigs always record tactile)
         for s in hw.tactile.sensors:
@@ -115,9 +145,10 @@ class SafetyMonitor:
         if len(ts):
             if arm["protective_stop"][0]:
                 return False
-            ft = arm["ft"][0]
-            if (np.linalg.norm(ft[:3]) > frac * hw.safety.wrench_limit_N
-                    or np.linalg.norm(ft[3:]) > frac * hw.safety.wrench_limit_Nm):
+            ft = np.asarray(arm["ft"][0], dtype=np.float64).reshape(-1)
+            dev = ft - self._wrench_base if self._wrench_base is not None else ft
+            if (np.linalg.norm(dev[:3]) > frac * hw.safety.wrench_limit_N
+                    or np.linalg.norm(dev[3:]) > frac * hw.safety.wrench_limit_Nm):
                 return False
         from phantom.data.derived import channel_slices
         ch = channel_slices(hw.tactile)

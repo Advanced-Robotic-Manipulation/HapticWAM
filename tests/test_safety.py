@@ -61,12 +61,37 @@ def test_benign_is_ok():
 
 
 def test_wrench_limit_stops_episode():
+    # Deviation from the rolling baseline, sustained past the debounce window
+    # (single spikes and static bias are ignored — see SafetyMonitor).
     hw = make_small_hw()
     with _rings(hw) as rings:
-        push_arm(rings, ft=[0, 0, hw.safety.wrench_limit_N + 5, 0, 0, 0])
-        v = SafetyMonitor(hw, rings).check(time.perf_counter(), IN_BOX)
+        mon = SafetyMonitor(hw, rings)
+        t0 = time.perf_counter()
+        push_arm(rings, ft=[0, 0, 10.0, 0, 0, 0])          # bias-only baseline
+        assert mon.check(t0, IN_BOX).action == SafetyAction.OK
+        debounce_s = hw.safety.wrench_debounce_ticks / hw.control.action_rate_hz
+        push_arm(rings, ft=[0, 0, 10.0 + hw.safety.wrench_limit_N + 5, 0, 0, 0])
+        v = mon.check(t0 + 0.01, IN_BOX)                    # spike starts
+        assert v.action == SafetyAction.OK                  # not yet debounced
+        v = mon.check(t0 + 0.01 + debounce_s, IN_BOX)       # still over: trip
         assert v.action == SafetyAction.STOP_EPISODE
         assert any(e.kind == "wrench_limit" for e in v.events)
+
+
+def test_wrench_transient_spike_ignored():
+    hw = make_small_hw()
+    with _rings(hw) as rings:
+        mon = SafetyMonitor(hw, rings)
+        t0 = time.perf_counter()
+        push_arm(rings, ft=[0, 0, 10.0, 0, 0, 0])
+        assert mon.check(t0, IN_BOX).action == SafetyAction.OK
+        push_arm(rings, ft=[0, 0, 10.0 + hw.safety.wrench_limit_N + 20, 0, 0, 0])
+        assert mon.check(t0 + 0.01, IN_BOX).action == SafetyAction.OK
+        push_arm(rings, ft=[0, 0, 10.0, 0, 0, 0])           # spike gone
+        assert mon.check(t0 + 0.02, IN_BOX).action == SafetyAction.OK
+        # over-limit counter must have reset: a fresh spike is again debounced
+        push_arm(rings, ft=[0, 0, 10.0 + hw.safety.wrench_limit_N + 20, 0, 0, 0])
+        assert mon.check(t0 + 0.03, IN_BOX).action == SafetyAction.OK
 
 
 def test_protective_stop_wins_priority():
