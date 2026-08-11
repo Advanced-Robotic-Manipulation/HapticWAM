@@ -67,6 +67,7 @@ class DeploymentRuntime:
         self.mode = mode
         self.out_root = Path(out_root)
         self.rig = make_rig(hw, control=True)
+        self.rig.worker_owned_tactile = True    # real DM-Tac is single-open
         self.session: SensorSession | None = None
         self.recorder: EpisodeRecorder | None = None
 
