@@ -20,7 +20,7 @@ Module names used throughout:
 
 **Manipulator.** UR 6-DoF arm, control and state readout via RTDE. The hardware fork that matters: any e-Series (UR3e/UR5e/…) has a built-in 6-axis force/torque sensor at the tool flange streaming at 500 Hz; a CB3-generation arm only *estimates* TCP force from joint currents (noisier, biased). If the arm is CB3, mount an external wrist F/T (e.g., Robotiq FT-300S, 100 Hz) — ACC depends on a clean wrist wrench. **Confirm the exact arm generation before anything else.**
 
-**Gripper.** Robotiq 2F-85/2F-140 class (position + speed + force command, opening and motor-current feedback at ~100 Hz), or the Daimon DM-Tac G, which ships with W-family fingertips pre-integrated (Modbus RTU/RS485 + Digital I/O).
+**Gripper.** Robotiq 2F-85/2F-140 class (position + speed + force command, opening and gOBJ object-detection status feedback at ~100 Hz), or the Daimon DM-Tac G, which ships with W-family fingertips pre-integrated (Modbus RTU/RS485 + Digital I/O).
 
 **Tactile.** Two DM-Tac W2L sensors (Daimon Robotics), one per fingertip. Confirmed spec (official W2L documentation, received directly from Daimon): vision-based optical-tactile, **36×27 mm perceived area, 120 Hz sampling, 640×480 internal camera, 384×288 perceptual resolution** (110,592 points), USB 2.0.
 
