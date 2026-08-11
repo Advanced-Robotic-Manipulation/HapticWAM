@@ -19,6 +19,7 @@ import time
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
+from phantom.data.derived import rotvec_nearest
 from phantom.deploy.governor import SpeedGovernor
 from phantom.deploy.safety import SafetyAction, SafetyMonitor
 from phantom.drivers.base import Arm, Gripper
@@ -43,6 +44,7 @@ class ChunkExecutor:
         self._play_time = 0.0                  # governed playback clock
         self._last_action_k = -1               # last action index reported to record_action
         self._last_tick = 0.0
+        self._last_cmd: np.ndarray | None = None   # last pose actually commanded
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -150,6 +152,29 @@ class ChunkExecutor:
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
 
+            # Kinematic rate limit on the COMMANDED pose — the model/plan side
+            # has no dynamics bound, and replan-boundary jumps otherwise get
+            # executed as whips (field 2026-08-11: joint speeds grew to
+            # 5.5 rad/s over an episode). Cap the per-tick displacement so any
+            # target is approached at arm.limits speeds; the executor converges
+            # to the plan whenever the plan itself is feasible.
+            target = np.array(target, dtype=np.float64)
+            if self._last_cmd is not None:
+                v_lin = hw.arm.limits.tcp_speed_m_s
+                v_rot = hw.arm.limits.joint_speed_rad_s
+                dp = target[:3] - self._last_cmd[:3]
+                n = float(np.linalg.norm(dp))
+                if n > v_lin * period:
+                    target[:3] = self._last_cmd[:3] + dp * (v_lin * period / n)
+                rv = rotvec_nearest(self._last_cmd[3:6], target[3:6])
+                dr = rv - self._last_cmd[3:6]
+                rn = float(np.linalg.norm(dr))
+                if rn > v_rot * period:
+                    target[3:6] = self._last_cmd[3:6] + dr * (v_rot * period / rn)
+                else:
+                    target[3:6] = rv
+            self._last_cmd = target.copy()
+
             self.arm.servo_l(target, dt_servo, hw.arm.servoj.lookahead_time_s,
                              hw.arm.servoj.gain)
             if grip is not None:
@@ -164,6 +189,7 @@ class ChunkExecutor:
     def start(self) -> None:
         self._stop.clear()
         self.stopped_reason = None
+        self._last_cmd = None                  # re-seed the rate limit per episode
         self._thread = threading.Thread(target=self._run, daemon=True, name="executor")
         self._thread.start()
 
