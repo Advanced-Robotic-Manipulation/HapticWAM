@@ -91,19 +91,27 @@ class PhantomRectifiedFlow(nn.Module):
         return self._time_shift(torch.sigmoid(u)).to(device)
 
     # ------------------------------------------------------------------
-    def build_x0(self, batch: dict, layout: SequenceLayout | None = None
+    def build_x0(self, batch: dict, layout: SequenceLayout | None = None,
+                 *, encode_gen: bool = True
                  ) -> tuple[torch.Tensor, torch.Tensor, AccInputs]:
-        """Assemble the clean extended sequence + cond mask + ACC inputs."""
+        """Assemble the clean extended sequence + cond mask + ACC inputs.
+
+        encode_gen=False (sampling): VIDEO_GEN x0 content is dead at sampling
+        (those frames start from pure noise and are never cond-pinned), so
+        only the single conditioning frame goes through the VAE — the policy
+        tiles the current camera frame across the window, and encoding the
+        other 12 identical pixel frames is pure latency."""
         layout = layout or self.layout
         dev, dt = self.device, self.dtype
         video = batch["video"].to(dev, dt)                        # (B, Tpix, 3, H, W)
         B = video.shape[0]
-        vid_lat = self.vae.encode(video.permute(0, 2, 1, 3, 4)).to(dt)  # (B,16,Tv,h,w)
+        pix = video if encode_gen else video[:, :1]
+        vid_lat = self.vae.encode(pix.permute(0, 2, 1, 3, 4)).to(dt)  # (B,16,Tv,h,w)
 
         x0 = torch.zeros(B, layout.lat_c, layout.t_total, layout.lat_h, layout.lat_w,
                          device=dev, dtype=dt)
         x0[:, :, layout.frame_slice(FrameGroup.VIDEO_COND)] = vid_lat[:, :, :1]
-        if layout.has(FrameGroup.VIDEO_GEN):
+        if layout.has(FrameGroup.VIDEO_GEN) and encode_gen:
             x0[:, :, layout.frame_slice(FrameGroup.VIDEO_GEN)] = vid_lat[:, :, 1:]
 
         obs_batch = {k: v.to(dev, dt) if torch.is_tensor(v) else v
@@ -271,7 +279,7 @@ class PhantomRectifiedFlow(nn.Module):
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
                                        student=self.layout.student, drop_video=True)
                   if drop_video else self.layout)
-        x0, cond_mask, acc_inputs = self.build_x0(batch, layout)
+        x0, cond_mask, acc_inputs = self.build_x0(batch, layout, encode_gen=False)
         if prev_cpk is not None:  # deployment: true previous-replan package
             acc_inputs.prev_cpk_summary_B_S = \
                 self.c_pack.flatten_summary(prev_cpk.to(self.device)).to(self.dtype)
@@ -282,6 +290,18 @@ class PhantomRectifiedFlow(nn.Module):
         x = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
         x = torch.where(cond_mask.bool(), x0, x)
 
+        # step-invariant conditioning, computed ONCE per replan (not per NFE
+        # step): the projected text context (the 100352->1024 projection reads
+        # a ~100M-param matrix — running it per step is pure waste), the
+        # intent chunk on-device, and the fps tensor
+        ctx = self.text.get(B, batch.get("text")).to(dt)
+        ctx_projected = False
+        if getattr(self.net, "use_crossattn_projection", False):
+            ctx = self.net.crossattn_proj(ctx)
+            ctx_projected = True
+        prev_chunk = batch["prev_chunk"].to(dev, dt)
+        fps = torch.full((B,), self.bb.fps, device=dev)
+
         ts = self._time_shift(torch.linspace(1.0, 0.0, nfe + 1)).to(dev, dt)
         acc_out: AccOutput | None = None
         contact_hidden = None
@@ -291,11 +311,11 @@ class PhantomRectifiedFlow(nn.Module):
             t_B_T[:, cond_T] = 0.0
             out = self.net(
                 x_B_C_T_H_W=x, timesteps_B_T=t_B_T * 1000.0,
-                crossattn_emb=self.text.get(B, batch.get("text")),
+                crossattn_emb=ctx, crossattn_projected=ctx_projected,
                 condition_video_input_mask_B_C_T_H_W=cond_mask,
-                action=batch["prev_chunk"].to(dev, dt),
+                action=prev_chunk,
                 acc_inputs=acc_inputs, layout=layout,
-                fps=torch.full((B,), self.bb.fps, device=dev))
+                fps=fps)
             x = x + (t_next - t_cur) * out.velocity_B_C_T_H_W
             x = torch.where(cond_mask.bool(), x0, x)               # keep cond pinned
             acc_out = out.acc

@@ -90,14 +90,13 @@ class HHT(nn.Module):
         if self.student:
             return out
 
-        # gel: encode each finger's single frame through the frozen VAE
+        # gel: all fingers' single frames through the frozen VAE in ONE call
+        # (fingers folded into the batch dim — one launch instead of F)
         gel = batch["gel"]                                     # (B, F, 3, H, W)
         Fn = gel.shape[1]
-        lat_list = []
-        for f in range(Fn):
-            single = gel[:, f].unsqueeze(2)                    # (B, 3, T=1, H, W)
-            lat_list.append(self.vae.encode(single)[:, :, 0])  # (B, lat, h, w)
-        gel_lat = torch.cat(lat_list, dim=1).to(pr.dtype)      # (B, F*lat, h, w)
+        lat = self.vae.encode(gel.flatten(0, 1).unsqueeze(2))[:, :, 0]  # (B*F, lat, h, w)
+        gel_lat = lat.reshape(B, Fn * lat.shape[1],
+                              *lat.shape[-2:]).to(pr.dtype)    # (B, F*lat, h, w)
         out[FrameGroup.OBS_GEL] = self.phantom_gel_fuse(gel_lat).unsqueeze(2)
 
         # mech: conv encoder spatial maps (FiLM on contact state), fused 1x1

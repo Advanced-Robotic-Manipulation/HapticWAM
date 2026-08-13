@@ -169,6 +169,7 @@ class PhantomDiT(ActionChunkConditionedMinimalV1LVGDiT):
         fps: torch.Tensor | None = None,
         padding_mask: torch.Tensor | None = None,
         return_contact_hidden: bool = True,
+        crossattn_projected: bool = False,   # crossattn_emb already through crossattn_proj
         **kwargs,
     ) -> PhantomNetOutput:
         layout = layout or self.layout
@@ -207,7 +208,7 @@ class PhantomDiT(ActionChunkConditionedMinimalV1LVGDiT):
                     if self.mc.rope_time_mode == "aligned" else rope_standard)
 
         # 4) cross-attention context
-        if self.use_crossattn_projection:
+        if self.use_crossattn_projection and not crossattn_projected:
             crossattn_emb = self.crossattn_proj(crossattn_emb)
         context_input = crossattn_emb
 
