@@ -45,9 +45,21 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             norm = NormStats(
                 mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
                 std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
+    from phantom.backbone import loader as bl
+    if args.ckpt and not args.tiny:
+        # exact: fold LoRA deltas into the base weights (removes the adapter
+        # matmuls from every hot linear)
+        bl.merge_lora(pm.rf.net)
+    if getattr(args, "fp8", False):
+        # bench-only escape hatch: torchao 0.18 rowwise FP8 currently produces
+        # NaN actions on this stack (measured 2026-08-13) — never expose it as
+        # a deploy flag until the parity check in bench_inference passes
+        bl.quantize_fp8(pm.rf.net)
+    if getattr(args, "flex", False):
+        bl.enable_flex_attention(pm.rf.net)
     if getattr(args, "compile", False):
-        from phantom.backbone.loader import compile_blocks
-        compile_blocks(pm.rf.net)
+        bl.compile_blocks(pm.rf.net, mode=getattr(args, "compile_mode", "default")
+                          or "default")
     return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
                          task_text=(args.text or args.task))
 
@@ -65,6 +77,11 @@ def main(argv=None) -> int:
     ap.add_argument("--drop-video", action="store_true")
     ap.add_argument("--compile", action="store_true",
                     help="torch.compile the DiT blocks (adds ~1-2 min warmup)")
+    ap.add_argument("--compile-mode", default="default",
+                    help="torch.compile mode (e.g. reduce-overhead for cudagraphs)")
+    ap.add_argument("--flex", action="store_true",
+                    help="FlexAttention self-attn (block-sparse structural mask; "
+                         "action parity vs SDPA verified to ~6e-4)")
     ap.add_argument("--ema", action="store_true")
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--hardware", default=None)
