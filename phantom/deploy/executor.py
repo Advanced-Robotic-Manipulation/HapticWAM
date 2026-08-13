@@ -186,11 +186,25 @@ class ChunkExecutor:
                 time.sleep(wait)
 
     # ------------------------------------------------------------------
+    def _run_guarded(self) -> None:
+        """_run with a crash net: an executor that dies (e.g. servoJ rejected
+        after a UR protective stop) MUST surface through stopped_reason —
+        field-debugged 2026-08-14: an uncaught servo exception killed the
+        thread silently and the planner kept replanning into a stopped arm
+        for 30+ cycles."""
+        try:
+            self._run()
+        except Exception:
+            log.exception("executor thread crashed")
+            if self.stopped_reason is None:
+                self.stopped_reason = "executor_crash"
+
     def start(self) -> None:
         self._stop.clear()
         self.stopped_reason = None
         self._last_cmd = None                  # re-seed the rate limit per episode
-        self._thread = threading.Thread(target=self._run, daemon=True, name="executor")
+        self._thread = threading.Thread(target=self._run_guarded, daemon=True,
+                                        name="executor")
         self._thread.start()
 
     def stop(self) -> None:
