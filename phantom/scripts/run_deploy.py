@@ -34,7 +34,8 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
     student = args.system != "teacher"
     dtype = torch.bfloat16 if (args.device == "cuda" and not args.tiny) else torch.float32
     pm = build_model(hw, paths, student=student, tiny=args.tiny,
-                     load_base=not args.tiny, device=args.device, dtype=dtype)
+                     load_base=not args.tiny, device=args.device, dtype=dtype,
+                     inference=True)
     norm = NormStats.identity()
     if args.ckpt:
         payload = C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw,
@@ -44,6 +45,9 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             norm = NormStats(
                 mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
                 std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
+    if getattr(args, "compile", False):
+        from phantom.backbone.loader import compile_blocks
+        compile_blocks(pm.rf.net)
     return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
                          task_text=(args.text or args.task))
 
@@ -59,6 +63,8 @@ def main(argv=None) -> int:
     ap.add_argument("--max-replans", type=int, default=20)
     ap.add_argument("--nfe", type=int, default=None)
     ap.add_argument("--drop-video", action="store_true")
+    ap.add_argument("--compile", action="store_true",
+                    help="torch.compile the DiT blocks (adds ~1-2 min warmup)")
     ap.add_argument("--ema", action="store_true")
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--hardware", default=None)

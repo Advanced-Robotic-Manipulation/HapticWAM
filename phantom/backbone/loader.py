@@ -54,7 +54,8 @@ def setup_cosmos(paths: PathsConfig) -> None:
 
 def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareConfig,
                       layout: SequenceLayout, paths: PathsConfig,
-                      device: str = "cpu", dtype: torch.dtype = torch.float32):
+                      device: str = "cpu", dtype: torch.dtype = torch.float32,
+                      inference: bool = False):
     """Construct a PhantomDiT with the transcribed backbone kwargs.
 
     NOTE on max sizes: max_frames bounds the RoPE/temporal axis — must cover
@@ -66,6 +67,16 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
         "wraps torch_attention_op's attn_mask argument")
     setup_cosmos_from_default(paths)
     from phantom.model.phantom_dit import PhantomDiT
+
+    extra = {}
+    if inference:
+        # cosmos wraps every block in a selective-activation-checkpoint
+        # wrapper BY DEFAULT (SACConfig() = mm_only every block) — a training
+        # memory feature. At inference it only adds Python indirection and
+        # blocks torch.compile/cudagraph capture of the block loop.
+        from cosmos_predict2._src.predict2.networks.minimal_v4_dit import (
+            CheckpointMode, SACConfig)
+        extra["sac_config"] = SACConfig(mode=CheckpointMode.NONE)
 
     net = PhantomDiT(
         layout=layout, mc=mc, bb=bb, hw=hw,
@@ -89,8 +100,22 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
         timestep_scale=bb.timestep_scale,
         action_dim=bb.action_dim,
         temporal_compression_ratio=bb.actions_per_latent_frame,
+        **extra,
     )
     return net.to(device=device, dtype=dtype)
+
+
+def compile_blocks(net, mode: str = "default") -> None:
+    """torch.compile each DiT block in place (deploy-only; static shapes).
+
+    Per-block rather than whole-net: the phantom forward mixes Python-side
+    bias bookkeeping and numpy layout lookups that graph-break anyway — the
+    blocks are where the time is."""
+    for i, block in enumerate(net.blocks):
+        net.blocks.register_module(
+            str(i), torch.compile(block, mode=mode, dynamic=False))
+    log.info("torch.compile enabled on %d DiT blocks (mode=%s)",
+             len(net.blocks), mode)
 
 
 def setup_cosmos_from_default(paths: PathsConfig) -> None:

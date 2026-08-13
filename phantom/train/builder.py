@@ -39,7 +39,8 @@ def build_model(hw: HardwareConfig, paths: PathsConfig, *,
                 student: bool = False, tiny: bool = False,
                 load_base: bool = True, lora: bool = True,
                 device: str = "cpu",
-                dtype: torch.dtype = torch.float32) -> PhantomModel:
+                dtype: torch.dtype = torch.float32,
+                inference: bool = False) -> PhantomModel:
     """tiny=True still imports the cosmos repo (for the DiT classes) but uses
     the small preset, random init, FakeVAE and fake text — CPU-runnable."""
     if mc is None:
@@ -50,7 +51,8 @@ def build_model(hw: HardwareConfig, paths: PathsConfig, *,
     log.info("layout:\n%s", layout.describe())
 
     bl.setup_cosmos(paths)
-    net = bl.build_phantom_net(bb, mc, hw, layout, paths, device=device, dtype=dtype)
+    net = bl.build_phantom_net(bb, mc, hw, layout, paths, device=device, dtype=dtype,
+                               inference=inference)
     if load_base and not tiny:
         bl.load_base_weights(net, paths.cosmos_checkpoint, verify=bb)
     if lora:
