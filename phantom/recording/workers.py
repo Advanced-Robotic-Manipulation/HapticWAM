@@ -145,7 +145,20 @@ def _tactile_main(hw_yaml: str, sensor_name: str, ring_specs: dict[str, dict],
     else:
         from phantom.drivers.real.dmtac import DmTacSensor
         driver = DmTacSensor(t, sensor_cfg)
-        driver.connect()
+        # Field-debugged 2026-08-13 (waffles deploy): both tactile workers
+        # spawn together, and two SIMULTANEOUS SDK opens power-cycle the
+        # second sensor off the USB bus (repeatable; solo opens and a
+        # 5s-staggered dual open are clean at the full 120 Hz, incl. on a
+        # shared hub). Serialize the connect window by finger index, with
+        # one retry as belt-and-braces.
+        time.sleep(finger_index * 8.0)
+        try:
+            driver.connect()
+        except Exception:
+            log.warning("tactile[%s] connect failed — retrying once in 5s",
+                        sensor_name)
+            time.sleep(5.0)
+            driver.connect()
 
     ring = SharedRingBuffer.attach(ring_specs[f"tactile_{sensor_name}"])
     ring_kf = SharedRingBuffer.attach(ring_specs[f"tactile_{sensor_name}_kf"])

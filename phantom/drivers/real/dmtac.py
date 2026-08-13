@@ -160,17 +160,28 @@ class DmTacSensor(TactileSensor):
         return np.asarray(im.img)
 
     def _wait_ready(self) -> None:
-        """Block until the device is OK and a new frame id is available."""
-        deadline = time.perf_counter() + 2.0
+        """Block until the device is OK and a new frame id is available.
+
+        DISCONNECTED is tolerated within the deadline window: field-debugged
+        2026-08-13 (waffles deploy) — a RealSense pipeline starting on the
+        same USB controller makes the sensor's stream drop transiently
+        (img FPS:0.0 -> USB re-enumerate), and the vendor SDK RECONNECTS BY
+        ITSELF within ~2-4 s. Treating the first DISCONNECTED as fatal killed
+        the tactile worker on every deploy start; only a disconnect that
+        persists past the deadline is real."""
+        deadline = time.perf_counter() + 6.0
+        warned = False
         while True:
             st = self._sdk.getDevStatus()
             if st == _STATUS_OK:
                 break
-            if st == _STATUS_DISCONNECTED:
-                raise RuntimeError(f"tactile[{self.sensor.name}] DISCONNECTED")
+            if st == _STATUS_DISCONNECTED and not warned:
+                warned = True
             if time.perf_counter() > deadline:
-                raise RuntimeError(f"tactile[{self.sensor.name}] not ready (status={st}) >2s")
-            time.sleep(0.005)
+                raise RuntimeError(
+                    f"tactile[{self.sensor.name}] not ready (status={st}) >6s"
+                    + (" — DISCONNECTED did not self-recover" if warned else ""))
+            time.sleep(0.02)
         try:
             self._sdk.wait_for_new(self._last_fid, timeout_ms=int(2000.0 / self.cfg.rate_hz) + 50)
         except Exception:
