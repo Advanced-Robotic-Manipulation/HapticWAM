@@ -82,6 +82,11 @@ def main(argv=None) -> int:
     ap.add_argument("--drop-video", action="store_true")
     ap.add_argument("--compile", action="store_true")
     ap.add_argument("--compile-mode", default="default")
+    ap.add_argument("--flex", action="store_true")
+    ap.add_argument("--fp8", action="store_true")
+    ap.add_argument("--dump-actions", default="",
+                    help="save the final replan's denormalized actions (.npy) "
+                         "for cross-config parity checks")
     ap.add_argument("--iters", type=int, default=10)
     ap.add_argument("--warmup", type=int, default=2)
     ap.add_argument("--ema", action="store_true")
@@ -146,6 +151,9 @@ def main(argv=None) -> int:
     log.info("other (CPU/pack/norm): median %.0f ms",
              statistics.median([w - n - v for w, n, v in
                                 zip(walls, nets, vaes)]))
+    if args.dump_actions:
+        np.save(args.dump_actions, prev_plan.actions)
+        log.info("actions of the last replan saved to %s", args.dump_actions)
     return 0
 
 

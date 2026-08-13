@@ -105,6 +105,49 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
     return net.to(device=device, dtype=dtype)
 
 
+def merge_lora(net) -> int:
+    """Fold the LoRA deltas into the base weights in place (mathematically
+    exact — removes the per-linear adapter matmuls from the hot path).
+    Deploy-only: a merged net must not be further LoRA-trained. Returns the
+    number of merged layers."""
+    from peft.tuners.lora import LoraLayer
+    n = 0
+    for m in net.modules():
+        if isinstance(m, LoraLayer):
+            m.merge()
+            n += 1
+    log.info("LoRA merged into base weights: %d layers", n)
+    return n
+
+
+def enable_flex_attention(net) -> None:
+    """Swap the SDPA+dense-mask self-attention ops for FlexAttention with a
+    BlockMask (structural mask tiles skipped) + score_mod (ACC key bias)."""
+    from phantom.model.attention_bias import install_flex_hooks
+    install_flex_hooks(net.blocks, net.phantom_bias_holder)
+    log.info("FlexAttention self-attn ops installed on %d blocks", len(net.blocks))
+
+
+def quantize_fp8(net) -> None:
+    """Dynamic FP8 (rowwise) quantization of the large block linears via
+    torchao. EXPERIMENTAL — bench_inference-only: on torchao 0.18 /
+    torch 2.13 / sm_120 with merged LoRA this produced NaN actions AND was
+    slower than the flex path (2026-08-13). Re-gate behind the bench parity
+    check before ever exposing it to run_deploy."""
+    import torch.nn as nn
+    from torchao.quantization import (Float8DynamicActivationFloat8WeightConfig,
+                                      PerRow, quantize_)
+
+    def big_linear(m, _name):
+        return isinstance(m, nn.Linear) and min(m.in_features, m.out_features) >= 1024
+
+    quantize_(net.blocks, Float8DynamicActivationFloat8WeightConfig(
+        granularity=PerRow()), filter_fn=big_linear)
+    n = sum(1 for m in net.blocks.modules()
+            if isinstance(m, nn.Linear) and min(m.in_features, m.out_features) >= 1024)
+    log.info("FP8 dynamic quantization applied to %d block linears", n)
+
+
 def compile_blocks(net, mode: str = "default") -> None:
     """torch.compile each DiT block in place (deploy-only; static shapes).
 
