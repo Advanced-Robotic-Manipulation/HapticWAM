@@ -99,20 +99,26 @@ class DeploymentRuntime:
 
         safety = SafetyMonitor(hw, self.session.rings)
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
-                                 record_action=self.recorder.record_action)
+                                 record_action=self.recorder.record_action,
+                                 gripper_ring=self.session.rings["gripper"])
         snapshots = SnapshotBuilder(hw, self.session, self.mode)
-        _wait_rings_warm(snapshots)
         trace: list = []
         planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace)
 
-        if hw.wrist_ft.bias_on_episode_start:
-            try:
-                self.rig.arm.zero_ft()
-            except Exception:
-                log.exception("zero_ft failed (continuing)")
-
+        # the executor thread owns + polls the gripper, so it must run BEFORE
+        # ring warm-up — the snapshot hard-requires gripper state (no silent
+        # zeros; that substitute collapsed the policy's action magnitude ~3x
+        # on every rig episode before 2026-08-14)
         executor.start()
         try:
+            _wait_rings_warm(snapshots)
+
+            if hw.wrist_ft.bias_on_episode_start:
+                try:
+                    self.rig.arm.zero_ft()
+                except Exception:
+                    log.exception("zero_ft failed (continuing)")
+
             planner.run(max_replans=max_replans)
         finally:
             planner.stop()

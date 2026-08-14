@@ -94,8 +94,13 @@ class PhantomPolicy:
         if prev_plan is not None and prev_plan.actions is not None:
             prev = self.norm.normalize("action", prev_plan.actions.astype(np.float32))
         else:
-            prev = np.zeros((hw.control.chunk_horizon, hw.control.action_dim),
-                            dtype=np.float32)
+            # "no previous chunk" = zero PHYSICAL action, which must be
+            # normalized like any other action — raw zeros in normalized space
+            # decode to the per-dim demo MEAN offset (gripper channel: -1.5
+            # sigma), an off-distribution first-replan conditioning
+            prev = self.norm.normalize(
+                "action", np.zeros((hw.control.chunk_horizon,
+                                    hw.control.action_dim), dtype=np.float32))
         batch["prev_chunk"] = torch.from_numpy(prev).unsqueeze(0)
 
         if not self.pm.layout.student:
