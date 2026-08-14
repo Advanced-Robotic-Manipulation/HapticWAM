@@ -33,13 +33,27 @@ log = logging.getLogger("run_deploy")
 def build_policy(args, hw, paths) -> PhantomPolicy:
     student = args.system != "teacher"
     dtype = torch.bfloat16 if (args.device == "cuda" and not args.tiny) else torch.float32
-    pm = build_model(hw, paths, student=student, tiny=args.tiny,
+    # build with the checkpoint's OWN model config (rope time mode, acc
+    # feedback mode, ...) — building code defaults silently changes the
+    # deployed geometry vs what was trained (v4 audit 2026-08-14)
+    mc = payload = None
+    if args.ckpt:
+        payload = torch.load(str(Path(args.ckpt)), map_location="cpu",
+                             weights_only=False)
+        saved_mc = payload.get("configs", {}).get("model")
+        if isinstance(saved_mc, dict):
+            from phantom.config.model import PhantomModelConfig
+            mc = PhantomModelConfig.from_dict(saved_mc)
+            log.info("model config from checkpoint: rope=%s cond_dropout=%.2f "
+                     "acc=%s", mc.rope_time_mode, mc.cond_dropout_p,
+                     mc.acc.self_anticipation)
+    pm = build_model(hw, paths, student=student, tiny=args.tiny, mc=mc,
                      load_base=not args.tiny, device=args.device, dtype=dtype,
                      inference=True)
     norm = NormStats.identity()
     if args.ckpt:
         payload = C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw,
-                                            load_ema=args.ema)
+                                            load_ema=args.ema, payload=payload)
         if payload.get("norm_stats"):
             ns = payload["norm_stats"]
             norm = NormStats(

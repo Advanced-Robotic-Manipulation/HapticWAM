@@ -25,15 +25,25 @@ from phantom.model.sequence import FrameGroup, SequenceLayout
 
 def group_velocity_mse(v_pred: torch.Tensor, v_target: torch.Tensor,
                        layout: SequenceLayout, group: FrameGroup,
-                       weights: torch.Tensor | None = None) -> torch.Tensor:
+                       weights: torch.Tensor | None = None,
+                       channels: slice | None = None) -> torch.Tensor:
     """Velocity MSE over one frame group.
 
     `weights` (B,) optionally scales each sample's contribution — used to zero
     the ACTION term on deliberate-failure demos while their contact/event
     supervision is kept. A batch of only zero-weight samples yields no
-    gradient rather than a NaN."""
+    gradient rather than a NaN.
+
+    `channels` restricts the loss to a channel range. For the ACTION group
+    this must be the packer's live channels (slice(0, actions_per_frame)):
+    ActionPacker writes only apf of the lat_c channels, so averaging all of
+    them spent 75% of the "action loss" on denoising constant zero padding —
+    diluting the action gradient 4x and pinning the reported metric near its
+    no-conditioning floor (v3 audit, 2026-08-14)."""
     sl = layout.frame_slice(group)
     pred, tgt = v_pred[:, :, sl].float(), v_target[:, :, sl].float()
+    if channels is not None:
+        pred, tgt = pred[:, channels], tgt[:, channels]
     if weights is None:
         return F.mse_loss(pred, tgt)
     per_sample = ((pred - tgt) ** 2).flatten(1).mean(1)          # (B,)
