@@ -54,7 +54,14 @@ class SnapshotBuilder:
 
         _, arm1 = rings["arm"].latest(1)
         _, grip = rings["gripper"].latest(1)
-        gr = grip["state"][0] if len(grip["state"]) else np.zeros(2, dtype=np.float32)
+        # HARD requirement, not a fallback: a zeros(2) substitute is a frozen
+        # -1.85sigma gripper-position input that collapses the sampled action
+        # magnitude ~3x (field root-cause 2026-08-14 — the deploy path never
+        # polled the gripper, so every rig episode ran on this substitute).
+        # _wait_rings_warm covers the startup window; a raise after that
+        # means the gripper feed stalled and the episode must end loudly.
+        assert len(grip["state"]), "no gripper state yet"
+        gr = grip["state"][0]
         ur_state = np.concatenate([
             arm1["q"][0], arm1["qd"][0], arm1["tcp_pose"][0], arm1["tcp_speed"][0], gr,
         ]).astype(np.float32)

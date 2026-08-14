@@ -30,13 +30,22 @@ log = logging.getLogger(__name__)
 
 class ChunkExecutor:
     def __init__(self, hw: HardwareConfig, arm: Arm, gripper: Gripper,
-                 safety: SafetyMonitor, *, record_action=None):
+                 safety: SafetyMonitor, *, record_action=None, gripper_ring=None):
         self.hw = hw
         self.arm = arm
         self.gripper = gripper
         self.safety = safety
         self.governor = SpeedGovernor(hw.safety.governor)
         self.record_action = record_action     # recorder.record_action hook
+        # The executor thread is the gripper's ONLY user at deploy, so gripper
+        # state polling lives HERE (same single-owner rule as GripperPilot on
+        # the collection path — a separate poller thread races move()/
+        # get_state() on RobotiqGripper's one TCP socket). Root cause
+        # 2026-08-14: no deploy-path poller existed at all, the snapshot's
+        # gripper dims were zeros(2) every rig episode.
+        self.gripper_ring = gripper_ring
+        self._grip_poll_period = 1.0 / hw.gripper.feedback_rate_hz
+        self._last_grip_poll = 0.0
         self._plan: Plan | None = None
         self._prev_plan: Plan | None = None
         self._prev_play_time = 0.0             # prev plan keeps playing during blend
@@ -52,19 +61,41 @@ class ChunkExecutor:
 
     # ------------------------------------------------------------------
     def submit(self, plan: Plan) -> bool:
-        """Accept a new plan if enough of it lies ahead of playback."""
+        """Accept a new plan if enough of it lies ahead of playback.
+
+        The plan is REBASED at swap (field root-cause 2026-08-14): its
+        t0_pose is the TCP measured at snapshot time, one full inference
+        latency ago, and playback used to restart at index 0 — together every
+        replan re-commanded already-elapsed motion from an already-left pose,
+        rewinding ~all of the previous cycle's advance (measured: 100% of rig
+        replan boundaries landed 22-26mm behind the commanded ramp).
+        Rebasing anchors the plan so pose_at(elapsed) == the pose we are
+        commanding RIGHT NOW, and playback starts at the action index whose
+        time it actually is."""
+        now = time.perf_counter()
         with self._lock:
             lead_ok = (plan.action_times[-1]
-                       > time.perf_counter() + self.hw.control.replan_min_lead_s)
+                       > now + self.hw.control.replan_min_lead_s)
             if not lead_ok:
                 log.warning("plan rejected: does not cover replan_min_lead_s")
                 return False
+            rate = self.hw.control.action_rate_hz
+            H = plan.actions.shape[0]
+            u0 = float(np.clip((now - plan.t_created) * rate, 0.0, H - 1e-6))
+            k0 = int(u0)
+            cum = np.cumsum(plan.actions[:, :6], axis=0)
+            prev0 = cum[k0 - 1] if k0 > 0 else np.zeros(6)
+            c0 = prev0 + (u0 - k0) * (cum[k0] - prev0)
+            if self._last_cmd is not None:
+                # continuity: target(u0) = t0_pose + c0 == _last_cmd
+                plan.t0_pose = self._last_cmd.copy() - c0
             self._prev_plan = self._plan
             self._prev_play_time = self._play_time
             self._plan = plan
-            self._swap_t = time.perf_counter()
-            self._play_time = 0.0
-            self._last_action_k = -1
+            self._swap_t = now
+            self._play_time = u0 / rate
+            # steps < k0 were never executed — don't report them as executed
+            self._last_action_k = k0 - 1
             return True
 
     def active_plan(self) -> Plan | None:
@@ -95,6 +126,16 @@ class ChunkExecutor:
             t0 = time.perf_counter()
             dt = t0 - self._last_tick
             self._last_tick = t0
+
+            # gripper state -> ring, throttled to feedback_rate_hz; runs even
+            # while idle so the ring is warm before the first plan arrives
+            if (self.gripper_ring is not None
+                    and t0 - self._last_grip_poll >= self._grip_poll_period):
+                self._last_grip_poll = t0
+                gs = self.gripper.get_state()
+                self.gripper_ring.push(gs.t_host, state=np.array(
+                    [gs.position, gs.obj], dtype=np.float32))
+
             with self._lock:
                 plan = self._plan
             if plan is None:
