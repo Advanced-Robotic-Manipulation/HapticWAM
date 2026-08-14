@@ -73,16 +73,57 @@ def pick_dtype(device: str, tiny: bool, compute=None) -> torch.dtype:
 # optimizer / EMA
 # ---------------------------------------------------------------------------
 
+class Fp32MasterAdamW(torch.optim.AdamW):
+    """AdamW stepping fp32 MASTER copies of (bf16) trainable params.
+
+    Pure-bf16 training silently froze every parameter whose per-step update
+    fell below the bf16 ulp — measured on teacher v3: acc beta_raw and all
+    tactile-encoder norm scales never moved off init (v4 audit 2026-08-14).
+    The masters accumulate updates in fp32 and are copied back to the model
+    dtype each step; grads flow from the live (bf16) params."""
+
+    def __init__(self, param_groups, **kw):
+        self._live: list[torch.nn.Parameter] = []
+        master_groups = []
+        for g in param_groups:
+            live = list(g["params"])
+            masters = [torch.nn.Parameter(p.detach().float().clone(),
+                                          requires_grad=False) for p in live]
+            self._live.extend(live)
+            master_groups.append({**g, "params": masters})
+        super().__init__(master_groups, **kw)
+        self._masters = [p for g in self.param_groups for p in g["params"]]
+        assert len(self._masters) == len(self._live)
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        for live, master in zip(self._live, self._masters):
+            master.grad = live.grad.float() if live.grad is not None else None
+        loss = super().step(closure)
+        for live, master in zip(self._live, self._masters):
+            live.data.copy_(master.data.to(live.dtype))
+            master.grad = None
+        return loss
+
+    def zero_grad(self, set_to_none: bool = True):
+        super().zero_grad(set_to_none)
+        for live in self._live:
+            if set_to_none:
+                live.grad = None
+            elif live.grad is not None:
+                live.grad.zero_()
+
+
 def make_optimizer(model: torch.nn.Module, cfg: CommonTrainConfig) -> torch.optim.Optimizer:
     lora, new = [], []
     for name, p in model.named_parameters():
         if not p.requires_grad:
             continue
         (lora if "lora_" in name else new).append(p)
-    return torch.optim.AdamW(
-        [{"params": lora, "lr": cfg.lr},
-         {"params": new, "lr": cfg.lr_new_modules}],
-        weight_decay=cfg.weight_decay, betas=(0.9, 0.95))
+    groups = [{"params": lora, "lr": cfg.lr},
+              {"params": new, "lr": cfg.lr_new_modules}]
+    cls = Fp32MasterAdamW if cfg.fp32_master else torch.optim.AdamW
+    return cls(groups, weight_decay=cfg.weight_decay, betas=(0.9, 0.95))
 
 
 def make_scheduler(opt: torch.optim.Optimizer, cfg: CommonTrainConfig):
@@ -166,10 +207,14 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
 
 def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             hw: HardwareConfig, load_ema: bool = False,
-                            allow_missing: bool = False) -> dict:
+                            allow_missing: bool = False,
+                            payload: dict | None = None) -> dict:
     """Load lora+phantom weights into a built model; asserts hardware
-    shape-compat (value-only drift warns via hash)."""
-    payload = torch.load(str(path), map_location="cpu", weights_only=False)
+    shape-compat (value-only drift warns via hash). `payload` lets callers
+    that already torch.load'ed the file (e.g. to reconstruct the saved model
+    config BEFORE building — see run_deploy) skip the second 286MB read."""
+    if payload is None:
+        payload = torch.load(str(path), map_location="cpu", weights_only=False)
     assert payload["format_version"] == CKPT_FORMAT_VERSION
     saved_shapes = payload["configs"]["hardware_shapes"]
     cur_shapes = hw.shape_relevant_fields()
@@ -348,9 +393,69 @@ def evaluate(model: torch.nn.Module, val_loader: DataLoader, step_fn,
     return {k: v / max(n, 1) for k, v in sums.items()}
 
 
+def evaluate_sampled(rf, val_ds, norm_action_mean, norm_action_std,
+                     n_windows: int = 8, nfe: int = 5,
+                     seed: int = 123) -> dict[str, float]:
+    """Open-loop SAMPLED-chunk metrics on held-out windows — what the flow
+    loss cannot see. teacher v3 shipped with val_action_v_mse pinned at its
+    no-conditioning floor while sampled actions were behaviorally wrong; this
+    is the standing guard against that (v4 audit 2026-08-14).
+
+    Returns mag_ratio (sampled/GT |dpos| — 1.0 is demo vigor), dir_cosine
+    (chunk direction vs GT), sampled_mse (normalized action space)."""
+    was_training = rf.training
+    rf.eval()
+    stride = max(1, len(val_ds) // n_windows)
+    idxs = list(range(0, len(val_ds), stride))[:n_windows]
+    mean = np.asarray(norm_action_mean, dtype=np.float64)
+    std = np.asarray(norm_action_std, dtype=np.float64)
+    mags_p, mags_g, coss, mses = [], [], [], []
+    gen_state = rf._gen.get_state()
+    with torch.no_grad():
+        for j, i in enumerate(idxs):
+            item = val_ds[i]
+            batch = {}
+            for k, v in item.items():
+                if isinstance(v, torch.Tensor):
+                    batch[k] = v.unsqueeze(0)
+                elif isinstance(v, np.ndarray):
+                    batch[k] = torch.from_numpy(v).unsqueeze(0)
+                elif isinstance(v, str):
+                    batch[k] = [v]
+                elif isinstance(v, (int, float, np.floating)):
+                    batch[k] = torch.tensor([v])
+                else:
+                    batch[k] = v
+            for k, v in batch.items():
+                if torch.is_tensor(v):
+                    v = v.to(rf.device)
+                    if v.is_floating_point():
+                        v = v.to(rf.dtype)
+                    batch[k] = v
+            rf._gen = torch.Generator().manual_seed(seed + j)
+            pred = rf.sample(batch, nfe=nfe)
+            gt = batch["action_chunk"][0].float().cpu().numpy().astype(np.float64)
+            pr = pred.actions_B_H_A[0].float().cpu().numpy().astype(np.float64)
+            mses.append(float(((pr - gt) ** 2).mean()))
+            gt_d, pr_d = gt * std + mean, pr * std + mean
+            mags_g.append(float(np.linalg.norm(gt_d[:, :3], axis=1).mean()))
+            mags_p.append(float(np.linalg.norm(pr_d[:, :3], axis=1).mean()))
+            den = (np.linalg.norm(pr_d[:, :3]) * np.linalg.norm(gt_d[:, :3]) + 1e-12)
+            coss.append(float(np.dot(pr_d[:, :3].ravel(), gt_d[:, :3].ravel()) / den))
+    rf._gen = torch.Generator()
+    rf._gen.set_state(gen_state)
+    if was_training:
+        rf.train()
+    return {
+        "sampled_mag_ratio": float(np.mean(mags_p) / (np.mean(mags_g) + 1e-9)),
+        "sampled_dir_cosine": float(np.mean(coss)),
+        "sampled_action_mse": float(np.mean(mses)),
+    }
+
+
 def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoader,
                step_fn, *, on_checkpoint=None, val_loader: DataLoader | None = None,
-               eval_step_fn=None) -> int:
+               eval_step_fn=None, sampled_eval_fn=None) -> int:
     """step_fn(batch) -> dict with 'total' loss tensor. Handles grad accum,
     clipping, EMA, logging; returns final step.
 
@@ -412,6 +517,10 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
             vm = evaluate(model, val_loader, eval_step_fn or step_fn)
             log.info("EVAL step %d  %s", step,
                      "  ".join(f"val_{k}={v:.4f}" for k, v in sorted(vm.items())))
+            if sampled_eval_fn is not None:
+                sm = sampled_eval_fn()
+                log.info("EVAL-SAMPLED step %d  %s", step,
+                         "  ".join(f"{k}={v:.4f}" for k, v in sorted(sm.items())))
         if is_main() and on_checkpoint and step % cfg.ckpt_every == 0:
             on_checkpoint(step, opt, sched, ema)
     if is_main() and on_checkpoint:

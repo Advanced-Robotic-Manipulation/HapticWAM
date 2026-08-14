@@ -106,17 +106,25 @@ def build_phantom_net(bb: BackboneConfig, mc: PhantomModelConfig, hw: HardwareCo
 
 
 def merge_lora(net) -> int:
-    """Fold the LoRA deltas into the base weights in place (mathematically
-    exact — removes the per-linear adapter matmuls from the hot path).
-    Deploy-only: a merged net must not be further LoRA-trained. Returns the
-    number of merged layers."""
+    """Fold the LoRA deltas into the base weights in place. Deploy-only: a
+    merged net must not be further LoRA-trained. Returns the merged count.
+
+    Each layer is merged IN FP32 and cast back: merging directly in bf16
+    discards the low bits of the delta against the much larger base weight
+    (measured ~3% of the delta magnitude on teacher v3 — the docstring used
+    to claim "mathematically exact", which was false in bf16)."""
     from peft.tuners.lora import LoraLayer
     n = 0
     for m in net.modules():
         if isinstance(m, LoraLayer):
+            dt = m.base_layer.weight.dtype
+            if dt != torch.float32:
+                m.to(torch.float32)
             m.merge()
+            if dt != torch.float32:
+                m.to(dt)
             n += 1
-    log.info("LoRA merged into base weights: %d layers", n)
+    log.info("LoRA merged into base weights (fp32 accumulate): %d layers", n)
     return n
 
 

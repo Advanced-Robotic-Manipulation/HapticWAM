@@ -63,6 +63,9 @@ class SequenceLayout:
     actions_per_frame: int
     student: bool
     drop_video: bool
+    # physical span of one ACTION latent frame in latent-video-frame units
+    # (rope "time_true" mode); 0.0 only for hand-built test layouts
+    action_pos_step: float = 0.0
 
     # ------------------------------------------------------------------
     @classmethod
@@ -90,9 +93,15 @@ class SequenceLayout:
         for g, n in order:
             slots.append(GroupSlot(g, t, n))
             t += n
+        # physical duration of one ACTION latent frame, in latent-video-frame
+        # units (the RoPE time axis): with apf=4 @ 10 Hz on the 4 Hz backbone
+        # (13 pixel frames -> 3 gen frames over 3 s) this is 0.4
+        latent_frame_s = ((bb.frames_pix - 1) / bb.fps) / max(t_gen, 1)
+        action_pos_step = (apf / hw.control.action_rate_hz) / latent_frame_s
         return cls(slots=tuple(slots), lat_c=bb.lat_ch, lat_h=bb.lat_h, lat_w=bb.lat_w,
                    tokens_per_frame=bb.tokens_per_frame, t_video_gen=t_gen,
-                   actions_per_frame=apf, student=student, drop_video=drop_video)
+                   actions_per_frame=apf, student=student, drop_video=drop_video,
+                   action_pos_step=action_pos_step)
 
     # ------------------------------------------------------------------
     @property
@@ -139,19 +148,26 @@ class SequenceLayout:
         return ids
 
     def rope_frame_positions(self, mode: str = "aligned") -> np.ndarray:
-        """(T,) int: temporal RoPE index per frame.
+        """(T,) temporal RoPE position per frame (int for aligned/append —
+        bit-compatible with v3 checkpoints; float for time_true).
 
-        aligned: OBS frames share position 0 (current time); CONTACT/ACTION
-                 frame k sits at 1+k (the video frame it predicts) — stays
-                 inside the pretrained temporal range [0, t_video).
-        append:  every frame gets a fresh position 0..T-1 (extrapolation risk;
-                 kept as an ablation).
+        aligned:   OBS frames share position 0 (current time); CONTACT/ACTION
+                   frame k sits at 1+k (the video frame it predicts) — stays
+                   inside the pretrained temporal range [0, t_video).
+                   DEFECT kept for v3 compat: with more action frames than
+                   t_video_gen this clamps to e.g. [1,2,3,3] — the last
+                   frames alias one temporal phase (v4 audit).
+        time_true: ACTION frame k at its PHYSICAL future time in latent-frame
+                   units ((k+1)*action_pos_step, e.g. [0.4,0.8,1.2,1.6]) —
+                   distinct, order-true, inside the pretrained range. CONTACT
+                   stays on the latent grid 1..t_gen (its labels live there).
+        append:    every frame a fresh position 0..T-1 (ablation).
         """
-        pos = np.zeros(self.t_total, dtype=np.int64)
         if mode == "append":
             return np.arange(self.t_total, dtype=np.int64)
-        if mode != "aligned":
+        if mode not in ("aligned", "time_true"):
             raise ValueError(f"unknown rope_time_mode {mode!r}")
+        pos = np.zeros(self.t_total, dtype=np.float64)
         for s in self.slots:
             if s.group == FrameGroup.VIDEO_COND:
                 pos[s.t_slice] = 0
@@ -159,9 +175,15 @@ class SequenceLayout:
                 pos[s.t_slice] = np.arange(1, 1 + s.t_len)
             elif s.group in COND_GROUPS:
                 pos[s.t_slice] = 0
-            else:  # CONTACT / ACTION: aligned with the future step they describe
+            elif s.group == FrameGroup.ACTION and mode == "time_true":
+                assert self.action_pos_step > 0, \
+                    "time_true rope needs a layout built with action_pos_step"
+                pos[s.t_slice] = (1 + np.arange(s.t_len)) * self.action_pos_step
+            else:  # CONTACT (both modes) / ACTION (aligned)
                 pos[s.t_slice] = 1 + np.arange(s.t_len) * max(1, (self.t_video_gen // s.t_len))
                 pos[s.t_slice] = np.minimum(pos[s.t_slice], self.t_video_gen)
+        if mode == "aligned":
+            return pos.astype(np.int64)      # exact v3 values + dtype
         return pos
 
     # ------------------------------------------------------------------

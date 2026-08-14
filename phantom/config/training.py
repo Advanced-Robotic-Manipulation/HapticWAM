@@ -26,6 +26,10 @@ class CommonTrainConfig:
     eval_every: int = 1000
     num_workers: int = 4
     activation_checkpointing: bool = True
+    # fp32 master copies in the optimizer: pure-bf16 stepping froze every
+    # param whose update rounds below the bf16 ulp (v3: acc beta_raw and the
+    # tactile-encoder norm scales never left init — v4 audit 2026-08-14)
+    fp32_master: bool = True
     synthetic: bool = False          # swap dataset for SyntheticEpisodeGenerator
     tiny: bool = False               # tiny backbone preset (CPU smoke)
     device: str = "cuda"

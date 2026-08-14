@@ -117,8 +117,9 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
     act_w = batch.get("action_weight")
     if act_w is not None:
         act_w = torch.as_tensor(act_w, device=v_s.device).reshape(-1)
-    parts["action_v_mse"] = L.group_velocity_mse(v_s, v_target, layout_s,
-                                                 FrameGroup.ACTION, act_w)
+    parts["action_v_mse"] = L.group_velocity_mse(
+        v_s, v_target, layout_s, FrameGroup.ACTION, act_w,
+        channels=slice(0, layout_s.actions_per_frame))
     if layout_s.has(FrameGroup.VIDEO_GEN):
         parts["video_v_mse"] = L.group_velocity_mse(v_s, v_target, layout_s,
                                                     FrameGroup.VIDEO_GEN)

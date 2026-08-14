@@ -30,7 +30,6 @@ class BiasHolder:
         self.lambdas: list[torch.Tensor] | None = None  # per-block learnable scales
         # flex-attention caches (persist across forwards; see FlexBiasedOp)
         self._flex_masks: dict = {}       # (id(structural), S_pad, dev) -> BlockMask
-        self._flex_kv: tuple | None = None  # (id(acc_key), padded (B, S_pad) fp32)
 
     def flex_block_mask(self, S: int, S_pad: int, device) -> "object":
         """BlockMask equivalent of the structural additive mask; cached per
@@ -51,14 +50,17 @@ class BiasHolder:
         return bm
 
     def flex_kv_bias(self, S_pad: int) -> torch.Tensor:
-        """(B, S_pad) fp32 view of acc_key, zero-padded; cached per forward."""
+        """(B, S_pad) fp32 view of acc_key, zero-padded.
+
+        NOT cached: the previous id(acc_key) cache could serve a STALE bias —
+        CPython reuses object ids after free, so a fresh tensor allocated at
+        a recycled address aliased the old entry (v4 audit). The reshape+pad
+        is negligible next to the attention it feeds."""
         ak = self.acc_key
-        if self._flex_kv is None or self._flex_kv[0] != id(ak):
-            v = ak.reshape(ak.shape[0], -1).float()
-            if v.shape[1] < S_pad:
-                v = torch.nn.functional.pad(v, (0, S_pad - v.shape[1]))
-            self._flex_kv = (id(ak), v)
-        return self._flex_kv[1]
+        v = ak.reshape(ak.shape[0], -1).float()
+        if v.shape[1] < S_pad:
+            v = torch.nn.functional.pad(v, (0, S_pad - v.shape[1]))
+        return v
 
     def bias_for_block(self, block_idx: int) -> torch.Tensor | None:
         parts = []

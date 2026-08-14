@@ -48,9 +48,14 @@ def main(argv=None) -> int:
         checkpoints = campaign_cfg.get("checkpoints", {})
         policies = {}
         for system in campaign_cfg["systems"]:
+            # text/task: build_policy conditions the policy on (text or task);
+            # per-trial task strings are set by run_campaign at episode time,
+            # so the build-time default is empty (was: AttributeError — this
+            # script has been unrunnable since the policy grew task_text)
             pol_args = SimpleNamespace(
                 system=system, ckpt=checkpoints.get(system, ""), nfe=None,
-                drop_video=False, ema=True, tiny=args.tiny, device=args.device)
+                drop_video=False, ema=True, tiny=args.tiny, device=args.device,
+                text="", task="")
             policies[system] = build_policy(pol_args, hw, paths)
         ledger = run_campaign(Path(args.campaign), hw, policies, out_root)
 

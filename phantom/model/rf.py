@@ -198,6 +198,18 @@ class PhantomRectifiedFlow(nn.Module):
         return x0, x_t, cond_mask, acc_inputs, t_B_T, used
 
     # ------------------------------------------------------------------
+    @staticmethod
+    def _null_obs_batch(batch: dict) -> dict:
+        """Copy of the batch with every OBSERVATION input nulled (classifier-
+        free dropout). Targets (action_chunk, cpk_*, events, gate_label) and
+        intent (prev_chunk) are untouched — only what the model perceives."""
+        out = dict(batch)
+        for k in ("video", "gel", "fields", "contact_state", "wrist",
+                  "ur_state", "reactive"):
+            if k in out and torch.is_tensor(out[k]):
+                out[k] = torch.zeros_like(out[k])
+        return out
+
     def training_step(self, batch: dict) -> dict[str, torch.Tensor]:
         layout = self.layout
         x0, cond_mask, acc_inputs = self.build_x0(batch)
@@ -207,16 +219,34 @@ class PhantomRectifiedFlow(nn.Module):
         t = self._sample_t(B, dev).to(dt)                          # (B,)
         cond_T = torch.from_numpy(layout.cond_mask_T()).to(dev)
         t_B_T = t.reshape(B, 1).expand(B, layout.t_total).clone()
+        if self.mc.action_t_max_of_two and layout.has(FrameGroup.ACTION):
+            # per-group timestep for ACTION: max of two draws biases its
+            # supervision toward the high-noise band few-NFE sampling visits
+            # first (velocity targets are t-independent, so only the noising
+            # level and the timestep embedding change)
+            t_act = torch.maximum(t, self._sample_t(B, dev).to(dt))
+            t_B_T[:, layout.frame_slice(FrameGroup.ACTION)] = t_act.reshape(B, 1)
         t_B_T[:, cond_T] = 0.0                                     # clean cond frames
 
+        text = batch.get("text")
+        if self.mc.cond_dropout_p > 0 and float(torch.rand(
+                (), generator=self._gen)) < self.mc.cond_dropout_p:
+            # classifier-free conditioning dropout: this sample trains the
+            # UNCONDITIONAL action/contact distribution — zero every
+            # observation input jointly (prev_chunk stays: it is intent, not
+            # observation). Enables obs-guidance at sampling.
+            x0, cond_mask, acc_inputs = self.build_x0(
+                self._null_obs_batch(batch), layout)
+            text = [""] * B
+
         eps = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
-        t_full = t.reshape(B, 1, 1, 1, 1)
-        x_t = (1 - t_full) * x0 + t_full * eps
+        t_frame = t_B_T.reshape(B, 1, layout.t_total, 1, 1).to(dt)
+        x_t = (1 - t_frame) * x0 + t_frame * eps
         x_t = torch.where(cond_mask.bool(), x0, x_t)               # FRAME_REPLACE
 
         out = self.net(
             x_B_C_T_H_W=x_t, timesteps_B_T=t_B_T * 1000.0,
-            crossattn_emb=self.text.get(B, batch.get("text")),
+            crossattn_emb=self.text.get(B, text),
             condition_video_input_mask_B_C_T_H_W=cond_mask,
             action=batch["prev_chunk"].to(dev, dt),
             acc_inputs=acc_inputs, layout=layout,
@@ -224,7 +254,7 @@ class PhantomRectifiedFlow(nn.Module):
 
         v_pred = out.velocity_B_C_T_H_W
         v_target = eps - x0
-        x0_pred = x_t - t_full * v_pred
+        x0_pred = x_t - t_frame * v_pred
 
         event_logits = self.phantom_event_head(out.contact_hidden_B_Tc_S_D)
         log_sigma = self.phantom_sigma_head(out.contact_hidden_B_Tc_S_D)
@@ -235,8 +265,11 @@ class PhantomRectifiedFlow(nn.Module):
         if act_w is not None:
             act_w = torch.as_tensor(act_w, device=dev).reshape(-1)
         parts: dict[str, torch.Tensor] = {
-            "action_v_mse": L.group_velocity_mse(v_pred, v_target, layout,
-                                                 FrameGroup.ACTION, act_w),
+            # channels: only the packer's live cells — averaging the zero
+            # padding diluted the action gradient 4x and floored the metric
+            "action_v_mse": L.group_velocity_mse(
+                v_pred, v_target, layout, FrameGroup.ACTION, act_w,
+                channels=slice(0, layout.actions_per_frame)),
             "contact_nll": L.contact_hetero_nll(
                 x0_pred, x0, log_sigma, layout,
                 group_channels=sigma_group_channels(self.hw.n_fingers)),
@@ -272,14 +305,23 @@ class PhantomRectifiedFlow(nn.Module):
     @torch.no_grad()
     def sample(self, batch: dict, *, nfe: int | None = None,
                prev_cpk: ContactPackage | None = None,
-               drop_video: bool | None = None) -> PhantomPrediction:
-        """Few-NFE Euler sampling of the joint sequence (the per-replan denoise)."""
+               drop_video: bool | None = None,
+               guidance_scale: float = 1.0) -> PhantomPrediction:
+        """Few-NFE Euler sampling of the joint sequence (the per-replan denoise).
+
+        guidance_scale > 1 applies observation-guidance (classifier-free):
+        v = v_null + s * (v_obs - v_null), doubling the per-step cost. Only
+        meaningful for checkpoints trained with cond_dropout_p > 0."""
         nfe = nfe or self.mc.nfe
         drop_video = self.mc.drop_video_at_inference if drop_video is None else drop_video
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
                                        student=self.layout.student, drop_video=True)
                   if drop_video else self.layout)
         x0, cond_mask, acc_inputs = self.build_x0(batch, layout, encode_gen=False)
+        x0_null = acc_null = ctx_null = None
+        if guidance_scale != 1.0:
+            x0_null, _, acc_null = self.build_x0(
+                self._null_obs_batch(batch), layout, encode_gen=False)
         if prev_cpk is not None:  # deployment: true previous-replan package
             acc_inputs.prev_cpk_summary_B_S = \
                 self.c_pack.flatten_summary(prev_cpk.to(self.device)).to(self.dtype)
@@ -301,6 +343,10 @@ class PhantomRectifiedFlow(nn.Module):
             ctx_projected = True
         prev_chunk = batch["prev_chunk"].to(dev, dt)
         fps = torch.full((B,), self.bb.fps, device=dev)
+        if guidance_scale != 1.0:
+            ctx_null = self.text.get(B, [""] * B).to(dt)
+            if ctx_projected:
+                ctx_null = self.net.crossattn_proj(ctx_null)
 
         ts = self._time_shift(torch.linspace(1.0, 0.0, nfe + 1)).to(dev, dt)
         acc_out: AccOutput | None = None
@@ -316,7 +362,19 @@ class PhantomRectifiedFlow(nn.Module):
                 action=prev_chunk,
                 acc_inputs=acc_inputs, layout=layout,
                 fps=fps)
-            x = x + (t_next - t_cur) * out.velocity_B_C_T_H_W
+            v = out.velocity_B_C_T_H_W
+            if guidance_scale != 1.0:
+                out_u = self.net(
+                    x_B_C_T_H_W=torch.where(cond_mask.bool(), x0_null, x),
+                    timesteps_B_T=t_B_T * 1000.0,
+                    crossattn_emb=ctx_null, crossattn_projected=ctx_projected,
+                    condition_video_input_mask_B_C_T_H_W=cond_mask,
+                    action=prev_chunk,
+                    acc_inputs=acc_null, layout=layout,
+                    fps=fps)
+                v = out_u.velocity_B_C_T_H_W + guidance_scale * (
+                    v - out_u.velocity_B_C_T_H_W)
+            x = x + (t_next - t_cur) * v
             x = torch.where(cond_mask.bool(), x0, x)               # keep cond pinned
             acc_out = out.acc
             contact_hidden = out.contact_hidden_B_Tc_S_D

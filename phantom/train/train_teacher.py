@@ -95,6 +95,23 @@ def main(argv=None) -> int:
                          "forward passes) instead of the gt_noised proxy. REQUIRED "
                          "for the final teacher whose gate lead-time is reported "
                          "(RQ2) — gt_noised trains the gate against leaked GT.")
+    ap.add_argument("--rope-time-mode", default="time_true",
+                    choices=["aligned", "append", "time_true"],
+                    help="ACTION-frame RoPE positions. time_true (v4 default) "
+                         "places each action frame at its physical future "
+                         "time; aligned reproduces v3's [1,2,3,3] clamping "
+                         "(last frames alias one temporal phase).")
+    ap.add_argument("--cond-dropout", type=float, default=0.1,
+                    help="p of nulling ALL observation inputs for a training "
+                         "sample (classifier-free) — makes obs-guidance "
+                         "available at sampling and sharpens obs->action "
+                         "coupling. 0 disables.")
+    ap.add_argument("--action-t-max-of-two", action="store_true", default=True,
+                    help="ACTION frames train at max of two timestep draws "
+                         "(high-noise-biased — the band few-NFE sampling "
+                         "visits first). --no-action-t-max-of-two disables.")
+    ap.add_argument("--no-action-t-max-of-two", dest="action_t_max_of_two",
+                    action="store_false")
     args = ap.parse_args(argv)
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
@@ -109,16 +126,18 @@ def main(argv=None) -> int:
     out_dir = Path(cfg.out_dir) if cfg.out_dir else paths.runs_root / "teacher" / cfg.run_name
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
-    mc = None
-    if args.acc_two_pass:
-        from phantom.config.model import AccConfig, PhantomModelConfig
-        mc = PhantomModelConfig(student=False,
-                                acc=AccConfig(self_anticipation="two_pass"))
-    else:
+    from phantom.config.model import AccConfig, PhantomModelConfig
+    acc = (AccConfig(self_anticipation="two_pass") if args.acc_two_pass
+           else AccConfig())
+    if not args.acc_two_pass:
         log.warning(
             "ACC self-anticipation = gt_noised (fast proxy). Do NOT report the "
             "RQ2 gate lead-time from this run — retrain the final teacher with "
             "--acc-two-pass so the gate never sees leaked GT contact.")
+    mc = PhantomModelConfig(student=False, acc=acc,
+                            rope_time_mode=args.rope_time_mode,
+                            cond_dropout_p=args.cond_dropout,
+                            action_t_max_of_two=args.action_t_max_of_two)
 
     pm = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc,
                      load_base=not cfg.tiny, device=args.device, dtype=dtype)
@@ -177,8 +196,15 @@ def main(argv=None) -> int:
             norm_stats=norm, optimizer=opt, scheduler=sched, ema=ema,
             text_conditioning=tc_prov)
 
+    sampled_eval = None
+    if val_loader is not None and not cfg.tiny:
+        val_ds_ref = val_loader.dataset
+        sampled_eval = lambda: C.evaluate_sampled(  # noqa: E731
+            pm.rf, val_ds_ref, norm.mean["action"], norm.std["action"],
+            n_windows=8, nfe=pm.mc.nfe)
+
     C.train_loop(cfg, pm.rf, loader, step_fn, on_checkpoint=on_ckpt,
-                 val_loader=val_loader)
+                 val_loader=val_loader, sampled_eval_fn=sampled_eval)
     return 0
 
 
