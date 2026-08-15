@@ -63,3 +63,4 @@ tensorboard
 # --- verification ----------------------------------------------------------------
 pytest>=8
 pytest-timeout
+imageio                     # cosmos easy_io hard-imports it (readiness audit 2026-08-14)

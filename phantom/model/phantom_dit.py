@@ -204,8 +204,14 @@ class PhantomDiT(ActionChunkConditionedMinimalV1LVGDiT):
                                        dtype=in_dtype)
         x_B_T_H_W_D, rope_standard, extra_pos_emb = self.prepare_embedded_sequence(
             x_B_C_T_H_W, fps=fps, padding_mask=padding_mask)
-        rope_emb = (self._phantom_rope(layout, fps, device)
-                    if self.mc.rope_time_mode == "aligned" else rope_standard)
+        # every named layout mode goes through the phantom rope (which reads
+        # layout.rope_frame_positions for the mode); ONLY "append" means "use
+        # the backbone's standard sequential rope". A `== "aligned"` test here
+        # silently dropped the v4 "time_true" mode into the untested append
+        # geometry while the checkpoint recorded time_true (readiness audit
+        # 2026-08-14 — the fix was provably inert).
+        rope_emb = (rope_standard if self.mc.rope_time_mode == "append"
+                    else self._phantom_rope(layout, fps, device))
 
         # 4) cross-attention context
         if self.use_crossattn_projection and not crossattn_projected:

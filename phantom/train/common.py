@@ -432,6 +432,12 @@ def evaluate_sampled(rf, val_ds, norm_action_mean, norm_action_std,
                     if v.is_floating_point():
                         v = v.to(rf.dtype)
                     batch[k] = v
+            # no privileged future: ACC's prev-cpk summary/events come from
+            # the batch's GT contact package at build_x0 time — deploy never
+            # has that, and the whole point of this metric is deploy realism
+            for k in list(batch):
+                if k == "events" or k.startswith("cpk_"):
+                    batch[k] = torch.zeros_like(batch[k])
             rf._gen = torch.Generator().manual_seed(seed + j)
             pred = rf.sample(batch, nfe=nfe)
             gt = batch["action_chunk"][0].float().cpu().numpy().astype(np.float64)
