@@ -202,9 +202,18 @@ class PhantomRectifiedFlow(nn.Module):
     def _null_obs_batch(batch: dict) -> dict:
         """Copy of the batch with every OBSERVATION input nulled (classifier-
         free dropout). Targets (action_chunk, cpk_*, events, gate_label) and
-        intent (prev_chunk) are untouched — only what the model perceives."""
+        intent (prev_chunk) are untouched — only what the model perceives.
+
+        video is DUAL-ROLE: frame 0 is the conditioning observation, frames
+        1: are the FUTURE VIDEO_GEN prediction targets — null only frame 0,
+        or dropout batches train video prediction against encoded black
+        frames (codex review 2026-08-14, blocker #5)."""
         out = dict(batch)
-        for k in ("video", "gel", "fields", "contact_state", "wrist",
+        if "video" in out and torch.is_tensor(out["video"]):
+            v = out["video"].clone()
+            v[:, :1] = 0.0
+            out["video"] = v
+        for k in ("gel", "fields", "contact_state", "wrist",
                   "ur_state", "reactive"):
             if k in out and torch.is_tensor(out[k]):
                 out[k] = torch.zeros_like(out[k])
@@ -212,6 +221,14 @@ class PhantomRectifiedFlow(nn.Module):
 
     def training_step(self, batch: dict) -> dict[str, torch.Tensor]:
         layout = self.layout
+        # decide conditioning-dropout BEFORE building: build_x0 is expensive
+        # (VAE encodes; with acc two_pass an inner sampling pass) — deciding
+        # after meant dropout batches paid it twice and discarded one
+        drop_cond = (self.mc.cond_dropout_p > 0 and self.training
+                     and float(torch.rand((), generator=self._gen))
+                     < self.mc.cond_dropout_p)
+        if drop_cond:
+            batch = self._null_obs_batch(batch)
         x0, cond_mask, acc_inputs = self.build_x0(batch)
         B = x0.shape[0]
         dev, dt = x0.device, x0.dtype
@@ -229,18 +246,12 @@ class PhantomRectifiedFlow(nn.Module):
         t_B_T[:, cond_T] = 0.0                                     # clean cond frames
 
         text = batch.get("text")
-        # self.training gate: dropout in eval would randomly contaminate every
-        # val_* metric with unconditional windows (val curves would stop being
-        # comparable across runs — readiness audit 2026-08-14)
-        if (self.mc.cond_dropout_p > 0 and self.training
-                and float(torch.rand((), generator=self._gen))
-                < self.mc.cond_dropout_p):
-            # classifier-free conditioning dropout: this sample trains the
-            # UNCONDITIONAL action/contact distribution — zero every
-            # observation input jointly (prev_chunk stays: it is intent, not
-            # observation). Enables obs-guidance at sampling.
-            x0, cond_mask, acc_inputs = self.build_x0(
-                self._null_obs_batch(batch), layout)
+        if drop_cond:
+            # classifier-free conditioning dropout (decided above, before the
+            # build): this sample trains the UNCONDITIONAL distribution —
+            # observations nulled jointly, empty text; prev_chunk stays (it
+            # is intent, not observation). self.training-gated so eval never
+            # mixes unconditional windows into val_* metrics.
             text = [""] * B
 
         eps = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
