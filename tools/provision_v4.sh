@@ -18,8 +18,9 @@ HUB=armteam/phantom-checkpoints
 PACK=dataset_v3_packed
 : "${HF_TOKEN:?set HF_TOKEN}"
 
-command -v zstd >/dev/null || (apt-get update -qq && apt-get install -y -qq zstd) \
-  || { echo "FATAL: zstd unavailable (needed for the dataset tarballs)"; exit 1; }
+(apt-get update -qq && apt-get install -y -qq zstd git python3-venv python3-pip) 2>/dev/null || true
+command -v zstd >/dev/null || { echo "FATAL: zstd unavailable"; exit 1; }
+command -v git  >/dev/null || { echo "FATAL: git unavailable"; exit 1; }
 AVAIL=$(df -BG --output=avail "${W%/*}" 2>/dev/null | tail -1 | tr -dc 0-9 || echo 999)
 [ "${AVAIL:-999}" -ge 150 ] || echo "WARNING: <150GB free — dataset+staging+ckpts need ~150GB"
 
@@ -29,8 +30,9 @@ echo "== python: $PY ($($PY -V))"
 
 $PY -m venv .venv 2>/dev/null || ($PY -m pip install -q virtualenv && $PY -m virtualenv .venv)
 . .venv/bin/activate
-pip install -q -U pip "huggingface_hub[hf_transfer]"
-export HF_HUB_ENABLE_HF_TRANSFER=1
+pip install -q -U pip huggingface_hub
+export HF_XET_HIGH_PERFORMANCE=1     # hub 1.x: xet turbo (hf_transfer extra is gone)
+export PIP_NO_CACHE_DIR=1
 
 hfget() {  # hfget <repo> <path-in-repo> [dest-dir]
   python - "$1" "$2" "${3:-.}" <<'EOF'
@@ -118,8 +120,35 @@ runs_root: $W/runs
 cosmos_text_embedding_cache: $W/data/phantom-episodes/tasks/text_embeddings.pt
 EOF2
 
-echo "== verify"
+echo "== verify: GPU"
+python - <<'EOF3'
+import torch
+assert torch.cuda.is_available(), "CUDA not available — wrong image or driver"
+print("GPU:", torch.cuda.get_device_name(0), "| torch", torch.__version__)
+EOF3
+
+echo "== verify: text-cache preflight (every episode text must equal its task)"
+python - "$W" <<'EOF3'
+import json, glob, sys, collections
+pairs = collections.Counter()
+for p in glob.glob(sys.argv[1] + "/data/phantom-episodes/tasks/*/ep_*/meta.json"):
+    m = json.load(open(p))
+    pairs[(m["task"], m.get("text") or m["task"])] += 1
+bad = {k: v for k, v in pairs.items() if k[0] != k[1]}
+print("task/text pairs:", dict(pairs))
+assert not bad, f"TEXT-CACHE MISS RISK: {bad} — these episodes would train with the empty-string embedding"
+EOF3
+
+echo "== verify: pytest"
 python -m pytest tests/ -q 2>&1 | tail -1 || echo "PYTEST FAILED — investigate before launch"
+
+echo "== verify: 2-step REAL training smoke (same flags as the launch line)"
+python -m phantom.train.train_teacher \
+    --data "$W/data/phantom-episodes/tasks" --hardware configs/hardware.nuc.yaml \
+    --allow-config-drift --run-name provision_smoke --max-steps 2 \
+    --device cuda --acc-two-pass 2>&1 | tail -3
+rm -rf "$W/runs/teacher/provision_smoke"
+rm -rf "$W/dl"
 EPS=$(find "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
 echo "episodes on disk: $EPS (expect 790)"
 
