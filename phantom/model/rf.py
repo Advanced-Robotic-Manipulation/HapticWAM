@@ -229,8 +229,12 @@ class PhantomRectifiedFlow(nn.Module):
         t_B_T[:, cond_T] = 0.0                                     # clean cond frames
 
         text = batch.get("text")
-        if self.mc.cond_dropout_p > 0 and float(torch.rand(
-                (), generator=self._gen)) < self.mc.cond_dropout_p:
+        # self.training gate: dropout in eval would randomly contaminate every
+        # val_* metric with unconditional windows (val curves would stop being
+        # comparable across runs — readiness audit 2026-08-14)
+        if (self.mc.cond_dropout_p > 0 and self.training
+                and float(torch.rand((), generator=self._gen))
+                < self.mc.cond_dropout_p):
             # classifier-free conditioning dropout: this sample trains the
             # UNCONDITIONAL action/contact distribution — zero every
             # observation input jointly (prev_chunk stays: it is intent, not
