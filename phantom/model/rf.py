@@ -92,7 +92,7 @@ class PhantomRectifiedFlow(nn.Module):
 
     # ------------------------------------------------------------------
     def build_x0(self, batch: dict, layout: SequenceLayout | None = None,
-                 *, encode_gen: bool = True
+                 *, encode_gen: bool = True, null_video_cond: bool = False
                  ) -> tuple[torch.Tensor, torch.Tensor, AccInputs]:
         """Assemble the clean extended sequence + cond mask + ACC inputs.
 
@@ -110,7 +110,12 @@ class PhantomRectifiedFlow(nn.Module):
 
         x0 = torch.zeros(B, layout.lat_c, layout.t_total, layout.lat_h, layout.lat_w,
                          device=dev, dtype=dt)
-        x0[:, :, layout.frame_slice(FrameGroup.VIDEO_COND)] = vid_lat[:, :, :1]
+        # null_video_cond (conditioning dropout / guidance null pass): the
+        # VIDEO_GEN targets keep the REAL encode (the causal VAE would bleed
+        # a blacked pixel frame 0 into them), and only the conditioning
+        # latent is swapped for the black-frame null token
+        x0[:, :, layout.frame_slice(FrameGroup.VIDEO_COND)] = (
+            self._null_cond_latent(B) if null_video_cond else vid_lat[:, :, :1])
         if layout.has(FrameGroup.VIDEO_GEN) and encode_gen:
             x0[:, :, layout.frame_slice(FrameGroup.VIDEO_GEN)] = vid_lat[:, :, 1:]
 
@@ -132,7 +137,14 @@ class PhantomRectifiedFlow(nn.Module):
         cond_mask = cond.reshape(1, 1, -1, 1, 1).expand(
             B, 1, -1, layout.lat_h, layout.lat_w).to(dt)
 
-        acc_inputs = self._acc_inputs_train(batch, gt_cpk, obs_batch)
+        acc_batch = batch
+        if null_video_cond:
+            # anything downstream that reads raw pixels (the ACC two-pass
+            # inner SAMPLE — a sampling path, where blacked pixels are the
+            # correct null) must see the nulled video, not the real one
+            acc_batch = dict(batch)
+            acc_batch["video"] = torch.zeros_like(video)
+        acc_inputs = self._acc_inputs_train(acc_batch, gt_cpk, obs_batch)
         return x0, cond_mask, acc_inputs
 
     def _acc_inputs_train(self, batch: dict, gt_cpk: ContactPackage,
@@ -204,20 +216,33 @@ class PhantomRectifiedFlow(nn.Module):
         free dropout). Targets (action_chunk, cpk_*, events, gate_label) and
         intent (prev_chunk) are untouched — only what the model perceives.
 
-        video is DUAL-ROLE: frame 0 is the conditioning observation, frames
-        1: are the FUTURE VIDEO_GEN prediction targets — null only frame 0,
-        or dropout batches train video prediction against encoded black
-        frames (codex review 2026-08-14, blocker #5)."""
+        video is deliberately NOT touched here: it is dual-role (frame 0 =
+        conditioning obs, frames 1: = VIDEO_GEN prediction targets) and the
+        Wan VAE is CAUSAL — nulling any pixel frame before the target encode
+        corrupts the later frames' latents. The conditioning null happens in
+        LATENT space instead (build_x0(null_video_cond=True)). text IS nulled
+        here: the ACC two-pass inner sample reads batch text directly, so
+        leaving it leaked task conditioning into dropout samples (codex
+        clearance review 2026-08-15)."""
         out = dict(batch)
-        if "video" in out and torch.is_tensor(out["video"]):
-            v = out["video"].clone()
-            v[:, :1] = 0.0
-            out["video"] = v
+        if "text" in out and isinstance(out["text"], (list, tuple)):
+            out["text"] = [""] * len(out["text"])
         for k in ("gel", "fields", "contact_state", "wrist",
                   "ur_state", "reactive"):
             if k in out and torch.is_tensor(out[k]):
                 out[k] = torch.zeros_like(out[k])
         return out
+
+    def _null_cond_latent(self, B: int) -> torch.Tensor:
+        """VAE latent of one BLACK conditioning frame (the video-null token),
+        encoded standalone — exactly what deploy's guidance null sees —
+        cached after the first call (it is a constant)."""
+        if getattr(self, "_null_cond_cache", None) is None:
+            black = torch.zeros(1, 3, 1, self.bb.res_h, self.bb.res_w,
+                                device=self.device, dtype=self.dtype)
+            with torch.no_grad():
+                self._null_cond_cache = self.vae.encode(black).to(self.dtype)
+        return self._null_cond_cache[:, :, :1].expand(B, -1, -1, -1, -1)
 
     def training_step(self, batch: dict) -> dict[str, torch.Tensor]:
         layout = self.layout
@@ -229,7 +254,8 @@ class PhantomRectifiedFlow(nn.Module):
                      < self.mc.cond_dropout_p)
         if drop_cond:
             batch = self._null_obs_batch(batch)
-        x0, cond_mask, acc_inputs = self.build_x0(batch)
+        x0, cond_mask, acc_inputs = self.build_x0(batch,
+                                                  null_video_cond=drop_cond)
         B = x0.shape[0]
         dev, dt = x0.device, x0.dtype
 
@@ -336,7 +362,8 @@ class PhantomRectifiedFlow(nn.Module):
         x0_null = acc_null = ctx_null = None
         if guidance_scale != 1.0:
             x0_null, _, acc_null = self.build_x0(
-                self._null_obs_batch(batch), layout, encode_gen=False)
+                self._null_obs_batch(batch), layout, encode_gen=False,
+                null_video_cond=True)
         if prev_cpk is not None:  # deployment: true previous-replan package
             acc_inputs.prev_cpk_summary_B_S = \
                 self.c_pack.flatten_summary(prev_cpk.to(self.device)).to(self.dtype)

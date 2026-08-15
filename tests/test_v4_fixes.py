@@ -97,3 +97,29 @@ def test_cond_dropout_gated_on_training(tiny_time_true, monkeypatch):
     pm.rf.training_step(clone())
     pm.rf.train()
     assert calls["n"] == 1, "eval mode must NEVER apply conditioning dropout"
+
+
+def test_dropout_preserves_video_targets_nulls_cond(tiny_time_true):
+    """Causal-VAE fix: under conditioning dropout the VIDEO_GEN target
+    latents must be IDENTICAL to the clean batch's (real video encode), and
+    only the VIDEO_COND latent may change (black-frame null token)."""
+    pm, batch = tiny_time_true
+    rf = pm.rf
+    layout = rf.layout
+
+    def clone():
+        return {k: (v.clone() if torch.is_tensor(v) else v)
+                for k, v in batch.items()}
+
+    x0_clean, _, _ = rf.build_x0(clone())
+    x0_null, _, _ = rf.build_x0(rf._null_obs_batch(clone()),
+                                null_video_cond=True)
+    gen_sl = layout.frame_slice(FrameGroup.VIDEO_GEN)
+    cond_sl = layout.frame_slice(FrameGroup.VIDEO_COND)
+    assert torch.equal(x0_clean[:, :, gen_sl], x0_null[:, :, gen_sl]), \
+        "dropout must not alter VIDEO_GEN target latents"
+    assert not torch.equal(x0_clean[:, :, cond_sl], x0_null[:, :, cond_sl]), \
+        "dropout must replace the conditioning latent"
+    # and the null token is deterministic (cached)
+    again = rf._null_cond_latent(x0_null.shape[0])
+    assert torch.equal(x0_null[:, :, cond_sl], again.to(x0_null.dtype))
