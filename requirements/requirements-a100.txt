@@ -35,8 +35,8 @@
 # --- PyTorch (cu128 wheels cover sm_80/A100; same pair as the other boxes) ---
 # Known-good tested pair: torch 2.7.1 + torchvision 0.22.1
 --extra-index-url https://download.pytorch.org/whl/cu128
-torch>=2.7,<2.9
-torchvision>=0.22,<0.24
+torch==2.7.1                # documented known-good pair; 2.8.x never exercised on this code
+torchvision==0.22.1
 
 # --- phantom core ------------------------------------------------------------
 numpy>=1.24
@@ -64,3 +64,4 @@ tensorboard
 pytest>=8
 pytest-timeout
 imageio                     # cosmos easy_io hard-imports it (readiness audit 2026-08-14)
+pandas                      # ditto, two lines below imageio in the same registry (launch clearance 2026-08-15)
