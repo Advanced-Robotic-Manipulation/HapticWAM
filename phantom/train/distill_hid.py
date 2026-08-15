@@ -107,8 +107,11 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
             .velocity_B_C_T_H_W
     sl_s = layout_s.frame_slice(FrameGroup.ACTION)
     sl_t = teacher_rf.layout.frame_slice(FrameGroup.ACTION)
-    parts["behavior_match"] = F.mse_loss(v_s[:, :, sl_s].float(),
-                                         v_t[:, :, sl_t].detach().float())
+    # live channels only — matching the packer's 12 zero-padding channels
+    # would let padding noise dominate distillation (w_behavior=1.0)
+    ch = slice(0, layout_s.actions_per_frame)
+    parts["behavior_match"] = F.mse_loss(v_s[:, ch, sl_s].float(),
+                                         v_t[:, ch, sl_t].detach().float())
 
     # (iv) GT grounding on actions / video / wrist + ACC auxiliaries
     v_target = eps_stack(eps_used, layout_s) - x0_s
