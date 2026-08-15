@@ -520,6 +520,13 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                          "  ".join(f"{k}={v:.4f}" for k, v in sorted(logs.items())), rate)
         if (val_loader is not None and is_main() and cfg.eval_every
                 and step % cfg.eval_every == 0):
+            log.info("EVAL running at step %d (val%s)...", step,
+                     " + sampled" if sampled_eval_fn is not None else "")
+            # eval calls stochastic training_step / sample — snapshot the
+            # model's generator so evaluation never perturbs the training
+            # noise stream (runs stay comparable across eval_every settings)
+            _gen = getattr(model, "_gen", None)
+            _gen_state = _gen.get_state() if _gen is not None else None
             vm = evaluate(model, val_loader, eval_step_fn or step_fn)
             log.info("EVAL step %d  %s", step,
                      "  ".join(f"val_{k}={v:.4f}" for k, v in sorted(vm.items())))
@@ -527,6 +534,8 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                 sm = sampled_eval_fn()
                 log.info("EVAL-SAMPLED step %d  %s", step,
                          "  ".join(f"{k}={v:.4f}" for k, v in sorted(sm.items())))
+            if _gen_state is not None:
+                model._gen.set_state(_gen_state)
         if is_main() and on_checkpoint and step % cfg.ckpt_every == 0:
             on_checkpoint(step, opt, sched, ema)
     if is_main() and on_checkpoint:
