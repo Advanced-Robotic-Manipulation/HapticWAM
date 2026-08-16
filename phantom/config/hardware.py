@@ -259,6 +259,14 @@ class CamerasConfig(_Frozen):
 
 class DerivedConfig(_Frozen):
     tau_contact_depth: float = Field(gt=0)
+    # frame-level contact requires this FRACTION of pad pixels above
+    # tau_contact_depth. max-over-110k-pixels statistics saturate (one hot
+    # pixel = "contact"): measured on the v3 dataset, gate labels were 100%
+    # positive and events 96% "hold" across every task — the tactile heads
+    # trained on constants (issue #1, verified 2026-08-16). Calibrated from
+    # data: free-frame mask_frac max 0.022 vs contact p10 0.031 — 0.025 sits
+    # in the empirical gap (0% false-contact, ~95% true-contact).
+    tau_contact_area: float = Field(gt=0, default=0.025)
     tau_contact_fz: float = Field(gt=0)
     contact_source: Literal["depth", "fz"] = "depth"
     tau_slip: float = Field(gt=0)

@@ -123,3 +123,27 @@ def test_dropout_preserves_video_targets_nulls_cond(tiny_time_true):
     # and the null token is deterministic (cached)
     again = rf._null_cond_latent(x0_null.shape[0])
     assert torch.equal(x0_null[:, :, cond_sl], again.to(x0_null.dtype))
+
+
+def test_frame_contact_requires_area_not_single_pixel():
+    """One hot pixel out of 110k must NOT read as contact (labels saturated
+    to 100% gate-positive / 96% hold on the v3 dataset — issue #1)."""
+    import numpy as np
+    from phantom.data.derived import event_labels
+    from phantom_test_utils import make_hw
+
+    hw = make_hw()
+    d = hw.derived
+    T = 12
+    # mask_frac trace: single-pixel noise (~1e-5) everywhere, real contact
+    # (5% of pad) only in the middle third
+    noise = np.full(T, 1.0 / (288 * 384))
+    mf = noise.copy()
+    mf[4:8] = 0.05
+    ev = event_labels(mf, np.zeros(T), d)
+    from phantom.config.model import EVENT_IDX
+    assert (ev[:3] == EVENT_IDX["none"]).all(), \
+        "single-pixel noise must not register as contact"
+    assert EVENT_IDX["onset"] in ev[3:6]
+    assert (ev == EVENT_IDX["hold"]).any()
+    assert EVENT_IDX["release"] in ev[6:10]
