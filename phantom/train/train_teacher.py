@@ -181,6 +181,14 @@ def main(argv=None) -> int:
             val_loader = C.make_loader(val_ds, cfg, shuffle=False)
             log.info("val: %d windows from %d episodes", len(val_ds), len(val_eps))
 
+    if not cfg.synthetic and not cfg.tiny:
+        # LOUD label-degeneracy gate (issue #1: v3 trained its entire
+        # contact/anticipation stack on 100%-positive gate labels and 96%
+        # "hold" events without anything noticing — teacher capacity spent
+        # memorizing constants). Probes real windows through the exact
+        # training path before any GPU time is spent.
+        C.assert_label_sanity(ds, log)
+
     def step_fn(batch: dict) -> dict:
         return pm.rf.training_step(C.to_device(batch, args.device))
 
