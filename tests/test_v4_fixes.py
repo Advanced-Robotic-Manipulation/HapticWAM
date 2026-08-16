@@ -147,3 +147,32 @@ def test_frame_contact_requires_area_not_single_pixel():
     assert EVENT_IDX["onset"] in ev[3:6]
     assert (ev == EVENT_IDX["hold"]).any()
     assert EVENT_IDX["release"] in ev[6:10]
+
+
+def test_label_sanity_gate_is_loud():
+    """Degenerate labels must hard-fail training startup (issue #1 follow-up:
+    Ilya's build-time assert suggestion)."""
+    import logging
+    import pytest as _pt
+    import torch as _t
+    from phantom.train.common import assert_label_sanity
+
+    class _DS:
+        def __init__(self, gate, events):
+            self._g, self._e = gate, events
+
+        def __len__(self):
+            return len(self._g)
+
+        def __getitem__(self, i):
+            return {"gate_label": _t.tensor(self._g[i]),
+                    "events": _t.tensor(self._e[i])}
+
+    log = logging.getLogger("t")
+    # degenerate: all gates positive, all events hold(2)
+    bad = _DS([1.0] * 8, [[2, 2, 2]] * 8)
+    with _pt.raises(SystemExit, match="DEGENERATE"):
+        assert_label_sanity(bad, log, n_windows=8)
+    # healthy: both gate classes, none(0)/onset(1)/hold(2) present
+    good = _DS([1.0, 0.0] * 4, [[0, 1, 2]] * 8)
+    assert_label_sanity(good, log, n_windows=8)

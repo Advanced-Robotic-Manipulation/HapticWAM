@@ -393,6 +393,49 @@ def evaluate(model: torch.nn.Module, val_loader: DataLoader, step_fn,
     return {k: v / max(n, 1) for k, v in sums.items()}
 
 
+def label_tally(ds, n_windows: int = 48) -> tuple[dict, dict]:
+    """Sample real windows and tally (gate_counts, event_shares)."""
+    from collections import Counter
+    from phantom.config.model import EVENTS
+    stride = max(1, len(ds) // n_windows)
+    gates: Counter = Counter()
+    events: Counter = Counter()
+    for i in list(range(0, len(ds), stride))[:n_windows]:
+        w = ds[i]
+        gates[int(float(w["gate_label"]) > 0.5)] += 1
+        for e in w["events"].tolist():
+            events[EVENTS[e]] += 1
+    tot = sum(events.values()) or 1
+    return dict(gates), {k: v / tot for k, v in events.items()}
+
+
+def assert_label_sanity(ds, logger, n_windows: int = 48,
+                        min_event_classes: int = 3,
+                        min_share: float = 0.005) -> None:
+    """Hard-fail on degenerate contact labels BEFORE burning GPU time.
+
+    Requires both gate classes present and >= min_event_classes event
+    classes above min_share. Teacher v3 trained on 100%-positive gates and
+    96% 'hold' events (single-pixel contact saturation, issue #1) and
+    nothing was loud about it."""
+    gates, ev = label_tally(ds, n_windows)
+    logger.info("label sanity: gate %s | events %s", dict(gates),
+                {k: f"{v:.1%}" for k, v in sorted(ev.items())})
+    problems = []
+    if len(gates) < 2:
+        problems.append(f"gate labels are constant ({dict(gates)})")
+    rich = [k for k, v in ev.items() if v >= min_share]
+    if len(rich) < min_event_classes:
+        problems.append(
+            f"only {len(rich)} event classes above {min_share:.1%} ({rich})")
+    if problems:
+        raise SystemExit(
+            "DEGENERATE LABELS: " + "; ".join(problems) + " — the contact/"
+            "anticipation stack would train on constants (issue #1). Check "
+            "derived.tau_contact_depth/tau_contact_area against this "
+            "dataset before training.")
+
+
 def evaluate_sampled(rf, val_ds, norm_action_mean, norm_action_std,
                      n_windows: int = 8, nfe: int = 5,
                      seed: int = 123) -> dict[str, float]:
