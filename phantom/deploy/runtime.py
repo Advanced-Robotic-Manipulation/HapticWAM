@@ -133,8 +133,9 @@ class DeploymentRuntime:
                 # the trace must survive crashes — crashed episodes are
                 # exactly the ones worth diagnosing (issue #2: the trace of
                 # the 08-14 table-press episode was lost this way)
-                if saved is not None and trace:
-                    trace_path = saved / "planner_trace.json"
+                saved_dir = saved if saved is not None else ep_path
+                if saved_dir is not None and trace:
+                    trace_path = saved_dir / "planner_trace.json"
                     trace_path.write_text(json.dumps(trace, indent=1),
                                           encoding="utf-8")
         return EpisodeResult(

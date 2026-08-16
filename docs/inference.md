@@ -77,3 +77,11 @@ Known first-run gotcha (fixed): the first snapshot used to race the sensor
 workers' first frames ("no camera frames yet") — `run_episode` now blocks up
 to 10 s for ring warm-up, which also covers the real rig's first episode
 right after connect.
+
+## Replan coherence (2026-08-16)
+
+`--persistent-noise` holds the sampling noise fixed within an episode —
+fresh noise per replan re-rolled the plan direction (rig-measured
+consecutive-replan cosine 0.16–0.35). A/B it by that cosine on the trace.
+The replan log line now shows the live event head (`p_evt=hold:0.95`);
+`--compile` runs its warmup replan before the episode gate.

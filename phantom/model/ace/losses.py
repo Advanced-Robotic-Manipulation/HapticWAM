@@ -94,7 +94,11 @@ def event_ce(event_logits_B_Tc_E: torch.Tensor, events_B_Tc: torch.Tensor) -> to
 def acc_losses(acc: AccOutput, gate_label_B: torch.Tensor,
                event_next_B: torch.Tensor, alpha_entropy_weight: float = 0.0) -> dict:
     out = {
-        "acc_gate_bce": F.binary_cross_entropy(acc.g.clamp(1e-6, 1 - 1e-6).float(),
+        # .float() BEFORE the clamp: in bf16 `1 - 1e-6` rounds to 1.0 and the
+        # clamp is a no-op — a saturated gate (logit ~6.9 suffices in bf16)
+        # on a negative label logged BCE=100 and carried a dead gradient.
+        # Unreachable pre-54b7943 (labels were 100% positive); real now.
+        "acc_gate_bce": F.binary_cross_entropy(acc.g.float().clamp(1e-6, 1 - 1e-6),
                                                gate_label_B.float()),
         "acc_event_ce": F.cross_entropy(acc.event_logits.float(), event_next_B),
     }

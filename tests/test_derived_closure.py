@@ -58,9 +58,9 @@ def test_mock_derived_closure(small_hw):
 
 def test_gate_label_lookahead():
     mf = np.array([0, 0, 0, 0.5, 0.5, 0], dtype=np.float32)
-    assert dv.contact_within(mf, 0, 3)
-    assert not dv.contact_within(mf, 0, 2)
-    assert not dv.contact_within(mf, 4, 1)
+    assert dv.contact_within(mf, 0, 3, 0.025)
+    assert not dv.contact_within(mf, 0, 2, 0.025)
+    assert not dv.contact_within(mf, 4, 1, 0.025)
 
 
 def test_tau_obj_calibration():
