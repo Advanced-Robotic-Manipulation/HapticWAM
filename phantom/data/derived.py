@@ -169,7 +169,9 @@ def event_labels(mask_frac: np.ndarray, slip: np.ndarray, derived_cfg) -> np.nda
     mask_frac = np.asarray(mask_frac)
     slip = np.asarray(slip)
     T = len(mask_frac)
-    contact = _debounced_contact(mask_frac > 0, max(1, int(derived_cfg.event_min_hold_ticks)))
+    contact = _debounced_contact(
+        mask_frac > getattr(derived_cfg, "tau_contact_area", 0.025),
+        max(1, int(derived_cfg.event_min_hold_ticks)))
     ev = np.full(T, EVENT_IDX["none"], dtype=np.int64)
     i = 0
     while i < T:

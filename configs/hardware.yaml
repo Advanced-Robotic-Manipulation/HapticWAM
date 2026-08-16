@@ -111,6 +111,7 @@ cameras:
 
 derived:                       # thresholds for phantom/data/derived.py (pipeline.md §1)
   tau_contact_depth: 0.05      # BENCH: contact mask threshold on |depth| (SDK depth units)
+  tau_contact_area: 0.025     # frame-level contact = this fraction of pixels > tau_contact_depth (empirical free/contact gap)
   tau_contact_fz: 0.10         # BENCH: contact mask threshold on |fz| in N (used only when calibrated)
   contact_source: depth        # depth | fz — which channel gates the contact mask
   tau_slip: 0.5                # BENCH: slip-score threshold (blended statistic)

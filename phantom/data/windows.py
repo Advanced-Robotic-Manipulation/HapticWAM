@@ -319,7 +319,10 @@ class WindowSampler:
             norm.normalize("wrist_ft", wrist_fut.astype(np.float32))))
 
         # ---- events on the latent grid (any-finger aggregation)
-        contact = (mask_frac > 0).any(axis=1)
+        # frame-level contact needs an AREA of pixels, not one: `> 0` meant a
+        # single hot pixel = contact, saturating events to 96% "hold" (issue
+        # #1; see DerivedConfig.tau_contact_area)
+        contact = (mask_frac > hw.derived.tau_contact_area).any(axis=1)
         slip_any = slip.max(axis=1)
         from phantom.config.model import EVENT_IDX
         ev = np.full(Tc, EVENT_IDX["none"], dtype=np.int64)
@@ -339,7 +342,10 @@ class WindowSampler:
         for sname in sensors:
             for tp in probes:
                 frame, _, _ = self._field_frame(c, sname, float(tp))
-                if np.abs(frame[..., ch["depth"].start]).max() > tau:
+                # area statistic, not max — max over 110k pixels fires on any
+                # single noisy pixel (gate labels were 100% positive; issue #1)
+                if (np.abs(frame[..., ch["depth"].start]) > tau).mean() \
+                        > hw.derived.tau_contact_area:
                     gate = 1.0
                     break
             if gate:
