@@ -195,10 +195,12 @@ def event_labels(mask_frac: np.ndarray, slip: np.ndarray, derived_cfg) -> np.nda
 # small pure helpers used across train/eval/deploy
 # ---------------------------------------------------------------------------
 
-def contact_within(mask_frac: np.ndarray, i: int, n: int) -> bool:
+def contact_within(mask_frac: np.ndarray, i: int, n: int,
+                   tau_area: float = 0.025) -> bool:
     """Contact anywhere in the strictly-future window (i, i+n]. The ACC gate
-    BCE label (pipeline.md §3)."""
-    return bool((np.asarray(mask_frac)[i + 1:i + 1 + n] > 0).any())
+    BCE label (pipeline.md §3). Area semantics: a single hot pixel is not
+    contact (see DerivedConfig.tau_contact_area)."""
+    return bool((np.asarray(mask_frac)[i + 1:i + 1 + n] > tau_area).any())
 
 
 def calibrate_tau_obj(peaks: np.ndarray, quantile: float) -> float:

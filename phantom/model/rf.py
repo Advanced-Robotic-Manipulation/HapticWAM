@@ -233,6 +233,11 @@ class PhantomRectifiedFlow(nn.Module):
                 out[k] = torch.zeros_like(out[k])
         return out
 
+    def reset_episode_noise(self) -> None:
+        """Drop the held sampling noise (call at episode start when deploying
+        with reuse_noise)."""
+        self._episode_noise = None
+
     def _null_cond_latent(self, B: int) -> torch.Tensor:
         """VAE latent of one BLACK conditioning frame (the video-null token),
         encoded standalone — exactly what deploy's guidance null sees —
@@ -347,12 +352,19 @@ class PhantomRectifiedFlow(nn.Module):
     def sample(self, batch: dict, *, nfe: int | None = None,
                prev_cpk: ContactPackage | None = None,
                drop_video: bool | None = None,
-               guidance_scale: float = 1.0) -> PhantomPrediction:
+               guidance_scale: float = 1.0,
+               reuse_noise: bool = False) -> PhantomPrediction:
         """Few-NFE Euler sampling of the joint sequence (the per-replan denoise).
 
         guidance_scale > 1 applies observation-guidance (classifier-free):
         v = v_null + s * (v_obs - v_null), doubling the per-step cost. Only
-        meaningful for checkpoints trained with cond_dropout_p > 0."""
+        meaningful for checkpoints trained with cond_dropout_p > 0.
+
+        reuse_noise=True holds the initial noise draw fixed across calls
+        (deployment: fresh noise each replan re-rolled the plan direction —
+        consecutive-replan direction cosine 0.16-0.35 on the rig; with a
+        fixed draw, plans differ only as observations differ). Cleared via
+        reset_episode_noise()."""
         nfe = nfe or self.mc.nfe
         drop_video = self.mc.drop_video_at_inference if drop_video is None else drop_video
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
@@ -371,7 +383,13 @@ class PhantomRectifiedFlow(nn.Module):
         dev, dt = x0.device, x0.dtype
         cond_T = torch.from_numpy(layout.cond_mask_T()).to(dev)
 
-        x = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
+        if (reuse_noise and getattr(self, "_episode_noise", None) is not None
+                and self._episode_noise.shape == x0.shape):
+            x = self._episode_noise.to(dev, dt).clone()
+        else:
+            x = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
+            if reuse_noise:
+                self._episode_noise = x.detach().clone()
         x = torch.where(cond_mask.bool(), x0, x)
 
         # step-invariant conditioning, computed ONCE per replan (not per NFE
