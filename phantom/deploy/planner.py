@@ -125,8 +125,12 @@ class PlannerLoop:
                 "accepted": accepted,
                 "actions": plan.actions.tolist(),
             })
-            log.info("replan %d: latency=%.2fs gate=%.2f sigma_max=%.2f accepted=%s",
-                     n, plan.latency_s, plan.gate, float(np.max(plan.sigma)), accepted)
+            from phantom.config.model import EVENTS
+            k_evt = int(np.argmax(plan.p_evt))
+            log.info("replan %d: latency=%.2fs gate=%.2f sigma_max=%.2f "
+                     "p_evt=%s:%.2f accepted=%s",
+                     n, plan.latency_s, plan.gate, float(np.max(plan.sigma)),
+                     EVENTS[k_evt], float(plan.p_evt[k_evt]), accepted)
             prev_plan = plan
             n += 1
             if max_replans is not None and n >= max_replans:

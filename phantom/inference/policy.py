@@ -55,11 +55,15 @@ class Plan:
 
 class PhantomPolicy:
     def __init__(self, pm: PhantomModel, norm: NormStats, *, nfe: int | None = None,
-                 drop_video: bool = False, task_text: str = ""):
+                 drop_video: bool = False, task_text: str = "",
+                 persistent_noise: bool = False):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
         # empty keeps the v2 empty-string conditioning.
         self.task_text = task_text
+        # fixed initial noise per episode: fresh randn each replan re-rolled
+        # the plan direction (rig-measured consec-replan cosine 0.16-0.35)
+        self.persistent_noise = persistent_noise
         self.pm = pm
         self.rf = pm.rf
         self.hw = pm.hw
@@ -138,6 +142,10 @@ class PhantomPolicy:
         })
         return batch
 
+    def reset_episode(self) -> None:
+        """Per-episode state reset (held sampling noise)."""
+        self.rf.reset_episode_noise()
+
     # ------------------------------------------------------------------
     @torch.no_grad()
     def replan(self, obs: ObsSnapshot, prev_plan: Plan | None,
@@ -147,7 +155,8 @@ class PhantomPolicy:
         pred: PhantomPrediction = self.rf.sample(
             batch, nfe=self.nfe,
             prev_cpk=prev_plan.cpk if prev_plan is not None else None,
-            drop_video=self.drop_video)
+            drop_video=self.drop_video,
+            reuse_noise=self.persistent_noise)
         actions = self.norm.denormalize(
             "action", pred.actions_B_H_A[0].float().cpu()).numpy()
         rate = self.hw.control.action_rate_hz

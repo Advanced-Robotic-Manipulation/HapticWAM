@@ -96,6 +96,8 @@ class DeploymentRuntime:
                            dagger_round=dagger_round)
         ep_name = f"ep_{self.mode}_{task}_{int(time.time())}"
         ep_path = self.recorder.start(meta, ep_name)
+        if hasattr(self.policy, "reset_episode"):
+            self.policy.reset_episode()
 
         safety = SafetyMonitor(hw, self.session.rings)
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
@@ -110,6 +112,8 @@ class DeploymentRuntime:
         # zeros; that substitute collapsed the policy's action magnitude ~3x
         # on every rig episode before 2026-08-14)
         executor.start()
+        saved = None
+        trace_path = None
         try:
             _wait_rings_warm(snapshots)
 
@@ -123,12 +127,16 @@ class DeploymentRuntime:
         finally:
             planner.stop()
             executor.stop()
-            saved = self.recorder.stop(success=None)
-
-        trace_path = None
-        if saved is not None:
-            trace_path = saved / "planner_trace.json"
-            trace_path.write_text(json.dumps(trace, indent=1), encoding="utf-8")
+            try:
+                saved = self.recorder.stop(success=None)
+            finally:
+                # the trace must survive crashes — crashed episodes are
+                # exactly the ones worth diagnosing (issue #2: the trace of
+                # the 08-14 table-press episode was lost this way)
+                if saved is not None and trace:
+                    trace_path = saved / "planner_trace.json"
+                    trace_path.write_text(json.dumps(trace, indent=1),
+                                          encoding="utf-8")
         return EpisodeResult(
             episode_path=saved, stopped_reason=executor.stopped_reason,
             n_replans=len(trace), safety_events=len(safety.log_events),

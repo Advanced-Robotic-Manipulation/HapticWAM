@@ -75,7 +75,8 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
         bl.compile_blocks(pm.rf.net, mode=getattr(args, "compile_mode", "default")
                           or "default")
     return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
-                         task_text=(args.text or args.task))
+                         task_text=(args.text or args.task),
+                         persistent_noise=getattr(args, "persistent_noise", False))
 
 
 def main(argv=None) -> int:
@@ -93,6 +94,10 @@ def main(argv=None) -> int:
                     help="torch.compile the DiT blocks (adds ~1-2 min warmup)")
     ap.add_argument("--compile-mode", default="default",
                     help="torch.compile mode (e.g. reduce-overhead for cudagraphs)")
+    ap.add_argument("--persistent-noise", action="store_true",
+                    help="hold the sampling noise fixed within an episode — "
+                         "fresh noise per replan re-rolls the plan direction "
+                         "(rig: consec-replan cosine 0.16-0.35)")
     ap.add_argument("--flex", action="store_true",
                     help="FlexAttention self-attn (block-sparse structural mask; "
                          "action parity vs SDPA verified to ~6e-4)")
@@ -110,6 +115,17 @@ def main(argv=None) -> int:
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
 
     policy = build_policy(args, hw, paths)
+    if getattr(args, "compile", False):
+        # compile warms up on the first forward — do it OUTSIDE the episode
+        # (it ate 1-2 min inside the first episode on the rig)
+        try:
+            from phantom.scripts.bench_inference import fake_obs
+            log.info("compile warmup replan...")
+            policy.replan(fake_obs(hw, teacher=(args.system == "teacher")),
+                          None, np.zeros(6))
+            policy.reset_episode()
+        except Exception:
+            log.exception("compile warmup failed (continuing)")
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root) as rt:
         for i in range(args.episodes):
             if hw.mode.drivers == "real":
