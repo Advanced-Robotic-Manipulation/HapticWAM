@@ -134,6 +134,7 @@ cameras:
     depth_enabled: false
 derived:
   tau_contact_depth: 0.05
+  tau_contact_area: 0.025     # frame-level contact = this fraction of pixels > tau_contact_depth (empirical free/contact gap)
   tau_contact_fz: 0.1
   contact_source: depth
   tau_slip: 0.5

@@ -196,7 +196,7 @@ def event_labels(mask_frac: np.ndarray, slip: np.ndarray, derived_cfg) -> np.nda
 # ---------------------------------------------------------------------------
 
 def contact_within(mask_frac: np.ndarray, i: int, n: int,
-                   tau_area: float = 0.025) -> bool:
+                   tau_area: float) -> bool:
     """Contact anywhere in the strictly-future window (i, i+n]. The ACC gate
     BCE label (pipeline.md §3). Area semantics: a single hot pixel is not
     contact (see DerivedConfig.tau_contact_area)."""

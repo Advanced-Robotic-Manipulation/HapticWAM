@@ -88,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
 
     events = r._g(tactile_stream(sensor, "events"))["data"][:]
     mask_frac = r._g(tactile_stream(sensor, "mask_frac"))["data"][:]
-    n_contact = int((mask_frac > 0.025).sum())   # area semantics (tau_contact_area)
+    n_contact = int((mask_frac > hw.derived.tau_contact_area).sum())
     found = {name for name, idx in EVENT_IDX.items() if (events == idx).any()}
     log.info("event coverage: %s (%d/%d frames in contact)", sorted(found),
              n_contact, len(events))
