@@ -152,6 +152,12 @@ class EMA:
     def state_dict(self) -> dict:
         return self.shadow
 
+    def load_state_dict(self, sd: dict) -> None:
+        missing = [n for n in self.shadow if n not in sd]
+        assert not missing, f"EMA resume: shadow keys absent from checkpoint: {missing[:8]}"
+        for n in self.shadow:
+            self.shadow[n].copy_(sd[n].float())
+
 
 # ---------------------------------------------------------------------------
 # checkpoints — never re-save the frozen 2B base
@@ -504,12 +510,20 @@ def evaluate_sampled(rf, val_ds, norm_action_mean, norm_action_std,
 
 def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoader,
                step_fn, *, on_checkpoint=None, val_loader: DataLoader | None = None,
-               eval_step_fn=None, sampled_eval_fn=None) -> int:
+               eval_step_fn=None, sampled_eval_fn=None,
+               resume_payload: dict | None = None) -> int:
     """step_fn(batch) -> dict with 'total' loss tensor. Handles grad accum,
     clipping, EMA, logging; returns final step.
 
     val_loader: optional held-out loader evaluated every cfg.eval_every steps
-    (eval_step_fn defaults to step_fn)."""
+    (eval_step_fn defaults to step_fn).
+
+    resume_payload: a save_phantom_checkpoint payload — restores optimizer,
+    scheduler, EMA and the step counter (weights are the caller's job, via
+    load_phantom_checkpoint, BEFORE calling this). Fp32MasterAdamW masters
+    re-init from the restored bf16 weights: the sub-ulp fp32 residual is lost
+    once at the resume point (one extra bf16 rounding), the exp_avg/exp_avg_sq
+    moments load exactly."""
     rank, world = setup_ddp()
     device = cfg.device if torch.cuda.is_available() or cfg.device == "cpu" else "cpu"
     model = model.to(device)
@@ -520,10 +534,25 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     sched = make_scheduler(opt, cfg)
     ema = EMA(model.module if world > 1 else model, cfg.ema_decay)
 
-    torch.manual_seed(cfg.seed + rank)
-    np.random.seed(cfg.seed + rank)
+    start_step = 0
+    if resume_payload is not None:
+        assert resume_payload.get("optimizer"), "resume checkpoint has no optimizer state"
+        opt.load_state_dict(resume_payload["optimizer"])
+        if resume_payload.get("scheduler"):
+            sched.load_state_dict(resume_payload["scheduler"])
+        if resume_payload.get("ema"):
+            ema.load_state_dict(resume_payload["ema"])
+        start_step = int(resume_payload["step"])
+        if is_main():
+            log.info("resumed optimizer/scheduler/ema at step %d (lr %.3g)",
+                     start_step, sched.get_last_lr()[0])
 
-    step, t0 = 0, time.perf_counter()
+    # offset by start_step so a resumed run does not replay the step-0 data
+    # order / noise stream it already trained on
+    torch.manual_seed(cfg.seed + rank + start_step)
+    np.random.seed(cfg.seed + rank + start_step)
+
+    step, t0 = start_step, time.perf_counter()
     epoch = 0
     it = iter(loader)
     while step < cfg.max_steps:
@@ -558,7 +587,7 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                 dist.all_reduce(t)
                 logs = {k: float(v) / world for k, v in zip(keys, t.tolist())}
             if is_main():
-                rate = step / (time.perf_counter() - t0)
+                rate = (step - start_step) / (time.perf_counter() - t0)
                 log.info("step %d/%d  %s  (%.2f it/s)", step, cfg.max_steps,
                          "  ".join(f"{k}={v:.4f}" for k, v in sorted(logs.items())), rate)
         if (val_loader is not None and is_main() and cfg.eval_every
