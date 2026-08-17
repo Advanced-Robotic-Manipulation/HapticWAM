@@ -43,6 +43,7 @@ def add_common_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--batch-size", type=int, default=None)
     ap.add_argument("--grad-accum", type=int, default=None)
+    ap.add_argument("--num-workers", type=int, default=None)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--compute", default=None,
                     help="compute profile name in configs/compute.yaml, or a path "
@@ -65,6 +66,8 @@ def apply_overrides(cfg, args, compute=None):
         updates["batch_size"] = args.batch_size
     if args.grad_accum is not None:
         updates["grad_accum"] = args.grad_accum
+    if getattr(args, "num_workers", None) is not None:
+        updates["num_workers"] = args.num_workers
     return dataclasses.replace(cfg, **updates)
 
 
@@ -90,6 +93,12 @@ def main(argv=None) -> int:
                     help="episode subset from manifests/all.jsonl (default train; "
                          "'all' reproduces the pre-split behaviour)")
     ap.add_argument("--tactile-pretrain", default="", help="program-1 checkpoint")
+    ap.add_argument("--resume", default="",
+                    help="teacher checkpoint to resume from: restores lora+phantom "
+                         "weights, optimizer, scheduler, EMA and the step counter, "
+                         "then continues to --max-steps. Model flags must match the "
+                         "original run (checked against the checkpoint's saved "
+                         "model config).")
     ap.add_argument("--acc-two-pass", action="store_true",
                     help="train ACC on the TRUE previous-replan prediction (two "
                          "forward passes) instead of the gt_noised proxy. REQUIRED "
@@ -141,6 +150,19 @@ def main(argv=None) -> int:
 
     pm = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc,
                      load_base=not cfg.tiny, device=args.device, dtype=dtype)
+
+    resume_payload = None
+    if args.resume:
+        assert not args.tactile_pretrain, "--resume already carries trained weights"
+        resume_payload = C.load_phantom_checkpoint(Path(args.resume), pm.rf, hw=hw)
+        saved_mc = resume_payload["configs"]["model"]
+        if saved_mc != mc.to_dict():
+            drift = {k: (saved_mc.get(k), v) for k, v in mc.to_dict().items()
+                     if saved_mc.get(k) != v}
+            raise SystemExit(f"--resume model-config drift vs checkpoint: {drift} "
+                             f"— pass the flags the original run used")
+        log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
+
     if args.tactile_pretrain:
         pm.rf.hht.load_pretrained_tactile(Path(args.tactile_pretrain))
         if cfg.freeze_tactile_steps > 0:
@@ -212,7 +234,8 @@ def main(argv=None) -> int:
             n_windows=8, nfe=pm.mc.nfe)
 
     C.train_loop(cfg, pm.rf, loader, step_fn, on_checkpoint=on_ckpt,
-                 val_loader=val_loader, sampled_eval_fn=sampled_eval)
+                 val_loader=val_loader, sampled_eval_fn=sampled_eval,
+                 resume_payload=resume_payload)
     return 0
 
 
