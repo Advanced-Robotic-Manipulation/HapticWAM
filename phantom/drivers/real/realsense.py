@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import logging
 import time
 
 import numpy as np
 
 from phantom.config.hardware import CameraEntry
 from phantom.drivers.base import Camera, CameraFrame
+
+log = logging.getLogger(__name__)
+
+# Consecutive wait_for_frames timeouts before the pipeline is rebuilt. A
+# librealsense pipeline can wedge permanently after a USB stall (observed on
+# the rig 2026-08-18: hub contention with the DmTac gels); wait_for_frames
+# then times out forever and the poller's retry never heals it. Rebuilding
+# the pipeline does.
+_REBUILD_AFTER_TIMEOUTS = 3
 
 
 class RealSenseCamera(Camera):
@@ -16,6 +26,7 @@ class RealSenseCamera(Camera):
         self._pipe = None
         self._rs = None
         self._seq = 0
+        self._timeouts = 0
 
     def connect(self) -> None:
         try:
@@ -44,7 +55,18 @@ class RealSenseCamera(Camera):
     def read(self) -> CameraFrame:
         if self._pipe is None:
             raise RuntimeError("read() before connect()")
-        frames = self._pipe.wait_for_frames()
+        try:
+            frames = self._pipe.wait_for_frames()
+            self._timeouts = 0
+        except RuntimeError:
+            self._timeouts += 1
+            if self._timeouts >= _REBUILD_AFTER_TIMEOUTS:
+                log.warning("camera %s: %d consecutive frame timeouts — rebuilding "
+                            "the pipeline", self.name, self._timeouts)
+                self.disconnect()
+                self.connect()
+                self._timeouts = 0
+            raise
         t_host = time.perf_counter()
         color = np.asanyarray(frames.get_color_frame().get_data())
         depth = None
