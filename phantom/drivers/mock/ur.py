@@ -105,6 +105,14 @@ class MockArm(Arm):
             self._q = np.asarray(q, dtype=np.float64).copy()
             self._qd = np.zeros_like(self._q)
 
+    def move_l(self, tcp_pose: np.ndarray, speed: float, accel: float,
+               blocking: bool = True) -> None:
+        if self._servo_active:
+            raise RuntimeError("move_l while servo mode active; call servo_stop() first")
+        with self._lock:
+            self._tcp = np.asarray(tcp_pose, dtype=np.float64).copy()
+            self._tcp_speed = np.zeros(6)
+
     def stop(self, decel: float) -> None:
         with self._lock:
             self._qd[:] = 0.0

@@ -1,0 +1,33 @@
+# Per-task demo START-pose distributions - generated from the FULL v3 dataset
+# (180 success episodes per task, first frame of arm_tcp_pose.zarr/gripper.zarr).
+# Regenerate with tools/gen_start_poses.py after any dataset change.
+# tcp: [x, y, z, rx, ry, rz]  (m / axis-angle rad, UR base frame)
+# Used by run_deploy --home-to-task: move arm to a jittered sample of this
+# distribution before the episode, and gate episode start beyond max_sigma.
+generated: 2026-08-20
+source: compute:~/phantom-icra-2027/data/phantom-episodes/tasks (v3, 4x180 eps)
+tasks:
+  Carton:
+    n: 180
+    tcp_mean: [-0.3843, -0.2785, 0.3044, -1.1492, -1.7695, 1.5336]
+    tcp_std:  [0.0286, 0.0331, 0.0485, 0.1206, 0.1178, 0.0815]
+    gripper_mean: 0.140
+    gripper_std: 0.122
+  egg:
+    n: 180
+    tcp_mean: [-0.3644, -0.2195, 0.2535, -1.4556, -1.7216, 1.1995]
+    tcp_std:  [0.0250, 0.0376, 0.0306, 0.1500, 0.1120, 0.1195]
+    gripper_mean: 0.286
+    gripper_std: 0.132
+  waffles:
+    n: 180
+    tcp_mean: [-0.3745, -0.2825, 0.3340, -1.0964, -1.7938, 1.5155]
+    tcp_std:  [0.0257, 0.0327, 0.0306, 0.1322, 0.1006, 0.1072]
+    gripper_mean: 0.185
+    gripper_std: 0.150
+  whiteboard:
+    n: 180
+    tcp_mean: [-0.3285, -0.2609, 0.3122, -1.2942, -1.8827, 1.3347]
+    tcp_std:  [0.0287, 0.0627, 0.0299, 0.1592, 0.1878, 0.1544]
+    gripper_mean: 0.214
+    gripper_std: 0.150

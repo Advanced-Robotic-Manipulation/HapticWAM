@@ -102,6 +102,11 @@ class ChunkExecutor:
         with self._lock:
             return self._plan
 
+    def last_cmd(self) -> np.ndarray | None:
+        """Last commanded TCP pose (copy) - the stall watchdog's reference."""
+        with self._lock:
+            return None if self._last_cmd is None else self._last_cmd.copy()
+
     # ------------------------------------------------------------------
     def _pose_at(self, plan: Plan, play_time: float) -> tuple[np.ndarray, float]:
         """Pose target from cumulative deltas at governed playback time."""

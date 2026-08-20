@@ -111,12 +111,42 @@ class PlannerLoop:
         self.trace = trace if trace is not None else []
         self._stop = threading.Event()
 
+    # Stall watchdog (postmortem 2026-08-20, ep ...1999): a protective stop
+    # kills the control script, the arm freezes, and the planner replans blind
+    # forever - actual motion was 2-10% of commanded for 18 straight replans
+    # with zero detection. If actual displacement < STALL_FRACTION x commanded
+    # for STALL_STRIKES consecutive replan windows (and the command was big
+    # enough to measure), stop the episode loudly.
+    STALL_FRACTION = 0.2
+    STALL_MIN_CMD_M = 0.005
+    STALL_STRIKES = 2
+
     def run(self, max_replans: int | None = None) -> None:
         n = 0
         prev_plan: Plan | None = None
+        prev_tcp = prev_cmd = None
+        strikes = 0
         while not self._stop.is_set():
             snap = self.snapshots.build()
             tcp_pose = snap.ur_state[2 * self.hw.arm.dof:2 * self.hw.arm.dof + 6]
+            cmd = self.executor.last_cmd()
+            if prev_cmd is not None and cmd is not None and prev_tcp is not None:
+                cmd_d = float(np.linalg.norm(cmd[:3] - prev_cmd[:3]))
+                act_d = float(np.linalg.norm(tcp_pose[:3] - prev_tcp[:3]))
+                if cmd_d > self.STALL_MIN_CMD_M and act_d < self.STALL_FRACTION * cmd_d:
+                    strikes += 1
+                    log.warning("stall watchdog: actual %.1fmm vs commanded %.1fmm "
+                                "(strike %d/%d)", act_d * 1000, cmd_d * 1000,
+                                strikes, self.STALL_STRIKES)
+                    if strikes >= self.STALL_STRIKES:
+                        log.error("MOTION STALL: arm is not following commands - "
+                                  "protective stop / Local mode suspected. Check "
+                                  "the pendant. Ending episode.")
+                        self.executor.stopped_reason = "motion_stall"
+                        break
+                else:
+                    strikes = 0
+            prev_tcp, prev_cmd = tcp_pose.copy(), cmd
             plan = self.policy.replan(snap, prev_plan, tcp_pose)
             accepted = self.executor.submit(plan)
             self.trace.append({
