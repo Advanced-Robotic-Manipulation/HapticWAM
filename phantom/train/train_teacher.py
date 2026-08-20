@@ -93,6 +93,14 @@ def main(argv=None) -> int:
                     help="episode subset from manifests/all.jsonl (default train; "
                          "'all' reproduces the pre-split behaviour)")
     ap.add_argument("--tactile-pretrain", default="", help="program-1 checkpoint")
+    ap.add_argument("--grasp-frac", type=float, default=0.0,
+                    help="fraction of training windows anchored in the 1.5 s "
+                         "before the first gripper close (terminal-phase "
+                         "fine-tune; 0 = uniform)")
+    ap.add_argument("--init-weights", default="",
+                    help="teacher checkpoint to initialize WEIGHTS from, with a "
+                         "fresh optimizer + schedule (fine-tuning; contrast "
+                         "--resume which restores optimizer/step too)")
     ap.add_argument("--resume", default="",
                     help="teacher checkpoint to resume from: restores lora+phantom "
                          "weights, optimizer, scheduler, EMA and the step counter, "
@@ -152,6 +160,11 @@ def main(argv=None) -> int:
                      load_base=not cfg.tiny, device=args.device, dtype=dtype)
 
     resume_payload = None
+    if args.init_weights:
+        assert not args.resume, "--init-weights and --resume are exclusive"
+        C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw)
+        log.info("weights initialized from %s (fresh optimizer/schedule)",
+                 args.init_weights)
     if args.resume:
         assert not args.tactile_pretrain, "--resume already carries trained weights"
         resume_payload = C.load_phantom_checkpoint(Path(args.resume), pm.rf, hw=hw)
@@ -174,7 +187,11 @@ def main(argv=None) -> int:
     data_root, norm = resolve_data(args, hw, paths)
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
-    ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed)
+    ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
+                         grasp_frac=args.grasp_frac)
+    if args.grasp_frac > 0:
+        log.info("terminal-phase weighting: %.0f%% of windows anchored before "
+                 "the first gripper close", 100 * args.grasp_frac)
     log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
     # A training run under a config the data was NOT recorded under silently
     # changes window semantics and produces a checkpoint the rig rejects on
