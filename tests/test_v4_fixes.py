@@ -176,3 +176,54 @@ def test_label_sanity_gate_is_loud():
     # healthy: both gate classes, none(0)/onset(1)/hold(2) present
     good = _DS([1.0, 0.0] * 4, [[0, 1, 2]] * 8)
     assert_label_sanity(good, log, n_windows=8)
+
+
+@pytest.fixture(scope="module")
+def tiny_two_pass():
+    """Tiny teacher with ACC self_anticipation='two_pass' (the deploy config)."""
+    from phantom.config.model import AccConfig
+    hw = make_hw()
+    mc = PhantomModelConfig(student=False, rope_time_mode="time_true",
+                            acc=AccConfig(self_anticipation="two_pass"))
+    pm = build_model(hw, load_paths(), student=False, tiny=True,
+                     load_base=False, mc=mc)
+    from phantom.data.synthetic import SyntheticEpisodeGenerator
+    from phantom.data.windows import WindowSampler
+    from phantom.data.schema import NormStats
+    from phantom.train import common as C
+    root = Path(tempfile.mkdtemp(prefix="v4tp"))
+    SyntheticEpisodeGenerator(hw, seed=0, rate_scale=1.0).generate(
+        root, task="grasp_slip", duration_s=8.0)
+    sampler = WindowSampler(hw, pm.bb, NormStats.identity(), student=False)
+    ds = C.WindowDataset(root, sampler, windows_per_episode=2)
+    return pm, C.collate_windows([ds[0]])
+
+
+def _count_sample_calls(pm, batch, monkeypatch, **kw):
+    calls = {"n": 0}
+    orig = type(pm.rf).sample
+
+    def spy(self, *a, **k):
+        calls["n"] += 1
+        return orig(self, *a, **k)
+
+    monkeypatch.setattr(type(pm.rf), "sample", spy)
+    with torch.no_grad():
+        pred = pm.rf.sample({k: (v.clone() if torch.is_tensor(v) else v)
+                             for k, v in batch.items()}, nfe=2, **kw)
+    return calls["n"], pred
+
+
+def test_two_pass_inner_sample_skipped_when_prev_cpk_given(tiny_two_pass, monkeypatch):
+    """Deploy passes the TRUE previous-replan package; the ACC inner sample
+    that build_x0 would run to predict it is overwritten anyway. It cost
+    ~0.35 s/replan on the rig (review find 2026-08-20)."""
+    pm, batch = tiny_two_pass
+    pm.rf.eval()
+    n_first, pred = _count_sample_calls(pm, batch, monkeypatch)
+    assert n_first == 2, f"first replan: outer + inner anticipation expected, got {n_first}"
+    n_next, _ = _count_sample_calls(pm, batch, monkeypatch, prev_cpk=pred.cpk)
+    assert n_next == 1, f"with prev_cpk the inner sample must be skipped, got {n_next}"
+    # the flag must not leak: a following no-prev_cpk call anticipates again
+    n_again, _ = _count_sample_calls(pm, batch, monkeypatch)
+    assert n_again == 2
