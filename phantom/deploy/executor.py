@@ -45,6 +45,8 @@ class ChunkExecutor:
         # gripper dims were zeros(2) every rig episode.
         self.gripper_ring = gripper_ring
         self._grip_poll_period = 1.0 / hw.gripper.feedback_rate_hz
+        self._grip_target: float | None = None
+        self._grip_thread: threading.Thread | None = None
         self._last_grip_poll = 0.0
         self._plan: Plan | None = None
         self._prev_plan: Plan | None = None
@@ -150,15 +152,6 @@ class ChunkExecutor:
             dt = t0 - self._last_tick
             self._last_tick = t0
 
-            # gripper state -> ring, throttled to feedback_rate_hz; runs even
-            # while idle so the ring is warm before the first plan arrives
-            if (self.gripper_ring is not None
-                    and t0 - self._last_grip_poll >= self._grip_poll_period):
-                self._last_grip_poll = t0
-                gs = self.gripper.get_state()
-                self.gripper_ring.push(gs.t_host, state=np.array(
-                    [gs.position, gs.obj], dtype=np.float32))
-
             with self._lock:
                 plan = self._plan
             if plan is None:
@@ -224,26 +217,35 @@ class ChunkExecutor:
             # to the plan whenever the plan itself is feasible.
             target = np.array(target, dtype=np.float64)
             if self._last_cmd is not None:
+                # Rate limit per MEASURED tick, not the nominal 8 ms: the old
+                # per-period cap silently scaled the speed ceiling by
+                # (period / actual dt) — with synchronous gripper I/O in this
+                # loop the tick ran ~40 ms and the arm topped out at ~1/5 of
+                # tcp_speed_m_s (audit 2026-08-20). Bounded so a stalled tick
+                # can never license a jump.
+                dt_eff = float(np.clip(dt, period, 4.0 * period))
                 v_lin = hw.arm.limits.tcp_speed_m_s
                 v_rot = hw.arm.limits.joint_speed_rad_s
                 dp = target[:3] - self._last_cmd[:3]
                 n = float(np.linalg.norm(dp))
-                if n > v_lin * period:
-                    target[:3] = self._last_cmd[:3] + dp * (v_lin * period / n)
+                if n > v_lin * dt_eff:
+                    target[:3] = self._last_cmd[:3] + dp * (v_lin * dt_eff / n)
                 rv = rotvec_nearest(self._last_cmd[3:6], target[3:6])
                 dr = rv - self._last_cmd[3:6]
                 rn = float(np.linalg.norm(dr))
-                if rn > v_rot * period:
-                    target[3:6] = self._last_cmd[3:6] + dr * (v_rot * period / rn)
+                if rn > v_rot * dt_eff:
+                    target[3:6] = self._last_cmd[3:6] + dr * (v_rot * dt_eff / rn)
                 else:
                     target[3:6] = rv
-            self._last_cmd = target.copy()
+            with self._lock:
+                self._last_cmd = target.copy()
 
             self.arm.servo_l(target, dt_servo, hw.arm.servoj.lookahead_time_s,
                              hw.arm.servoj.gain)
             if grip is not None:
-                self.gripper.move(float(np.clip(grip, 0, 1)),
-                                  hw.gripper.default_speed, hw.gripper.default_force)
+                # hand the gripper target to the gripper thread (non-blocking):
+                # a synchronous socket round-trip here throttled the servo loop
+                self._grip_target = float(np.clip(grip, 0, 1))
 
             wait = period - (time.perf_counter() - t0)
             if wait > 0:
@@ -262,10 +264,46 @@ class ChunkExecutor:
             log.exception("executor thread crashed")
             self._set_reason("executor_crash")
 
+    GRIP_DEADBAND = 0.02   # re-sending an unchanged target makes the Robotiq
+                           # report OBJ=0 ("moving") for a cycle — the flicker
+                           # the model never saw in training
+
+    def _grip_worker(self) -> None:
+        """Single owner of gripper I/O: sends the latest target (deadbanded)
+        and polls state into the ring at feedback_rate_hz, off the servo
+        thread. Runs while idle so the ring is warm before the first plan."""
+        hw = self.hw
+        last_sent: float | None = None
+        while not self._stop.is_set():
+            t0 = time.perf_counter()
+            try:
+                tgt = self._grip_target
+                if tgt is not None and (last_sent is None
+                                        or abs(tgt - last_sent) > self.GRIP_DEADBAND):
+                    self.gripper.move(tgt, hw.gripper.default_speed,
+                                      hw.gripper.default_force)
+                    last_sent = tgt
+                if self.gripper_ring is not None:
+                    gs = self.gripper.get_state()
+                    self.gripper_ring.push(gs.t_host, state=np.array(
+                        [gs.position, gs.obj], dtype=np.float32))
+            except Exception:
+                log.exception("gripper worker error")
+                self._set_reason("executor_crash")
+                self._stop.set()
+                break
+            wait = self._grip_poll_period - (time.perf_counter() - t0)
+            if wait > 0:
+                time.sleep(wait)
+
     def start(self) -> None:
         self._stop.clear()
         self.stopped_reason = None
         self._last_cmd = None                  # re-seed the rate limit per episode
+        self._grip_target = None
+        self._grip_thread = threading.Thread(target=self._grip_worker, daemon=True,
+                                             name="gripper")
+        self._grip_thread.start()
         self._thread = threading.Thread(target=self._run_guarded, daemon=True,
                                         name="executor")
         self._thread.start()
@@ -274,6 +312,8 @@ class ChunkExecutor:
         self._stop.set()
         if self._thread is not None:
             self._thread.join(2.0)
+        if getattr(self, "_grip_thread", None) is not None:
+            self._grip_thread.join(2.0)
         try:
             self.arm.servo_stop()
         except Exception:

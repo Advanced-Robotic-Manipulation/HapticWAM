@@ -194,3 +194,34 @@ def test_first_replan_prev_chunk_is_normalized_zero_action():
     src = inspect.getsource(P.PhantomPolicy._batch_from_obs)
     assert re.search(r'normalize\(\s*"action",\s*np\.zeros', src), \
         "prev_chunk fallback must be a NORMALIZED zero action"
+
+
+def test_gripper_worker_deadbands_repeated_targets():
+    """Gripper I/O lives on its own thread (the servo loop only posts a
+    target) and an unchanged target is NOT re-sent: every move() made the
+    Robotiq report OBJ=0 'moving' — a flicker training never showed
+    (audit 2026-08-20)."""
+    hw = _hw()
+
+    class CountingGripper(_StubGripper):
+        def __init__(self):
+            super().__init__()
+            self.moves = []
+
+        def move(self, position, speed, force):
+            self.moves.append(position)
+
+    g = CountingGripper()
+    ex = ChunkExecutor(hw, arm=None, gripper=g, safety=None, gripper_ring=_StubRing())
+    ex.start()
+    try:
+        ex._grip_target = 0.30
+        time.sleep(0.25)
+        ex._grip_target = 0.31           # inside the 0.02 deadband
+        time.sleep(0.25)
+        ex._grip_target = 0.60           # real change
+        time.sleep(0.25)
+    finally:
+        ex.stop()
+    assert g.moves == [0.30, 0.60], g.moves
+    assert g.n > 3                       # state polled into the ring meanwhile
