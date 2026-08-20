@@ -115,6 +115,12 @@ def main(argv=None) -> int:
                          "--max-start-sigma from the task's demo start "
                          "distribution (postmortem: 2-6 sigma starts caused "
                          "place-phase behavior in 7/7 episodes)")
+    ap.add_argument("--seed", type=int, default=None,
+                    help="reseed the policy's sampling generator per episode "
+                         "(seed + episode index) — reproducible noise draws for "
+                         "paired trials")
+    ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
+                    default=True, help="skip the post-episode success/notes prompt")
     ap.add_argument("--max-start-sigma", type=float, default=2.5,
                     help="refuse episode start beyond this many sigma from the "
                          "task's demo start distribution (default 2.5: the "
@@ -153,6 +159,20 @@ def main(argv=None) -> int:
                 log.exception("warmup replan FAILED on a real-hardware session")
                 return 3
             log.exception("warmup failed (mock session — continuing)")
+    import subprocess
+    try:
+        sha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"],
+                                      cwd=Path(__file__).resolve().parents[2],
+                                      text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        sha = "nogit"
+    ckpt_real = str(Path(args.ckpt).resolve()) if args.ckpt else ""
+    cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
+                 "pnoise" if args.persistent_noise else "freshnoise",
+                 f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
+                 f"seed:{args.seed}" if args.seed is not None else "seed:none"]
+    log.info("episode condition tags: %s", cond_tags)
+
     from phantom.deploy import start_pose as sp
     stats = sp.load_start_stats().get(args.task)
     if arm_real and stats is None:
@@ -236,12 +256,27 @@ def main(argv=None) -> int:
                 # policy flail confidently and slam the table.
                 log.info("camera AE settle...")
                 time.sleep(5.0)
+            if args.seed is not None:
+                policy.rf._gen = torch.Generator().manual_seed(args.seed + i)
+                policy.rf.reset_episode_noise()
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
-                                 policy_name=f"{args.system}")
+                                 policy_name=f"{args.system}", tags=cond_tags)
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
+            if arm_real and args.label_prompt and res.episode_path:
+                # success is otherwise hardcoded None on every deploy episode
+                # (audit 2026-08-20): the session produced unlabeled anecdotes
+                ans = input("outcome? [s]uccess / [f]ail / [c]ontaminated / "
+                            "Enter=skip, then optional notes: ").strip()
+                if ans:
+                    code, _, note = ans.partition(" ")
+                    succ = {"s": True, "f": False, "c": False}.get(code[:1].lower())
+                    extra = (" CONTAMINATED" if code[:1].lower() == "c" else "") + \
+                        (f" {note}" if note else "")
+                    rt.recorder.relabel(Path(res.episode_path), success=succ,
+                                        notes=f"operator: {ans}{extra}")
     return 0
 
 

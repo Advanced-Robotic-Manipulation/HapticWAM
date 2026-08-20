@@ -154,6 +154,10 @@ class PlannerLoop:
                 "p_evt": plan.p_evt.tolist(), "sigma": plan.sigma.tolist(),
                 "accepted": accepted,
                 "actions": plan.actions.tolist(),
+                # provenance: nfe/guidance/... per replan (audit 2026-08-20 —
+                # the A/B condition lived only in the operator's memory)
+                "diag": {k: v for k, v in (getattr(plan, "diag", None) or {}).items()
+                         if isinstance(v, (int, float, str, bool))},
             })
             from phantom.config.model import EVENTS
             k_evt = int(np.argmax(plan.p_evt))
