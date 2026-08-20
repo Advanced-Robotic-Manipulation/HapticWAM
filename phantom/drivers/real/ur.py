@@ -43,6 +43,7 @@ class URArm(Arm):
 
     def __init__(self, hw: HardwareConfig):
         super().__init__(hw)
+        self._servo_active = False
         self._recv = None
         self._ctrl = None
         self._seq = 0
@@ -305,6 +306,7 @@ class URArm(Arm):
 
     def servo_j(self, q: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
         with self._ctrl_lock:
+            self._servo_active = True
             ok = self._require_ctrl().servoJ(list(np.asarray(q, dtype=float)), 0.0,
                                              0.0, dt, lookahead, gain)
         if ok is False:
@@ -317,6 +319,7 @@ class URArm(Arm):
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
         with self._ctrl_lock:
+            self._servo_active = True
             ctrl = self._require_ctrl()
             q = ctrl.getInverseKinematics(list(np.asarray(tcp_pose, dtype=float)))
             ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
@@ -337,6 +340,13 @@ class URArm(Arm):
     def move_l(self, tcp_pose: np.ndarray, speed: float, accel: float,
                blocking: bool = True) -> None:
         with self._ctrl_lock:
+            if self._servo_active:
+                # same guard MockArm enforces: a moveL while a servo stream is
+                # (possibly) live is an illegal mode mix on the controller —
+                # the homing caller must run before executor.start() or after
+                # servo_stop()
+                raise RuntimeError("move_l while servo mode may be active; "
+                                   "call servo_stop() first")
             ok = self._require_ctrl().moveL(list(np.asarray(tcp_pose, dtype=float)),
                                             speed, accel, not blocking)
         if ok is False:
@@ -362,3 +372,4 @@ class URArm(Arm):
     def servo_stop(self) -> None:
         with self._ctrl_lock:
             self._require_ctrl().servoStop()
+            self._servo_active = False

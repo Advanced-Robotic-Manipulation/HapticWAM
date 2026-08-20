@@ -46,11 +46,44 @@ def test_sigma_report_flags_postmortem_start():
     bad = np.array([-0.3751, -0.1957, 0.3063, -1.12, -1.89, 1.52])
     sig, table = sp.start_sigma_report(st, bad, gripper_pos=0.45)
     assert float(sig[1]) > 2.5          # y was the killer axis
-    assert float(np.max(sig)) > 2.5
+    # pinned to the SHIPPED default gate (2.5): the pose that burned the
+    # session must actually refuse, not just look large in a report
+    DEFAULT_MAX_START_SIGMA = 2.5
+    assert float(np.max(sig)) > DEFAULT_MAX_START_SIGMA
     assert "sigma" in table
     good = st.tcp_mean.copy()
     sig2, _ = sp.start_sigma_report(st, good)
     assert float(np.max(sig2)) < 1e-9
+
+
+def test_gripper_participates_in_gate():
+    """Perfect TCP + wildly wrong gripper must still gate out (codex review:
+    the gripper sigma was print-only and never reached the max)."""
+    st = sp.load_start_stats()["Carton"]
+    sig, _ = sp.start_sigma_report(st, st.tcp_mean.copy(), gripper_pos=1.0)
+    assert sig.shape == (7,)
+    assert float(np.max(sig)) > 3.0
+
+
+def test_rotvec_antipodal_representation_does_not_false_refuse():
+    """whiteboard's mean rotvec norm is 2.646 — a live pose past the pi
+    surface returns from UR in the antipodal representation; the gate must
+    read it as the same rotation, not ~20 sigma."""
+    st = sp.load_start_stats()["whiteboard"]
+    r = st.tcp_mean[3:6].copy()
+    n = np.linalg.norm(r)
+    r_anti = r * (1.0 - 2.0 * np.pi / n)      # same rotation, other branch
+    pose = st.tcp_mean.copy(); pose[3:6] = r_anti
+    sig, _ = sp.start_sigma_report(st, pose)
+    assert float(np.max(sig)) < 1e-6
+
+
+def test_nonfinite_live_state_gates_out():
+    """NaN in the live TCP must read as infinite sigma, never pass a gate."""
+    st = sp.load_start_stats()["waffles"]
+    bad = st.tcp_mean.copy(); bad[0] = np.nan
+    sig, _ = sp.start_sigma_report(st, bad)
+    assert np.isinf(sig[0]) and float(np.max(sig)) > 3.0
 
 
 def test_wait_gripper_settled():
@@ -83,10 +116,15 @@ class _StubExecutor:
     """Commanded pose advances every call; stopped_reason writable."""
     def __init__(self):
         self.stopped_reason = None
+        self.stop_requested = False
         self._cmd = np.zeros(6)
     def last_cmd(self):
         self._cmd = self._cmd + np.array([0.01, 0, 0, 0, 0, 0])
         return self._cmd.copy()
+    def request_stop(self, reason):
+        if self.stopped_reason is None:
+            self.stopped_reason = reason
+        self.stop_requested = True
     def submit(self, plan):
         return True
 
@@ -117,6 +155,7 @@ def test_stall_watchdog_stops_episode():
     loop = PlannerLoop(hw, _StubPolicy(), _StubSnapshots(hw), _StubExecutor())
     loop.run(max_replans=10)
     assert loop.executor.stopped_reason == "motion_stall"
+    assert loop.executor.stop_requested
     # commanded 10mm/window vs 0 actual -> strikes at replans 1,2 -> <=4 replans
     assert len(loop.trace) <= 4
 

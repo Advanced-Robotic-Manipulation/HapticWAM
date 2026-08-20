@@ -81,7 +81,14 @@ class ChunkExecutor:
                 return False
             rate = self.hw.control.action_rate_hz
             H = plan.actions.shape[0]
-            u0 = float(np.clip((now - plan.t_created) * rate, 0.0, H - 1e-6))
+            # Playback anchors at action_times[0] = obs.t + inference latency —
+            # the SAME origin the lead check above uses. Anchoring at t_created
+            # (obs.t) skipped `latency*rate` actions of EVERY chunk: at the
+            # rig's ~1.4 s replans that discarded ~14 of 16 actions, so the arm
+            # only ever played chunk tails (review find 2026-08-20; the
+            # postmortem's 35 executed actions / 17 replans).
+            u0 = float(np.clip((now - float(plan.action_times[0])) * rate,
+                               0.0, H - 1e-6))
             k0 = int(u0)
             cum = np.cumsum(plan.actions[:, :6], axis=0)
             prev0 = cum[k0 - 1] if k0 > 0 else np.zeros(6)
@@ -101,6 +108,17 @@ class ChunkExecutor:
     def active_plan(self) -> Plan | None:
         with self._lock:
             return self._plan
+
+    def _set_reason(self, reason: str) -> None:
+        with self._lock:
+            if self.stopped_reason is None:
+                self.stopped_reason = reason
+
+    def request_stop(self, reason: str) -> None:
+        """External stop (planner watchdog): record the reason (first writer
+        wins) and halt the servo loop now — not at episode teardown."""
+        self._set_reason(reason)
+        self._stop.set()
 
     def last_cmd(self) -> np.ndarray | None:
         """Last commanded TCP pose (copy) - the stall watchdog's reference."""
@@ -189,11 +207,11 @@ class ChunkExecutor:
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
-                self.stopped_reason = "protective_stop"
+                self._set_reason("protective_stop")
                 break
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
-                self.stopped_reason = "safety_stop"
+                self._set_reason("safety_stop")
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
@@ -242,8 +260,7 @@ class ChunkExecutor:
             self._run()
         except Exception:
             log.exception("executor thread crashed")
-            if self.stopped_reason is None:
-                self.stopped_reason = "executor_crash"
+            self._set_reason("executor_crash")
 
     def start(self) -> None:
         self._stop.clear()
