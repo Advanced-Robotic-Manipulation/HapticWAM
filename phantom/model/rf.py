@@ -370,7 +370,22 @@ class PhantomRectifiedFlow(nn.Module):
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
                                        student=self.layout.student, drop_video=True)
                   if drop_video else self.layout)
-        x0, cond_mask, acc_inputs = self.build_x0(batch, layout, encode_gen=False)
+        # When the caller supplies the TRUE previous-replan package (every
+        # deploy replan after the first), the ACC two-pass inner sample that
+        # build_x0 would run to *predict* that package is overwritten below —
+        # pure cost (2 NFE of the full net, ~0.35 s/replan on the 5090; x2
+        # with guidance). Take the cheap branch instead. The first replan of
+        # an episode (prev_cpk=None) keeps the model's own anticipation.
+        # (The guidance NULL build below keeps its inner sample: training's
+        # cond-dropout batches got their ACC summary from exactly that
+        # prediction-under-null-obs, so it is conditioning, not waste.)
+        _prev_flag = getattr(self, "_in_anticipation_pass", False)
+        if prev_cpk is not None:
+            self._in_anticipation_pass = True
+        try:
+            x0, cond_mask, acc_inputs = self.build_x0(batch, layout, encode_gen=False)
+        finally:
+            self._in_anticipation_pass = _prev_flag
         x0_null = acc_null = ctx_null = None
         if guidance_scale != 1.0:
             x0_null, _, acc_null = self.build_x0(
