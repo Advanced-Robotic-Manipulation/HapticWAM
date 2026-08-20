@@ -6,7 +6,7 @@ This evaluates windows anchored in the last 1.5 s before the demo's first
 gripper close, sampled exactly like deploy, and reports:
 
   endpoint_err_mm   |cum(pred dpos) - cum(gt dpos)| at chunk end (xyz)
-  z_end_err_mm      pred z-at-end - gt z-at-end  (negative = closes HIGH)
+  z_end_err_mm      pred z-at-end - gt z-at-end  (POSITIVE = ends HIGH)
   close_step_err    (first step pred gripper > 0.45) - (same for gt); +ve = late
   commit_ratio      |pred descent| / |gt descent| over the chunk
 
@@ -39,8 +39,10 @@ def main() -> int:
     ap.add_argument("--nfe", type=int, default=5)
     ap.add_argument("--guidance", type=float, default=1.0)
     ap.add_argument("--seeds", type=int, default=2)
-    ap.add_argument("--lead-s", type=float, default=1.0,
-                    help="anchor t0 this many seconds before the first close")
+    ap.add_argument("--lead-s", type=float, default=None,
+                    help="anchor t0 this many seconds before the first close "
+                         "(default: the chunk duration, so the chunk ENDS at "
+                         "the close — no post-grasp lift inside the window)")
     ap.add_argument("--max-episodes", type=int, default=80)
     ap.add_argument("--out", default="")
     args = ap.parse_args()
@@ -63,16 +65,18 @@ def main() -> int:
 
     data_root = Path(args.data)
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=0)
-    val_eps = C.manifest_split(data_root, "val") or []
+    val_eps = C.manifest_split(data_root, "val")     # None = every episode
     ds = C.WindowDataset(data_root, sampler, episodes=val_eps, windows_per_episode=1,
                          resample=False, seed=0)
     pm.rf.eval()
     rows = []
+    chunk_s = hw.control.chunk_horizon / hw.control.action_rate_hz
+    lead = args.lead_s if args.lead_s is not None else chunk_s
     for wi in ds.index[: args.max_episodes]:
         tc = ds._close_time(wi.episode)
         if tc is None:
             continue
-        t0 = float(np.clip(tc - args.lead_s, wi.lo, wi.hi))
+        t0 = float(np.clip(tc - lead, wi.lo, wi.hi))
         item = sampler.sample(wi.episode, t0)
         batch = {}
         for k, v in item.items():

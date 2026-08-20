@@ -162,7 +162,17 @@ def main(argv=None) -> int:
     resume_payload = None
     if args.init_weights:
         assert not args.resume, "--init-weights and --resume are exclusive"
-        C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw)
+        init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw)
+        saved_mc = init_payload["configs"]["model"]
+        if saved_mc != mc.to_dict():
+            # same shapes can hide a silent behavioral change (acc two_pass ->
+            # gt_noised, rope mode, cond-dropout): a fine-tune must inherit the
+            # checkpoint's model config unless the operator says otherwise
+            drift = {k: (saved_mc.get(k), v) for k, v in mc.to_dict().items()
+                     if saved_mc.get(k) != v}
+            raise SystemExit(f"--init-weights model-config drift vs checkpoint: "
+                             f"{drift} — pass the flags the checkpoint was "
+                             f"trained with (e.g. --acc-two-pass)")
         log.info("weights initialized from %s (fresh optimizer/schedule)",
                  args.init_weights)
     if args.resume:
