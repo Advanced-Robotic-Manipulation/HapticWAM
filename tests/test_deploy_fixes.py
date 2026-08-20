@@ -25,7 +25,11 @@ def _hw():
     return load_hardware(None)          # configs/hardware.yaml (mock rig)
 
 
-def _plan(hw, t_created, dstep=0.005):
+def _plan(hw, t_created, dstep=0.005, latency=0.0):
+    """Production semantics: action_times[0] = t_created + inference latency
+    (phantom/inference/policy.py builds exactly this). The old +10 s fudge
+    decoupled the two time origins and HID the u0-anchor bug the executor
+    carried until 2026-08-20."""
     H = hw.control.chunk_horizon
     A = hw.control.action_dim
     actions = np.zeros((H, A))
@@ -35,7 +39,7 @@ def _plan(hw, t_created, dstep=0.005):
     return Plan(t_created=t_created,
                 t0_pose=np.array([.1, .2, .3, 0, 0, 0], dtype=np.float64),
                 actions=actions,
-                action_times=t_created + np.arange(H) / rate + 10.0,
+                action_times=t_created + latency + np.arange(H) / rate,
                 sigma=np.zeros(4), gate=1.0, p_evt=np.zeros(5), cpk=None)
 
 
@@ -57,31 +61,49 @@ class _StubRing:
         self.rows.append((ts, values))
 
 
-def test_submit_rebases_anchor_and_seeds_play_time():
+def test_submit_fresh_plan_plays_full_chunk():
+    """A plan submitted right after inference (now == action_times[0]) must
+    play from the START of its chunk. The pre-2026-08-20 anchor used
+    t_created, silently discarding latency*rate actions of every chunk (~14
+    of 16 at the rig's 1.4 s replans — the postmortem's 35 actions / 17
+    replans)."""
     hw = _hw()
     ex = ChunkExecutor(hw, arm=None, gripper=None, safety=None)
     ex._last_cmd = np.array([.15, .25, .35, .01, .02, .03])
-    elapsed = 0.45                       # 4.5 action steps of inference latency
-    plan = _plan(hw, t_created=time.perf_counter() - elapsed)
+    latency = 1.4
+    plan = _plan(hw, t_created=time.perf_counter() - latency, latency=latency)
+    assert ex.submit(plan)
+    assert ex._play_time == pytest.approx(0.0, abs=0.02)
+    # continuity: the plan's pose at the seeded play time IS the last command
+    target, _ = ex._pose_at(plan, ex._play_time)
+    np.testing.assert_allclose(target, ex._last_cmd, atol=1e-9)
+    # advancing play time moves the target FORWARD from _last_cmd
+    rate = hw.control.action_rate_hz
+    t2, _ = ex._pose_at(plan, ex._play_time + 2.0 / rate)
+    assert t2[0] > target[0]
+
+
+def test_submit_stale_plan_skips_elapsed_head():
+    """If submit happens 0.45 s after the plan's execution grid began,
+    playback resumes at the step whose time it actually is."""
+    hw = _hw()
+    ex = ChunkExecutor(hw, arm=None, gripper=None, safety=None)
+    ex._last_cmd = np.array([.15, .25, .35, .01, .02, .03])
+    elapsed = 0.45
+    plan = _plan(hw, t_created=time.perf_counter() - elapsed, latency=0.0)
     assert ex.submit(plan)
     rate = hw.control.action_rate_hz
-    # playback starts at the step whose time it actually is
     assert ex._play_time == pytest.approx(elapsed, abs=0.02)
-    # continuity: the plan's pose at the seeded play time IS the last command
     target, _ = ex._pose_at(plan, ex._play_time)
     np.testing.assert_allclose(target, ex._last_cmd, atol=1e-9)
     # already-elapsed steps are never reported as executed
     assert ex._last_action_k == int(elapsed * rate) - 1
-    # the elapsed head is skipped, not replayed: advancing play time moves
-    # the target FORWARD from _last_cmd, never back toward old poses
-    t2, _ = ex._pose_at(plan, ex._play_time + 2.0 / rate)
-    assert t2[0] > target[0]
 
 
 def test_submit_without_last_cmd_keeps_measured_anchor():
     hw = _hw()
     ex = ChunkExecutor(hw, arm=None, gripper=None, safety=None)
-    plan = _plan(hw, t_created=time.perf_counter() - 0.3)
+    plan = _plan(hw, t_created=time.perf_counter() - 0.3, latency=0.0)
     t0 = plan.t0_pose.copy()
     assert ex.submit(plan)
     np.testing.assert_allclose(plan.t0_pose, t0)   # first plan: anchor untouched

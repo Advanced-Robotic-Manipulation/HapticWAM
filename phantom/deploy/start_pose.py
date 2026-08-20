@@ -14,6 +14,14 @@ an explicit precondition:
 - ``wait_gripper_settled``: block until the gripper reports OBJ==3 (at rest).
   3/7 postmortem episodes started while the gripper was still homing
   (OBJ==0 at frame 0) - a state that occurs mid-grasp in training data.
+
+Known limits (reviewed 2026-08-20): rotation sigma is per-axis on the
+axis-angle vector, canonicalized to the representation nearest the task mean
+(rotvec_nearest) - the task clusters sit at rotvec norm 2.55-2.65 rad, close
+enough to pi that live readings can flip to the antipodal representation. The homing moveL runs BEFORE the
+episode SafetyMonitor exists - by design it is slow (0.1 m/s), prompted
+("clear the arm's path"), and covered by UR firmware limits + the operator's
+E-stop, not by the deploy safety layer.
 """
 
 from __future__ import annotations
@@ -48,13 +56,20 @@ def load_start_stats(path: str | Path | None = None) -> dict[str, TaskStartStats
     raw = yaml.safe_load(Path(path).read_text())
     out = {}
     for task, d in raw["tasks"].items():
-        out[task] = TaskStartStats(
+        st = TaskStartStats(
             task=task, n=int(d["n"]),
             tcp_mean=np.asarray(d["tcp_mean"], dtype=np.float64),
             tcp_std=np.asarray(d["tcp_std"], dtype=np.float64),
             gripper_mean=float(d["gripper_mean"]),
             gripper_std=float(d["gripper_std"]),
         )
+        # a gate built on malformed stats fails OPEN (NaN > x is False) —
+        # refuse to load instead
+        assert st.tcp_mean.shape == (6,) and st.tcp_std.shape == (6,), task
+        assert np.all(np.isfinite(st.tcp_mean)) and np.all(np.isfinite(st.tcp_std)), task
+        assert np.all(st.tcp_std > 0) and st.gripper_std > 0, task
+        assert np.isfinite(st.gripper_mean) and 0.0 <= st.gripper_mean <= 1.0, task
+        out[task] = st
     return out
 
 
@@ -77,8 +92,16 @@ def sample_start_pose(stats: TaskStartStats, rng: np.random.Generator | None = N
 def start_sigma_report(stats: TaskStartStats, tcp_pose: np.ndarray,
                        gripper_pos: float | None = None) -> tuple[np.ndarray, str]:
     """Per-axis |sigma| distances + a printable table line-set."""
+    from phantom.data.derived import rotvec_nearest
+    tcp_pose = np.asarray(tcp_pose, dtype=np.float64).copy()
+    # UR reports the ||r|| <= pi rotvec representation; a pose ~2 sigma out
+    # radially (whiteboard mean is at 2.646 rad) crosses pi and comes back
+    # antipodal, which would read as ~20 false sigma component-wise
+    tcp_pose[3:6] = rotvec_nearest(stats.tcp_mean[3:6], tcp_pose[3:6])
     std = np.where(stats.tcp_std > 1e-9, stats.tcp_std, np.inf)
-    sig = np.abs((np.asarray(tcp_pose, dtype=np.float64) - stats.tcp_mean) / std)
+    sig = np.abs((tcp_pose - stats.tcp_mean) / std)
+    # a non-finite live reading must gate OUT, not slip past a NaN comparison
+    sig = np.where(np.isfinite(sig), sig, np.inf)
     lines = []
     for i, ax in enumerate(AXES):
         unit = "mm" if i < 3 else "rad"
@@ -89,8 +112,13 @@ def start_sigma_report(stats: TaskStartStats, tcp_pose: np.ndarray,
                      f"{sig[i]:.1f} sigma)")
     if gripper_pos is not None and stats.gripper_std > 1e-9:
         gs = abs(gripper_pos - stats.gripper_mean) / stats.gripper_std
+        if not np.isfinite(gs):
+            gs = np.inf
         lines.append(f"  grip: {gripper_pos:6.2f}      (demo {stats.gripper_mean:.2f} "
                      f"+/- {stats.gripper_std:.2f}, {gs:.1f} sigma)")
+        sig = np.append(sig, gs)      # the gripper GATES, not just prints:
+                                      # half-closed 0.43-0.47 starts were part
+                                      # of the postmortem OOD state
     return sig, "\n".join(lines)
 
 

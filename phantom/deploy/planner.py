@@ -142,7 +142,7 @@ class PlannerLoop:
                         log.error("MOTION STALL: arm is not following commands - "
                                   "protective stop / Local mode suspected. Check "
                                   "the pendant. Ending episode.")
-                        self.executor.stopped_reason = "motion_stall"
+                        self.executor.request_stop("motion_stall")
                         break
                 else:
                     strikes = 0

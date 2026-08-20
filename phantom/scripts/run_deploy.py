@@ -110,7 +110,10 @@ def main(argv=None) -> int:
                          "--max-start-sigma from the task's demo start "
                          "distribution (postmortem: 2-6 sigma starts caused "
                          "place-phase behavior in 7/7 episodes)")
-    ap.add_argument("--max-start-sigma", type=float, default=3.0)
+    ap.add_argument("--max-start-sigma", type=float, default=2.5,
+                    help="refuse episode start beyond this many sigma from the "
+                         "task's demo start distribution (default 2.5: the "
+                         "postmortem episode-1 pose was 2.65 sigma and failed)")
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--hardware", default=None)
     ap.add_argument("--out", default="")
@@ -124,65 +127,107 @@ def main(argv=None) -> int:
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
 
     policy = build_policy(args, hw, paths)
-    if getattr(args, "compile", False) or (hw.mode.drivers == "real" and not args.tiny):
+    any_real = hw.mode.drivers == "real" or "real" in hw.mode.overrides.values()
+    arm_real = hw.mode.resolve("arm") == "real"
+    if getattr(args, "compile", False) or (any_real and not args.tiny):
         # Warmup on the first forward — OUTSIDE the episode. Compile ate 1-2
         # min inside the first episode; even uncompiled, the first replan ran
         # 1.66-1.86 s vs the 1.6 s chunk budget in EVERY postmortem episode
         # (CUDA context + autotune) — so warm up unconditionally on the rig.
         try:
             from phantom.scripts.bench_inference import fake_obs
-            log.info("compile warmup replan...")
+            log.info("warmup replan...")
             policy.replan(fake_obs(hw, teacher=(args.system == "teacher")),
                           None, np.zeros(6))
             policy.reset_episode()
         except Exception:
-            log.exception("compile warmup failed (continuing)")
+            if any_real:
+                # a failed warmup on real hardware means either a broken model
+                # (better to die here than mid-episode) or a cold first replan
+                # that blows the 1.6 s chunk budget — fail closed
+                log.exception("warmup replan FAILED on a real-hardware session")
+                return 3
+            log.exception("warmup failed (mock session — continuing)")
     from phantom.deploy import start_pose as sp
     stats = sp.load_start_stats().get(args.task)
-    if hw.mode.drivers == "real" and stats is None:
-        log.warning("no start-pose stats for task %r — homing and the OOD "
-                    "start gate are DISABLED for this session", args.task)
+    if arm_real and stats is None:
+        # a missing/misspelled task must not silently disable the OOD gate on
+        # a real arm (postmortem: 7/7 episodes failed from OOD starts)
+        if not args.allow_ood_start:
+            log.error("no start-pose stats for task %r (configs/start_poses.yaml"
+                      " has: %s). Fix the task name, or pass --allow-ood-start "
+                      "to run ungated deliberately.",
+                      args.task, sorted(sp.load_start_stats()))
+            return 2
+        log.warning("task %r has no start stats — homing and the OOD gate are "
+                    "DISABLED (--allow-ood-start)", args.task)
     rng = np.random.default_rng()
+
+    def _gate(rt) -> tuple[float, bool]:
+        """(worst sigma incl. gripper, gripper settled)."""
+        st = rt.rig.arm.get_state()
+        gs = rt.rig.gripper.get_state()
+        sig, table = sp.start_sigma_report(stats, st.tcp_pose, gs.position)
+        print(f"live state vs {args.task} demo start distribution:\n{table}")
+        return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
+
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root) as rt:
         for i in range(args.episodes):
-            if hw.mode.drivers == "real":
+            if arm_real:
+                ep_tag = f"episode {i + 1}/{args.episodes}"
                 # -- stage 1: home the arm to the task's demo start ---------
                 if args.home and stats is not None:
-                    input(f"episode {i + 1}/{args.episodes}: clear the arm's "
-                          f"path. Enter to MOVE ARM to the {args.task} demo "
-                          "start pose (slow move, E-stop in hand)...")
+                    input(f"{ep_tag}: clear the arm's path. Enter to MOVE ARM "
+                          f"to the {args.task} demo start pose (slow move, "
+                          "E-stop in hand)...")
                     try:
                         sp.move_to_start(rt.rig.arm, rt.rig.gripper, hw, stats,
                                          rng=rng)
                     except Exception:
-                        log.exception("homing move failed — jog manually to "
-                                      "the pose below, then continue")
-                # -- stage 2: gate + operator confirm ----------------------
+                        log.exception("homing move FAILED (protective stop / "
+                                      "Local mode / no move_l?) — jog the arm "
+                                      "to the pose below by hand; the gate "
+                                      "re-checks before anything runs")
+                # -- stage 2: gate loop + operator confirm ------------------
                 if stats is not None:
-                    st = rt.rig.arm.get_state()
-                    gs = rt.rig.gripper.get_state()
-                    sig, table = sp.start_sigma_report(stats, st.tcp_pose,
-                                                       gs.position)
-                    print(f"live state vs {args.task} demo start "
-                          f"distribution:\n{table}")
-                    worst = float(np.max(sig))
-                    if worst > args.max_start_sigma and not args.allow_ood_start:
-                        log.error(
-                            "START REFUSED: %.1f sigma from the demo start "
-                            "(max %.1f). Jog the arm / rerun homing, or pass "
-                            "--allow-ood-start to override deliberately.",
-                            worst, args.max_start_sigma)
-                        return 2
-                    if float(getattr(gs, "obj", 3.0)) != 3.0:
-                        log.warning("gripper not settled (OBJ=%s != 3) — "
-                                    "waiting...", getattr(gs, "obj", None))
-                        sp.wait_gripper_settled(rt.rig.gripper)
-                input(f"episode {i + 1}/{args.episodes}: place the object, "
-                      "confirm the scene is safe. Enter to START EPISODE...")
+                    while True:
+                        worst, settled = _gate(rt)
+                        ok = worst <= args.max_start_sigma and settled
+                        if ok or args.allow_ood_start:
+                            if not ok:
+                                log.warning("OOD start ALLOWED by flag: "
+                                            "%.1f sigma, settled=%s",
+                                            worst, settled)
+                            break
+                        if not settled:
+                            log.warning("gripper not settled (OBJ != 3) — "
+                                        "waiting up to 10 s...")
+                            if sp.wait_gripper_settled(rt.rig.gripper):
+                                continue
+                        log.error("START GATE: %.1f sigma from the demo start "
+                                  "(max %.1f) or gripper unsettled. Fix it "
+                                  "(re-run homing / jog / reactivate gripper), "
+                                  "then Enter to re-check. Ctrl-C aborts.",
+                                  worst, args.max_start_sigma)
+                        input("re-check when ready...")
+                    while True:
+                        input(f"{ep_tag}: place the object, confirm the scene "
+                              "is safe. Enter to START EPISODE...")
+                        # re-gate: the arm may have been bumped/jogged while
+                        # the operator set the scene
+                        worst, settled = _gate(rt)
+                        if (worst <= args.max_start_sigma and settled) \
+                                or args.allow_ood_start:
+                            break
+                        log.error("state drifted while setting the scene "
+                                  "(%.1f sigma, settled=%s) — fix it (jog / "
+                                  "re-settle gripper), then Enter to re-check",
+                                  worst, settled)
+                else:
+                    input(f"{ep_tag}: reset scene, Enter to start...")
                 # RealSense auto-exposure needs seconds after the stream opens
-                # to settle; the first plans otherwise condition on dark frames
-                # (collection never hit this — its camera runs the whole
-                # session). Field-verified 2026-08-11: unsettled AE made the
+                # to settle; the first plans otherwise condition on dark
+                # frames. Field-verified 2026-08-11: unsettled AE made the
                 # policy flail confidently and slam the table.
                 log.info("camera AE settle...")
                 time.sleep(5.0)
