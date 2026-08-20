@@ -179,3 +179,51 @@ def test_no_stall_when_arm_follows():
     loop.run(max_replans=6)
     assert ex.stopped_reason is None
     assert len(loop.trace) == 6
+
+
+def test_grasp_weighted_windows_anchor_before_close(tmp_path):
+    """grasp_frac=1.0 must draw every resampled t0 inside the pre-close band."""
+    import zarr
+    from phantom.config.hardware import load_hardware
+    from phantom.data.synthetic import SyntheticEpisodeGenerator
+    from phantom.data.windows import WindowSampler
+    from phantom.data.schema import NormStats
+    from phantom.train import common as C
+    from phantom.train.builder import build_model
+    from phantom.config.paths import load_paths
+    hw = load_hardware(None)
+    pm = build_model(hw, load_paths(), student=False, tiny=True, load_base=False)
+    root = tmp_path / "eps"
+    SyntheticEpisodeGenerator(hw, seed=0, rate_scale=1.0).generate(
+        root, task="grasp_slip", duration_s=8.0)
+    sampler = WindowSampler(hw, pm.bb, NormStats.identity(), student=False)
+    ds = C.WindowDataset(root, sampler, windows_per_episode=4, seed=1, grasp_frac=1.0)
+    ep = ds.index[0].episode
+    tc_real = ds._close_time(ep)
+    assert tc_real is not None, "synthetic grasp_slip episode must close the gripper"
+    lo, hi = ds.index[0].lo, ds.index[0].hi
+    # inject a close time mid-range so the pre-close band is inside [lo, hi]
+    tc = lo + 0.7 * (hi - lo)
+    ds._close_cache[ep] = tc
+    a, b = max(lo, tc - 1.5), min(hi, tc - 0.2)
+    assert b > a
+    sampled = []
+    orig = ds.sampler.sample
+    ds.sampler.sample = lambda e, t0: sampled.append(t0) or {"t0": t0}
+    try:
+        for _ in range(40):
+            ds[0]
+    finally:
+        ds.sampler.sample = orig
+    assert all(a - 1e-9 <= t <= b + 1e-9 for t in sampled), (min(sampled), max(sampled), a, b)
+    # band outside the valid range -> graceful fallback to uniform, never crash
+    ds._close_cache[ep] = lo - 5.0
+    ds.sampler.sample = lambda e, t0: {"t0": t0}
+    try:
+        t0 = ds[0]["t0"]
+    finally:
+        ds.sampler.sample = orig
+    assert lo <= t0 <= hi
+    # and the unweighted dataset is unchanged
+    ds0 = C.WindowDataset(root, sampler, windows_per_episode=4, seed=1)
+    assert ds0.grasp_frac == 0.0 and ds0._close_cache == {}

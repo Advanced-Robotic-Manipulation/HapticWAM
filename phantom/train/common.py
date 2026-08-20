@@ -294,7 +294,8 @@ class WindowDataset(Dataset):
 
     def __init__(self, root: Path, sampler, windows_per_episode: int = 8,
                  episodes: list[Path] | None = None, resample: bool = True,
-                 seed: int = 0):
+                 seed: int = 0, grasp_frac: float = 0.0,
+                 grasp_window_s: tuple[float, float] = (1.5, 0.2)):
         self.sampler = sampler
         self.index = sampler.build_index(root, windows_per_episode, episodes)
         # A frozen index replays the same anchors every epoch (~35x over a long
@@ -303,15 +304,48 @@ class WindowDataset(Dataset):
         # sets pass resample=False to stay comparable across evals.
         self.resample = resample
         self._rng = np.random.default_rng(seed)
+        # Terminal-phase weighting (rig postmortem 2026-08-20: the policy
+        # under-executes the last ~6 cm — closes 35-80 mm above grasp height
+        # in 13/13 rig episodes). With probability grasp_frac a window's t0 is
+        # drawn from [t_close - grasp_window_s[0], t_close - grasp_window_s[1]]
+        # so the chunk spans the commit phase. 0 = uniform (unchanged).
+        self.grasp_frac = float(grasp_frac)
+        self.grasp_window_s = grasp_window_s
+        self._close_cache: dict[Path, float | None] = {}
 
     def __len__(self) -> int:
         return len(self.index)
+
+    def _close_time(self, ep: Path) -> float | None:
+        """First gripper-close time (stream ts base) or None if never closes."""
+        if ep not in self._close_cache:
+            t = None
+            try:
+                import zarr
+                g = zarr.open(str(Path(ep) / "gripper.zarr"), mode="r")
+                pos = np.asarray(g["data"][:, 0], dtype=np.float64)
+                ts = np.asarray(g["ts"][:], dtype=np.float64)
+                run_min = np.minimum.accumulate(pos)
+                hit = np.nonzero((pos > 0.45) & (pos - run_min > 0.15))[0]
+                if len(hit):
+                    t = float(ts[hit[0]])
+            except Exception as e:          # noqa: BLE001 — weighting is best-effort
+                log.debug("no close time for %s: %s", ep, e)
+            self._close_cache[ep] = t
+        return self._close_cache[ep]
 
     def __getitem__(self, i: int) -> dict:
         wi = self.index[i]
         t0 = wi.t0
         if self.resample and wi.hi > wi.lo:
             t0 = float(self._rng.uniform(wi.lo, wi.hi))
+            if self.grasp_frac > 0 and self._rng.uniform() < self.grasp_frac:
+                tc = self._close_time(wi.episode)
+                if tc is not None:
+                    a = max(wi.lo, tc - self.grasp_window_s[0])
+                    b = min(wi.hi, tc - self.grasp_window_s[1])
+                    if b > a:
+                        t0 = float(self._rng.uniform(a, b))
         return self.sampler.sample(wi.episode, t0)
 
 
