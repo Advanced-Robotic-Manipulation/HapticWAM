@@ -334,6 +334,15 @@ class URArm(Arm):
             self._require_ctrl().moveJ(list(np.asarray(q, dtype=float)), speed, accel,
                                        not blocking)
 
+    def move_l(self, tcp_pose: np.ndarray, speed: float, accel: float,
+               blocking: bool = True) -> None:
+        with self._ctrl_lock:
+            ok = self._require_ctrl().moveL(list(np.asarray(tcp_pose, dtype=float)),
+                                            speed, accel, not blocking)
+        if ok is False:
+            raise RuntimeError("moveL rejected - control script not running "
+                               "(pendant popup / protective stop / Local mode)")
+
     def stop(self, decel: float) -> None:
         try:
             with self._ctrl_lock:

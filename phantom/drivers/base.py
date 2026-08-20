@@ -164,6 +164,13 @@ class Arm(ABC):
     @abstractmethod
     def speed_l(self, xd: np.ndarray, accel: float, dt: float) -> None: ...
 
+    def move_l(self, tcp_pose: np.ndarray, speed: float, accel: float,
+               blocking: bool = True) -> None:
+        """Linear TCP move (moveL). Slow homing moves only - never the servo
+        path. Default raises: drivers without a linear move (teleop stubs)
+        simply can't home - run_deploy catches and asks for a manual jog."""
+        raise NotImplementedError(f"{type(self).__name__} has no move_l")
+
     @abstractmethod
     def move_j(self, q: np.ndarray, speed: float, accel: float, blocking: bool = True) -> None:
         """Setup moves only — never inside the control loop."""
