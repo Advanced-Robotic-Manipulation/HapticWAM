@@ -116,11 +116,19 @@ class ChunkExecutor:
             if self.stopped_reason is None:
                 self.stopped_reason = reason
 
+    def _halt(self, reason: str) -> None:
+        """Stop BOTH threads and invalidate the gripper mailbox. Safety stops
+        used to only break the servo loop — the gripper worker could still
+        consume the previous tick's target (possibly a close) on an arm that
+        had already stopped (review 2026-08-20)."""
+        self._set_reason(reason)
+        self._grip_target = None
+        self._stop.set()
+
     def request_stop(self, reason: str) -> None:
         """External stop (planner watchdog): record the reason (first writer
         wins) and halt the servo loop now — not at episode teardown."""
-        self._set_reason(reason)
-        self._stop.set()
+        self._halt(reason)
 
     def last_cmd(self) -> np.ndarray | None:
         """Last commanded TCP pose (copy) - the stall watchdog's reference."""
@@ -200,11 +208,11 @@ class ChunkExecutor:
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
-                self._set_reason("protective_stop")
+                self._halt("protective_stop")
                 break
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
-                self._set_reason("safety_stop")
+                self._halt("safety_stop")
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
@@ -216,6 +224,7 @@ class ChunkExecutor:
             # target is approached at arm.limits speeds; the executor converges
             # to the plan whenever the plan itself is feasible.
             target = np.array(target, dtype=np.float64)
+            dt_eff = period
             if self._last_cmd is not None:
                 # Rate limit per MEASURED tick, not the nominal 8 ms: the old
                 # per-period cap silently scaled the speed ceiling by
@@ -223,7 +232,7 @@ class ChunkExecutor:
                 # loop the tick ran ~40 ms and the arm topped out at ~1/5 of
                 # tcp_speed_m_s (audit 2026-08-20). Bounded so a stalled tick
                 # can never license a jump.
-                dt_eff = float(np.clip(dt, period, 4.0 * period))
+                dt_eff = float(np.clip(dt, period, 2.0 * period))
                 v_lin = hw.arm.limits.tcp_speed_m_s
                 v_rot = hw.arm.limits.joint_speed_rad_s
                 dp = target[:3] - self._last_cmd[:3]
@@ -240,7 +249,11 @@ class ChunkExecutor:
             with self._lock:
                 self._last_cmd = target.copy()
 
-            self.arm.servo_l(target, dt_servo, hw.arm.servoj.lookahead_time_s,
+            # servoJ's time parameter = the interval the controller is asked
+            # to reach the setpoint in; give it the interval the setpoint was
+            # actually sized for, so a delayed tick never doubles the
+            # commanded speed (review 2026-08-20)
+            self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
                              hw.arm.servoj.gain)
             if grip is not None:
                 # hand the gripper target to the gripper thread (non-blocking):
@@ -262,6 +275,7 @@ class ChunkExecutor:
             self._run()
         except Exception:
             log.exception("executor thread crashed")
+            self._halt("executor_crash")
             self._set_reason("executor_crash")
 
     GRIP_DEADBAND = 0.02   # re-sending an unchanged target makes the Robotiq
@@ -278,8 +292,11 @@ class ChunkExecutor:
             t0 = time.perf_counter()
             try:
                 tgt = self._grip_target
-                if tgt is not None and (last_sent is None
-                                        or abs(tgt - last_sent) > self.GRIP_DEADBAND):
+                if (tgt is not None and not self._stop.is_set()
+                        and (last_sent is None
+                             or abs(tgt - last_sent) > self.GRIP_DEADBAND)):
+                    # re-check the stop flag right before I/O: a stop between
+                    # reading the mailbox and move() must not close the gripper
                     self.gripper.move(tgt, hw.gripper.default_speed,
                                       hw.gripper.default_force)
                     last_sent = tgt
@@ -289,8 +306,7 @@ class ChunkExecutor:
                         [gs.position, gs.obj], dtype=np.float32))
             except Exception:
                 log.exception("gripper worker error")
-                self._set_reason("executor_crash")
-                self._stop.set()
+                self._halt("executor_crash")
                 break
             wait = self._grip_poll_period - (time.perf_counter() - t0)
             if wait > 0:
@@ -310,10 +326,20 @@ class ChunkExecutor:
 
     def stop(self) -> None:
         self._stop.set()
-        if self._thread is not None:
-            self._thread.join(2.0)
-        if getattr(self, "_grip_thread", None) is not None:
-            self._grip_thread.join(2.0)
+        self._grip_target = None
+        # the gripper worker may be inside a socket transaction (2 s timeout
+        # x2 per get_state) — wait long enough to be CONCLUSIVE, and never
+        # hand the gripper to a new executor while the old worker is alive
+        for th, name, budget in ((self._thread, "executor", 2.0),
+                                 (getattr(self, "_grip_thread", None), "gripper", 6.0)):
+            if th is None:
+                continue
+            th.join(budget)
+            if th.is_alive():
+                log.error("%s thread did not exit within %.0fs — device may still "
+                          "be owned by a stale worker; restart the session before "
+                          "the next episode", name, budget)
+                self._set_reason("executor_crash")
         try:
             self.arm.servo_stop()
         except Exception:

@@ -256,12 +256,14 @@ def main(argv=None) -> int:
                 # policy flail confidently and slam the table.
                 log.info("camera AE settle...")
                 time.sleep(5.0)
+            ep_tags = list(cond_tags)
             if args.seed is not None:
                 policy.rf._gen = torch.Generator().manual_seed(args.seed + i)
                 policy.rf.reset_episode_noise()
+                ep_tags[-1] = f"seed:{args.seed + i}"     # the ACTUAL per-episode seed
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
-                                 policy_name=f"{args.system}", tags=cond_tags)
+                                 policy_name=f"{args.system}", tags=ep_tags)
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
@@ -272,11 +274,22 @@ def main(argv=None) -> int:
                             "Enter=skip, then optional notes: ").strip()
                 if ans:
                     code, _, note = ans.partition(" ")
-                    succ = {"s": True, "f": False, "c": False}.get(code[:1].lower())
-                    extra = (" CONTAMINATED" if code[:1].lower() == "c" else "") + \
-                        (f" {note}" if note else "")
+                    c = code[:1].lower()
+                    # 'contaminated' (hand in frame, bumped scene, sensor glitch)
+                    # is NOT a failure demonstration: success=False would make
+                    # is_failure_demo() treat it as a deliberate failure and
+                    # train contact/event heads on it. Keep success=None and
+                    # tag it so dataset listers can exclude it.
+                    succ = {"s": True, "f": False}.get(c)
+                    extra = (" CONTAMINATED" if c == "c" else "") + (f" {note}" if note else "")
                     rt.recorder.relabel(Path(res.episode_path), success=succ,
                                         notes=f"operator: {ans}{extra}")
+                    if c == "c":
+                        mp = Path(res.episode_path) / "meta.json"
+                        import json as _json
+                        m = _json.loads(mp.read_text())
+                        m["tags"] = list(m.get("tags") or []) + ["contaminated"]
+                        mp.write_text(_json.dumps(m, indent=1))
     return 0
 
 
