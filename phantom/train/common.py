@@ -329,10 +329,28 @@ class WindowDataset(Dataset):
                 hit = np.nonzero((pos > 0.45) & (pos - run_min > 0.15))[0]
                 if len(hit):
                     t = float(ts[hit[0]])
-            except Exception as e:          # noqa: BLE001 — weighting is best-effort
-                log.debug("no close time for %s: %s", ep, e)
+            except Exception as e:          # noqa: BLE001
+                log.warning("grasp weighting: no close time for %s (%s)", ep, e)
             self._close_cache[ep] = t
         return self._close_cache[ep]
+
+    def grasp_coverage(self) -> dict:
+        """How many indexed episodes can actually be grasp-weighted (close
+        time found AND the pre-close band intersects the valid range). Log
+        this: a fine-tune whose weighting silently degraded to uniform would
+        otherwise look identical in the training log."""
+        eps = {wi.episode: (wi.lo, wi.hi) for wi in self.index}
+        ok = no_close = no_band = 0
+        for ep, (lo, hi) in eps.items():
+            tc = self._close_time(ep)
+            if tc is None:
+                no_close += 1
+            elif min(hi, tc - self.grasp_window_s[1]) <= max(lo, tc - self.grasp_window_s[0]):
+                no_band += 1
+            else:
+                ok += 1
+        return {"episodes": len(eps), "weightable": ok, "no_close": no_close,
+                "band_outside_range": no_band}
 
     def __getitem__(self, i: int) -> dict:
         wi = self.index[i]

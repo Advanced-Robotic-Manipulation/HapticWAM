@@ -44,6 +44,8 @@ def main() -> int:
                          "(default: the chunk duration, so the chunk ENDS at "
                          "the close — no post-grasp lift inside the window)")
     ap.add_argument("--max-episodes", type=int, default=80)
+    ap.add_argument("--no-ema", dest="ema", action="store_false", default=True,
+                    help="GO scripts deploy with --ema; match that by default")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
 
@@ -56,7 +58,7 @@ def main() -> int:
     payload = torch.load(args.ckpt, map_location="cpu", weights_only=False)
     mc = PhantomModelConfig.from_dict(payload["configs"]["model"])
     pm = build_model(hw, paths, student=False, tiny=False, mc=mc, device=dev, dtype=dt)
-    C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw, load_ema=True, payload=payload)
+    C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw, load_ema=args.ema, payload=payload)
     ns = payload["norm_stats"]
     a_mean = np.asarray(ns["mean"]["action"], dtype=np.float64)
     a_std = np.asarray(ns["std"]["action"], dtype=np.float64)
@@ -72,12 +74,8 @@ def main() -> int:
     rows = []
     chunk_s = hw.control.chunk_horizon / hw.control.action_rate_hz
     lead = args.lead_s if args.lead_s is not None else chunk_s
-    for wi in ds.index[: args.max_episodes]:
-        tc = ds._close_time(wi.episode)
-        if tc is None:
-            continue
-        t0 = float(np.clip(tc - lead, wi.lo, wi.hi))
-        item = sampler.sample(wi.episode, t0)
+    def make_batch(ep, t0):
+        item = sampler.sample(ep, t0)
         batch = {}
         for k, v in item.items():
             if isinstance(v, torch.Tensor):
@@ -95,12 +93,34 @@ def main() -> int:
         for k in list(batch):
             if k == "events" or k.startswith("cpk_"):
                 batch[k] = torch.zeros_like(batch[k])
+        return item, batch
+
+    skipped = 0
+    for wi in ds.index[: args.max_episodes]:
+        tc = ds._close_time(wi.episode)
+        if tc is None:
+            skipped += 1
+            continue
+        t0 = tc - lead
+        if not (wi.lo <= t0 <= wi.hi):
+            skipped += 1           # chunk would not span the close — not a terminal window
+            continue
+        item, batch = make_batch(wi.episode, t0)
         gt = batch["action_chunk"][0].float().cpu().numpy().astype(np.float64) * a_std + a_mean
         preds = []
         with torch.no_grad():
             for s in range(args.seeds):
                 pm.rf._gen = torch.Generator().manual_seed(1000 + s)
-                p = pm.rf.sample(batch, nfe=args.nfe, guidance_scale=args.guidance)
+                # steady-state deploy path: every rig replan after the first
+                # passes the TRUE previous package — reproduce it with a prior
+                # window one chunk earlier (first-replan path otherwise)
+                prev_cpk = None
+                t_prev = t0 - chunk_s
+                if t_prev >= wi.lo:
+                    _, pb = make_batch(wi.episode, t_prev)
+                    prev_cpk = pm.rf.sample(pb, nfe=args.nfe, guidance_scale=args.guidance).cpk
+                p = pm.rf.sample(batch, nfe=args.nfe, guidance_scale=args.guidance,
+                                 prev_cpk=prev_cpk)
                 preds.append(p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64) * a_std + a_mean)
         for pr in preds:
             cg, cp = np.cumsum(gt[:, :3], axis=0), np.cumsum(pr[:, :3], axis=0)
@@ -117,6 +137,7 @@ def main() -> int:
                          "close_step_err": first_close(pr) - first_close(gt)})
     if not rows:
         print("no windows with a gripper close found"); return 1
+    print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
     tasks = sorted({r["task"] for r in rows})
     def mean(key, sel):
         v = np.array([r[key] for r in sel if np.isfinite(r[key])])

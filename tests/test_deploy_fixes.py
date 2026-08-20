@@ -217,11 +217,15 @@ def test_gripper_worker_deadbands_repeated_targets():
     try:
         ex._grip_target = 0.30
         time.sleep(0.25)
-        ex._grip_target = 0.31           # inside the 0.02 deadband
-        time.sleep(0.25)
+        ex._grip_target = 0.305          # inside the 0.008 deadband ...
+        time.sleep(0.05)
         ex._grip_target = 0.60           # real change
         time.sleep(0.25)
+        ex._grip_target = 0.605          # inside deadband, but then HELD ->
+        time.sleep(0.6)                  # flushed after GRIP_FLUSH_CYCLES
     finally:
         ex.stop()
-    assert g.moves == [0.30, 0.60], g.moves
+    assert g.moves[:2] == [0.30, 0.60], g.moves
+    assert g.moves[-1] == 0.605, (g.moves, "stable sub-deadband target must be flushed")
+    assert 0.305 not in g.moves          # transient sub-deadband jitter suppressed
     assert g.n > 3                       # state polled into the ring meanwhile

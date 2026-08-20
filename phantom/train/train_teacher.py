@@ -162,6 +162,7 @@ def main(argv=None) -> int:
     resume_payload = None
     if args.init_weights:
         assert not args.resume, "--init-weights and --resume are exclusive"
+        assert not args.tactile_pretrain, "--init-weights already carries the tactile encoder"
         init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw)
         saved_mc = init_payload["configs"]["model"]
         if saved_mc != mc.to_dict():
@@ -195,13 +196,28 @@ def main(argv=None) -> int:
                      cfg.freeze_tactile_steps)
 
     data_root, norm = resolve_data(args, hw, paths)
+    if args.init_weights:
+        ns = init_payload.get("norm_stats")
+        if ns:
+            import numpy as _np
+            for k in ("action",):
+                if k in ns["mean"] and not _np.allclose(ns["mean"][k], norm.mean[k], atol=1e-6):
+                    raise SystemExit(f"--init-weights norm_stats[{k}] differ from the "
+                                     f"fine-tune data root's norm_stats.json — the "
+                                     f"checkpoint's action normalization would not "
+                                     f"match the data")
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
                          grasp_frac=args.grasp_frac)
     if args.grasp_frac > 0:
+        cov = ds.grasp_coverage()
         log.info("terminal-phase weighting: %.0f%% of windows anchored before "
-                 "the first gripper close", 100 * args.grasp_frac)
+                 "the first gripper close — coverage %s", 100 * args.grasp_frac, cov)
+        if cov["weightable"] < 0.5 * max(cov["episodes"], 1):
+            raise SystemExit(f"grasp weighting would silently degrade: only "
+                             f"{cov['weightable']}/{cov['episodes']} episodes "
+                             f"weightable ({cov}) — check gripper.zarr ts/pos")
     log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
     # A training run under a config the data was NOT recorded under silently
     # changes window semantics and produces a checkpoint the rig rejects on
