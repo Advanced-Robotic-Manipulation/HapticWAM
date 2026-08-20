@@ -176,7 +176,8 @@ class ChunkExecutor:
             else:
                 hold_pose = None
                 scale = self.governor.scale_profile(plan.sigma)
-                self._play_time += dt * scale
+                with self._lock:
+                    self._play_time += dt * scale
                 target, grip = self._pose_at(plan, self._play_time)
 
                 # chunk blending: the previous plan keeps playing on its own
@@ -278,9 +279,12 @@ class ChunkExecutor:
             self._halt("executor_crash")
             self._set_reason("executor_crash")
 
-    GRIP_DEADBAND = 0.02   # re-sending an unchanged target makes the Robotiq
+    GRIP_DEADBAND = 0.008  # ~2/255 counts, same as collection (GripperTuning):
+                           # re-sending an unchanged target makes the Robotiq
                            # report OBJ=0 ("moving") for a cycle — the flicker
                            # the model never saw in training
+    GRIP_FLUSH_CYCLES = 5  # a target stable this many cycles is sent even if
+                           # inside the deadband (no permanent residual)
 
     def _grip_worker(self) -> None:
         """Single owner of gripper I/O: sends the latest target (deadbanded)
@@ -288,13 +292,18 @@ class ChunkExecutor:
         thread. Runs while idle so the ring is warm before the first plan."""
         hw = self.hw
         last_sent: float | None = None
+        stable_for, last_seen = 0, None
         while not self._stop.is_set():
             t0 = time.perf_counter()
             try:
                 tgt = self._grip_target
-                if (tgt is not None and not self._stop.is_set()
-                        and (last_sent is None
-                             or abs(tgt - last_sent) > self.GRIP_DEADBAND)):
+                stable_for = stable_for + 1 if tgt == last_seen else 0
+                last_seen = tgt
+                due = tgt is not None and (
+                    last_sent is None
+                    or abs(tgt - last_sent) > self.GRIP_DEADBAND
+                    or (stable_for == self.GRIP_FLUSH_CYCLES and tgt != last_sent))
+                if due and not self._stop.is_set():
                     # re-check the stop flag right before I/O: a stop between
                     # reading the mailbox and move() must not close the gripper
                     self.gripper.move(tgt, hw.gripper.default_speed,

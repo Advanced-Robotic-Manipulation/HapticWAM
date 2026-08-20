@@ -281,7 +281,7 @@ def main(argv=None) -> int:
                     # train contact/event heads on it. Keep success=None and
                     # tag it so dataset listers can exclude it.
                     succ = {"s": True, "f": False}.get(c)
-                    extra = (" CONTAMINATED" if c == "c" else "") + (f" {note}" if note else "")
+                    extra = " CONTAMINATED" if c == "c" else ""
                     rt.recorder.relabel(Path(res.episode_path), success=succ,
                                         notes=f"operator: {ans}{extra}")
                     if c == "c":
