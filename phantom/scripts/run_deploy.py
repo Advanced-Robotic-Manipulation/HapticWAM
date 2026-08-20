@@ -76,7 +76,8 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
                           or "default")
     return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
                          task_text=(args.text or args.task),
-                         persistent_noise=getattr(args, "persistent_noise", False))
+                         persistent_noise=getattr(args, "persistent_noise", False),
+                         guidance=getattr(args, "guidance", 1.0))
 
 
 def main(argv=None) -> int:
@@ -89,6 +90,10 @@ def main(argv=None) -> int:
     ap.add_argument("--episodes", type=int, default=1)
     ap.add_argument("--max-replans", type=int, default=20)
     ap.add_argument("--nfe", type=int, default=None)
+    ap.add_argument("--guidance", type=float, default=1.0,
+                    help="observation-guidance weight (classifier-free; v4 "
+                         "trained with cond-dropout for this). >1 sharpens "
+                         "obs->action coupling at ~2x replan latency")
     ap.add_argument("--drop-video", action="store_true")
     ap.add_argument("--compile", action="store_true",
                     help="torch.compile the DiT blocks (adds ~1-2 min warmup)")
