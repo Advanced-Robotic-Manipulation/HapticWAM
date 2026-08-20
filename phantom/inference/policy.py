@@ -56,7 +56,7 @@ class Plan:
 class PhantomPolicy:
     def __init__(self, pm: PhantomModel, norm: NormStats, *, nfe: int | None = None,
                  drop_video: bool = False, task_text: str = "",
-                 persistent_noise: bool = False):
+                 persistent_noise: bool = False, guidance: float = 1.0):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
         # empty keeps the v2 empty-string conditioning.
@@ -64,6 +64,9 @@ class PhantomPolicy:
         # fixed initial noise per episode: fresh randn each replan re-rolled
         # the plan direction (rig-measured consec-replan cosine 0.16-0.35)
         self.persistent_noise = persistent_noise
+        # observation-guidance (classifier-free) weight; >1 sharpens the
+        # obs->action coupling cond_dropout trained for, at ~2x denoise cost
+        self.guidance = float(guidance)
         self.pm = pm
         self.rf = pm.rf
         self.hw = pm.hw
@@ -153,7 +156,7 @@ class PhantomPolicy:
         t_start = time.perf_counter()
         batch = self._batch_from_obs(obs, prev_plan)
         pred: PhantomPrediction = self.rf.sample(
-            batch, nfe=self.nfe,
+            batch, nfe=self.nfe, guidance_scale=self.guidance,
             prev_cpk=prev_plan.cpk if prev_plan is not None else None,
             drop_video=self.drop_video,
             reuse_noise=self.persistent_noise)
@@ -173,6 +176,6 @@ class PhantomPolicy:
                    if pred.acc is not None else np.zeros(5)),
             cpk=pred.cpk.detach(),
             latency_s=latency,
-            diag={"nfe": self.nfe,
+            diag={"nfe": self.nfe, "guidance": self.guidance,
                   "event_logits": pred.event_logits_B_Tc_E[0].float().cpu().numpy()},
         )
