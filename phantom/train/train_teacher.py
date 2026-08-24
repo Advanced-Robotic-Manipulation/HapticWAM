@@ -97,6 +97,10 @@ def main(argv=None) -> int:
                     help="fraction of training windows anchored in the 1.5 s "
                          "before the first gripper close (terminal-phase "
                          "fine-tune; 0 = uniform)")
+    ap.add_argument("--photo-aug", type=float, default=0.0,
+                    help="photometric jitter strength on the scene camera "
+                         "(0 disables; 1.0 = brightness +-30%%, contrast "
+                         "+-25%%, per-channel +-8%% — one draw per window)")
     ap.add_argument("--init-weights", default="",
                     help="teacher checkpoint to initialize WEIGHTS from, with a "
                          "fresh optimizer + schedule (fine-tuning; contrast "
@@ -209,7 +213,7 @@ def main(argv=None) -> int:
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
-                         grasp_frac=args.grasp_frac)
+                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug)
     if args.grasp_frac > 0:
         cov = ds.grasp_coverage()
         log.info("terminal-phase weighting: %.0f%% of windows anchored before "

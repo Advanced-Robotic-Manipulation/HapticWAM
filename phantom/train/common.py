@@ -295,7 +295,8 @@ class WindowDataset(Dataset):
     def __init__(self, root: Path, sampler, windows_per_episode: int = 8,
                  episodes: list[Path] | None = None, resample: bool = True,
                  seed: int = 0, grasp_frac: float = 0.0,
-                 grasp_window_s: tuple[float, float] = (1.5, 0.2)):
+                 grasp_window_s: tuple[float, float] = (1.5, 0.2),
+                 photo_aug: float = 0.0):
         self.sampler = sampler
         self.index = sampler.build_index(root, windows_per_episode, episodes)
         # A frozen index replays the same anchors every epoch (~35x over a long
@@ -312,6 +313,12 @@ class WindowDataset(Dataset):
         self.grasp_frac = float(grasp_frac)
         self.grasp_window_s = grasp_window_s
         self._close_cache: dict[Path, float | None] = {}
+        # Photometric augmentation of the SCENE camera only (train sets):
+        # rig session 08-18/20 ran under noticeably different lighting than
+        # collection; the camera is the model's dominant input (conditioning
+        # ablation). One jitter per window (lighting is constant within an
+        # episode), same jitter for every frame of the window.
+        self.photo_aug = float(photo_aug)
 
     def __len__(self) -> int:
         return len(self.index)
@@ -364,7 +371,19 @@ class WindowDataset(Dataset):
                     b = min(wi.hi, tc - self.grasp_window_s[1])
                     if b > a:
                         t0 = float(self._rng.uniform(a, b))
-        return self.sampler.sample(wi.episode, t0)
+        item = self.sampler.sample(wi.episode, t0)
+        if self.photo_aug > 0 and self.resample and "video" in item:
+            s = self.photo_aug
+            v = item["video"]                       # (T, 3, H, W) in [-1, 1]
+            x = (v + 1.0) * 0.5                     # -> [0, 1]
+            gain = 1.0 + s * float(self._rng.uniform(-0.3, 0.3))
+            contrast = 1.0 + s * float(self._rng.uniform(-0.25, 0.25))
+            ch = 1.0 + s * self._rng.uniform(-0.08, 0.08, size=3)
+            import torch as _t
+            x = ((x - 0.5) * contrast + 0.5) * gain \
+                * _t.as_tensor(ch, dtype=x.dtype).view(1, 3, 1, 1)
+            item["video"] = (x.clamp(0.0, 1.0) * 2.0 - 1.0).to(v.dtype)
+        return item
 
 
 def collate_windows(items: list[dict]) -> dict:

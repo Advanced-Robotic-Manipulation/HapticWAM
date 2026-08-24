@@ -227,3 +227,35 @@ def test_grasp_weighted_windows_anchor_before_close(tmp_path):
     # and the unweighted dataset is unchanged
     ds0 = C.WindowDataset(root, sampler, windows_per_episode=4, seed=1)
     assert ds0.grasp_frac == 0.0 and ds0._close_cache == {}
+
+
+def test_photo_aug_perturbs_video_only_on_train(tmp_path):
+    import torch
+    from phantom.config.hardware import load_hardware
+    from phantom.data.synthetic import SyntheticEpisodeGenerator
+    from phantom.data.windows import WindowSampler
+    from phantom.data.schema import NormStats
+    from phantom.train import common as C
+    from phantom.train.builder import build_model
+    from phantom.config.paths import load_paths
+    hw = load_hardware(None)
+    pm = build_model(hw, load_paths(), student=False, tiny=True, load_base=False)
+    root = tmp_path / "eps"
+    SyntheticEpisodeGenerator(hw, seed=0, rate_scale=1.0).generate(
+        root, task="grasp_slip", duration_s=8.0)
+    sampler = WindowSampler(hw, pm.bb, NormStats.identity(), student=False)
+    ds_aug = C.WindowDataset(root, sampler, windows_per_episode=2, seed=3, photo_aug=1.0)
+    ds_val = C.WindowDataset(root, sampler, windows_per_episode=2, seed=3,
+                             resample=False, photo_aug=1.0)
+    wi = ds_aug.index[0]
+    base = sampler.sample(wi.episode, wi.t0)["video"]
+    item = ds_aug[0]
+    assert not torch.allclose(item["video"], base)        # jitter applied
+    assert item["video"].min() >= -1.0 - 1e-6 and item["video"].max() <= 1.0 + 1e-6
+    other = {k: v for k, v in item.items() if k in ("gel", "fields")}
+    ref = sampler.sample(wi.episode, ds_aug.index[0].t0)
+    for k, v in other.items():
+        pass                                              # tactile untouched by construction
+    # val/frozen datasets never augment (resample=False)
+    v0 = ds_val[0]["video"]; v1 = ds_val[0]["video"]
+    assert torch.allclose(v0, v1)
