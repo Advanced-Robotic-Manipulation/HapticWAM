@@ -3,6 +3,7 @@ Description=PHANTOM episode auto-upload to HuggingFace
 
 [Service]
 Type=oneshot
+Environment=HF_XET_HIGH_PERFORMANCE=1
 ExecStart=/home/nuc/phantom-icra-2027/.venv/bin/python /home/nuc/phantom-icra-2027/hf_upload_episodes.py
 Nice=15
 IOSchedulingClass=idle
