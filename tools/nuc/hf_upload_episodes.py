@@ -31,7 +31,7 @@ Usage:
 import argparse, fcntl, json, os, shutil, subprocess, sys, time
 from pathlib import Path
 
-os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "1")
+os.environ.setdefault("HF_XET_HIGH_PERFORMANCE", "1")   # HF_HUB_ENABLE_HF_TRANSFER is dead in hub 1.x
 
 REPO = "armteam/phantom-episodes"
 HUB_PREFIX = "archive"          # single canonical hub prefix for all copies
@@ -57,9 +57,23 @@ def log(msg: str) -> None:
 
 
 def collection_running() -> bool:
+    """Defer only for an ACTIVE collection: a collect/panel process exists AND
+    episodes were written recently. A UI left open overnight blocked every
+    upload for 2 days (2026-08-22..24) while exiting 0 = looked healthy."""
     out = subprocess.run(["pgrep", "-f", "phantom.scripts.(collect|record_episodes|panel)"],
                         capture_output=True, text=True)
-    return out.returncode == 0
+    if out.returncode != 0:
+        return False
+    for root in ROOTS:
+        if not root.is_dir():
+            continue
+        chk = subprocess.run(["find", str(root), "-mindepth", "2", "-maxdepth", "3",
+                              "-newermt", "-30 minutes", "-print", "-quit"],
+                             capture_output=True, text=True)
+        if chk.stdout.strip():
+            return True
+    log("collect process exists but no writes in 30 min -- treating as STALE, proceeding")
+    return False
 
 
 def load_manifest() -> dict:
