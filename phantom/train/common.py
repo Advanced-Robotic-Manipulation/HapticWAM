@@ -261,6 +261,36 @@ def _norm_shape(v):
 # datasets
 # ---------------------------------------------------------------------------
 
+CLOSE_ABS_POS = 0.45      # gripper position that unambiguously means "closed"
+CLOSE_ABS_RISE = 0.15     # ... after rising this much from the running minimum
+CLOSE_MAX_DELTA = 0.05    # fallback: within this of the episode's tightest closure
+CLOSE_MAX_RISE = 0.10
+
+
+def close_index(pos: np.ndarray) -> int | None:
+    """Index of the first gripper close, or None if the gripper never closes.
+
+    Primary rule: pos > 0.45 after rising > 0.15 from its running minimum.
+    Fallback (only when the primary never fires): first sample within 0.05
+    of the episode's tightest closure after rising > 0.10 — wide grasps
+    (Carton closes to 0.40-0.47) never cross 0.45 and were silently left
+    unweighted by --grasp-frac (24% of Carton demos). Lowering the global
+    threshold instead fires on pre-grasp aperture adjustments (egg: 108/250
+    episodes > 1s early), so the fallback is used strictly as a fallback.
+    Validated on 1000 success demos: identical to the primary wherever it
+    fires, Carton coverage 76% -> 99%, egg/waffles/whiteboard 100%."""
+    pos = np.asarray(pos, dtype=np.float64)
+    if pos.size == 0:
+        return None
+    run_min = np.minimum.accumulate(pos)
+    hit = np.nonzero((pos > CLOSE_ABS_POS) & (pos - run_min > CLOSE_ABS_RISE))[0]
+    if len(hit):
+        return int(hit[0])
+    hit = np.nonzero((pos >= pos.max() - CLOSE_MAX_DELTA)
+                     & (pos - run_min > CLOSE_MAX_RISE))[0]
+    return int(hit[0]) if len(hit) else None
+
+
 def manifest_split(data_root: Path, split: str) -> list[Path] | None:
     """Episode dirs for `split` from manifests/all.jsonl, or None if absent.
 
@@ -332,10 +362,9 @@ class WindowDataset(Dataset):
                 g = zarr.open(str(Path(ep) / "gripper.zarr"), mode="r")
                 pos = np.asarray(g["data"][:, 0], dtype=np.float64)
                 ts = np.asarray(g["ts"][:], dtype=np.float64)
-                run_min = np.minimum.accumulate(pos)
-                hit = np.nonzero((pos > 0.45) & (pos - run_min > 0.15))[0]
-                if len(hit):
-                    t = float(ts[hit[0]])
+                i = close_index(pos)
+                if i is not None:
+                    t = float(ts[i])
             except Exception as e:          # noqa: BLE001
                 log.warning("grasp weighting: no close time for %s (%s)", ep, e)
             self._close_cache[ep] = t

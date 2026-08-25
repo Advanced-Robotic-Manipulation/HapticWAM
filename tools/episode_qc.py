@@ -39,9 +39,8 @@ def qc_episode(ep: Path, stats) -> dict:
         out["grip_start"] = round(float(g[0, 0]), 2)
         out["grip_max"] = round(float(g[:, 0].max()), 2)
         out["obj2_frac"] = round(float((g[:, 1] == 2).mean()), 2)
-        hit = np.nonzero((g[:, 0] > 0.45)
-                         & (g[:, 0] - np.minimum.accumulate(g[:, 0]) > 0.15))[0]
-        out["closes"] = bool(len(hit))
+        from phantom.train.common import close_index   # same rule as --grasp-frac
+        out["closes"] = close_index(g[:, 0]) is not None
         try:
             import io
             import imageio.v2 as iio

@@ -16,8 +16,15 @@ Why each rule exists:
   they were ever imitated they would teach exactly the rig failure mode.
   windows.py sets action_weight=0 for failure demos; contact/event heads
   still learn from their (true) tactile labels.
-- successful recovery episodes get the tag `recovery` (start deliberately
-  off the demo manifold) so they can be selected/weighted later.
+- every intake episode gets a provenance tag `batch_<YYYYMMDD>` derived from
+  its session directory (e.g. `batch_20260822`). Successful episodes are
+  ordinary positive demos — appended, weight 1, nothing else. (An earlier
+  revision tagged them `recovery`; QC showed their start poses are inside
+  the demo distribution, so the tag was wrong and is removed here.)
+- `<Task>_fail` episodes get success=False: the manipulation failed. The
+  v4 `_fail` rows carry success=True ("episode captured the failure") —
+  training treats both identically (is_failure_demo short-circuits on any
+  of the three encodings); only student-side tau calibration reads success.
 """
 from __future__ import annotations
 
@@ -28,6 +35,12 @@ import sys
 from pathlib import Path
 
 CANON = {"carton": "Carton", "waffles": "waffles", "egg": "egg", "whiteboard": "whiteboard"}
+
+
+def batch_tag(session_dir_name: str) -> str:
+    """`20260822_130412_waffles` -> `batch_20260822` (provenance, training-inert)."""
+    head = session_dir_name.split("_", 1)[0]
+    return f"batch_{head}" if head.isdigit() and len(head) == 8 else f"batch_{session_dir_name}"
 
 
 def canon_task(raw: str) -> tuple[str, list[str]]:
@@ -52,9 +65,8 @@ def normalize(root: Path) -> int:
         n += 1
         raw = m.get("task", "")
         task, extra = canon_task(raw)
-        tags = list(m.get("tags") or [])
-        if not task.endswith("_fail") and "recovery" not in tags:
-            extra.append("recovery")
+        tags = [t for t in (m.get("tags") or []) if t != "recovery"]
+        extra.append(batch_tag(mp.parent.parent.name))
         new_tags = tags + [t for t in extra if t not in tags]
         new = dict(m)
         new["task"] = task
@@ -62,10 +74,8 @@ def normalize(root: Path) -> int:
             new["text"] = task
         new["tags"] = new_tags
         if task.endswith("_fail"):
-            # historical encoding: the EPISODE succeeded at capturing the
-            # failure; the manipulation did not. Keep success as recorded,
-            # the `_fail` task + tag already gate the action loss.
             new["failure_demo"] = True
+            new["success"] = False        # the manipulation failed (by design)
         if new != m:
             mp.write_text(json.dumps(new, indent=1))
             changed += 1
@@ -102,8 +112,8 @@ def manifest(tasks_root: Path, manifest_path: Path) -> int:
             if ep.name in existing:
                 continue
             m = json.loads(mp.read_text())
-            if "recovery" not in (m.get("tags") or []) and not m["task"].endswith("_fail"):
-                continue                       # only new intake episodes
+            # anything not already in the manifest is a new intake episode
+            # (v4 rows are all present; val stays frozen — new rows -> train)
             row = {"episode": ep.name, "task": m["task"], "success": m.get("success"),
                    "failure_demo": bool(m.get("failure_demo")) or m["task"].endswith("_fail"),
                    "tactile_contact": None, "split": "train",   # v3 val stays frozen

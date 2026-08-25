@@ -183,7 +183,9 @@ def list_episodes(root: Path, *, include_unfinalized: bool = False) -> list[Path
     still-recording episodes are skipped unless include_unfinalized."""
     root = Path(root)
     out = []
-    for meta_path in sorted(root.rglob("meta.json")):
+    # `ep_*/meta.json` (not `**/meta.json`): pathlib's `**` does not descend
+    # into symlinked directories, and intake places episodes as symlinks.
+    for meta_path in sorted(root.rglob("ep_*/meta.json")):
         ep = meta_path.parent
         if not ep.name.startswith("ep_"):
             continue

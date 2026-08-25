@@ -68,7 +68,7 @@ def collect_texts(data_root: Path) -> list[str]:
                 r = json.loads(line)
                 texts.add(str(r.get("text") or r.get("task") or ""))
     else:
-        for mp in sorted(data_root.rglob("meta.json")):
+        for mp in sorted(data_root.rglob("ep_*/meta.json")):   # follows symlinked eps
             try:
                 m = json.loads(mp.read_text())
             except (OSError, json.JSONDecodeError):
