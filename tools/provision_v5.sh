@@ -115,7 +115,7 @@ EOF
 
 echo "== recovery sessions (hub archive/20260822_*) -> normalized + placed under tasks/"
 python - "$W" <<'PYEOF'
-import glob, subprocess, sys
+import collections, glob, json, os, subprocess, sys
 from huggingface_hub import HfApi, snapshot_download
 W = sys.argv[1]
 api = HfApi()
@@ -131,8 +131,17 @@ for cmd in (["normalize", f"{W}/data/recovery_raw/archive"],
             ["manifest", f"{W}/data/phantom-episodes/tasks",
              f"{W}/data/phantom-episodes/manifests/all.jsonl"]):
     subprocess.run([sys.executable, "tools/intake_recovery.py", *cmd], check=True)
-n = len(glob.glob(f"{W}/data/phantom-episodes/tasks/*/ep_*"))
-print(f"episodes under tasks/ now: {n} (expect 790 + ~315)")
+eps = sorted(glob.glob(f"{W}/data/phantom-episodes/tasks/*/ep_*"))
+print(f"episodes under tasks/ now: {len(eps)} (expect 790 + 325 = 1115)")
+assert len(eps) == 1115, f"episode count {len(eps)} != 1115 — partial snapshot or duplicate placement"
+NEED = ("meta.json", "gripper.zarr", "actions.zarr", "camera_scene_color.zarr",
+        "tactile_left_fields_ds.zarr", "tactile_right_fields_ds.zarr")
+bad = [e for e in eps if not all(os.path.exists(os.path.join(e, f)) for f in NEED)]
+assert not bad, f"{len(bad)} episodes missing streams, e.g. {bad[:3]}"
+rows = [json.loads(l) for l in open(f"{W}/data/phantom-episodes/manifests/all.jsonl") if l.strip()]
+split = collections.Counter(r["split"] for r in rows)
+print("manifest:", dict(split), "(expect train 1037 / val 78)")
+assert split == {"train": 1037, "val": 78}, f"manifest split {dict(split)} != train 1037 / val 78"
 PYEOF
 
 echo "== 20k teacher checkpoint (fine-tune init)"
@@ -171,24 +180,32 @@ EOF3
 echo "== verify: pytest"
 python -m pytest tests/ -q 2>&1 | tail -1 || echo "PYTEST FAILED — investigate before launch"
 
-echo "== verify: 2-step REAL training smoke (same flags as the launch line)"
+echo "== verify: 2-step REAL training smoke (same flags as the launch line, incl. the"
+echo "   --init-weights / --grasp-frac guards that would otherwise first run at paid launch)"
 python -m phantom.train.train_teacher \
     --data "$W/data/phantom-episodes/tasks" --hardware configs/hardware.nuc.yaml \
     --allow-config-drift --run-name provision_smoke --max-steps 2 \
-    --device cuda --acc-two-pass 2>&1 | tail -3
+    --init-weights "$W/runs/teacher/teacher_v4_790eps/teacher_020000.pt" \
+    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
+    --device cuda 2>&1 | tail -3
 rm -rf "$W/runs/teacher/provision_smoke"
 rm -rf "$W/dl"
-EPS=$(find "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
-echo "episodes on disk: $EPS (expect 790)"
+EPS=$(find -L "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
+echo "episodes on disk: $EPS (expect 1115 = 790 v4 + 325 batch_20260822; symlinks counted)"
+NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
+echo "nproc: $(nproc) -> --num-workers $NW"
 
 echo
 echo "READY. Launch (only on explicit GO):"
+echo "  unset HF_TOKEN   # training does not need it; keep it out of the process environment"
 echo "  cd $W/phantom && nohup $W/.venv/bin/python -m phantom.train.train_teacher \\"
 echo "    --data $W/data/phantom-episodes/tasks --hardware configs/hardware.nuc.yaml \\"
-echo "    --allow-config-drift --run-name teacher_v5_recovery --max-steps 3000 \\"
+echo "    --allow-config-drift --run-name teacher_v5_batch0822 --max-steps 3000 \\"
 echo "    --init-weights $W/runs/teacher/teacher_v4_790eps/teacher_020000.pt \\"
 echo "    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \\"
-echo "    --batch-size 4 --grad-accum 2 --num-workers 16 \\"
+echo "    --batch-size 4 --grad-accum 2 --num-workers $NW \\"
 echo "    --device cuda > train_v5.log 2>&1 &"
-echo "  # batch 4x2 needs ~62GB (H100 NVL/80GB); on 40GB use --batch-size 2 --grad-accum 4"
+echo "  # effective batch 8 everywhere: 4x2 needs ~62GB (H100 NVL/80GB, measured 61.5GB);"
+echo "  # 40GB -> --batch-size 2 --grad-accum 4; 5090 32GB / 4090 24GB -> --batch-size 1 --grad-accum 8"
+echo "  # (4090 measured 19.9GiB at 1x8 with --acc-two-pass; batch 2 on a 5090 is unmeasured)"
 echo "  # 3000 steps ~= 5h on H100 NVL. Offline check: tools/terminal_eval.py + tools/episode_qc.py"
