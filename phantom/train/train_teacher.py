@@ -231,12 +231,19 @@ def main(argv=None) -> int:
         ns = init_payload.get("norm_stats")
         if ns:
             import numpy as _np
-            for k in ("action",):
-                if k in ns["mean"] and not _np.allclose(ns["mean"][k], norm.mean[k], atol=1e-6):
-                    raise SystemExit(f"--init-weights norm_stats[{k}] differ from the "
-                                     f"fine-tune data root's norm_stats.json — the "
-                                     f"checkpoint's action normalization would not "
-                                     f"match the data")
+            # every normalized key, mean AND std (an action-mean-only check let
+            # a recomputed norm_stats through with different stds / obs keys)
+            keys = set(ns["mean"]) | set(getattr(norm, "mean", {}))
+            for k in sorted(keys):
+                if k not in ns["mean"] or k not in norm.mean:
+                    raise SystemExit(f"--init-weights norm_stats key set differs from the "
+                                     f"data root's norm_stats.json (missing {k!r})")
+                for which, a, b in (("mean", ns["mean"][k], norm.mean[k]),
+                                    ("std", ns["std"][k], norm.std[k])):
+                    if not _np.allclose(a, b, atol=1e-6):
+                        raise SystemExit(f"--init-weights norm_stats[{k}].{which} differ from "
+                                         f"the fine-tune data root's norm_stats.json — the "
+                                         f"checkpoint's normalization would not match the data")
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,

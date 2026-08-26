@@ -27,7 +27,7 @@ from phantom.config.hardware import HardwareConfig
 from phantom.config.model import PhantomModelConfig
 from phantom.model.ace import losses as L
 from phantom.model.ace.heads import EventReadout, SigmaHead
-from phantom.model.ace.packing import (_CH_WRIST, ActionPacker, ContactPackage,
+from phantom.model.ace.packing import (CH_EVENT, _CH_WRIST, ActionPacker, ContactPackage,
                                        ContactPacker, sigma_group_channels)
 from phantom.model.acc import AccInputs, AccOutput
 from phantom.model.sequence import FrameGroup, SequenceLayout
@@ -319,6 +319,9 @@ class PhantomRectifiedFlow(nn.Module):
             "contact_nll": L.contact_hetero_nll(
                 x0_pred, x0, log_sigma, layout,
                 group_channels=sigma_group_channels(self.hw.n_fingers)),
+            # the event band is in no sigma group; without this it was never
+            # denoised yet fed ACC via cpk.event (see losses.event_band_mse)
+            "contact_event_mse": L.event_band_mse(x0_pred, x0, layout, CH_EVENT),
             "event_ce": L.event_ce(event_logits, batch["events"].to(dev)),
             "wrist_mse": L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST),
             "sigma_reg": (log_sigma ** 2).mean(),

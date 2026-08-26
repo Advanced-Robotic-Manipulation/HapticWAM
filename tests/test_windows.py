@@ -68,6 +68,11 @@ def _check_window(hw, root, student: bool):
         assert w["contact_state"].shape == (Fn, hw.contact_state_dim)
         assert torch.isfinite(w["reactive"])
     for k, v in w.items():
+        if k == "cpk_cop":
+            # NaN = "no CoP" by contract (derived.py); ContactPacker keys the
+            # bump amplitude on it. Everything else must be finite.
+            assert torch.isfinite(v[~torch.isnan(v)]).all()
+            continue
         if torch.is_tensor(v) and v.is_floating_point():
             assert torch.isfinite(v).all(), f"non-finite values in {k}"
 

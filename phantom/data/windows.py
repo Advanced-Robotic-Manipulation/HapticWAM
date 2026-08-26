@@ -283,14 +283,20 @@ class WindowSampler:
         F = len(sensors)
         ds = np.zeros((Tc + 1, F, cph, cpw, 8), dtype=np.float32)
         mask_frac = np.zeros((Tc + 1, F), dtype=np.float32)
-        cop = np.zeros((Tc + 1, F, 2), dtype=np.float32)
+        # NaN = "no CoP" (derived.py returns NaN below cop_min_contact_cells).
+        # ContactPacker keys the CoP-bump amplitude on that NaN; zeroing it
+        # here packed every no-contact timestep as a full-amplitude bump at
+        # the canvas centre — a fictitious CoP target in contact_nll, worst on
+        # under-grasp failure demos (Codex review 2026-08-26). Observation
+        # features below still use nan_to_num (they must be finite inputs).
+        cop = np.full((Tc + 1, F, 2), np.nan, dtype=np.float32)
         slip = np.zeros((Tc + 1, F), dtype=np.float32)
         for f, sname in enumerate(sensors):
             for k, uk in enumerate(u):
                 frame, prev_frame, dt = self._field_frame(c, sname, float(uk))
                 d = dv.derive_timestep(frame, prev_frame, dt, hw)
                 mask_frac[k, f] = d["mask_frac"]
-                cop[k, f] = np.nan_to_num(d["cop"], nan=0.0)
+                cop[k, f] = d["cop"]
                 slip[k, f] = d["slip"]
                 ds[k, f] = bilinear_resize(frame, (cph, cpw))
 

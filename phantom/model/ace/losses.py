@@ -109,8 +109,26 @@ def acc_losses(acc: AccOutput, gate_label_B: torch.Tensor,
     return out
 
 
+def event_band_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor, layout,
+                   event_channel: int) -> torch.Tensor:
+    """Reconstruction MSE on the packed contact-EVENT channel.
+
+    That channel belongs to no SigmaHead group, so the grouped contact NLL
+    (introduced at 8ebe429; the legacy aggregate loss covered all 16
+    channels) never supervised it — yet ContactPacker.unpack() derives
+    `cpk.event` from it at sampling and flatten_summary() feeds those
+    probabilities to ACC (two-pass training AND deploy). Plain MSE, weighted
+    like the EventReadout CE, keeps the head shapes and checkpoint format
+    unchanged (Codex review 2026-08-26)."""
+    sl = layout.frame_slice(FrameGroup.CONTACT)
+    d = (x0_pred[:, event_channel, sl].float() - x0_target[:, event_channel, sl].float()) ** 2
+    return d.mean()
+
+
 def total_loss(parts: dict[str, torch.Tensor], w: LossWeights) -> torch.Tensor:
     total = (w.action * parts["action_v_mse"]
+             + w.event * parts.get("contact_event_mse", torch.zeros(())).to(
+                 parts["action_v_mse"].device)
              + w.contact * parts["contact_nll"]
              + w.event * parts["event_ce"]
              + w.wrist * parts["wrist_mse"]

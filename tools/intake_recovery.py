@@ -112,6 +112,9 @@ def manifest(tasks_root: Path, manifest_path: Path) -> int:
             if ep.name in existing:
                 continue
             m = json.loads(mp.read_text())
+            if m.get("status", "finalized") != "finalized":
+                print(f"manifest: skipping {ep.name} (status={m.get('status')!r})")
+                continue                       # crashed/in-flight/aborted takes never train
             # anything not already in the manifest is a new intake episode
             # (v4 rows are all present; val stays frozen — new rows -> train)
             row = {"episode": ep.name, "task": m["task"], "success": m.get("success"),
