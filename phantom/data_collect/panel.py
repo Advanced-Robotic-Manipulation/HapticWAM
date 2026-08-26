@@ -196,6 +196,13 @@ class CollectRunner:
             self.panel.state.reset_session(
                 phase="starting", task=task, operator=s.operator, mode=mode,
                 target_episodes=s.target_episodes)
+            # Nothing queued before this moment belongs to this session. Any
+            # leftover would be popped on the FIRST loop tick: a stale
+            # 'start_stop' auto-records a phantom episode during the engage
+            # glide, a stale 'quit' ends the freshly brought-up session.
+            # push_button already drops commands while no session runs; this
+            # covers whatever slipped in during bring-up of a PREVIOUS one.
+            self.panel.pop_buttons()
             self._thread = threading.Thread(target=self._run, args=(s,),
                                             daemon=True, name="collect-session")
             self._thread.start()
@@ -281,8 +288,21 @@ class CollectPanel:
             except queue.Empty:
                 return out
 
-    def push_button(self, name: str) -> None:
+    def push_button(self, name: str) -> bool:
+        """Queue one command for the session loop. Returns False if it was
+        dropped because no session is running.
+
+        The queue has exactly one consumer — the session loop — so a button
+        pressed while idle (or during the ~30 s bring-up, when the Episode
+        card still offers Start) is not "queued for later", it is queued for
+        the NEXT session and fires on its first tick: a phantom episode that
+        nobody started, or an instant quit. Dropping it at the door is the
+        only place that knows the button is homeless."""
+        if self.runner is not None and not self.runner.is_running():
+            log.info("panel button %r ignored: no session is running", name)
+            return False
         self._cmds.put(name)
+        return True
 
     # ------------------------------------------------------------------
     def start(self) -> None:
@@ -350,8 +370,10 @@ class CollectPanel:
                 if self.path == "/api/cmd":
                     btn = self._body().get("button")
                     if btn in BUTTONS:
-                        panel._cmds.put(btn)
-                        self._json({"ok": True, "button": btn})
+                        # push_button drops it when no session is running
+                        queued = panel.push_button(btn)
+                        self._json({"ok": True, "button": btn,
+                                    "queued": queued})
                     else:
                         self._json({"error": f"unknown button {btn!r}"}, 400)
                 elif self.path == "/api/safeguard":
@@ -527,6 +549,7 @@ border-radius:10px;padding:12px;margin-bottom:12px}
 .eplist{max-height:180px;overflow-y:auto;font-size:12px}
 .eplist div{padding:3px 0;border-bottom:1px solid var(--line);color:var(--dim)}
 .eplist .success{color:var(--ok)}.eplist .fail,.eplist .safeguard{color:var(--bad)}
+.eplist .unjudged{color:var(--warn)}
 iframe{width:100%;height:640px;border:1px solid var(--line);border-radius:10px;
 background:#0e1116}
 .err{color:var(--bad);font-size:13px;white-space:pre-wrap}
@@ -930,7 +953,13 @@ function render(){
   // session button state machine: setup -> starting -> running -> stopping.
   // the server confirms the optimistic 'pending' by moving the phase.
   if(pending==='start'&&(s.phase==='starting'||s.phase==='running'))pending='';
-  if(pending==='stop'&&(s.phase==='stopping'||s.phase==='setup'))pending='';
+  // a phase still 'running' a beat later also settles a stop: the loop
+  // REFUSES to end a session whose last episode has no verdict and puts the
+  // phase back, and without this the spinner would hide the End-session
+  // button for the full 10 s timeout. The delay keeps the optimistic
+  // spinner: this same render runs immediately after the click.
+  if(pending==='stop'&&(s.phase==='stopping'||s.phase==='setup'
+    ||(s.phase==='running'&&Date.now()-pendingT>1200)))pending='';
   // timeout safety: if the server never confirms the phase (dead/wedged
   // server, dropped POST), drop the optimistic spinner after 10 s
   if(pending&&Date.now()-pendingT>10000)pending='';
@@ -956,7 +985,9 @@ function render(){
   if(epPending==='start')epView='recording';
   else if(epPending==='stop')epView='finalizing';
   else if(epPending==='verdict')epView='saving';
-  $('epStartBtn').style.display=(epView==='idle')?'block':'none';
+  // only while a session is actually live: 'idle' also covers setup and the
+  // whole bring-up, and a Start there is a command with no session to run it
+  $('epStartBtn').style.display=(epView==='idle'&&run)?'block':'none';
   $('epRecCtl').style.display=(epView==='recording')?'block':'none';
   const epBusy=(epView==='finalizing'||epView==='saving');
   $('epBusyBtn').style.display=epBusy?'flex':'none';

@@ -353,6 +353,29 @@ class CollectApp:
         except Exception:
             log.exception("teardown: %s failed to stop cleanly", what)
 
+    @staticmethod
+    def _file_unlabeled(recorder, panel, path, name: str, why: str) -> None:
+        """File a stopped-but-never-judged episode as NOT training-ready.
+
+        Such an episode is already finalized on disk with success=None. Left
+        that way it is indistinguishable from a judged demo: is_failure_demo()
+        is False for success=None, so WindowSampler hands it action_weight 1.0
+        and a take the operator never accepted fully supervises action
+        imitation. Marking it status='aborted' + tag 'unlabeled' keeps every
+        byte on disk (the offload still copies it to the drive) while
+        list_episodes() and the hub uploader both skip it. Recoverable by hand
+        — edit meta.json — if the take turns out to be worth keeping.
+        """
+        try:
+            recorder.relabel(path, status="aborted", tags=["unlabeled"],
+                             notes=f"no operator verdict ({why})")
+        except Exception:
+            log.exception("could not mark %s as unlabeled", name)
+        panel.state.add_episode(name=name, outcome="unjudged",
+                                tags=["unlabeled"])
+        log.warning("episode %s got no operator verdict (%s) — filed as "
+                    "unlabeled, excluded from training", name, why)
+
     def _trip_now(self, streamer, pilot, info) -> None:
         """Time-critical part of a safeguard trip — runs ON the safeguard
         thread: freeze the arm, open the gripper. Episode bookkeeping happens
@@ -376,6 +399,7 @@ class CollectApp:
         # waiting for the operator to press success / fail / discard
         pending_path = None
         pending_name = ""
+        quit_armed = False     # one "End session" already refused (no verdict)
         trip_handled = False
         prev_tcp = None        # previous MEASURED TCP pose (Delta-EE reference)
         arm_hold = ""          # "" | "pstop" | "wrench"
@@ -410,12 +434,54 @@ class CollectApp:
                                                 tags=["arm_fault"])
                         panel.state.update(recording=False,
                                            busy_detail="saved episode (aborted)")
+                    if pending_path is not None:
+                        # a fault cannot wait for a verdict: the episode the
+                        # operator had not judged yet must not be shipped as a
+                        # full-weight demo by the auto-offload that follows
+                        self._file_unlabeled(recorder, panel, pending_path,
+                                             pending_name, "motion thread died")
+                        pending_path, pending_name = None, ""
                     raise RuntimeError(f"motion thread died: {cause}")
 
             # ---- quit -----------------------------------------------------
+            if buttons.get("quit") and pending_path is not None and (
+                    buttons.get("success") or buttons.get("fail")
+                    or buttons.get("abort")):
+                # A verdict and "End session" landed in the SAME 100 ms pop
+                # (both cards are on screen at once). The quit branch runs
+                # first, so handling it here would throw the operator's
+                # judgment away: re-queue the quit instead and let the verdict
+                # below apply — it always clears pending_path, so the next
+                # tick quits cleanly.
+                panel.push_button("quit")
+                buttons["quit"] = False
             if buttons.get("quit"):
+                if pending_path is not None and not quit_armed:
+                    # "End session" while an episode still awaits a verdict:
+                    # refuse ONCE and say so. Ending here used to ship the
+                    # unjudged take as an ordinary full-weight demo (it is
+                    # already finalized on disk with success=None, which
+                    # nothing downstream distinguishes from an accepted one).
+                    # A second press is honoured — the session must never be
+                    # strandable on the rig — and files it as unlabeled.
+                    quit_armed = True
+                    panel.state.update(
+                        phase="running",
+                        error=f"{pending_name} has no verdict — press Success "
+                              "/ Fail / Discard, or press End session again "
+                              "to file it as unlabeled (excluded from "
+                              "training)",
+                        episode_phase="awaiting_verdict",
+                        episode_detail="verdict needed before the session ends")
+                    note("End session refused: episode still awaiting a "
+                         "verdict", "WARN")
+                    continue
                 if recording:
                     recorder.stop(abort=True)
+                if pending_path is not None:
+                    self._file_unlabeled(recorder, panel, pending_path,
+                                         pending_name, "session ended")
+                    pending_path, pending_name = None, ""
                 log.info("session quit")
                 return
 
@@ -587,7 +653,11 @@ class CollectApp:
                 panel.state.add_episode(name=pending_name, outcome=outcome)
                 note(f"episode {pending_name}: {outcome}")
                 pending_path, pending_name = None, ""
-                panel.state.update(episode_phase="idle", episode_detail="")
+                # the verdict clears a refused End-session: the next press
+                # ends the session normally, and the banner goes away
+                quit_armed = False
+                panel.state.update(episode_phase="idle", episode_detail="",
+                                   error="")
                 if (not end_discard and s.target_episodes
                         and ep_count >= s.target_episodes):
                     # target hit on an accepted verdict: close the session the

@@ -72,6 +72,7 @@ class StubRecorder:
         self.started = []
         self.stopped = []          # (success, notes, abort, delete)
         self.relabels = []         # (path, success, discard)
+        self.relabel_kw = []       # full kwargs of each relabel call
         self.actions = []          # (stream, action)
         self.recording = False
 
@@ -88,8 +89,12 @@ class StubRecorder:
         return None if (abort and delete) else (
             Path(self.started[-1]) if self.started else None)
 
-    def relabel(self, path, *, success=None, discard=False, notes=""):
+    def relabel(self, path, *, success=None, discard=False, notes="",
+                status=None, tags=None):
         self.relabels.append((Path(path), success, discard))
+        self.relabel_kw.append(dict(path=Path(path), success=success,
+                                    discard=discard, notes=notes,
+                                    status=status, tags=list(tags or ())))
 
     def record_action(self, t, action, stream="actions"):
         self.actions.append((stream, np.asarray(action)))
@@ -144,6 +149,11 @@ def env():
                                 session=session, rings=rings, thread=thread)
     panel.push_button("quit")
     thread.join(3.0)
+    if thread.is_alive():
+        # an episode left awaiting a verdict makes the loop refuse the first
+        # "End session" (see test_data_collect_verdict_guard); confirm it
+        panel.push_button("quit")
+        thread.join(3.0)
     assert not thread.is_alive()
 
 
