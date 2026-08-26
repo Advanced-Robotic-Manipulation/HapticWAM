@@ -332,16 +332,38 @@ def manifest_split(data_root: Path, split: str) -> list[Path] | None:
         log.warning("no manifest at %s — using every episode under %s "
                     "(NO held-out set)", mf, data_root)
         return None
+    rows = [json.loads(l) for l in mf.read_text().splitlines() if l.strip()]
+    # the manifest is the ONLY thing standing between the data and the
+    # optimizer on this path (list_episodes() is bypassed), so it must be a
+    # bijection onto finalized episodes: no duplicate rows, no path in two
+    # splits, no missing directories (Codex review 2026-08-26)
+    by_path: dict[str, str] = {}
+    for r in rows:
+        prev = by_path.get(r["path"])
+        if prev is not None and prev != r.get("split"):
+            raise SystemExit(f"manifest {mf}: {r['path']} appears in both "
+                             f"{prev!r} and {r.get('split')!r} splits")
+        by_path[r["path"]] = r.get("split")
+    if len(by_path) != len(rows):
+        dups = sorted({r["path"] for r in rows if sum(x["path"] == r["path"] for x in rows) > 1})
+        raise SystemExit(f"manifest {mf}: duplicate rows for {dups[:5]}")
     eps: list[Path] = []
-    for line in mf.read_text().splitlines():
-        if not line.strip():
-            continue
-        r = json.loads(line)
+    missing: list[str] = []
+    for r in rows:
         if r.get("split") != split:
             continue
         p = Path(data_root).parent / r["path"]
-        if (p / "meta.json").exists():
-            eps.append(p)
+        if not (p / "meta.json").exists():
+            missing.append(r["path"])
+            continue
+        st = json.loads((p / "meta.json").read_text()).get("status", "finalized")
+        if st != "finalized":
+            raise SystemExit(f"manifest {mf}: {r['path']} has status {st!r} — "
+                             f"non-finalized episodes must not train")
+        eps.append(p)
+    if missing:
+        raise SystemExit(f"manifest {mf}: {len(missing)} {split!r} rows point at missing "
+                         f"episodes, e.g. {missing[:3]} — partial dataset")
     log.info("manifest split %r: %d episodes", split, len(eps))
     return eps
 

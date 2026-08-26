@@ -52,6 +52,10 @@ mkdir -p "$W/dl"
 hfget $HUB $PACK/phantom_repo_latest.tar.gz "$W/dl" >/dev/null
 mkdir -p phantom && tar -xzf "$W/dl/$PACK/phantom_repo_latest.tar.gz" -C phantom
 cd phantom
+REPO_COMMIT=${REPO_COMMIT:-__REPO_COMMIT__}   # baked in at tarball pack time
+GOT=$(cat COMMIT 2>/dev/null || echo none)
+[ "$GOT" = "$REPO_COMMIT" ] || { echo "FATAL: hub repo tarball is commit '$GOT', this script expects '$REPO_COMMIT' — repack (git archive --add-file=COMMIT) or set REPO_COMMIT"; exit 1; }
+echo "repo commit $GOT verified"
 
 echo "== cosmos repo (public, pinned to the submodule commit)"
 [ -d cosmos-predict2.5/.git ] || git clone -q https://github.com/nvidia-cosmos/cosmos-predict2.5.git
@@ -103,9 +107,8 @@ for t in tasks:
         except Exception:
             p = None
     assert p, f"no tarball for {t}"
-    flags = "--zstd" if p.endswith("zst") else ""
-    subprocess.run(f"tar {flags} -xf {p} -C {W}/data/phantom-episodes/tasks",
-                   shell=True, check=True)
+    cmd = ["tar"] + (["--zstd"] if p.endswith("zst") else []) + ["-xf", p, "-C", f"{W}/data/phantom-episodes/tasks"]
+    subprocess.run(cmd, check=True)
     subprocess.run(["rm", p])
     open(done_flag, "w").close()
     print("unpacked", t, flush=True)
@@ -130,15 +133,15 @@ W = sys.argv[1]
 api = HfApi()
 raw = f"{W}/data/recovery_raw/archive"
 os.makedirs(raw, exist_ok=True)
-if len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json")) >= 325:
-    print("recovery sessions already present", flush=True)
+if os.path.exists(f"{raw}/.complete") and len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json")) == 325:
+    print("recovery sessions already present (validated)", flush=True)
 elif api.file_exists("armteam/phantom-checkpoints", "dataset_v3_packed/batch_20260822.tar.zst"):
     # ONE 30GB xet transfer instead of 123k files (snapshot_download first
     # enumerates the whole 200k-entry episodes repo: measured 1-3h idle GPU)
     from huggingface_hub import hf_hub_download
     p = hf_hub_download("armteam/phantom-checkpoints", "dataset_v3_packed/batch_20260822.tar.zst",
                         repo_type="model", local_dir=W + "/dl")
-    subprocess.run(f"tar --zstd -xf {p} -C {raw}", shell=True, check=True)
+    subprocess.run(["tar", "--zstd", "-xf", p, "-C", raw], check=True)
     subprocess.run(["rm", p])
     print("recovery sessions unpacked from batch_20260822.tar.zst", flush=True)
 else:
@@ -151,6 +154,7 @@ else:
                       local_dir=f"{W}/data/recovery_raw")
 n_raw = len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json"))
 assert n_raw == 325, f"recovery sessions incomplete: {n_raw}/325 episodes under {raw}"
+open(f"{raw}/.complete", "w").close()
 for cmd in (["normalize", f"{W}/data/recovery_raw/archive"],
             ["place", f"{W}/data/recovery_raw/archive", f"{W}/data/phantom-episodes/tasks"],
             ["manifest", f"{W}/data/phantom-episodes/tasks",
@@ -159,14 +163,40 @@ for cmd in (["normalize", f"{W}/data/recovery_raw/archive"],
 eps = sorted(glob.glob(f"{W}/data/phantom-episodes/tasks/*/ep_*"))
 print(f"episodes under tasks/ now: {len(eps)} (expect 790 + 325 = 1115)")
 assert len(eps) == 1115, f"episode count {len(eps)} != 1115 — partial snapshot or duplicate placement"
-NEED = ("meta.json", "gripper.zarr", "actions.zarr", "camera_scene_color.zarr",
-        "tactile_left_fields_ds.zarr", "tactile_right_fields_ds.zarr")
-bad = [e for e in eps if not all(os.path.exists(os.path.join(e, f)) for f in NEED)]
-assert not bad, f"{len(bad)} episodes missing streams, e.g. {bad[:3]}"
+# every stream the teacher's WindowSampler reads, OPENED (existence alone
+# accepts a half-written zarr group): nonempty, equal-length data/ts
+import zarr
+STREAMS = ("gripper", "actions", "camera_scene_color", "arm_q", "arm_qd", "arm_tcp_pose",
+           "arm_tcp_speed", "arm_ft") + tuple(
+    f"tactile_{side}_{k}" for side in ("left", "right")
+    for k in ("fields_ds", "keyframes", "infer_img", "wrench", "area"))
+bad = []
+for e in eps:
+    st = json.load(open(os.path.join(e, "meta.json"))).get("status", "finalized")
+    if st != "finalized":
+        bad.append((e, f"status={st}")); continue
+    for sname in STREAMS:
+        try:
+            g = zarr.open(os.path.join(e, sname + ".zarr"), mode="r")
+            n, m = g["data"].shape[0], g["ts"].shape[0]
+            if n == 0 or n != m:
+                bad.append((e, f"{sname}: data {n} vs ts {m}")); break
+        except Exception as ex:
+            bad.append((e, f"{sname}: {type(ex).__name__}")); break
+assert not bad, f"{len(bad)} episodes fail stream validation, e.g. {bad[:3]}"
+print(f"stream validation: {len(eps)} episodes x {len(STREAMS)} groups OK", flush=True)
 rows = [json.loads(l) for l in open(f"{W}/data/phantom-episodes/manifests/all.jsonl") if l.strip()]
 split = collections.Counter(r["split"] for r in rows)
 print("manifest:", dict(split), "(expect train 1037 / val 78)")
 assert split == {"train": 1037, "val": 78}, f"manifest split {dict(split)} != train 1037 / val 78"
+paths = [r["path"] for r in rows]
+assert len(set(paths)) == len(paths) == 1115, "manifest rows are not unique"
+assert len({r["episode"] for r in rows}) == 1115, "duplicate episode ids in manifest"
+phys = {os.path.relpath(e, f"{W}/data/phantom-episodes") for e in eps}
+assert set(paths) == phys, f"manifest/disk mismatch: {sorted(set(paths) ^ phys)[:5]}"
+tr = {r["path"] for r in rows if r["split"] == "train"}; va = {r["path"] for r in rows if r["split"] == "val"}
+assert not (tr & va), "a path is in both train and val"
+print("manifest: bijection onto disk, unique, disjoint splits OK", flush=True)
 PYEOF
 
 echo "== 20k teacher checkpoint (fine-tune init)"
@@ -200,10 +230,17 @@ for p in glob.glob(sys.argv[1] + "/data/phantom-episodes/tasks/*/ep_*/meta.json"
 bad = {k: v for k, v in pairs.items() if k[0] != k[1]}
 print("task/text pairs:", dict(pairs))
 assert not bad, f"TEXT-CACHE MISS RISK: {bad} — these episodes would train with the empty-string embedding"
+import torch
+cache = torch.load(sys.argv[1] + "/data/phantom-episodes/tasks/text_embeddings.pt", map_location="cpu", weights_only=False)
+keys = set(cache.keys()) if isinstance(cache, dict) else set(getattr(cache, "keys", lambda: [])())
+need = {k[1] for k in pairs}
+missing = need - keys
+assert not missing, f"text_embeddings.pt lacks {sorted(missing)} — those episodes would train unconditioned"
+print("text cache covers", sorted(need), flush=True)
 EOF3
 
 echo "== verify: pytest"
-python -m pytest tests/ -q 2>&1 | tail -1 || echo "PYTEST FAILED — investigate before launch"
+python -m pytest tests/ -q 2>&1 | tail -1; [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "PYTEST FAILED — fix before launch"; exit 1; }
 
 NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
 BS=${BS:-4}; GA=${GA:-2}     # effective batch 8; export BS=1 GA=8 on a 24-32GB card, BS=2 GA=4 on 40GB

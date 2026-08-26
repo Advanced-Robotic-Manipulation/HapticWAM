@@ -84,17 +84,21 @@ class AccGate(nn.Module):
             self.intent_mlp(inp.intent_B_H_A.reshape(B, -1).to(dt)),
             self.cpk_mlp(inp.prev_cpk_summary_B_S.to(dt)),
         ], dim=-1))
-        event_logits = self.W_e(e)
+        # probabilities are formed in fp32: a bf16 sigmoid already rounds to
+        # exactly 1.0 at logit ~6.9, so casting AFTER it (losses.py clamps
+        # `.float()`) cannot restore precision and the BCE gradient on a
+        # saturated false-positive gate is dead (Codex review 2026-08-26)
+        event_logits = self.W_e(e).float()
         p_evt = F.softmax(event_logits, dim=-1)
-        g_ant = torch.sigmoid(self.W_g(e)).squeeze(-1)
+        g_ant = torch.sigmoid(self.W_g(e).float()).squeeze(-1)
 
         if self.student or inp.react_score_B is None:
-            alpha = torch.ones(B, device=e.device, dtype=e.dtype)
+            alpha = torch.ones(B, device=e.device, dtype=torch.float32)
             g_react = torch.zeros_like(g_ant)
         else:
-            alpha = torch.sigmoid(self.W_alpha(e)).squeeze(-1)
+            alpha = torch.sigmoid(self.W_alpha(e).float()).squeeze(-1)
             g_react = torch.sigmoid(
-                self.psi_react(inp.react_score_B.reshape(B, 1).to(e.dtype))).squeeze(-1)
+                self.psi_react(inp.react_score_B.reshape(B, 1).to(e.dtype)).float()).squeeze(-1)
         g = alpha * g_ant + (1.0 - alpha) * g_react
 
         return AccOutput(g=g, g_ant=g_ant, g_react=g_react, alpha=alpha,

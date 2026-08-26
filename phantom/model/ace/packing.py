@@ -36,6 +36,7 @@ from phantom.model.sequence import SequenceLayout
 _MAX_FINGERS = 2
 _PER_FINGER_CH = 5   # d_disp(3) + d_fz(1) + mask(1)
 _CH_EVENT = 10
+CH_EVENT = _CH_EVENT   # public: rf.training_step supervises this band
 _CH_COP = 11
 _CH_SLIP = 12
 _CH_WRENCH0 = 13
