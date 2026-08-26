@@ -187,6 +187,7 @@ python -m phantom.train.train_teacher \
     --allow-config-drift --run-name provision_smoke --max-steps 2 \
     --init-weights "$W/runs/teacher/teacher_v4_790eps/teacher_020000.pt" \
     --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
+    --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 \
     --device cuda 2>&1 | tail -3
 rm -rf "$W/runs/teacher/provision_smoke"
 rm -rf "$W/dl"
@@ -203,8 +204,12 @@ echo "    --data $W/data/phantom-episodes/tasks --hardware configs/hardware.nuc.
 echo "    --allow-config-drift --run-name teacher_v5_batch0822 --max-steps 3000 \\"
 echo "    --init-weights $W/runs/teacher/teacher_v4_790eps/teacher_020000.pt \\"
 echo "    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \\"
+echo "    --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 --ckpt-every 500 --eval-every 500 \\"
 echo "    --batch-size 4 --grad-accum 2 --num-workers $NW \\"
 echo "    --device cuda > train_v5.log 2>&1 &"
+echo "  # fine-tune LR = 1/5 of the from-scratch peak (audit 2026-08-26: full peak = 2.7x LoRA-B"
+echo "  #   weight-scale displacement budget); --init-ema (default) starts from the deployed EMA weights;"
+echo "  #   ckpt/eval every 500 -> SELECT the best checkpoint with tools/terminal_eval.py, do not ship step 3000"
 echo "  # effective batch 8 everywhere: 4x2 needs ~62GB (H100 NVL/80GB, measured 61.5GB);"
 echo "  # 40GB -> --batch-size 2 --grad-accum 4; 5090 32GB / 4090 24GB -> --batch-size 1 --grad-accum 8"
 echo "  # (4090 measured 19.9GiB at 1x8 with --acc-two-pass; batch 2 on a 5090 is unmeasured)"

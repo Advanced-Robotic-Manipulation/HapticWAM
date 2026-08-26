@@ -129,8 +129,10 @@ def main() -> int:
             gt_desc = float(-cg[-1, 2]); pr_desc = float(-cp[-1, 2])
             commit = pr_desc / gt_desc if abs(gt_desc) > 2e-3 else float("nan")
             def first_close(a):
-                h = np.nonzero(a[:, 6] > 0.45)[0]
-                return int(h[0]) if len(h) else len(a)
+                # same rule as --grasp-frac (wide Carton grasps never cross 0.45)
+                from phantom.train.common import close_index
+                i = close_index(a[:, 6])
+                return int(i) if i is not None else len(a)
             rows.append({"episode": wi.episode.name, "task": item.get("text", "?"),
                          "endpoint_err_mm": end_err, "z_end_err_mm": z_err,
                          "commit_ratio": commit,

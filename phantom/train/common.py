@@ -135,17 +135,35 @@ def make_scheduler(opt: torch.optim.Optimizer, cfg: CommonTrainConfig):
     return torch.optim.lr_scheduler.LambdaLR(opt, fn)
 
 
+_SAC_INFIX = "._checkpoint_wrapped_module"
+
+
+def canon_param_name(name: str) -> str:
+    """state_dict()-style name for a named_parameters() entry.
+
+    cosmos wraps every DiT block in an activation-checkpoint wrapper on
+    TRAINING builds; `named_parameters()` reports those params as
+    `net.blocks.N._checkpoint_wrapped_module.self_attn...` while
+    `state_dict()` (what checkpoints store and what load_state_dict wants)
+    strips the infix. Keying the EMA on the raw names meant `--ema` matched
+    0/560 LoRA tensors on load and silently deployed raw LoRA + EMA heads
+    (found 2026-08-26; v4 impact ~1e-3 rel-L2 because its LR had decayed to
+    0, but a fine-tune with a live LR would have been evaluated wrong)."""
+    return name.replace(_SAC_INFIX, "")
+
+
 class EMA:
-    """EMA over trainable params only."""
+    """EMA over trainable params only, keyed by canonical (state_dict) names."""
 
     def __init__(self, model: torch.nn.Module, decay: float):
         self.decay = decay
-        self.shadow = {n: p.detach().clone().float()
+        self.shadow = {canon_param_name(n): p.detach().clone().float()
                        for n, p in model.named_parameters() if p.requires_grad}
 
     @torch.no_grad()
     def update(self, model: torch.nn.Module) -> None:
         for n, p in model.named_parameters():
+            n = canon_param_name(n)
             if n in self.shadow:
                 self.shadow[n].lerp_(p.detach().float(), 1.0 - self.decay)
 
@@ -153,6 +171,7 @@ class EMA:
         return self.shadow
 
     def load_state_dict(self, sd: dict) -> None:
+        sd = {canon_param_name(k): v for k, v in sd.items()}   # pre-fix ckpts
         missing = [n for n in self.shadow if n not in sd]
         assert not missing, f"EMA resume: shadow keys absent from checkpoint: {missing[:8]}"
         for n in self.shadow:
@@ -235,7 +254,15 @@ def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
     weights = dict(payload["lora"])
     weights.update(payload["phantom_modules"])
     if load_ema and payload.get("ema"):
-        weights.update({k: v for k, v in payload["ema"].items() if k in weights})
+        ema_sd = {canon_param_name(k): v for k, v in payload["ema"].items()}
+        hit = {k: v for k, v in ema_sd.items() if k in weights}
+        n_lora = sum("lora_" in k for k in hit)
+        assert len(hit) == len(ema_sd) and (n_lora > 0 or not any("lora_" in k for k in weights)), (
+            f"EMA tensors do not map onto the model: matched {len(hit)}/{len(ema_sd)} "
+            f"({n_lora} LoRA) — checkpoint/model naming drift; refuse rather than "
+            f"silently deploying raw weights")
+        weights.update(hit)
+        log.info("EMA weights applied: %d tensors (%d LoRA)", len(hit), n_lora)
     missing, unexpected = model.load_state_dict(weights, strict=False)
     unexpected = [k for k in unexpected]
     if unexpected and not allow_missing:
@@ -334,6 +361,8 @@ class WindowDataset(Dataset):
         # so the run keeps seeing fresh windows from the same episodes. Held-out
         # sets pass resample=False to stay comparable across evals.
         self.resample = resample
+        self.seed = int(seed)
+        self.epoch = 0                     # set by train_loop at each rollover
         self._rng = np.random.default_rng(seed)
         # Terminal-phase weighting (rig postmortem 2026-08-20: the policy
         # under-executes the last ~6 cm — closes 35-80 mm above grasp height
@@ -465,7 +494,23 @@ def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
                       shuffle=((sampler is None) if shuffle is None else shuffle),
                       sampler=sampler,
                       num_workers=0 if cfg.synthetic else cfg.num_workers,
-                      collate_fn=collate_fn, drop_last=True)
+                      collate_fn=collate_fn, drop_last=True,
+                      worker_init_fn=_seed_worker_rng)
+
+
+def _seed_worker_rng(worker_id: int) -> None:
+    """Give every DataLoader worker its own numpy stream per epoch.
+
+    Workers are forked with a COPY of the dataset's `_rng`, so without this
+    all workers drew the same t0 / grasp-anchor / photo-aug jitters in
+    lockstep and replayed them every epoch (measured 32% distinct jitters at
+    16 workers, 2026-08-26). torch's own per-worker seeding does not cover
+    numpy Generators held on the dataset."""
+    info = torch.utils.data.get_worker_info()
+    ds = info.dataset if info is not None else None
+    if ds is not None and hasattr(ds, "_rng"):
+        ds._rng = np.random.default_rng(
+            [int(getattr(ds, "seed", 0)), int(getattr(ds, "epoch", 0)), int(worker_id)])
 
 
 # ---------------------------------------------------------------------------
@@ -651,6 +696,12 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     # order / noise stream it already trained on
     torch.manual_seed(cfg.seed + rank + start_step)
     np.random.seed(cfg.seed + rank + start_step)
+    # the rectified-flow model keeps its own Generator for (t, eps, cond-drop)
+    # draws; it was seeded to 0 regardless of cfg.seed/rank, so DDP ranks
+    # shared one noise stream (found 2026-08-26)
+    base = model.module if world > 1 else model
+    if hasattr(base, "_gen"):
+        base._gen.manual_seed(cfg.seed + 1000 * rank + start_step)
 
     step, t0 = start_step, time.perf_counter()
     epoch = 0
@@ -665,6 +716,8 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                 epoch += 1
                 if hasattr(getattr(loader, "sampler", None), "set_epoch"):
                     loader.sampler.set_epoch(epoch)   # DistributedSampler reshuffle
+                if hasattr(loader.dataset, "epoch"):
+                    loader.dataset.epoch = epoch      # fresh per-worker numpy streams
                 it = iter(loader)
                 batch = next(it)
             parts = step_fn(batch)

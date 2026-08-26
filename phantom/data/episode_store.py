@@ -34,6 +34,13 @@ class EpisodeWriter:
         self.hw = hw
         self.meta = meta
         self.path.mkdir(parents=True, exist_ok=True)
+        stale = sorted(p.name for p in self.path.glob("*.zarr"))
+        if stale:
+            # zarr groups open in append mode: a second episode with the same
+            # name would be concatenated onto the first (non-monotonic ts,
+            # silently corrupt windows). Refuse instead.
+            raise FileExistsError(f"episode dir {self.path} already holds streams "
+                                  f"{stale[:3]} — pick a unique episode name")
         # provenance: WindowSampler warns when data was recorded under
         # different shape-relevant config values
         try:
@@ -191,7 +198,9 @@ def list_episodes(root: Path, *, include_unfinalized: bool = False) -> list[Path
             continue
         if not include_unfinalized:
             try:
-                if EpisodeMeta.load(meta_path).status == "aborted":
+                # "recording" = crashed or still in flight: never a training
+                # episode (it used to slip through — only "aborted" was skipped)
+                if EpisodeMeta.load(meta_path).status != "finalized":
                     continue
             except Exception:
                 log.warning("unreadable meta.json in %s — skipping", ep)
