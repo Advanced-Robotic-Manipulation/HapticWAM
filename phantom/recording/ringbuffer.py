@@ -84,6 +84,15 @@ class SharedRingBuffer:
         lo = max(0, hi - min(n, self.capacity))
         return self._rows(lo, hi)
 
+    def latest_ts(self) -> float | None:
+        """Timestamp of the newest row WITHOUT copying its payload (None if the
+        ring is still empty). latest(1) on a camera ring copies ~1 MB of pixels;
+        the safety loop runs at executor rate and only needs the age."""
+        hi = self.write_index
+        if hi == 0:
+            return None
+        return float(self._ts[(hi - 1) % self.capacity])
+
     def drain(self, since_seq: int) -> tuple[int, np.ndarray, dict[str, np.ndarray]]:
         """All rows with seq >= since_seq still in the ring -> (next_seq, ts, data).
         If the reader fell behind (overwritten rows), it silently resumes from

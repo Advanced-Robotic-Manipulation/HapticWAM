@@ -76,6 +76,12 @@ class URArm(Arm):
         destroyed (use-after-free), fully stops the control script, and frees the
         process-wide controller slot."""
         old, self._ctrl = self._ctrl, None
+        # A servo session belongs to ONE control script. Tearing that script
+        # down (or rebuilding it in reconnect_control) ends the session by
+        # definition, so the guard flag must clear here — leaving it True
+        # made move_l refuse start-pose homing for the rest of the session
+        # even though the fresh script has no servo stream at all.
+        self._servo_active = False
         if old is None:
             return
         for op in ("servoStop", "stopScript", "disconnect"):
@@ -370,6 +376,34 @@ class URArm(Arm):
         return bool(self._recv.isProtectiveStopped())
 
     def servo_stop(self) -> None:
+        """End the servo stream.
+
+        INVARIANT for `_servo_active`: it is True only while a servo session
+        may still be live on the control script that is running RIGHT NOW. It
+        must never outlive that script — a sticky True is what refuses every
+        subsequent move_l (start-pose homing), which is the OOD-start failure
+        mode start_pose.py exists to prevent.
+
+        So the flag is cleared whenever the servo session is provably over:
+        after a successful servoStop, in _teardown_ctrl (script replaced), and
+        when servoStop could not be delivered AND the receive interface
+        confirms the control script is not running (a dead script cannot be
+        servoing). The one case that keeps the guard up is a servoStop failure
+        against a script that IS still playing: there the stream may genuinely
+        still be live, so the caller gets the exception and move_l stays
+        refused."""
         with self._ctrl_lock:
-            self._require_ctrl().servoStop()
+            try:
+                self._require_ctrl().servoStop()
+            except Exception:
+                # program_running() reads the RECEIVE interface only — safe to
+                # call on a control interface whose script has died (probing
+                # the control object there segfaults; see reconnect_control).
+                if self.program_running():
+                    raise
+                self._servo_active = False
+                log.warning("servoStop failed and the control script is not "
+                            "running — the servo session is already over; "
+                            "cleared servo guard so homing can move_l")
+                return
             self._servo_active = False

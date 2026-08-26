@@ -15,6 +15,7 @@ Conventions:
 
 from __future__ import annotations
 
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -242,6 +243,21 @@ class Camera(ABC):
     @abstractmethod
     def read(self) -> CameraFrame:
         """Block until the next frame at configured fps."""
+
+    # -- health contract (a wedged camera must never look like a working one) --
+    @property
+    def healthy(self) -> bool:
+        """False once the driver KNOWS its stream is unrecoverable. Drivers
+        that can wedge (RealSenseCamera) override this; a frozen stream is
+        otherwise indistinguishable from a slow one."""
+        return True
+
+    def last_frame_age(self) -> float:
+        """Seconds since the last frame this driver actually produced (inf
+        before the first). The planner sees the same age via the camera ring's
+        newest timestamp."""
+        t = getattr(self, "_last_frame_t", 0.0)
+        return float("inf") if not t else time.perf_counter() - t
 
 
 # ---------------------------------------------------------------------------

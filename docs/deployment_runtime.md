@@ -53,19 +53,41 @@ EpisodeRecorder ◀── drains all rings every 0.25 s ──────┘   
 | wrist |F| > `safety.wrench_limit_N` or |T| > `wrench_limit_Nm` | arm ring | controlled stop, episode aborted (`safety_stop`) |
 | peak fingertip f_z > `tactile_fz_limit_N` (calibrated) / indentation > `tactile_depth_limit` (fallback) | tactile rings | controlled stop, episode aborted |
 | tactile ring stale (sensor stall) | ring freshness | controlled stop, episode aborted |
+| `camera_scene` ring stale > `safety.camera_stale_s(hw)` (wedged RealSense) | ring freshness | controlled stop, episode aborted (`safety_stop`) |
 | TCP target outside `safety.workspace_m` | commanded target | clamp to the box, continue (logged) |
 | protective stop | RTDE flag | executor exits (`protective_stop`); see recovery below |
 
 All events are t_master-stamped in `SafetyMonitor.log_events` and counted in
-the episode result; the eval harness reads them.
+the episode result; the eval harness reads them. A *sustained* condition (a
+clamp, a stale ring) is retained and logged ONCE per condition — the rising
+edge, then at most 1 Hz while it holds, with the tick count on the event —
+so `EpisodeResult.safety_events` counts problems, not executor ticks, and the
+2 ms servo loop is not doing 500 stderr writes a second.
+
+`SnapshotBuilder.build()` carries the same camera-freshness threshold as a
+hard assert (like the gripper-state assert), so a frozen scene stream can
+never condition a replan even with no SafetyMonitor in the loop.
 
 ## Protective-stop recovery
 
 1. Clear the fault on the pendant (Enable robot).
-2. The RTDE control session is dead: the runtime must call
-   `URArm.reconnect_control()` (run_deploy does this between episodes; if it
-   happens mid-campaign, finish the trial as failed and restart the episode).
+2. The RTDE control session is dead. `run_deploy` handles this between
+   episodes: when the previous episode ended with `protective_stop`,
+   `executor_crash` or `motion_stall` it blocks on
+   `URArm.is_ready_for_control()` (prompting until the pendant is clear),
+   calls `URArm.reconnect_control()`, and verifies the new control script is
+   actually **running** before homing the next episode. If it cannot recover
+   in 3 attempts the campaign stops with exit code 4 rather than running
+   zero-motion episodes. Mid-episode, the trial is finished as failed.
 3. Re-zero F/T (`0` in teleop, automatic at episode start otherwise).
+
+`URArm` invariant: `_servo_active` is true only while a servo session may be
+live on the control script running *right now*. It is cleared on a successful
+`servo_stop()`, on `_teardown_ctrl()`/`reconnect_control()` (a fresh script has
+no servo stream), and on a failed `servoStop()` whose receive-side check shows
+the script is not running. It stays set only when `servoStop()` failed against
+a script that is still playing. A sticky true would refuse every subsequent
+`move_l`, i.e. disable start-pose homing for the rest of the session.
 
 ## System modes (`--system`)
 

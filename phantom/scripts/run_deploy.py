@@ -80,6 +80,57 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
                          guidance=getattr(args, "guidance", 1.0))
 
 
+# Episode outcomes that mean the robot's RTDE CONTROL SCRIPT is (probably)
+# dead: a UR protective stop kills it outright, and both executor_crash and
+# motion_stall are what a rejected servoJ looks like from the outside. The
+# socket stays up in all three cases, so nothing else notices — every later
+# episode would home-fail, start on a hand-jogged OOD pose and record 1-2
+# zero-motion replans (audit 2026-08-26). docs/deployment_runtime.md's
+# protective-stop recovery is implemented here.
+_CONTROL_DEAD_REASONS = ("protective_stop", "executor_crash", "motion_stall")
+_RECONNECT_TRIES = 3
+_SCRIPT_START_TIMEOUT_S = 5.0
+
+
+def recover_control(arm, reason: str) -> bool:
+    """Rebuild the RTDE control session between episodes. True if the arm is
+    servo-able again.
+
+    Blocks on the operator until the robot itself reports it may be controlled
+    (protective stop cleared, mode RUNNING, safety NORMAL), rebuilds the
+    control interface, and then VERIFIES the new control script is actually
+    playing — isConnected() is only the socket, which stays up while the script
+    is dead, so without this check the failure would resurface as a rejected
+    servoJ in the middle of the next episode."""
+    log.error("previous episode ended with %r — the RTDE control script must be "
+              "assumed dead; rebuilding it before the next episode "
+              "(deployment_runtime.md: protective-stop recovery)", reason)
+    for attempt in range(1, _RECONNECT_TRIES + 1):
+        ok, why = arm.is_ready_for_control()
+        while not ok:
+            log.error("robot is not ready for control: %s", why)
+            input("clear the fault on the pendant (Enable robot), then Enter "
+                  "to re-check. Ctrl-C aborts...")
+            ok, why = arm.is_ready_for_control()
+        try:
+            arm.reconnect_control()
+        except Exception:
+            log.exception("reconnect_control FAILED (attempt %d/%d)",
+                          attempt, _RECONNECT_TRIES)
+            continue
+        deadline = time.perf_counter() + _SCRIPT_START_TIMEOUT_S
+        while time.perf_counter() < deadline:
+            if arm.program_running():
+                log.info("RTDE control rebuilt and the control script is "
+                         "running — the arm is servo-able again")
+                return True
+            time.sleep(0.1)
+        log.error("control script is NOT running %.0fs after reconnect "
+                  "(attempt %d/%d)", _SCRIPT_START_TIMEOUT_S, attempt,
+                  _RECONNECT_TRIES)
+    return False
+
+
 def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     ap = argparse.ArgumentParser()
@@ -196,10 +247,21 @@ def main(argv=None) -> int:
         print(f"live state vs {args.task} demo start distribution:\n{table}")
         return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
 
+    prev_reason: str | None = None
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root) as rt:
         for i in range(args.episodes):
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
+                # -- stage 0: restore control after a protective stop -------
+                if prev_reason in _CONTROL_DEAD_REASONS:
+                    if not recover_control(rt.rig.arm, prev_reason):
+                        log.error("RTDE control could NOT be recovered — "
+                                  "refusing to start %s. Everything after this "
+                                  "would be a zero-motion episode on a "
+                                  "hand-jogged start pose. Fix the robot and "
+                                  "restart the process.", ep_tag)
+                        return 4
+                    prev_reason = None
                 # -- stage 1: home the arm to the task's demo start ---------
                 if args.home and stats is not None:
                     input(f"{ep_tag}: clear the arm's path. Enter to MOVE ARM "
@@ -267,6 +329,7 @@ def main(argv=None) -> int:
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
+            prev_reason = res.stopped_reason
             if arm_real and args.label_prompt and res.episode_path:
                 # success is otherwise hardcoded None on every deploy episode
                 # (audit 2026-08-20): the session produced unlabeled anecdotes
