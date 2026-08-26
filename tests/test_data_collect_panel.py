@@ -53,6 +53,11 @@ class StubRunner:
         self.offloads += 1
         return None
 
+    def is_running(self):
+        # push_button drops commands when no session is running; these tests
+        # exercise the queueing path, so the stub is always "in session"
+        return True
+
 
 @pytest.fixture
 def panel():

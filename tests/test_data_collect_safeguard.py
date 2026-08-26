@@ -190,3 +190,49 @@ def test_arm_guard_recovered_uses_deviation(hw):
     assert g.recovered()
     _push_arm(r, f=hw.safety.wrench_limit_N * 0.95)  # above 0.8*limit
     assert not g.recovered()
+
+
+# ------------------------------------------- shipped config characterization
+# The 2026-08 data audit found 165/180 whiteboard v4 episodes peaking ABOVE the
+# 30 N DM-Tac pad ceiling (max 58.8 N) with the safeguard's limit set to 15 N
+# and nothing ever tripping. These two tests pin down why: the mechanism is
+# sound and would have caught every one of those peaks — it is switched OFF in
+# the shipped config, so check_once() never looks at a sample. Flipping that
+# default must break a test, not a pad.
+def _shipped_safeguard_cfg():
+    """SafeguardConfig exactly as committed — the sibling data_collect.local
+    .yaml is deliberately NOT merged, so a rig-local override cannot mask a
+    change to the default everyone else ships."""
+    import yaml
+    from phantom.data_collect.config import DEFAULT_COLLECT_YAML
+    raw = yaml.safe_load(DEFAULT_COLLECT_YAML.read_text())
+    return SafeguardConfig.model_validate(raw.get("safeguard", {}))
+
+
+def test_shipped_config_leaves_the_pad_guard_switched_off(hw):
+    cfg = _shipped_safeguard_cfg()
+    assert cfg.enabled is False, (
+        "the pad guard is ON now — update this test and tell the operator, the "
+        "whiteboard task normally loads the pads well past force_limit_n")
+    sg = TactileSafeguard(hw, _rings(hw, force=58.8), cfg)   # audit's peak
+    assert sg.check_once() is None, "disabled guard must not trip"
+    assert sg.tripped is None
+
+
+def test_shipped_force_limit_would_catch_a_whiteboard_peak(hw):
+    """Same config with the panel toggle ON: the limit and the reduction are
+    right (per-pad ‖F‖ of getForce()[:3], calibrated N). 40 N trips, the 10 N
+    grasp-stop working load does not — the limits nest 10 < 15 < 30 N."""
+    cfg = _shipped_safeguard_cfg().model_copy(update={"enabled": True})
+    assert cfg.force_limit_n == 15.0
+
+    calls = []
+    sg = TactileSafeguard(hw, _rings(hw, force=40.0), cfg, on_trip=calls.append)
+    info = sg.check_once()
+    assert info is not None and info.kind == "force"
+    assert info.value == pytest.approx(40.0) and info.limit == 15.0
+    assert len(calls) == 1                       # teleop freezes, gripper opens
+
+    sg.reset()
+    sg.rings.update(_rings(hw, force=10.0))      # a normal force-limited grasp
+    assert sg.check_once() is None
