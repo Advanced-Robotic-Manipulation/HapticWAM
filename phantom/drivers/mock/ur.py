@@ -34,6 +34,7 @@ class MockArm(Arm):
         self._connected = False
         self._protective_stop = False
         self._servo_active = False
+        self.n_reconnects = 0          # test hook (deploy recovery rehearsal)
 
     # ------------------------------------------------------------------
     def connect(self, *, control: bool = False) -> None:
@@ -127,6 +128,26 @@ class MockArm(Arm):
     def servo_stop(self) -> None:
         self._servo_active = False
         self.stop(2.0)
+
+    # ------------------------------------------------------------------
+    # control-session parity with URArm: the deploy loop's protective-stop
+    # recovery calls these between episodes, so a mock dry run must exercise
+    # exactly the same code path (URArm's versions talk to RTDE).
+    def program_running(self) -> bool:
+        return self._connected and not self._protective_stop
+
+    def is_ready_for_control(self) -> tuple[bool, str]:
+        if not self._connected:
+            return False, "mock arm not connected"
+        if self._protective_stop:
+            return False, ("mock arm is STILL protective-stopped — clear it "
+                           "before rebuilding control")
+        return True, ''
+
+    def reconnect_control(self) -> None:
+        # a freshly started control script cannot have a live servo session
+        self._servo_active = False
+        self.n_reconnects += 1
 
     # test hook
     def trigger_protective_stop(self, on: bool = True) -> None:

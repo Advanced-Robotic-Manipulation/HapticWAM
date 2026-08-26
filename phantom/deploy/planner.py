@@ -18,6 +18,7 @@ import numpy as np
 
 from phantom.config.hardware import HardwareConfig
 from phantom.data import derived as dv
+from phantom.deploy.safety import camera_stale_s
 from phantom.inference.policy import ObsSnapshot, Plan, PhantomPolicy
 from phantom.recording.workers import SensorSession
 
@@ -34,6 +35,7 @@ class SnapshotBuilder:
         self.session = session
         self.mode = mode
         self._prev_fields: np.ndarray | None = None
+        self._cam_stale_s = camera_stale_s(hw)
 
     def build(self) -> ObsSnapshot:
         hw = self.hw
@@ -43,6 +45,18 @@ class SnapshotBuilder:
         cam_name = "camera_scene"
         ts, cam = rings[cam_name].latest(1)
         assert len(ts), "no camera frames yet"
+        # Freshness is a HARD requirement, like the gripper state below: a
+        # wedged RealSense pipeline leaves this ring frozen on the pre-stall
+        # frame and every later plan would be conditioned on it with nothing
+        # detecting the stall (blocker 2026-08-26). _wait_rings_warm treats the
+        # AssertionError as "not warm yet" during start-up; after that it ends
+        # the episode loudly. SafetyMonitor carries the same threshold and stops
+        # the executor first, within one tick.
+        cam_age = t_now - float(ts[0])
+        assert cam_age < self._cam_stale_s, (
+            f"camera_scene stale by {cam_age:.2f}s (>{self._cam_stale_s:.2f}s) — "
+            "the scene pipeline is wedged; the policy must not replan on a "
+            "frozen frame")
         rgb = cam["color"][0]
 
         L = hw.wrist_ft.window_len
@@ -127,6 +141,11 @@ class PlannerLoop:
         prev_tcp = prev_cmd = None
         strikes = 0
         while not self._stop.is_set():
+            # BEFORE building a snapshot: a safety stop raised by the executor
+            # (e.g. camera_scene_stale) must end the episode through this clean
+            # path, not through the staleness assert inside build().
+            if self._executor_stopped():
+                break
             snap = self.snapshots.build()
             tcp_pose = snap.ur_state[2 * self.hw.arm.dof:2 * self.hw.arm.dof + 6]
             cmd = self.executor.last_cmd()
@@ -169,10 +188,15 @@ class PlannerLoop:
             n += 1
             if max_replans is not None and n >= max_replans:
                 break
-            if self.executor.stopped_reason is not None:
-                log.warning("executor stopped (%s); ending episode",
-                            self.executor.stopped_reason)
+            if self._executor_stopped():
                 break
+
+    def _executor_stopped(self) -> bool:
+        reason = self.executor.stopped_reason
+        if reason is None:
+            return False
+        log.warning("executor stopped (%s); ending episode", reason)
+        return True
 
     def stop(self) -> None:
         self._stop.set()

@@ -30,6 +30,11 @@ class SafetyEvent:
     kind: str
     value: float
     action: SafetyAction
+    # A sustained condition (a clamp, a stale ring) re-fires on EVERY executor
+    # tick. log_events keeps one event per CONDITION and counts the ticks here,
+    # so EpisodeResult.safety_events reads "1 clamp" instead of "15000 clamps".
+    count: int = 1
+    t_last: float = 0.0
 
 
 @dataclass
@@ -38,13 +43,35 @@ class SafetyVerdict:
     events: list[SafetyEvent] = field(default_factory=list)
 
 
+def camera_stale_s(hw: HardwareConfig) -> float:
+    """How old the newest scene frame may be before the episode is stopped.
+
+    Deliberately looser than the tactile ring threshold: dropping a few USB
+    frames is routine on the rig, while a wedged librealsense pipeline is a
+    multi-second condition. 0.5 s is >=15 frames at 30 fps."""
+    return max(0.5, 10.0 / hw.cameras.scene.fps)
+
+
+# A sustained condition logs on its rising edge and then at most this often.
+_EVENT_LOG_PERIOD_S = 1.0
+# Hard ceiling on retained distinct events (an episode that produces this many
+# separate conditions is already pathological; counts still accumulate).
+_MAX_LOG_EVENTS = 1000
+
+
 class SafetyMonitor:
     def __init__(self, hw: HardwareConfig, rings: dict[str, SharedRingBuffer]):
         self.hw = hw
         self.rings = rings
         self.log_events: list[SafetyEvent] = []
+        self.dropped_events = 0
+        # kind -> the retained SafetyEvent for the condition currently active,
+        # plus when it was last logged. Cleared as soon as a tick passes
+        # without that kind, so the next occurrence is a fresh rising edge.
+        self._active: dict[str, tuple[SafetyEvent, float]] = {}
         self._ring_stale_s = 3.0 / min(hw.recording.field_ds_rate_hz,
                                        hw.cameras.scene.fps)
+        self._cam_stale_s = camera_stale_s(hw)
         # Wrench guard state — same scheme as data_collect.safeguard.ArmGuard:
         # the CB3 "wrench" is a current-based estimate with a large pose-
         # dependent static bias plus acceleration spikes, so the raw value vs
@@ -124,6 +151,19 @@ class SafetyMonitor:
                 events.append(SafetyEvent(t_now, kind, peak, SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
+        # scene-camera freshness: a wedged RealSense pipeline stops pushing and
+        # the ring keeps serving the pre-stall frame, so every replan conditions
+        # on a frozen image while the arm keeps being driven (blocker
+        # 2026-08-26). Same treatment as a stale tactile ring. Read the ring's
+        # timestamp ONLY — latest(1) here would copy ~1 MB of pixels per tick.
+        cam_ring = self.rings.get("camera_scene")
+        if cam_ring is not None:
+            ts_c = cam_ring.latest_ts()
+            if ts_c is not None and t_now - ts_c > self._cam_stale_s:
+                events.append(SafetyEvent(t_now, "camera_scene_stale",
+                                          t_now - ts_c, SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
+
         # workspace clamp on the commanded target
         if not hw.safety.workspace_m.contains(tcp_target[:3]):
             events.append(SafetyEvent(t_now, "workspace_clamp",
@@ -131,10 +171,43 @@ class SafetyMonitor:
                                       SafetyAction.CLAMP))
             action = _max(action, SafetyAction.CLAMP)
 
-        self.log_events.extend(events)
-        for e in events:
-            log.warning("SAFETY %s value=%.3f -> %s", e.kind, e.value, e.action.value)
+        self._record(t_now, events)
         return SafetyVerdict(action=action, events=events)
+
+    def _record(self, t_now: float, events: list[SafetyEvent]) -> None:
+        """Retain and log CONDITIONS, not ticks.
+
+        check() runs every executor tick (500 Hz), so a sustained clamp used to
+        append ~15k events per episode and issue ~15k warnings — synchronous
+        stderr writes from inside the 2 ms servo loop, and a safety_events count
+        that reported ticks instead of problems. Each kind is now stored once on
+        its rising edge, its `count` incremented while it persists, and re-logged
+        at most every _EVENT_LOG_PERIOD_S."""
+        seen = set()
+        for e in events:
+            seen.add(e.kind)
+            prev = self._active.get(e.kind)
+            if prev is None:
+                if len(self.log_events) < _MAX_LOG_EVENTS:
+                    self.log_events.append(e)
+                else:
+                    self.dropped_events += 1
+                e.t_last = t_now
+                self._active[e.kind] = (e, t_now)
+                log.warning("SAFETY %s value=%.3f -> %s", e.kind, e.value,
+                            e.action.value)
+                continue
+            held, last_log = prev
+            held.count += 1
+            held.t_last = t_now
+            held.value = e.value            # latest magnitude of the condition
+            if t_now - last_log >= _EVENT_LOG_PERIOD_S:
+                self._active[e.kind] = (held, t_now)
+                log.warning("SAFETY %s value=%.3f -> %s (sustained %.1fs, %d ticks)",
+                            held.kind, held.value, held.action.value,
+                            t_now - held.t, held.count)
+        for kind in [k for k in self._active if k not in seen]:
+            self._active.pop(kind, None)    # condition cleared: re-arm the edge
 
     def recovered(self, frac: float = 0.8) -> bool:
         """Hysteresis gate for resuming after a STOP_EPISODE: True when the

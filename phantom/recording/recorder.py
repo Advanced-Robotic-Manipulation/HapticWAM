@@ -205,13 +205,21 @@ class EpisodeRecorder:
         return True
 
     def relabel(self, path: Path, *, success: bool | None = None,
-                discard: bool = False, notes: str = "") -> None:
+                discard: bool = False, notes: str = "",
+                status: str | None = None, tags=None) -> None:
         """Apply an operator verdict to an ALREADY-finalized episode by
         rewriting its meta.json — used for the stop-then-judge flow (the
         episode is finalized without a verdict on stop, then marked
         success/fail/discard). The recorded data is never touched; a discard
         just flips the status to 'aborted' (kept on disk, skipped by listers,
-        same as an in-recording abort)."""
+        same as an in-recording abort).
+
+        `status` / `tags` exist for the NO-VERDICT path: an episode whose
+        session ended before the operator judged it must not stay
+        status='finalized' + success=None, which every lister reads as an
+        ordinary full-weight demo. Marking it status='aborted' + tag
+        'unlabeled' keeps the data on disk (and offloadable) while
+        list_episodes() and the hub uploader both skip it."""
         if discard:
             # The operator asked for this episode to go away: DELETE it, do
             # not merely mark it aborted. Leaving ~130 MB of zarr on disk got
@@ -225,4 +233,9 @@ class EpisodeRecorder:
             meta.success = success
         if notes:
             meta.notes = notes
+        if status is not None:
+            meta.status = status
+        for tag in (tags or ()):
+            if tag not in meta.tags:
+                meta.tags.append(tag)
         meta.save(meta_path)
