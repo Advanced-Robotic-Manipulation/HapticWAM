@@ -22,13 +22,13 @@ def test_start_stats_load_all_tasks():
     stats = sp.load_start_stats()
     assert set(stats) == {"Carton", "egg", "waffles", "whiteboard"}
     for t, st in stats.items():
-        assert st.n == 180
+        assert st.n == 250
         assert st.tcp_mean.shape == (6,) and st.tcp_std.shape == (6,)
         assert np.all(st.tcp_std > 0)
         assert 0.0 <= st.gripper_mean <= 1.0
     # spot-check against the generation run (full 790-ep dataset, 2026-08-20)
     w = stats["waffles"]
-    assert np.allclose(w.tcp_mean[:3], [-0.3745, -0.2825, 0.3340], atol=1e-4)
+    assert np.allclose(w.tcp_mean[:3], [-0.3652, -0.2859, 0.3346], atol=1e-4)   # v4+batch_20260822
 
 
 def test_sample_start_pose_within_one_sigma():

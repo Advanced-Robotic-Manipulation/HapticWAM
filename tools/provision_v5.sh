@@ -23,8 +23,9 @@ PACK=dataset_v3_packed
 (apt-get update -qq && apt-get install -y -qq zstd git python3-venv python3-pip) 2>/dev/null || true
 command -v zstd >/dev/null || { echo "FATAL: zstd unavailable"; exit 1; }
 command -v git  >/dev/null || { echo "FATAL: git unavailable"; exit 1; }
+nvidia-smi -L >/dev/null 2>&1 || { echo "FATAL: no GPU visible (nvidia-smi -L failed)"; exit 1; }
 AVAIL=$(df -BG --output=avail "${W%/*}" 2>/dev/null | tail -1 | tr -dc 0-9 || echo 999)
-[ "${AVAIL:-999}" -ge 150 ] || echo "WARNING: <150GB free — dataset+staging+ckpts need ~150GB"
+[ "${AVAIL:-999}" -ge 200 ] || echo "WARNING: <200GB free — peak usage ~155GB (dataset 73G + recovery 31G + cosmos + hub cache + ckpts); rent --disk 300"
 
 mkdir -p "$W" && cd "$W"
 PY=$(command -v python3.11 || command -v python3.10 || command -v python3)
@@ -32,7 +33,7 @@ echo "== python: $PY ($($PY -V))"
 
 $PY -m venv .venv 2>/dev/null || ($PY -m pip install -q virtualenv && $PY -m virtualenv .venv)
 . .venv/bin/activate
-pip install -q -U pip huggingface_hub
+pip install -q -U pip "huggingface_hub>=1.20,<2"
 export HF_XET_HIGH_PERFORMANCE=1     # hub 1.x: xet turbo (hf_transfer extra is gone)
 export PIP_NO_CACHE_DIR=1
 
@@ -60,6 +61,11 @@ echo "== python deps"
 pip install -q -r requirements/requirements-h100.txt || \
   pip install -q -r requirements/requirements-a100.txt
 pip install -q -e .
+python - <<'EOF0'
+import torch
+assert torch.cuda.is_available(), "CUDA not available after deps install — wrong image/driver; stop before the 100GB pull"
+print("GPU:", torch.cuda.get_device_name(0), "| torch", torch.__version__, "| cuda", torch.version.cuda)
+EOF0
 
 echo "== cosmos weights (gated: token must have accepted the NVIDIA license)"
 WR="$W/cosmos-predict2.5-2b"
@@ -84,8 +90,10 @@ tasks = ["Carton", "Carton_fail", "waffles", "waffles_fail",
          "egg", "egg_fail", "whiteboard", "whiteboard_fail"]
 import os
 for t in tasks:
-    if os.path.isdir(f"{W}/data/phantom-episodes/tasks/{t}"):
-        print("skip (present)", t, flush=True); continue
+    done_flag = f"{W}/data/phantom-episodes/tasks/{t}/.complete"
+    if os.path.exists(done_flag):
+        print("skip (complete)", t, flush=True); continue
+    subprocess.run(["rm", "-rf", f"{W}/data/phantom-episodes/tasks/{t}"])   # half-extracted -> redo
     for ext in ("tar.zst", "tar"):
         try:
             p = hf_hub_download("armteam/phantom-checkpoints",
@@ -99,6 +107,7 @@ for t in tasks:
     subprocess.run(f"tar {flags} -xf {p} -C {W}/data/phantom-episodes/tasks",
                    shell=True, check=True)
     subprocess.run(["rm", p])
+    open(done_flag, "w").close()
     print("unpacked", t, flush=True)
 for extra, dest in (("manifests.tar", W + "/data/phantom-episodes"),
                     ("norm_stats.json", W + "/data/phantom-episodes/tasks"),
@@ -119,13 +128,29 @@ import collections, glob, json, os, subprocess, sys
 from huggingface_hub import HfApi, snapshot_download
 W = sys.argv[1]
 api = HfApi()
-sess = [e.path for e in api.list_repo_tree("armteam/phantom-episodes", path_in_repo="archive",
-                                          repo_type="dataset", recursive=False)
-        if "20260822_" in e.path]
-print(f"{len(sess)} recovery sessions on hub")
-snapshot_download("armteam/phantom-episodes", repo_type="dataset",
-                  allow_patterns=[p + "/*" for p in sess],
-                  local_dir=f"{W}/data/recovery_raw")
+raw = f"{W}/data/recovery_raw/archive"
+os.makedirs(raw, exist_ok=True)
+if len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json")) >= 325:
+    print("recovery sessions already present", flush=True)
+elif api.file_exists("armteam/phantom-checkpoints", "dataset_v3_packed/batch_20260822.tar.zst"):
+    # ONE 30GB xet transfer instead of 123k files (snapshot_download first
+    # enumerates the whole 200k-entry episodes repo: measured 1-3h idle GPU)
+    from huggingface_hub import hf_hub_download
+    p = hf_hub_download("armteam/phantom-checkpoints", "dataset_v3_packed/batch_20260822.tar.zst",
+                        repo_type="model", local_dir=W + "/dl")
+    subprocess.run(f"tar --zstd -xf {p} -C {raw}", shell=True, check=True)
+    subprocess.run(["rm", p])
+    print("recovery sessions unpacked from batch_20260822.tar.zst", flush=True)
+else:
+    sess = [e.path for e in api.list_repo_tree("armteam/phantom-episodes", path_in_repo="archive",
+                                              repo_type="dataset", recursive=False)
+            if "20260822_" in e.path]
+    print(f"{len(sess)} recovery sessions on hub — no tarball, slow per-file snapshot", flush=True)
+    snapshot_download("armteam/phantom-episodes", repo_type="dataset",
+                      allow_patterns=[p + "/*" for p in sess], max_workers=32,
+                      local_dir=f"{W}/data/recovery_raw")
+n_raw = len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json"))
+assert n_raw == 325, f"recovery sessions incomplete: {n_raw}/325 episodes under {raw}"
 for cmd in (["normalize", f"{W}/data/recovery_raw/archive"],
             ["place", f"{W}/data/recovery_raw/archive", f"{W}/data/phantom-episodes/tasks"],
             ["manifest", f"{W}/data/phantom-episodes/tasks",
@@ -180,6 +205,8 @@ EOF3
 echo "== verify: pytest"
 python -m pytest tests/ -q 2>&1 | tail -1 || echo "PYTEST FAILED — investigate before launch"
 
+NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
+BS=${BS:-4}; GA=${GA:-2}     # effective batch 8; export BS=1 GA=8 on a 24-32GB card, BS=2 GA=4 on 40GB
 echo "== verify: 2-step REAL training smoke (same flags as the launch line, incl. the"
 echo "   --init-weights / --grasp-frac guards that would otherwise first run at paid launch)"
 python -m phantom.train.train_teacher \
@@ -188,13 +215,13 @@ python -m phantom.train.train_teacher \
     --init-weights "$W/runs/teacher/teacher_v4_790eps/teacher_020000.pt" \
     --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
     --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 \
+    --batch-size $BS --grad-accum $GA --num-workers $NW \
     --device cuda 2>&1 | tail -3
 rm -rf "$W/runs/teacher/provision_smoke"
 rm -rf "$W/dl"
 EPS=$(find -L "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
 echo "episodes on disk: $EPS (expect 1115 = 790 v4 + 325 batch_20260822; symlinks counted)"
-NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
-echo "nproc: $(nproc) -> --num-workers $NW"
+echo "nproc: $(nproc) -> --num-workers $NW; smoke ran batch ${BS}x${GA}"
 
 echo
 echo "READY. Launch (only on explicit GO):"
@@ -205,7 +232,7 @@ echo "    --allow-config-drift --run-name teacher_v5_batch0822 --max-steps 3000 
 echo "    --init-weights $W/runs/teacher/teacher_v4_790eps/teacher_020000.pt \\"
 echo "    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \\"
 echo "    --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 --ckpt-every 500 --eval-every 500 \\"
-echo "    --batch-size 4 --grad-accum 2 --num-workers $NW \\"
+echo "    --batch-size $BS --grad-accum $GA --num-workers $NW \\"
 echo "    --device cuda > train_v5.log 2>&1 &"
 echo "  # fine-tune LR = 1/5 of the from-scratch peak (audit 2026-08-26: full peak = 2.7x LoRA-B"
 echo "  #   weight-scale displacement budget); --init-ema (default) starts from the deployed EMA weights;"
