@@ -68,6 +68,18 @@ def apply_overrides(cfg, args, compute=None):
         updates["grad_accum"] = args.grad_accum
     if getattr(args, "num_workers", None) is not None:
         updates["num_workers"] = args.num_workers
+    # fine-tune knobs (2026-08-26): a fresh cosine at the from-scratch peak
+    # gives a converged checkpoint a per-element Adam displacement budget of
+    # ~2.7x the LoRA-B weight scale — a rewrite, not a fine-tune. Explicit
+    # CLI values beat the compute profile.
+    for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every", "eval_every"):
+        v = getattr(args, name, None)
+        if v is not None:
+            updates[name] = v
+    if args.max_steps is not None:
+        for name in ("ckpt_every", "eval_every"):
+            if name in updates:
+                updates[name] = min(updates[name], args.max_steps)
     return dataclasses.replace(cfg, **updates)
 
 
@@ -105,6 +117,18 @@ def main(argv=None) -> int:
                     help="teacher checkpoint to initialize WEIGHTS from, with a "
                          "fresh optimizer + schedule (fine-tuning; contrast "
                          "--resume which restores optimizer/step too)")
+    ap.add_argument("--init-ema", dest="init_ema", action="store_true", default=True,
+                    help="(default) --init-weights starts from the checkpoint's EMA "
+                         "weights — the artifact eval/deploy actually use")
+    ap.add_argument("--no-init-ema", dest="init_ema", action="store_false",
+                    help="start the fine-tune from the raw (last-step) weights")
+    ap.add_argument("--lr", type=float, default=None, help="peak LoRA LR (config default 1e-4)")
+    ap.add_argument("--lr-new-modules", type=float, default=None,
+                    help="peak LR for HHT/ACC/heads (config default 3e-4)")
+    ap.add_argument("--warmup-steps", type=int, default=None,
+                    help="linear warmup steps (default min(500, max_steps//10))")
+    ap.add_argument("--ckpt-every", type=int, default=None, help="checkpoint cadence (default 1000)")
+    ap.add_argument("--eval-every", type=int, default=None, help="val cadence (default 1000)")
     ap.add_argument("--resume", default="",
                     help="teacher checkpoint to resume from: restores lora+phantom "
                          "weights, optimizer, scheduler, EMA and the step counter, "
@@ -167,7 +191,10 @@ def main(argv=None) -> int:
     if args.init_weights:
         assert not args.resume, "--init-weights and --resume are exclusive"
         assert not args.tactile_pretrain, "--init-weights already carries the tactile encoder"
-        init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw)
+        init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw,
+                                                 load_ema=args.init_ema)
+        log.info("--init-weights %s from %s weights", args.init_weights,
+                 "EMA" if args.init_ema else "RAW")
         saved_mc = init_payload["configs"]["model"]
         if saved_mc != mc.to_dict():
             # same shapes can hide a silent behavioral change (acc two_pass ->

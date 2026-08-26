@@ -94,7 +94,11 @@ class DeploymentRuntime:
         meta = EpisodeMeta(task=task, text=text or task, tags=list(tags or []),
                            policy=policy_name or self.mode,
                            dagger_round=dagger_round)
-        ep_name = f"ep_{self.mode}_{task}_{int(time.time())}"
+        # 1 s wall-clock resolution alone collided on fast retries (gate
+        # reject -> relaunch inside the same second) and appended the second
+        # episode onto the first zarr; a per-runtime sequence makes it unique
+        self._ep_seq = getattr(self, "_ep_seq", -1) + 1
+        ep_name = f"ep_{self.mode}_{task}_{int(time.time())}_{self._ep_seq:03d}"
         ep_path = self.recorder.start(meta, ep_name)
         if hasattr(self.policy, "reset_episode"):
             self.policy.reset_episode()
