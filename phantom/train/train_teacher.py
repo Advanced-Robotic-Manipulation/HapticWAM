@@ -129,6 +129,11 @@ def main(argv=None) -> int:
                     help="linear warmup steps (default min(500, max_steps//10))")
     ap.add_argument("--ckpt-every", type=int, default=None, help="checkpoint cadence (default 1000)")
     ap.add_argument("--eval-every", type=int, default=None, help="val cadence (default 1000)")
+    ap.add_argument("--event-band-weight", type=float, default=None,
+                    help="weight of the packed contact-EVENT band MSE (default: the "
+                         "config's event weight, 0.5). Use 0 when fine-tuning a "
+                         "checkpoint trained before that term existed — it starts "
+                         "~0.9 vs action_v_mse ~0.1 and would dominate a low-LR run")
     ap.add_argument("--allow-skipped-episodes", action="store_true",
                     help="tolerate manifest episodes that yield no training windows")
     ap.add_argument("--resume", default="",
@@ -246,6 +251,10 @@ def main(argv=None) -> int:
                         raise SystemExit(f"--init-weights norm_stats[{k}].{which} differ from "
                                          f"the fine-tune data root's norm_stats.json — the "
                                          f"checkpoint's normalization would not match the data")
+    if args.event_band_weight is not None:
+        pm.rf.event_band_weight = args.event_band_weight
+        log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
+                 args.event_band_weight, pm.mc.loss.event)
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
