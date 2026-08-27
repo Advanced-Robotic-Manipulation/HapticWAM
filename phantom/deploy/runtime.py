@@ -21,7 +21,8 @@ import numpy as np
 from phantom.config.hardware import HardwareConfig
 from phantom.data.schema import EpisodeMeta
 from phantom.deploy.executor import ChunkExecutor
-from phantom.deploy.planner import PlannerLoop, SnapshotBuilder
+from phantom.deploy.planner import (PlannerLoop, SnapshotBuilder,
+                                    snapshot_stop_reason)
 from phantom.deploy.safety import SafetyMonitor
 from phantom.drivers.factory import make_rig
 from phantom.inference.policy import PhantomPolicy
@@ -32,21 +33,58 @@ from phantom.timesync.clock import IdentityClock, MasterClock
 log = logging.getLogger(__name__)
 
 
-def _wait_rings_warm(snapshots: SnapshotBuilder, timeout_s: float = 10.0) -> None:
+# Floor on the ring warm-up budget, independent of any camera model.
+_WARMUP_FLOOR_S = 20.0
+_WARMUP_MARGIN_S = 5.0
+_WARMUP_LOG_PERIOD_S = 2.0
+
+
+def warmup_timeout_s() -> float:
+    """How long to wait for the rings to fill before giving up.
+
+    Derived from the scene camera driver, not guessed: RealSenseCamera tolerates
+    _REBUILD_AFTER_TIMEOUTS blocking wait_for_frames() timeouts (5 s each, the
+    pyrealsense2 default) before it rebuilds the pipeline, so a camera that
+    heals itself can take ~17 s to deliver its FIRST frame. The old flat 10 s
+    aborted at two thirds of that first rebuild — the episode died with
+    "no camera frames yet" while the driver was still recovering normally
+    (rig 2026-08-27)."""
+    from phantom.drivers.real.realsense import first_frame_budget_s
+    return max(_WARMUP_FLOOR_S, first_frame_budget_s() + _WARMUP_MARGIN_S)
+
+
+def _wait_rings_warm(snapshots: SnapshotBuilder, timeout_s: float | None = None) -> None:
     """Block until every ring the snapshot reads has its first sample.
 
     The real rig streams long before an operator starts an episode, but the
     first episode right after connect — and any mock-driver dry run, where
     the session and the episode start together — races the workers' first
     frames."""
+    if timeout_s is None:
+        timeout_s = warmup_timeout_s()
     deadline = time.monotonic() + timeout_s
+    next_log = time.monotonic()
+    log.info("waiting up to %.0fs for the sensor rings to warm "
+             "(one RealSense pipeline rebuild fits inside this budget)...",
+             timeout_s)
     while True:
         try:
             snapshots.build()
             return
-        except (AssertionError, IndexError):
-            if time.monotonic() >= deadline:
+        except (AssertionError, IndexError) as e:
+            now = time.monotonic()
+            # say WHAT is missing: "no camera frames yet" vs "no gripper state
+            # yet" point at completely different hardware, and the operator was
+            # previously given only a bare traceback at the deadline
+            waiting_on = str(e).splitlines()[0] if str(e) else type(e).__name__
+            if now >= deadline:
+                log.error("rings did not warm within %.0fs — still waiting on: "
+                          "%s", timeout_s, waiting_on)
                 raise
+            if now >= next_log:
+                log.info("ring warm-up (%.0fs left): waiting on %s",
+                         deadline - now, waiting_on)
+                next_log = now + _WARMUP_LOG_PERIOD_S
             time.sleep(0.05)
 
 
@@ -157,15 +195,29 @@ class DeploymentRuntime:
         saved = None
         trace_path = None
         try:
-            _wait_rings_warm(snapshots)
+            try:
+                _wait_rings_warm(snapshots)
 
-            if hw.wrist_ft.bias_on_episode_start:
-                try:
-                    self.rig.arm.zero_ft()
-                except Exception:
-                    log.exception("zero_ft failed (continuing)")
+                if hw.wrist_ft.bias_on_episode_start:
+                    try:
+                        self.rig.arm.zero_ft()
+                    except Exception:
+                        log.exception("zero_ft failed (continuing)")
 
-            planner.run(max_replans=max_replans)
+                planner.run(max_replans=max_replans)
+            except AssertionError as e:
+                # Last net for the snapshot's hard requirements (PlannerLoop.run
+                # catches its own; this covers _wait_rings_warm timing out and
+                # any future caller of build() in here). Escaping this frame
+                # cost the operator the label prompt and left an empty episode
+                # directory behind, with the failure surfacing as an rc-1
+                # traceback from run_deploy (rig 2026-08-27).
+                reason = snapshot_stop_reason(e)
+                log.error("episode aborted before/around the planner loop (%s): "
+                          "%s — ending it through the normal stop path so the "
+                          "trace is saved and the episode can be labelled",
+                          reason, e)
+                executor.request_stop(reason)
         finally:
             planner.stop()
             executor.stop()

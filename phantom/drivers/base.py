@@ -247,10 +247,24 @@ class Camera(ABC):
     # -- health contract (a wedged camera must never look like a working one) --
     @property
     def healthy(self) -> bool:
-        """False once the driver KNOWS its stream is unrecoverable. Drivers
+        """False whenever the driver is not currently serving frames. Drivers
         that can wedge (RealSenseCamera) override this; a frozen stream is
-        otherwise indistinguishable from a slow one."""
+        otherwise indistinguishable from a slow one.
+
+        NOT a death signal: it is also False during a recoverable rebuild (the
+        RealSense driver retries a USB stall up to _REBUILD_MAX_ATTEMPTS times
+        and routinely comes back). Use `dead_reason` to decide whether to kill
+        a worker or a session."""
         return True
+
+    @property
+    def dead_reason(self) -> str | None:
+        """Non-None once the driver KNOWS its stream is unrecoverable IN THIS
+        PROCESS — i.e. its own bounded self-healing has given up.
+
+        This is the signal a poller/session may act on: `healthy` False is a
+        stall the driver may still heal, `dead_reason` set never heals."""
+        return None
 
     def last_frame_age(self) -> float:
         """Seconds since the last frame this driver actually produced (inf

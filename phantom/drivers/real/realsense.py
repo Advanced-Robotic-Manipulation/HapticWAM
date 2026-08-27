@@ -28,6 +28,23 @@ _REBUILD_AFTER_TIMEOUTS = 3
 _REBUILD_MAX_ATTEMPTS = 6
 _REBUILD_BACKOFF_S = 0.5       # doubles per consecutive failure
 _REBUILD_BACKOFF_MAX_S = 5.0
+# pyrealsense2's default wait_for_frames() timeout. The driver does not pass
+# one, so every tolerated timeout below costs a full 5 s of BLOCKING wall clock
+# inside the camera poller.
+FRAME_TIMEOUT_S = 5.0
+
+
+def first_frame_budget_s() -> float:
+    """Worst-case seconds between connect() and the first frame reaching the
+    ring, for a camera that heals itself.
+
+    _REBUILD_AFTER_TIMEOUTS blocking wait_for_frames() timeouts at
+    FRAME_TIMEOUT_S each, then one backoff and one pipeline rebuild (a
+    pipeline.start() on a freed device is ~1-2 s). Callers that wait on the
+    camera ring must budget at least this much or they abort a camera that was
+    about to come back — the 10 s ring warm-up in deploy/runtime.py used to
+    time out at 2/3 of the FIRST rebuild (rig 2026-08-27)."""
+    return _REBUILD_AFTER_TIMEOUTS * FRAME_TIMEOUT_S + _REBUILD_BACKOFF_S + 2.0
 
 
 class RealSenseCamera(Camera):
@@ -84,8 +101,17 @@ class RealSenseCamera(Camera):
     # ------------------------------------------------------------------
     @property
     def healthy(self) -> bool:
-        """False once the pipeline is gone and the bounded rebuild gave up."""
+        """False while no live pipeline is serving frames — which includes the
+        RECOVERABLE window between a failed rebuild and the next attempt."""
         return self._dead_reason is None and self._pipe is not None
+
+    @property
+    def dead_reason(self) -> str | None:
+        """Non-None once the bounded rebuild gave up: this camera will never
+        produce another frame in this process. The camera poller exits on it so
+        the wedged device surfaces as a dead worker (session-fatal) instead of
+        an endless 10 Hz retry against a ring nothing writes (rig 2026-08-27)."""
+        return self._dead_reason
 
     def last_frame_age(self) -> float:
         """Seconds since the last frame actually read (inf before the first).

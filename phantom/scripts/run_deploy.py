@@ -98,7 +98,21 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
 # episode would home-fail, start on a hand-jogged OOD pose and record 1-2
 # zero-motion replans (audit 2026-08-26). docs/deployment_runtime.md's
 # protective-stop recovery is implemented here.
-_CONTROL_DEAD_REASONS = ("protective_stop", "executor_crash", "motion_stall")
+# `safety_stop` joins them (audit 2026-08-27): the STOP_EPISODE path calls
+# URArm.stop(), whose stopL failure is SWALLOWED as a log line, and one of the
+# conditions that raises it is `arm_stale` — a dead RTDE stream. Verifying the
+# control script before the next episode costs one is_ready_for_control() call
+# on a healthy robot and nothing else.
+# `servo_stop_failed` is the executor telling us servoStop() failed against a
+# script that is still playing: `URArm._servo_active` is stuck True, so the
+# next homing move_l would be refused outright. reconnect_control() replaces
+# the script and clears the guard (ur.py invariant), which is exactly the fix.
+# `worker_died` is here for completeness of the predicate — a dead sensor
+# worker is ALSO session-fatal, so main() returns 5 before it could ever reuse
+# the arm; any other caller asking "is the control script suspect?" should
+# still get True.
+_CONTROL_DEAD_REASONS = ("protective_stop", "executor_crash", "motion_stall",
+                         "servo_stop_failed", "safety_stop", "worker_died")
 _RECONNECT_TRIES = 3
 _SCRIPT_START_TIMEOUT_S = 5.0
 
@@ -279,7 +293,9 @@ def main(argv=None) -> int:
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
                 # -- stage 0: restore control after a protective stop -------
-                if prev_reason in _CONTROL_DEAD_REASONS:
+                recovered_from = (prev_reason
+                                  if prev_reason in _CONTROL_DEAD_REASONS else None)
+                if recovered_from is not None:
                     if not recover_control(rt.rig.arm, prev_reason):
                         log.error("RTDE control could NOT be recovered — "
                                   "refusing to start %s. Everything after this "
@@ -297,6 +313,21 @@ def main(argv=None) -> int:
                         sp.move_to_start(rt.rig.arm, rt.rig.gripper, hw, stats,
                                          rng=rng)
                     except Exception:
+                        if recovered_from is not None:
+                            # We JUST rebuilt the control script and verified it
+                            # is playing, and move_l still failed: the arm is
+                            # not controllable in a way this process can fix
+                            # (sticky servo guard, Local mode, IK reject).
+                            # Continuing here is what turned one bad episode
+                            # into a whole campaign of hand-jogged OOD starts —
+                            # refuse instead of logging (audit 2026-08-27).
+                            log.exception(
+                                "homing move FAILED right after RTDE control "
+                                "was rebuilt for %r — the arm is not "
+                                "controllable from this process. Refusing %s. "
+                                "Check the pendant (Local mode?) and restart "
+                                "run_deploy.", recovered_from, ep_tag)
+                            return 4
                         log.exception("homing move FAILED (protective stop / "
                                       "Local mode / no move_l?) — jog the arm "
                                       "to the pose below by hand; the gate "
