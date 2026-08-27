@@ -125,9 +125,17 @@ def event_band_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor, layout,
     return d.mean()
 
 
-def total_loss(parts: dict[str, torch.Tensor], w: LossWeights) -> torch.Tensor:
+def total_loss(parts: dict[str, torch.Tensor], w: LossWeights,
+               event_band_weight: float | None = None) -> torch.Tensor:
+    # event_band_weight: train-time override for the packed-event-band MSE
+    # (defaults to w.event). A checkpoint trained before that term existed
+    # starts at contact_event_mse ~0.9 vs action_v_mse ~0.1 (H100 probe
+    # 2026-08-27), so a low-LR fine-tune of it should run this at 0 (or tiny)
+    # to keep the gradient budget on the action objective; from-scratch runs
+    # keep the default.
+    w_band = w.event if event_band_weight is None else float(event_band_weight)
     total = (w.action * parts["action_v_mse"]
-             + w.event * parts.get("contact_event_mse", torch.zeros(())).to(
+             + w_band * parts.get("contact_event_mse", torch.zeros(())).to(
                  parts["action_v_mse"].device)
              + w.contact * parts["contact_nll"]
              + w.event * parts["event_ce"]

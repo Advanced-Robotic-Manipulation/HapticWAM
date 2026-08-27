@@ -144,3 +144,18 @@ def test_intake_manifest_skips_non_finalized(tmp_path):
     IR.manifest(tasks, mf)
     rows = [json.loads(l) for l in mf.read_text().splitlines() if l.strip()]
     assert [r["episode"] for r in rows] == ["ep_ok"]
+
+
+def test_event_band_weight_override(tiny):
+    hw, pm, ds = tiny
+    batch = C.collate_windows([ds[0], ds[1]])
+    pm.rf.train()
+    p0 = pm.rf.training_step(batch)
+    pm.rf.event_band_weight = 0.0
+    p1 = pm.rf.training_step(batch)
+    del pm.rf.event_band_weight
+    w = pm.mc.loss
+    # same batch, same draws are not guaranteed; check the accounting identity instead
+    assert torch.isfinite(p1["total"])
+    expect = p1["total"] + w.event * p1["contact_event_mse"]
+    assert torch.allclose(L.total_loss(p1, w), expect, atol=1e-5)

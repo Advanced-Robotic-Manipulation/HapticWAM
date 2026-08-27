@@ -333,7 +333,8 @@ class PhantomRectifiedFlow(nn.Module):
             parts.update(L.acc_losses(out.acc, batch["gate_label"].to(dev),
                                       batch["events"][:, 0].to(dev),
                                       self.mc.acc.alpha_entropy_weight))
-        parts["total"] = L.total_loss(parts, self.mc.loss)
+        parts["total"] = L.total_loss(parts, self.mc.loss,
+                                      event_band_weight=getattr(self, "event_band_weight", None))
         return parts
 
     # ------------------------------------------------------------------
