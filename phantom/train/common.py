@@ -4,6 +4,8 @@ programs. Plain PyTorch — no imaginaire trainer (user decision)."""
 
 from __future__ import annotations
 
+import contextlib
+
 import json
 import logging
 import os
@@ -675,6 +677,21 @@ def evaluate_sampled(rf, val_ds, norm_action_mean, norm_action_std,
     }
 
 
+class _StepModule(torch.nn.Module):
+    """Makes a program's step_fn the FORWARD of a module that owns the
+    program's parameters, so DistributedDataParallel can wrap it: DDP arms
+    its gradient all-reduce in forward(), and step_fn keeps calling the
+    inner module's training_step exactly as before."""
+
+    def __init__(self, inner: torch.nn.Module, step_fn):
+        super().__init__()
+        self.inner = inner
+        self._step_fn = step_fn
+
+    def forward(self, batch):
+        return self._step_fn(batch)
+
+
 def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoader,
                step_fn, *, on_checkpoint=None, val_loader: DataLoader | None = None,
                eval_step_fn=None, sampled_eval_fn=None,
@@ -694,12 +711,21 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     rank, world = setup_ddp()
     device = cfg.device if torch.cuda.is_available() or cfg.device == "cpu" else "cpu"
     model = model.to(device)
+    base = model                       # the program's module (checkpoints, EMA)
+    run_step, sync_ctx = step_fn, None
     if world > 1:
-        model = torch.nn.parallel.DistributedDataParallel(
-            model, find_unused_parameters=True)
+        # DDP only all-reduces gradients for a backward whose FORWARD went
+        # through the wrapper. Every program's step_fn calls its own module's
+        # training_step directly, so the wrapper below routes that call
+        # through DDP.forward; calling step_fn on the bare module (the old
+        # code) gave N independent single-GPU runs (found 2026-08-26).
+        ddp = torch.nn.parallel.DistributedDataParallel(
+            _StepModule(base, step_fn), find_unused_parameters=True)
+        run_step, sync_ctx = ddp, ddp.no_sync
+        model = ddp
     opt = make_optimizer(model, cfg)
     sched = make_scheduler(opt, cfg)
-    ema = EMA(model.module if world > 1 else model, cfg.ema_decay)
+    ema = EMA(base, cfg.ema_decay)
 
     start_step = 0
     if resume_payload is not None:
@@ -721,7 +747,6 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     # the rectified-flow model keeps its own Generator for (t, eps, cond-drop)
     # draws; it was seeded to 0 regardless of cfg.seed/rank, so DDP ranks
     # shared one noise stream (found 2026-08-26)
-    base = model.module if world > 1 else model
     if hasattr(base, "_gen"):
         base._gen.manual_seed(cfg.seed + 1000 * rank + start_step)
 
@@ -731,7 +756,7 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
     while step < cfg.max_steps:
         opt.zero_grad(set_to_none=True)
         logs: dict[str, float] = {}
-        for _ in range(cfg.grad_accum):
+        for micro in range(cfg.grad_accum):
             try:
                 batch = next(it)
             except StopIteration:
@@ -742,8 +767,11 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
                     loader.dataset.epoch = epoch      # fresh per-worker numpy streams
                 it = iter(loader)
                 batch = next(it)
-            parts = step_fn(batch)
-            (parts["total"] / cfg.grad_accum).backward()
+            # under DDP skip the all-reduce on every micro-batch but the last
+            last = micro == cfg.grad_accum - 1
+            with (sync_ctx() if (sync_ctx is not None and not last) else contextlib.nullcontext()):
+                parts = run_step(batch)
+                (parts["total"] / cfg.grad_accum).backward()
             for k, v in parts.items():
                 if torch.is_tensor(v) and v.ndim == 0:
                     logs[k] = logs.get(k, 0.0) + float(v.detach()) / cfg.grad_accum
@@ -751,7 +779,7 @@ def train_loop(cfg: CommonTrainConfig, model: torch.nn.Module, loader: DataLoade
             [p for p in model.parameters() if p.requires_grad], cfg.grad_clip)
         opt.step()
         sched.step()
-        ema.update(model.module if world > 1 else model)
+        ema.update(base)
         step += 1
         if step % cfg.log_every == 0:
             if world > 1 and logs:
