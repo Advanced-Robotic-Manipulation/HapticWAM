@@ -21,6 +21,9 @@ class MockCamera(Camera):
         self._seq = 0
         self._connected = False
         self._last_frame_t = 0.0     # parity: Camera.last_frame_age() reads it
+        # parity with RealSenseCamera: a mock camera never wedges on its own,
+        # but a dry run / test can set this to exercise the dead-worker path
+        self._dead_reason: str | None = None
 
     def connect(self) -> None:
         self._t0 = time.perf_counter()
@@ -32,7 +35,11 @@ class MockCamera(Camera):
 
     @property
     def healthy(self) -> bool:
-        return self._connected
+        return self._connected and self._dead_reason is None
+
+    @property
+    def dead_reason(self) -> str | None:
+        return self._dead_reason
 
     def render(self, t_scenario: float, t_host: float) -> CameraFrame:
         h, w, c = self.cfg.color.hwc
@@ -54,6 +61,8 @@ class MockCamera(Camera):
         return frame
 
     def read(self) -> CameraFrame:
+        if self._dead_reason is not None:      # parity with RealSenseCamera
+            raise RuntimeError(f"camera {self.name} is dead: {self._dead_reason}")
         if not self._connected:
             raise RuntimeError("read() before connect()")
         period = 1.0 / self.cfg.fps

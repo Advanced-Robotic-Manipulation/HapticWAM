@@ -54,6 +54,7 @@ EpisodeRecorder ◀── drains all rings every 0.25 s ──────┘   
 | peak fingertip f_z > `tactile_fz_limit_N` (calibrated) / indentation > `tactile_depth_limit` (fallback) | tactile rings | controlled stop, episode aborted |
 | tactile ring stale (sensor stall) | ring freshness | controlled stop, episode aborted |
 | `camera_scene` ring stale > `safety.camera_stale_s(hw)` (wedged RealSense) | ring freshness | controlled stop, episode aborted (`safety_stop`) |
+| `arm` ring stale > `safety.arm_stale_s(hw)` (dead RTDE-receive worker / stalled stream) | ring freshness | controlled stop, episode aborted (`safety_stop`); `tcp_pose`, `tcp_speed`, the F/T window and the protective-stop flag all freeze together, so nothing below this row is trustworthy |
 | TCP target outside `safety.workspace_m` | commanded target | clamp to the box, continue (logged) |
 | protective stop | RTDE flag | executor exits (`protective_stop`); see recovery below |
 
@@ -64,21 +65,53 @@ edge, then at most 1 Hz while it holds, with the tick count on the event —
 so `EpisodeResult.safety_events` counts problems, not executor ticks, and the
 2 ms servo loop is not doing 500 stderr writes a second.
 
-`SnapshotBuilder.build()` carries the same camera-freshness threshold as a
-hard assert (like the gripper-state assert), so a frozen scene stream can
-never condition a replan even with no SafetyMonitor in the loop.
+`SnapshotBuilder.build()` carries the same camera- and arm-freshness thresholds
+as hard requirements (like the gripper-state one), so a frozen scene stream or a
+frozen robot state can never condition a replan even with no SafetyMonitor in
+the loop. They raise `planner.StaleStreamError` (an `AssertionError` subclass,
+so ring warm-up still treats it as "not ready yet"), carrying the stop reason
+the planner/runtime convert it into — `camera_scene_stale`, `arm_stale`,
+`gripper_stale`. The episode then ends through the NORMAL stop path: the
+executor is halted, the planner trace is written, and the operator still gets
+the success/notes prompt. Before 2026-08-27 these escaped `run_episode` as an
+rc-1 traceback and left an empty episode directory with no label.
+
+`EpisodeResult.stopped_reason` values and what run_deploy does with each:
+
+| reason | meaning | run_deploy |
+|---|---|---|
+| `protective_stop` | UR protective stop (control script dead) | rebuild control before the next episode |
+| `safety_stop` | SafetyMonitor STOP_EPISODE (wrench, tactile, `arm_stale`, `camera_scene_stale`) | rebuild control before the next episode |
+| `motion_stall` / `executor_crash` | arm not following / servo thread died | rebuild control before the next episode |
+| `servo_stop_failed` | `servoStop()` failed against a script that is still playing — `_servo_active` is stuck, homing `move_l` would be refused | rebuild control before the next episode (the rebuild clears the guard) |
+| `camera_scene_stale` / `arm_stale` / `gripper_stale` / `snapshot_invalid` | planner-side snapshot rejection | episode ends cleanly, labelled as usual |
+| `worker_died` | a sensor/arm worker thread or process is gone (includes a RealSense whose bounded rebuild gave up: its poller exits) | **session-fatal**, exit code 5 |
+| `executor_join_timeout` | a stale executor/gripper thread still owns the device | **session-fatal**, exit code 5 |
+
+Ring warm-up at episode start (`runtime.warmup_timeout_s()`) is derived from
+`drivers/real/realsense.first_frame_budget_s()` — the driver tolerates three
+5 s `wait_for_frames()` timeouts before rebuilding the pipeline, so a camera
+that is healing itself needs ~17 s to produce its first frame. The old flat
+10 s budget aborted the episode mid-recovery.
 
 ## Protective-stop recovery
 
 1. Clear the fault on the pendant (Enable robot).
 2. The RTDE control session is dead. `run_deploy` handles this between
-   episodes: when the previous episode ended with `protective_stop`,
-   `executor_crash` or `motion_stall` it blocks on
+   episodes: when the previous episode ended with any of
+   `_CONTROL_DEAD_REASONS` (`protective_stop`, `executor_crash`,
+   `motion_stall`, `servo_stop_failed`, `safety_stop`) it blocks on
    `URArm.is_ready_for_control()` (prompting until the pendant is clear),
    calls `URArm.reconnect_control()`, and verifies the new control script is
    actually **running** before homing the next episode. If it cannot recover
    in 3 attempts the campaign stops with exit code 4 rather than running
    zero-motion episodes. Mid-episode, the trial is finished as failed.
+   If the start-pose homing `move_l` then fails anyway — right after the script
+   was rebuilt and verified playing — the campaign also stops with exit code 4:
+   the arm is not controllable from this process (Local mode, sticky servo
+   guard, IK reject), and continuing is what produced whole campaigns of
+   hand-jogged OOD starts. A homing failure with no preceding recovery keeps
+   the old tolerant behaviour (jog by hand; the start gate re-checks).
 3. Re-zero F/T (`0` in teleop, automatic at episode start otherwise).
 
 `URArm` invariant: `_servo_active` is true only while a servo session may be

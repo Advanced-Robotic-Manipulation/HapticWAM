@@ -28,6 +28,35 @@ SYSTEM_MODES = ("teacher", "student", "vision_only", "no_distill", "drop_tactile
 TACTILE_INPUT_MODES = ("teacher",)   # modes whose MODEL consumes tactile streams
 
 
+class StaleStreamError(AssertionError):
+    """A ring the snapshot HARD-REQUIRES is stale (or not flowing yet).
+
+    Subclasses AssertionError deliberately: `_wait_rings_warm` treats it as
+    "not warm yet" during start-up and every existing caller that catches
+    AssertionError keeps working unchanged.
+
+    `reason` is the executor stop reason it becomes once the episode is under
+    way. Before 2026-08-27 these were bare asserts: raised mid-episode from
+    inside `SnapshotBuilder.build()` they escaped `run_episode`'s try/finally
+    and reached run_deploy as an rc-1 traceback — no operator label prompt, and
+    an episode directory left behind with nothing in it. They now end the
+    episode through the SAME path as any other stop (executor halted, trace
+    written, label prompt shown)."""
+
+    def __init__(self, reason: str, message: str):
+        super().__init__(message)
+        self.reason = reason
+
+
+def snapshot_stop_reason(exc: BaseException) -> str:
+    """Executor stop reason for a snapshot that could not be built.
+
+    Anything that is not a StaleStreamError (a plain assert somewhere in
+    build(), a malformed ring row) still ends the episode cleanly rather than
+    crashing the process — it just gets the generic reason."""
+    return getattr(exc, "reason", "snapshot_invalid")
+
+
 class SnapshotBuilder:
     def __init__(self, hw: HardwareConfig, session: SensorSession, mode: str):
         assert mode in SYSTEM_MODES, f"unknown system mode {mode}"
@@ -52,7 +81,8 @@ class SnapshotBuilder:
 
         cam_name = "camera_scene"
         ts, cam = rings[cam_name].latest(1)
-        assert len(ts), "no camera frames yet"
+        if not len(ts):
+            raise StaleStreamError("camera_scene_stale", "no camera frames yet")
         # Freshness is a HARD requirement, like the gripper state below: a
         # wedged RealSense pipeline leaves this ring frozen on the pre-stall
         # frame and every later plan would be conditioned on it with nothing
@@ -61,10 +91,12 @@ class SnapshotBuilder:
         # the episode loudly. SafetyMonitor carries the same threshold and stops
         # the executor first, within one tick.
         cam_age = t_now - float(ts[0])
-        assert cam_age < self._cam_stale_s, (
-            f"camera_scene stale by {cam_age:.2f}s (>{self._cam_stale_s:.2f}s) — "
-            "the scene pipeline is wedged; the policy must not replan on a "
-            "frozen frame")
+        if cam_age >= self._cam_stale_s:
+            raise StaleStreamError(
+                "camera_scene_stale",
+                f"camera_scene stale by {cam_age:.2f}s (>{self._cam_stale_s:.2f}s) — "
+                "the scene pipeline is wedged; the policy must not replan on a "
+                "frozen frame")
         rgb = cam["color"][0]
 
         ts_a, arm = rings["arm"].latest(self._n_arm)
@@ -74,12 +106,15 @@ class SnapshotBuilder:
         # where the snapshot says. SafetyMonitor carries the same threshold and
         # stops the executor within one tick; _wait_rings_warm treats the
         # AssertionError as "not warm yet" during start-up.
-        assert len(ts_a), "no arm samples yet"
+        if not len(ts_a):
+            raise StaleStreamError("arm_stale", "no arm samples yet")
         arm_age = t_now - float(ts_a[-1])
-        assert arm_age < self._arm_stale_s, (
-            f"arm ring stale by {arm_age:.2f}s (>{self._arm_stale_s:.2f}s) — "
-            "the RTDE receive stream is dead; the policy must not replan on a "
-            "frozen robot state")
+        if arm_age >= self._arm_stale_s:
+            raise StaleStreamError(
+                "arm_stale",
+                f"arm ring stale by {arm_age:.2f}s (>{self._arm_stale_s:.2f}s) — "
+                "the RTDE receive stream is dead; the policy must not replan on a "
+                "frozen robot state")
 
         # Wrist F/T window, TRAINING PARITY (Codex review 2026-08-27):
         # WindowSampler.sample() resamples the recorded F/T stream onto
@@ -110,7 +145,8 @@ class SnapshotBuilder:
         # polled the gripper, so every rig episode ran on this substitute).
         # _wait_rings_warm covers the startup window; a raise after that
         # means the gripper feed stalled and the episode must end loudly.
-        assert len(grip["state"]), "no gripper state yet"
+        if not len(grip["state"]):
+            raise StaleStreamError("gripper_stale", "no gripper state yet")
         gr = grip["state"][0]
         ur_state = np.concatenate([
             arm1["q"][0], arm1["qd"][0], arm1["tcp_pose"][0], arm1["tcp_speed"][0], gr,
@@ -188,7 +224,20 @@ class PlannerLoop:
             # path, not through the staleness assert inside build().
             if self._executor_stopped() or self._workers_dead():
                 break
-            snap = self.snapshots.build()
+            try:
+                snap = self.snapshots.build()
+            except AssertionError as e:
+                # A hard-required ring went stale mid-episode (the SafetyMonitor
+                # usually gets there first, within one executor tick, but the
+                # planner must not depend on that). Turn it into a normal stop:
+                # letting it propagate killed run_episode's return path, so the
+                # operator lost the label prompt and the episode directory was
+                # left empty (rig 2026-08-27).
+                reason = snapshot_stop_reason(e)
+                log.error("snapshot rejected mid-episode (%s): %s — ending the "
+                          "episode through the normal stop path", reason, e)
+                self.executor.request_stop(reason)
+                break
             tcp_pose = snap.ur_state[2 * self.hw.arm.dof:2 * self.hw.arm.dof + 6]
             cmd = self.executor.last_cmd()
             if prev_cmd is not None and cmd is not None and prev_tcp is not None:

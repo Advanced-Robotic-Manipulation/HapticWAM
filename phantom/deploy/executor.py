@@ -365,7 +365,21 @@ class ChunkExecutor:
         try:
             self.arm.servo_stop()
         except Exception:
-            log.exception("servo_stop failed")
+            # URArm.servo_stop() only re-raises when the control script is
+            # STILL RUNNING (a dead script clears the guard itself, per the
+            # ur.py invariant): the servo stream may genuinely still be live,
+            # so `_servo_active` stays set and every later move_l — i.e. the
+            # next episode's start-pose homing — is refused. Swallowed as a log
+            # line, that downgraded the whole rest of the campaign to
+            # hand-jogged OOD starts (rig 2026-08-27). Surface it as a stop
+            # reason run_deploy treats as control-dead, so the RTDE control
+            # script is rebuilt (which clears the guard) before the next
+            # episode. First-writer-wins: a real episode stop reason
+            # (protective_stop, ...) is never overwritten by this.
+            log.exception("servo_stop failed — the servo session may still be "
+                          "live on a running control script; the arm's move_l "
+                          "guard stays up until the script is rebuilt")
+            self._set_reason("servo_stop_failed")
 
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()

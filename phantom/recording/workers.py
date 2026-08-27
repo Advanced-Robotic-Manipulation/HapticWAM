@@ -329,22 +329,49 @@ class TactileWorker:
 # ---------------------------------------------------------------------------
 
 class ThreadPoller:
-    def __init__(self, name: str, rate_hz: float, poll_fn, ring: SharedRingBuffer):
+    def __init__(self, name: str, rate_hz: float, poll_fn, ring: SharedRingBuffer,
+                 *, dead_fn=None):
         self.name = name
         self.rate_hz = rate_hz
         self.poll_fn = poll_fn
         self.ring = ring
+        # Optional device-death probe: returns a reason string once the DRIVER
+        # knows it will never produce another sample in this process (bounded
+        # self-healing exhausted), None otherwise. The poller's retry loop is
+        # unbounded by design — a driver that heals itself must not lose its
+        # worker over a stall — so a permanently wedged device would otherwise
+        # retry forever against a ring nobody writes, and all_alive() (which
+        # only sees thread liveness) would keep reporting the session healthy.
+        self.dead_fn = dead_fn
+        self.dead_reason: str | None = None
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True, name=f"poll-{name}")
+
+    def _check_dead(self) -> bool:
+        if self.dead_fn is None:
+            return False
+        reason = self.dead_fn()
+        if not reason:
+            return False
+        self.dead_reason = str(reason)
+        log.error("poller %s: the device is DEAD (%s) — exiting the worker "
+                  "thread. Its ring now has no writer, so the session is over: "
+                  "the episode stops as `worker_died` and run_deploy refuses to "
+                  "start another one in this process.", self.name, self.dead_reason)
+        return True
 
     def _run(self) -> None:
         period = 1.0 / self.rate_hz
         next_t = time.perf_counter()
         while not self._stop.is_set():
+            if self._check_dead():
+                return
             try:
                 t_host, values = self.poll_fn()
                 self.ring.push(t_host, **values)
             except Exception:
+                if self._check_dead():
+                    return
                 log.exception("poller %s failed; retrying", self.name)
                 time.sleep(0.1)
             next_t += period
@@ -396,7 +423,13 @@ def make_camera_poller(camera, name: str, fps: float, ring: SharedRingBuffer) ->
     def poll():
         f = camera.read()   # blocking read paces itself; poller rate is a backstop
         return f.t_host, dict(color=f.color)
-    return ThreadPoller(f"camera_{name}", fps * 2, poll, ring)
+
+    # `dead_reason`, not `healthy`: healthy is also False during the driver's
+    # own bounded pipeline rebuild, which usually SUCCEEDS (a USB stall on the
+    # DmTac hub). Killing the worker there would end a rig session over a
+    # recoverable stall. dead_reason is set only once the rebuild gave up.
+    return ThreadPoller(f"camera_{name}", fps * 2, poll, ring,
+                        dead_fn=lambda: getattr(camera, "dead_reason", None))
 
 
 # ---------------------------------------------------------------------------
