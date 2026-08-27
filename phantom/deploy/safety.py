@@ -52,6 +52,25 @@ def camera_stale_s(hw: HardwareConfig) -> float:
     return max(0.5, 10.0 / hw.cameras.scene.fps)
 
 
+def arm_stale_s(hw: HardwareConfig) -> float:
+    """How old the newest arm sample may be before the episode is stopped.
+
+    The arm ring is the ONLY source of tcp_pose, tcp_speed, the wrist F/T
+    window and the protective-stop flag. If the RTDE-receive worker dies or
+    its stream stalls, the ring keeps serving the pre-stall sample and the
+    policy replans, the governor scales and the wrench guard all run on a
+    frozen robot state with nothing detecting it (Codex review 2026-08-27) —
+    the same failure the camera guard above was written for.
+
+    Same shape as camera_stale_s: a generous floor over a rate-derived bound.
+    The 0.5 s floor is 250 missed samples at the 500 Hz e-series default (62
+    on a cb3 at 125 Hz) — deliberately loose so a GIL-starved mock poller or a
+    scheduling hiccup never false-trips, while the real condition (a dead
+    worker process / a lost RTDE stream) is unbounded. Below 100 Hz the
+    rate-derived term takes over at 50 samples."""
+    return max(0.5, 50.0 / hw.arm.rtde_receive_hz)
+
+
 # A sustained condition logs on its rising edge and then at most this often.
 _EVENT_LOG_PERIOD_S = 1.0
 # Hard ceiling on retained distinct events (an episode that produces this many
@@ -72,6 +91,7 @@ class SafetyMonitor:
         self._ring_stale_s = 3.0 / min(hw.recording.field_ds_rate_hz,
                                        hw.cameras.scene.fps)
         self._cam_stale_s = camera_stale_s(hw)
+        self._arm_stale_s = arm_stale_s(hw)
         # Wrench guard state — same scheme as data_collect.safeguard.ArmGuard:
         # the CB3 "wrench" is a current-based estimate with a large pose-
         # dependent static bias plus acceleration spikes, so the raw value vs
@@ -96,6 +116,16 @@ class SafetyMonitor:
         # protective stop + wrist wrench (latest arm sample)
         ts, arm = self.rings["arm"].latest(1)
         if len(ts):
+            # Arm-stream freshness FIRST: everything below (protective stop,
+            # wrench deviation) and everything the executor does this tick
+            # reads this one frozen sample if the RTDE-receive worker died or
+            # its stream stalled. Same treatment as a stale tactile ring or a
+            # wedged scene camera.
+            arm_age = t_now - float(ts[0])
+            if arm_age > self._arm_stale_s:
+                events.append(SafetyEvent(t_now, "arm_stale", arm_age,
+                                          SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
             if arm["protective_stop"][0]:
                 events.append(SafetyEvent(t_now, "protective_stop", 1.0,
                                           SafetyAction.PROTECTIVE_STOP))
@@ -216,6 +246,8 @@ class SafetyMonitor:
         hw = self.hw
         ts, arm = self.rings["arm"].latest(1)
         if len(ts):
+            if time.perf_counter() - float(ts[0]) > self._arm_stale_s:
+                return False   # dead/stale arm stream: no resume without it
             if arm["protective_stop"][0]:
                 return False
             ft = np.asarray(arm["ft"][0], dtype=np.float64).reshape(-1)

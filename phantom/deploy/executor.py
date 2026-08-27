@@ -60,6 +60,10 @@ class ChunkExecutor:
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self.stopped_reason: str | None = None
+        # SESSION-fatal, not episode-fatal: set when stop() could not join a
+        # worker. See stop() — the old worker may still own the Robotiq socket
+        # / the servo session, so no further episode may run in this process.
+        self.join_failed: bool = False
 
     # ------------------------------------------------------------------
     def submit(self, plan: Plan) -> bool:
@@ -345,9 +349,18 @@ class ChunkExecutor:
                 continue
             th.join(budget)
             if th.is_alive():
-                log.error("%s thread did not exit within %.0fs — device may still "
-                          "be owned by a stale worker; restart the session before "
-                          "the next episode", name, budget)
+                # FATAL for the deployment session (Codex review 2026-08-27):
+                # a stale gripper worker still owns the one Robotiq socket and
+                # a stale servo thread still owns the servo session, so
+                # starting a second executor here races both. recover_control()
+                # rebuilds the RTDE control script but cannot evict a thread —
+                # only a fresh process can. run_deploy refuses to start
+                # another episode once this is set.
+                log.error("%s thread did not exit within %.0fs — the device is "
+                          "still owned by a stale worker. This deployment "
+                          "session is over: no further episode may start in "
+                          "this process (restart it).", name, budget)
+                self.join_failed = True
                 self._set_reason("executor_crash")
         try:
             self.arm.servo_stop()

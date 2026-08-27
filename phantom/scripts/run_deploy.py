@@ -52,8 +52,19 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
                      inference=True)
     norm = NormStats.identity()
     if args.ckpt:
+        # EMA is the DEPLOY artifact (run_eval builds every campaign policy
+        # with ema=True): running the rig on raw last-step weights meant the
+        # rig and the eval numbers came from different artifacts of the same
+        # checkpoint. Default True here, --no-ema/--raw to opt out.
+        want_ema = bool(getattr(args, "ema", True))
+        has_ema = bool((payload or {}).get("ema"))
+        log.info("checkpoint weights: %s (%s)",
+                 "EMA" if (want_ema and has_ema) else "raw (last step)",
+                 "--no-ema/--raw" if not want_ema
+                 else "EMA requested" if has_ema
+                 else "EMA requested but this checkpoint has none")
         payload = C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw,
-                                            load_ema=args.ema, payload=payload)
+                                            load_ema=want_ema, payload=payload)
         if payload.get("norm_stats"):
             ns = payload["norm_stats"]
             norm = NormStats(
@@ -131,8 +142,7 @@ def recover_control(arm, reason: str) -> bool:
     return False
 
 
-def main(argv=None) -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--system", choices=SYSTEM_MODES, required=True)
     ap.add_argument("--ckpt", default="")
@@ -157,7 +167,18 @@ def main(argv=None) -> int:
     ap.add_argument("--flex", action="store_true",
                     help="FlexAttention self-attn (block-sparse structural mask; "
                          "action parity vs SDPA verified to ~6e-4)")
-    ap.add_argument("--ema", action="store_true")
+    # EMA weights are the deploy artifact and what run_eval loads for every
+    # campaign policy — deploying raw last-step weights ran the rig on a
+    # DIFFERENT artifact than the eval numbers came from (Codex review
+    # 2026-08-27). `--ema` is kept (a no-op now) so the existing GO scripts
+    # and docs/inference.md commands still parse.
+    ema = ap.add_mutually_exclusive_group()
+    ema.add_argument("--ema", dest="ema", action="store_true", default=True,
+                     help="use the checkpoint's EMA weights (DEFAULT; kept for "
+                          "backward compatibility with existing GO scripts)")
+    ema.add_argument("--no-ema", "--raw", dest="ema", action="store_false",
+                     help="deploy the raw last-step weights instead of EMA "
+                          "(debugging escape hatch — NOT what eval measures)")
     ap.add_argument("--no-home", dest="home", action="store_false", default=True,
                     help="skip the pre-episode arm homing to the task's demo "
                          "start pose (real drivers home by default)")
@@ -180,7 +201,12 @@ def main(argv=None) -> int:
     ap.add_argument("--hardware", default=None)
     ap.add_argument("--out", default="")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
-    args = ap.parse_args(argv)
+    return ap
+
+
+def main(argv=None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    args = build_parser().parse_args(argv)
 
     hw = load_hardware(args.hardware)
     paths = load_paths()
@@ -330,6 +356,16 @@ def main(argv=None) -> int:
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
             prev_reason = res.stopped_reason
+            if res.fatal_reason:
+                # Not recoverable by recover_control(): either a sensor worker
+                # process is gone (its ring has no writer) or a stale executor/
+                # gripper thread still owns the device. Both need a fresh
+                # process; another episode here would silently run on frozen
+                # streams or race the old worker on the Robotiq socket. Label
+                # this episode first — it is exactly the one worth diagnosing.
+                log.error("DEPLOYMENT SESSION OVER (%s) — refusing to start "
+                          "another episode in this process. Fix the rig and "
+                          "relaunch run_deploy.", res.fatal_reason)
             if arm_real and args.label_prompt and res.episode_path:
                 # success is otherwise hardcoded None on every deploy episode
                 # (audit 2026-08-20): the session produced unlabeled anecdotes
@@ -353,6 +389,10 @@ def main(argv=None) -> int:
                         m = _json.loads(mp.read_text())
                         m["tags"] = list(m.get("tags") or []) + ["contaminated"]
                         mp.write_text(_json.dumps(m, indent=1))
+            if res.fatal_reason:
+                # returning from inside the `with` runs DeploymentRuntime
+                # .__exit__: session.stop() + disconnect_all()
+                return 5
     return 0
 
 
