@@ -31,6 +31,25 @@ from phantom.train import common as C
 from phantom.train.builder import build_model
 
 
+def close_steps(gt_grip: np.ndarray, pr_grip: np.ndarray) -> tuple[int | None, int]:
+    """(gt close step, pred close step) within one action chunk.
+
+    The GT close is found with the training rule (close_index: absolute 0.45
+    rule, max-relative fallback for wide grasps). The PREDICTION is then
+    judged against the ABSOLUTE aperture the GT reached at its close (minus
+    a 0.05 margin) — applying close_index's max-relative fallback to a
+    16-step predicted chunk credited any >0.10 aperture rise as "closed"
+    (delta review 2026-08-27). A prediction that never reaches that aperture
+    scores len(chunk) (= "did not close in the chunk")."""
+    from phantom.train.common import close_index
+    gi = close_index(gt_grip)
+    if gi is None:
+        return None, len(pr_grip)
+    thr = float(gt_grip[gi]) - 0.05
+    hit = np.nonzero(pr_grip >= thr)[0]
+    return int(gi), (int(hit[0]) if len(hit) else len(pr_grip))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
@@ -128,15 +147,13 @@ def main() -> int:
             z_err = float((cp[-1, 2] - cg[-1, 2]) * 1000)
             gt_desc = float(-cg[-1, 2]); pr_desc = float(-cp[-1, 2])
             commit = pr_desc / gt_desc if abs(gt_desc) > 2e-3 else float("nan")
-            def first_close(a):
-                # same rule as --grasp-frac (wide Carton grasps never cross 0.45)
-                from phantom.train.common import close_index
-                i = close_index(a[:, 6])
-                return int(i) if i is not None else len(a)
+            gt_i, pr_i = close_steps(gt[:, 6], pr[:, 6])
             rows.append({"episode": wi.episode.name, "task": item.get("text", "?"),
                          "endpoint_err_mm": end_err, "z_end_err_mm": z_err,
                          "commit_ratio": commit,
-                         "close_step_err": first_close(pr) - first_close(gt)})
+                         "close_step_err": (pr_i - gt_i) if gt_i is not None else float("nan"),
+                         "gt_close_aperture": float(gt[gt_i, 6]) if gt_i is not None else float("nan"),
+                         "pr_max_aperture": float(pr[:, 6].max())})
     if not rows:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
