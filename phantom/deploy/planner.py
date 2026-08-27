@@ -18,7 +18,7 @@ import numpy as np
 
 from phantom.config.hardware import HardwareConfig
 from phantom.data import derived as dv
-from phantom.deploy.safety import camera_stale_s
+from phantom.deploy.safety import arm_stale_s, camera_stale_s
 from phantom.inference.policy import ObsSnapshot, Plan, PhantomPolicy
 from phantom.recording.workers import SensorSession
 
@@ -36,6 +36,14 @@ class SnapshotBuilder:
         self.mode = mode
         self._prev_fields: np.ndarray | None = None
         self._cam_stale_s = camera_stale_s(hw)
+        self._arm_stale_s = arm_stale_s(hw)
+        # Enough arm rows to SPAN the wrist window in TIME (the ring runs at
+        # rtde_receive_hz, which is not wrist_ft.rate_hz on a cb3), with 2x
+        # margin — sampling below is by timestamp, not by row count, and a ring
+        # that somehow does not reach back a full window_s only makes np.interp
+        # clamp (flat-extend) its head rather than fail.
+        self._n_arm = max(2, int(np.ceil(2.0 * hw.wrist_ft.window_s
+                                         * hw.arm.rtde_receive_hz)) + 8)
 
     def build(self) -> ObsSnapshot:
         hw = self.hw
@@ -59,12 +67,40 @@ class SnapshotBuilder:
             "frozen frame")
         rgb = cam["color"][0]
 
+        ts_a, arm = rings["arm"].latest(self._n_arm)
+        # Same hard requirement as the camera above: a dead RTDE-receive worker
+        # freezes tcp_pose / tcp_speed / the F/T window / protective_stop all at
+        # once, and every later plan is conditioned on a robot that is no longer
+        # where the snapshot says. SafetyMonitor carries the same threshold and
+        # stops the executor within one tick; _wait_rings_warm treats the
+        # AssertionError as "not warm yet" during start-up.
+        assert len(ts_a), "no arm samples yet"
+        arm_age = t_now - float(ts_a[-1])
+        assert arm_age < self._arm_stale_s, (
+            f"arm ring stale by {arm_age:.2f}s (>{self._arm_stale_s:.2f}s) — "
+            "the RTDE receive stream is dead; the policy must not replan on a "
+            "frozen robot state")
+
+        # Wrist F/T window, TRAINING PARITY (Codex review 2026-08-27):
+        # WindowSampler.sample() resamples the recorded F/T stream onto
+        # np.linspace(t0 - window_s, t0, window_len) with np.interp
+        # (phantom/data/windows.py). Taking the last window_len ROWS instead
+        # made the deployed window a sample COUNT, not a duration: it silently
+        # equals the trained window only while the ring runs at exactly
+        # wrist_ft.rate_hz with no dropped samples (a cb3 at 125 Hz would feed
+        # the WristTCN a 4x-long window; RTDE jitter warps it either way).
+        # Anchor at the newest arm SAMPLE time, not t_now: t_now is later, and
+        # np.interp would clamp — i.e. flat-extrapolate — the window's tail.
         L = hw.wrist_ft.window_len
-        _, arm = rings["arm"].latest(max(L, 2))
-        ft = arm["ft"]
-        if ft.shape[0] < L:
-            ft = np.concatenate([np.repeat(ft[:1], L - ft.shape[0], axis=0), ft])
-        wrist_window = ft[-L:].astype(np.float32)
+        t_ft = float(ts_a[-1])
+        ft = np.asarray(arm["ft"], dtype=np.float64).reshape(len(ts_a), -1)
+        grid = np.linspace(t_ft - hw.wrist_ft.window_s, t_ft, L)
+        # Warm-up (fewer samples than the window spans) needs no special case:
+        # np.interp clamps to ft[0] below the first timestamp, exactly the
+        # leading repeat-pad the row-slice version applied.
+        wrist_window = np.stack(
+            [np.interp(grid, ts_a, ft[:, k]) for k in range(ft.shape[1])],
+            axis=-1).astype(np.float32)
 
         _, arm1 = rings["arm"].latest(1)
         _, grip = rings["gripper"].latest(1)
@@ -117,12 +153,18 @@ class PlannerLoop:
     """Runs replan cycles; publishes plans to the executor; keeps a trace."""
 
     def __init__(self, hw: HardwareConfig, policy: PhantomPolicy,
-                 snapshots: SnapshotBuilder, executor, *, trace: list | None = None):
+                 snapshots: SnapshotBuilder, executor, *, trace: list | None = None,
+                 session: SensorSession | None = None):
         self.hw = hw
         self.policy = policy
         self.snapshots = snapshots
         self.executor = executor
         self.trace = trace if trace is not None else []
+        # optional: when given, a dead sensor/arm worker ends the episode as
+        # `worker_died` instead of the loop replanning on whatever the abandoned
+        # ring last held (workers.py: a dead worker "aborts the in-progress
+        # episode ... rather than silently corrupting or gapping the stream")
+        self.session = session
         self._stop = threading.Event()
 
     # Stall watchdog (postmortem 2026-08-20, ep ...1999): a protective stop
@@ -144,7 +186,7 @@ class PlannerLoop:
             # BEFORE building a snapshot: a safety stop raised by the executor
             # (e.g. camera_scene_stale) must end the episode through this clean
             # path, not through the staleness assert inside build().
-            if self._executor_stopped():
+            if self._executor_stopped() or self._workers_dead():
                 break
             snap = self.snapshots.build()
             tcp_pose = snap.ur_state[2 * self.hw.arm.dof:2 * self.hw.arm.dof + 6]
@@ -184,12 +226,37 @@ class PlannerLoop:
                      "p_evt=%s:%.2f accepted=%s",
                      n, plan.latency_s, plan.gate, float(np.max(plan.sigma)),
                      EVENTS[k_evt], float(plan.p_evt[k_evt]), accepted)
-            prev_plan = plan
+            if accepted:
+                # Feedback state advances ONLY on a plan the executor took.
+                # A rejected plan (too late to cover replan_min_lead_s) is
+                # never commanded, so carrying it into the next replan's
+                # prev_chunk / prev_cpk conditions the policy on motion that
+                # never happened (Codex review 2026-08-27).
+                # DEFERRED (deliberately, not an oversight): prev_chunk should
+                # be the last H EXECUTED action-grid samples, the way
+                # WindowSampler.sample() builds it from recorded actions
+                # (phantom/data/windows.py) and the way model/acc.py documents
+                # it ("previously committed action chunk") — an accepted plan
+                # is still only a PROPOSAL, and the governor/blend/rate-limit
+                # reshape it before the arm sees it.
+                prev_plan = plan
             n += 1
             if max_replans is not None and n >= max_replans:
                 break
             if self._executor_stopped():
                 break
+
+    def _workers_dead(self) -> bool:
+        """A dead sensor/arm worker leaves its ring frozen (or gapped) with no
+        one writing it: fail closed, and make it the executor's stop reason so
+        the runtime can end the whole deployment session on it."""
+        if self.session is None or self.session.all_alive():
+            return False
+        log.error("SENSOR WORKER DIED mid-episode — the rings it feeds are "
+                  "abandoned; stopping the episode. The session cannot be "
+                  "restarted in this process.")
+        self.executor.request_stop("worker_died")
+        return True
 
     def _executor_stopped(self) -> bool:
         reason = self.executor.stopped_reason

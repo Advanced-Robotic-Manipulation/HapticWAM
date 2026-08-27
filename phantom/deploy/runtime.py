@@ -50,6 +50,29 @@ def _wait_rings_warm(snapshots: SnapshotBuilder, timeout_s: float = 10.0) -> Non
             time.sleep(0.05)
 
 
+# Stop reasons that end the whole DEPLOYMENT SESSION, not just the episode:
+# nothing in-process can put the rig back in a runnable state, so continuing
+# would only produce corrupt episodes (a dead sensor worker cannot be
+# respawned — SensorSession.start() wires the rings once).
+_SESSION_FATAL_REASONS = ("worker_died",)
+
+
+def fatal_reason(executor) -> str | None:
+    """Why this PROCESS must not start another episode (None = it may).
+
+    Distinct from EpisodeResult.stopped_reason, which run_deploy uses to decide
+    whether to REBUILD the RTDE control script and carry on: these are the
+    conditions rebuilding cannot fix."""
+    if getattr(executor, "join_failed", False):
+        # stop() could not join the servo/gripper thread: the arm's servo
+        # session and the one Robotiq socket are still owned by a worker this
+        # process can no longer address, so a second executor would race it.
+        return "executor_join_timeout"
+    if executor.stopped_reason in _SESSION_FATAL_REASONS:
+        return executor.stopped_reason
+    return None
+
+
 @dataclass
 class EpisodeResult:
     episode_path: Path | None
@@ -57,6 +80,9 @@ class EpisodeResult:
     n_replans: int
     safety_events: int
     trace_path: Path | None
+    # non-None => this PROCESS must not start another episode (see
+    # _SESSION_FATAL_REASONS and ChunkExecutor.join_failed). run_deploy exits.
+    fatal_reason: str | None = None
 
 
 class DeploymentRuntime:
@@ -91,6 +117,17 @@ class DeploymentRuntime:
                     dagger_round: int = 0) -> EpisodeResult:
         assert self.session is not None and self.recorder is not None
         hw = self.hw
+        # Fail closed BEFORE anything is recorded or the arm is driven: a
+        # worker that died during the previous episode (or between them)
+        # leaves its ring frozen, and every stream this episode would record
+        # or condition on is then a stale copy of the last live sample.
+        if not self.session.all_alive():
+            log.error("a sensor/arm worker is DEAD before episode start — "
+                      "refusing to run. The rings it feeds have no writer; "
+                      "restart the process.")
+            return EpisodeResult(episode_path=None, stopped_reason="worker_died",
+                                 n_replans=0, safety_events=0, trace_path=None,
+                                 fatal_reason="worker_died")
         meta = EpisodeMeta(task=task, text=text or task, tags=list(tags or []),
                            policy=policy_name or self.mode,
                            dagger_round=dagger_round)
@@ -109,7 +146,8 @@ class DeploymentRuntime:
                                  gripper_ring=self.session.rings["gripper"])
         snapshots = SnapshotBuilder(hw, self.session, self.mode)
         trace: list = []
-        planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace)
+        planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace,
+                              session=self.session)
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
         # ring warm-up — the snapshot hard-requires gripper state (no silent
@@ -145,4 +183,4 @@ class DeploymentRuntime:
         return EpisodeResult(
             episode_path=saved, stopped_reason=executor.stopped_reason,
             n_replans=len(trace), safety_events=len(safety.log_events),
-            trace_path=trace_path)
+            trace_path=trace_path, fatal_reason=fatal_reason(executor))

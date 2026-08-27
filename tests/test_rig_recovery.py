@@ -364,6 +364,13 @@ def _push_cam(rings, hw, ts):
                                                  dtype=np.uint8))
 
 
+def _push_arm(rings, ts):
+    """The arm ring has its own freshness guard (arm_stale_s) — a test that
+    simulates seconds of executor ticks must keep the arm stream alive too, or
+    it is testing `arm_stale` instead of whatever it meant to test."""
+    rings["arm"].push(ts, ft=np.zeros(6), protective_stop=np.uint8(0))
+
+
 IN_BOX = np.array([0.0, -0.45, 0.25, 0.0, 3.14, 0.0])
 OUT_OF_BOX = np.array([0.0, 5.0, 0.25, 0.0, 3.14, 0.0])
 
@@ -377,7 +384,10 @@ def test_stale_scene_camera_stops_the_episode():
         t0 = time.perf_counter()
         _push_cam(rings, hw, t0)
         assert mon.check(t0, IN_BOX).action == SafetyAction.OK
-        v = mon.check(t0 + camera_stale_s(hw) + 0.01, IN_BOX)
+        # keep the ARM stream alive: this test is about the camera alone
+        t1 = t0 + camera_stale_s(hw) + 0.01
+        _push_arm(rings, t1)
+        v = mon.check(t1, IN_BOX)
         assert v.action == SafetyAction.STOP_EPISODE
         assert [e.kind for e in v.events] == ["camera_scene_stale"]
 
@@ -393,6 +403,7 @@ def test_sustained_clamp_is_one_event_and_one_log_line(caplog):
         with caplog.at_level(logging.WARNING, logger="phantom.deploy.safety"):
             for k in range(400):                      # 0.8 s at 500 Hz
                 _push_cam(rings, hw, t0 + k * 0.002)
+                _push_arm(rings, t0 + k * 0.002)
                 v = mon.check(t0 + k * 0.002, OUT_OF_BOX)
                 assert v.action == SafetyAction.CLAMP  # clamping every tick
         clamp_logs = [r for r in caplog.records if "workspace_clamp" in r.message]

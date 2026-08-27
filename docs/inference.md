@@ -26,7 +26,9 @@ metadata and the conditioning text (`--text` overrides the latter only).
 The string must be a key of the cache; unknown text falls back to the
 empty-string embedding with a warning (that's v2 behavior, not v3).
 `*_fail` names exist in the cache for completeness but are never prompted at
-deploy. Always pass `--ema` (EMA weights are the deploy weights).
+deploy. EMA weights ARE the deploy weights, and are now the default — `--ema`
+still parses (no-op) and `--no-ema`/`--raw` is the debugging escape hatch.
+`run_deploy` logs which of the two it loaded.
 
 ## Mocked dry run with the real model (no hardware)
 
