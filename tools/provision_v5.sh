@@ -158,7 +158,7 @@ open(f"{raw}/.complete", "w").close()
 for cmd in (["normalize", f"{W}/data/recovery_raw/archive"],
             ["place", f"{W}/data/recovery_raw/archive", f"{W}/data/phantom-episodes/tasks"],
             ["manifest", f"{W}/data/phantom-episodes/tasks",
-             f"{W}/data/phantom-episodes/manifests/all.jsonl"]):
+             f"{W}/data/phantom-episodes/manifests/all.jsonl", "--val-min-eps", "10"]):
     subprocess.run([sys.executable, "tools/intake_recovery.py", *cmd], check=True)
 eps = sorted(glob.glob(f"{W}/data/phantom-episodes/tasks/*/ep_*"))
 print(f"episodes under tasks/ now: {len(eps)} (expect 790 + 325 = 1115)")
@@ -187,8 +187,10 @@ assert not bad, f"{len(bad)} episodes fail stream validation, e.g. {bad[:3]}"
 print(f"stream validation: {len(eps)} episodes x {len(STREAMS)} groups OK", flush=True)
 rows = [json.loads(l) for l in open(f"{W}/data/phantom-episodes/manifests/all.jsonl") if l.strip()]
 split = collections.Counter(r["split"] for r in rows)
-print("manifest:", dict(split), "(expect train 1037 / val 78)")
-assert split == {"train": 1037, "val": 78}, f"manifest split {dict(split)} != train 1037 / val 78"
+hold = json.load(open(f"{W}/data/phantom-episodes/manifests/intake_holdout.json"))
+exp = {"train": 712 + hold["train"], "val": 78 + hold["val"]}
+print("manifest:", dict(split), "| expect", exp, "| new-batch holdout:", hold["holdout_sessions"])
+assert split == exp and hold["added"] == 325, f"manifest split {dict(split)} != {exp}"
 paths = [r["path"] for r in rows]
 assert len(set(paths)) == len(paths) == 1115, "manifest rows are not unique"
 assert len({r["episode"] for r in rows}) == 1115, "duplicate episode ids in manifest"
@@ -274,6 +276,8 @@ echo "    --device cuda > train_v5.log 2>&1 &"
 echo "  # fine-tune LR = 1/5 of the from-scratch peak (audit 2026-08-26: full peak = 2.7x LoRA-B"
 echo "  #   weight-scale displacement budget); --init-ema (default) starts from the deployed EMA weights;"
 echo "  #   ckpt/eval every 500 -> SELECT the best checkpoint with tools/terminal_eval.py, do not ship step 3000"
+echo "  #   val = frozen v4 78 eps + the last whole session(s) per task of batch_20260822 (>=10 eps/task),"
+echo "  #   see manifests/intake_holdout.json — in-run val_* mixes both; terminal_eval per task for the split"
 echo "  # effective batch 8 everywhere: 4x2 needs ~62GB (H100 NVL/80GB, measured 61.5GB);"
 echo "  # 40GB -> --batch-size 2 --grad-accum 4; 5090 32GB / 4090 24GB -> --batch-size 1 --grad-accum 8"
 echo "  # (4090 measured 19.9GiB at 1x8 with --acc-two-pass; batch 2 on a 5090 is unmeasured)"

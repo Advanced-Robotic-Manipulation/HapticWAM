@@ -2,7 +2,7 @@
 
     python tools/intake_recovery.py normalize <root-with-sessions>   # fix meta.json in place
     python tools/intake_recovery.py place <archive_root> <tasks_root> # symlink eps into tasks/<task>/
-    python tools/intake_recovery.py manifest <tasks_root> <manifests/all.jsonl>  # append rows
+    python tools/intake_recovery.py manifest <tasks_root> <manifests/all.jsonl> [--val-min-eps 10]  # append rows (hold out last sessions/task as val)
 
 Why each rule exists:
 - task names: sessions were recorded as `carton` / `carton_fail_undergrasp`; the
@@ -98,35 +98,70 @@ def place(archive: Path, tasks_root: Path) -> int:
     return 0
 
 
-def manifest(tasks_root: Path, manifest_path: Path) -> int:
-    rows = []
+def holdout_sessions(new_rows: list[dict], min_eps: int) -> set[tuple[str, str]]:
+    """(task, session) pairs to hold out as `val` from a new intake batch:
+    per SUCCESS task, the chronologically LAST whole sessions until at least
+    `min_eps` episodes are covered (same whole-session rule as the v4 val
+    split — no session is ever split across train and val). Failure demos
+    are never held out (they carry no action supervision to validate)."""
+    out: set[tuple[str, str]] = set()
+    if min_eps <= 0:
+        return out
+    by_task: dict[str, dict[str, int]] = {}
+    for r in new_rows:
+        if r["task"].endswith("_fail"):
+            continue
+        by_task.setdefault(r["task"], {}).setdefault(r["session"], 0)
+        by_task[r["task"]][r["session"]] += 1
+    for task, sessions in by_task.items():
+        n = 0
+        for sess in sorted(sessions, reverse=True):      # session dir names sort by time
+            if n >= min_eps:
+                break
+            out.add((task, sess))
+            n += sessions[sess]
+    return out
+
+
+def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int:
     existing = set()
     if manifest_path.exists():
         for l in manifest_path.read_text().splitlines():
             if l.strip():
                 existing.add(json.loads(l)["episode"])
-    added = 0
+    new_rows = []
+    for mp in sorted(tasks_root.rglob("ep_*/meta.json")):
+        ep = mp.parent
+        if ep.name in existing:
+            continue
+        m = json.loads(mp.read_text())
+        if m.get("status", "finalized") != "finalized":
+            print(f"manifest: skipping {ep.name} (status={m.get('status')!r})")
+            continue                       # crashed/in-flight/aborted takes never train
+        # anything not already in the manifest is a new intake episode
+        # (v4 rows are all present; the v4 val rows stay frozen)
+        new_rows.append({"episode": ep.name, "task": m["task"], "success": m.get("success"),
+                         "failure_demo": bool(m.get("failure_demo")) or m["task"].endswith("_fail"),
+                         "tactile_contact": None, "split": "train",
+                         "session": ep.resolve().parent.name, "operator": m.get("operator", ""),
+                         "duration_s": None, "peak_force_N": None, "max_contact_mm2": None,
+                         "path": f"tasks/{m['task']}/{ep.name}",
+                         "tags": m.get("tags") or []})
+    hold = holdout_sessions(new_rows, val_min_eps)
+    n_val = 0
+    for r in new_rows:
+        if (r["task"], r["session"]) in hold:
+            r["split"] = "val"
+            n_val += 1
     with manifest_path.open("a") as f:
-        for mp in sorted(tasks_root.rglob("ep_*/meta.json")):
-            ep = mp.parent
-            if ep.name in existing:
-                continue
-            m = json.loads(mp.read_text())
-            if m.get("status", "finalized") != "finalized":
-                print(f"manifest: skipping {ep.name} (status={m.get('status')!r})")
-                continue                       # crashed/in-flight/aborted takes never train
-            # anything not already in the manifest is a new intake episode
-            # (v4 rows are all present; val stays frozen — new rows -> train)
-            row = {"episode": ep.name, "task": m["task"], "success": m.get("success"),
-                   "failure_demo": bool(m.get("failure_demo")) or m["task"].endswith("_fail"),
-                   "tactile_contact": None, "split": "train",   # v3 val stays frozen
-                   "session": ep.resolve().parent.name, "operator": m.get("operator", ""),
-                   "duration_s": None, "peak_force_N": None, "max_contact_mm2": None,
-                   "path": f"tasks/{m['task']}/{ep.name}",
-                   "tags": m.get("tags") or []}
-            f.write(json.dumps(row) + "\n")
-            added += 1
-    print(f"manifest: appended {added} rows to {manifest_path}")
+        for r in new_rows:
+            f.write(json.dumps(r) + "\n")
+    info = {"added": len(new_rows), "val": n_val, "train": len(new_rows) - n_val,
+            "holdout_sessions": sorted(f"{t}/{s}" for t, s in hold)}
+    if new_rows:            # re-runs append nothing; keep the first run's record
+        (manifest_path.parent / "intake_holdout.json").write_text(json.dumps(info, indent=1))
+    print(f"manifest: appended {len(new_rows)} rows to {manifest_path} "
+          f"({n_val} held out as val from {len(hold)} sessions: {info['holdout_sessions']})")
     return 0
 
 
@@ -137,5 +172,8 @@ if __name__ == "__main__":
     if cmd == "place":
         raise SystemExit(place(Path(sys.argv[2]), Path(sys.argv[3])))
     if cmd == "manifest":
-        raise SystemExit(manifest(Path(sys.argv[2]), Path(sys.argv[3])))
+        # manifest <tasks_root> <all.jsonl> [--val-min-eps N]: hold out the last
+        # whole session(s) per success task of the NEW batch as val (>= N eps)
+        n = int(sys.argv[sys.argv.index("--val-min-eps") + 1]) if "--val-min-eps" in sys.argv else 0
+        raise SystemExit(manifest(Path(sys.argv[2]), Path(sys.argv[3]), val_min_eps=n))
     raise SystemExit(f"unknown command {cmd}")

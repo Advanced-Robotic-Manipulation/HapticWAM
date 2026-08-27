@@ -129,6 +129,8 @@ def main(argv=None) -> int:
                     help="linear warmup steps (default min(500, max_steps//10))")
     ap.add_argument("--ckpt-every", type=int, default=None, help="checkpoint cadence (default 1000)")
     ap.add_argument("--eval-every", type=int, default=None, help="val cadence (default 1000)")
+    ap.add_argument("--allow-skipped-episodes", action="store_true",
+                    help="tolerate manifest episodes that yield no training windows")
     ap.add_argument("--resume", default="",
                     help="teacher checkpoint to resume from: restores lora+phantom "
                          "weights, optimizer, scheduler, EMA and the step counter, "
@@ -257,6 +259,17 @@ def main(argv=None) -> int:
                              f"{cov['weightable']}/{cov['episodes']} episodes "
                              f"weightable ({cov}) — check gripper.zarr ts/pos")
     log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
+    if train_eps is not None:
+        # WindowSampler.build_index drops episodes with insufficient stream
+        # overlap with only a log line; a fine-tune whose new episodes were
+        # silently dropped would look healthy (Codex premortem 2026-08-26)
+        indexed = {wi.episode for wi in ds.index}
+        dropped = [p.name for p in train_eps if p not in indexed]
+        if dropped and not args.allow_skipped_episodes:
+            raise SystemExit(f"{len(dropped)}/{len(train_eps)} manifest episodes produced no "
+                             f"windows (e.g. {dropped[:5]}) — stream overlap too short; "
+                             f"fix the data or pass --allow-skipped-episodes")
+        log.info("episodes indexed: %d/%d", len(indexed), len(train_eps))
     # A training run under a config the data was NOT recorded under silently
     # changes window semantics and produces a checkpoint the rig rejects on
     # load (shape assert). Shapes are checked separately; this catches VALUE
