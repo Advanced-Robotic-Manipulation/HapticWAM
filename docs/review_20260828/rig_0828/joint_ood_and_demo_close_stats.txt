@@ -1,0 +1,76 @@
+DEMO Carton      n= 20 q_mean(deg)=[   5.  -88.   65.   34.   61. -181.] q_std(deg)=[ 6.   1.3 16.7 21.   9.   6. ]
+DEMO egg         n= 17 q_mean(deg)=[  19.  -89.   78.   32.   96. -172.] q_std(deg)=[7.5 2.2 6.1 8.3 9.8 5.6]
+DEMO waffles     n= 37 q_mean(deg)=[  12.  -87.   58.   47.   67. -179.] q_std(deg)=[2.3 0.6 6.6 7.4 4.4 3.2]
+DEMO whiteboard  n= 21 q_mean(deg)=[  19.  -88.   57.   58.   78. -178.] q_std(deg)=[4.3 0.6 3.6 3.9 5.5 2.4]
+
+ep_teacher_waffles_1787922904_000        teacher_020000.pt q0(deg)=[  26.  -88.   69.   29.   88. -183.]  sigma=[6.  1.2 1.6 2.5 4.9 1.3]  worst=6.0
+ep_teacher_waffles_1787923361_000        teacher_020000.pt q0(deg)=[  15.  -92.   73.   30.   68. -179.]  sigma=[1.1 8.4 2.2 2.4 0.2 0.2]  worst=8.4
+ep_teacher_waffles_1787923675_000        v5_6.pt    q0(deg)=[  19.  -87.   70.   34.   75. -176.]  sigma=[2.8 0.4 1.7 1.8 1.9 0.9]  worst=2.8
+ep_teacher_waffles_1787929940_000        v5_6.pt    q0(deg)=[  10.  -78.   44.   51.   67. -188.]  sigma=[ 1.  16.7  2.2  0.6  0.1  2.8]  worst=16.7
+ep_teacher_waffles_1787930167_001        v5_6.pt    q0(deg)=[  40.  -60.   45.   28.  114. -176.]  sigma=[12.1 48.5  2.   2.7 10.8  0.9]  worst=48.5
+ep_teacher_waffles_1787930224_002        v5_6.pt    q0(deg)=[  13.  -78.   47.   52.   70. -181.]  sigma=[ 0.3 16.9  1.7  0.7  0.8  0.8]  worst=16.9
+ep_teacher_Carton_1787937561_000         v5_6.pt    q0(deg)=[  15.  -96.   80.   26.   73. -173.]  sigma=[1.7 6.1 0.9 0.4 1.3 1.2]  worst=6.1
+ep_teacher_Carton_1787937844_001         v5_6.pt    q0(deg)=[-112.  -80. -134.   11.   57.   16.]  sigma=[19.6  6.3 12.   1.1  0.5 33.1]  worst=33.1
+ep_teacher_Carton_1787938064_000         v5_6.pt    q0(deg)=[-113.  -86. -125.   20.   51.    9.]  sigma=[19.7  1.5 11.4  0.7  1.1 31.9]  worst=31.9
+ep_teacher_Carton_1787938156_001         v5_6.pt    q0(deg)=[-112.  -74. -110.  -22.   57.   25.]  sigma=[19.5 10.8 10.5  2.7  0.5 34.5]  worst=34.5
+ep_teacher_Carton_1787938241_002         v5_6.pt    q0(deg)=[-117.  -77. -106.  -23.   61.   22.]  sigma=[20.4  8.1 10.3  2.7  0.  34.1]  worst=34.1
+ep_teacher_whiteboard_1787939258_000     v5_6.pt    q0(deg)=[-103.  -54. -131.  -18.   52.   23.]  sigma=[28.2 51.7 52.2 19.4  4.8 83.5]  worst=83.5
+ep_teacher_whiteboard_1787939348_001     v5_6.pt    q0(deg)=[ -87.  -74. -126.  -28.   23.   40.]  sigma=[24.4 21.8 50.9 21.9  9.9 90.8]  worst=90.8
+ep_teacher_whiteboard_1787939911_002     v5_6.pt    q0(deg)=[ 20. -88.  55.  75.  82. 190.]  sigma=[1.00e-01 5.00e-01 5.00e-01 4.30e+00 8.00e-01 1.53e+02]  worst=153.0
+ep_teacher_whiteboard_1787940032_000     v5_6.pt    q0(deg)=[ -24. -117.   90.   55.   39.  170.]  sigma=[  9.9  45.9   9.4   0.6   7.1 144.7]  worst=144.7
+ep_teacher_whiteboard_1787940205_000     v5_6.pt    q0(deg)=[ 24. -86.  58.  48.  79. 183.]  sigma=[  1.    2.7   0.3   2.5   0.2 150. ]  worst=150.0
+ep_teacher_whiteboard_1787941182_001     v5_6.pt    q0(deg)=[  2. -90.  49.  74.  58. 175.]  sigma=[  4.1   3.3   2.    4.1   3.7 146.9]  worst=146.9
+ep_teacher_whiteboard_1787941222_002     v5_6.pt    q0(deg)=[  9. -97.  76.  43.  76. 171.]  sigma=[  2.3  14.8   5.4   3.7   0.3 145.3]  worst=145.3
+ep_teacher_whiteboard_1787943872_000     v5_6.pt    q0(deg)=[ 23. -88.  65.  45.  94. 183.]  sigma=[  0.8   0.7   2.2   3.3   2.9 150.4]  worst=150.4
+ep_teacher_waffles_1787944282_000        v5_6.pt    q0(deg)=[  7. -94.  70.  32.  62. 182.]  sigma=[  2.6  11.8   1.8   2.1   1.  113.2]  worst=113.2
+ep_teacher_waffles_1787944399_001        v5_6.pt    q0(deg)=[ 17. -79.  54.  44.  72. 185.]  sigma=[  1.8  15.4   0.7   0.5   1.3 114.3]  worst=114.3
+ep_teacher_waffles_1787944578_002        v5_6.pt    q0(deg)=[ -6. -84.  53.  55.  46. 177.]  sigma=[  8.1   5.1   0.9   1.    4.9 111.5]  worst=111.5
+ep_teacher_Carton_1787944743_000         teacher_020000.pt q0(deg)=[ 18. -83.  72.  20.  79. 183.]  sigma=[ 2.3  3.4  0.4  0.7  2.  61. ]  worst=61.0
+ep_teacher_Carton_1787944853_001         teacher_020000.pt q0(deg)=[ 25. -83.  58.  34.  88. 181.]  sigma=[ 3.4  3.8  0.4  0.   3.  60.7]  worst=60.7
+ep_teacher_Carton_1787944930_002         teacher_020000.pt q0(deg)=[  2. -83.  50.  56.  61. 177.]  sigma=[ 0.4  4.   0.9  1.   0.  60. ]  worst=60.0
+ep_teacher_waffles_1787945153_000        teacher_020000.pt q0(deg)=[ 17. -98.  81.  27.  78. 179.]  sigma=[  2.1  19.8   3.5   2.8   2.5 112.3]  worst=112.3
+
+/home/physicalai/phantom-icra-2027/data/val_eval/tasks/waffles: n=19 task=waffles success=19/19
+   dur_s         mean     19.0  sd    1.6  min     16.0  max     22.9
+   t_close_s     mean      6.2  sd    1.1  min      4.7  max      9.7
+   z_start       mean    338.6  sd   28.1  min    277.8  max    374.1
+   x_close       mean   -353.8  sd   20.7  min   -395.3  max   -318.2
+   y_close       mean   -277.9  sd   11.6  min   -300.5  max   -248.4
+   z_close       mean     71.9  sd   10.2  min     54.6  max     93.5
+   grip_start    mean      0.3  sd    0.1  min      0.0  max      0.5
+   grip_plateau  mean      0.6  sd    0.0  min      0.5  max      0.7
+   obj2_seen     mean      0.3  sd    0.5  min      0.0  max      1.0
+   z_min         mean     67.3  sd    9.8  min     52.0  max     87.4
+/home/physicalai/phantom-icra-2027/data/val_eval/tasks/Carton: n=17 task=Carton success=17/17
+   dur_s         mean     18.8  sd    2.1  min     15.6  max     23.2
+   t_close_s     mean      5.4  sd    0.7  min      4.5  max      7.0
+   z_start       mean    339.5  sd   43.6  min    216.5  max    390.0
+   x_close       mean   -385.8  sd   17.2  min   -417.4  max   -350.0
+   y_close       mean   -243.5  sd    9.7  min   -259.9  max   -218.3
+   z_close       mean    103.6  sd   14.4  min     78.6  max    143.3
+   grip_start    mean      0.2  sd    0.1  min      0.0  max      0.4
+   grip_plateau  mean      0.6  sd    0.1  min      0.5  max      0.9
+   obj2_seen     mean      0.1  sd    0.3  min      0.0  max      1.0
+   z_min         mean    100.3  sd   11.8  min     76.1  max    121.6
+/home/physicalai/phantom-icra-2027/data/val_eval/tasks/whiteboard: n=21 task=whiteboard success=21/21
+   dur_s         mean     22.3  sd    1.2  min     20.3  max     25.7
+   t_close_s     mean      5.5  sd    0.4  min      4.6  max      6.6
+   z_start       mean    314.2  sd   18.2  min    286.8  max    363.9
+   x_close       mean   -276.7  sd    5.9  min   -288.2  max   -266.7
+   y_close       mean   -285.3  sd    6.8  min   -296.9  max   -272.9
+   z_close       mean    156.2  sd    3.8  min    148.7  max    162.8
+   grip_start    mean      0.3  sd    0.1  min      0.2  max      0.5
+   grip_plateau  mean      0.5  sd    0.0  min      0.5  max      0.5
+   obj2_seen     mean      1.0  sd    0.0  min      1.0  max      1.0
+   z_min         mean     80.1  sd    3.4  min     74.6  max     87.1
+/home/physicalai/phantom-icra-2027/data/val_eval/tasks/egg: n=17 task=egg success=17/17
+   dur_s         mean     24.8  sd    2.8  min     21.1  max     30.8
+   t_close_s     mean      8.0  sd    1.3  min      5.8  max     10.2
+   z_start       mean    260.6  sd   19.1  min    237.3  max    319.6
+   x_close       mean   -304.8  sd    3.6  min   -312.1  max   -298.7
+   y_close       mean   -181.9  sd    6.0  min   -193.2  max   -171.3
+   z_close       mean     71.9  sd    4.4  min     61.1  max     78.5
+   grip_start    mean      0.3  sd    0.1  min      0.0  max      0.4
+   grip_plateau  mean      0.5  sd    0.0  min      0.5  max      0.6
+   obj2_seen     mean      0.1  sd    0.3  min      0.0  max      1.0
+   z_min         mean     68.8  sd    4.4  min     59.5  max     75.3
