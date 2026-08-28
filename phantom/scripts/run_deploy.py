@@ -163,7 +163,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--task", required=True)
     ap.add_argument("--text", default="")
     ap.add_argument("--episodes", type=int, default=1)
-    ap.add_argument("--max-replans", type=int, default=20)
+    ap.add_argument("--max-replans", type=int, default=40,
+                    help="episode cap in replans (~0.9 s each). Demos take 16-31 s and a "
+                         "rollout that retries needs room: 20 cut every 08-28 retry short")
     ap.add_argument("--nfe", type=int, default=None)
     ap.add_argument("--guidance", type=float, default=1.0,
                     help="observation-guidance weight (classifier-free; v4 "
@@ -207,6 +209,24 @@ def build_parser() -> argparse.ArgumentParser:
                          "paired trials")
     ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
                     default=True, help="skip the post-episode success/notes prompt")
+    ap.add_argument("--home-joints", action="store_true",
+                    help="before the slow moveL homing, moveJ to the task's demo JOINT "
+                         "configuration (start_poses.yaml q_mean). Fixes a wrapped wrist / "
+                         "flipped IK branch that the TCP gate cannot see. Path must be clear.")
+    ap.add_argument("--z-floor", type=float, default=None,
+                    help="no-go floor for the commanded TCP z (m). Default: the task's demo "
+                         "tcp_z_min - --z-floor-margin from start_poses.yaml")
+    ap.add_argument("--z-floor-margin", type=float, default=0.01)
+    ap.add_argument("--hitbox-margin", type=float, default=0.03,
+                    help="STOP hitbox = task demo TCP envelope (start_poses.yaml tcp_min/max) "
+                         "+/- this margin (m); a commanded target outside ends the episode")
+    ap.add_argument("--no-hitbox", action="store_true")
+    ap.add_argument("--max-tcp-speed", type=float, default=None,
+                    help="lower the executor's commanded TCP speed cap (m/s) below "
+                         "hardware.yaml arm.limits.tcp_speed_m_s for this run")
+    ap.add_argument("--no-z-floor", action="store_true",
+                    help="run with only the hardware.yaml workspace box (not on a real arm "
+                         "unless you mean it)")
     ap.add_argument("--max-start-sigma", type=float, default=2.5,
                     help="refuse episode start beyond this many sigma from the "
                          "task's demo start distribution (default 2.5: the "
@@ -218,11 +238,54 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
+def resolve_z_floor(args, stats) -> float | None:
+    """The z no-go floor (m) for this run, or None when disabled/unknown."""
+    if getattr(args, "no_z_floor", False):
+        return None
+    if getattr(args, "z_floor", None) is not None:
+        return float(args.z_floor)
+    zmin = getattr(stats, "tcp_z_min", None) if stats is not None else None
+    if zmin is None:
+        return None
+    return float(zmin) - float(getattr(args, "z_floor_margin", 0.01))
+
+
 def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = build_parser().parse_args(argv)
 
     hw = load_hardware(args.hardware)
+    from phantom.deploy import start_pose as sp
+    stats = sp.load_start_stats().get(args.task)
+    # per-task no-go floor: the executor clamps every commanded target to the
+    # workspace box, so raising its z lower bound to (demo z_min - margin)
+    # stops a runaway descent where the demos never went (rig 2026-08-28:
+    # whiteboard rollout 40 mm below any demo, waffles pack slammed)
+    z_floor = resolve_z_floor(args, stats)
+    if z_floor is not None:
+        from phantom.deploy.safety import apply_z_floor
+        hw = apply_z_floor(hw, z_floor)
+        log.info("z no-go floor: commanded TCP z clamped to >= %.0f mm (workspace z now %s m)",
+                 hw.safety.workspace_m.z[0] * 1000, hw.safety.workspace_m.z)
+    elif hw.mode.resolve("arm") == "real":
+        log.warning("NO task z floor (%s) — only the hardware.yaml workspace box (z >= %.0f mm) "
+                    "protects the table", "--no-z-floor" if args.no_z_floor else "no tcp_z_min in start_poses.yaml",
+                    hw.safety.workspace_m.z[0] * 1000)
+    hb_lo, hb_hi = getattr(stats, "tcp_min", None), getattr(stats, "tcp_max", None)
+    hitbox_on = not args.no_hitbox and hb_lo is not None and hb_hi is not None
+    if hitbox_on:
+        from phantom.deploy.safety import apply_hitbox
+        hw = apply_hitbox(hw, hb_lo, hb_hi, args.hitbox_margin)
+        hb = hw.safety.hitbox_m
+        log.info("STOP hitbox (demo envelope +/- %.0f mm): x %s y %s z %s mm", args.hitbox_margin * 1000,
+                 [round(v * 1000) for v in hb.x], [round(v * 1000) for v in hb.y], [round(v * 1000) for v in hb.z])
+    elif hw.mode.resolve("arm") == "real":
+        log.warning("NO task hitbox (%s) — a lost policy can wander anywhere inside the workspace box",
+                    "--no-hitbox" if args.no_hitbox else "no tcp_min/tcp_max in start_poses.yaml")
+    if args.max_tcp_speed is not None:
+        from phantom.deploy.safety import apply_tcp_speed_limit
+        hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)
+    log.info("executor TCP speed cap: %.2f m/s", hw.arm.limits.tcp_speed_m_s)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
     out_root = Path(args.out) if args.out else \
@@ -261,11 +324,13 @@ def main(argv=None) -> int:
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
-                 f"seed:{args.seed}" if args.seed is not None else "seed:none"]
+                 f"seed:{args.seed}" if args.seed is not None else "seed:none",
+                 # safety envelope provenance (rig 2026-08-28)
+                 f"zfloor:{round(hw.safety.workspace_m.z[0] * 1000)}mm",
+                 f"hitbox:{round(args.hitbox_margin * 1000)}mm" if hitbox_on else "hitbox:none",
+                 f"vmax:{hw.arm.limits.tcp_speed_m_s:.2f}"]
     log.info("episode condition tags: %s", cond_tags)
 
-    from phantom.deploy import start_pose as sp
-    stats = sp.load_start_stats().get(args.task)
     if arm_real and stats is None:
         # a missing/misspelled task must not silently disable the OOD gate on
         # a real arm (postmortem: 7/7 episodes failed from OOD starts)
@@ -283,7 +348,8 @@ def main(argv=None) -> int:
         """(worst sigma incl. gripper, gripper settled)."""
         st = rt.rig.arm.get_state()
         gs = rt.rig.gripper.get_state()
-        sig, table = sp.start_sigma_report(stats, st.tcp_pose, gs.position)
+        sig, table = sp.start_sigma_report(stats, st.tcp_pose, gs.position,
+                                           q=getattr(st, "q", None))
         print(f"live state vs {args.task} demo start distribution:\n{table}")
         return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
 
@@ -311,6 +377,7 @@ def main(argv=None) -> int:
                           "E-stop in hand)...")
                     try:
                         sp.move_to_start(rt.rig.arm, rt.rig.gripper, hw, stats,
+                                         home_joints=args.home_joints,
                                          rng=rng)
                     except Exception:
                         if recovered_from is not None:

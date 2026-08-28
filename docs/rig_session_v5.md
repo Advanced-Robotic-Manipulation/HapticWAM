@@ -50,6 +50,46 @@ PY
 ln -sfn v5_5.pt runs/teacher_v5_batch0822/DEMO.pt
 ```
 
+## Safety batch (2026-08-28 evening) — what changed after the first v5 session
+
+Root cause of the "later" 08-28 episodes (16 of 26): after the protective stop / manual jogging the arm was
+left in a **different joint configuration** — wrist 3 wrapped by a full turn (+183 deg instead of -179 deg) or a
+flipped elbow branch (base rotated -127 deg). The TCP pose passed the 2.5-sigma gate, but the policy consumes the
+**raw joint vector** (`ur_state = [q, qd, tcp_pose, tcp_speed, gripper]`), so it ran ~60-150 sigma out of
+distribution and closed the gripper at the start pose / wandered. Every episode from 17:19 on is invalid data.
+
+New in `run_deploy` (all default-on, tags land in `meta.json` as `zfloor:`, `hitbox:`, `vmax:`):
+- **Joint-space start gate**: the sigma table now lists `q1..q6` against the demo start configuration
+  (`start_poses.yaml q_mean/q_std`, 5-deg std floor). A wrapped/flipped joint prints a `!!! FULL-TURN` line and
+  gates out. Fix it on the pendant (joint jog wrist 3 by -360 deg, or move back to the demo branch), then Enter.
+  `--home-joints` does a slow moveJ to the demo joint configuration BEFORE the moveL homing — path must be clear,
+  a base rotation sweeps the bin; E-stop in hand.
+- **z no-go floor** (clamp): commanded TCP z >= task demo `tcp_z_min` - 10 mm (waffles 42, Carton 66,
+  whiteboard 65, egg 50 mm). Override `--z-floor <m>`, margin `--z-floor-margin`, off `--no-z-floor`.
+- **STOP hitbox**: the task's demo TCP envelope (`tcp_min/tcp_max`, all frames) +/- 30 mm; a commanded target
+  outside ENDS the episode (stop reason `safety_stop`, event `hitbox_exit`). `--hitbox-margin`, `--no-hitbox`.
+- **Speed cap**: `--max-tcp-speed <m/s>` lowers the executor's commanded-TCP cap below hardware.yaml's 0.25.
+  (Demos peak at 0.24-0.34 m/s during transport, so 0.25 is already conservative; 0.15 is a sane "careful" value.)
+- **`--max-replans` default 20 -> 40**: the 20-replan cap (~19 s) cut every retry short; demos run 16-31 s.
+
+Gripper from the shell (between runs, when no deploy process owns it):
+```
+cd ~/phantom-icra-2027 && ./GRIPPER_OPEN.sh      # open (activates first if needed)
+cd ~/phantom-icra-2027 && ./GRIPPER_RESET.sh     # ACT 0 -> ACT 1 calibration stroke -> open (after e-stop / power cycle)
+.venv/bin/python -m phantom.scripts.gripper_ctl status --hardware configs/hardware.nuc.yaml
+```
+
+After an E-stop / protective stop, in this order: (1) clear the stop on the pendant, (2) if the arm was moved by
+hand or jogged, expect the joint gate to complain — unwind wrist 3 / return to the demo branch on the pendant,
+(3) `GRIPPER_OPEN.sh` if the gripper is stuck closed, (4) relaunch; the first Enter homes with moveL (or moveJ+moveL
+with `--home-joints`), the gate re-checks before anything runs.
+
+Pass extra flags through the GO scripts with `EXTRA`, e.g. `EXTRA="--home-joints --max-tcp-speed 0.15" ./GO_v5_waffles.sh 3`.
+
+**Electrical**: a shock from the arm after the E-stop is NOT a software condition and nothing here addresses it —
+stop touching the arm while the controller is in a fault state and have the control-box earth / the USB chain
+between the NUC, the tactile sensors and the robot checked before the next session.
+
 ## If something refuses to start
 - `arm NOT reachable` -> robot off / pendant not started / wrong subnet.
 - `NO CAMERA` or USB type not 3.x -> replug the RealSense into the back USB3 hub port.

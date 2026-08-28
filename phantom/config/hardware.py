@@ -372,6 +372,11 @@ class SafetyConfig(_Frozen):
     tactile_fz_limit_N: float = Field(gt=0)
     tactile_depth_limit: float = Field(gt=0)
     workspace_m: WorkspaceBox
+    # Optional per-task HITBOX (set by run_deploy from the task's demo TCP
+    # envelope + margin, never from yaml by default): a commanded target
+    # outside it ends the episode with a stop — unlike workspace_m, which only
+    # clamps. Rig 2026-08-28: rollouts wandered 300 mm past any demo pose.
+    hitbox_m: WorkspaceBox | None = None
     governor: GovernorConfig
     stale_plan_timeout_s: float = Field(gt=0)
 

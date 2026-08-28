@@ -47,6 +47,21 @@ class TaskStartStats:
     tcp_std: np.ndarray           # (6,)
     gripper_mean: float
     gripper_std: float
+    # optional (start_poses.yaml >= 2026-08-28): demo START joint configuration
+    # and the lowest TCP height any demo reached. The policy's proprio input is
+    # the RAW joint vector, so a wrist wrapped by a full turn or an elbow-flipped
+    # IK branch is hundreds of sigma OOD even when the TCP pose gates fine
+    # (rig 2026-08-28: 16/26 episodes ran like that after manual jogging).
+    q_mean: np.ndarray | None = None      # (dof,) rad
+    q_std: np.ndarray | None = None       # (dof,) rad
+    tcp_z_min: float | None = None        # m
+    tcp_min: np.ndarray | None = None     # (3,) m — demo TCP envelope (all frames)
+    tcp_max: np.ndarray | None = None     # (3,) m
+
+
+# a demo joint std below this is treated as this (the taught start pose is
+# repeated within ~0.5 deg on some joints — that is not a useful tolerance)
+Q_STD_FLOOR_RAD = np.radians(5.0)
 
 
 def load_start_stats(path: str | Path | None = None) -> dict[str, TaskStartStats]:
@@ -62,7 +77,24 @@ def load_start_stats(path: str | Path | None = None) -> dict[str, TaskStartStats
             tcp_std=np.asarray(d["tcp_std"], dtype=np.float64),
             gripper_mean=float(d["gripper_mean"]),
             gripper_std=float(d["gripper_std"]),
+            q_mean=(np.asarray(d["q_mean"], dtype=np.float64) if "q_mean" in d else None),
+            q_std=(np.asarray(d["q_std"], dtype=np.float64) if "q_std" in d else None),
+            tcp_z_min=(float(d["tcp_z_min"]) if "tcp_z_min" in d else None),
+            tcp_min=(np.asarray(d["tcp_min"], dtype=np.float64) if "tcp_min" in d else None),
+            tcp_max=(np.asarray(d["tcp_max"], dtype=np.float64) if "tcp_max" in d else None),
         )
+        if st.tcp_min is not None or st.tcp_max is not None:
+            assert st.tcp_min is not None and st.tcp_max is not None, task
+            assert st.tcp_min.shape == (3,) and st.tcp_max.shape == (3,), task
+            assert np.all(np.isfinite(st.tcp_min)) and np.all(np.isfinite(st.tcp_max)), task
+            assert np.all(st.tcp_max > st.tcp_min), task
+        if st.q_mean is not None or st.q_std is not None:
+            assert st.q_mean is not None and st.q_std is not None, task
+            assert st.q_mean.shape == st.q_std.shape and st.q_mean.ndim == 1, task
+            assert np.all(np.isfinite(st.q_mean)) and np.all(np.isfinite(st.q_std)), task
+            assert np.all(st.q_std >= 0), task
+        if st.tcp_z_min is not None:
+            assert np.isfinite(st.tcp_z_min) and 0.0 < st.tcp_z_min < 1.0, task
         # a gate built on malformed stats fails OPEN (NaN > x is False) —
         # refuse to load instead
         assert st.tcp_mean.shape == (6,) and st.tcp_std.shape == (6,), task
@@ -90,8 +122,14 @@ def sample_start_pose(stats: TaskStartStats, rng: np.random.Generator | None = N
 
 
 def start_sigma_report(stats: TaskStartStats, tcp_pose: np.ndarray,
-                       gripper_pos: float | None = None) -> tuple[np.ndarray, str]:
-    """Per-axis |sigma| distances + a printable table line-set."""
+                       gripper_pos: float | None = None,
+                       q: np.ndarray | None = None) -> tuple[np.ndarray, str]:
+    """Per-axis |sigma| distances + a printable table line-set.
+
+    `q` (live joint vector, rad) is gated too when the stats carry a demo
+    joint distribution: on the RAW difference, deliberately unwrapped — the
+    model consumes raw joint angles, so wrist-3 at +183 deg IS ~150 sigma
+    away from the demos' -179 deg even though the flange points the same way."""
     from phantom.data.derived import rotvec_nearest
     tcp_pose = np.asarray(tcp_pose, dtype=np.float64).copy()
     # UR reports the ||r|| <= pi rotvec representation; a pose ~2 sigma out
@@ -119,6 +157,25 @@ def start_sigma_report(stats: TaskStartStats, tcp_pose: np.ndarray,
         sig = np.append(sig, gs)      # the gripper GATES, not just prints:
                                       # half-closed 0.43-0.47 starts were part
                                       # of the postmortem OOD state
+    if q is not None and stats.q_mean is not None:
+        q = np.asarray(q, dtype=np.float64)
+        if q.shape != stats.q_mean.shape:
+            lines.append(f"  joints: live vector has {q.shape}, stats {stats.q_mean.shape} — GATED OUT")
+            sig = np.append(sig, np.inf)
+        else:
+            raw = q - stats.q_mean
+            std = np.maximum(stats.q_std, Q_STD_FLOOR_RAD)
+            sq = np.abs(raw) / std
+            sq = np.where(np.isfinite(sq), sq, np.inf)
+            for i in range(len(q)):
+                lines.append(f"  q{i + 1}: {np.degrees(q[i]):8.1f} deg  (demo {np.degrees(stats.q_mean[i]):.1f} "
+                             f"+/- {np.degrees(std[i]):.1f}, {sq[i]:.1f} sigma)")
+                if abs(raw[i]) > np.pi:
+                    lines.append(f"  !!! q{i + 1} is {np.degrees(raw[i]):+.0f} deg from the demos — a FULL-TURN "
+                                 f"wrap or a flipped IK branch. The policy reads raw joint angles: "
+                                 f"unwind it on the pendant (joint jog) before running; the TCP pose "
+                                 f"gate cannot see this.")
+            sig = np.append(sig, sq)
     return sig, "\n".join(lines)
 
 
@@ -135,7 +192,9 @@ def wait_gripper_settled(gripper, timeout_s: float = 10.0) -> bool:
 
 def move_to_start(arm, gripper, hw, stats: TaskStartStats,
                   rng: np.random.Generator | None = None,
-                  speed: float = 0.10, accel: float = 0.30) -> tuple[np.ndarray, float]:
+                  speed: float = 0.10, accel: float = 0.30,
+                  home_joints: bool = False, joint_speed: float = 0.20,
+                  joint_accel: float = 0.50) -> tuple[np.ndarray, float]:
     """Move arm+gripper to a jittered demo start. Returns (tcp_target, grip_target).
 
     Uses moveL at a deliberately slow speed (0.1 m/s). The caller owns safety:
@@ -147,6 +206,18 @@ def move_to_start(arm, gripper, hw, stats: TaskStartStats,
              "(task mean + <=1sigma jitter)", stats.task,
              *(tcp_target[:3] * 1000), grip_target)
     gripper.move(grip_target, hw.gripper.default_speed, hw.gripper.default_force)
+    if home_joints:
+        if stats.q_mean is None:
+            log.warning("--home-joints: no demo joint stats for %s — skipping the joint move",
+                        stats.task)
+        else:
+            # moveJ to the demo joint configuration FIRST: moveL keeps whatever
+            # IK branch / wrist wrap the arm is currently in, and that is
+            # invisible to the TCP gate (rig 2026-08-28). Slow, operator at
+            # the E-stop, path must be clear (a base rotation can sweep the bin).
+            log.info("homing JOINTS to the %s demo configuration: %s deg (moveJ %.2f rad/s)",
+                     stats.task, np.round(np.degrees(stats.q_mean), 0).tolist(), joint_speed)
+            arm.move_j(np.asarray(stats.q_mean, dtype=np.float64), joint_speed, joint_accel)
     arm.move_l(tcp_target, speed, accel)
     if not wait_gripper_settled(gripper):
         log.warning("gripper did not settle (OBJ!=3) within timeout")

@@ -11,7 +11,7 @@ from enum import Enum
 
 import numpy as np
 
-from phantom.config.hardware import HardwareConfig
+from phantom.config.hardware import HardwareConfig, WorkspaceBox
 from phantom.recording.ringbuffer import SharedRingBuffer
 
 log = logging.getLogger(__name__)
@@ -200,6 +200,14 @@ class SafetyMonitor:
                                       float(np.linalg.norm(tcp_target[:3])),
                                       SafetyAction.CLAMP))
             action = _max(action, SafetyAction.CLAMP)
+        # per-task hitbox: leaving the demo envelope is not something to clamp
+        # and continue from — the policy is already lost; stop the episode
+        hb = hw.safety.hitbox_m
+        if hb is not None and not hb.contains(tcp_target[:3]):
+            events.append(SafetyEvent(t_now, "hitbox_exit",
+                                      float(np.linalg.norm(tcp_target[:3])),
+                                      SafetyAction.STOP_EPISODE))
+            action = _max(action, SafetyAction.STOP_EPISODE)
 
         self._record(t_now, events)
         return SafetyVerdict(action=action, events=events)
@@ -293,3 +301,46 @@ _ORDER = [SafetyAction.OK, SafetyAction.CLAMP, SafetyAction.STOP_EPISODE,
 
 def _max(a: SafetyAction, b: SafetyAction) -> SafetyAction:
     return a if _ORDER.index(a) >= _ORDER.index(b) else b
+
+
+def apply_z_floor(hw: HardwareConfig, floor_m: float) -> HardwareConfig:
+    """Copy of `hw` whose workspace z lower bound is RAISED to floor_m.
+
+    The per-task no-go floor (rig 2026-08-28: a policy drove the gripper
+    40 mm below the lowest demo height and slammed the table): the executor
+    clamps every commanded target to the workspace box, so a floor at
+    (demo z_min - margin) stops the descent there and lets x/y continue.
+    Never lowers the configured bound."""
+    ws = hw.safety.workspace_m
+    lo = max(float(ws.z[0]), float(floor_m))
+    if not np.isfinite(lo) or lo >= ws.z[1]:
+        raise ValueError(f"z floor {floor_m} m is not below the workspace ceiling {ws.z[1]} m")
+    box = WorkspaceBox(x=ws.x, y=ws.y, z=(lo, float(ws.z[1])))
+    return hw.model_copy(update={"safety": hw.safety.model_copy(update={"workspace_m": box})})
+
+
+def apply_hitbox(hw: HardwareConfig, lo, hi, margin_m: float) -> HardwareConfig:
+    """Copy of `hw` with a STOP hitbox = [lo - margin, hi + margin] per axis,
+    intersected with the workspace box (the hitbox can only be tighter)."""
+    lo = np.asarray(lo, dtype=np.float64) - float(margin_m)
+    hi = np.asarray(hi, dtype=np.float64) + float(margin_m)
+    ws = hw.safety.workspace_m
+    box = {}
+    for i, ax in enumerate("xyz"):
+        wlo, whi = getattr(ws, ax)
+        a, b = max(float(lo[i]), float(wlo)), min(float(hi[i]), float(whi))
+        if not (np.isfinite(a) and np.isfinite(b)) or b <= a:
+            raise ValueError(f"hitbox {ax} bounds collapse: ({a}, {b})")
+        box[ax] = (a, b)
+    hb = WorkspaceBox(**box)
+    return hw.model_copy(update={"safety": hw.safety.model_copy(update={"hitbox_m": hb})})
+
+
+def apply_tcp_speed_limit(hw: HardwareConfig, v_m_s: float) -> HardwareConfig:
+    """Copy of `hw` whose executor TCP speed cap is LOWERED to v_m_s (never raised)."""
+    lim = hw.arm.limits
+    v = min(float(lim.tcp_speed_m_s), float(v_m_s))
+    if not np.isfinite(v) or v <= 0:
+        raise ValueError(f"bad tcp speed limit {v_m_s}")
+    new_lim = lim.model_copy(update={"tcp_speed_m_s": v})
+    return hw.model_copy(update={"arm": hw.arm.model_copy(update={"limits": new_lim})})
