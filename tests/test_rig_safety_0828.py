@@ -238,3 +238,31 @@ def test_gripper_ctl_open_close_status_on_mock():
     assert G.main(["close", "--pos", "0.5"]) == 0
     assert G.main(["status"]) == 0
     assert G.main(["reset"]) == 0
+
+
+def test_floor_is_a_clamp_even_with_the_hitbox_armed():
+    """Review 2026-08-28: with the hitbox intersected against the already-raised
+    floor, a target below the floor tripped hitbox_exit (STOP) instead of being
+    clamped. A deep descent must be pinned at the floor, never stopped."""
+    from phantom.scripts.run_deploy import build_parser, resolve_z_floor
+    hw = make_small_hw()
+    ws = hw.safety.workspace_m
+    lo = np.array([np.mean(ws.x) - 0.05, np.mean(ws.y) - 0.05, ws.z[0] + 0.03])
+    hi = lo + 0.10
+    hw2 = apply_hitbox(hw, lo, hi, margin_m=0.03)          # hitbox first (as run_deploy does now)
+    floor = lo[2] + 0.02
+    hw2 = apply_z_floor(hw2, floor)
+    assert hw2.safety.hitbox_m.z[0] < hw2.safety.workspace_m.z[0]
+    with _rings(hw2) as rings:
+        mon = SafetyMonitor(hw2, rings)
+        t = time.perf_counter(); _fresh(rings, hw2, t)
+        deep = np.array([lo[0] + 0.05, lo[1] + 0.05, ws.z[0] - 0.5, 0, 3.14, 0])   # far below everything
+        v = mon.check(t, deep)
+        assert v.action == SafetyAction.CLAMP, [e.kind for e in v.events]
+        assert not any(e.kind == "hitbox_exit" for e in v.events)
+        assert mon.clamp_target(deep)[2] == pytest.approx(floor)
+        side = np.array([hi[0] + 0.1, lo[1] + 0.05, lo[2] + 0.05, 0, 3.14, 0])     # lateral exit still stops
+        assert mon.check(t, side).action == SafetyAction.STOP_EPISODE
+    # run_deploy order: hitbox applied before the floor
+    src = open("phantom/scripts/run_deploy.py").read()
+    assert src.index("apply_hitbox(") < src.index("apply_z_floor(")

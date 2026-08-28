@@ -257,6 +257,17 @@ def main(argv=None) -> int:
     hw = load_hardware(args.hardware)
     from phantom.deploy import start_pose as sp
     stats = sp.load_start_stats().get(args.task)
+    hb_lo, hb_hi = getattr(stats, "tcp_min", None), getattr(stats, "tcp_max", None)
+    hitbox_on = not args.no_hitbox and hb_lo is not None and hb_hi is not None
+    if hitbox_on:
+        from phantom.deploy.safety import apply_hitbox
+        hw = apply_hitbox(hw, hb_lo, hb_hi, args.hitbox_margin)
+        hb = hw.safety.hitbox_m
+        log.info("STOP hitbox (demo envelope +/- %.0f mm): x %s y %s z %s mm", args.hitbox_margin * 1000,
+                 [round(v * 1000) for v in hb.x], [round(v * 1000) for v in hb.y], [round(v * 1000) for v in hb.z])
+    elif hw.mode.resolve("arm") == "real":
+        log.warning("NO task hitbox (%s) — a lost policy can wander anywhere inside the workspace box",
+                    "--no-hitbox" if args.no_hitbox else "no tcp_min/tcp_max in start_poses.yaml")
     # per-task no-go floor: the executor clamps every commanded target to the
     # workspace box, so raising its z lower bound to (demo z_min - margin)
     # stops a runaway descent where the demos never went (rig 2026-08-28:
@@ -271,17 +282,6 @@ def main(argv=None) -> int:
         log.warning("NO task z floor (%s) — only the hardware.yaml workspace box (z >= %.0f mm) "
                     "protects the table", "--no-z-floor" if args.no_z_floor else "no tcp_z_min in start_poses.yaml",
                     hw.safety.workspace_m.z[0] * 1000)
-    hb_lo, hb_hi = getattr(stats, "tcp_min", None), getattr(stats, "tcp_max", None)
-    hitbox_on = not args.no_hitbox and hb_lo is not None and hb_hi is not None
-    if hitbox_on:
-        from phantom.deploy.safety import apply_hitbox
-        hw = apply_hitbox(hw, hb_lo, hb_hi, args.hitbox_margin)
-        hb = hw.safety.hitbox_m
-        log.info("STOP hitbox (demo envelope +/- %.0f mm): x %s y %s z %s mm", args.hitbox_margin * 1000,
-                 [round(v * 1000) for v in hb.x], [round(v * 1000) for v in hb.y], [round(v * 1000) for v in hb.z])
-    elif hw.mode.resolve("arm") == "real":
-        log.warning("NO task hitbox (%s) — a lost policy can wander anywhere inside the workspace box",
-                    "--no-hitbox" if args.no_hitbox else "no tcp_min/tcp_max in start_poses.yaml")
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)

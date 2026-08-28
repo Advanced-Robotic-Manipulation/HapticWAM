@@ -202,8 +202,13 @@ class SafetyMonitor:
             action = _max(action, SafetyAction.CLAMP)
         # per-task hitbox: leaving the demo envelope is not something to clamp
         # and continue from — the policy is already lost; stop the episode
+        # Evaluated on the CLAMPED target: the z floor is a clamp, not a stop —
+        # a policy that finally descends deep enough must be pinned at the
+        # floor and allowed to close there, never stopped for it (review
+        # 2026-08-28: floor == hitbox lower edge turned every deep descent
+        # into a STOP and would have biased the A/B against the better arm)
         hb = hw.safety.hitbox_m
-        if hb is not None and not hb.contains(tcp_target[:3]):
+        if hb is not None and not hb.contains(self.clamp_target(np.asarray(tcp_target, dtype=np.float64))[:3]):
             events.append(SafetyEvent(t_now, "hitbox_exit",
                                       float(np.linalg.norm(tcp_target[:3])),
                                       SafetyAction.STOP_EPISODE))
@@ -321,7 +326,8 @@ def apply_z_floor(hw: HardwareConfig, floor_m: float) -> HardwareConfig:
 
 def apply_hitbox(hw: HardwareConfig, lo, hi, margin_m: float) -> HardwareConfig:
     """Copy of `hw` with a STOP hitbox = [lo - margin, hi + margin] per axis,
-    intersected with the workspace box (the hitbox can only be tighter)."""
+    intersected with the workspace box (the hitbox can only be tighter).
+    Apply BEFORE apply_z_floor so the hitbox floor sits below the clamp floor."""
     lo = np.asarray(lo, dtype=np.float64) - float(margin_m)
     hi = np.asarray(hi, dtype=np.float64) + float(margin_m)
     ws = hw.safety.workspace_m
