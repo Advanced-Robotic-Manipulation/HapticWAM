@@ -1,0 +1,47 @@
+1. `[high]` File: `phantom/deploy/planner.py:278-290`, `phantom/inference/policy.py:101-111`, `phantom/data/windows.py:277-279`, `phantom/deploy/executor.py:183-251`, `phantom/model/phantom_dit.py:142-156`
+   Claim: Deploy conditions the next replan on the accepted previous chunk, not the executed one, so `prev_chunk` disagrees with the actual slow/high robot state.
+   Evidence: Training builds `prev_chunk` from recorded executed `actions` windows, but deploy copies `prev_plan.actions`; the executor then time-scales, blends, and rate-limits that plan before the arm sees it, and the planner comment explicitly marks executed-history parity as deferred.
+   Failure scenario: A slowed descent yields real `qd/tcp_speed` consistent with “I am still high and slow” while `prev_chunk` says “I already committed a full descent,” pushing the next sample back into the same slow-hover mode.
+   Minimal fix: Record the last 16 executed action-grid samples after governor/blend/rate-limit and feed those as `prev_chunk`; cheapest decisive offline experiment is a trace-replay script over recorded deploy episodes (`planner_trace.json` + `actions.zarr` + `arm_tcp_pose.zarr`) that swaps proposal-history vs executed-history `prev_chunk` and checks predicted `dz`, close step, and z-at-close.
+
+2. `[high]` File: `phantom/data/windows.py:395-403`, `phantom/model/rf.py:308-318`, `phantom/model/ace/losses.py:32-35`, `tools/intake_recovery.py:12-18`
+   Claim: The model is never action-supervised on “close failed / empty gripper” states, so it has no learned recovery after closing on air.
+   Evidence: Any deliberate failure demo gets `action_weight = 0.0`; the action loss respects that; the recovery-intake script explicitly says under-grasp episodes continue with an empty gripper and are excluded from imitation because otherwise they would teach the observed failure mode.
+   Failure scenario: After a high close, the next observation is `gripper closed + OBJ=3/no object + no tactile contact`, but all action-supervised examples from similar closed-gripper states are successful lift/transport continuations, so the policy lifts anyway.
+   Minimal fix: Keep action supervision on the corrective portion of recovery demos and mask only the post-failure phantom-carry tail; cheapest decisive offline experiment is to relabel the `batch_20260822` under-grasp episodes into `pre_recontact` vs `post_failure_carry`, fine-tune only on `pre_recontact`, and compare predicted next chunks from recorded high-hover states.
+
+3. `[high]` File: `phantom/model/ace/packing.py:247-261`, `phantom/model/rf.py:398-400`, `phantom/model/acc.py:3-19`, `phantom/data/windows.py:136-138,281-282`
+   Claim: `prev_cpk` feedback is too early: ACC only gets step 0 of the previous predicted contact package, which is 1.0 s after the prior replan while the action chunk lasts 1.6 s.
+   Evidence: `flatten_summary()` defaults to `step=0`; deploy uses that default; `WindowSampler.latent_dt` is `temporal_comp / fps = 1.0 s` while the configured chunk duration is `16 / 10 Hz = 1.6 s` (verified with `.venv/bin/python -c`).
+   Failure scenario: The miss or close-on-air happens late in the chunk, but the next replan is conditioned on the earlier “contact soon / pre-close” summary rather than the outcome of the failed close, so ACC cannot tell the action head that the grasp did not happen.
+   Minimal fix: Feed a summary aligned to executed elapsed time or the last executed contact step, or pass the full 3-step summary; cheapest decisive offline experiment is replaying the same deploy traces with `prev_cpk` summary at step 0 vs last-step and checking gate, `p_evt[none]`, `dz`, and lift probability.
+
+4. `[high]` File: `tools/terminal_eval.py:61-65,133-141`, `phantom/eval/metrics.py:153-166`
+   Claim: The current offline checkpoint-selection metric is optimistic in exactly the wrong way: it stops the window at the close and seeds `prev_cpk` from a prior demo window, so it does not test “close on air, then lift.”
+   Evidence: `terminal_eval` sets `lead = chunk_s` by default, so the evaluated chunk ends at the first close, and it synthesizes steady-state `prev_cpk` from a previous demo chunk one horizon earlier; the main eval metrics do not include miss distance or z-at-close.
+   Failure scenario: A checkpoint can improve from `20.7 -> 17.4 mm` offline and still be useless on the rig because the metric never exposes covariate-shifted late-hover states or post-close empty-gripper behavior.
+   Minimal fix: Add a deploy-trace replay eval that spans close through `+0.8 s` and scores z-at-close, `OBJ` at close, and post-close `dz`; cheapest decisive offline experiment is to run that replay on recorded deploy episodes and compare current vs fixed feedback/normalization variants before touching the rig.
+
+5. `[high]` File: `phantom/scripts/dump_norm_stats.py:63-72,84-91`, `phantom/model/hht/encoders.py:68-80`, `configs/start_poses.yaml:42-63`
+   Claim: I believe `ur_state` normalization weakens grasp-height feedback because it is computed over whole-episode motion, not the narrow grasp band where the failure occurs.
+   Evidence: `dump_norm_stats.py` aggregates all `q`, `qd`, `tcp_pose`, `tcp_speed`, and gripper samples across full episodes; `URStateMLP` is a generic 3-layer MLP over that concatenated 26-D vector; the shipped start stats show grasp/start z variation is only about `27-43 mm`, far tighter than full pick-and-place motion.
+   Failure scenario: A `65-120 mm` hover error can become only a modest normalized `tcp_pose.z` deviation compared with whole-episode z variation, so the model under-reacts and lets the visual prior choose “close now.”
+   Minimal fix: Recompute `ur_state` stats from close-window data or explicitly up-scale `tcp_pose.z` and `tcp_speed.z`; cheapest decisive offline experiment is inference-time ablation on recorded states with only those normalized channels multiplied by `2x/4x`, expecting more negative `dz`, lower z-at-close, and later close if this is causal.
+
+6. `[medium]` File: `phantom/train/train_teacher.py:156-160,189-192`, `tools/provision_v5.sh:268-276`, `phantom/model/rf.py:394-455`, `phantom/scripts/run_deploy.py:170-173`
+   Claim: v5 was trained with observation dropout but deployed at `guidance=1.0`, leaving the unconditional close-lift prior available and untested at stronger observation guidance.
+   Evidence: Teacher training defaults to `--cond-dropout 0.1`; the v5 launch line does not override it; deploy runs with `--guidance 1.0`; the sampler only does the unconditional/null pass when `guidance_scale != 1.0`.
+   Failure scenario: From slightly off-manifold hover states, the model can follow the unconditional demo script instead of the current observation, because nothing in the shipped evaluation forced the stronger guided regime.
+   Minimal fix: A/B `guidance=1.0/1.5/2.0` offline first, then on rig only if offline improves z-at-close; expected signature is higher descent commit ratio, lower positive z-end error, and later close under stronger guidance.
+
+7. `[medium]` File: `phantom/inference/policy.py:83-89`, `phantom/model/rf.py:99-103,117-120`, `phantom/model/sequence.py:190-202`, `configs/start_poses.yaml:1-14`
+   Claim: The real visual input is only one scene frame per replan, so phase/depth ambiguity from the near-top-down camera is a built-in weakness; “future-video tokens dominating action” is the weaker version of this hypothesis.
+   Evidence: Deploy tiles the current RGB frame across the window, sampling encodes only frame 0, and ACTION/CONTACT queries are structurally blocked from attending `VIDEO_GEN`, so the direct issue is not future-video leakage but single-frame ambiguity combined with tightly repeated starts.
+   Failure scenario: Being `65 mm` high can still look like a valid late-approach image from that camera, especially when motion history is absent, so the policy uses a time-anchored visual prior and closes early.
+   Minimal fix: Add 2-3 real scene conditioning frames from the camera ring or an explicit progress feature; cheapest decisive offline experiment is to hold proprio fixed while swapping neighboring camera frames, then hold image fixed while perturbing `tcp_pose.z`, and compare action sensitivity.
+
+8. `[medium]` File: `phantom/deploy/planner.py:80-100,155-185`, `phantom/data/windows.py:257-271,361-384`, `configs/hardware.nuc.yaml:124,164,187,201-205`
+   Claim: Deploy snapshots are not time-aligned, and teacher tactile inputs can be materially stale relative to arm state.
+   Evidence: Deploy stamps `ObsSnapshot.t` with `t_now` and pulls the latest ring row from each modality separately; current config implies about `66 ms` scene-camera period, `10 ms` gripper, `8 ms` arm, `125 ms` infer-image, and `333 ms` tactile keyframe cadence (verified with `.venv/bin/python -c`); training samples all modalities at one anchor `t0`.
+   Failure scenario: Around a `33-50 mm/s` descent, `100-333 ms` modal skew is roughly `3-17 mm` of phase error, which is not the whole miss but is large enough to reinforce hovering when combined with weak proprio and bad feedback state.
+   Minimal fix: Build deploy snapshots on a common arm timestamp and resample/pick all modalities to that time; cheapest decisive offline experiment is to inject `100/200/300 ms` lag into demo-window camera/tactile inputs and measure `commit_ratio`, z-end error, and close timing.
