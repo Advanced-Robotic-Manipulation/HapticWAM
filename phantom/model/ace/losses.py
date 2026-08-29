@@ -51,22 +51,57 @@ def group_velocity_mse(v_pred: torch.Tensor, v_target: torch.Tensor,
     return (per_sample * w).sum() / w.sum().clamp_min(1e-6)
 
 
+def _nll_term(d_B_Tc: torch.Tensor, log_var: torch.Tensor,
+              beta: float | None, detach_weight: bool) -> torch.Tensor:
+    """One sigma group's contact term.
+
+    Default (beta=None, detach_weight=False) is exactly the historical
+    `d / sigma^2 + log sigma^2` — bit-identical, no extra ops.
+
+    P5 knobs (review 2026-08-28), both aimed at the same thing: the trunk's
+    gradient through `x0_pred` is `2r/sigma^2`, and the logged regime is
+    `log sigma ~ -2.35` (`1/sigma^2 ~ 110`), so the contact residual owns the
+    LoRA while the action objective trains at ~1/10-1/50 rate.
+
+      beta (beta-NLL, Seitzer et al. 2022): scale the whole term by
+      `(sigma^2)^beta` DETACHED. beta=1 makes the trunk's gradient exactly the
+      plain-MSE gradient (the 1/sigma^2 and the detached sigma^2 cancel) while
+      the sigma head still sees a proper NLL; beta=0 is the unmodified NLL.
+
+      detach_weight: the sigma head trains on the DETACHED residual
+      (`d.detach()/var + log var` — sigma stays calibrated for the speed
+      governor and the HID confidence weights) and the trunk trains on plain
+      `d`. The two paths are added, so the returned VALUE is no longer
+      comparable across the flag; the gradient is what changes on purpose.
+    """
+    var = log_var.exp()
+    nll = (d_B_Tc.detach() if detach_weight else d_B_Tc) / var + log_var
+    if beta is not None:
+        nll = nll * var.detach().pow(beta)
+    return nll + d_B_Tc if detach_weight else nll
+
+
 def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
                        log_sigma_B_Tc_K: torch.Tensor,
                        layout: SequenceLayout,
-                       group_channels: dict[str, list[int]] | None = None) -> torch.Tensor:
+                       group_channels: dict[str, list[int]] | None = None,
+                       beta: float | None = None,
+                       detach_weight: bool = False) -> torch.Tensor:
     """Heteroscedastic NLL d/sigma^2 + log sigma^2 on the CONTACT frames' x0,
     PER SIGMA GROUP: each SigmaHead channel is supervised against the residual
     of its own packed channels (sigma_group_channels), so the per-group sigma
     the speed governor and HID confidence weights consume is individually
     calibrated. Falls back to the scalar-aggregate version when no channel map
-    is given (legacy)."""
+    is given (legacy).
+
+    `beta` / `detach_weight` rebalance the trunk gradient — see `_nll_term`.
+    Both default to off = the shipped v4/v5 objective."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
     d = (x0_pred[:, :, sl].float() - x0_target[:, :, sl].float()) ** 2  # (B,C,Tc,H,W)
     if group_channels is None:
         d_B_Tc = d.mean(dim=(1, 3, 4))                   # (B, Tc)
         log_var = 2.0 * log_sigma_B_Tc_K.mean(-1)        # (B, Tc)
-        return (d_B_Tc / log_var.exp() + log_var).mean()
+        return _nll_term(d_B_Tc, log_var, beta, detach_weight).mean()
     terms = []
     for k, name in enumerate(SIGMA_GROUPS):
         chans = group_channels.get(name)
@@ -74,13 +109,18 @@ def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
             continue
         d_B_Tc = d[:, chans].mean(dim=(1, 3, 4))         # (B, Tc)
         log_var = 2.0 * log_sigma_B_Tc_K[..., k]         # (B, Tc)
-        terms.append(d_B_Tc / log_var.exp() + log_var)
+        terms.append(_nll_term(d_B_Tc, log_var, beta, detach_weight))
     return torch.stack(terms, dim=-1).mean()
 
 
 def wrist_region_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor,
                      layout: SequenceLayout, wrist_channel: int) -> torch.Tensor:
-    """lambda_w term: the wrist-F/T channel of the CONTACT frames."""
+    """lambda_w term: the wrist-F/T channel of the CONTACT frames.
+
+    NOTE (P5): channel 15 is ALSO the NLL's `wrist` sigma group, so this term
+    is a second supervision of the same cells at weight lambda_w. Kept for
+    checkpoint parity; `PhantomModelConfig.wrist_region_mse=False`
+    (--no-wrist-region-mse) drops it."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
     return F.mse_loss(x0_pred[:, wrist_channel, sl].float(),
                       x0_target[:, wrist_channel, sl].float())
