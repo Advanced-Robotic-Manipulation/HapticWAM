@@ -37,6 +37,25 @@ class LossWeights:
     sigma_reg: float = 0.01        # mild penalty keeping log-sigma bounded
 
 
+# PhantomModelConfig fields that change ONLY the training objective — no
+# module shape, no sampling behaviour, nothing the deployed forward reads.
+# `assert_model_config_matches` (P10B) ignores these: a checkpoint fine-tuned
+# with a different contact-loss shape is still the same model at deploy.
+TRAIN_ONLY_MODEL_FIELDS: frozenset[str] = frozenset({
+    "contact_nll_beta", "contact_nll_detach_weight",
+    "wrist_region_mse", "contact_self_forcing",
+})
+# ...plus the fields a FINE-TUNE may legitimately flip relative to the
+# checkpoint it initializes from. `action_noise_per_strip` also changes
+# SAMPLING, so it stays in the deploy-side P10B check — but adopting it is
+# the whole point of the FT-A bundle, so --init-weights only warns.
+# `action_t_max_of_two` and `cond_dropout_p` are read exclusively by
+# `training_step` (verified 2026-08-29).
+FINETUNE_MUTABLE_MODEL_FIELDS: frozenset[str] = TRAIN_ONLY_MODEL_FIELDS | frozenset({
+    "action_noise_per_strip", "action_t_max_of_two", "cond_dropout_p",
+})
+
+
 @dataclass(frozen=True)
 class LoRAConfig:
     rank: int = 16
@@ -65,6 +84,36 @@ class PhantomModelConfig:
     # their supervision toward the high-noise band that few-NFE sampling
     # actually visits first (informative band ~t in [0.87,1] under tiling)
     action_t_max_of_two: bool = False
+    # --- FT-A objective knobs (review 2026-08-28, P5/P6/P7). All default to
+    # the shipped v4/v5 behaviour: a checkpoint trained before they existed
+    # trains and evaluates bit-identically with every one of them off.
+    #
+    # P5: the contact heteroscedastic NLL sends 2r/sigma^2 into the shared
+    # trunk; with the logged log sigma ~ -2.35 that is a ~110x weight on the
+    # contact residual and the action objective trains at ~1/10-1/50 rate.
+    # contact_nll_beta = beta-NLL (Seitzer 2022): multiply the NLL term by
+    # (sigma^2)^beta detached, beta in [0, 1] (1 = the trunk sees exactly the
+    # plain-MSE gradient). None = off.
+    contact_nll_beta: float | None = None
+    # P5 alternative: the sigma head trains on the DETACHED residual
+    # (d.detach()/var + log var) and the trunk on plain MSE (+ d), so sigma
+    # stays calibrated for the governor while the trunk is no longer scaled
+    # by 1/sigma^2.
+    contact_nll_detach_weight: bool = False
+    # P5: lambda_w * wrist_region_mse double-supervises packed channel 15,
+    # which is ALSO the NLL's `wrist` sigma group. False drops the duplicate.
+    wrist_region_mse: bool = True
+    # P7: pack the ACC two-pass inner sample's OWN predicted contact package
+    # into the CONTACT x0 the ACTION frames are denoised alongside (GT stays
+    # the loss target) — self-forcing, zero extra forward passes. Requires
+    # acc.self_anticipation == "two_pass".
+    contact_self_forcing: bool = False
+    # P6: draw ACTION noise PER STRIP — eps_action = ActionPacker.pack(
+    # randn(B, H, A)) — so every latent cell of one action value shares one
+    # noise draw instead of 160-192 i.i.d. cells whose strip mean is a small
+    # fixed offset. Honoured by training_step AND sample() (deploy/train must
+    # match); the checkpoint records it and run_deploy rebuilds from it.
+    action_noise_per_strip: bool = False
     # Zero the wrist F/T window before it reaches the WristTCN (HHT.obs_frames
     # and HHT.wrist_feature). The INPUT ABLATION the comparative systems need:
     # without it `vision_only` / `no_distill` / `drop_tactile` are input-
@@ -99,7 +148,10 @@ class PhantomModelConfig:
         for f in ("student", "drop_video_at_inference", "rope_time_mode",
                   "use_action_adaln_intent", "hht_dim", "contact_obs_frames",
                   "nfe", "feature_align", "cond_dropout_p",
-                  "action_t_max_of_two", "mask_wrist"):
+                  "action_t_max_of_two", "mask_wrist",
+                  "contact_nll_beta", "contact_nll_detach_weight",
+                  "wrist_region_mse", "contact_self_forcing",
+                  "action_noise_per_strip"):
             if f in d:
                 kw[f] = d[f]
         if isinstance(d.get("loss"), dict):
