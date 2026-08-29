@@ -43,8 +43,15 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, default=4)
     ap.add_argument("--persistent-noise", action="store_true")
     ap.add_argument("--no-merge", action="store_true", help="skip run_deploy's LoRA fold")
+    ap.add_argument("--deploy-rng", action="store_true",
+                    help="reproduce the rig's ACTUAL noise: keep the sampler generator at its "
+                         "constructor seed, run the warm-up replan exactly as run_deploy does, "
+                         "then replay episode-0 traces (seeds forced to 1). A match to the mm "
+                         "proves the rig ran one fixed noise draw (2026-08-29)")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
+    if args.deploy_rng:
+        args.seeds = 1
     hw = load_hardware(args.hardware)
     paths = load_paths()
     dargs = SimpleNamespace(system="teacher", ckpt=args.ckpt, device="cuda", tiny=False,
@@ -63,7 +70,16 @@ def main() -> int:
         policy.task_text = ep.meta.text or ep.meta.task
         per_seed = []          # per_seed[j] = list of chunks per accepted replan
         for j in range(args.seeds):
-            torch.manual_seed(1000 + j)
+            if args.deploy_rng:
+                # exactly run_deploy's sequence: fresh generator at seed 0
+                # (rf.py constructor), one warm-up replan on fake_obs, reset
+                policy.rf._gen = torch.Generator().manual_seed(0)
+                from phantom.scripts.bench_inference import fake_obs
+                policy.reset_episode()
+                with torch.no_grad():
+                    policy.replan(fake_obs(hw, teacher=True), None, np.zeros(6))
+            else:
+                policy.rf._gen = torch.Generator().manual_seed(1000 + j)
             policy.reset_episode()
             prev_plan, prev_fields, chunks = None, None, []
             for i, r in enumerate(ep.trace):
