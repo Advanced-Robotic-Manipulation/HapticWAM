@@ -316,6 +316,16 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
+def episode_seed(base_seed, episode_index: int) -> int:
+    """The sampling-noise seed for episode i: base + i when --seed was given
+    (reproducible A/B), otherwise a fresh random draw — never the generator's
+    constructor default, which made every rig session sample the same noise."""
+    if base_seed is not None:
+        return int(base_seed) + int(episode_index)
+    import os
+    return int.from_bytes(os.urandom(4), "little")
+
+
 def resolve_z_floor(args, stats) -> float | None:
     """The z no-go floor (m) for this run, or None when disabled/unknown."""
     if getattr(args, "no_z_floor", False):
@@ -644,10 +654,21 @@ def main(argv=None) -> int:
                 log.info("camera AE settle...")
                 time.sleep(5.0)
             ep_tags = list(cond_tags)
-            if args.seed is not None:
-                policy.rf._gen = torch.Generator().manual_seed(args.seed + i)
+            # Seed the SAMPLING noise per episode and record it. Without this
+            # the rectified-flow generator stays at its constructor seed
+            # (rf.py: manual_seed(0)), so every deploy process replayed the
+            # SAME noise sequence: the warm-up replan consumed a fixed number
+            # of draws and episode 0 of every rig session since 08-14 sampled
+            # one identical persistent-noise tensor — a 6th-percentile "slow"
+            # draw (16-seed replay, 2026-08-29: the rig's chunk == the slowest
+            # of 16 seeds at every replan of every episode-0 trace).
+            ep_seed = episode_seed(args.seed, i)
+            if hasattr(policy.rf, "reset_episode_noise"):
+                policy.rf._gen = torch.Generator().manual_seed(ep_seed)
                 policy.rf.reset_episode_noise()
-                ep_tags[-1] = f"seed:{args.seed + i}"     # the ACTUAL per-episode seed
+            else:                       # test stubs without a sampler
+                log.warning("policy has no sampling generator to seed")
+            ep_tags = [t for t in ep_tags if not t.startswith("seed:")] + [f"seed:{ep_seed}"]
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
                                  policy_name=f"{args.system}", tags=ep_tags)

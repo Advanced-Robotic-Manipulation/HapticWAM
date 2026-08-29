@@ -266,3 +266,12 @@ def test_floor_is_a_clamp_even_with_the_hitbox_armed():
     # run_deploy order: hitbox applied before the floor
     src = open("phantom/scripts/run_deploy.py").read()
     assert src.index("apply_hitbox(") < src.index("apply_z_floor(")
+
+
+def test_episode_seed_is_random_without_seed_and_reproducible_with():
+    """rf.py seeds its generator to a constant; run_deploy must not let a rig
+    session sample the same noise as every other session (2026-08-29)."""
+    from phantom.scripts.run_deploy import episode_seed
+    a, b = episode_seed(None, 0), episode_seed(None, 0)
+    assert a != b and 0 <= a < 2**32
+    assert episode_seed(7, 0) == 7 and episode_seed(7, 3) == 10
