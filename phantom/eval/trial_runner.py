@@ -100,7 +100,7 @@ def _run_one(rt: DeploymentRuntime, ledger: Ledger, campaign: str, task: str,
     if res.episode_path:
         rt.recorder.relabel(Path(res.episode_path), success=success,
                             status="finalized", remove_tags=["unlabeled"],
-                            tags=["damaged"] if damage else None,
+                            damage=damage,
                             notes=f"eval {campaign}/{system}: {notes}"
                                   f"{' DAMAGE' if damage else ''}")
     ledger.append({

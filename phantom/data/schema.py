@@ -27,6 +27,15 @@ STREAM_ACTIONS = "actions"                    # (T, 7)  teleop / executor comman
 STREAM_ACTIONS_QTARGET = "actions_qtarget"    # (T, dof) raw joint-space teleop targets
 STREAM_ACTIONS_ABS = "actions_abs"            # (T, 7)  ABSOLUTE action: q_target(6) + gripper cmd(1)
                                               #   (Echo leader; Δ-EE stays canonical)
+STREAM_ACTIONS_PLAN = "actions_plan"          # (T, 7)  deploy only: the policy's raw chunk
+                                              #   PROPOSAL as entered by the executor, at
+                                              #   governor-warped times, before clamp/rate
+                                              #   limit. Written by the executor as `actions`
+                                              #   and moved aside by
+                                              #   tools/rederive_rollout_actions.py, which
+                                              #   rebuilds `actions` as the MEASURED delta-EE
+                                              #   on the action grid (what teleop demos hold
+                                              #   and what WindowSampler trains on).
 STREAM_ARM_Q = "arm_q"                        # (T, dof)
 STREAM_ARM_QD = "arm_qd"                      # (T, dof)
 STREAM_ARM_TCP_POSE = "arm_tcp_pose"          # (T, 6)
@@ -64,13 +73,24 @@ class EpisodeMeta:
     policy: str = ""
     dagger_round: int = -1
     success: bool | None = None
+    # operator verdict on collateral damage (object broken, gripper/table hit).
+    # Independent of `success`: a run can fail cleanly or succeed destructively.
+    # Also mirrored as the training-inert tag 'damaged' (eval/trial_runner).
+    damage: bool = False
     notes: str = ""
     # filled by EpisodeRecorder.start:
     driver_modes: dict = field(default_factory=dict)
     clock_calibration: dict = field(default_factory=dict)
-    # filled by EpisodeWriter (provenance for WindowSampler warnings):
+    # filled by EpisodeWriter (provenance for WindowSampler warnings) — unless
+    # the caller pre-set it. Deploy pre-sets the BASE (as-loaded-from-yaml)
+    # hash so run-time safety overrides do not make every rollout look like it
+    # came from another rig; see `deploy_overrides`.
     config_hash: str = ""
     hardware_shapes: dict = field(default_factory=dict)
+    # run-time hardware overrides applied on top of the config identified by
+    # `config_hash` (deploy only): {"z_floor_m", "hitbox_m", "tcp_speed_m_s"}.
+    # Recorded so the envelope an episode actually ran under stays auditable.
+    deploy_overrides: dict = field(default_factory=dict)
     status: str = "recording"        # recording | finalized | aborted
 
     # ------------------------------------------------------------------

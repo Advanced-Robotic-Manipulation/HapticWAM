@@ -42,9 +42,15 @@ class EpisodeWriter:
             raise FileExistsError(f"episode dir {self.path} already holds streams "
                                   f"{stale[:3]} — pick a unique episode name")
         # provenance: WindowSampler warns when data was recorded under
-        # different shape-relevant config values
+        # different shape-relevant config values.
+        # A caller that already set config_hash keeps it: deploy stamps the
+        # BASE (as-loaded) hardware hash, because run_deploy applies per-task
+        # safety overrides (z floor / hitbox / TCP speed cap) via model_copy
+        # and `hw` here is the OVERRIDDEN config. Its hash would differ from
+        # every teleop demo's and trip train_teacher's CONFIG DRIFT gate on
+        # every rollout. The overrides go to meta.deploy_overrides instead.
         try:
-            meta.config_hash = hw.config_hash()
+            meta.config_hash = meta.config_hash or hw.config_hash()
             meta.hardware_shapes = dict(hw.shape_relevant_fields())
         except Exception:  # tolerate partial configs in tests
             pass

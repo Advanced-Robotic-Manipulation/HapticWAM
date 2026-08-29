@@ -35,7 +35,8 @@ from phantom.data.schema import STREAM_ACTIONS_QTARGET, EpisodeMeta
 from phantom.deploy.safety import SafetyAction, SafetyMonitor
 from phantom.drivers.factory import make_rig
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession, make_gripper_poller
+from phantom.recording.workers import (SensorSession, make_gripper_poller,
+                                       new_session_id)
 from phantom.timesync.clock import IdentityClock, MasterClock
 
 log = logging.getLogger("record")
@@ -102,7 +103,7 @@ def run_collection(hw, cfg, out_root: Path, *, panel=None, enable_viz: bool = Fa
         time.sleep(0.5)   # let the pads' gel relax before the reference grab
         clock = (IdentityClock() if hw.mode.resolve("arm") == "mock"
                  else MasterClock.calibrate(rig.arm))
-        session = SensorSession.start(hw, rig, session_id=str(int(time.time()) % 10_000_000))
+        session = SensorSession.start(hw, rig, session_id=new_session_id())
         # this script sends gripper.move() straight from _teleop_loop below
         # (no GripperPilot), so a standalone poller thread for get_state()
         # is safe here -- unlike collect.py's session.py, there's no second
