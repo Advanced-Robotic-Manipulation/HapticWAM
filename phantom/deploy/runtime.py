@@ -21,7 +21,7 @@ import numpy as np
 from phantom.config.hardware import HardwareConfig
 from phantom.data.schema import EpisodeMeta
 from phantom.deploy.executor import ChunkExecutor
-from phantom.deploy.planner import (PlannerLoop, SnapshotBuilder,
+from phantom.deploy.planner import (PlannerLoop, SnapshotBuilder, TerminalVeto,
                                     snapshot_stop_reason)
 from phantom.deploy.safety import SafetyMonitor
 from phantom.drivers.factory import make_rig
@@ -125,11 +125,16 @@ class EpisodeResult:
 
 class DeploymentRuntime:
     def __init__(self, hw: HardwareConfig, policy: PhantomPolicy, mode: str,
-                 out_root: Path):
+                 out_root: Path, *, parity_fixes: bool = False,
+                 veto: TerminalVeto | None = None):
         self.hw = hw
         self.policy = policy
         self.mode = mode
         self.out_root = Path(out_root)
+        # deploy levers (review 2026-08-28), both default OFF so the rig A/B
+        # can attribute each one; run_deploy tags every episode with the state
+        self.parity_fixes = bool(parity_fixes)
+        self.veto = veto
         self.rig = make_rig(hw, control=True)
         self.rig.worker_owned_tactile = True    # real DM-Tac is single-open
         self.session: SensorSession | None = None
@@ -182,10 +187,12 @@ class DeploymentRuntime:
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
                                  record_action=self.recorder.record_action,
                                  gripper_ring=self.session.rings["gripper"])
-        snapshots = SnapshotBuilder(hw, self.session, self.mode)
+        snapshots = SnapshotBuilder(hw, self.session, self.mode,
+                                    parity_fixes=self.parity_fixes,
+                                    executor=executor)
         trace: list = []
         planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace,
-                              session=self.session)
+                              session=self.session, veto=self.veto)
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
         # ring warm-up — the snapshot hard-requires gripper state (no silent

@@ -445,8 +445,9 @@ class _StubRuntime:
     results: list = []
     last: "_StubRuntime | None" = None
 
-    def __init__(self, hw, policy, mode, out_root):
+    def __init__(self, hw, policy, mode, out_root, **kw):
         type(self).last = self
+        self.kw = kw                    # deploy levers (parity_fixes, veto)
         self.rig = SimpleNamespace(
             arm=_StubArm(),
             gripper=SimpleNamespace(get_state=lambda: SimpleNamespace(

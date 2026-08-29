@@ -433,12 +433,14 @@ def test_all_accepted_keeps_the_previous_behaviour():
     assert pol.seen == [None, 0, 1, 2]
 
 
-def test_the_executed_history_upgrade_is_marked_deferred():
+def test_the_proposal_fallback_still_points_at_the_executed_history():
     """The larger change (prev_chunk = executed action grid, as
-    WindowSampler.sample() builds it) is deliberately deferred — the pointer
-    must survive so it is not re-found as a fresh bug."""
+    WindowSampler.sample() builds it) now ships behind --parity-fixes; the
+    legacy branch is still what runs without it, so the pointer must survive
+    where the fallback lives (it used to say DEFERRED)."""
     src = inspect.getsource(PlannerLoop.run)
-    assert "DEFERRED" in src and "windows.py" in src
+    assert "--parity-fixes" in src and "windows.py" in src
+    assert "prev_chunk_from_history" in src
 
 
 # ---------------------------------------------------------------------------

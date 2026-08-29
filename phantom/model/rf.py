@@ -15,6 +15,7 @@ clean values with per-frame timestep 0 and excluded from every loss
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import fields as dc_fields
 
 import numpy as np
 import torch
@@ -42,6 +43,17 @@ class PhantomPrediction:
     governor_sigma_B_Tc: torch.Tensor
     acc: AccOutput | None
     x_final_B_C_T_H_W: torch.Tensor
+
+
+def _expand_acc(acc: AccInputs, k: int) -> AccInputs:
+    """Repeat every ACC conditioning tensor k times along the batch dim.
+
+    Used only by K-seed sampling: seed j of sample b must see IDENTICAL
+    conditioning to every other seed, so the only thing that differs between
+    the K rows is the initial noise draw."""
+    return AccInputs(**{
+        f.name: (v.repeat_interleave(k, dim=0) if torch.is_tensor(v) else v)
+        for f, v in ((f, getattr(acc, f.name)) for f in dc_fields(acc))})
 
 
 def package_from_batch(batch: dict) -> ContactPackage:
@@ -355,9 +367,11 @@ class PhantomRectifiedFlow(nn.Module):
     @torch.no_grad()
     def sample(self, batch: dict, *, nfe: int | None = None,
                prev_cpk: ContactPackage | None = None,
+               prev_cpk_step: int = 0,
                drop_video: bool | None = None,
                guidance_scale: float = 1.0,
-               reuse_noise: bool = False) -> PhantomPrediction:
+               reuse_noise: bool = False,
+               k_seeds: int = 1) -> PhantomPrediction:
         """Few-NFE Euler sampling of the joint sequence (the per-replan denoise).
 
         guidance_scale > 1 applies observation-guidance (classifier-free):
@@ -368,7 +382,26 @@ class PhantomRectifiedFlow(nn.Module):
         (deployment: fresh noise each replan re-rolled the plan direction —
         consecutive-replan direction cosine 0.16-0.35 on the rig; with a
         fixed draw, plans differ only as observations differ). Cleared via
-        reset_episode_noise()."""
+        reset_episode_noise().
+
+        prev_cpk_step selects which future step of the supplied package ACC is
+        summarised from (`ContactPacker.flatten_summary`). 0 is the historical
+        behaviour and the right value when the package was produced for THIS
+        t0; at deploy the package is one replan old, so the training-aligned
+        index is round(latency / latent_dt) (parity fix P2).
+
+        k_seeds > 1 draws K independent noise tensors and denoises them as ONE
+        batch of K (the conditioning — x0, cond mask, ACC inputs, text context,
+        prev_chunk — is repeat_interleaved, so every seed sees identical
+        conditioning). The caller then selects one chunk (BID 2408.17355 /
+        P6). COST, and it must be profiled on the DEPLOY GPU before it books
+        rig time: this is a 2B DiT, so both activation memory and FLOPs scale
+        ~linearly in K once the batch dimension is past the point where the
+        GPU was latency-bound. Expect K=4 at NFE 5 to approach 4x the replan
+        latency on a NUC-class card — which fights P4's L <= 0.5 s target
+        head-on; the documented fallbacks are K=2-3, a lower --nfe, or scoring
+        only every other replan. The 5090 figures in the research notes are
+        NOT the rig's."""
         nfe = nfe or self.mc.nfe
         drop_video = self.mc.drop_video_at_inference if drop_video is None else drop_video
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
@@ -396,8 +429,27 @@ class PhantomRectifiedFlow(nn.Module):
                 self._null_obs_batch(batch), layout, encode_gen=False,
                 null_video_cond=True)
         if prev_cpk is not None:  # deployment: true previous-replan package
-            acc_inputs.prev_cpk_summary_B_S = \
-                self.c_pack.flatten_summary(prev_cpk.to(self.device)).to(self.dtype)
+            acc_inputs.prev_cpk_summary_B_S = self.c_pack.flatten_summary(
+                prev_cpk.to(self.device), step=max(0, int(prev_cpk_step))).to(self.dtype)
+        k_seeds = max(1, int(k_seeds))
+        texts = batch.get("text")
+        if k_seeds > 1:
+            # one denoise, K seeds: replicate every conditioning tensor so seed
+            # j of sample b lands at row b*K + j
+            x0 = x0.repeat_interleave(k_seeds, dim=0)
+            cond_mask = cond_mask.repeat_interleave(k_seeds, dim=0)
+            acc_inputs = _expand_acc(acc_inputs, k_seeds)
+            if x0_null is not None:
+                x0_null = x0_null.repeat_interleave(k_seeds, dim=0)
+            if acc_null is not None:
+                acc_null = _expand_acc(acc_null, k_seeds)
+            batch = dict(batch)
+            batch["prev_chunk"] = batch["prev_chunk"].repeat_interleave(k_seeds, dim=0)
+            if isinstance(texts, (list, tuple)):
+                # TextEmbeddingProvider.get() truncates to batch_size and pads
+                # the REST with the empty-string embedding — an unexpanded list
+                # would silently decondition every seed but the first
+                texts = [t for t in texts for _ in range(k_seeds)]
         B = x0.shape[0]
         dev, dt = x0.device, x0.dtype
         cond_T = torch.from_numpy(layout.cond_mask_T()).to(dev)
@@ -415,7 +467,7 @@ class PhantomRectifiedFlow(nn.Module):
         # step): the projected text context (the 100352->1024 projection reads
         # a ~100M-param matrix — running it per step is pure waste), the
         # intent chunk on-device, and the fps tensor
-        ctx = self.text.get(B, batch.get("text")).to(dt)
+        ctx = self.text.get(B, texts).to(dt)
         ctx_projected = False
         if getattr(self.net, "use_crossattn_projection", False):
             ctx = self.net.crossattn_proj(ctx)
