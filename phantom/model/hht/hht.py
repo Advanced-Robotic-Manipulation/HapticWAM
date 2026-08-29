@@ -34,6 +34,7 @@ class HHT(nn.Module):
         self.hw = hw
         self.bb = bb
         self.student = student
+        self.mask_wrist = bool(mc.mask_wrist)   # input ablation, see below
         self.vae = vae                      # frozen; not an nn submodule on purpose
         d = mc.hht_dim
         lat = bb.lat_ch
@@ -73,13 +74,27 @@ class HHT(nn.Module):
                 f"unexpected={list(unexpected)} ({ckpt_path})")
 
     # ------------------------------------------------------------------
+    def _wrist_input(self, batch: dict) -> torch.Tensor:
+        """batch['wrist'] (B,L,6), zeroed when mask_wrist is set.
+
+        The ONE place the wrist window enters the model — both OBS_PROPRIO
+        (via obs_frames) and the ACC leading-signal branch (wrist_feature) go
+        through here, so masking is total: the model's output becomes
+        invariant to the recorded F/T window (the WristTCN still contributes
+        its bias/constant path, which is what an ablated input looks like).
+        This is what makes vision_only / no_distill / drop_tactile genuinely
+        different inputs from the tactile-free student (P10A).
+        """
+        w = batch["wrist"]
+        return torch.zeros_like(w) if self.mask_wrist else w
+
     def obs_frames(self, batch: dict) -> dict[FrameGroup, torch.Tensor]:
         """batch keys (from WindowSampler / policy ObsSnapshot):
         gel (B,F,3,res_h,res_w), fields (B,F,Hf,Wf,C8),
         contact_state (B,F,Dcs), wrist (B,L,6), ur_state (B,Dur).
         Returns {group: (B, lat_ch, 1, lat_h, lat_w)}."""
         out: dict[FrameGroup, torch.Tensor] = {}
-        wrist = self.phantom_wrist_tcn(batch["wrist"])
+        wrist = self.phantom_wrist_tcn(self._wrist_input(batch))
         ur = self.phantom_ur_mlp(batch["ur_state"])
         pr = self.phantom_proprio_proj(torch.cat([wrist, ur], dim=-1))
         B = pr.shape[0]
@@ -112,4 +127,4 @@ class HHT(nn.Module):
 
     def wrist_feature(self, batch: dict) -> torch.Tensor:
         """(B, d) — the WristTCN feature reused by ACC (leading signal)."""
-        return self.phantom_wrist_tcn(batch["wrist"])
+        return self.phantom_wrist_tcn(self._wrist_input(batch))

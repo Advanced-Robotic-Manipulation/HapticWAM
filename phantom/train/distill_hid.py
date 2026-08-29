@@ -36,7 +36,7 @@ import torch.nn.functional as F
 
 from phantom.config.compute import load_compute
 from phantom.config.hardware import load_hardware
-from phantom.config.model import EVENT_IDX
+from phantom.config.model import EVENT_IDX, PhantomModelConfig
 from phantom.config.paths import load_paths
 from phantom.config.training import HIDConfig
 from phantom.data.windows import WindowSampler
@@ -186,15 +186,34 @@ def main(argv=None) -> int:
     out_dir = paths.runs_root / "hid" / f"{cfg.run_name}_r{cfg.dagger_round}"
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
-    # teacher (frozen) + student (trainable), student initialized from teacher
-    teacher = build_model(hw, paths, student=False, tiny=cfg.tiny,
+    # teacher (frozen) + student (trainable), student initialized from teacher.
+    # Both are built with the TEACHER CHECKPOINT'S OWN model config (P10B,
+    # review 2026-08-28): building code defaults gave the teacher
+    # rope_time_mode='aligned' + acc='gt_noised' while v4/v5 were trained
+    # 'time_true' + 'two_pass', so the distillation target came from a
+    # differently-phased model and nothing raised.
+    mc = payload = None
+    if cfg.teacher_ckpt:
+        payload = torch.load(str(Path(cfg.teacher_ckpt)), map_location="cpu",
+                             weights_only=False)
+        saved_mc = (payload.get("configs") or {}).get("model")
+        if isinstance(saved_mc, dict):
+            mc = PhantomModelConfig.from_dict(saved_mc)
+            log.info("model config from teacher checkpoint: rope=%s acc=%s "
+                     "cond_dropout=%.2f", mc.rope_time_mode,
+                     mc.acc.self_anticipation, mc.cond_dropout_p)
+    mc_teacher = dataclasses.replace(mc, student=False) if mc else None
+    mc_student = dataclasses.replace(mc, student=True) if mc else None
+    teacher = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc_teacher,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
-    student = build_model(hw, paths, student=True, tiny=cfg.tiny,
+    student = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc_student,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
     if cfg.teacher_ckpt:
-        C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), teacher.rf, hw=hw)
+        C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), teacher.rf, hw=hw,
+                                  payload=payload)
         C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), student.rf, hw=hw,
-                                  allow_missing=True)   # teacher-only keys dropped
+                                  allow_missing=True,   # teacher-only keys dropped
+                                  payload=payload)
     teacher.rf.eval()
     for p in teacher.rf.parameters():
         p.requires_grad = False

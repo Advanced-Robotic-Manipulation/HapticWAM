@@ -93,9 +93,12 @@ def _snapshot_rings(hw, arm_ring):
     }
 
 
-def _builder(hw, arm_ring):
+def _builder(hw, arm_ring, mode: str = "student"):
+    # 'student' (not 'vision_only'): the tactile-free mode that still READS the
+    # wrist F/T window, which is what the parity tests below are about.
+    # vision_only/drop_tactile zero it on purpose (WRIST_MASKED_MODES, P10A).
     return SnapshotBuilder(hw, types.SimpleNamespace(
-        rings=_snapshot_rings(hw, arm_ring)), "vision_only")
+        rings=_snapshot_rings(hw, arm_ring)), mode)
 
 
 # ---------------------------------------------------------------------------
