@@ -81,6 +81,8 @@ class RigEpisode:
     what this rebuild picks; at 125 Hz that is <= 8 ms of arm state.
     """
 
+    jpeg_quality: int | None = None      # set by main() from --jpeg-quality
+
     def __init__(self, path: Path, hw):
         self.path = Path(path)
         self.hw = hw
@@ -125,6 +127,15 @@ class RigEpisode:
         """
         hw = self.hw
         rgb = self.row(STREAM_CAMERA_SCENE, t)          # JPEG decoded by the reader
+        if self.jpeg_quality is not None:
+            # image-fragility probe: the rig saw the RAW ring frame, the
+            # recording is a JPEG re-encode; re-encoding again at quality Q
+            # measures how much the chunk moves per unit of image degradation
+            import cv2
+            ok, buf = cv2.imencode(".jpg", np.ascontiguousarray(rgb[..., ::-1]),
+                                   [cv2.IMWRITE_JPEG_QUALITY, int(self.jpeg_quality)])
+            assert ok
+            rgb = cv2.imdecode(buf, cv2.IMREAD_COLOR)[..., ::-1].copy()
 
         # wrist F/T window: anchored at the newest arm SAMPLE time, resampled
         # onto linspace(t_ft - window_s, t_ft, window_len) with np.interp
@@ -373,10 +384,13 @@ def main() -> int:
                     help="random tiny backbone, identity norm stats — CPU smoke "
                          "test of the replay plumbing, NOT an evaluation")
     ap.add_argument("--seed", type=int, default=1000)
+    ap.add_argument("--jpeg-quality", type=int, default=None,
+                    help="re-encode the scene frame at this JPEG quality (image-fragility probe)")
     ap.add_argument("--merge-lora", action="store_true",
                     help="fold LoRA into the base weights exactly as run_deploy does")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
+    RigEpisode.jpeg_quality = args.jpeg_quality
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     assert args.ckpt or args.tiny, "--ckpt is required unless --tiny"
 
