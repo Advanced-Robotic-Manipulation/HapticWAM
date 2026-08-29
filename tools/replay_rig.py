@@ -225,6 +225,10 @@ def summarize(seed_metrics: list[dict], trace_m: dict) -> dict:
     hz = np.array([m["head_dz"] for m in seed_metrics])
     row["head_dz_err"] = float(trace_m["head_dz"] - hz.mean())
     row["trace_in_spread"] = bool(hz.min() <= trace_m["head_dz"] <= hz.max())
+    # per-seed values: the across-seed DISTRIBUTION is the point of E2 (mode
+    # collapse / bimodality) and the rig's own unrecorded seed must be placed in it
+    for k in ("head_dz", "chunk_dz", "close_step", "grip_max"):
+        row[f"seed_{k}"] = [float(m[k]) for m in seed_metrics]
     return row
 
 
