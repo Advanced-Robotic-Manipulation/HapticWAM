@@ -15,3 +15,4 @@ cosmos-predict2.5-2b/
 .venv/
 .gstack/
 configs/data_collect.local.yaml
+.claude/worktrees/
