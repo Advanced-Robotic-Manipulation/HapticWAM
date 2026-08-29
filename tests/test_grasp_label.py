@@ -210,3 +210,21 @@ def test_confusion_counts(tmp_path, hw):
     c = confusion(labels)
     assert c == {"ok_s": 1, "ok_f": 0, "ok_none": 1,
                  "no_s": 0, "no_f": 1, "no_none": 0}
+
+
+def test_truncated_stream_is_a_reason_not_a_crash(tmp_path, hw):
+    """Recordings can die mid-write, leaving a .zarr group with no arrays."""
+    import shutil
+    ep = write_episode(tmp_path / "ep_trunc", hw)
+    shutil.rmtree(ep / "gripper.zarr" / "data")
+    lab = label_episode(ep, hw)
+    assert not lab.grasp_ok
+    assert lab.reasons and lab.reasons[0].startswith("unreadable_stream")
+
+
+def test_missing_stream_is_reported(tmp_path, hw):
+    import shutil
+    ep = write_episode(tmp_path / "ep_nopose", hw)
+    shutil.rmtree(ep / "arm_tcp_pose.zarr")
+    lab = label_episode(ep, hw)
+    assert lab.reasons == ["missing_stream:arm_tcp_pose"]

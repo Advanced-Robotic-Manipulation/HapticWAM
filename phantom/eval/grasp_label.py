@@ -36,6 +36,23 @@ successful rollouts to date. Every label therefore carries the operator verdict
 (`tools/label_grasps.py --confusion`) and do not freeze the thresholds before
 >= 10 human-confirmed policy grasps exist.
 
+VALIDATION (compute3, 2026-08-29, defaults below, contact grid 10 Hz)
+--------------------------------------------------------------------
+Demos (operator `s`): 87/94 = 92.6% positive — Carton 20/20, whiteboard 21/21,
+egg 16/17, waffles 30/36. P8 expected >= 95%; the gap is entirely `c_hold`
+(7 episodes at 0.02/0.22/0.42/0.44/0.56/0.64/0.72, six of them waffles, where
+the gel loses the soft waffle intermittently mid-lift). `c_hold >= 0.5` would
+give 95.7% and `>= 0.4` 97.9% with NO change in the rollout false positives —
+recorded here, NOT applied: the thresholds stay as P8 specified them until a
+human re-checks those seven videos.
+Rollouts: 0/26 on 20260828 and 1/11 on 20260820 = 1/37 = 2.7% false positive.
+The one positive (`ep_teacher_whiteboard_1787248612`, operator `f`) measures
+c_hold 1.00 and a 208 mm in-contact lift, which contradicts its own auto-relabel
+note "outcome=grasp-contact-no-lift" — it needs a human video pass before it is
+called either way. Z_MAX headroom over the demo maxima is thin for Carton
+(143 vs 144 mm) and waffles (97 vs 103 mm), generous for egg (78/101) and
+whiteboard (163/181): re-derive the table after any table or TCP-offset change.
+
 STREAMS USED (and which carries what)
 -------------------------------------
 `gripper.zarr`            (T, 2) = [position 0..1 (1 = closed), gOBJ 0..3]
@@ -222,10 +239,18 @@ def label_episode(ep_dir: str | Path, hw, task: str | None = None, *,
             lab.reasons.append(f"missing_stream:{stream}")
             return lab
 
-    grip = np.asarray(reader.data(STREAM_GRIPPER)[:], dtype=np.float64)
-    g_ts = reader.ts(STREAM_GRIPPER)
-    tcp = np.asarray(reader.data(STREAM_ARM_TCP_POSE)[:], dtype=np.float64)
-    t_ts = reader.ts(STREAM_ARM_TCP_POSE)
+    try:
+        # a truncated recording can leave <stream>.zarr with chunk dirs but no
+        # .zarray metadata (seen on incoming_recovery/ep_waffles_1787394038_009,
+        # which is also missing arm_tcp_pose entirely) — that is a QC finding,
+        # not a crash.
+        grip = np.asarray(reader.data(STREAM_GRIPPER)[:], dtype=np.float64)
+        g_ts = reader.ts(STREAM_GRIPPER)
+        tcp = np.asarray(reader.data(STREAM_ARM_TCP_POSE)[:], dtype=np.float64)
+        t_ts = reader.ts(STREAM_ARM_TCP_POSE)
+    except Exception as e:                                 # noqa: BLE001
+        lab.reasons.append(f"unreadable_stream:{type(e).__name__}")
+        return lab
     if len(g_ts) == 0 or len(t_ts) == 0:
         lab.reasons.append("empty_streams")
         return lab
