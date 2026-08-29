@@ -72,7 +72,8 @@ def apply_overrides(cfg, args, compute=None):
     # gives a converged checkpoint a per-element Adam displacement budget of
     # ~2.7x the LoRA-B weight scale — a rewrite, not a fine-tune. Explicit
     # CLI values beat the compute profile.
-    for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every", "eval_every"):
+    for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
+                 "eval_every", "ema_decay"):
         v = getattr(args, name, None)
         if v is not None:
             updates[name] = v
@@ -81,6 +82,31 @@ def apply_overrides(cfg, args, compute=None):
             if name in updates:
                 updates[name] = min(updates[name], args.max_steps)
     return dataclasses.replace(cfg, **updates)
+
+
+def model_config_drift(saved_mc: dict, mc, *,
+                       tolerate: frozenset = frozenset()) -> tuple[dict, dict]:
+    """(hard, soft) model-config drift between a checkpoint and this run.
+
+    A key MISSING from the checkpoint predates the flag — compare it against
+    the dataclass DEFAULT, not against None, or every checkpoint saved before
+    a config field existed would fail the check the moment the field is added.
+
+    `tolerate` names the fields a fine-tune may legitimately flip
+    (`FINETUNE_MUTABLE_MODEL_FIELDS`): they change the training objective or
+    the noise schedule, never a module shape, and the new checkpoint records
+    its own values so run_deploy/replay still rebuild the right model. Those
+    land in `soft` (warn); everything else in `hard` (fail)."""
+    cur = mc.to_dict()
+    defaults = type(mc)().to_dict()
+    hard: dict = {}
+    soft: dict = {}
+    for k, v in cur.items():
+        ref = saved_mc[k] if k in saved_mc else defaults.get(k)
+        if ref == v:
+            continue
+        (soft if k in tolerate else hard)[k] = (ref, v)
+    return hard, soft
 
 
 def resolve_data(args, hw, paths) -> tuple[Path, NormStats]:
@@ -127,6 +153,11 @@ def main(argv=None) -> int:
                     help="peak LR for HHT/ACC/heads (config default 3e-4)")
     ap.add_argument("--warmup-steps", type=int, default=None,
                     help="linear warmup steps (default min(500, max_steps//10))")
+    ap.add_argument("--ema-decay", type=float, default=None,
+                    help="EMA decay of the deployed weights (config default "
+                         "0.999). A 2-3k-step fine-tune should use ~0.995: at "
+                         "0.999 the EMA still averages over ~1000 steps, i.e. "
+                         "a third of the whole run")
     ap.add_argument("--ckpt-every", type=int, default=None, help="checkpoint cadence (default 1000)")
     ap.add_argument("--eval-every", type=int, default=None, help="val cadence (default 1000)")
     ap.add_argument("--event-band-weight", type=float, default=None,
@@ -164,6 +195,39 @@ def main(argv=None) -> int:
                          "visits first). --no-action-t-max-of-two disables.")
     ap.add_argument("--no-action-t-max-of-two", dest="action_t_max_of_two",
                     action="store_false")
+    # --- FT-A objective knobs (review 2026-08-28: P5, P6, P7). Every one of
+    # them defaults to the shipped v4/v5 behaviour.
+    ap.add_argument("--contact-nll-beta", type=float, default=None,
+                    help="beta-NLL (Seitzer 2022) on the contact "
+                         "heteroscedastic term: multiply it by sigma^(2*beta) "
+                         "DETACHED, beta in [0,1]. The trunk's contact "
+                         "gradient is 2r/sigma^2 and the logged regime is "
+                         "1/sigma^2 ~ 110, so the action objective trains at "
+                         "~1/10-1/50 rate (P5); beta=1 gives the trunk exactly "
+                         "the plain-MSE gradient while sigma stays calibrated. "
+                         "Unset = the shipped objective.")
+    ap.add_argument("--contact-nll-detach-weight", action="store_true",
+                    help="P5 alternative to --contact-nll-beta: the sigma head "
+                         "trains on the detached residual and the trunk on "
+                         "plain MSE.")
+    ap.add_argument("--no-wrist-region-mse", dest="wrist_region_mse",
+                    action="store_false", default=True,
+                    help="drop the lambda_w wrist term: packed channel 15 is "
+                         "ALSO the NLL's `wrist` sigma group, so it is "
+                         "supervised twice (P5).")
+    ap.add_argument("--contact-self-forcing", action="store_true",
+                    help="P7: denoise the ACTION frames alongside the model's "
+                         "OWN predicted contact package (the --acc-two-pass "
+                         "inner sample, already computed) instead of the "
+                         "co-noised GT future, which is ~98%% decodable at the "
+                         "ACTION head's median training t. GT stays the loss "
+                         "target. Requires --acc-two-pass; zero extra passes.")
+    ap.add_argument("--action-noise-per-strip", action="store_true",
+                    help="P6: draw ACTION noise per strip (one draw per action "
+                         "value, not per latent cell), in training AND "
+                         "sampling. i.i.d. cells leave a structured strip-mean "
+                         "offset that --persistent-noise freezes into a fixed "
+                         "per-episode velocity bias.")
     ap.add_argument("--student", action="store_true",
                     help="train the STUDENT layout (no OBS_GEL/OBS_MECH "
                          "frames, no tactile encoders) directly from demos. "
@@ -178,6 +242,16 @@ def main(argv=None) -> int:
                          "`vision_only` arm — the recovery_ratio denominator; "
                          "without it, the teacher minus its wrist signal.")
     args = ap.parse_args(argv)
+    # argument-only validation FIRST: these must fail before DDP/compute/paths
+    # setup, so a typo in a launch line costs nothing
+    if args.contact_nll_beta is not None and not 0.0 <= args.contact_nll_beta <= 1.0:
+        raise SystemExit(f"--contact-nll-beta must be in [0, 1], got "
+                         f"{args.contact_nll_beta}")
+    if args.contact_self_forcing and not args.acc_two_pass:
+        raise SystemExit(
+            "--contact-self-forcing needs the model's own predicted contact "
+            "package, which only --acc-two-pass produces (gt_noised has no "
+            "prediction to force with) — add --acc-two-pass")
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
     profile = load_compute(args.compute)
@@ -191,7 +265,8 @@ def main(argv=None) -> int:
     out_dir = Path(cfg.out_dir) if cfg.out_dir else paths.runs_root / "teacher" / cfg.run_name
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
-    from phantom.config.model import AccConfig, PhantomModelConfig
+    from phantom.config.model import (FINETUNE_MUTABLE_MODEL_FIELDS, AccConfig,
+                                      PhantomModelConfig)
     acc = (AccConfig(self_anticipation="two_pass") if args.acc_two_pass
            else AccConfig())
     if not args.acc_two_pass:
@@ -203,7 +278,21 @@ def main(argv=None) -> int:
                             rope_time_mode=args.rope_time_mode,
                             cond_dropout_p=args.cond_dropout,
                             action_t_max_of_two=args.action_t_max_of_two,
-                            mask_wrist=args.mask_wrist)
+                            mask_wrist=args.mask_wrist,
+                            contact_nll_beta=args.contact_nll_beta,
+                            contact_nll_detach_weight=args.contact_nll_detach_weight,
+                            wrist_region_mse=args.wrist_region_mse,
+                            contact_self_forcing=args.contact_self_forcing,
+                            action_noise_per_strip=args.action_noise_per_strip)
+    ft_a = {k: v for k, v in (("contact_nll_beta", mc.contact_nll_beta),
+                              ("contact_nll_detach_weight", mc.contact_nll_detach_weight),
+                              ("wrist_region_mse", mc.wrist_region_mse),
+                              ("contact_self_forcing", mc.contact_self_forcing),
+                              ("action_noise_per_strip", mc.action_noise_per_strip),
+                              ("action_t_max_of_two", mc.action_t_max_of_two))
+            if v != getattr(PhantomModelConfig(), k)}
+    if ft_a:
+        log.info("FT-A objective knobs active (non-default): %s", ft_a)
     if args.student:
         # the `no_distill` / `vision_only` control arms (P10A): same program,
         # student LAYOUT — no OBS_GEL/OBS_MECH frames and no tactile encoders,
@@ -229,14 +318,18 @@ def main(argv=None) -> int:
         log.info("--init-weights %s from %s weights", args.init_weights,
                  "EMA" if args.init_ema else "RAW")
         saved_mc = init_payload["configs"]["model"]
-        if saved_mc != mc.to_dict():
-            # same shapes can hide a silent behavioral change (acc two_pass ->
-            # gt_noised, rope mode, cond-dropout): a fine-tune must inherit the
-            # checkpoint's model config unless the operator says otherwise
-            drift = {k: (saved_mc.get(k), v) for k, v in mc.to_dict().items()
-                     if saved_mc.get(k) != v}
+        # same shapes can hide a silent behavioral change (acc two_pass ->
+        # gt_noised, rope mode): a fine-tune must inherit the checkpoint's
+        # model config unless the operator says otherwise. The FT-A objective
+        # knobs are the deliberate exception — changing them IS the fine-tune.
+        hard, soft = model_config_drift(saved_mc, mc,
+                                        tolerate=FINETUNE_MUTABLE_MODEL_FIELDS)
+        if soft:
+            log.warning("--init-weights: training-only model flags differ from "
+                        "the checkpoint (checkpoint -> this run): %s", soft)
+        if hard:
             raise SystemExit(f"--init-weights model-config drift vs checkpoint: "
-                             f"{drift} — pass the flags the checkpoint was "
+                             f"{hard} — pass the flags the checkpoint was "
                              f"trained with (e.g. --acc-two-pass)")
         log.info("weights initialized from %s (fresh optimizer/schedule)",
                  args.init_weights)
@@ -244,10 +337,11 @@ def main(argv=None) -> int:
         assert not args.tactile_pretrain, "--resume already carries trained weights"
         resume_payload = C.load_phantom_checkpoint(Path(args.resume), pm.rf, hw=hw)
         saved_mc = resume_payload["configs"]["model"]
-        if saved_mc != mc.to_dict():
-            drift = {k: (saved_mc.get(k), v) for k, v in mc.to_dict().items()
-                     if saved_mc.get(k) != v}
-            raise SystemExit(f"--resume model-config drift vs checkpoint: {drift} "
+        # --resume CONTINUES one run (optimizer, schedule and step come back
+        # with it), so nothing may change — not even the objective knobs.
+        hard, _ = model_config_drift(saved_mc, mc)
+        if hard:
+            raise SystemExit(f"--resume model-config drift vs checkpoint: {hard} "
                              f"— pass the flags the original run used")
         log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
 

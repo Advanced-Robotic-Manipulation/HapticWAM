@@ -102,6 +102,25 @@ class PhantomRectifiedFlow(nn.Module):
             + self.bb.rf_logit_normal_mean
         return self._time_shift(torch.sigmoid(u)).to(device)
 
+    def _action_strip_noise(self, B: int, device, dtype) -> torch.Tensor:
+        """(B, lat_c, Ta, lat_h, lat_w) ACTION noise drawn PER STRIP (P6).
+
+        `ActionPacker.pack(randn(B, H, A))` gives every latent cell of one
+        action value ONE noise draw instead of 160-192 i.i.d. cells. With
+        i.i.d. cells the strip mean the unpacker reads is a small (std
+        0.072-0.079) but structured offset that the network cannot cancel and
+        that `--persistent-noise` freezes for a whole episode — a fixed
+        per-step velocity bias. Per-strip noise makes the strip mean the noise
+        itself, i.e. exactly the quantity the RF objective is defined on.
+
+        Cells outside the packer's strips (and channels >= actions_per_frame)
+        stay ZERO here, matching the packed signal, which writes only those
+        cells; training and sampling both use this draw, so the distribution
+        is consistent end to end."""
+        a = torch.randn(B, self.hw.control.chunk_horizon,
+                        self.hw.control.action_dim, generator=self._gen)
+        return self.a_pack.pack(a.to(device)).to(dtype)
+
     # ------------------------------------------------------------------
     def build_x0(self, batch: dict, layout: SequenceLayout | None = None,
                  *, encode_gen: bool = True, null_video_cond: bool = False
@@ -172,12 +191,18 @@ class PhantomRectifiedFlow(nn.Module):
         one-level approximation of an infinite replan history)."""
         dev, dt = self.device, self.dtype
         mode = self.mc.acc.self_anticipation
+        # stale predictions must never survive into a later step: cleared on
+        # EVERY call, set only by the two-pass branch below
+        self._sf_pred_cpk: ContactPackage | None = None
         if mode == "two_pass" and not getattr(self, "_in_anticipation_pass", False):
             self._in_anticipation_pass = True
             try:
                 with torch.no_grad():
                     pred = self.sample(batch, nfe=max(2, self.mc.nfe // 2))
                 summary = self.c_pack.flatten_summary(pred.cpk.detach()).to(dt)
+                # P7 self-forcing reuses this same package as the CONTACT x0
+                # the ACTION frames are denoised alongside — no extra pass
+                self._sf_pred_cpk = pred.cpk.detach()
             finally:
                 self._in_anticipation_pass = False
         else:
@@ -210,6 +235,11 @@ class PhantomRectifiedFlow(nn.Module):
         t_B_T = t_B.reshape(B, 1).expand(B, layout.t_total).clone()
         t_B_T[:, cond_T] = 0.0
         eps = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
+        if self.mc.action_noise_per_strip and layout.has(FrameGroup.ACTION):
+            # same P6 draw as training_step/sample; an explicit eps_by_group
+            # (HID's shared-noise path) still wins, in the loop below
+            eps[:, :, layout.frame_slice(FrameGroup.ACTION)] = \
+                self._action_strip_noise(B, dev, dt)
         used: dict[FrameGroup, torch.Tensor] = {}
         for slot in layout.slots:
             g = slot.group
@@ -345,9 +375,26 @@ class PhantomRectifiedFlow(nn.Module):
             text = [""] * B
 
         eps = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
+        if self.mc.action_noise_per_strip and layout.has(FrameGroup.ACTION):
+            eps[:, :, layout.frame_slice(FrameGroup.ACTION)] = \
+                self._action_strip_noise(B, dev, dt)               # P6
+
+        # P7 self-forcing: the ACTION frames are denoised alongside a CONTACT
+        # package the model PREDICTED (the two-pass inner sample, already
+        # computed), not the co-noised GT future that is ~98% decodable at
+        # the ACTION head's median training t. GT stays the loss target, so
+        # `x0` below is untouched and only the network INPUT changes.
+        x0_in = x0
+        sf_cpk = getattr(self, "_sf_pred_cpk", None)
+        if (self.mc.contact_self_forcing and sf_cpk is not None
+                and layout.has(FrameGroup.CONTACT)):
+            x0_in = x0.clone()
+            x0_in[:, :, layout.frame_slice(FrameGroup.CONTACT)] = \
+                self.c_pack.pack(sf_cpk.to(dev)).to(dt)
+
         t_frame = t_B_T.reshape(B, 1, layout.t_total, 1, 1).to(dt)
-        x_t = (1 - t_frame) * x0 + t_frame * eps
-        x_t = torch.where(cond_mask.bool(), x0, x_t)               # FRAME_REPLACE
+        x_t = (1 - t_frame) * x0_in + t_frame * eps
+        x_t = torch.where(cond_mask.bool(), x0_in, x_t)            # FRAME_REPLACE
 
         out = self.net(
             x_B_C_T_H_W=x_t, timesteps_B_T=t_B_T * 1000.0,
@@ -377,12 +424,18 @@ class PhantomRectifiedFlow(nn.Module):
                 channels=slice(0, layout.actions_per_frame)),
             "contact_nll": L.contact_hetero_nll(
                 x0_pred, x0, log_sigma, layout,
-                group_channels=sigma_group_channels(self.hw.n_fingers)),
+                group_channels=sigma_group_channels(self.hw.n_fingers),
+                beta=self.mc.contact_nll_beta,
+                detach_weight=self.mc.contact_nll_detach_weight),
             # the event band is in no sigma group; without this it was never
             # denoised yet fed ACC via cpk.event (see losses.event_band_mse)
             "contact_event_mse": L.event_band_mse(x0_pred, x0, layout, CH_EVENT),
             "event_ce": L.event_ce(event_logits, batch["events"].to(dev)),
-            "wrist_mse": L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST),
+            # duplicate supervision of packed channel 15 (also the NLL's
+            # `wrist` sigma group) — zeroed, not merely unweighted, when off
+            "wrist_mse": (L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST)
+                          if self.mc.wrist_region_mse
+                          else torch.zeros((), device=dev)),
             "sigma_reg": (log_sigma ** 2).mean(),
         }
         if layout.has(FrameGroup.VIDEO_GEN):
@@ -514,6 +567,11 @@ class PhantomRectifiedFlow(nn.Module):
             x = self._episode_noise.to(dev, dt).clone()
         else:
             x = torch.randn(x0.shape, generator=self._gen).to(dev, dt)
+            if self.mc.action_noise_per_strip and layout.has(FrameGroup.ACTION):
+                # P6: sampling MUST draw the same kind of ACTION noise the
+                # model was trained to denoise, or deploy runs off-distribution
+                x[:, :, layout.frame_slice(FrameGroup.ACTION)] = \
+                    self._action_strip_noise(B, dev, dt)
             if reuse_noise:
                 self._episode_noise = x.detach().clone()
         x = torch.where(cond_mask.bool(), x0, x)
