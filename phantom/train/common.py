@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from phantom.config.backbone import BackboneConfig
 from phantom.config.hardware import HardwareConfig
-from phantom.config.model import PhantomModelConfig
+from phantom.config.model import TRAIN_ONLY_MODEL_FIELDS, PhantomModelConfig
 from phantom.config.training import CommonTrainConfig
 from phantom.data.schema import (NON_TRAINING_TAGS, EpisodeMeta, NormStats,
                                  is_trainable_episode)
@@ -250,12 +250,18 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
     teacher checkpoint into a student model on purpose (allow_missing=True).
     `mask_wrist` is likewise an INPUT-ABLATION switch applied on top of a
     trained checkpoint (vision_only / drop_tactile), not a weight-layout knob.
+
+    `TRAIN_ONLY_MODEL_FIELDS` (the FT-A contact-loss knobs) are ignored too:
+    they shape the TRAINING objective only — nothing in the deployed forward
+    or the sampler reads them, so a checkpoint fine-tuned with a different
+    contact-loss balance is the same model at deploy. `action_noise_per_strip`
+    is deliberately NOT in that set: it changes `sample()`.
     """
     saved = (payload.get("configs") or {}).get("model")
     mc = getattr(model, "mc", None)          # PhantomRectifiedFlow.mc
     if not isinstance(saved, dict) or mc is None:
         return
-    ignore = ("student", "mask_wrist")
+    ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS)
     cur = {k: v for k, v in mc.to_dict().items() if k not in ignore}
     drift = {k: {"checkpoint": saved.get(k), "model": v}
              for k, v in cur.items() if k in saved and saved[k] != v}
