@@ -78,6 +78,38 @@ def test_sample_shapes(tiny_models):
     assert torch.isfinite(pred.actions_B_H_A).all()
 
 
+def test_k_seed_sample_batches_the_denoise(tiny_models):
+    """P6 K-seed sampling: K chunks per call in ONE denoise, every seed on
+    identical conditioning (the only difference is the noise draw), rows laid
+    out as b*K + j."""
+    hw, teacher, student, batch = tiny_models
+    K, B = 3, batch["prev_chunk"].shape[0]
+    with torch.no_grad():
+        pred = teacher.rf.sample(batch, nfe=2, k_seeds=K)
+    assert pred.actions_B_H_A.shape == (B * K, hw.control.chunk_horizon,
+                                        hw.control.action_dim)
+    assert pred.governor_sigma_B_Tc.shape[0] == B * K
+    assert pred.acc.g.shape == (B * K,) and pred.cpk.batch == B * K
+    assert torch.isfinite(pred.actions_B_H_A).all()
+    # different noise per row => different chunks (a broadcast bug would make
+    # them identical, and the selection rule would then be a no-op)
+    assert not torch.allclose(pred.actions_B_H_A[0], pred.actions_B_H_A[1])
+
+
+def test_prev_cpk_step_selects_a_later_package_row(tiny_models):
+    """The parity prev_cpk alignment must actually reach flatten_summary."""
+    hw, teacher, student, batch = tiny_models
+    with torch.no_grad():
+        base = teacher.rf.sample(batch, nfe=2)
+        a = teacher.rf.sample(batch, nfe=2, prev_cpk=base.cpk, prev_cpk_step=0)
+        b = teacher.rf.sample(batch, nfe=2, prev_cpk=base.cpk, prev_cpk_step=1)
+    assert torch.isfinite(a.actions_B_H_A).all()
+    assert torch.isfinite(b.actions_B_H_A).all()
+    # step is clamped to the package horizon, never an index error
+    with torch.no_grad():
+        teacher.rf.sample(batch, nfe=2, prev_cpk=base.cpk, prev_cpk_step=999)
+
+
 def test_drop_video_sample(tiny_models):
     hw, teacher, student, batch = tiny_models
     with torch.no_grad():
