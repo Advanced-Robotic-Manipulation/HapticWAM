@@ -74,11 +74,11 @@ def new_session_id() -> str:
     two processes record from one host.
 
     Seconds stay the leading component (the segments are human-greppable in
-    /dev/shm while a session runs); pid + 4 random hex disambiguate across
+    /dev/shm while a session runs); pid + 8 random hex disambiguate across
     processes and within one process. NOT written into any episode's
     meta.json — nothing reads it back (EpisodeMeta has no session field;
     episode names carry their own timestamp + sequence)."""
-    return f"{int(time.time()) % 10_000_000}-{os.getpid()}-{secrets.token_hex(2)}"
+    return f"{int(time.time()) % 10_000_000}-{os.getpid()}-{secrets.token_hex(4)}"
 
 
 def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, SharedRingBuffer]:
