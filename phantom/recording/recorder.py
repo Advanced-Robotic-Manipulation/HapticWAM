@@ -206,7 +206,8 @@ class EpisodeRecorder:
 
     def relabel(self, path: Path, *, success: bool | None = None,
                 discard: bool = False, notes: str = "",
-                status: str | None = None, tags=None, remove_tags=None) -> None:
+                status: str | None = None, tags=None, remove_tags=None,
+                damage: bool | None = None) -> None:
         """Apply an operator verdict to an ALREADY-finalized episode by
         rewriting its meta.json — used for the stop-then-judge flow (the
         episode is finalized without a verdict on stop, then marked
@@ -224,7 +225,13 @@ class EpisodeRecorder:
         `remove_tags` is the inverse move: a verdict arriving LATER (the deploy
         label prompt runs after the episode was provisionally filed as
         unlabeled) must be able to clear that tag, otherwise a judged episode
-        stays permanently excluded from training."""
+        stays permanently excluded from training.
+
+        `damage` records collateral damage (object broken, table/gripper hit)
+        independently of `success` — the eval protocol reports it as its own
+        rate, and a destructive success must stay distinguishable from a clean
+        one. It also adds/keeps the training-inert `damaged` tag. None leaves
+        whatever the meta already had."""
         if discard:
             # The operator asked for this episode to go away: DELETE it, do
             # not merely mark it aborted. Leaving ~130 MB of zarr on disk got
@@ -236,6 +243,10 @@ class EpisodeRecorder:
         meta = EpisodeMeta.load(meta_path)
         if success is not None:
             meta.success = success
+        if damage is not None:
+            meta.damage = bool(damage)
+            if damage and "damaged" not in meta.tags:
+                meta.tags.append("damaged")
         if notes:
             meta.notes = notes
         if status is not None:
