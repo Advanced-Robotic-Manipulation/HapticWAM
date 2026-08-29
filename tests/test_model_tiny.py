@@ -110,6 +110,80 @@ def test_prev_cpk_step_selects_a_later_package_row(tiny_models):
         teacher.rf.sample(batch, nfe=2, prev_cpk=base.cpk, prev_cpk_step=999)
 
 
+def _spy_build_x0(rf, monkeypatch):
+    """Record every build_x0 call: whether it was the CFG null build, whether
+    the ACC two-pass anticipation sample was suppressed for it, and the
+    AccInputs it produced (mutated in place afterwards by align_guidance_acc)."""
+    seen: list[dict] = []
+    real = rf.build_x0
+
+    def spy(batch, layout=None, *, encode_gen=True, null_video_cond=False):
+        rec = {"null": null_video_cond,
+               "suppressed": getattr(rf, "_in_anticipation_pass", False)}
+        seen.append(rec)
+        out = real(batch, layout, encode_gen=encode_gen,
+                   null_video_cond=null_video_cond)
+        rec["acc"] = out[2]
+        return out
+
+    monkeypatch.setattr(rf, "build_x0", spy)
+    return seen
+
+
+def test_guidance_null_branch_shares_the_conditional_prev_cpk(tiny_models, monkeypatch):
+    """§1.11: the CFG null branch used to keep its OWN predicted prev_cpk
+    summary while the conditional branch was overwritten with the true one, so
+    v_obs - v_null carried an intent perturbation as well as an observation
+    one and a guidance sweep measured two things at once."""
+    hw, teacher, student, batch = tiny_models
+    rf = teacher.rf
+    with torch.no_grad():
+        base = rf.sample(batch, nfe=2)
+    seen = _spy_build_x0(rf, monkeypatch)
+    with torch.no_grad():
+        pred = rf.sample(batch, nfe=2, prev_cpk=base.cpk, prev_cpk_step=1,
+                         guidance_scale=1.5)
+    assert torch.isfinite(pred.actions_B_H_A).all()
+
+    assert [r["null"] for r in seen] == [False, True]      # conditional, then null
+    cond, null = seen[0]["acc"], seen[1]["acc"]
+    want = rf.c_pack.flatten_summary(base.cpk.to(rf.device), step=1).to(rf.dtype)
+    assert torch.equal(cond.prev_cpk_summary_B_S, want)
+    assert torch.equal(null.prev_cpk_summary_B_S, want)    # THE fix
+    # ...while the OBSERVATION inputs stay nulled: guidance still guides
+    assert not torch.equal(null.wrist_feat_B_D, cond.wrist_feat_B_D)
+    assert torch.count_nonzero(null.react_score_B) == 0
+    assert torch.count_nonzero(cond.react_score_B) > 0
+
+
+def test_guidance_null_branch_skips_the_anticipation_sample(tiny_models, monkeypatch):
+    """The summary it would predict is discarded, so the inner two-pass sample
+    (2 NFE of the full net per replan) must not run for it either."""
+    hw, teacher, student, batch = tiny_models
+    rf = teacher.rf
+    with torch.no_grad():
+        base = rf.sample(batch, nfe=2)
+    seen = _spy_build_x0(rf, monkeypatch)
+    with torch.no_grad():
+        rf.sample(batch, nfe=2, prev_cpk=base.cpk, guidance_scale=1.5)
+    assert all(r["suppressed"] for r in seen)
+    # and the flag is restored, not left latched on
+    assert not getattr(rf, "_in_anticipation_pass", False)
+
+
+def test_guidance_without_prev_cpk_still_aligns_the_branches(tiny_models, monkeypatch):
+    """Offline (terminal_eval --guidance) there is no true package: both
+    branches then share the CONDITIONAL branch's own anticipation."""
+    hw, teacher, student, batch = tiny_models
+    rf = teacher.rf
+    seen = _spy_build_x0(rf, monkeypatch)
+    with torch.no_grad():
+        pred = rf.sample(batch, nfe=2, guidance_scale=2.0)
+    assert torch.isfinite(pred.actions_B_H_A).all()
+    cond, null = seen[0]["acc"], seen[1]["acc"]
+    assert torch.equal(null.prev_cpk_summary_B_S, cond.prev_cpk_summary_B_S)
+
+
 def test_drop_video_sample(tiny_models):
     hw, teacher, student, batch = tiny_models
     with torch.no_grad():
