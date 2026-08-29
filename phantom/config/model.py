@@ -65,6 +65,15 @@ class PhantomModelConfig:
     # their supervision toward the high-noise band that few-NFE sampling
     # actually visits first (informative band ~t in [0.87,1] under tiling)
     action_t_max_of_two: bool = False
+    # Zero the wrist F/T window before it reaches the WristTCN (HHT.obs_frames
+    # and HHT.wrist_feature). The INPUT ABLATION the comparative systems need:
+    # without it `vision_only` / `no_distill` / `drop_tactile` are input-
+    # identical to `student` (both fuse [WristTCN(wrist) || URStateMLP] into
+    # OBS_PROPRIO), so the recovery_ratio denominator in eval/aggregate.py has
+    # no producible arm and a reviewer attributes any student gain to the
+    # surviving wrist F/T signal (P10A, review 2026-08-28). The window is
+    # still RECORDED in every mode — only the model stops reading it.
+    mask_wrist: bool = False
     use_action_adaln_intent: bool = True   # feed prev chunk through pretrained AdaLN path
     hht_dim: int = 256                     # shared embedding width of the small encoders
     contact_obs_frames: int = 1
@@ -90,7 +99,7 @@ class PhantomModelConfig:
         for f in ("student", "drop_video_at_inference", "rope_time_mode",
                   "use_action_adaln_intent", "hht_dim", "contact_obs_frames",
                   "nfe", "feature_align", "cond_dropout_p",
-                  "action_t_max_of_two"):
+                  "action_t_max_of_two", "mask_wrist"):
             if f in d:
                 kw[f] = d[f]
         if isinstance(d.get("loss"), dict):

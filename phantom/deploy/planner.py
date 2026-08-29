@@ -26,6 +26,15 @@ log = logging.getLogger(__name__)
 
 SYSTEM_MODES = ("teacher", "student", "vision_only", "no_distill", "drop_tactile")
 TACTILE_INPUT_MODES = ("teacher",)   # modes whose MODEL consumes tactile streams
+# Modes whose model must ALSO not see the wrist F/T window (P10A, review
+# 2026-08-28). Without this the "tactile-free" arms still received
+# WristTCN(wrist F/T) through OBS_PROPRIO — vision_only, no_distill and
+# drop_tactile were input-identical to `student`, so eval/aggregate.py's
+# recovery_ratio = (student - vision_only)/(teacher - vision_only) had no
+# producible denominator and any student gain could be attributed to the
+# surviving wrist signal. The window is still RECORDED (the rig wears the
+# sensors in every mode) — it is zeroed on the way into the model only.
+WRIST_MASKED_MODES = ("vision_only", "drop_tactile")
 
 
 class StaleStreamError(AssertionError):
@@ -136,6 +145,13 @@ class SnapshotBuilder:
         wrist_window = np.stack(
             [np.interp(grid, ts_a, ft[:, k]) for k in range(ft.shape[1])],
             axis=-1).astype(np.float32)
+        if self.mode in WRIST_MASKED_MODES:
+            # input ablation for the sensor-free comparative arms — see
+            # WRIST_MASKED_MODES. Zeroed here (not skipped) so the snapshot
+            # shape, the staleness checks above and the recording are all
+            # unchanged; a model built with mc.mask_wrist=True zeroes it again
+            # inside HHT, so the two paths agree.
+            wrist_window = np.zeros_like(wrist_window)
 
         _, arm1 = rings["arm"].latest(1)
         _, grip = rings["gripper"].latest(1)

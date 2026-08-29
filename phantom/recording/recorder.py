@@ -206,7 +206,7 @@ class EpisodeRecorder:
 
     def relabel(self, path: Path, *, success: bool | None = None,
                 discard: bool = False, notes: str = "",
-                status: str | None = None, tags=None) -> None:
+                status: str | None = None, tags=None, remove_tags=None) -> None:
         """Apply an operator verdict to an ALREADY-finalized episode by
         rewriting its meta.json — used for the stop-then-judge flow (the
         episode is finalized without a verdict on stop, then marked
@@ -219,7 +219,12 @@ class EpisodeRecorder:
         status='finalized' + success=None, which every lister reads as an
         ordinary full-weight demo. Marking it status='aborted' + tag
         'unlabeled' keeps the data on disk (and offloadable) while
-        list_episodes() and the hub uploader both skip it."""
+        list_episodes() and the hub uploader both skip it.
+
+        `remove_tags` is the inverse move: a verdict arriving LATER (the deploy
+        label prompt runs after the episode was provisionally filed as
+        unlabeled) must be able to clear that tag, otherwise a judged episode
+        stays permanently excluded from training."""
         if discard:
             # The operator asked for this episode to go away: DELETE it, do
             # not merely mark it aborted. Leaving ~130 MB of zarr on disk got
@@ -238,4 +243,7 @@ class EpisodeRecorder:
         for tag in (tags or ()):
             if tag not in meta.tags:
                 meta.tags.append(tag)
+        for tag in (remove_tags or ()):
+            while tag in meta.tags:
+                meta.tags.remove(tag)
         meta.save(meta_path)
