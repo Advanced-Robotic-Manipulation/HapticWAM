@@ -50,6 +50,31 @@ PY
 ln -sfn v5_5.pt runs/teacher_v5_batch0822/DEMO.pt
 ```
 
+## Session 4 recipe (2026-08-29) — the sampler was seeded to a constant; every earlier session ran ONE noise draw
+
+Found 08-29 by replaying the rig's own recorded states: `phantom/model/rf.py` seeded the flow sampler's noise
+generator to a constant and `run_deploy` never reseeded it, so the warm-up replan consumed a fixed number of draws
+and **episode 0 of every rig session sampled the same persistent-noise tensor** — a 6th-percentile "slow" draw
+(the rig's chunk equals the slowest of 16 seeds at every replan; replaying the deploy RNG sequence reproduces every
+rig chunk to 0.3 mm, v4 and v5 alike). The model's actual seed spread at those states is −93…−26 mm per replan;
+demos descend ≈ −45. v4 vs v5 on the rig was never a model comparison.
+
+Fixed in `ba61354`: every episode now draws a fresh seed and records it (`seed:<n>` in meta tags; pass `--seed N`
+for reproducible arms). New deploy levers, all flag-gated and tagged in meta: `--nfe 1` (deterministic conditional
+mean, the most committed descent in the sweep and 172 ms replans instead of 865), `--terminal-veto` (no close unless
+the contact gate agrees or the gripper is at the demo grasp band; a close on air reopens and re-descends, 3 tries),
+`--parity-fixes` (train/deploy input parity), `--k-seeds K` (multi-seed selection; only affordable at NFE ≤ 3).
+
+Arms for the first clean session (waffles, centre cell, interleaved, ≥10 episodes per arm, both from `GO_v5_waffles.sh`):
+```
+EXTRA="--nfe 1 --terminal-veto"            ./GO_v5_waffles.sh 1    # arm B: deterministic + veto
+EXTRA="--seed 4242"                         ./GO_v5_waffles.sh 1    # arm A: as before (NFE 5), seeded per episode
+```
+(`EXTRA` is appended after the GO script's own flags, so its `--nfe` wins.) Alternate A/B per placement; note the
+cell id in the verdict prompt (`s`/`f`/`c`, optionally `d` for damage). The z floor, hitbox and joint gate are on by
+default; if the joint gate refuses after a protective stop, unwind wrist 3 on the pendant. Judge with
+`tools/label_grasps.py` (tactile hold + lift) in addition to the operator verdict.
+
 ## Safety batch (2026-08-28 evening) — what changed after the first v5 session
 
 Root cause of the "later" 08-28 episodes (16 of 26): after the protective stop / manual jogging the arm was
