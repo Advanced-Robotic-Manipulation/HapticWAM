@@ -6,6 +6,18 @@ real rig (or fully mocked for a dry run on any machine).
     python -m phantom.scripts.run_deploy --system student --ckpt <student.pt> ...
     # dry run without hardware or checkpoint:
     python -m phantom.scripts.run_deploy --system teacher --tiny --task smoke
+
+Deploy levers from the 2026-08-28 review (all default OFF, all tagged into the
+episode's condition tags so an A/B arm is reconstructable from the recording):
+
+    # arm A - baseline, exactly what GO_ANY.sh runs today
+    ... --task waffles
+    # arm B - the four levers, one at a time or bundled
+    ... --task waffles --parity-fixes --terminal-veto --k-seeds 4 --nfe 3 --compile
+
+`--nfe 3` and `--compile` are the LATENCY levers (P4: latency == the replan
+interval, so only steps 0-9 of each 16-step chunk ever run). `--k-seeds` pushes
+the other way and must be profiled on the deploy GPU first — see its help.
 """
 
 from __future__ import annotations
@@ -88,7 +100,10 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
     return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
                          task_text=(args.text or args.task),
                          persistent_noise=getattr(args, "persistent_noise", False),
-                         guidance=getattr(args, "guidance", 1.0))
+                         guidance=getattr(args, "guidance", 1.0),
+                         parity_fixes=getattr(args, "parity_fixes", False),
+                         k_seeds=getattr(args, "k_seeds", 1),
+                         close_p=getattr(args, "veto_p_close", 0.5))
 
 
 # Episode outcomes that mean the robot's RTDE CONTROL SCRIPT is (probably)
@@ -166,14 +181,32 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-replans", type=int, default=40,
                     help="episode cap in replans (~0.9 s each). Demos take 16-31 s and a "
                          "rollout that retries needs room: 20 cut every 08-28 retry short")
-    ap.add_argument("--nfe", type=int, default=None)
+    ap.add_argument("--nfe", type=int, default=None,
+                    help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
+                         "LATENCY LEVER (review P4): the loop is compute-bound and "
+                         "latency == replan interval == 0.97 s on 08-28, so only steps "
+                         "0-9 of every 16-step chunk ever execute. --nfe 3 is the "
+                         "first thing to try for L <= 0.5 s; --nfe 1 emits "
+                         "x0 = eps - v(eps, t=1) = E[x0|obs] (deterministic, no "
+                         "persistent-noise velocity offset, ~5x cheaper). Both are "
+                         "unused by GO_ANY.sh — benchmark them with "
+                         "phantom.scripts.bench_inference before a session")
     ap.add_argument("--guidance", type=float, default=1.0,
                     help="observation-guidance weight (classifier-free; v4 "
                          "trained with cond-dropout for this). >1 sharpens "
                          "obs->action coupling at ~2x replan latency")
     ap.add_argument("--drop-video", action="store_true")
     ap.add_argument("--compile", action="store_true",
-                    help="torch.compile the DiT blocks (adds ~1-2 min warmup)")
+                    help="torch.compile the DiT blocks (adds ~1-2 min warmup, taken "
+                         "OUTSIDE the episode by the unconditional warmup replan). "
+                         "LATENCY LEVER (review P4), also unused by GO_ANY.sh: pair it "
+                         "with --nfe 3 and, on a card with the kernels, --flex. "
+                         "--compile-mode reduce-overhead adds cudagraphs. Status: the "
+                         "wiring is intact (backbone/loader.compile_blocks wraps each "
+                         "DiT block with dynamic=False; bench_inference exposes the "
+                         "same path), but NO test covers it and it has never been "
+                         "timed on the rig NUC — measure it with bench_inference "
+                         "--compile before trusting it")
     ap.add_argument("--compile-mode", default="default",
                     help="torch.compile mode (e.g. reduce-overhead for cudagraphs)")
     ap.add_argument("--persistent-noise", action="store_true",
@@ -231,6 +264,39 @@ def build_parser() -> argparse.ArgumentParser:
                     help="refuse episode start beyond this many sigma from the "
                          "task's demo start distribution (default 2.5: the "
                          "postmortem episode-1 pose was 2.65 sigma and failed)")
+    # ---- deploy levers from the 2026-08-28 review. ALL DEFAULT OFF: the rig
+    # A/B can only attribute an effect if each one is switched independently,
+    # and every one of them writes its state into the episode condition tags.
+    ap.add_argument("--parity-fixes", action="store_true",
+                    help="P2: build prev_chunk from the MEASURED arm history + the "
+                         "gripper commands actually sent (what WindowSampler feeds in "
+                         "training) instead of the policy's own last proposal; take the "
+                         "contact-state dt from the tactile ring timestamps; compute "
+                         "`reactive` from the two consecutive fields_ds frames rather "
+                         "than the last two replans; and summarise the ACC prev_cpk at "
+                         "step round(latency/latent_dt) so it lines up with training's "
+                         "two-pass anchor")
+    ap.add_argument("--terminal-veto", action="store_true",
+                    help="P3: scripted terminal commitment guard. Masks a commanded "
+                         "gripper close unless p_contact > --veto-p-close or the TCP is "
+                         "within 15 mm of the task z floor, and on a phantom grasp "
+                         "(p_evt[none] > --veto-p-none one replan after a close) opens "
+                         "to the demo start aperture and forbids any lift so the policy "
+                         "re-descends. Logged per replan under `terminal_veto`")
+    ap.add_argument("--veto-p-close", type=float, default=0.5,
+                    help="theta_close on p_contact = 1 - p_evt[none] (default 0.5; "
+                         "calibrate on the 08-20 gate trace). Also the threshold the "
+                         "K-seed head-descent rejection uses")
+    ap.add_argument("--veto-p-none", type=float, default=0.9)
+    ap.add_argument("--veto-max-retries", type=int, default=3,
+                    help="open/re-descend cycles allowed per episode before the episode "
+                         "ends with reason `veto_retry_cap`")
+    ap.add_argument("--k-seeds", type=int, default=1,
+                    help="P6: sample K chunks per replan in ONE batched denoise and "
+                         "select (reject a head descent < 50%% of the K-max while "
+                         "p_contact is low, then take the chunk nearest the previous "
+                         "accepted plan). PROFILE FIRST: cost scales ~linearly in K on "
+                         "a 2B DiT, which fights the P4 latency target")
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--hardware", default=None)
     ap.add_argument("--out", default="")
@@ -248,6 +314,29 @@ def resolve_z_floor(args, stats) -> float | None:
     if zmin is None:
         return None
     return float(zmin) - float(getattr(args, "z_floor_margin", 0.01))
+
+
+def build_veto(args, stats, z_floor: float | None):
+    """TerminalVeto for this run, or None when --terminal-veto is absent.
+
+    The floor the close-mask's "already low enough to close" band is measured
+    from is the SAME z the executor clamps to (resolve_z_floor), so the two
+    cannot disagree; the open aperture is the task's demo START aperture
+    (start_poses.yaml gripper_mean) — the aperture the demos approach with, and
+    therefore the in-distribution thing to reopen to."""
+    if not getattr(args, "terminal_veto", False):
+        return None
+    from phantom.deploy.planner import TerminalVeto
+    from phantom.train.common import CLOSE_ABS_POS, CLOSE_ABS_RISE
+    open_ap = float(getattr(stats, "gripper_mean", 0.0) or 0.0)
+    if stats is None:
+        log.warning("--terminal-veto with no start-pose stats for %r: the "
+                    "recovery rule will reopen to 0.0 (fully open) and the "
+                    "close-mask has no z-floor band", args.task)
+    return TerminalVeto(
+        p_close=float(args.veto_p_close), p_none=float(args.veto_p_none),
+        max_retries=int(args.veto_max_retries), z_floor=z_floor,
+        open_aperture=open_ap, close_pos=CLOSE_ABS_POS, close_rise=CLOSE_ABS_RISE)
 
 
 def main(argv=None) -> int:
@@ -328,7 +417,20 @@ def main(argv=None) -> int:
                  # safety envelope provenance (rig 2026-08-28)
                  f"zfloor:{round(hw.safety.workspace_m.z[0] * 1000)}mm",
                  f"hitbox:{round(args.hitbox_margin * 1000)}mm" if hitbox_on else "hitbox:none",
-                 f"vmax:{hw.arm.limits.tcp_speed_m_s:.2f}"]
+                 f"vmax:{hw.arm.limits.tcp_speed_m_s:.2f}",
+                 # deploy levers (review 2026-08-28) — ALWAYS tagged, on or off,
+                 # so an A/B arm can never be reconstructed from memory alone
+                 f"parity:{'on' if args.parity_fixes else 'off'}",
+                 (f"veto:pc{args.veto_p_close:.2f}/pn{args.veto_p_none:.2f}/"
+                  f"r{args.veto_max_retries}" if args.terminal_veto else "veto:off"),
+                 f"kseeds:{max(1, args.k_seeds)}"]
+    veto = build_veto(args, stats, z_floor)
+    if veto is not None:
+        log.info("terminal veto ON: p_close=%.2f p_none=%.2f max_retries=%d "
+                 "z_floor=%s open_aperture=%.2f", veto.p_close, veto.p_none,
+                 veto.max_retries,
+                 "none" if veto.z_floor is None else f"{veto.z_floor * 1000:.0f}mm",
+                 veto.open_aperture)
     log.info("episode condition tags: %s", cond_tags)
 
     if arm_real and stats is None:
@@ -354,7 +456,8 @@ def main(argv=None) -> int:
         return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
 
     prev_reason: str | None = None
-    with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root) as rt:
+    with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root,
+                           parity_fixes=args.parity_fixes, veto=veto) as rt:
         for i in range(args.episodes):
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
