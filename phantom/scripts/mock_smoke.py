@@ -27,7 +27,8 @@ from phantom.data.schema import STREAM_ARM_FT, STREAM_CAMERA_SCENE, tactile_stre
 from phantom.drivers.factory import make_rig
 from phantom.recording.postprocess import postprocess_episode
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession, make_gripper_poller
+from phantom.recording.workers import (SensorSession, make_gripper_poller,
+                                       new_session_id)
 from phantom.data.schema import EpisodeMeta
 from phantom.timesync.clock import IdentityClock
 
@@ -53,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rig = make_rig(hw, control=False)
     with rig:
-        session = SensorSession.start(hw, rig, session_id=str(int(time.time()) % 10_000_000))
+        session = SensorSession.start(hw, rig, session_id=new_session_id())
         # this smoke test has no GripperPilot (nothing sends gripper.move()),
         # so exercise the standalone poller instead -- keeps the "gripper"
         # stream covered by the smoke test's session.all_alive() check.
