@@ -351,6 +351,37 @@ def build_veto(args, stats, z_floor: float | None):
         open_aperture=open_ap, close_pos=CLOSE_ABS_POS, close_rise=CLOSE_ABS_RISE)
 
 
+VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
+                  "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
+                  "then optional notes: ")
+
+
+def parse_verdict(ans: str) -> tuple[str, bool]:
+    """Split an operator answer into (verdict code, damage flag).
+
+    The code is the FIRST whitespace-separated token; everything after it is
+    free-text notes. A single trailing 'd' on that token is the damage flag
+    (`sd`, `fd`, `cd`) — the eval protocol reports damage as its own rate, so
+    a destructive success has to stay distinguishable from a clean one, and a
+    second y/N prompt is one more thing to answer per episode on a rig where
+    the operator's hands are on the E-stop.
+
+    Deliberately lenient in the same way the original was: only the token's
+    FIRST character selects the verdict ('success!' -> 's'), so a two-char
+    token is the only thing read as a damage flag ('success' does not set it).
+    Returns ('', False) for anything unrecognized — the caller must not
+    promote the episode."""
+    ans = (ans or "").strip()
+    if not ans:
+        return "", False
+    code, _, _note = ans.partition(" ")
+    c = code[:1].lower()
+    if c not in ("s", "f", "c"):
+        return "", False
+    damage = len(code) == 2 and code[1].lower() == "d"
+    return c, damage
+
+
 def label_episode(recorder, ep_path: Path, ans: str) -> str:
     """Apply the operator's post-episode verdict. Returns the verdict code
     ('s'/'f'/'c'/'' for skipped).
@@ -366,26 +397,28 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
               it out of every training index (is_trainable_episode);
       ''   -> nothing at all: the episode STAYS aborted + unlabeled. An
               operator who hits Enter has not accepted the take.
+
+    A trailing 'd' on the verdict token (`sd`/`fd`/`cd`) additionally records
+    meta.damage=True + the training-inert `damaged` tag — the same field
+    eval/trial_runner's "Damage/breakage?" prompt writes, so a campaign and a
+    plain run produce comparable episodes.
     """
     ans = (ans or "").strip()
-    if not ans:
-        log.warning("episode %s got no operator verdict (skipped) — left "
+    c, damage = parse_verdict(ans)
+    if not c:
+        log.warning("no usable operator verdict for %s (%s) — left "
                     "status='aborted' + tag 'unlabeled', excluded from "
-                    "training", ep_path.name)
+                    "training", ep_path.name,
+                    "skipped" if not ans else f"unrecognized {ans!r}")
         return ""
-    code, _, _note = ans.partition(" ")
-    c = code[:1].lower()
-    if c not in ("s", "f", "c"):
-        log.warning("unrecognized verdict %r for %s — treating as skip; the "
-                    "episode stays unlabeled", ans, ep_path.name)
-        return ""
+    note = f"operator: {ans}" + (" DAMAGE" if damage else "")
     if c == "c":
         recorder.relabel(ep_path, success=None, status="aborted",
                          tags=["contaminated"], remove_tags=["unlabeled"],
-                         notes=f"operator: {ans} CONTAMINATED")
+                         damage=damage, notes=f"{note} CONTAMINATED")
         return c
     recorder.relabel(ep_path, success=(c == "s"), status="finalized",
-                     remove_tags=["unlabeled"], notes=f"operator: {ans}")
+                     remove_tags=["unlabeled"], damage=damage, notes=note)
     return c
 
 
@@ -394,6 +427,14 @@ def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
 
     hw = load_hardware(args.hardware)
+    # The per-task safety overrides below are model_copy()s, so each one changes
+    # hw.config_hash(). Episodes are stamped with the BASE hash (the config as
+    # loaded from yaml — the one the demos were recorded under), otherwise every
+    # rollout trips train_teacher's CONFIG DRIFT gate and the whole DAgger set
+    # is unusable. The overrides are recorded separately, under
+    # meta.deploy_overrides, so the envelope stays auditable.
+    base_hw = hw
+    deploy_overrides: dict = {}
     from phantom.deploy import start_pose as sp
     stats = sp.load_start_stats().get(args.task)
     hb_lo, hb_hi = getattr(stats, "tcp_min", None), getattr(stats, "tcp_max", None)
@@ -402,6 +443,9 @@ def main(argv=None) -> int:
         from phantom.deploy.safety import apply_hitbox
         hw = apply_hitbox(hw, hb_lo, hb_hi, args.hitbox_margin)
         hb = hw.safety.hitbox_m
+        deploy_overrides["hitbox_m"] = {"x": list(hb.x), "y": list(hb.y),
+                                        "z": list(hb.z),
+                                        "margin_m": float(args.hitbox_margin)}
         log.info("STOP hitbox (demo envelope +/- %.0f mm): x %s y %s z %s mm", args.hitbox_margin * 1000,
                  [round(v * 1000) for v in hb.x], [round(v * 1000) for v in hb.y], [round(v * 1000) for v in hb.z])
     elif hw.mode.resolve("arm") == "real":
@@ -415,6 +459,7 @@ def main(argv=None) -> int:
     if z_floor is not None:
         from phantom.deploy.safety import apply_z_floor
         hw = apply_z_floor(hw, z_floor)
+        deploy_overrides["z_floor_m"] = float(hw.safety.workspace_m.z[0])
         log.info("z no-go floor: commanded TCP z clamped to >= %.0f mm (workspace z now %s m)",
                  hw.safety.workspace_m.z[0] * 1000, hw.safety.workspace_m.z)
     elif hw.mode.resolve("arm") == "real":
@@ -424,6 +469,7 @@ def main(argv=None) -> int:
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)
+        deploy_overrides["tcp_speed_m_s"] = float(hw.arm.limits.tcp_speed_m_s)
     log.info("executor TCP speed cap: %.2f m/s", hw.arm.limits.tcp_speed_m_s)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
@@ -507,7 +553,9 @@ def main(argv=None) -> int:
 
     prev_reason: str | None = None
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root,
-                           parity_fixes=args.parity_fixes, veto=veto) as rt:
+                           parity_fixes=args.parity_fixes, veto=veto,
+                           base_hw=base_hw,
+                           deploy_overrides=deploy_overrides) as rt:
         for i in range(args.episodes):
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
@@ -623,8 +671,7 @@ def main(argv=None) -> int:
                 # run_episode has already filed this episode as
                 # status='aborted' + tag 'unlabeled' (P9): a verdict PROMOTES
                 # it back to 'finalized', no verdict leaves it excluded.
-                ans = input("outcome? [s]uccess / [f]ail / [c]ontaminated / "
-                            "Enter=skip, then optional notes: ").strip()
+                ans = input(VERDICT_PROMPT).strip()
                 label_episode(rt.recorder, Path(res.episode_path), ans)
             elif res.episode_path:
                 log.warning("episode %s got no operator verdict (%s) — left "
