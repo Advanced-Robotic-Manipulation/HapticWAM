@@ -197,6 +197,29 @@ def test_unrecognized_verdict_does_not_promote(rollout):
     assert not is_trainable_episode(_meta(ep))
 
 
+def test_eval_trial_writes_its_verdict_onto_the_episode(rollout, monkeypatch):
+    """An eval campaign asks success/damage but used to record them in the
+    ledger only — with the no-verdict guard in place that would leave every
+    campaign episode aborted+unlabeled."""
+    from phantom.eval import trial_runner as TR
+    recorder, ep = rollout
+    answers = iter(["", "y", "n", "clean run"])   # scene reset, success, damage, notes
+    monkeypatch.setattr("builtins.input", lambda *a: next(answers))
+    monkeypatch.setattr(TR, "print", lambda *a, **k: None, raising=False)
+    rt = SimpleNamespace(
+        recorder=recorder,
+        run_episode=lambda **kw: SimpleNamespace(
+            episode_path=ep, stopped_reason="", n_replans=1))
+    ledger: list[dict] = []
+    TR._run_one(rt, SimpleNamespace(append=ledger.append), "camp", "egg",
+                "student", 0, 0, False, 30)
+    m = _meta(ep)
+    assert m.success is True and m.status == "finalized"
+    assert "unlabeled" not in m.tags and "damaged" not in m.tags
+    assert is_trainable_episode(m)
+    assert ledger and ledger[0]["success"] == "True"
+
+
 def test_relabel_can_clear_a_tag(tmp_path):
     ep = tmp_path / "ep_0"
     ep.mkdir()
