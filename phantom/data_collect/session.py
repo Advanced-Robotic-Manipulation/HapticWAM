@@ -49,7 +49,7 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ACTIONS_ABS,
                                  EpisodeMeta)
 from phantom.drivers.factory import make_rig
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession
+from phantom.recording.workers import SensorSession, new_session_id
 from phantom.teleop.echo import EchoTeleop
 from phantom.timesync.clock import IdentityClock, MasterClock
 
@@ -188,7 +188,7 @@ class CollectApp:
             panel.state.update(
                 busy_detail="sensors + camera (open + warmup)")
             session = SensorSession.start(
-                hw, rig, session_id=str(int(time.time()) % 10_000_000))
+                hw, rig, session_id=new_session_id())
             recorder = EpisodeRecorder(
                 session, clock, staging,
                 stream_filter=lite_stream_filter if s.mode == "lite" else None)

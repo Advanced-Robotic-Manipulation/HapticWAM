@@ -27,7 +27,7 @@ from phantom.deploy.safety import SafetyMonitor
 from phantom.drivers.factory import make_rig
 from phantom.inference.policy import PhantomPolicy
 from phantom.recording.recorder import EpisodeRecorder
-from phantom.recording.workers import SensorSession
+from phantom.recording.workers import SensorSession, new_session_id
 from phantom.timesync.clock import IdentityClock, MasterClock
 
 log = logging.getLogger(__name__)
@@ -126,8 +126,21 @@ class EpisodeResult:
 class DeploymentRuntime:
     def __init__(self, hw: HardwareConfig, policy: PhantomPolicy, mode: str,
                  out_root: Path, *, parity_fixes: bool = False,
-                 veto: TerminalVeto | None = None):
+                 veto: TerminalVeto | None = None,
+                 base_hw: HardwareConfig | None = None,
+                 deploy_overrides: dict | None = None):
+        """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
+        per-task safety overrides (z floor / hitbox / TCP speed cap, applied
+        with model_copy). Episodes are stamped with ITS config_hash so a
+        rollout matches the demos recorded on the same rig — otherwise every
+        override changes hw.config_hash() and train_teacher's CONFIG DRIFT
+        gate (train_teacher.py:312) refuses the whole rollout set. The
+        overrides themselves are recorded under meta.deploy_overrides, so the
+        envelope an episode ran under is never lost. Default (None): stamp
+        `hw` exactly as before."""
         self.hw = hw
+        self.base_config_hash = (base_hw or hw).config_hash()
+        self.deploy_overrides = dict(deploy_overrides or {})
         self.policy = policy
         self.mode = mode
         self.out_root = Path(out_root)
@@ -145,7 +158,7 @@ class DeploymentRuntime:
         clock = (IdentityClock() if self.hw.mode.resolve("arm") == "mock"
                  else MasterClock.calibrate(self.rig.arm))
         self.session = SensorSession.start(self.hw, self.rig,
-                                           session_id=str(int(time.time()) % 10_000_000))
+                                           session_id=new_session_id())
         self.recorder = EpisodeRecorder(self.session, clock, self.out_root)
         return self
 
@@ -173,7 +186,9 @@ class DeploymentRuntime:
                                  fatal_reason="worker_died")
         meta = EpisodeMeta(task=task, text=text or task, tags=list(tags or []),
                            policy=policy_name or self.mode,
-                           dagger_round=dagger_round)
+                           dagger_round=dagger_round,
+                           config_hash=self.base_config_hash,
+                           deploy_overrides=dict(self.deploy_overrides))
         # 1 s wall-clock resolution alone collided on fast retries (gate
         # reject -> relaunch inside the same second) and appended the second
         # episode onto the first zarr; a per-runtime sequence makes it unique

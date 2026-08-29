@@ -349,7 +349,8 @@ def test_run_deploy_exits_instead_of_starting_another_episode():
     assert "res.fatal_reason" in src and "return 5" in src
     # the fatal check must come AFTER the label prompt: the crashed episode is
     # exactly the one worth labelling before the process dies
-    assert src.index("outcome? [s]uccess") < src.rindex("res.fatal_reason")
+    assert "outcome?" in RD.VERDICT_PROMPT
+    assert src.index("input(VERDICT_PROMPT)") < src.rindex("res.fatal_reason")
 
 
 # ---------------------------------------------------------------------------

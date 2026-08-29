@@ -42,6 +42,8 @@ from __future__ import annotations
 import hashlib
 import logging
 import multiprocessing as mp
+import os
+import secrets
 import sys
 import threading
 import time
@@ -59,6 +61,25 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # ring construction (parent side, owns the shm)
 # ---------------------------------------------------------------------------
+
+def new_session_id() -> str:
+    """Unique id for ONE SensorSession's shared-memory segments.
+
+    `build_session_rings` derives every shm segment name from md5(session_id +
+    stream), and `SharedRingBuffer(create=True)` raises FileExistsError on a
+    collision. The old id was `int(time.time()) % 10_000_000` alone, so two
+    sessions that started inside the same wall-clock second collided — which
+    happens for real when two pytest runs overlap on one machine, and on the
+    rig whenever a session is relaunched fast (a gate reject -> relaunch) or
+    two processes record from one host.
+
+    Seconds stay the leading component (the segments are human-greppable in
+    /dev/shm while a session runs); pid + 4 random hex disambiguate across
+    processes and within one process. NOT written into any episode's
+    meta.json — nothing reads it back (EpisodeMeta has no session field;
+    episode names carry their own timestamp + sequence)."""
+    return f"{int(time.time()) % 10_000_000}-{os.getpid()}-{secrets.token_hex(2)}"
+
 
 def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, SharedRingBuffer]:
     r, t = hw.recording, hw.tactile

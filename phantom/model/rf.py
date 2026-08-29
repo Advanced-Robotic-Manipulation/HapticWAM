@@ -245,6 +245,53 @@ class PhantomRectifiedFlow(nn.Module):
                 out[k] = torch.zeros_like(out[k])
         return out
 
+    @staticmethod
+    def align_guidance_acc(acc_inputs: AccInputs,
+                           acc_null: AccInputs | None) -> AccInputs | None:
+        """Make the CFG null branch's ACC inputs differ from the conditional
+        branch's ONLY in what the model PERCEIVES.
+
+        Classifier-free guidance is `v_null + s * (v_obs - v_null)`, and that
+        difference is only interpretable as "the effect of the observations"
+        if the two branches are identical in everything else. Two of ACC's
+        four inputs are observations (`wrist_feat_B_D`, `react_score_B`) and
+        the null branch correctly gets them zeroed by `_null_obs_batch`. The
+        other two are the previous replan's own output — INTENT, not
+        perception: `intent_B_H_A` is `batch["prev_chunk"]`, which
+        `_null_obs_batch` deliberately leaves untouched ("Targets ... and
+        intent (prev_chunk) are untouched — only what the model perceives"),
+        and `prev_cpk_summary_B_S` is its contact-side twin.
+
+        Before this, the two were treated inconsistently: `prev_chunk` was
+        shared while the prev-contact summary was not. `build_x0` re-derives
+        the summary per branch, so the null branch ran its OWN two-pass
+        anticipation sample under nulled observations, and at deploy the
+        conditional branch was then overwritten with the true previous-replan
+        package. The guidance vector therefore carried an intent perturbation
+        (a null-obs *prediction* vs the measured truth) on top of the
+        observation one — a sweep over `guidance_scale` was measuring two
+        things at once, which is why §1.11 of the 2026-08-28 review asks for
+        this before any guidance A/B is interpreted.
+
+        Decision: the null branch ADOPTS the conditional branch's summary
+        (deploy: the true prev_cpk; first replan / offline: the conditional
+        branch's own anticipation). The alternative — a deliberately nulled
+        summary (zeros) — was rejected: zeros are not a value the ACC MLP ever
+        saw in training (cond-dropout batches fed it a *predicted* package,
+        never a null token), so it would push the unconditional branch
+        off-distribution rather than merely de-conditioning it, and it would
+        keep the intent channel asymmetric in the opposite direction.
+
+        Training faithfulness is preserved where it exists: training has no
+        true prev_cpk at all, so its cond-dropout batches' summaries are the
+        model's own predictions — the same KIND of quantity this shares.
+
+        Returns `acc_null` (mutated in place) or None when not guiding."""
+        if acc_null is None:
+            return None
+        acc_null.prev_cpk_summary_B_S = acc_inputs.prev_cpk_summary_B_S
+        return acc_null
+
     def reset_episode_noise(self) -> None:
         """Drop the held sampling noise (call at episode start when deploying
         with reuse_noise)."""
@@ -376,7 +423,10 @@ class PhantomRectifiedFlow(nn.Module):
 
         guidance_scale > 1 applies observation-guidance (classifier-free):
         v = v_null + s * (v_obs - v_null), doubling the per-step cost. Only
-        meaningful for checkpoints trained with cond_dropout_p > 0.
+        meaningful for checkpoints trained with cond_dropout_p > 0. The two
+        branches differ ONLY in the observations — the ACC intent channel
+        (prev_chunk and the prev-contact summary) is shared, see
+        `align_guidance_acc`.
 
         reuse_noise=True holds the initial noise draw fixed across calls
         (deployment: fresh noise each replan re-rolled the plan direction —
@@ -413,9 +463,6 @@ class PhantomRectifiedFlow(nn.Module):
         # pure cost (2 NFE of the full net, ~0.35 s/replan on the 5090; x2
         # with guidance). Take the cheap branch instead. The first replan of
         # an episode (prev_cpk=None) keeps the model's own anticipation.
-        # (The guidance NULL build below keeps its inner sample: training's
-        # cond-dropout batches got their ACC summary from exactly that
-        # prediction-under-null-obs, so it is conditioning, not waste.)
         _prev_flag = getattr(self, "_in_anticipation_pass", False)
         if prev_cpk is not None:
             self._in_anticipation_pass = True
@@ -425,12 +472,20 @@ class PhantomRectifiedFlow(nn.Module):
             self._in_anticipation_pass = _prev_flag
         x0_null = acc_null = ctx_null = None
         if guidance_scale != 1.0:
-            x0_null, _, acc_null = self.build_x0(
-                self._null_obs_batch(batch), layout, encode_gen=False,
-                null_video_cond=True)
+            # The null branch's prev_cpk summary is DISCARDED (align_guidance_acc
+            # below): suppress the inner anticipation sample that would produce
+            # it — 2 NFE of the full net per replan, purely to be overwritten.
+            self._in_anticipation_pass = True
+            try:
+                x0_null, _, acc_null = self.build_x0(
+                    self._null_obs_batch(batch), layout, encode_gen=False,
+                    null_video_cond=True)
+            finally:
+                self._in_anticipation_pass = _prev_flag
         if prev_cpk is not None:  # deployment: true previous-replan package
             acc_inputs.prev_cpk_summary_B_S = self.c_pack.flatten_summary(
                 prev_cpk.to(self.device), step=max(0, int(prev_cpk_step))).to(self.dtype)
+        acc_null = self.align_guidance_acc(acc_inputs, acc_null)
         k_seeds = max(1, int(k_seeds))
         texts = batch.get("text")
         if k_seeds > 1:
