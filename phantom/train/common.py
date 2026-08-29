@@ -21,7 +21,8 @@ from phantom.config.backbone import BackboneConfig
 from phantom.config.hardware import HardwareConfig
 from phantom.config.model import PhantomModelConfig
 from phantom.config.training import CommonTrainConfig
-from phantom.data.schema import NormStats
+from phantom.data.schema import (NON_TRAINING_TAGS, EpisodeMeta, NormStats,
+                                 is_trainable_episode)
 
 log = logging.getLogger(__name__)
 
@@ -232,6 +233,41 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
              path, step, len(lora), len(phantom))
 
 
+def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
+    """Refuse a checkpoint whose saved PhantomModelConfig differs from the one
+    the model was BUILT with (P10B, review 2026-08-28).
+
+    Behavioral knobs live in `mc`, not in the weights: `rope_time_mode`
+    decides the ACTION frames' RoPE positions (recomputed at runtime from mc
+    in phantom_dit.py — no saved tensor can rescue a mismatch) and
+    `acc.self_anticipation` decides whether the gate sees its own prediction
+    or leaked GT. Loading a `time_true`/`two_pass` checkpoint into a
+    default-built (`aligned`/`gt_noised`) model raised nothing and silently
+    shifted every action frame's temporal phase — distill_hid, dagger.relabel
+    and finetune_hids all did exactly that.
+
+    `student` is the ONE legitimate difference: teacher->student init loads a
+    teacher checkpoint into a student model on purpose (allow_missing=True).
+    `mask_wrist` is likewise an INPUT-ABLATION switch applied on top of a
+    trained checkpoint (vision_only / drop_tactile), not a weight-layout knob.
+    """
+    saved = (payload.get("configs") or {}).get("model")
+    mc = getattr(model, "mc", None)          # PhantomRectifiedFlow.mc
+    if not isinstance(saved, dict) or mc is None:
+        return
+    ignore = ("student", "mask_wrist")
+    cur = {k: v for k, v in mc.to_dict().items() if k not in ignore}
+    drift = {k: {"checkpoint": saved.get(k), "model": v}
+             for k, v in cur.items() if k in saved and saved[k] != v}
+    if drift:
+        raise RuntimeError(
+            f"model-config drift vs checkpoint: {drift} — the model was built "
+            f"with different behavior than these weights were trained with. "
+            f"Build it from the checkpoint's own config: "
+            f"mc = PhantomModelConfig.from_dict(payload['configs']['model']) "
+            f"(dataclasses.replace(mc, student=True) for the student).")
+
+
 def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             hw: HardwareConfig, load_ema: bool = False,
                             allow_missing: bool = False,
@@ -253,6 +289,7 @@ def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
     if payload["configs"]["hardware_hash"] != hw.config_hash():
         log.warning("hardware config VALUES differ from checkpoint provenance "
                     "(shape-compatible — proceeding)")
+    assert_model_config_matches(payload, model)
     weights = dict(payload["lora"])
     weights.update(payload["phantom_modules"])
     if load_ema and payload.get("ema"):
@@ -351,6 +388,7 @@ def manifest_split(data_root: Path, split: str) -> list[Path] | None:
         raise SystemExit(f"manifest {mf}: duplicate rows for {dups[:5]}")
     eps: list[Path] = []
     missing: list[str] = []
+    excluded: list[str] = []
     for r in rows:
         if r.get("split") != split:
             continue
@@ -358,11 +396,41 @@ def manifest_split(data_root: Path, split: str) -> list[Path] | None:
         if not (p / "meta.json").exists():
             missing.append(r["path"])
             continue
-        st = json.loads((p / "meta.json").read_text()).get("status", "finalized")
+        meta_d = json.loads((p / "meta.json").read_text())
+        # P9 (review 2026-08-28): tags disqualify BEFORE the status check —
+        # 'unlabeled' episodes are deliberately status='aborted' (that is how
+        # the no-verdict guard files them), so the hard error below would turn
+        # a correctly-excluded episode into a crashed run.
+        tags = {str(t) for t in (meta_d.get("tags") or [])}
+        tags |= {str(t) for t in (r.get("tags") or [])}
+        bad = sorted(tags & set(NON_TRAINING_TAGS))
+        if bad:
+            excluded.append(f"{r['path']} ({','.join(bad)})")
+            continue
+        st = meta_d.get("status", "finalized")
         if st != "finalized":
             raise SystemExit(f"manifest {mf}: {r['path']} has status {st!r} — "
                              f"non-finalized episodes must not train")
+        # meta.json written before the status field existed has no key; the
+        # status check above already read it as finalized, so keep that
+        # reading (EpisodeMeta defaults to "recording").
+        meta = EpisodeMeta.from_dict({**meta_d, "status": st})
+        if not is_trainable_episode(meta):
+            # what is left after the two checks above: an UNJUDGED POLICY
+            # ROLLOUT (policy != teleop, success is None). Loud, not skipped —
+            # it means a DAgger intake pass admitted rollouts nobody labelled,
+            # and every one of them would ground the student's own mistakes at
+            # action_weight 1.0.
+            raise SystemExit(
+                f"manifest {mf}: {r['path']} is a policy rollout "
+                f"(policy={meta.policy!r}) with no success verdict — label it "
+                f"(run_deploy's prompt) or drop it from the manifest; "
+                f"unjudged rollouts must never train")
         eps.append(p)
+    if excluded:
+        log.warning("manifest split %r: %d episodes excluded by tag "
+                    "(%s%s)", split, len(excluded), ", ".join(excluded[:3]),
+                    ", ..." if len(excluded) > 3 else "")
     if missing:
         raise SystemExit(f"manifest {mf}: {len(missing)} {split!r} rows point at missing "
                          f"episodes, e.g. {missing[:3]} — partial dataset")

@@ -34,6 +34,10 @@ import os
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from phantom.data.schema import (NON_TRAINING_TAGS, EpisodeMeta,  # noqa: E402
+                                 is_trainable_episode)
+
 CANON = {"carton": "Carton", "waffles": "waffles", "egg": "egg", "whiteboard": "whiteboard"}
 
 
@@ -130,6 +134,7 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
             if l.strip():
                 existing.add(json.loads(l)["episode"])
     new_rows = []
+    n_refused = 0
     for mp in sorted(tasks_root.rglob("ep_*/meta.json")):
         ep = mp.parent
         if ep.name in existing:
@@ -138,6 +143,20 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
         if m.get("status", "finalized") != "finalized":
             print(f"manifest: skipping {ep.name} (status={m.get('status')!r})")
             continue                       # crashed/in-flight/aborted takes never train
+        # P9 (review 2026-08-28): the ONE gate between a deploy rollout and
+        # the optimizer. `unlabeled`/`contaminated` takes and unjudged policy
+        # rollouts (success is None on a non-teleop episode) are refused a
+        # manifest row entirely — admitting them trains the model's own
+        # on-policy mistakes at action_weight 1.0, which is exactly what a
+        # DAgger round must not do.
+        if not is_trainable_episode(EpisodeMeta.from_dict(
+                {**m, "status": m.get("status", "finalized")})):
+            why = ",".join(sorted({str(t) for t in (m.get("tags") or [])}
+                                  & set(NON_TRAINING_TAGS))) \
+                  or f"unjudged rollout (policy={m.get('policy')!r}, success=None)"
+            print(f"manifest: REFUSING {ep.name} — {why}")
+            n_refused += 1
+            continue
         # anything not already in the manifest is a new intake episode
         # (v4 rows are all present; the v4 val rows stay frozen)
         new_rows.append({"episode": ep.name, "task": m["task"], "success": m.get("success"),
@@ -162,6 +181,9 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
         (manifest_path.parent / "intake_holdout.json").write_text(json.dumps(info, indent=1))
     print(f"manifest: appended {len(new_rows)} rows to {manifest_path} "
           f"({n_val} held out as val from {len(hold)} sessions: {info['holdout_sessions']})")
+    if n_refused:
+        print(f"manifest: REFUSED {n_refused} episodes (unlabeled / contaminated / "
+              f"unjudged policy rollouts) — label them and re-run to admit them")
     return 0
 
 

@@ -164,6 +164,19 @@ def main(argv=None) -> int:
                          "visits first). --no-action-t-max-of-two disables.")
     ap.add_argument("--no-action-t-max-of-two", dest="action_t_max_of_two",
                     action="store_false")
+    ap.add_argument("--student", action="store_true",
+                    help="train the STUDENT layout (no OBS_GEL/OBS_MECH "
+                         "frames, no tactile encoders) directly from demos. "
+                         "This is the `no_distill` control arm named in "
+                         "docs/training_playbook.md — the same architecture "
+                         "and data as the distilled student but never taught "
+                         "by the teacher. Without it that arm is unbuildable "
+                         "(P10A). Combine with --mask-wrist for `vision_only`.")
+    ap.add_argument("--mask-wrist", action="store_true",
+                    help="zero the wrist F/T window on the way into the model "
+                         "(still recorded). With --student this is the "
+                         "`vision_only` arm — the recovery_ratio denominator; "
+                         "without it, the teacher minus its wrist signal.")
     args = ap.parse_args(argv)
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
@@ -186,12 +199,25 @@ def main(argv=None) -> int:
             "ACC self-anticipation = gt_noised (fast proxy). Do NOT report the "
             "RQ2 gate lead-time from this run — retrain the final teacher with "
             "--acc-two-pass so the gate never sees leaked GT contact.")
-    mc = PhantomModelConfig(student=False, acc=acc,
+    mc = PhantomModelConfig(student=args.student, acc=acc,
                             rope_time_mode=args.rope_time_mode,
                             cond_dropout_p=args.cond_dropout,
-                            action_t_max_of_two=args.action_t_max_of_two)
+                            action_t_max_of_two=args.action_t_max_of_two,
+                            mask_wrist=args.mask_wrist)
+    if args.student:
+        # the `no_distill` / `vision_only` control arms (P10A): same program,
+        # student LAYOUT — no OBS_GEL/OBS_MECH frames and no tactile encoders,
+        # so the tactile-target losses simply have no frames to land on.
+        assert not args.tactile_pretrain, (
+            "--student has no tactile encoder to initialize from a program-1 "
+            "checkpoint")
+        log.info("STUDENT layout (%s arm): tactile inputs absent%s",
+                 "vision_only" if args.mask_wrist else "no_distill",
+                 ", wrist F/T MASKED" if args.mask_wrist else "")
+    elif args.mask_wrist:
+        log.info("wrist F/T window MASKED (teacher layout)")
 
-    pm = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc,
+    pm = build_model(hw, paths, student=args.student, tiny=cfg.tiny, mc=mc,
                      load_base=not cfg.tiny, device=args.device, dtype=dtype)
 
     resume_payload = None
@@ -255,7 +281,7 @@ def main(argv=None) -> int:
         pm.rf.event_band_weight = args.event_band_weight
         log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
                  args.event_band_weight, pm.mc.loss.event)
-    sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=cfg.seed)
+    sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
                          grasp_frac=args.grasp_frac, photo_aug=args.photo_aug)

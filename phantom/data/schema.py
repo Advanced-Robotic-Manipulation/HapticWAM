@@ -169,3 +169,40 @@ def is_failure_demo(meta: "EpisodeMeta") -> bool:
     if any("deliberate_failure" in str(t) for t in (meta.tags or [])):
         return True
     return str(meta.task or "").endswith("_fail")
+
+
+# Tags that disqualify an episode from training entirely (not "train it at
+# weight 0" like a deliberate failure demo — it must not be indexed at all).
+#   unlabeled    — stopped but never judged (collect: session._file_unlabeled;
+#                  deploy: runtime.run_episode's no-verdict guard)
+#   contaminated — hand in frame / bumped scene / sensor glitch. NOT a failure
+#                  demonstration (success stays None so is_failure_demo() does
+#                  not misread it as a deliberate failure), so the tag is the
+#                  only thing standing between it and full-weight training.
+NON_TRAINING_TAGS: tuple[str, ...] = ("contaminated", "unlabeled")
+
+
+def is_trainable_episode(meta: "EpisodeMeta") -> bool:
+    """False for any episode that must never enter a training index.
+
+    Three independent disqualifiers (P9, review 2026-08-28):
+      * a NON_TRAINING_TAGS tag (`unlabeled` / `contaminated`);
+      * status != 'finalized' (crashed, in flight, or aborted);
+      * a POLICY ROLLOUT with no verdict — `policy` set to anything but the
+        teleop marker and `success is None`. A deploy rollout the operator
+        never judged is exactly the on-policy state where the model is already
+        wrong; training it at action_weight 1.0 reinforces the bug.
+
+    Deliberate failure demos stay trainable here on purpose: they carry real
+    supervision for the contact/event/slip heads and WindowSampler already
+    zeroes their action weight via is_failure_demo().
+    """
+    tags = {str(t) for t in (meta.tags or [])}
+    if tags & set(NON_TRAINING_TAGS):
+        return False
+    if str(meta.status or "finalized") != "finalized":
+        return False
+    policy = str(meta.policy or "").strip()
+    if policy and policy != "teleop" and meta.success is None:
+        return False
+    return True

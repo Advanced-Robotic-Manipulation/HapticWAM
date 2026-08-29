@@ -92,6 +92,17 @@ def _run_one(rt: DeploymentRuntime, ledger: Ledger, campaign: str, task: str,
     success = _ask_yn("Success?")
     damage = _ask_yn("Damage/breakage?")
     notes = input("Notes (Enter to skip): ").strip()
+    # write the verdict back onto the EPISODE, not only into the ledger:
+    # run_episode files every deploy episode as status='aborted' + tag
+    # 'unlabeled' (P9), so without this an entire eval campaign stays
+    # untrainable — and the ledger would be the only record that these
+    # episodes were ever judged.
+    if res.episode_path:
+        rt.recorder.relabel(Path(res.episode_path), success=success,
+                            status="finalized", remove_tags=["unlabeled"],
+                            tags=["damaged"] if damage else None,
+                            notes=f"eval {campaign}/{system}: {notes}"
+                                  f"{' DAMAGE' if damage else ''}")
     ledger.append({
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"), "campaign": campaign,
         "task": task, "system": system, "seed": seed, "trial": trial,
