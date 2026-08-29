@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections import deque
 
 import numpy as np
 
@@ -54,6 +55,13 @@ class ChunkExecutor:
         self._swap_t = 0.0
         self._play_time = 0.0                  # governed playback clock
         self._last_action_k = -1               # last action index reported to record_action
+        # (t, gripper command) of every action-grid step the playback ENTERED —
+        # the deploy-side stand-in for the recorded STREAM_ACTIONS gripper
+        # channel that WindowSampler reads into prev_chunk (parity fix P2).
+        # Only entered steps land here, so it is the command actually sent, not
+        # the proposal: rejected plans and never-reached chunk tails never
+        # appear. Bounded; ~1 entry per 0.1 s at action_rate_hz.
+        self._grip_hist: deque[tuple[float, float]] = deque(maxlen=256)
         self._last_tick = 0.0
         self._last_cmd: np.ndarray | None = None   # last pose actually commanded
         self._lock = threading.Lock()
@@ -139,6 +147,25 @@ class ChunkExecutor:
         with self._lock:
             return None if self._last_cmd is None else self._last_cmd.copy()
 
+    def gripper_cmd_at(self, times) -> np.ndarray | None:
+        """Gripper command in force at each of `times` (zero-order hold).
+
+        The parity prev_chunk (P2) needs the gripper channel of the EXECUTED
+        action grid, exactly as `WindowSampler.sample()` reads it out of the
+        recorded STREAM_ACTIONS rows. Returns None while nothing has been
+        executed yet (first replan), or NaN for grid times that precede the
+        first entered step — the caller substitutes the measured aperture."""
+        times = np.asarray(times, dtype=np.float64)
+        with self._lock:
+            hist = list(self._grip_hist)
+        if not hist:
+            return None
+        ts = np.asarray([h[0] for h in hist], dtype=np.float64)
+        gs = np.asarray([h[1] for h in hist], dtype=np.float64)
+        idx = np.searchsorted(ts, times, side="right") - 1
+        out = np.where(idx >= 0, gs[np.clip(idx, 0, len(gs) - 1)], np.nan)
+        return out.astype(np.float64)
+
     # ------------------------------------------------------------------
     def _pose_at(self, plan: Plan, play_time: float) -> tuple[np.ndarray, float]:
         """Pose target from cumulative deltas at governed playback time."""
@@ -204,12 +231,19 @@ class ChunkExecutor:
 
                 # report each newly-entered action-grid step (DAgger rollout
                 # episodes need the executed STREAM_ACTIONS like teleop demos)
-                if self.record_action is not None:
-                    k = min(int(self._play_time * hw.control.action_rate_hz),
-                            plan.actions.shape[0] - 1)
-                    while self._last_action_k < k:
-                        self._last_action_k += 1
-                        self.record_action(t0, plan.actions[self._last_action_k])
+                # and remember its gripper command (parity prev_chunk, P2).
+                k = min(int(self._play_time * hw.control.action_rate_hz),
+                        plan.actions.shape[0] - 1)
+                while self._last_action_k < k:
+                    self._last_action_k += 1
+                    a = plan.actions[self._last_action_k]
+                    if self.record_action is not None:
+                        self.record_action(t0, a)
+                    # locked: the planner thread reads this deque, and a full
+                    # maxlen deque pops-left on append — an unsynchronised
+                    # list() over it can raise "mutated during iteration"
+                    with self._lock:
+                        self._grip_hist.append((t0, float(np.clip(a[6], 0.0, 1.0))))
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
@@ -330,6 +364,7 @@ class ChunkExecutor:
         self.stopped_reason = None
         self._last_cmd = None                  # re-seed the rate limit per episode
         self._grip_target = None
+        self._grip_hist.clear()                # executed-gripper history is per-episode
         self._grip_thread = threading.Thread(target=self._grip_worker, daemon=True,
                                              name="gripper")
         self._grip_thread.start()
