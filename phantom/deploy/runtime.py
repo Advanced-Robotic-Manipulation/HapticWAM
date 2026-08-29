@@ -230,6 +230,23 @@ class DeploymentRuntime:
             executor.stop()
             try:
                 saved = self.recorder.stop(success=None)
+                if saved is not None:
+                    # PROVISIONAL verdict (P9, review 2026-08-28): a deploy
+                    # episode is finalized with success=None, which every
+                    # lister reads as an ordinary full-weight demo — so a
+                    # session where the operator hits Enter, runs with
+                    # --no-label-prompt, or whose process dies before the
+                    # prompt would train on-air closes at action_weight 1.0.
+                    # File it as NOT training-ready right here, at the only
+                    # point guaranteed to run; run_deploy's label prompt
+                    # promotes it back to 'finalized' when a verdict arrives.
+                    # Same guard the collect app got (data_collect/session.py
+                    # _file_unlabeled) — deploy was missed.
+                    try:
+                        self.recorder.relabel(saved, status="aborted",
+                                              tags=["unlabeled"])
+                    except Exception:
+                        log.exception("could not file %s as unlabeled", saved)
             finally:
                 # the trace must survive crashes — crashed episodes are
                 # exactly the ones worth diagnosing (issue #2: the trace of

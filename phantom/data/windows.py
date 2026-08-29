@@ -31,7 +31,8 @@ from phantom.data.episode_store import EpisodeReader, list_episodes
 from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
-                                 STREAM_GRIPPER, NormStats, is_failure_demo,
+                                 STREAM_GRIPPER, EpisodeMeta, NormStats,
+                                 is_failure_demo, is_trainable_episode,
                                  tactile_stream)
 
 log = logging.getLogger(__name__)
@@ -186,6 +187,25 @@ class WindowSampler:
         replay one frozen set of windows."""
         items: list[WindowItem] = []
         for ep in (list_episodes(root) if episodes is None else episodes):
+            # P9 (review 2026-08-28): the LAST gate before windows exist. The
+            # DAgger path reaches here directly — dagger_driver hands a rollout
+            # root to distill_hid --extra-data, which calls build_index with no
+            # manifest at all — so an unjudged or contaminated rollout would
+            # otherwise be indexed and grounded at action_weight 1.0 on exactly
+            # the on-policy states the model already gets wrong.
+            try:
+                # read meta.json directly (not through the episode cache): a
+                # rejected episode must not cost a zarr open, and the check
+                # must see what is on disk now
+                meta = EpisodeMeta.load(Path(ep) / "meta.json")
+            except Exception as e:                       # unreadable meta.json
+                log.warning("skipping %s: %s", ep.name, e)
+                continue
+            if not is_trainable_episode(meta):
+                log.warning("skipping %s: not training-ready (status=%r "
+                            "tags=%s policy=%r success=%r)", ep.name,
+                            meta.status, meta.tags, meta.policy, meta.success)
+                continue
             try:
                 lo, hi = self.valid_range(ep)
             except (ValueError, KeyError, FileNotFoundError) as e:

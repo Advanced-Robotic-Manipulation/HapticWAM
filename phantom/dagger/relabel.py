@@ -9,6 +9,7 @@ teacher, and stores its action chunks + contact packages + confidences in
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 from pathlib import Path
 
@@ -16,6 +17,7 @@ import numpy as np
 import torch
 
 from phantom.config.hardware import HardwareConfig
+from phantom.config.model import PhantomModelConfig
 from phantom.config.paths import PathsConfig
 from phantom.data.episode_store import list_episodes
 from phantom.data.schema import NormStats
@@ -58,9 +60,24 @@ def relabel_root(root: Path, teacher_ckpt: Path, hw: HardwareConfig,
                  paths: PathsConfig, *, device: str = "cuda",
                  tiny: bool = False) -> int:
     dtype = torch.bfloat16 if (device == "cuda" and not tiny) else torch.float32
-    teacher = build_model(hw, paths, student=False, tiny=tiny,
+    # build with the checkpoint's OWN model config (P10B, review 2026-08-28):
+    # every relabel this teacher writes is a training target, so a
+    # default-built teacher (rope 'aligned', acc 'gt_noised') would poison the
+    # whole DAgger round with differently-phased action chunks and nothing
+    # would raise.
+    payload = torch.load(str(Path(teacher_ckpt)), map_location="cpu",
+                         weights_only=False)
+    saved_mc = (payload.get("configs") or {}).get("model")
+    mc = None
+    if isinstance(saved_mc, dict):
+        mc = dataclasses.replace(PhantomModelConfig.from_dict(saved_mc),
+                                 student=False)
+        log.info("model config from checkpoint: rope=%s acc=%s",
+                 mc.rope_time_mode, mc.acc.self_anticipation)
+    teacher = build_model(hw, paths, student=False, tiny=tiny, mc=mc,
                           load_base=not tiny, device=device, dtype=dtype)
-    payload = C.load_phantom_checkpoint(Path(teacher_ckpt), teacher.rf, hw=hw)
+    C.load_phantom_checkpoint(Path(teacher_ckpt), teacher.rf, hw=hw,
+                              payload=payload)
     teacher.rf.eval()
     norm = NormStats.identity()
     if payload.get("norm_stats"):

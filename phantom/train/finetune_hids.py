@@ -29,6 +29,7 @@ import torch.nn.functional as F
 
 from phantom.config.compute import load_compute
 from phantom.config.hardware import load_hardware
+from phantom.config.model import PhantomModelConfig
 from phantom.config.paths import load_paths
 from phantom.config.training import HIDSConfig
 from phantom.data import derived as dv
@@ -140,13 +141,29 @@ def main(argv=None) -> int:
     out_dir = paths.runs_root / "hids" / cfg.run_name
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
-    student = build_model(hw, paths, student=True, tiny=cfg.tiny,
+    # the student checkpoint's OWN model config (P10B, review 2026-08-28) —
+    # a default-built student silently changes rope_time_mode and the ACC
+    # self-anticipation mode out from under the trained weights, and the KL
+    # leash would then be to a DIFFERENT model than the one being fine-tuned
+    mc = payload = None
+    if cfg.student_ckpt:
+        payload = torch.load(str(Path(cfg.student_ckpt)), map_location="cpu",
+                             weights_only=False)
+        saved_mc = (payload.get("configs") or {}).get("model")
+        if isinstance(saved_mc, dict):
+            mc = dataclasses.replace(PhantomModelConfig.from_dict(saved_mc),
+                                     student=True)
+            log.info("model config from student checkpoint: rope=%s acc=%s",
+                     mc.rope_time_mode, mc.acc.self_anticipation)
+    student = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
-    reference = build_model(hw, paths, student=True, tiny=cfg.tiny,
+    reference = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc,
                             load_base=not cfg.tiny, device=args.device, dtype=dtype)
     if cfg.student_ckpt:
-        C.load_phantom_checkpoint(Path(cfg.student_ckpt), student.rf, hw=hw)
-        C.load_phantom_checkpoint(Path(cfg.student_ckpt), reference.rf, hw=hw)
+        C.load_phantom_checkpoint(Path(cfg.student_ckpt), student.rf, hw=hw,
+                                  payload=payload)
+        C.load_phantom_checkpoint(Path(cfg.student_ckpt), reference.rf, hw=hw,
+                                  payload=payload)
     reference.rf.eval()
     for p in reference.rf.parameters():
         p.requires_grad = False

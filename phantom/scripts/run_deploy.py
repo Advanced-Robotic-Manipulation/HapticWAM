@@ -23,6 +23,7 @@ the other way and must be profiled on the deploy GPU first — see its help.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import logging
 import time
 from pathlib import Path
@@ -33,7 +34,7 @@ import torch
 from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.data.schema import NormStats
-from phantom.deploy.planner import SYSTEM_MODES
+from phantom.deploy.planner import SYSTEM_MODES, WRIST_MASKED_MODES
 from phantom.deploy.runtime import DeploymentRuntime
 from phantom.inference.policy import PhantomPolicy
 from phantom.train import common as C
@@ -59,6 +60,17 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             log.info("model config from checkpoint: rope=%s cond_dropout=%.2f "
                      "acc=%s", mc.rope_time_mode, mc.cond_dropout_p,
                      mc.acc.self_anticipation)
+    if args.system in WRIST_MASKED_MODES:
+        # the sensor-free comparative arms (P10A): zero the wrist window
+        # inside the model too, not only in the snapshot, so what the model
+        # sees is exactly what a mask_wrist-trained arm saw. mask_wrist is an
+        # input ablation applied ON TOP of trained weights, which is why
+        # load_phantom_checkpoint's config check ignores it.
+        from phantom.config.model import PhantomModelConfig
+        mc = (dataclasses.replace(mc, mask_wrist=True) if mc is not None
+              else PhantomModelConfig(student=student, mask_wrist=True))
+        log.info("system %s: wrist F/T window MASKED (recorded, not read)",
+                 args.system)
     pm = build_model(hw, paths, student=student, tiny=args.tiny, mc=mc,
                      load_base=not args.tiny, device=args.device, dtype=dtype,
                      inference=True)
@@ -339,6 +351,44 @@ def build_veto(args, stats, z_floor: float | None):
         open_aperture=open_ap, close_pos=CLOSE_ABS_POS, close_rise=CLOSE_ABS_RISE)
 
 
+def label_episode(recorder, ep_path: Path, ans: str) -> str:
+    """Apply the operator's post-episode verdict. Returns the verdict code
+    ('s'/'f'/'c'/'' for skipped).
+
+    The episode arrives here already filed as status='aborted' + tag
+    'unlabeled' by DeploymentRuntime.run_episode (P9), so this function's job
+    is to PROMOTE it:
+      s/f  -> success True/False, status='finalized', 'unlabeled' cleared;
+      c    -> 'contaminated' (hand in frame, bumped scene, sensor glitch). NOT
+              a failure demonstration: success=False would make
+              is_failure_demo() treat it as a deliberate failure and train the
+              contact/event heads on it. success stays None and the tag keeps
+              it out of every training index (is_trainable_episode);
+      ''   -> nothing at all: the episode STAYS aborted + unlabeled. An
+              operator who hits Enter has not accepted the take.
+    """
+    ans = (ans or "").strip()
+    if not ans:
+        log.warning("episode %s got no operator verdict (skipped) — left "
+                    "status='aborted' + tag 'unlabeled', excluded from "
+                    "training", ep_path.name)
+        return ""
+    code, _, _note = ans.partition(" ")
+    c = code[:1].lower()
+    if c not in ("s", "f", "c"):
+        log.warning("unrecognized verdict %r for %s — treating as skip; the "
+                    "episode stays unlabeled", ans, ep_path.name)
+        return ""
+    if c == "c":
+        recorder.relabel(ep_path, success=None, status="aborted",
+                         tags=["contaminated"], remove_tags=["unlabeled"],
+                         notes=f"operator: {ans} CONTAMINATED")
+        return c
+    recorder.relabel(ep_path, success=(c == "s"), status="finalized",
+                     remove_tags=["unlabeled"], notes=f"operator: {ans}")
+    return c
+
+
 def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = build_parser().parse_args(argv)
@@ -569,27 +619,19 @@ def main(argv=None) -> int:
                           "relaunch run_deploy.", res.fatal_reason)
             if arm_real and args.label_prompt and res.episode_path:
                 # success is otherwise hardcoded None on every deploy episode
-                # (audit 2026-08-20): the session produced unlabeled anecdotes
+                # (audit 2026-08-20): the session produced unlabeled anecdotes.
+                # run_episode has already filed this episode as
+                # status='aborted' + tag 'unlabeled' (P9): a verdict PROMOTES
+                # it back to 'finalized', no verdict leaves it excluded.
                 ans = input("outcome? [s]uccess / [f]ail / [c]ontaminated / "
                             "Enter=skip, then optional notes: ").strip()
-                if ans:
-                    code, _, note = ans.partition(" ")
-                    c = code[:1].lower()
-                    # 'contaminated' (hand in frame, bumped scene, sensor glitch)
-                    # is NOT a failure demonstration: success=False would make
-                    # is_failure_demo() treat it as a deliberate failure and
-                    # train contact/event heads on it. Keep success=None and
-                    # tag it so dataset listers can exclude it.
-                    succ = {"s": True, "f": False}.get(c)
-                    extra = " CONTAMINATED" if c == "c" else ""
-                    rt.recorder.relabel(Path(res.episode_path), success=succ,
-                                        notes=f"operator: {ans}{extra}")
-                    if c == "c":
-                        mp = Path(res.episode_path) / "meta.json"
-                        import json as _json
-                        m = _json.loads(mp.read_text())
-                        m["tags"] = list(m.get("tags") or []) + ["contaminated"]
-                        mp.write_text(_json.dumps(m, indent=1))
+                label_episode(rt.recorder, Path(res.episode_path), ans)
+            elif res.episode_path:
+                log.warning("episode %s got no operator verdict (%s) — left "
+                            "status='aborted' + tag 'unlabeled', excluded from "
+                            "training", Path(res.episode_path).name,
+                            "no --label-prompt" if not args.label_prompt
+                            else "no arm")
             if res.fatal_reason:
                 # returning from inside the `with` runs DeploymentRuntime
                 # .__exit__: session.stop() + disconnect_all()
