@@ -253,6 +253,12 @@ def build_policy(args, hw) -> PhantomPolicy:
         # deploy loads EMA (parity fix 2026-08-27); the replay must too
         C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw, load_ema=True,
                                   payload=payload)
+        if getattr(args, "merge_lora", False):
+            # deploy folds the LoRA into the bf16 base weights (run_deploy
+            # build_policy); replaying with the same fold tests whether that
+            # cast is what separates the rig from the unmerged replay
+            from phantom.backbone import loader as bl
+            bl.merge_lora(pm.rf.net)
         ns = payload["norm_stats"]
         norm = NormStats(
             mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
@@ -367,6 +373,8 @@ def main() -> int:
                     help="random tiny backbone, identity norm stats — CPU smoke "
                          "test of the replay plumbing, NOT an evaluation")
     ap.add_argument("--seed", type=int, default=1000)
+    ap.add_argument("--merge-lora", action="store_true",
+                    help="fold LoRA into the base weights exactly as run_deploy does")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
