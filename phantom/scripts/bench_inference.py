@@ -90,6 +90,9 @@ def main(argv=None) -> int:
     ap.add_argument("--iters", type=int, default=10)
     ap.add_argument("--warmup", type=int, default=2)
     ap.add_argument("--ema", action="store_true")
+    ap.add_argument("--k-seeds", type=int, default=1,
+                    help="K-seed batched sampling (run_deploy --k-seeds): profile the "
+                         "replan latency cost on the DEPLOY GPU before booking rig time")
     ap.add_argument("--hardware", default=None)
     args = ap.parse_args(argv)
     args.device = "cuda"
