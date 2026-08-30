@@ -455,7 +455,9 @@ def main(argv=None) -> int:
             # frozen anchors on the held-out set so successive evals compare
             val_ds = C.WindowDataset(data_root, sampler, episodes=val_eps,
                                      resample=False, seed=cfg.seed)
-            val_loader = C.make_loader(val_ds, cfg, shuffle=False)
+            # unsharded: only rank 0 evaluates, so a DistributedSampler would
+            # make val_* a shuffled 1/world sample (validation 2026-08-30)
+            val_loader = C.make_loader(val_ds, cfg, shuffle=False, shard=False)
             log.info("val: %d windows from %d episodes", len(val_ds), len(val_eps))
 
     if not cfg.synthetic and not cfg.tiny:

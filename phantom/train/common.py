@@ -595,16 +595,23 @@ def ensure_synthetic_dataset(root: Path, hw: HardwareConfig, n_episodes: int = 4
 
 
 def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
-                collate_fn=collate_windows, shuffle: bool | None = None) -> DataLoader:
+                collate_fn=collate_windows, shuffle: bool | None = None,
+                shard: bool = True) -> DataLoader:
     """The one training DataLoader for all four programs. world==1 reproduces
     the historical construction exactly (shuffle=True, drop_last=True,
     synthetic -> workers 0); under torchrun a DistributedSampler shards the
     window index disjointly per rank (train_loop's re-iteration calls
     set_epoch for the reshuffle). Construct AFTER any ds.index mutation
-    (distill_hid --extra-data) — the sampler snapshots len(ds)."""
+    (distill_hid --extra-data) — the sampler snapshots len(ds).
+
+    `shard=False` for VALIDATION loaders (validation 2026-08-30, §1 row 2c):
+    only rank 0 evaluates (`train_loop`), so a DistributedSampler's shuffled,
+    drop_last rank-0 shard made `val_*` a 1/world sample that moved with the
+    shard composition — the in-run health signal checkpoint selection reads on
+    a rented H100 node."""
     rank, world = setup_ddp()          # idempotent
     sampler = None
-    if world > 1:
+    if world > 1 and shard:
         from torch.utils.data.distributed import DistributedSampler
         sampler = DistributedSampler(ds, num_replicas=world, rank=rank,
                                      shuffle=True, seed=cfg.seed, drop_last=True)
@@ -615,7 +622,10 @@ def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
                       shuffle=((sampler is None) if shuffle is None else shuffle),
                       sampler=sampler,
                       num_workers=0 if cfg.synthetic else cfg.num_workers,
-                      collate_fn=collate_fn, drop_last=True,
+                      collate_fn=collate_fn,
+                      # an eval pass must see every window, including a
+                      # partial tail batch; training keeps fixed-size steps
+                      drop_last=shard,
                       worker_init_fn=_seed_worker_rng)
 
 
