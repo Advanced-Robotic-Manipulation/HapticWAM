@@ -64,13 +64,49 @@ class TaskStartStats:
 Q_STD_FLOOR_RAD = np.radians(5.0)
 
 
-def load_start_stats(path: str | Path | None = None) -> dict[str, TaskStartStats]:
-    """configs/start_poses.yaml -> {task: TaskStartStats}."""
+class ThinStartStatsError(ValueError):
+    """start_poses.yaml mixes stats computed over different episode sets."""
+
+
+def _check_q_n(task: str, d: dict, path: str | Path, allow_thin_q: bool) -> None:
+    """q_n (episodes behind q_mean/q_std/tcp_z_min/tcp_min/tcp_max) must equal n
+    (episodes behind tcp_mean/tcp_std). Anything else is a subset envelope."""
+    if not any(k in d for k in ("q_mean", "q_std", "tcp_z_min", "tcp_min", "tcp_max")):
+        return                                  # pre-2026-08-28 file: no joint block at all
+    n = int(d["n"])
+    q_n = d.get("q_n")
+    if q_n is not None and int(q_n) == n:
+        return
+    msg = (f"{path}: task {task!r} has q_n={q_n} but n={n} — the joint stats, the "
+           f"z floor and the STOP hitbox come from a DIFFERENT (smaller) episode "
+           f"set than tcp_mean/tcp_std. A hitbox fitted to a subset is too tight "
+           f"everywhere the subset did not go. Regenerate with "
+           f"tools/gen_start_poses.py over the full dataset.")
+    if allow_thin_q:
+        log.warning("THIN START STATS: %s", msg)
+        return
+    raise ThinStartStatsError(msg)
+
+
+def load_start_stats(path: str | Path | None = None,
+                     allow_thin_q: bool = False) -> dict[str, TaskStartStats]:
+    """configs/start_poses.yaml -> {task: TaskStartStats}.
+
+    Refuses a file whose joint/envelope/floor block was computed over a
+    DIFFERENT (smaller) episode set than tcp_mean/tcp_std: the generator emits
+    ``q_n`` next to ``n`` and they must match. The 2026-08-28 file carried
+    q_n = 17..37 against n = 250 — a STOP hitbox and a z no-go floor fitted to
+    7% of the demos, i.e. an envelope that is too tight in every direction the
+    subset happened not to visit. Regenerate with tools/gen_start_poses.py over
+    the full dataset. ``allow_thin_q=True`` downgrades the refusal to a loud
+    warning (offline analysis only — never for a run that drives the arm).
+    """
     if path is None:
         path = Path(__file__).resolve().parents[2] / "configs" / "start_poses.yaml"
     raw = yaml.safe_load(Path(path).read_text())
     out = {}
     for task, d in raw["tasks"].items():
+        _check_q_n(task, d, path, allow_thin_q)
         st = TaskStartStats(
             task=task, n=int(d["n"]),
             tcp_mean=np.asarray(d["tcp_mean"], dtype=np.float64),
