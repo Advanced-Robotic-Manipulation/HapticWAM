@@ -15,7 +15,10 @@ import pytest
 from phantom.data.episode_store import EpisodeWriter
 from phantom.data.schema import (STREAM_ARM_TCP_POSE, STREAM_GRIPPER,
                                  EpisodeMeta, tactile_stream)
-from phantom.eval.grasp_label import (confusion, label_episode, reason_key)
+from pathlib import Path
+
+from phantom.eval.grasp_label import (close_attempts, confusion,
+                                     label_episode, reason_key)
 from phantom_test_utils import make_small_hw
 
 T0 = 1000.0
@@ -209,7 +212,10 @@ def test_confusion_counts(tmp_path, hw):
     ]
     c = confusion(labels)
     assert c == {"ok_s": 1, "ok_f": 0, "ok_none": 1,
-                 "no_s": 0, "no_f": 1, "no_none": 0}
+                 "no_s": 0, "no_f": 1, "no_none": 0,
+                 # the third row: episodes the rule ABSTAINS on (the recording
+                 # ended inside the hold window) — none of these three
+                 "trunc_s": 0, "trunc_f": 0, "trunc_none": 0}
 
 
 def test_truncated_stream_is_a_reason_not_a_crash(tmp_path, hw):
@@ -228,3 +234,157 @@ def test_missing_stream_is_reported(tmp_path, hw):
     shutil.rmtree(ep / "arm_tcp_pose.zarr")
     lab = label_episode(ep, hw)
     assert lab.reasons == ["missing_stream:arm_tcp_pose"]
+
+
+# ---------------------------------------------------------------------------
+# validation 2026-08-30: the two cases the rule used to get wrong
+# ---------------------------------------------------------------------------
+
+def write_grip_episode(path, hw, *, task="waffles", success=None, dur=8.0,
+                       close_t=2.0, reopen_t=None, reclose_t=None,
+                       z_close_mm=90.0, z_lift_mm=120.0, lift_from=None,
+                       contact_from=None, tags=None):
+    """An episode with an explicit gripper story: close [, reopen, close].
+
+    `reopen_t`/`reclose_t` reproduce a `--terminal-veto` retry (the veto forces
+    the gripper open on a suspected phantom grasp and lets the policy close
+    again); `dur` shorter than close_t + 2.5 s reproduces `run_episode` ending
+    the recording before the hold can be measured.
+    """
+    w = EpisodeWriter(path, hw, EpisodeMeta(task=task, tags=list(tags or [])))
+    contact_from = close_t if contact_from is None else contact_from
+    lift_from = (contact_from + 0.5) if lift_from is None else lift_from
+
+    g_ts = T0 + np.arange(0.0, dur, 1.0 / GRIP_HZ)
+    rel = g_ts - T0
+    pos = np.where(rel < close_t, 0.10, 0.70)
+    if reopen_t is not None:
+        pos = np.where(rel >= reopen_t, 0.10, pos)
+        if reclose_t is not None:
+            pos = np.where(rel >= reclose_t, 0.70, pos)
+    obj = np.where(rel < close_t, 0.0, 3.0)
+    w.append(STREAM_GRIPPER, g_ts, np.stack([pos, obj], axis=1).astype(np.float32))
+
+    t_ts = T0 + np.arange(0.0, dur, 1.0 / TCP_HZ)
+    rel_t = t_ts - T0
+    z = z_close_mm + np.clip((rel_t - lift_from) / 2.0, 0.0, 1.0) * z_lift_mm
+    pose = np.zeros((len(t_ts), 6), dtype=np.float64)
+    pose[:, 2] = z / 1000.0
+    w.append(STREAM_ARM_TCP_POSE, t_ts, pose)
+
+    f_hz = hw.recording.field_ds_rate_hz
+    f_ts = T0 + np.arange(0.0, dur, 1.0 / f_hz)
+    on, off = _fields(hw, True), _fields(hw, False)
+    frames = np.stack([on if (t - T0) >= contact_from else off for t in f_ts])
+    for s in hw.tactile.sensors:
+        w.append(tactile_stream(s.name, "fields_ds"), f_ts, frames)
+    w.finalize(success=success, notes="")
+    return path
+
+
+def test_hold_truncated_is_not_a_negative(tmp_path, hw):
+    """`run_episode` stops the recorder right after `planner.run()` returns, so
+    a grasp on one of the last replans has no 2.5 s tail. `hold 0.4s < 2.0s`
+    there is TRUNCATION — flagged, and reported in its own confusion cell
+    instead of as a failed grasp (G2/G3 are 16-episode decisions)."""
+    ep = write_grip_episode(tmp_path / "ep_trunc_hold", hw, dur=3.0,
+                            close_t=2.0, z_lift_mm=200.0, lift_from=2.1)
+    lab = label_episode(ep, hw)
+    assert lab.hold_truncated is True and lab.inconclusive is True
+    assert not lab.grasp_ok
+    assert lab.hold_s < 2.0
+    keys = {reason_key(r) for r in lab.reasons}
+    assert "hold_truncated" in keys and "hold" not in keys
+    assert "recording ends" in " ".join(lab.reasons)
+    # ... and it is NOT counted as a negative
+    c = confusion([lab])
+    assert c["trunc_none"] == 1 and c["no_none"] == 0 and c["ok_none"] == 0
+
+
+def test_a_truncated_episode_that_closed_too_high_is_still_a_failure(tmp_path, hw):
+    """Abstaining is only for a hold the recording cut short. z_close is
+    measured at the close instant, so a close 60 mm above the ceiling is a
+    plain negative however early the recording ended."""
+    ep = write_grip_episode(tmp_path / "ep_trunc_high", hw, dur=3.0, close_t=2.0,
+                            z_close_mm=180.0, z_lift_mm=200.0, lift_from=2.1)
+    lab = label_episode(ep, hw)
+    assert lab.hold_truncated is True and lab.inconclusive is False
+    assert "z_close" in {reason_key(r) for r in lab.reasons}
+    c = confusion([lab])
+    assert c["no_none"] == 1 and c["trunc_none"] == 0
+
+
+def test_a_real_reopen_is_still_a_short_hold_failure(tmp_path, hw):
+    """The flag must not swallow the genuine case: the gripper DID let go."""
+    ep = write_grip_episode(tmp_path / "ep_letgo", hw, dur=8.0, close_t=2.0,
+                            reopen_t=3.0, z_lift_mm=200.0)
+    lab = label_episode(ep, hw)
+    assert lab.hold_truncated is False and not lab.grasp_ok
+    keys = {reason_key(r) for r in lab.reasons}
+    assert "hold" in keys and "hold_truncated" not in keys
+    assert confusion([lab])["no_none"] == 1
+
+
+def test_a_close_after_a_reopen_is_scored_on_the_last_close(tmp_path, hw):
+    """The --terminal-veto retry: close, forced open, close again and hold.
+
+    Scoring the FIRST close made every veto retry-success a failure — the exact
+    number GATE G2 is decided on."""
+    ep = write_grip_episode(tmp_path / "ep_retry", hw, success=True, dur=9.0,
+                            close_t=2.0, reopen_t=2.6, reclose_t=3.2,
+                            contact_from=3.2, lift_from=3.7, z_lift_mm=120.0)
+    lab = label_episode(ep, hw)
+    assert lab.n_close_attempts == 2
+    assert lab.t_first_close_s == pytest.approx(2.0, abs=0.05)
+    assert lab.t_close == pytest.approx(3.2, abs=0.05)     # the LAST close
+    assert lab.hold_s == pytest.approx(9.0 - 3.2 - 0.5, abs=0.1)
+    assert lab.c_hold == 1.0 and lab.lift_mm == pytest.approx(120.0, abs=1.0)
+    assert lab.grasp_ok, lab.reasons
+    assert lab.hold_truncated is False
+    # the attempt the OLD rule scored: closed at 2.0 s, forced open 0.6 s later
+    from phantom.data.episode_store import EpisodeReader
+    rd = EpisodeReader(ep)
+    g = np.asarray(rd.data(STREAM_GRIPPER)[:], dtype=np.float64)
+    ts = rd.ts(STREAM_GRIPPER)
+    atts = close_attempts(g[:, 0], ts, float(ts[-1]))
+    assert len(atts) == 2
+    ci0, t_rel0, released0 = atts[0]
+    assert released0 is True
+    assert t_rel0 - float(ts[ci0]) < 1.0, "the veto reopen must end attempt 1"
+    assert atts[1][0] > ci0 and atts[1][2] is False        # still closed at the end
+
+
+def test_a_reopen_with_no_second_close_still_fails(tmp_path, hw):
+    """One attempt, released early — the veto's own failure mode."""
+    ep = write_grip_episode(tmp_path / "ep_veto_fail", hw, dur=8.0, close_t=2.0,
+                            reopen_t=2.8)
+    lab = label_episode(ep, hw)
+    assert lab.n_close_attempts == 1 and not lab.grasp_ok
+    assert lab.hold_truncated is False
+
+
+def test_label_grasps_cli_reports_the_truncated_row(tmp_path, hw, capsys,
+                                                    monkeypatch):
+    """The real entry point: tools/label_grasps.py --confusion must show the
+    abstention row, not fold truncated episodes into `not ok`."""
+    import sys
+    import yaml
+    REPO = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(REPO / "tools"))
+    import label_grasps
+
+    root = tmp_path / "eps"
+    root.mkdir()
+    write_grip_episode(root / "ep_good", hw, success=True)
+    write_grip_episode(root / "ep_cut", hw, dur=3.0, close_t=2.0,
+                       z_lift_mm=200.0, lift_from=2.1)
+    hw_yaml = tmp_path / "hw.yaml"
+    hw_yaml.write_text(yaml.safe_dump(hw.model_dump(mode="json")))
+    monkeypatch.setattr(sys, "argv", ["label_grasps.py", str(root),
+                                      "--hw", str(hw_yaml), "--confusion"])
+    assert label_grasps.main() == 0
+    out = capsys.readouterr().out
+    assert "truncated" in out
+    assert "hold_truncated" in out          # the per-condition histogram
+    lines = [l for l in out.splitlines() if l.startswith("truncated")]
+    assert lines and lines[0].split()[-1] == "1"

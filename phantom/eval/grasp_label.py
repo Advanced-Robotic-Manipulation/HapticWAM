@@ -27,6 +27,24 @@ THE RULE (P8, verbatim thresholds)
     stall    = mean(obj == 2 over hold) > 0.5      # FLAG only
     task_ok  = operator verdict                     # place/wipe stays human
 
+TWO CASES THE RULE USED TO GET WRONG (validation 2026-08-30)
+------------------------------------------------------------
+1. **The hold tail is not guaranteed.** `DeploymentRuntime.run_episode` stops
+   the recorder immediately after `planner.run()` returns (runtime.py:241-246),
+   so a grasp on one of the last replans — or an episode ended by
+   `veto_retry_cap` — has NO 2.5 s tail to measure. `hold 0.4s < 2.0s` there is
+   TRUNCATION, not failure, and counting it as a negative biases G2/G3 (a
+   16-episode decision). Such an episode is now flagged `hold_truncated` and is
+   reported in its own `trunc_*` cell of the confusion table: inconclusive,
+   never a negative. (`grasp_ok` still requires a measured hold — an
+   unverifiable grasp is not a success either.)
+2. **A retry after the terminal veto is a real grasp.** `--terminal-veto`
+   forces the gripper open on a suspected phantom grasp and lets the policy
+   close again; scoring the FIRST close made every veto retry-success a
+   failure — the exact number G2 is decided on. The rule now walks every close
+   attempt (close, reopen, close, ...) and is evaluated on the LAST one, with
+   `n_close_attempts` / `t_first_close_s` kept for provenance.
+
 DUAL LABEL, NOT A REPLACEMENT
 -----------------------------
 The rule has **no validated positive class on a policy-driven grasp** — it was
@@ -143,6 +161,17 @@ class GraspLabel:
     stall: bool                    # mean(obj==2) over hold > 0.5 — FLAG ONLY
     grasp_ok: bool
     reasons: list[str] = field(default_factory=list)
+    # the recording ENDED inside the hold window (no reopen was seen and the
+    # hold is short) — see the module docstring
+    hold_truncated: bool = False
+    # ... and nothing ELSE disqualifies the grasp, so the rule has no verdict:
+    # the confusion table counts these apart instead of as negatives. A
+    # truncated episode that also closed above Z_MAX is still a plain failure.
+    inconclusive: bool = False
+    # close attempts in this episode; > 1 means the gripper reopened and closed
+    # again (the --terminal-veto retry). The rule is evaluated on the LAST one.
+    n_close_attempts: int = 1
+    t_first_close_s: float | None = None
     # --- the human ---
     operator_success: bool | None = None   # meta.success ('s'/'f'/skipped)
     notes: str = ""
@@ -167,6 +196,49 @@ def _nearest(ts: np.ndarray, t: float) -> int:
     if i > 0 and abs(ts[i - 1] - t) <= abs(ts[i] - t):
         i -= 1
     return i
+
+
+def _release_after(pos: np.ndarray, g_ts: np.ndarray, ci: int, t_end: float,
+                   hold_start_s: float = HOLD_START_S
+                   ) -> tuple[float, int | None]:
+    """(t_release, release index) for the close at `ci`.
+
+    Release = the gripper position falling `RELEASE_DROP` below the plateau it
+    held after the close. Index None means it never reopened before the
+    recording ended, and `t_release` is then the end of the recording — the
+    truncation case the caller has to distinguish from a real release."""
+    t_close = float(g_ts[ci])
+    plateau_sel = (g_ts >= t_close) & (g_ts <= t_close + 2.0)
+    plateau = float(pos[plateau_sel].max()) if plateau_sel.any() else float(pos[ci])
+    after = np.nonzero((g_ts > t_close + hold_start_s)
+                       & (pos < plateau - RELEASE_DROP))[0]
+    if len(after):
+        return float(g_ts[after[0]]), int(after[0])
+    return float(t_end), None
+
+
+def close_attempts(pos: np.ndarray, g_ts: np.ndarray, t_end: float,
+                   hold_start_s: float = HOLD_START_S) -> list[tuple[int, float, bool]]:
+    """Every (close index, t_release, released) in the episode, in order.
+
+    A `--terminal-veto` episode closes, is forced open, and closes again; the
+    P8 rule is about whether the object is HELD, so it is the LAST attempt that
+    decides (P8 auto-label bug, validation 2026-08-30). Each attempt is found
+    by re-running `close_index` on the samples after the previous release, so
+    the close rule (and its Carton max-relative fallback) is unchanged."""
+    out: list[tuple[int, float, bool]] = []
+    start = 0
+    while start < len(pos):
+        ci = close_index(pos[start:])
+        if ci is None:
+            break
+        ci += start
+        t_release, ri = _release_after(pos, g_ts, ci, t_end, hold_start_s)
+        out.append((ci, t_release, ri is not None))
+        if ri is None or ri <= ci:
+            break
+        start = ri + 1
+    return out
 
 
 def _z_max_for(task: str, table: dict[str, float]) -> float | None:
@@ -260,10 +332,16 @@ def label_episode(ep_dir: str | Path, hw, task: str | None = None, *,
     t0 = float(min(g_ts[0], t_ts[0]))
 
     # ---- close ---------------------------------------------------------
-    ci = close_index(pos)
-    if ci is None:
+    # every attempt, then the LAST one: after a --terminal-veto reopen the
+    # grasp that counts is the one the gripper ended up holding
+    t_end = float(min(g_ts[-1], t_ts[-1]))
+    attempts = close_attempts(pos, g_ts, t_end)
+    if not attempts:
         lab.reasons.append("never_closed")
         return lab
+    lab.n_close_attempts = len(attempts)
+    lab.t_first_close_s = round(float(g_ts[attempts[0][0]]) - t0, 3)
+    ci, t_release, released = attempts[-1]
     t_close = float(g_ts[ci])
     lab.t_close = round(t_close - t0, 3)
     z_close = float(z_mm[_nearest(t_ts, t_close)])
@@ -271,13 +349,9 @@ def label_episode(ep_dir: str | Path, hw, task: str | None = None, *,
 
     # ---- hold window: [t_close + 0.5 s, t_release) ----------------------
     # release = the gripper reopening (position falling RELEASE_DROP below the
-    # closed plateau); otherwise the episode ends while still closed.
+    # closed plateau); otherwise the episode ends while still closed, and that
+    # end is TRUNCATION, not a release (`released` is False).
     hold_start = t_close + HOLD_START_S
-    t_end = float(min(g_ts[-1], t_ts[-1]))
-    plateau_sel = (g_ts >= t_close) & (g_ts <= t_close + 2.0)
-    plateau = float(pos[plateau_sel].max()) if plateau_sel.any() else float(pos[ci])
-    after = np.nonzero((g_ts > hold_start) & (pos < plateau - RELEASE_DROP))[0]
-    t_release = float(g_ts[after[0]]) if len(after) else t_end
     hold_s = max(0.0, t_release - hold_start)
     lab.hold_s = round(hold_s, 2)
 
@@ -309,12 +383,27 @@ def label_episode(ep_dir: str | Path, hw, task: str | None = None, *,
     elif z_close > z_max:
         lab.reasons.append(f"z_close {z_close:.0f}mm > {z_max:.0f}mm")
     if hold_s < min_hold_s:
-        lab.reasons.append(f"hold {hold_s:.1f}s < {min_hold_s:.1f}s")
+        # a short hold with NO reopen is the recording running out, not the
+        # gripper letting go: distinct reason, distinct confusion cell
+        lab.hold_truncated = not released
+        lab.reasons.append(
+            f"hold_truncated {hold_s:.1f}s < {min_hold_s:.1f}s "
+            f"(recording ends {t_end - t_close:.1f}s after the close, "
+            f"still closed)" if lab.hold_truncated
+            else f"hold {hold_s:.1f}s < {min_hold_s:.1f}s")
     if lab.c_hold < min_c_hold:
         lab.reasons.append(f"c_hold {lab.c_hold:.2f} < {min_c_hold:.2f}")
     if lab.lift_mm < min_lift_mm:
         lab.reasons.append(f"lift {lab.lift_mm:.0f}mm < {min_lift_mm:.0f}mm")
     lab.grasp_ok = not lab.reasons
+    # Abstain only when the truncation is the ONLY thing in the way: hold,
+    # c_hold and lift all shrink with the cut-off window, but z_close is
+    # measured at the close instant and a close above Z_MAX is a failure however
+    # long the recording ran.
+    lab.inconclusive = bool(
+        lab.hold_truncated
+        and all(reason_key(r) in ("hold_truncated", "c_hold", "lift")
+                for r in lab.reasons))
     return lab
 
 
@@ -324,10 +413,17 @@ def reason_key(reason: str) -> str:
 
 
 def confusion(labels: list[GraspLabel]) -> dict[str, int]:
-    """Rule-vs-operator counts. `op_none` = operator never labeled it."""
+    """Rule-vs-operator counts. `op_none` = operator never labeled it.
+
+    `trunc_*` is a THIRD row, not part of `no_*`: those episodes ended inside
+    the hold window with nothing else against them (`inconclusive`), so the rule
+    has no verdict and counting them as negatives understates the policy
+    (validation 2026-08-30). `ok_* + no_* + trunc_*` is still every label."""
     out = {"ok_s": 0, "ok_f": 0, "ok_none": 0,
-           "no_s": 0, "no_f": 0, "no_none": 0}
+           "no_s": 0, "no_f": 0, "no_none": 0,
+           "trunc_s": 0, "trunc_f": 0, "trunc_none": 0}
     for l in labels:
         v = {True: "s", False: "f", None: "none"}[l.operator_success]
-        out[("ok_" if l.grasp_ok else "no_") + v] += 1
+        pre = "ok_" if l.grasp_ok else ("trunc_" if l.inconclusive else "no_")
+        out[pre + v] += 1
     return out
