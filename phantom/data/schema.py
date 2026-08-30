@@ -209,6 +209,33 @@ def is_failure_demo(meta: "EpisodeMeta") -> bool:
 #                  only thing standing between it and full-weight training.
 NON_TRAINING_TAGS: tuple[str, ...] = ("contaminated", "unlabeled")
 
+# Provenance tag written by tools/rederive_rollout_actions.py once a POLICY
+# rollout's `actions` stream has been rebuilt as the measured delta-EE on the
+# action grid (the proposal is kept as actions_plan.zarr). Lives here so both
+# the intake gate and WindowSampler.build_index can check for it without
+# importing from tools/ (validation 2026-08-30 F13).
+REDERIVED_TAG: str = "actions_rederived"
+
+
+def is_policy_rollout(meta: "EpisodeMeta") -> bool:
+    """True for an episode produced by a POLICY (not a teleop demo). Its
+    `actions` stream is the executor's proposal until re-derivation runs."""
+    policy = str(meta.policy or "").strip()
+    return bool(policy) and policy != "teleop"
+
+
+def needs_rederive(ep_dir, meta: "EpisodeMeta") -> bool:
+    """True for a policy rollout whose actions stream is still the executor
+    PROPOSAL: tools/rederive_rollout_actions.py has not run on it.
+
+    Training on it imitates commands the safety layer refused, at a cadence
+    the sampler misreads as the 10 Hz grid (validation 2026-08-30 F13)."""
+    if not is_policy_rollout(meta):
+        return False
+    if REDERIVED_TAG in {str(t) for t in (meta.tags or [])}:
+        return False
+    return not (Path(ep_dir) / f"{STREAM_ACTIONS_PLAN}.zarr").exists()
+
 
 def is_trainable_episode(meta: "EpisodeMeta") -> bool:
     """False for any episode that must never enter a training index.
