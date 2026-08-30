@@ -5,11 +5,11 @@ programs. Plain PyTorch — no imaginaire trainer (user decision)."""
 from __future__ import annotations
 
 import contextlib
-
 import json
 import logging
 import os
 import time
+from collections.abc import Iterable
 from pathlib import Path
 
 import numpy as np
@@ -233,7 +233,8 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
              path, step, len(lora), len(phantom))
 
 
-def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
+def assert_model_config_matches(payload: dict, model: torch.nn.Module, *,
+                                tolerate: frozenset[str] | Iterable[str] = frozenset()) -> None:
     """Refuse a checkpoint whose saved PhantomModelConfig differs from the one
     the model was BUILT with (P10B, review 2026-08-28).
 
@@ -256,12 +257,20 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
     or the sampler reads them, so a checkpoint fine-tuned with a different
     contact-loss balance is the same model at deploy. `action_noise_per_strip`
     is deliberately NOT in that set: it changes `sample()`.
+
+    `tolerate` widens that ignore set for ONE caller class: a fine-tune that
+    deliberately flips a training-objective knob relative to the checkpoint it
+    initializes from (`train_teacher --init-weights` passes
+    `FINETUNE_MUTABLE_MODEL_FIELDS`; validation 2026-08-30 F1). Every other
+    caller — `--resume`, deploy, distill, replay — stays strict, and the
+    fine-tune path re-checks the same fields itself via `model_config_drift`
+    so the difference is warned about rather than silently accepted.
     """
     saved = (payload.get("configs") or {}).get("model")
     mc = getattr(model, "mc", None)          # PhantomRectifiedFlow.mc
     if not isinstance(saved, dict) or mc is None:
         return
-    ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS)
+    ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS, *tolerate)
     cur = {k: v for k, v in mc.to_dict().items() if k not in ignore}
     drift = {k: {"checkpoint": saved.get(k), "model": v}
              for k, v in cur.items() if k in saved and saved[k] != v}
@@ -277,11 +286,14 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
 def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             hw: HardwareConfig, load_ema: bool = False,
                             allow_missing: bool = False,
-                            payload: dict | None = None) -> dict:
+                            payload: dict | None = None,
+                            tolerate_model_fields: frozenset[str] | Iterable[str] = frozenset()) -> dict:
     """Load lora+phantom weights into a built model; asserts hardware
     shape-compat (value-only drift warns via hash). `payload` lets callers
     that already torch.load'ed the file (e.g. to reconstruct the saved model
-    config BEFORE building — see run_deploy) skip the second 286MB read."""
+    config BEFORE building — see run_deploy) skip the second 286MB read.
+    `tolerate_model_fields` is forwarded to `assert_model_config_matches` —
+    only the `--init-weights` fine-tune path passes it."""
     if payload is None:
         payload = torch.load(str(path), map_location="cpu", weights_only=False)
     assert payload["format_version"] == CKPT_FORMAT_VERSION
@@ -295,7 +307,7 @@ def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
     if payload["configs"]["hardware_hash"] != hw.config_hash():
         log.warning("hardware config VALUES differ from checkpoint provenance "
                     "(shape-compatible — proceeding)")
-    assert_model_config_matches(payload, model)
+    assert_model_config_matches(payload, model, tolerate=tolerate_model_fields)
     weights = dict(payload["lora"])
     weights.update(payload["phantom_modules"])
     if load_ema and payload.get("ema"):
