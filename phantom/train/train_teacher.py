@@ -73,7 +73,7 @@ def apply_overrides(cfg, args, compute=None):
     # ~2.7x the LoRA-B weight scale — a rewrite, not a fine-tune. Explicit
     # CLI values beat the compute profile.
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
-                 "eval_every", "ema_decay"):
+                 "eval_every", "ema_decay", "event_band_weight"):
         v = getattr(args, name, None)
         if v is not None:
             updates[name] = v
@@ -135,6 +135,11 @@ def main(argv=None) -> int:
                     help="fraction of training windows anchored in the 1.5 s "
                          "before the first gripper close (terminal-phase "
                          "fine-tune; 0 = uniform)")
+    ap.add_argument("--commit-band-weight", type=float, default=1.0,
+                    help="extra ACTION-loss multiplier for windows anchored "
+                         "inside the pre-close commit band (plan D8; 1.0 = "
+                         "off). Composes with the per-episode "
+                         "EpisodeMeta.weight; failure demos stay at 0")
     ap.add_argument("--photo-aug", type=float, default=0.0,
                     help="photometric jitter strength on the scene camera "
                          "(0 disables; 1.0 = brightness +-30%%, contrast "
@@ -313,8 +318,13 @@ def main(argv=None) -> int:
     if args.init_weights:
         assert not args.resume, "--init-weights and --resume are exclusive"
         assert not args.tactile_pretrain, "--init-weights already carries the tactile encoder"
+        # the P10B assert inside load_phantom_checkpoint runs BEFORE the
+        # fine-tune-tolerant drift check below, so it has to know about the
+        # same exception set or the whole FT-A bundle dies at load
+        # (validation 2026-08-30 F1). `--resume` (below) stays strict.
         init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw,
-                                                 load_ema=args.init_ema)
+                                                 load_ema=args.init_ema,
+                                                 tolerate_model_fields=FINETUNE_MUTABLE_MODEL_FIELDS)
         log.info("--init-weights %s from %s weights", args.init_weights,
                  "EMA" if args.init_ema else "RAW")
         saved_mc = init_payload["configs"]["model"]
@@ -343,6 +353,27 @@ def main(argv=None) -> int:
         if hard:
             raise SystemExit(f"--resume model-config drift vs checkpoint: {hard} "
                              f"— pass the flags the original run used")
+        # ... including the objective knob that is NOT part of `mc`: the
+        # event-band weight rides in configs.train, so a resume without the
+        # flag restores it instead of silently reinstating mc.loss.event
+        # (validation 2026-08-30 F11).
+        saved_train = resume_payload["configs"].get("train") or {}
+        if "event_band_weight" not in saved_train:
+            if args.event_band_weight is not None:
+                log.warning("--resume: checkpoint predates event_band_weight persistence "
+                            "— using the CLI value %.3g", args.event_band_weight)
+        else:
+            saved_ebw = saved_train["event_band_weight"]
+            if args.event_band_weight is None:
+                cfg = dataclasses.replace(cfg, event_band_weight=saved_ebw)
+                if saved_ebw is not None:
+                    log.info("--resume: packed event-band MSE weight %.3g restored "
+                             "from the checkpoint", float(saved_ebw))
+            elif saved_ebw is None or float(saved_ebw) != float(args.event_band_weight):
+                raise SystemExit(
+                    f"--resume event-band weight drift: checkpoint {saved_ebw}, "
+                    f"this run {args.event_band_weight} — a resume continues ONE "
+                    f"run; drop --event-band-weight or pass the original value")
         log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
 
     if args.tactile_pretrain:
@@ -371,14 +402,15 @@ def main(argv=None) -> int:
                         raise SystemExit(f"--init-weights norm_stats[{k}].{which} differ from "
                                          f"the fine-tune data root's norm_stats.json — the "
                                          f"checkpoint's normalization would not match the data")
-    if args.event_band_weight is not None:
-        pm.rf.event_band_weight = args.event_band_weight
+    if cfg.event_band_weight is not None:
+        pm.rf.event_band_weight = cfg.event_band_weight
         log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
-                 args.event_band_weight, pm.mc.loss.event)
+                 cfg.event_band_weight, pm.mc.loss.event)
     sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
-                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug)
+                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug,
+                         commit_band_weight=args.commit_band_weight)
     if args.grasp_frac > 0:
         cov = ds.grasp_coverage()
         log.info("terminal-phase weighting: %.0f%% of windows anchored before "
@@ -423,7 +455,9 @@ def main(argv=None) -> int:
             # frozen anchors on the held-out set so successive evals compare
             val_ds = C.WindowDataset(data_root, sampler, episodes=val_eps,
                                      resample=False, seed=cfg.seed)
-            val_loader = C.make_loader(val_ds, cfg, shuffle=False)
+            # unsharded: only rank 0 evaluates, so a DistributedSampler would
+            # make val_* a shuffled 1/world sample (validation 2026-08-30)
+            val_loader = C.make_loader(val_ds, cfg, shuffle=False, shard=False)
             log.info("val: %d windows from %d episodes", len(val_ds), len(val_eps))
 
     if not cfg.synthetic and not cfg.tiny:

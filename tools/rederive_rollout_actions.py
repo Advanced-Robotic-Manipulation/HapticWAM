@@ -28,6 +28,12 @@ Why (P9, docs/review_20260828/REVIEW_SYNTHESIS.md, last paragraph):
   `actions_plan.zarr` (it is the record of what the policy asked for, and the
   only way to decompose policy error from executor error post-hoc).
 
+  The GRIPPER channel is the one exception to "measured": a demo records the
+  COMMANDED aperture, so the re-derived rows take channel 6 from the proposal
+  (the executor's command stream) at each grid time, not from
+  `gripper.zarr` — the measured position is the grasp OUTCOME and would leak
+  it into the action target (validation 2026-08-30 F20).
+
 Idempotent: an episode that already has `actions_plan.zarr` is skipped, so the
 tool is safe to re-run over a whole deploy root as new sessions land.
 """
@@ -48,21 +54,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from phantom.config.hardware import HardwareConfig, load_hardware  # noqa: E402
 from phantom.data.derived import pose_delta  # noqa: E402
 from phantom.data.episode_store import EpisodeReader  # noqa: E402
-from phantom.data.schema import (STREAM_ACTIONS, STREAM_ACTIONS_PLAN,  # noqa: E402
-                                 STREAM_ARM_TCP_POSE, STREAM_GRIPPER,
-                                 EpisodeMeta)
+from phantom.data.schema import (REDERIVED_TAG, STREAM_ACTIONS,  # noqa: E402
+                                 STREAM_ACTIONS_PLAN, STREAM_ARM_TCP_POSE,
+                                 STREAM_GRIPPER, EpisodeMeta, is_policy_rollout)
 
 log = logging.getLogger("rederive_rollout_actions")
 
 _COMPRESSOR = Blosc(cname="zstd", clevel=3, shuffle=Blosc.BITSHUFFLE)
-REDERIVED_TAG = "actions_rederived"
 
-
-def is_rollout(meta: EpisodeMeta) -> bool:
-    """A POLICY rollout (not a teleop demo). The executor-proposal stream only
-    exists for these; a teleop episode's `actions` is already correct."""
-    policy = str(meta.policy or "").strip()
-    return bool(policy) and policy != "teleop"
+# re-exported: the tag and the rollout test now live in phantom.data.schema so
+# the intake gate and WindowSampler can check them too (2026-08-30 F13)
+is_rollout = is_policy_rollout
 
 
 def _write_stream(path: Path, ts: np.ndarray, data: np.ndarray) -> None:
@@ -101,6 +103,36 @@ def action_grid(tcp_ts: np.ndarray, grip_ts: np.ndarray,
     return t0 + np.arange(max(n, 0)) / rate
 
 
+def _gripper_commands(reader: EpisodeReader, grid: np.ndarray,
+                      grip: np.ndarray, grip_ts: np.ndarray,
+                      ep_name: str = "") -> np.ndarray:
+    """Channel 6 of the re-derived actions: the COMMANDED aperture in effect at
+    each grid time — never the measured one (validation 2026-08-30 F20).
+
+    A teleop demo records `grip_cmd = pilot.last_sent`
+    (`data_collect/session.py:735-745`), and the executor's own parity
+    `prev_chunk` history stores the commanded `a[6]`
+    (`deploy/executor.py:241`). `gripper.zarr[:,0]` is `GripperState.position`
+    — what the fingers actually reached. On the rig that difference IS the
+    grasp outcome: a command of 1.0 that closes on an object reads back as the
+    object's width, a close on air reads ~1.0. Writing the measured position
+    into the ACTION target both leaks the outcome into what the policy is
+    trained to predict and disagrees with demos on the single channel the
+    terminal commit is about.
+
+    The command stream here is the executor proposal still sitting in
+    `actions.zarr` (it becomes `actions_plan.zarr` a few lines later). Falls
+    back to the measured position only when no command stream exists."""
+    if reader.has(STREAM_ACTIONS):
+        cmd = np.asarray(reader.data(STREAM_ACTIONS)[:], dtype=np.float64)
+        cmd_ts = reader.ts(STREAM_ACTIONS)
+        if cmd.ndim == 2 and cmd.shape[1] >= 7 and len(cmd_ts) >= 1:
+            return np.clip(cmd[_latest_at_or_before(cmd_ts, grid), 6], 0.0, 1.0)
+    log.warning("%s: no usable command stream — gripper channel falls back to "
+                "the MEASURED aperture", ep_name)
+    return grip[_latest_at_or_before(grip_ts, grid), 0]
+
+
 def rederive_actions(ep_path: Path, hw: HardwareConfig, *,
                      dry_run: bool = False) -> str:
     """Rebuild one episode's `actions` stream. Returns a status word:
@@ -132,7 +164,7 @@ def rederive_actions(ep_path: Path, hw: HardwareConfig, *,
         return "too-short"
 
     poses = tcp[_latest_at_or_before(tcp_ts, grid)]
-    grips = grip[_latest_at_or_before(grip_ts, grid), 0]
+    grips = _gripper_commands(reader, grid, grip, grip_ts, ep.name)
 
     # One row per grid step from the SECOND one on: the first tick has no
     # previous measured pose, exactly as session.py's `prev_tcp is None` guard.

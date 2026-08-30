@@ -60,6 +60,12 @@ class TeacherTrainConfig(CommonTrainConfig):
     tactile_pretrain_ckpt: str = ""  # output of program (1); empty = train from scratch
     freeze_tactile_steps: int = 0    # optional warmup with the tactile conv frozen
     max_steps: int = 50_000
+    # packed-event-band MSE weight override (None = use mc.loss.event). It
+    # lives HERE so it lands in the checkpoint's `configs.train` and can be
+    # re-applied on --resume: `--event-band-weight 0` used to be a bare
+    # attribute on pm.rf, so a spot-instance kill + resume silently brought
+    # the term back at 0.5 (validation 2026-08-30 F11).
+    event_band_weight: float | None = None
 
 
 @dataclass(frozen=True)
