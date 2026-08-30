@@ -60,6 +60,11 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             log.info("model config from checkpoint: rope=%s cond_dropout=%.2f "
                      "acc=%s", mc.rope_time_mode, mc.cond_dropout_p,
                      mc.acc.self_anticipation)
+        if getattr(args, "terminal_veto", False):
+            # BEFORE the model is built: an ACC-less checkpoint makes the veto
+            # a silent no-op, and finding that out after a 2-minute build (on
+            # the rig, with the operator waiting) is worse than useless
+            assert_acc_head(payload, str(args.ckpt))
     if args.system in WRIST_MASKED_MODES:
         # the sensor-free comparative arms (P10A): zero the wrist window
         # inside the model too, not only in the snapshot, so what the model
@@ -193,6 +198,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-replans", type=int, default=40,
                     help="episode cap in replans (~0.9 s each). Demos take 16-31 s and a "
                          "rollout that retries needs room: 20 cut every 08-28 retry short")
+    ap.add_argument("--max-episode-s", type=float, default=35.0,
+                    help="episode WALL-CLOCK cap (s), checked beside --max-replans. "
+                         "The replan cap is not a time budget: at --nfe 1 (172 ms "
+                         "replans) 40 replans is a ~7 s episode against 16-31 s "
+                         "demos. 0 or negative disables it")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
                          "LATENCY LEVER (review P4): the loop is compute-bound and "
@@ -300,6 +310,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "calibrate on the 08-20 gate trace). Also the threshold the "
                          "K-seed head-descent rejection uses")
     ap.add_argument("--veto-p-none", type=float, default=0.9)
+    ap.add_argument("--veto-z-margin", type=float, default=None,
+                    help="height (m) of the terminal veto's 'a demo would close "
+                         "here' band above the task's demo tcp_z_min. Default: "
+                         "sized so the band top is the task's demo close p95 + "
+                         "15 mm (eval/grasp_label.Z_MAX_MM)")
     ap.add_argument("--veto-max-retries", type=int, default=3,
                     help="open/re-descend cycles allowed per episode before the episode "
                          "ends with reason `veto_retry_cap`")
@@ -338,14 +353,39 @@ def resolve_z_floor(args, stats) -> float | None:
     return float(zmin) - float(getattr(args, "z_floor_margin", 0.01))
 
 
+def veto_z_margin(args, stats) -> float:
+    """Height of the close-mask's "a demo would close here" band above the
+    task's demo `tcp_z_min`, in metres.
+
+    Default: the band top IS the task's demo close ceiling, `Z_MAX_MM` =
+    demo z_close p95 + 15 mm (phantom/eval/grasp_label.py) — the same table
+    tools/label_grasps.py judges the session by. Measured from the already
+    LOWERED safety floor with a hard-coded 15 mm the hatch topped out at
+    57-81 mm, i.e. 30-90 mm below every demo close and ~50 mm below the
+    model's own predicted close height (110.8 mm, E9), so it never fired and
+    every close hung on an uncalibrated `p_contact` (VALIDATION_0830 P0 #5)."""
+    if getattr(args, "veto_z_margin", None) is not None:
+        return float(args.veto_z_margin)
+    from phantom.eval.grasp_label import Z_MAX_MM
+    z_max = Z_MAX_MM.get(str(args.task).removesuffix("_fail"))
+    z_ref = getattr(stats, "tcp_z_min", None) if stats is not None else None
+    if z_max is None or z_ref is None:
+        log.warning("no demo close ceiling for task %r (Z_MAX_MM=%s, "
+                    "tcp_z_min=%s) — the veto's at-floor band falls back to "
+                    "15 mm", args.task, z_max, z_ref)
+        return 0.015
+    return max(0.015, float(z_max) / 1000.0 - float(z_ref))
+
+
 def build_veto(args, stats, z_floor: float | None):
     """TerminalVeto for this run, or None when --terminal-veto is absent.
 
-    The floor the close-mask's "already low enough to close" band is measured
-    from is the SAME z the executor clamps to (resolve_z_floor), so the two
-    cannot disagree; the open aperture is the task's demo START aperture
-    (start_poses.yaml gripper_mean) — the aperture the demos approach with, and
-    therefore the in-distribution thing to reopen to."""
+    The close-mask's "already low enough to close" band is measured from the
+    task's demo `tcp_z_min` (NOT from the lowered safety floor the executor
+    clamps to) and reaches the demo close p95; the open aperture is the task's
+    demo START aperture (start_poses.yaml gripper_mean) — the aperture the
+    demos approach with, and therefore the in-distribution thing to reopen
+    to."""
     if not getattr(args, "terminal_veto", False):
         return None
     from phantom.deploy.planner import TerminalVeto
@@ -354,16 +394,67 @@ def build_veto(args, stats, z_floor: float | None):
     if stats is None:
         log.warning("--terminal-veto with no start-pose stats for %r: the "
                     "recovery rule will reopen to 0.0 (fully open) and the "
-                    "close-mask has no z-floor band", args.task)
+                    "close-mask has no z band", args.task)
+    z_ref = getattr(stats, "tcp_z_min", None) if stats is not None else None
     return TerminalVeto(
         p_close=float(args.veto_p_close), p_none=float(args.veto_p_none),
         max_retries=int(args.veto_max_retries), z_floor=z_floor,
+        z_ref=None if z_ref is None else float(z_ref),
+        z_margin=veto_z_margin(args, stats),
         open_aperture=open_ap, close_pos=CLOSE_ABS_POS, close_rise=CLOSE_ABS_RISE)
+
+
+def envelope_conflict(hw) -> str | None:
+    """The floor-is-a-CLAMP fix holds only while the STOP hitbox's lower z edge
+    sits at or below the clamped workspace floor.
+
+    `--hitbox-margin 5 --z-floor-margin 10` silently restores the 2026-08-28
+    bug: the executor clamps a deep target ONTO the floor and the hitbox then
+    calls that same target an exit, so every deep descent ends the episode
+    (`STOP ['workspace_clamp','hitbox_exit']`). Both knobs are advertised in
+    docs/rig_session_v5.md, and nothing asserted the invariant
+    (validation_0830/safety-final.md §5)."""
+    hb = hw.safety.hitbox_m
+    if hb is None:
+        return None
+    floor = float(hw.safety.workspace_m.z[0])
+    if float(hb.z[0]) <= floor + 1e-9:
+        return None
+    return (f"UNSAFE ENVELOPE: the STOP hitbox floor ({hb.z[0] * 1000:.0f} mm) "
+            f"is ABOVE the z clamp floor ({floor * 1000:.0f} mm), so every "
+            f"target the clamp pins on the floor is a hitbox_exit and ends the "
+            f"episode. Raise --hitbox-margin above --z-floor-margin (or lower "
+            f"--z-floor-margin).")
+
+
+def has_acc_head(payload: dict) -> bool:
+    """True when the checkpoint carries ACC-head weights."""
+    for key in ("phantom_modules", "ema", "model", "state_dict"):
+        sd = (payload or {}).get(key)
+        if isinstance(sd, dict) and any("phantom_acc" in str(k) for k in sd):
+            return True
+    return False
+
+
+def assert_acc_head(payload: dict, ckpt: str) -> None:
+    """The terminal veto reads `p_evt`. With no ACC head the model returns
+    `p_evt = zeros(5)` -> `p_none = 0` -> `p_contact = 1`, so the close mask
+    and the K-seed rejection silently become no-ops that log `close_allowed`:
+    an arm labelled `veto:on` that measures nothing (validation §9)."""
+    if not has_acc_head(payload):
+        raise RuntimeError(
+            f"--terminal-veto with a checkpoint that has NO ACC head ({ckpt}): "
+            "p_evt would be zeros(5), p_contact 1.0, and every close would be "
+            "allowed while the trace logged `close_allowed`. Refusing — deploy "
+            "an ACC checkpoint or drop --terminal-veto.")
 
 
 VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
                   "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
-                  "then optional notes: ")
+                  "then optional notes "
+                  # a let-go stop releases the fingers itself (executor._halt);
+                  # this is the manual path if it could not reach the gripper
+                  "[gripper still closed? run ./GRIPPER_OPEN.sh]: ")
 
 
 def parse_verdict(ans: str) -> tuple[str, bool]:
@@ -476,6 +567,10 @@ def main(argv=None) -> int:
         log.warning("NO task z floor (%s) — only the hardware.yaml workspace box (z >= %.0f mm) "
                     "protects the table", "--no-z-floor" if args.no_z_floor else "no tcp_z_min in start_poses.yaml",
                     hw.safety.workspace_m.z[0] * 1000)
+    conflict = envelope_conflict(hw)
+    if conflict is not None:
+        log.error("%s", conflict)
+        return 2
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)
@@ -521,7 +616,10 @@ def main(argv=None) -> int:
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
                  f"seed:{args.seed}" if args.seed is not None else "seed:none",
                  # safety envelope provenance (rig 2026-08-28)
-                 f"zfloor:{round(hw.safety.workspace_m.z[0] * 1000)}mm",
+                 # honest under --no-z-floor: the raw workspace bound is NOT
+                 # a task floor, and the two used to be indistinguishable
+                 (f"zfloor:{round(hw.safety.workspace_m.z[0] * 1000)}mm"
+                  if z_floor is not None else "zfloor:none"),
                  f"hitbox:{round(args.hitbox_margin * 1000)}mm" if hitbox_on else "hitbox:none",
                  f"vmax:{hw.arm.limits.tcp_speed_m_s:.2f}",
                  # deploy levers (review 2026-08-28) — ALWAYS tagged, on or off,
@@ -550,7 +648,6 @@ def main(argv=None) -> int:
             return 2
         log.warning("task %r has no start stats — homing and the OOD gate are "
                     "DISABLED (--allow-ood-start)", args.task)
-    rng = np.random.default_rng()
 
     def _gate(rt) -> tuple[float, bool]:
         """(worst sigma incl. gripper, gripper settled)."""
@@ -562,11 +659,20 @@ def main(argv=None) -> int:
         return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
 
     prev_reason: str | None = None
+    open_aperture = float(getattr(stats, "gripper_mean", 0.0) or 0.0)
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root,
                            parity_fixes=args.parity_fixes, veto=veto,
-                           base_hw=base_hw,
+                           base_hw=base_hw, open_aperture=open_aperture,
                            deploy_overrides=deploy_overrides) as rt:
         for i in range(args.episodes):
+            # ONE seed per episode, drawn before anything random happens: the
+            # sampler noise AND the homing jitter come from it. The jitter used
+            # to run on its own unseeded default_rng (+-27 mm per axis on
+            # waffles — the same order as the effect the A/B measures), so
+            # `--seed`'s "reproducible ... for paired trials" was false.
+            ep_seed = episode_seed(args.seed, i)
+            rng = np.random.default_rng(ep_seed)
+            start_tag = None
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
                 # -- stage 0: restore control after a protective stop -------
@@ -587,9 +693,16 @@ def main(argv=None) -> int:
                           f"to the {args.task} demo start pose (slow move, "
                           "E-stop in hand)...")
                     try:
-                        sp.move_to_start(rt.rig.arm, rt.rig.gripper, hw, stats,
-                                         home_joints=args.home_joints,
-                                         rng=rng)
+                        homed = sp.move_to_start(
+                            rt.rig.arm, rt.rig.gripper, hw, stats,
+                            home_joints=args.home_joints, rng=rng)
+                        # provenance: the REALISED start, not just the seed —
+                        # the pairing of an A/B cell is only readable with it
+                        if homed is not None:
+                            tcp_t, grip_t = homed
+                            start_tag = ("start:" + ",".join(
+                                f"{v * 1000:.0f}" for v in np.asarray(tcp_t)[:3])
+                                + f"mm/g{float(grip_t):.2f}")
                     except Exception:
                         if recovered_from is not None:
                             # We JUST rebuilt the control script and verified it
@@ -662,15 +775,18 @@ def main(argv=None) -> int:
             # one identical persistent-noise tensor — a 6th-percentile "slow"
             # draw (16-seed replay, 2026-08-29: the rig's chunk == the slowest
             # of 16 seeds at every replan of every episode-0 trace).
-            ep_seed = episode_seed(args.seed, i)
             if hasattr(policy.rf, "reset_episode_noise"):
                 policy.rf._gen = torch.Generator().manual_seed(ep_seed)
                 policy.rf.reset_episode_noise()
             else:                       # test stubs without a sampler
                 log.warning("policy has no sampling generator to seed")
             ep_tags = [t for t in ep_tags if not t.startswith("seed:")] + [f"seed:{ep_seed}"]
+            if start_tag is not None:
+                ep_tags.append(start_tag)
+            budget = float(args.max_episode_s)
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
+                                 max_episode_s=budget if budget > 0 else None,
                                  policy_name=f"{args.system}", tags=ep_tags)
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
