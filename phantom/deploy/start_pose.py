@@ -106,7 +106,6 @@ def load_start_stats(path: str | Path | None = None,
     raw = yaml.safe_load(Path(path).read_text())
     out = {}
     for task, d in raw["tasks"].items():
-        _check_q_n(task, d, path, allow_thin_q)
         st = TaskStartStats(
             task=task, n=int(d["n"]),
             tcp_mean=np.asarray(d["tcp_mean"], dtype=np.float64),
@@ -137,6 +136,8 @@ def load_start_stats(path: str | Path | None = None,
         assert np.all(np.isfinite(st.tcp_mean)) and np.all(np.isfinite(st.tcp_std)), task
         assert np.all(st.tcp_std > 0) and st.gripper_std > 0, task
         assert np.isfinite(st.gripper_mean) and 0.0 <= st.gripper_mean <= 1.0, task
+        # last: the file is well-formed, but is every block from the SAME episodes?
+        _check_q_n(task, d, path, allow_thin_q)
         out[task] = st
     return out
 
