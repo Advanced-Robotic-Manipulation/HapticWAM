@@ -75,10 +75,10 @@ Each is a flag, each defaults OFF, and with all of them off the run is
 bit-identical to v4/v5 — so the shipped checkpoints stay reproducible.
 
 ```bash
-    --contact-nll-beta 0.5 --contact-self-forcing \
+    --contact-nll-beta 0.5 \
     --action-noise-per-strip --no-action-t-max-of-two \
     --ema-decay 0.995 --cond-dropout 0 \
-    --acc-two-pass          # required by --contact-self-forcing
+    --acc-two-pass
 ```
 
 | flag | finding | what it changes |
@@ -86,7 +86,7 @@ bit-identical to v4/v5 — so the shipped checkpoints stay reproducible.
 | `--contact-nll-beta B` | P5 | β-NLL (Seitzer 2022): the contact term is multiplied by `sigma^(2B)` **detached**. The trunk's contact gradient is `2r/sigma^2`, and the v4/v5 logs pin `log sigma ≈ −2.35` (`1/sigma^2 ≈ 110`), so the LoRA — the only capacity that can route observations into ACTION tokens — is optimised as a contact-field forecaster and the action objective trains at ~1/10–1/50 rate. β=1 hands the trunk exactly the plain-MSE gradient; β=0.5 halves the exponent and keeps some heteroscedastic weighting. σ stays calibrated for the speed governor either way. |
 | `--contact-nll-detach-weight` | P5 | The *alternative* to β-NLL, not a companion: σ head on the detached residual, trunk on plain MSE. Pick one. |
 | `--no-wrist-region-mse` | P5 | Drops the `λ_w` term. Packed channel 15 is also the NLL's `wrist` sigma group, i.e. supervised twice. Not in the bundle — it changes the loss *scale* as well as the balance; enable it only in an explicit ablation. |
-| `--contact-self-forcing` | P7 | The ACTION frames are denoised alongside the model's **own** predicted contact package (the `--acc-two-pass` inner sample, already computed — zero extra forward passes) instead of the co-noised GT future, which is 98% decodable at the ACTION head's median training `t=0.90`. GT remains the CONTACT loss target, so only the network *input* changes. Needs `--acc-two-pass`; the run hard-fails without it. |
+| `--contact-self-forcing` *(NOT in the recommended bundle — see below)* | P7 | The ACTION frames are denoised alongside the model's **own** predicted contact package (the `--acc-two-pass` inner sample, already computed — zero extra forward passes) instead of the co-noised GT future, which is 98% decodable at the ACTION head's median training `t=0.90`. GT remains the CONTACT loss target, so only the network *input* changes. Needs `--acc-two-pass`; the run hard-fails without it. **Removed from the recommended FT-A bundle 2026-08-30**: the corrected E9 (docs/review_20260828/E9_premise_test.md) shows the "98% decodable GT" measurement conflated pinning with content — pinning the CONTACT frames to *zeros* hurts commit as much as pinning to GT (0.58 vs 0.65, real 0.94), so E9 provides no exposure-bias gap and no offline evidence that self-forcing helps. The flag remains available for a controlled ablation; do not spend the primary FT-A run on it. |
 | `--action-noise-per-strip` | P6 | `eps_action = ActionPacker.pack(randn(B,H,A))`: one noise draw per action *value* instead of 160–192 i.i.d. latent cells whose strip mean is a structured 0.072–0.079σ offset. Honoured by `training_step` **and** `sample()` — deploy must draw the noise the model was trained to denoise. The checkpoint records the flag and `run_deploy`/`replay` rebuild from it. |
 | `--no-action-t-max-of-two` | P6 | Drops the max-of-two ACTION timestep. Under max-of-two the ACTION frames see median `t=0.896` and `P(t<0.556)=0.7%`, while the two Euler steps that actually resolve the chunk run at `t≤0.556` — the head is barely trained where it is read. |
 | `--ema-decay 0.995` | — | At 0.999 the EMA averages over ~1000 steps, i.e. a third of a 3000-step fine-tune, so the deployed artifact lags the fine-tune it paid for. |
