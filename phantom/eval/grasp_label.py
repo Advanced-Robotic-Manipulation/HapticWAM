@@ -162,8 +162,12 @@ class GraspLabel:
     grasp_ok: bool
     reasons: list[str] = field(default_factory=list)
     # the recording ENDED inside the hold window (no reopen was seen and the
-    # hold is short): inconclusive, NOT a negative — see the module docstring
+    # hold is short) — see the module docstring
     hold_truncated: bool = False
+    # ... and nothing ELSE disqualifies the grasp, so the rule has no verdict:
+    # the confusion table counts these apart instead of as negatives. A
+    # truncated episode that also closed above Z_MAX is still a plain failure.
+    inconclusive: bool = False
     # close attempts in this episode; > 1 means the gripper reopened and closed
     # again (the --terminal-veto retry). The rule is evaluated on the LAST one.
     n_close_attempts: int = 1
@@ -392,6 +396,14 @@ def label_episode(ep_dir: str | Path, hw, task: str | None = None, *,
     if lab.lift_mm < min_lift_mm:
         lab.reasons.append(f"lift {lab.lift_mm:.0f}mm < {min_lift_mm:.0f}mm")
     lab.grasp_ok = not lab.reasons
+    # Abstain only when the truncation is the ONLY thing in the way: hold,
+    # c_hold and lift all shrink with the cut-off window, but z_close is
+    # measured at the close instant and a close above Z_MAX is a failure however
+    # long the recording ran.
+    lab.inconclusive = bool(
+        lab.hold_truncated
+        and all(reason_key(r) in ("hold_truncated", "c_hold", "lift")
+                for r in lab.reasons))
     return lab
 
 
@@ -404,14 +416,14 @@ def confusion(labels: list[GraspLabel]) -> dict[str, int]:
     """Rule-vs-operator counts. `op_none` = operator never labeled it.
 
     `trunc_*` is a THIRD row, not part of `no_*`: those episodes ended inside
-    the hold window (`hold_truncated`), so the rule has no verdict on them and
-    counting them as negatives understates the policy (validation 2026-08-30).
-    `ok_* + no_* + trunc_*` is still every label."""
+    the hold window with nothing else against them (`inconclusive`), so the rule
+    has no verdict and counting them as negatives understates the policy
+    (validation 2026-08-30). `ok_* + no_* + trunc_*` is still every label."""
     out = {"ok_s": 0, "ok_f": 0, "ok_none": 0,
            "no_s": 0, "no_f": 0, "no_none": 0,
            "trunc_s": 0, "trunc_f": 0, "trunc_none": 0}
     for l in labels:
         v = {True: "s", False: "f", None: "none"}[l.operator_success]
-        pre = "ok_" if l.grasp_ok else ("trunc_" if l.hold_truncated else "no_")
+        pre = "ok_" if l.grasp_ok else ("trunc_" if l.inconclusive else "no_")
         out[pre + v] += 1
     return out
