@@ -14,8 +14,7 @@ Per replan it reports head_dz (cum z over steps 0-8, mm), tail_dz, chunk_dz,
 close_step (first step with gripper > 0.45), grip_max, the across-seed std,
 the trace's own values, and whether the trace falls inside the K-seed spread
 (E0 / GATE G0: if the replay cannot reproduce the rig, nothing downstream is
-interpretable — the recorded episodes carry `seed:none`, so the trace can only
-be checked against the spread).
+interpretable).
 
 E0 on compute3 (5090), one day of rig episodes:
 
@@ -24,23 +23,67 @@ E0 on compute3 (5090), one day of rig episodes:
         --hardware configs/hardware.nuc.yaml \
         --episodes data/episodes/deploy/20260828/ep_* \
         --seeds 8 --persistent-noise --prev-chunk proposal --prev-cpk chained \
-        --out runs/replay_e0.json
+        --merge-lora --out runs/replay_e0.json
+
+`--merge-lora` belongs in that line: `run_deploy.build_policy` ALWAYS folds the
+LoRA into the bf16 base weights, so without it E0 replays a numerically
+different network from the rig.
 
 E3 (is the intent loop live?) is the same command with
 `--prev-chunk measured` / `--prev-chunk zeros`; E2 sweeps `--nfe`.
-CPU smoke (no weights, random tiny backbone): add `--tiny` and drop `--ckpt`.
+Session-4 **Arm B** episodes (`parity:on` in `meta.tags`) must be replayed with
+`--parity-fixes`, which reproduces all four deploy parity switches (below);
+without it the replay silently conditions Arm B on the legacy intent channel —
+the very channel E3/P2 measures. The tag is checked and a mismatch is a loud
+warning.
+CPU smoke (no weights, random tiny backbone): add `--tiny`; `--tiny --ckpt
+<tiny.pt>` loads that checkpoint's weights and norm stats into the tiny
+backbone instead of running random init with identity norms.
+
+SEEDING (2026-08-30). Every episode is reseeded before it is replayed, so a
+result never depends on the position of an episode in `--episodes` nor on
+which other episodes were dropped:
+
+  default            seed = --seed + a stable per-EPISODE offset derived from
+                     the episode directory name (never the list index)
+  --seed-from-meta   seed = the `seed:<n>` tag `run_deploy` records per episode
+                     since ba61354. This reproduces the rig's ACTUAL noise draw
+                     for a post-fix episode exactly (manual_seed(n) +
+                     reset_episode_noise(), no warm-up replan), so the trace can
+                     be checked against the SAMPLE rather than only against the
+                     K-seed spread. `tools/replay_deploy_path.py --deploy-rng`
+                     remains the way to reproduce a PRE-fix trace (2026-08-29
+                     and earlier), where the rig ran the generator's
+                     constructor seed through one warm-up replan and no
+                     `seed:<n>` tag exists.
+
+--parity-fixes reproduces `SnapshotBuilder(parity_fixes=True)` +
+`PhantomPolicy.replan`'s parity branch, by CALLING the deploy code rather than
+restating it (`SnapshotBuilder.prev_chunk_from_history`):
+ 1. prev_chunk = the measured/executed past (`--prev-chunk measured`, the
+    default under this flag) instead of the policy's own last proposal;
+ 2. contact-state dt = the MEASURED fields_ds inter-frame dt;
+ 3. reactive = the two CONSECUTIVE fields_ds frames at t, not the last two
+    replans;
+ 4. prev_cpk_step = round(previous replan's latency / latent_dt).
 
 Known fidelity gaps, all in the replay's favour to state plainly:
- - the K seeds denoise as ONE batch of K, so a seed is "an independent noise
-   draw", not the rig's (unrecorded) seed; `--persistent-noise` holds that
-   K-batch draw across the episode the way deploy holds its single draw;
+ - without `--seed-from-meta` the K seeds denoise as ONE batch of K, so a seed
+   is "an independent noise draw", not the rig's; `--persistent-noise` holds
+   that K-batch draw across the episode the way deploy holds its single draw;
  - deploy stamps `snap.t` BEFORE it reads the rings, so the rebuilt arm row
    can be one 125 Hz sample older than the one the rig used;
- - `reactive` is 0 at the first replan here; on the rig the ring warm-up had
-   already primed `SnapshotBuilder._prev_fields`;
+ - `reactive` is 0 at the first replan without `--parity-fixes`; on the rig the
+   ring warm-up had already primed `SnapshotBuilder._prev_fields`;
  - `--prev-chunk proposal` replays the TRACE's previous chunk (what deploy
    conditioned on), not this run's own previous sample, so a replan's
-   conditioning never drifts away from the recorded episode.
+   conditioning never drifts away from the recorded episode;
+ - on a `--terminal-veto` replan the trace's `actions` are the VETO's
+   arithmetic, not a model sample. The comparison therefore prefers the
+   trace's `actions_pre_veto` (recorded since F9) and flags the row
+   `trace_vetoed` when it had to fall back to the rewritten chunk;
+   conditioning still uses the post-veto chunk, which is what deploy carried
+   forward as `prev_plan`.
 """
 
 from __future__ import annotations
@@ -48,6 +91,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -57,10 +101,10 @@ from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.data import derived as dv
 from phantom.data.episode_store import EpisodeReader
-from phantom.data.schema import (STREAM_ARM_FT, STREAM_ARM_Q, STREAM_ARM_QD,
-                                 STREAM_ARM_TCP_POSE, STREAM_ARM_TCP_SPEED,
-                                 STREAM_CAMERA_SCENE, STREAM_GRIPPER,
-                                 NormStats, tactile_stream)
+from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
+                                 STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
+                                 STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
+                                 STREAM_GRIPPER, NormStats, tactile_stream)
 from phantom.inference.policy import ObsSnapshot, PhantomPolicy, Plan
 from phantom.train import common as C
 from phantom.train.builder import build_model
@@ -69,6 +113,43 @@ log = logging.getLogger("replay_rig")
 
 CLOSE_THR = 0.45          # same aperture rule as terminal_eval / close_index
 HEAD_STEP = 8             # "head" = cum z over steps 0..8 of the 16-step chunk
+
+
+def episode_seed(base: int, ep_name: str) -> int:
+    """Sampling seed for ONE episode: `base` + a stable per-episode offset.
+
+    The offset is a CRC32 of the episode directory name, not the episode's
+    index in `--episodes`: replays are compared across checkpoints, and an
+    invalid episode dropped for one checkpoint used to shift every later
+    episode's noise (`main()` seeded once per RUN, so results depended on the
+    list and its order — validation 2026-08-30). Same episode, same base seed,
+    same numbers, whatever else is on the command line."""
+    return int(base) + int(zlib.crc32(ep_name.encode()) % 1_000_003)
+
+
+def meta_seed(meta) -> int | None:
+    """The `seed:<n>` tag `run_deploy` writes per episode (ba61354), or None.
+
+    `seed:none` (pre-fix, or `--seed` omitted before that commit) reads as
+    None: there is no recorded draw to reproduce."""
+    for tag in (meta.tags or []):
+        if isinstance(tag, str) and tag.startswith("seed:"):
+            v = tag.split(":", 1)[1]
+            try:
+                return int(v)
+            except ValueError:
+                return None
+    return None
+
+
+def meta_parity(meta) -> bool | None:
+    """`parity:on|off` from meta.tags (run_deploy always tags it), else None."""
+    for tag in (meta.tags or []):
+        if tag == "parity:on":
+            return True
+        if tag == "parity:off":
+            return False
+    return None
 
 
 class RigEpisode:
@@ -91,6 +172,8 @@ class RigEpisode:
         self.trace = json.loads((self.path / "planner_trace.json").read_text())
         self.offset = float((self.meta.clock_calibration or {}).get("offset", 0.0))
         self._ts: dict[str, np.ndarray] = {}
+        self._sb = None
+        self._poses: np.ndarray | None = None
 
     def ts(self, stream: str) -> np.ndarray:
         t = self._ts.get(stream)
@@ -119,11 +202,18 @@ class RigEpisode:
 
     # ------------------------------------------------------------------
     def snapshot(self, t: float, prev_fields: np.ndarray | None,
-                 *, teacher: bool) -> tuple[ObsSnapshot, np.ndarray | None]:
+                 *, teacher: bool, parity: bool = False
+                 ) -> tuple[ObsSnapshot, np.ndarray | None]:
         """The ObsSnapshot deploy built at zarr time `t` (planner.py:77-185).
 
         Returns (snapshot, fields_ds stack) — the stack is the next replan's
-        `_prev_fields`, which is how deploy derives `reactive`.
+        `_prev_fields`, which is how deploy derives `reactive` WITHOUT
+        `--parity-fixes`.
+
+        `parity=True` reproduces `SnapshotBuilder(parity_fixes=True)`: the
+        measured contact-state dt, the consecutive-frame `reactive`, and the
+        measured/executed `prev_chunk` on the snapshot itself (which is what
+        `PhantomPolicy._batch_from_obs` prefers over `prev_plan.actions`).
         """
         hw = self.hw
         rgb = self.row(STREAM_CAMERA_SCENE, t)          # JPEG decoded by the reader
@@ -155,11 +245,15 @@ class RigEpisode:
         ]).astype(np.float32)
 
         snap = ObsSnapshot(t=t, rgb=rgb, wrist_window=wrist, ur_state=ur_state)
+        if parity:
+            # deploy sets this inside build() under --parity-fixes; the policy
+            # then prefers it over prev_plan.actions
+            snap.prev_chunk = self.measured_prev_chunk(t)
         if not teacher:
             return snap, None
 
         dt_field = 1.0 / hw.recording.field_ds_rate_hz
-        fields, gels, contact, ds_now = [], [], [], []
+        fields, gels, contact, ds_now, ds_prev = [], [], [], [], []
         for s in hw.tactile.sensors:
             fields.append(np.asarray(self.row(tactile_stream(s.name, "keyframes"), t),
                                      dtype=np.float32))
@@ -169,41 +263,92 @@ class RigEpisode:
             data = self.reader.data(fs)
             cur = np.asarray(data[i], dtype=np.float32)
             prev = np.asarray(data[max(i - 1, 0)], dtype=np.float32)
-            d = dv.derive_timestep(cur, prev, dt_field, hw)
+            dt_use = dt_field
+            if parity and i >= 1:
+                # planner.py: under parity training's MEASURED inter-frame dt
+                # is used, and derive_timestep divides the tangential flow by it
+                ts_f = self.ts(fs)
+                dt_use = float(max(float(ts_f[i]) - float(ts_f[i - 1]), 1e-6))
+            d = dv.derive_timestep(cur, prev, dt_use, hw)
             contact.append(np.concatenate([
                 self.row(tactile_stream(s.name, "wrench"), t),
                 [self.row(tactile_stream(s.name, "area"), t)],
                 np.nan_to_num(d["cop"], nan=0.0), [d["slip"]], [d["mask_frac"]],
             ]).astype(np.float32))
             ds_now.append(cur)
+            ds_prev.append(prev)
         snap.fields = np.stack(fields)
         snap.gel = np.stack(gels)
         snap.contact_state = np.stack(contact)
         ds_now = np.stack(ds_now)
-        if prev_fields is not None:
+        if parity:
+            # training's reactive: the two CONSECUTIVE fields_ds frames at t
+            # (~1/30 s apart), not the last two REPLANS (~1 s apart)
+            snap.reactive = dv.reactive_score(ds_now, np.stack(ds_prev))
+        elif prev_fields is not None:
             snap.reactive = dv.reactive_score(ds_now, prev_fields)
         return snap, ds_now
 
     # ------------------------------------------------------------------
-    def measured_prev_chunk(self, t: float) -> np.ndarray:
-        """The prev_chunk TRAINING saw: 16 measured Δ-TCP rows on the action
-        grid ending at t (windows.py:277 reads the recorded `actions` stream,
-        which data_collect/session.py:733-750 writes as
-        `pose_delta(prev_tcp, tcp)` of the MEASURED pose plus the gripper
-        command). Reconstructed here from arm_tcp_pose + gripper so it works
-        on deploy episodes too, where `actions` holds executor COMMANDS."""
-        hw = self.hw
-        H, rate = hw.control.chunk_horizon, hw.control.action_rate_hz
-        pose = self.reader.data(STREAM_ARM_TCP_POSE)
-        out = np.zeros((H, hw.control.action_dim), dtype=np.float32)
-        for k in range(H):
-            g = t - (H - k) / rate
-            cur = np.asarray(pose[self.nearest(STREAM_ARM_TCP_POSE, g)])
-            prv = np.asarray(pose[self.nearest(STREAM_ARM_TCP_POSE, g - 1.0 / rate)])
-            out[k, :6] = dv.pose_delta(prv, cur)
-            out[k, 6] = float(np.asarray(
-                self.reader.data(STREAM_GRIPPER)[self.nearest(STREAM_GRIPPER, g)])[0])
-        return out
+    def _builder(self):
+        """The DEPLOY `SnapshotBuilder`, reused for the parity `prev_chunk`.
+
+        Constructed with `session=None` on purpose: `prev_chunk_from_history`
+        touches only `self.hw` and `self.executor`, and calling deploy's own
+        method is the point — a second implementation here is exactly how the
+        replay drifted away from the arm it is supposed to score."""
+        if self._sb is None:
+            from phantom.deploy.planner import SnapshotBuilder
+            self._sb = SnapshotBuilder(self.hw, None, "teacher",
+                                       parity_fixes=True,
+                                       executor=_RecordedGripperCmds(self))
+        return self._sb
+
+    def poses(self) -> np.ndarray:
+        if self._poses is None:
+            self._poses = np.asarray(self.reader.data(STREAM_ARM_TCP_POSE)[:],
+                                     dtype=np.float64)
+        return self._poses
+
+    def measured_prev_chunk(self, t: float) -> np.ndarray | None:
+        """The prev_chunk deploy builds under `--parity-fixes`, and the one
+        TRAINING saw: 16 chained `pose_delta` rows of the MEASURED TCP on the
+        action grid ending at t, plus the gripper COMMAND that was executed.
+
+        Delegates to `SnapshotBuilder.prev_chunk_from_history` — the recorded
+        streams stand in for the rings (`arm["tcp_pose"]` and the executor's
+        gripper history, `_RecordedGripperCmds`). Returns None when the
+        recording cannot supply two distinct arm rows, exactly as deploy does
+        (the caller then keeps the normalized-zero first-replan conditioning).
+        """
+        grip_now = float(np.asarray(self.row(STREAM_GRIPPER, t))[0])
+        out = self._builder().prev_chunk_from_history(
+            t, self.ts(STREAM_ARM_TCP_POSE), {"tcp_pose": self.poses()}, grip_now)
+        return None if out is None else np.asarray(out, dtype=np.float32)
+
+
+class _RecordedGripperCmds:
+    """`executor.gripper_cmd_at(times)` replayed off the recording.
+
+    `ChunkExecutor` reports every newly-entered action-grid step into
+    STREAM_ACTIONS (executor.py:233) and remembers its gripper command; the
+    recorded rows ARE that history, so a zero-order hold over them is the same
+    function. Without the stream (older episodes) returns None and
+    `prev_chunk_from_history` substitutes the measured aperture."""
+
+    def __init__(self, ep: "RigEpisode"):
+        self.ep = ep
+
+    def gripper_cmd_at(self, times) -> np.ndarray | None:
+        if not self.ep.reader.has(STREAM_ACTIONS):
+            return None
+        ts = self.ep.ts(STREAM_ACTIONS)
+        if not len(ts):
+            return None
+        g = np.asarray(self.ep.reader.data(STREAM_ACTIONS)[:], dtype=np.float64)[:, 6]
+        times = np.asarray(times, dtype=np.float64)
+        idx = np.searchsorted(ts, times, side="right") - 1
+        return np.where(idx >= 0, g[np.clip(idx, 0, len(g) - 1)], np.nan)
 
 
 # ---------------------------------------------------------------------------
@@ -251,14 +396,39 @@ def build_policy(args, hw) -> PhantomPolicy:
     paths = load_paths()
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     dt = torch.float32 if dev == "cpu" else torch.bfloat16
-    if args.tiny:
-        pm = build_model(hw, paths, student=False, tiny=True, load_base=False,
-                         device=dev, dtype=dt)
-        norm = NormStats.identity()
-    else:
+    payload = None
+    if args.ckpt:
         from phantom.config.model import PhantomModelConfig
         payload = torch.load(args.ckpt, map_location="cpu", weights_only=False)
         mc = PhantomModelConfig.from_dict(payload["configs"]["model"])
+    if args.tiny:
+        # --tiny --ckpt used to SILENTLY drop the checkpoint and run a random
+        # backbone with identity norm stats (validation 2026-08-30). Honour it:
+        # the tiny model is built from the CHECKPOINT'S model config, its
+        # trainable state (LoRA + phantom modules) is loaded and its norm stats
+        # are used, so the smoke run denormalizes like the run it stands in
+        # for. The FROZEN base stays random init (load_base=False) — that is
+        # what --tiny means, and it is why --tiny is a plumbing smoke test and
+        # never an evaluation.
+        pm = build_model(hw, paths, student=mc.student if payload else False,
+                         tiny=True, load_base=False, mc=mc if payload else None,
+                         device=dev, dtype=dt)
+        norm = NormStats.identity()
+        if payload is not None:
+            try:
+                C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw,
+                                          load_ema=True, payload=payload)
+            except Exception as e:                          # noqa: BLE001
+                raise SystemExit(
+                    f"--tiny --ckpt {args.ckpt}: the checkpoint does not fit "
+                    f"the tiny backbone ({type(e).__name__}: {e}). --tiny is "
+                    f"the CPU smoke path; drop --ckpt to run a random tiny "
+                    f"backbone, or drop --tiny to evaluate this checkpoint.")
+            norm = _norm_from(payload)
+        if getattr(args, "merge_lora", False):
+            log.warning("--merge-lora is ignored under --tiny (load_base=False, "
+                        "so there is no base weight to fold into)")
+    else:
         pm = build_model(hw, paths, student=mc.student, mc=mc, device=dev, dtype=dt,
                          inference=True)
         # deploy loads EMA (parity fix 2026-08-27); the replay must too
@@ -270,12 +440,17 @@ def build_policy(args, hw) -> PhantomPolicy:
             # cast is what separates the rig from the unmerged replay
             from phantom.backbone import loader as bl
             bl.merge_lora(pm.rf.net)
-        ns = payload["norm_stats"]
-        norm = NormStats(
-            mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
-            std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
+        norm = _norm_from(payload)
     return PhantomPolicy(pm, norm, nfe=args.nfe, guidance=args.guidance,
-                         persistent_noise=args.persistent_noise)
+                         persistent_noise=args.persistent_noise,
+                         parity_fixes=bool(getattr(args, "parity_fixes", False)))
+
+
+def _norm_from(payload: dict) -> NormStats:
+    ns = payload["norm_stats"]
+    return NormStats(
+        mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
+        std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
 
 
 def _tile(batch: dict, k: int) -> dict:
@@ -292,6 +467,21 @@ def _tile(batch: dict, k: int) -> dict:
     return out
 
 
+def seed_for_episode(ep: RigEpisode, args) -> tuple[int, str]:
+    """(seed, provenance) for this episode — see the module docstring."""
+    if args.seed_from_meta:
+        n = meta_seed(ep.meta)
+        if n is None:
+            raise SystemExit(
+                f"{ep.path.name}: --seed-from-meta, but meta.tags carries no "
+                f"`seed:<n>` (tags={list(ep.meta.tags or [])}). Episodes "
+                f"recorded before ba61354 have no recorded draw; replay them "
+                f"without the flag (K-seed spread) or use "
+                f"tools/replay_deploy_path.py --deploy-rng.")
+        return int(n), "meta"
+    return episode_seed(args.seed, ep.path.name), "name"
+
+
 def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
     hw = policy.hw
     teacher = not policy.pm.layout.student
@@ -302,57 +492,116 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
         log.warning("%s was RECORDED at nfe=%s guidance=%s; replaying at "
                     "nfe=%s guidance=%s", ep.path.name, diag.get("nfe"),
                     diag.get("guidance"), args.nfe, args.guidance)
+    rec_parity = meta_parity(ep.meta)
+    if rec_parity is not None and rec_parity != bool(args.parity_fixes):
+        log.warning("%s was RECORDED with parity:%s but is being replayed with "
+                    "--parity-fixes %s — the replay is conditioning on a "
+                    "DIFFERENT intent channel than the rig did",
+                    ep.path.name, "on" if rec_parity else "off",
+                    "ON" if args.parity_fixes else "OFF")
     policy.nfe, policy.guidance = int(args.nfe), float(args.guidance)
     policy.task_text = ep.meta.text or ep.meta.task
+    # Per-EPISODE seeding: the run used to seed once, before the loop, so every
+    # episode after the first started wherever the previous one's replans left
+    # the generator and the numbers moved with the --episodes list (validation
+    # 2026-08-30). reset_episode() clears the held noise draw as well.
+    seed, seed_src = seed_for_episode(ep, args)
+    policy.rf._gen = torch.Generator().manual_seed(int(seed))
     policy.reset_episode()
+    log.info("%s: seed %d (%s)", ep.path.name, seed,
+             "recorded seed:<n>" if seed_src == "meta" else "base + episode name")
     prev_fields = None
     prev_cpk = None
     prev_actions = None          # last ACCEPTED trace chunk (deploy's prev_plan)
+    prev_latency = None          # previous ACCEPTED replan's latency (prev_cpk_step)
+    n_vetoed = 0
     rows = []
     for i, r in enumerate(ep.trace):
         t = ep.t_master(i)
         try:
-            snap, prev_fields = ep.snapshot(t, prev_fields, teacher=teacher)
+            snap, prev_fields = ep.snapshot(t, prev_fields, teacher=teacher,
+                                            parity=args.parity_fixes)
         except (KeyError, IndexError, FileNotFoundError) as e:
             log.warning("%s replan %d: cannot rebuild the snapshot (%s)",
                         ep.path.name, i, e)
             continue
         if not r.get("accepted", True):
             continue             # deploy advances its feedback state only on accepts
+        pa = None
         if args.prev_chunk == "proposal":
             pa = prev_actions
         elif args.prev_chunk == "measured":
-            pa = ep.measured_prev_chunk(t) if i else None
+            # under --parity-fixes the snapshot already carries it, for EVERY
+            # replan including the first (deploy builds it there too)
+            pa = (snap.prev_chunk if snap.prev_chunk is not None
+                  else (ep.measured_prev_chunk(t) if i else None))
+        if args.prev_chunk != "measured":
+            # snapshot(parity=True) set the measured chunk on the snapshot and
+            # _batch_from_obs prefers it; the E3 swaps must still reach the batch
+            snap.prev_chunk = None
         else:
-            pa = None
+            snap.prev_chunk = pa
         stub = None if pa is None else Plan(
             t_created=t, t0_pose=snap.ur_state[2 * hw.arm.dof:2 * hw.arm.dof + 6],
             actions=np.asarray(pa, dtype=np.float32),
             action_times=np.zeros(1), sigma=np.zeros(1), gate=0.0,
             p_evt=np.zeros(1), cpk=None)
         batch = _tile(policy._batch_from_obs(snap, stub), args.seeds)
+        # deploy's parity branch (policy.py) realigns which future step of the
+        # one-replan-old package ACC summarises
+        cpk_step = 0
+        if args.parity_fixes and prev_cpk is not None and prev_latency:
+            cpk_step = int(round(float(prev_latency) / policy.latent_dt))
         with torch.no_grad():
             pred = policy.rf.sample(
                 batch, nfe=policy.nfe, guidance_scale=policy.guidance,
                 prev_cpk=prev_cpk if args.prev_cpk == "chained" else None,
+                prev_cpk_step=cpk_step,
                 reuse_noise=policy.persistent_noise)
         acts = [np.asarray(policy.norm.denormalize(
             "action", pred.actions_B_H_A[k].float().cpu()), dtype=np.float64)
             for k in range(args.seeds)]
         prev_cpk = pred.cpk.detach()
+        # CONDITIONING carries the chunk deploy actually kept as prev_plan —
+        # post-veto, since _apply_veto rewrites plan.actions in place. The
+        # COMPARISON instead wants the model's own sample: on a vetoed replan
+        # trace["actions"] is the veto's arithmetic (a scripted aperture and a
+        # zeroed z), so trace_in_spread against it is uninformative (G0).
         prev_actions = np.asarray(r["actions"], dtype=np.float32)
+        pre_veto = r.get("actions_pre_veto")
+        vetoed = bool(r.get("terminal_veto")) or pre_veto is not None
+        trace_chunk = np.asarray(pre_veto if pre_veto is not None else r["actions"],
+                                 dtype=np.float64)
+        prev_latency = r.get("latency_s")
         row = summarize([chunk_metrics(a) for a in acts],
-                        chunk_metrics(prev_actions))
+                        chunk_metrics(trace_chunk))
         row.update(episode=ep.path.name, replan=i, t=t, gate=r.get("gate"),
-                   latency_s=r.get("latency_s"))
+                   latency_s=r.get("latency_s"),
+                   # what the trace_* columns were measured on
+                   trace_source="actions_pre_veto" if pre_veto is not None else "actions",
+                   trace_vetoed=bool(vetoed),
+                   # ... and whether that comparison is interpretable at all
+                   trace_comparable=bool(pre_veto is not None or not vetoed))
+        if not row["trace_comparable"]:
+            n_vetoed += 1
         rows.append(row)
         log.info("%s replan %2d: head_dz %7.1f +-%5.1f mm (trace %7.1f, in-spread %s) "
-                 "close_step %.1f grip_max %.2f", ep.path.name, i, row["head_dz"],
+                 "close_step %.1f grip_max %.2f%s", ep.path.name, i, row["head_dz"],
                  row["head_dz_std"], row["trace_head_dz"], row["trace_in_spread"],
-                 row["close_step"], row["grip_max"])
+                 row["close_step"], row["grip_max"],
+                 "" if row["trace_comparable"] else "  [VETOED chunk, trace_* is "
+                 "the veto's arithmetic — no actions_pre_veto in this trace]")
+    if n_vetoed:
+        log.warning("%s: %d/%d replayed replans compare against a VETO-REWRITTEN "
+                    "chunk (pre-F9 trace); their trace_in_spread is not a G0 "
+                    "signal", ep.path.name, n_vetoed, len(rows))
     return {"episode": ep.path.name, "task": ep.meta.task,
             "success": ep.meta.success, "n_replans": len(rows),
-            "nfe": policy.nfe, "guidance": policy.guidance, "rows": rows,
+            "nfe": policy.nfe, "guidance": policy.guidance,
+            "seed": int(seed), "seed_source": seed_src,
+            "parity_fixes": bool(args.parity_fixes),
+            "recorded_parity": rec_parity,
+            "n_uncomparable_vetoed": n_vetoed, "rows": rows,
             "summary": episode_summary(rows)}
 
 
@@ -378,12 +627,34 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, default=8)
     ap.add_argument("--persistent-noise", action="store_true")
     ap.add_argument("--prev-chunk", choices=("proposal", "measured", "zeros"),
-                    default="proposal")
+                    default=None,
+                    help="intent-channel source. Default: `measured` under "
+                         "--parity-fixes (what deploy builds there), else "
+                         "`proposal` (the legacy deploy behaviour)")
     ap.add_argument("--prev-cpk", choices=("chained", "none"), default="chained")
+    ap.add_argument("--parity-fixes", action="store_true",
+                    help="replay the Session-4 ARM B construction: measured "
+                         "prev_chunk (via SnapshotBuilder itself), measured "
+                         "contact dt, consecutive-frame reactive, and the "
+                         "aligned prev_cpk_step. Required for episodes tagged "
+                         "`parity:on`")
     ap.add_argument("--tiny", action="store_true",
-                    help="random tiny backbone, identity norm stats — CPU smoke "
-                         "test of the replay plumbing, NOT an evaluation")
-    ap.add_argument("--seed", type=int, default=1000)
+                    help="tiny backbone — CPU smoke test of the replay "
+                         "plumbing, NOT an evaluation. Without --ckpt: random "
+                         "init + identity norm stats; with --ckpt: that "
+                         "(tiny) checkpoint's weights and norm stats")
+    ap.add_argument("--seed", type=int, default=1000,
+                    help="BASE seed; each episode adds a stable offset derived "
+                         "from its directory name, so results do not depend on "
+                         "the --episodes list or its order")
+    ap.add_argument("--seed-from-meta", action="store_true",
+                    help="seed each episode from its recorded `seed:<n>` tag "
+                         "instead — reproduces the rig's ACTUAL noise draw for "
+                         "episodes recorded after ba61354. Use with --seeds 1: "
+                         "the K seeds denoise as ONE batch, so K>1 does not "
+                         "hand element 0 the rig's draw. Refuses episodes with "
+                         "no tag (use replay_deploy_path --deploy-rng for "
+                         "pre-fix traces)")
     ap.add_argument("--jpeg-quality", type=int, default=None,
                     help="re-encode the scene frame at this JPEG quality (image-fragility probe)")
     ap.add_argument("--merge-lora", action="store_true",
@@ -393,14 +664,27 @@ def main() -> int:
     RigEpisode.jpeg_quality = args.jpeg_quality
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     assert args.ckpt or args.tiny, "--ckpt is required unless --tiny"
+    if args.prev_chunk is None:
+        args.prev_chunk = "measured" if args.parity_fixes else "proposal"
+    if args.seed_from_meta and args.seeds > 1:
+        # rf.sample draws randn over the WHOLE x0, so a batch of K is not K
+        # independent draws of the B=1 tensor: element 0 of a K-batch is not
+        # the chunk the rig sampled. Reproducing a recorded draw needs K=1.
+        log.warning("--seed-from-meta with --seeds %d: the K seeds denoise as "
+                    "one batch, so no single element is the rig's recorded "
+                    "draw. Pass --seeds 1 for an exact reproduction.",
+                    args.seeds)
 
     hw = load_hardware(args.hardware, quiet=True)
     policy = build_policy(args, hw)
-    policy.rf._gen = torch.Generator().manual_seed(args.seed)
+    # NB: no run-level seeding here — replay_episode seeds PER EPISODE, so the
+    # numbers do not depend on the --episodes list or its order
 
     out = {"ckpt": args.ckpt or "tiny", "hardware": args.hardware,
            "seeds": args.seeds, "nfe": args.nfe, "guidance": args.guidance,
            "prev_chunk": args.prev_chunk, "prev_cpk": args.prev_cpk,
+           "parity_fixes": bool(args.parity_fixes),
+           "seed_base": args.seed, "seed_from_meta": bool(args.seed_from_meta),
            "persistent_noise": bool(args.persistent_noise), "episodes": []}
     for path in args.episodes:
         p = Path(path)
