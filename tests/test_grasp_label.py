@@ -290,7 +290,7 @@ def test_hold_truncated_is_not_a_negative(tmp_path, hw):
     ep = write_grip_episode(tmp_path / "ep_trunc_hold", hw, dur=3.0,
                             close_t=2.0, z_lift_mm=200.0, lift_from=2.1)
     lab = label_episode(ep, hw)
-    assert lab.hold_truncated is True
+    assert lab.hold_truncated is True and lab.inconclusive is True
     assert not lab.grasp_ok
     assert lab.hold_s < 2.0
     keys = {reason_key(r) for r in lab.reasons}
@@ -299,6 +299,19 @@ def test_hold_truncated_is_not_a_negative(tmp_path, hw):
     # ... and it is NOT counted as a negative
     c = confusion([lab])
     assert c["trunc_none"] == 1 and c["no_none"] == 0 and c["ok_none"] == 0
+
+
+def test_a_truncated_episode_that_closed_too_high_is_still_a_failure(tmp_path, hw):
+    """Abstaining is only for a hold the recording cut short. z_close is
+    measured at the close instant, so a close 60 mm above the ceiling is a
+    plain negative however early the recording ended."""
+    ep = write_grip_episode(tmp_path / "ep_trunc_high", hw, dur=3.0, close_t=2.0,
+                            z_close_mm=180.0, z_lift_mm=200.0, lift_from=2.1)
+    lab = label_episode(ep, hw)
+    assert lab.hold_truncated is True and lab.inconclusive is False
+    assert "z_close" in {reason_key(r) for r in lab.reasons}
+    c = confusion([lab])
+    assert c["no_none"] == 1 and c["trunc_none"] == 0
 
 
 def test_a_real_reopen_is_still_a_short_hold_failure(tmp_path, hw):
