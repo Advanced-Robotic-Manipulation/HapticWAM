@@ -17,26 +17,58 @@ gripper close, sampled exactly like deploy, and reports:
         --hardware configs/hardware.nuc.yaml [--nfe 5] [--guidance 1.0]
 Bars (from demos): endpoint < 15 mm, |z_end_err| < 10 mm, commit_ratio ~ 1.
 
-Conditioning ablations (REVIEW_SYNTHESIS P1.2 / experiment E9) — `--null`:
+Conditioning ablations (REVIEW_SYNTHESIS P1.2 / experiment E9) — `--null`.
 
-  none        as-is (teacher-forced demo observations; the historical default)
-  tactile     gel / fields / contact_state zeroed — what the "sensor-free"
-              student's layout drops. wrist F/T is deliberately KEPT (it is
-              `source: ur_internal`, present in both arms of the contrast).
-  wrist       the wrist F/T window zeroed
-  prev_cpk    the previous-replan contact package zeroed (the ACC intent
-              channel), the previous-window chunk itself untouched
-  obs         `PhantomRectifiedFlow._null_obs_batch` (gel/fields/contact_state/
-              wrist/ur_state/reactive/text) plus the video conditioning frame
-              blacked — the classifier-free null branch. Blacking the pixels
-              is safe HERE only because sampling encodes frame 0 alone
-              (build_x0(encode_gen=False)), so the causal-VAE bleed that
-              `_null_obs_batch` avoids cannot happen.
-  contact_gt  the OPPOSITE of a null and the P7 probe: the CONTACT frames are
-              cond-PINNED to the GT package instead of being co-denoised from
-              zeros. A large shift means the ACTION head leans on future
-              contact tokens it never has at deploy.
-  all         obs + prev_cpk (every perceived channel and the intent package)
+THE GT CONTACT PACKAGE IS ZEROED IN EVERY MODE BUT `contact_gt`, INCLUDING THE
+DEFAULT. This is the one thing the E9 table was read backwards on (validation
+2026-08-30): `--null none` is not "the model gets everything", it is the DEPLOY
+condition — `events` and every `cpk_*` batch key zeroed, so the CONTACT frames
+are co-denoised from noise like every other generated frame. Two orthogonal
+switches describe every mode:
+
+  package   what the batch's GT contact package holds: ZEROED or KEPT
+  frames    what the CONTACT frames do during denoising: CO-DENOISED from
+            noise (free) or cond-PINNED (held at their x0 every step)
+
+  mode          package  frames        what it measures
+  none          zeroed   co-denoised   the deploy condition — the DEFAULT
+  tactile       zeroed   co-denoised   gel / fields / contact_state / reactive
+                                       zeroed: the streams the "sensor-free"
+                                       student's layout drops. wrist F/T is
+                                       deliberately KEPT (`source: ur_internal`,
+                                       present in both arms of the contrast).
+  wrist         zeroed   co-denoised   the wrist F/T window zeroed
+  prev_cpk      zeroed   co-denoised   the PREVIOUS replan's package (the ACC
+                                       intent channel) zeroed; the previous
+                                       window's chunk itself untouched
+  obs           zeroed   co-denoised   `_null_obs_batch` (gel/fields/
+                                       contact_state/wrist/ur_state/reactive/
+                                       text) plus a blacked video conditioning
+                                       frame — the classifier-free null branch.
+                                       Blacking the pixels is safe HERE only
+                                       because sampling encodes frame 0 alone
+                                       (build_x0(encode_gen=False)), so the
+                                       causal-VAE bleed `_null_obs_batch`
+                                       avoids cannot happen.
+  contact_zero  zeroed   PINNED        P7's control arm: the CONTACT frames are
+                                       pinned to the ZERO package, so the head
+                                       is handed "no contact, and it is not
+                                       allowed to imagine any". vs `none` this
+                                       isolates PINNING; vs `contact_gt` it
+                                       isolates the package's CONTENT — the
+                                       "cond-pinned to GT **vs zeros**" pair
+                                       REVIEW_SYNTHESIS P7 actually asked for.
+  contact_gt    KEPT     PINNED        the OPPOSITE of a null and the P7 probe:
+                                       privileged future contact, held through
+                                       every denoise step. Deploy NEVER has
+                                       this; a large shift away from `none`
+                                       means the ACTION head leans on contact
+                                       tokens it will not have.
+  all           zeroed   co-denoised   obs + prev_cpk (every perceived channel
+                                       and the intent package)
+
+Every run records its own semantics in the JSON (`summary["null_semantics"]`),
+so a table built from these files can never be relabelled by hand again.
 
 Interpretation (REVIEW_SYNTHESIS §2 E9, gate G1b): if tactile-null lands on
 top of the real run (|Δ endpoint| < 3 mm and |Δ close_step| < 1 step), the
@@ -61,7 +93,8 @@ from phantom.model.sequence import FrameGroup
 from phantom.train import common as C
 from phantom.train.builder import build_model
 
-NULL_MODES = ("none", "tactile", "wrist", "prev_cpk", "obs", "contact_gt", "all")
+NULL_MODES = ("none", "tactile", "wrist", "prev_cpk", "obs", "contact_zero",
+              "contact_gt", "all")
 METRICS = ("endpoint_err_mm", "z_end_err_mm", "commit_ratio", "close_step_err",
            "pred_close_height_mm")
 
@@ -105,8 +138,11 @@ def null_batch(batch: dict, mode: str) -> dict:
                 out[k] = torch.zeros_like(out[k])
 
     if mode in ("tactile",):
-        # exactly the streams the student layout has no frames for
-        zero("gel", "fields", "contact_state")
+        # the streams the student layout has no frames for, PLUS `reactive`:
+        # it is `derived.reactive_score` of two consecutive fields_ds frames,
+        # i.e. a tactile-derived scalar. Leaving it live made "tactile nulled"
+        # a partial null (validation 2026-08-30, F12).
+        zero("gel", "fields", "contact_state", "reactive")
     if mode in ("wrist",):
         zero("wrist")
     if mode in ("obs", "all"):
@@ -120,7 +156,60 @@ def nulls_prev_cpk(mode: str) -> bool:
 
 
 def pins_contact(mode: str) -> bool:
+    """Are the CONTACT frames cond-PINNED (held at their x0 every step)?
+
+    True for both P7 arms: `contact_gt` pins them to the GT package,
+    `contact_zero` pins them to the ZERO package. Every other mode leaves them
+    co-denoised from noise, which is what deploy does."""
+    return mode in ("contact_gt", "contact_zero")
+
+
+def keeps_gt_package(mode: str) -> bool:
+    """Does the batch keep the GT contact package (`events` + `cpk_*`)?
+
+    ONLY `contact_gt`. Every other mode — the default `none` included — zeroes
+    it, because deploy has no privileged future contact. Read `--null none`
+    as "real observations, NO GT contact package", never as "everything on"."""
     return mode == "contact_gt"
+
+
+def null_semantics(mode: str) -> dict:
+    """The two orthogonal switches of `mode`, recorded into every JSON.
+
+    The E9 premise table was published with `none` and `contact_gt` swapped in
+    the reading (validation 2026-08-30); shipping the semantics beside the
+    numbers makes that unrepeatable."""
+    if mode not in NULL_MODES:
+        raise SystemExit(f"--null {mode!r} not in {NULL_MODES}")
+    frames = {True: "cond_pinned", False: "co_denoised_from_noise"}[pins_contact(mode)]
+    pin_target = ("gt_package" if keeps_gt_package(mode) else
+                  "zero_package") if pins_contact(mode) else None
+    zeroed = sorted(_zeroed_keys(mode))
+    return {"mode": mode,
+            "gt_contact_package": "kept" if keeps_gt_package(mode) else "zeroed",
+            "contact_frames": frames,
+            "contact_frames_pinned_to": pin_target,
+            "batch_streams_zeroed": zeroed,
+            # under contact_zero the PREVIOUS window is sampled with the same
+            # pinned-zero CONTACT frames, so the intent package it hands the
+            # terminal window is zero by construction — part of the arm, not a
+            # separate null
+            "prev_cpk": ("zeroed" if nulls_prev_cpk(mode) else
+                         "zero_by_pinning" if mode == "contact_zero" else
+                         "as_sampled"),
+            "is_deploy_condition": mode == "none"}
+
+
+def _zeroed_keys(mode: str) -> set[str]:
+    """Which OBSERVATION streams `null_batch` zeroes for `mode` (doc only)."""
+    if mode == "tactile":
+        return {"gel", "fields", "contact_state", "reactive"}
+    if mode == "wrist":
+        return {"wrist"}
+    if mode in ("obs", "all"):
+        return {"gel", "fields", "contact_state", "wrist", "ur_state",
+                "reactive", "text", "video"}
+    return set()
 
 
 def zero_package(pkg):
@@ -132,7 +221,10 @@ def zero_package(pkg):
 
 def contact_pinned_layout(layout):
     """`layout` with the CONTACT frames added to the FRAME_REPLACE cond mask,
-    i.e. held at their x0 (the GT package) through every denoise step."""
+    i.e. held at their x0 through every denoise step.
+
+    x0 is whatever the batch's `cpk_*` keys hold: the GT package under
+    `--null contact_gt`, zeros under `--null contact_zero`."""
     class _ContactPinned(type(layout)):
         def cond_mask_T(self):
             m = super().cond_mask_T()
@@ -247,7 +339,20 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--split", default="val", choices=("val", "train", "all"),
                     help="manifest split; 'all' deliberately bypasses the manifest")
     ap.add_argument("--null", default="none", choices=NULL_MODES,
-                    help="conditioning ablation (see the module docstring)")
+                    help="conditioning ablation. THE GT CONTACT PACKAGE IS "
+                         "ZEROED IN EVERY MODE BUT contact_gt, THE DEFAULT "
+                         "INCLUDED. none=deploy condition (real obs, package "
+                         "zeroed, CONTACT frames co-denoised); "
+                         "tactile=gel/fields/contact_state/reactive zeroed; "
+                         "wrist=F/T window zeroed; prev_cpk=previous replan's "
+                         "package zeroed; obs=classifier-free null + black "
+                         "video; contact_zero=CONTACT frames cond-PINNED to "
+                         "the ZERO package (P7's control arm); "
+                         "contact_gt=package KEPT and CONTACT frames "
+                         "cond-PINNED to it (privileged future contact, the "
+                         "opposite of a null); all=obs+prev_cpk. Every run "
+                         "writes summary['null_semantics'] saying exactly "
+                         "this for the mode it ran.")
     ap.add_argument("--persistent-noise", action="store_true",
                     help="hold the initial noise draw fixed across the replans "
                          "of one window (deploy's reuse_noise)")
@@ -257,6 +362,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="tiny random-init backbone (tests only)")
     ap.add_argument("--out", default="")
     args = ap.parse_args(argv)
+    # say what this condition IS before any number is printed — the E9 table
+    # was published with two of these rows read backwards (2026-08-30)
+    print("null semantics: " + json.dumps(null_semantics(args.null)))
 
     dev, dt = ("cuda" if torch.cuda.is_available() else "cpu"), torch.bfloat16
     if dev == "cpu" or args.tiny:
@@ -266,7 +374,12 @@ def main(argv: list[str] | None = None) -> int:
     from phantom.config.model import PhantomModelConfig
     payload = torch.load(args.ckpt, map_location="cpu", weights_only=False)
     mc = PhantomModelConfig.from_dict(payload["configs"]["model"])
-    pm = build_model(hw, paths, student=False, tiny=args.tiny, mc=mc, device=dev, dtype=dt)
+    # student=mc.student, NOT a hardcoded False: builder.py:48 asserts the two
+    # agree, so a student checkpoint (D9/D12 evaluate one offline) used to die
+    # at "mc.student must agree with the student flag" (F12). `inference=True`
+    # matches replay_rig.build_policy (activation checkpointing off).
+    pm = build_model(hw, paths, student=mc.student, tiny=args.tiny, mc=mc,
+                     device=dev, dtype=dt, inference=True)
     C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw, load_ema=args.ema, payload=payload)
     ns = payload["norm_stats"]
     a_mean = np.asarray(ns["mean"]["action"], dtype=np.float64)
@@ -277,7 +390,9 @@ def main(argv: list[str] | None = None) -> int:
                      std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
 
     data_root = Path(args.data)
-    sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=0)
+    # the sampler must build the layout's OWN streams: a student checkpoint has
+    # no gel/fields/contact_state frames (F12)
+    sampler = WindowSampler(hw, pm.bb, norm, student=mc.student, seed=0)
     val_eps = resolve_episodes(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=val_eps, windows_per_episode=1,
                          resample=False, seed=0)
@@ -303,10 +418,11 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 batch[k] = v
         batch = C.to_device(batch, dev, dt)
-        if not pins_contact(args.null):
-            # no privileged future contact package (deploy never has it).
-            # --null contact_gt is exactly the opposite condition: keep the
-            # GT package AND cond-pin its frames.
+        if not keeps_gt_package(args.null):
+            # no privileged future contact package — deploy never has it, so
+            # THE DEFAULT (`--null none`) ZEROES IT TOO. `contact_zero` also
+            # lands here and then pins the CONTACT frames to these zeros;
+            # `contact_gt` is the only mode that keeps the GT package.
             for k in list(batch):
                 if k == "events" or k.startswith("cpk_"):
                     batch[k] = torch.zeros_like(batch[k])
@@ -371,7 +487,8 @@ def main(argv: list[str] | None = None) -> int:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
     summary = summarize(rows, nfe=args.nfe, guidance=args.guidance, seeds=args.seeds,
-                        null=args.null, split=args.split,
+                        null=args.null, null_semantics=null_semantics(args.null),
+                        student=bool(mc.student), split=args.split,
                         persistent_noise=bool(args.persistent_noise),
                         max_episodes=args.max_episodes, ema=bool(args.ema),
                         skipped=skipped)
