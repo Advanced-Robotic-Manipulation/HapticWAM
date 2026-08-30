@@ -313,8 +313,13 @@ def main(argv=None) -> int:
     if args.init_weights:
         assert not args.resume, "--init-weights and --resume are exclusive"
         assert not args.tactile_pretrain, "--init-weights already carries the tactile encoder"
+        # the P10B assert inside load_phantom_checkpoint runs BEFORE the
+        # fine-tune-tolerant drift check below, so it has to know about the
+        # same exception set or the whole FT-A bundle dies at load
+        # (validation 2026-08-30 F1). `--resume` (below) stays strict.
         init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw,
-                                                 load_ema=args.init_ema)
+                                                 load_ema=args.init_ema,
+                                                 tolerate_model_fields=FINETUNE_MUTABLE_MODEL_FIELDS)
         log.info("--init-weights %s from %s weights", args.init_weights,
                  "EMA" if args.init_ema else "RAW")
         saved_mc = init_payload["configs"]["model"]
