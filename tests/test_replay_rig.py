@@ -119,8 +119,22 @@ def test_rebuilt_snapshot_matches_the_snapshot_builder(mock_deploy_episode):
         i_deploy = int(hit[np.argmin(np.abs(hit - i_replay))])
         snap, _ = ep.snapshot(float(ts_arm[i_deploy]), None, teacher=True)
         assert np.array_equal(snap.ur_state[:4 * dof], dsnap.ur_state[:4 * dof])
-        assert np.allclose(snap.wrist_window, dsnap.wrist_window, atol=1e-5)
         assert snap.wrist_window.shape == (hw.wrist_ft.window_len, 6)
+        # The wrist window is anchored ONE READ EARLIER than ur_state:
+        # SnapshotBuilder.build() takes rings["arm"].latest(self._n_arm) and
+        # anchors the F/T grid at ts_a[-1], then takes a SECOND
+        # rings["arm"].latest(1) for ur_state. A 125 Hz sample landing between
+        # those two reads leaves ur_state one row newer than its own wrist
+        # anchor, which made this assertion fail on ~1 run in 3 (F15, root-caused
+        # 2026-08-30 — the flake was the race, not the rebuild). Both anchors are
+        # therefore admissible; an exact match at ONE of them is still a strict
+        # parity check, because the mock F/T stream is fresh noise per sample.
+        anchors = [i_deploy] + ([i_deploy - 1] if i_deploy > 0 else [])
+        windows = [ep.snapshot(float(ts_arm[a]), None, teacher=True)[0].wrist_window
+                   for a in anchors]
+        assert any(np.allclose(w, dsnap.wrist_window, atol=1e-5) for w in windows), \
+            (f"replan {i}: deploy's wrist window matches neither the rebuild at "
+             f"its own ur_state row {i_deploy} nor the one at {i_deploy - 1}")
         # the gripper row is read after the arm row on the rig — within one
         assert abs(ep.last_leq(STREAM_GRIPPER, float(ts_arm[i_deploy]))
                    - ep.last_leq(STREAM_GRIPPER, t)) <= 1
@@ -201,3 +215,384 @@ def test_prev_chunk_swaps_change_the_conditioning(mock_deploy_episode, tmp_path)
         cpk=None))["prev_chunk"]
     assert zeros.shape == measured.shape
     assert not torch.allclose(zeros, measured)
+
+
+# ---------------------------------------------------------------------------
+# 3. F16 (validation 2026-08-30): --parity-fixes, per-episode seeding,
+#    --seed-from-meta, actions_pre_veto, --ckpt under --tiny.
+#    Every one of these goes through the tool's OWN main().
+# ---------------------------------------------------------------------------
+
+def _copy_episode(ep_path: Path, dst: Path, name: str | None = None) -> Path:
+    """A copy of the recorded episode under a NEW episode directory name.
+
+    The name matters: the per-episode seed is derived from it (that is what
+    makes it independent of the --episodes list), so two copies under the same
+    basename are, correctly, the same episode as far as seeding goes."""
+    import shutil
+    out = dst / (name or ep_path.name)
+    shutil.copytree(ep_path, out)
+    return out
+
+
+def _set_tags(ep: Path, tags: list[str]) -> None:
+    meta = json.loads((ep / "meta.json").read_text())
+    meta["tags"] = tags
+    (ep / "meta.json").write_text(json.dumps(meta))
+
+
+def _run_cli(monkeypatch, hw_yaml, episodes, out: Path, *extra) -> dict:
+    """replay_rig.main() exactly as an operator runs it."""
+    import replay_rig
+    argv = ["replay_rig.py", "--tiny", "--hardware", str(hw_yaml), "--episodes"]
+    argv += [str(e) for e in episodes]
+    argv += ["--seeds", "2", "--nfe", "1", "--out", str(out), *extra]
+    monkeypatch.setattr(sys, "argv", argv)
+    assert replay_rig.main() == 0
+    return json.loads(out.read_text())
+
+
+def _head_dz(payload: dict, k: int = 0) -> list[float]:
+    return [r["head_dz"] for r in payload["episodes"][k]["rows"]]
+
+
+# --- the parity construction -----------------------------------------------
+
+def test_parity_prev_chunk_is_built_by_the_deploy_snapshot_builder(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    """F16: the parity prev_chunk must come from
+    `SnapshotBuilder.prev_chunk_from_history` — deploy's own method — not from
+    a second implementation in the replay that can drift away from it."""
+    from phantom.deploy import planner as P
+    from replay_rig import RigEpisode
+    hw, ep_path, _, _ = mock_deploy_episode
+    calls = []
+    orig = P.SnapshotBuilder.prev_chunk_from_history
+
+    def spy(self, t_now, ts_a, arm, grip_now):
+        calls.append((t_now, float(grip_now)))
+        return orig(self, t_now, ts_a, arm, grip_now)
+
+    monkeypatch.setattr(P.SnapshotBuilder, "prev_chunk_from_history", spy)
+    ep = RigEpisode(ep_path, hw)
+    t = ep.t_master(len(ep.trace) - 1)
+    snap, _ = ep.snapshot(t, None, teacher=True, parity=True)
+    assert calls, "the replay did not call deploy's prev_chunk_from_history"
+    assert calls[-1][0] == t
+    # ... and it lands on the SNAPSHOT, which is what the policy prefers
+    assert snap.prev_chunk is not None
+    assert snap.prev_chunk.shape == (hw.control.chunk_horizon, hw.control.action_dim)
+    assert np.isfinite(snap.prev_chunk).all()
+    # the gripper channel is the EXECUTED command (STREAM_ACTIONS), not the
+    # measured aperture: the mock policy commanded 0.3 from the first replan,
+    # and grid steps before the first executed step fall back to the measured
+    # aperture (0.0 here) exactly as SnapshotBuilder does on the rig
+    g = np.asarray(snap.prev_chunk[:, 6], dtype=np.float64)
+    assert np.all(np.isclose(g, 0.3) | np.isclose(g, 0.0)), g
+    assert np.isclose(g[-1], 0.3), "the newest grid step is an executed command"
+    # without parity the snapshot carries none of it (legacy conditioning)
+    plain, _ = ep.snapshot(t, None, teacher=True)
+    assert plain.prev_chunk is None
+
+
+def test_parity_snapshot_uses_measured_dt_and_consecutive_frame_reactive(
+        mock_deploy_episode):
+    """The other two SnapshotBuilder parity switches, at replan 0 where the
+    legacy path has no previous replan to difference at all."""
+    from replay_rig import RigEpisode
+    hw, ep_path, _, _ = mock_deploy_episode
+    ep = RigEpisode(ep_path, hw)
+    t = ep.t_master(len(ep.trace) - 1)
+    legacy, _ = ep.snapshot(t, None, teacher=True)
+    parity, _ = ep.snapshot(t, None, teacher=True, parity=True)
+    # legacy reactive needs a PREVIOUS REPLAN; parity differences the two
+    # consecutive fields_ds frames at t, so it is defined at every replan
+    assert legacy.reactive == 0.0
+    assert np.isfinite(parity.reactive)
+    # contact_state: slip is flow / dt, and dt differs (nominal vs measured)
+    assert legacy.contact_state.shape == parity.contact_state.shape
+
+
+def test_parity_fixes_reaches_the_batch_and_is_recorded(mock_deploy_episode,
+                                                        tmp_path, monkeypatch):
+    """End to end through main(): the flag is recorded and the default
+    prev_chunk source flips to `measured`; and the batch the policy is handed
+    really does carry the measured/executed past instead of the proposal.
+
+    (The sampled NUMBERS cannot be compared across two main() calls under
+    --tiny: the frozen tiny backbone is random per build and the checkpoint
+    format stores only the trainable state, so the comparison below is made on
+    the conditioning tensor, which is deterministic.)"""
+    import replay_rig
+    from phantom.inference.policy import Plan
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    base = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "off.json")
+    par = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "on.json",
+                   "--parity-fixes")
+    assert base["parity_fixes"] is False and base["prev_chunk"] == "proposal"
+    assert par["parity_fixes"] is True and par["prev_chunk"] == "measured"
+    assert par["episodes"][0]["parity_fixes"] is True
+    assert par["episodes"][0]["n_replans"] == base["episodes"][0]["n_replans"]
+    assert all(np.isfinite(v) for v in _head_dz(par))
+    # an explicit --prev-chunk still wins (E3 sweeps)
+    z = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "z.json",
+                 "--parity-fixes", "--prev-chunk", "zeros")
+    assert z["prev_chunk"] == "zeros"
+
+    # what actually reaches the model
+    ep = replay_rig.RigEpisode(ep_path, hw)
+    t = ep.t_master(len(ep.trace) - 1)
+    args = replay_rig.argparse.Namespace(tiny=True, ckpt=None, nfe=1, guidance=1.0,
+                                         seeds=1, persistent_noise=False,
+                                         parity_fixes=True)
+    policy = replay_rig.build_policy(args, hw)
+    assert policy.parity_fixes is True     # ... so replan() aligns prev_cpk_step
+    snap_par, _ = ep.snapshot(t, None, teacher=True, parity=True)
+    snap_leg, _ = ep.snapshot(t, None, teacher=True)
+    proposal = Plan(t_created=t, t0_pose=np.zeros(6),
+                    actions=np.asarray(ep.trace[0]["actions"], np.float32),
+                    action_times=np.zeros(1), sigma=np.zeros(1), gate=0.0,
+                    p_evt=np.zeros(1), cpk=None)
+    b_par = policy._batch_from_obs(snap_par, proposal)["prev_chunk"]
+    b_leg = policy._batch_from_obs(snap_leg, proposal)["prev_chunk"]
+    assert not torch.allclose(b_par, b_leg), \
+        "--parity-fixes did not change the intent channel the model is given"
+    want = policy.norm.normalize("action", snap_par.prev_chunk.astype(np.float32))
+    assert torch.allclose(b_par[0], torch.from_numpy(want), atol=1e-6)
+
+
+def test_parity_tag_mismatch_is_warned(mock_deploy_episode, tmp_path,
+                                       monkeypatch, caplog):
+    """`parity:on` episodes replayed without the flag silently condition on
+    the legacy intent channel — the tool must say so."""
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "tagged")
+    _set_tags(ep, ["parity:on", "nfe5"])
+    with caplog.at_level("WARNING"):
+        _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "warn.json")
+    assert any("parity" in r.message.lower() and "recorded" in r.message.lower()
+               for r in caplog.records), caplog.text
+
+
+# --- seeding ----------------------------------------------------------------
+
+def test_seeding_is_per_episode_not_per_run(mock_deploy_episode, tmp_path,
+                                            monkeypatch):
+    """The generator used to be seeded ONCE before the episode loop, so every
+    episode after the first started wherever the previous one's replans left it
+    and the numbers moved with the --episodes list and its order (GATE G0 and
+    every checkpoint comparison are read off these)."""
+    import replay_rig
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    # the SAME episode three times in one run: with a per-run seed the second
+    # and third differ from the first; with per-episode seeding all three are
+    # the same replay of the same episode
+    got = _run_cli(monkeypatch, hw_yaml, [ep_path, ep_path, ep_path],
+                   tmp_path / "three.json")
+    assert len(got["episodes"]) == 3
+    assert _head_dz(got, 0) == _head_dz(got, 1) == _head_dz(got, 2)
+    seeds = {e["seed"] for e in got["episodes"]}
+    assert len(seeds) == 1 and got["episodes"][0]["seed_source"] == "name"
+    # a DIFFERENT episode between them must not shift it either
+    other = _copy_episode(ep_path, tmp_path / "other", "ep_other_1788000000_001")
+    mixed = _run_cli(monkeypatch, hw_yaml, [ep_path, other, ep_path],
+                     tmp_path / "mixed.json")
+    assert _head_dz(mixed, 0) == _head_dz(mixed, 2)
+    assert mixed["episodes"][1]["seed"] != mixed["episodes"][0]["seed"]
+    # the seed is the BASE plus a stable offset of the episode NAME — never the
+    # index, so dropping an invalid episode cannot renumber the rest
+    assert got["episodes"][0]["seed"] == replay_rig.episode_seed(1000, ep_path.name)
+    assert replay_rig.episode_seed(1000, "ep_a") != replay_rig.episode_seed(1000, "ep_b")
+    assert (replay_rig.episode_seed(7, "ep_a")
+            - replay_rig.episode_seed(0, "ep_a")) == 7
+    assert got["seed_base"] == 1000 and got["seed_from_meta"] is False
+
+
+def test_seed_from_meta_reproduces_the_recorded_draw(mock_deploy_episode,
+                                                     tmp_path, monkeypatch):
+    """`run_deploy` records `seed:<n>` per episode since ba61354 — the
+    strongest available validity check, and no tool read it.
+
+    Three copies of ONE recorded episode (identical streams and trace) in a
+    single run: two tagged `seed:4242`, one `seed:99`. Under --seed-from-meta
+    the two that share a tag must sample identically even though their
+    directory names differ, and the third must not."""
+    import replay_rig
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    a1 = _copy_episode(ep_path, tmp_path / "a1", "ep_seeded_1788000000_001")
+    a2 = _copy_episode(ep_path, tmp_path / "a2", "ep_seeded_1788000000_002")
+    b = _copy_episode(ep_path, tmp_path / "b", "ep_seeded_1788000000_003")
+    _set_tags(a1, ["nfe5", "seed:4242", "parity:off"])
+    _set_tags(a2, ["nfe5", "seed:4242", "parity:off"])
+    _set_tags(b, ["nfe5", "seed:99", "parity:off"])
+
+    got = _run_cli(monkeypatch, hw_yaml, [a1, a2, b], tmp_path / "m.json",
+                   "--seed-from-meta")
+    assert got["seed_from_meta"] is True
+    assert [e["seed"] for e in got["episodes"]] == [4242, 4242, 99]
+    assert {e["seed_source"] for e in got["episodes"]} == {"meta"}
+    assert _head_dz(got, 0) == _head_dz(got, 1), "the recorded draw is not reproducible"
+    assert _head_dz(got, 2) != _head_dz(got, 0), "the recorded seed was ignored"
+    # without the flag the same two episodes draw from their NAMES instead
+    plain = _run_cli(monkeypatch, hw_yaml, [a1, a2], tmp_path / "p.json")
+    assert plain["episodes"][0]["seed"] != plain["episodes"][1]["seed"]
+    assert _head_dz(plain, 0) != _head_dz(plain, 1)
+    assert replay_rig.meta_seed(replay_rig.RigEpisode(a1, hw).meta) == 4242
+    assert replay_rig.meta_parity(replay_rig.RigEpisode(a1, hw).meta) is False
+
+
+def test_seed_from_meta_refuses_a_pre_fix_episode(mock_deploy_episode, tmp_path,
+                                                  monkeypatch):
+    """`seed:none` / no tag = no recorded draw; replaying it under some other
+    noise and calling it a reproduction is the failure mode to prevent."""
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "old")
+    _set_tags(ep, ["nfe5", "seed:none"])
+    with pytest.raises(SystemExit) as e:
+        _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "x.json", "--seed-from-meta")
+    assert "seed:" in str(e.value) and "deploy-rng" in str(e.value)
+
+
+# --- the veto's arithmetic is not a model sample ----------------------------
+
+def test_actions_pre_veto_is_what_the_trace_columns_measure(mock_deploy_episode,
+                                                            tmp_path, monkeypatch):
+    """On a vetoed replan `trace["actions"]` is the veto's rewrite (scripted
+    aperture, zeroed z), so trace_in_spread — GATE G0 — scores against
+    arithmetic. Prefer `actions_pre_veto` when the trace carries it."""
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "veto")
+    trace = json.loads((ep / "planner_trace.json").read_text())
+    acc = [i for i, r in enumerate(trace) if r.get("accepted", True)]
+    pre = np.asarray(trace[acc[0]]["actions"], dtype=np.float64).copy()
+    pre[:, 2] = -0.002                      # the model's own descent
+    trace[acc[0]]["actions_pre_veto"] = pre.tolist()
+    trace[acc[0]]["terminal_veto"] = "recovery_open"
+    trace[acc[1]]["terminal_veto"] = "close_masked"    # rewritten, NOT recorded
+    (ep / "planner_trace.json").write_text(json.dumps(trace))
+
+    got = _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "v.json")
+    rows = {r["replan"]: r for r in got["episodes"][0]["rows"]}
+    r0 = rows[acc[0]]
+    assert r0["trace_source"] == "actions_pre_veto" and r0["trace_vetoed"] is True
+    assert r0["trace_comparable"] is True
+    # -2 mm/step over steps 0..8 = -18 mm, i.e. the PRE-veto chunk
+    assert r0["trace_head_dz"] == pytest.approx(-18.0, abs=1e-6)
+    r1 = rows[acc[1]]
+    assert r1["trace_source"] == "actions" and r1["trace_comparable"] is False
+    assert got["episodes"][0]["n_uncomparable_vetoed"] == 1
+    # conditioning still uses the POST-veto chunk deploy carried forward
+    assert got["prev_chunk"] == "proposal"
+
+
+# --- --tiny --ckpt ----------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def tiny_ckpt(tmp_path_factory, mock_deploy_episode):
+    """A checkpoint of the tiny backbone, with NON-identity norm stats."""
+    if not _cosmos_available():
+        pytest.skip("cosmos repo not importable")
+    from phantom.config.training import CommonTrainConfig
+    from phantom.data.schema import NormStats
+    from phantom.train import common as C
+    from phantom.train.builder import build_model
+    hw = mock_deploy_episode[0]
+    pm = build_model(hw, load_paths(), student=False, tiny=True, load_base=False)
+    ns = NormStats(mean={"action": np.zeros(hw.control.action_dim, np.float32),
+                         "ur_state": np.zeros(hw.ur_state_dim, np.float32)},
+                   std={"action": np.full(hw.control.action_dim, 3.0, np.float32),
+                        "ur_state": np.ones(hw.ur_state_dim, np.float32)})
+    out = tmp_path_factory.mktemp("ckpt") / "tiny.pt"
+    C.save_phantom_checkpoint(out, pm.rf, hw=hw, bb=pm.bb, mc=pm.mc,
+                              train_cfg=CommonTrainConfig(), step=0, norm_stats=ns)
+    return out
+
+
+@pytest.mark.skipif(not _cosmos_available(), reason="cosmos repo not importable")
+def test_tiny_honours_the_checkpoint(mock_deploy_episode, tiny_ckpt, tmp_path,
+                                     monkeypatch):
+    """--tiny --ckpt used to DROP the checkpoint silently: a random backbone
+    with IDENTITY norm stats, reported as if that checkpoint had been replayed.
+
+    (A tiny checkpoint carries the trainable state — LoRA + phantom modules —
+    and the norm stats; the frozen base is random under load_base=False, which
+    is why this asserts the loaded contract rather than run-to-run equality.)"""
+    import replay_rig
+    from phantom.train.common import trainable_state_dicts
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    got = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "c1.json",
+                   "--ckpt", str(tiny_ckpt))
+    assert got["ckpt"] == str(tiny_ckpt)
+    assert all(np.isfinite(v) for v in _head_dz(got))
+
+    args = replay_rig.argparse.Namespace(
+        tiny=True, ckpt=str(tiny_ckpt), nfe=1, guidance=1.0, seeds=1,
+        persistent_noise=False, parity_fixes=False)
+    pol = replay_rig.build_policy(args, hw)
+    # the checkpoint's own norm stats, not NormStats.identity()
+    assert float(pol.norm.std["action"][0]) == pytest.approx(3.0)
+    # ... and its trainable weights really are in the live model
+    payload = torch.load(str(tiny_ckpt), map_location="cpu", weights_only=False)
+    lora, phantom = trainable_state_dicts(pol.rf)
+    saved = {**payload["lora"], **payload["phantom_modules"]}
+    live = {**lora, **phantom}
+    assert saved and set(saved) == set(live)
+    assert all(torch.allclose(live[k].float().cpu(), v.float().cpu(), atol=1e-5)
+               for k, v in saved.items())
+    # without --ckpt the tiny path is the random smoke backbone, and its norm
+    # stats are the identity (a pass-through, no "action" entry at all)
+    plain = replay_rig.build_policy(
+        replay_rig.argparse.Namespace(tiny=True, ckpt=None, nfe=1, guidance=1.0,
+                                      seeds=1, persistent_noise=False,
+                                      parity_fixes=False), hw)
+    assert not plain.norm.std and not plain.norm.mean
+    one = np.ones((1, hw.control.action_dim), dtype=np.float32)
+    assert float(np.asarray(plain.norm.normalize("action", one))[0, 0]) == 1.0
+
+
+@pytest.mark.skipif(not _cosmos_available(), reason="cosmos repo not importable")
+def test_tiny_with_a_full_size_checkpoint_fails_loudly(mock_deploy_episode,
+                                                       tmp_path, monkeypatch):
+    """Honouring --ckpt must not mean silently half-loading it."""
+    import replay_rig
+    hw, _, _, _ = mock_deploy_episode
+    bad = tmp_path / "bad.pt"
+    torch.save({"configs": {"model": {}}, "model": {"nope": torch.zeros(3)},
+                "norm_stats": {"mean": {}, "std": {}}}, bad)
+    args = replay_rig.argparse.Namespace(
+        tiny=True, ckpt=str(bad), nfe=1, guidance=1.0, seeds=1,
+        persistent_noise=False, parity_fixes=False)
+    with pytest.raises(SystemExit) as e:
+        replay_rig.build_policy(args, hw)
+    assert "tiny" in str(e.value)
+
+
+# ---------------------------------------------------------------------------
+# 4. tools/replay_deploy_path.py — the E0 discriminator had NO test and could
+#    not run off a GPU box (hardcoded device="cuda", no --tiny)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.skipif(not _cosmos_available(), reason="cosmos repo not importable")
+def test_replay_deploy_path_runs_on_cpu_and_reads_the_recorded_seed(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    import importlib
+    rdp = importlib.import_module("replay_deploy_path")
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "dp")
+    _set_tags(ep, ["seed:4242"])
+    out = tmp_path / "dp.json"
+    monkeypatch.setattr(sys, "argv", [
+        "replay_deploy_path.py", "--ckpt", "", "--hardware", str(hw_yaml),
+        "--episodes", str(ep), "--nfe", "1", "--tiny", "--device", "cpu",
+        "--seed-from-meta", "--out", str(out)])
+    assert rdp.main() == 0
+    rows = json.loads(out.read_text())[0]["rows"]
+    assert rows and all(np.isfinite(r["head_dz"]) for r in rows)
+    assert all(r["trace_source"] == "actions" for r in rows)
+    # --deploy-rng and --seed-from-meta are the two ERAS of run_deploy seeding
+    monkeypatch.setattr(sys, "argv", [
+        "replay_deploy_path.py", "--ckpt", "", "--hardware", str(hw_yaml),
+        "--episodes", str(ep), "--tiny", "--device", "cpu",
+        "--seed-from-meta", "--deploy-rng"])
+    with pytest.raises(SystemExit):
+        rdp.main()
