@@ -170,6 +170,10 @@ def main(argv=None) -> int:
     ap.add_argument("--dagger-round", type=int, default=0)
     ap.add_argument("--extra-data", nargs="*", default=[],
                     help="additional episode roots (DAgger rollouts)")
+    ap.add_argument("--split", default="train", choices=["train", "val", "all"],
+                    help="episode subset from manifests/all.jsonl (default "
+                         "train; 'all' reproduces the pre-2026-08-30 behaviour "
+                         "of training on the held-out val episodes too)")
     args = ap.parse_args(argv)
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
@@ -223,10 +227,15 @@ def main(argv=None) -> int:
     # note: student windows still carry tactile targets (labels come from the
     # rig's sensors during training); the student MODEL just never sees the
     # tactile inputs — its layout has no OBS_GEL/OBS_MECH frames.
-    ds = C.WindowDataset(data_root, sampler_s)
+    # the manifest split, exactly as train_teacher does it: without
+    # `episodes=` WindowDataset falls through to list_episodes(root) and the
+    # student trains on its own validation set (validation 2026-08-30 F10)
+    train_eps = C.manifest_split(data_root, args.split)
+    ds = C.WindowDataset(data_root, sampler_s, episodes=train_eps)
     for extra in args.extra_data:
         ds.index += sampler_s.build_index(Path(extra))
-    log.info("HID dataset: %d windows (round %d)", len(ds), cfg.dagger_round)
+    log.info("HID dataset: %d windows (round %d, split=%s)", len(ds),
+             cfg.dagger_round, args.split)
     loader = C.make_loader(ds, cfg)   # AFTER the --extra-data index merge
 
     def step_fn(batch: dict) -> dict:

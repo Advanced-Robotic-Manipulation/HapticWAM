@@ -126,6 +126,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     add_common_args(ap)
     ap.add_argument("--student-ckpt", default="")
+    ap.add_argument("--split", default="train", choices=["train", "val", "all"],
+                    help="episode subset from manifests/all.jsonl (default "
+                         "train; 'all' reproduces the pre-2026-08-30 behaviour "
+                         "of training on the held-out val episodes too)")
     args = ap.parse_args(argv)
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
@@ -171,7 +175,11 @@ def main(argv=None) -> int:
     data_root, norm = resolve_data(args, hw, paths)
     taus = calibrate_tau_per_task(data_root, hw, cfg.tau_quantile)
     sampler = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed)
-    ds = C.WindowDataset(data_root, sampler)
+    # manifest split (validation 2026-08-30 F10): without `episodes=` this
+    # fine-tune ran on every episode, val included
+    train_eps = C.manifest_split(data_root, args.split)
+    ds = C.WindowDataset(data_root, sampler, episodes=train_eps)
+    log.info("HID-S dataset: %d windows (split=%s)", len(ds), args.split)
     loader = C.make_loader(ds, cfg)
 
     running_mean = [0.0]
