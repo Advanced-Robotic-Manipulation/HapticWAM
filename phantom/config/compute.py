@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import os
 from pathlib import Path
 from typing import Literal
 
@@ -81,14 +82,30 @@ class ComputeProfile(ProgramOverrides):
         return ProgramOverrides(**merged)
 
     def check_world(self, world: int) -> None:
-        """Warn-only: profile/launch mismatch (e.g. h100x8 without torchrun).
-        Per-GPU batch/accum still come from the profile, so the effective
-        batch changes with the actual world size."""
-        if world != self.nproc_per_node:
-            log.warning(
-                "compute profile expects %s with nproc_per_node=%d but "
-                "WORLD_SIZE=%d — proceeding (effective batch scales with the "
-                "actual world size)", self.launcher, self.nproc_per_node, world)
+        """Profile/launch mismatch (e.g. h100x8 without torchrun).
+
+        FATAL for a multi-GPU profile (validation 2026-08-30, §1 row 2d):
+        selecting `h100x8` and forgetting `torchrun` leaves batch_size 1 x
+        grad_accum 1 = effective batch 1 instead of 8, i.e. a rented 8-GPU
+        node silently training the wrong recipe on one card. Single-GPU
+        profiles keep the old warning (a torchrun launch of `rtx5090` is
+        odd but not a silent 8x recipe change).
+        Escape hatch for a deliberate single-GPU debug run on a cluster
+        profile: PHANTOM_ALLOW_WORLD_MISMATCH=1."""
+        if world == self.nproc_per_node:
+            return
+        msg = (f"compute profile expects {self.launcher} with "
+               f"nproc_per_node={self.nproc_per_node} but WORLD_SIZE={world}")
+        if self.nproc_per_node > 1 and not os.environ.get("PHANTOM_ALLOW_WORLD_MISMATCH"):
+            raise SystemExit(
+                f"{msg} — the profile's per-GPU batch/accum would give an "
+                f"effective batch of {world}/{self.nproc_per_node} of the "
+                f"intended one. Launch it as `torchrun --nproc_per_node "
+                f"{self.nproc_per_node} -m <program>`, pick a single-GPU "
+                f"profile with --compute, or set "
+                f"PHANTOM_ALLOW_WORLD_MISMATCH=1 to proceed anyway.")
+        log.warning("%s — proceeding (effective batch scales with the actual "
+                    "world size)", msg)
 
 
 class ComputeConfig(_Frozen):
