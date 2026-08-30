@@ -444,10 +444,18 @@ def test_executor_start_clears_the_gripper_history():
 # ---------------------------------------------------------------------------
 
 class _Ex:
-    def __init__(self, accepts=None):
+    """Ideal executor: an accepted chunk is played to the end, so every one of
+    its action-grid steps is ENTERED. `entered_grip_after` is what the terminal
+    veto latches its recovery on (F3, 2026-08-30) — a rejected plan, or a plan
+    whose close lives in a tail playback never reached, arms nothing."""
+
+    def __init__(self, accepts=None, enter=True):
         self.stopped_reason = None
         self.submitted = []
         self.accepts = accepts
+        self.enter = enter
+        self._hist: list[tuple[float, float]] = []
+        self._t = 0.0
 
     def last_cmd(self):
         return None
@@ -460,7 +468,14 @@ class _Ex:
         ok = True if self.accepts is None else self.accepts[
             min(len(self.submitted), len(self.accepts) - 1)]
         self.submitted.append(np.array(plan.actions, copy=True))
+        if ok and self.enter:
+            for g in plan.actions[:, 6]:
+                self._t += 0.1
+                self._hist.append((self._t, float(g)))
         return ok
+
+    def entered_grip_after(self, t):
+        return [(ts, g) for ts, g in self._hist if ts > t]
 
 
 class _Snaps:

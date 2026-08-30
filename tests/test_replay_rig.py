@@ -81,7 +81,9 @@ def mock_deploy_episode(tmp_path_factory):
     out = tmp_path_factory.mktemp("deploy")
     with DeploymentRuntime(hw, pol, mode="teacher", out_root=out) as rt:
         res = rt.run_episode(task="whiteboard", max_replans=5)
-    assert res.stopped_reason is None and res.episode_path is not None
+    # `replan_cap` since 2026-08-30: the loop's own caps are named now
+    assert res.stopped_reason in (None, "replan_cap")
+    assert res.episode_path is not None
     hw_yaml = out / "hardware.small.yaml"
     hw_yaml.write_text(yaml.safe_dump(hw.model_dump(mode="json")))
     return hw, res.episode_path, pol.snaps, hw_yaml

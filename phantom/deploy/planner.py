@@ -303,24 +303,39 @@ class TerminalVeto:
 
     close-mask   a commanded gripper-close transition is rewritten to HOLD the
                  current aperture unless p_contact > p_close, or the TCP is
-                 already within `z_margin` of the task's z floor (where closing
-                 is what a demo would do).
-    recovery     if a close WAS commanded and the very next replan reports
-                 p_evt[none] > p_none, the grasp is phantom: command the task
-                 open aperture and forbid any upward z in the chunk, so the
-                 policy re-descends instead of lifting nothing. Capped at
-                 `max_retries` cycles per episode, then the episode ends with
-                 reason `veto_retry_cap` (an uncapped open/re-descend loop is
-                 the safety gap the review's completeness critic flagged).
+                 already inside the task's demo CLOSE band (where closing is
+                 what a demo would do): `z <= z_ref + z_margin`, with `z_ref`
+                 the demo `tcp_z_min` and `z_margin` sized so the band reaches
+                 the per-task demo close p95 (eval/grasp_label.Z_MAX_MM).
+                 Measuring it from the already-lowered SAFETY floor with a
+                 15 mm margin put the hatch 30-90 mm below every demo close and
+                 ~50 mm below the model's own predicted close height, so it
+                 never fired (VALIDATION_0830 P0 #5).
+    recovery     if a close was EXECUTED and this or the very next replan
+                 reports p_evt[none] > p_none, the grasp is phantom: command
+                 the task open aperture and forbid any upward z in the chunk,
+                 so the policy re-descends instead of lifting nothing. Capped
+                 at `max_retries` cycles per episode, then the episode ends
+                 with reason `veto_retry_cap` (an uncapped open/re-descend loop
+                 is the safety gap the review's completeness critic flagged).
+
+    Both rules read the aperture through the TRAINING close rule
+    (train/common.close_index): a rise of `close_rise` above the episode's
+    RUNNING MINIMUM, not above the current sample. The rig's terminal phase
+    ramps 0.31 -> 0.52 over several replans (per-replan rise 0.02-0.06), so the
+    old per-replan rate test never fired on the failure this exists to catch.
     """
     p_close: float = 0.5              # theta_close on p_contact = 1 - p_evt[none]
     p_none: float = 0.9               # p_evt[none] above which a close is phantom
     max_retries: int = 3
-    z_floor: float | None = None      # m; from start_poses.yaml tcp_z_min
-    z_margin: float = 0.015           # "already at the floor" band (15 mm)
+    z_floor: float | None = None      # m; the SAFETY floor (tcp_z_min - margin)
+    z_ref: float | None = None        # m; demo tcp_z_min the band is measured
+                                      # from (falls back to z_floor)
+    z_margin: float = 0.015           # "already in the demo close band" margin
     open_aperture: float = 0.0        # task open aperture (demo start mean)
     # Close detection reuses the TRAINING rule (train/common.close_index):
-    # aperture past CLOSE_ABS_POS after rising CLOSE_ABS_RISE from where it is.
+    # aperture past CLOSE_ABS_POS after rising CLOSE_ABS_RISE from the running
+    # minimum of the measured aperture.
     close_pos: float = 0.45
     close_rise: float = 0.15
 
@@ -343,6 +358,9 @@ class PlannerLoop:
         # ring last held (workers.py: a dead worker "aborts the in-progress
         # episode ... rather than silently corrupting or gapping the stream")
         self.session = session
+        # why the LOOP ended when the executor has no stop reason of its own
+        # (replan cap / wall-clock budget); runtime.run_episode surfaces it
+        self.stop_reason: str | None = None
         self._stop = threading.Event()
 
     # Stall watchdog (postmortem 2026-08-20, ep ...1999): a protective stop
@@ -356,8 +374,46 @@ class PlannerLoop:
     STALL_STRIKES = 2
 
     # ------------------------------------------------------------------
+    # how many replans after an EXECUTED close the phantom-grasp recovery may
+    # still fire (the docstring's "the very next replan"). Before 2026-08-30
+    # the latch was unbounded and reopened a real grasp any time later in the
+    # episode (VALIDATION_0830 P0 #3).
+    VETO_RECOVERY_REPLANS = 1
+
+    def _note_executed_close(self, state: dict, n: int) -> None:
+        """Latch the replan index of a close the EXECUTOR actually entered.
+
+        Plan acceptance is not execution: a close living in the tail of a chunk
+        playback never reached was never commanded, and a chunk the veto itself
+        rewrote carries the held aperture rather than the proposal. The
+        executor's `_grip_hist` is the deploy-side stand-in for the recorded
+        STREAM_ACTIONS gripper channel, i.e. exactly the commands that went
+        out."""
+        v = self.veto
+        fn = getattr(self.executor, "entered_grip_after", None)
+        if v is None or fn is None:
+            return
+        try:
+            steps = fn(state["grip_seen_t"])
+        except Exception:               # never let telemetry kill an episode
+            log.exception("entered_grip_after failed — the veto latch stays cold")
+            return
+        g_min = state["g_min"]
+        for t_step, g in steps:
+            state["grip_seen_t"] = max(state["grip_seen_t"], float(t_step))
+            if g_min is None:
+                continue
+            # the TRANSITION into the close is the event, not the state: the
+            # running minimum keeps every later step of a held grasp above the
+            # rise threshold, and re-arming on those would make the latch
+            # unbounded again by another route.
+            closed = g > v.close_pos and (g - g_min) > v.close_rise
+            if closed and not state["in_close"]:
+                state["closed_idx"] = n
+            state["in_close"] = closed
+
     def _apply_veto(self, plan, tcp_pose: np.ndarray, grip_now: float,
-                    state: dict) -> dict | None:
+                    state: dict, n: int = 0) -> dict | None:
         """Rewrite `plan.actions` in place per TerminalVeto. Returns the trace
         record (or None when the veto is off).
 
@@ -374,10 +430,22 @@ class PlannerLoop:
         p_contact = 1.0 - p_none
         rec = {"p_contact": round(p_contact, 4), "retries": state["retries"]}
 
+        # running minimum of the MEASURED aperture (train/common.close_index's
+        # rule), and the executed-close latch it feeds.
+        state["g_min"] = (grip_now if state["g_min"] is None
+                          else min(state["g_min"], grip_now))
+        self._note_executed_close(state, n)
+
         # ---- (b) phantom-grasp recovery ------------------------------------
-        # checked FIRST: it reacts to the close committed one replan ago.
-        if state["closed_at"] is not None and p_none > v.p_none:
-            state["closed_at"] = None
+        # checked FIRST: it reacts to the close executed one replan ago, and
+        # only inside that window — outside it the latch is dropped, so a real
+        # grasp is never reopened by a late high-p_none frame (a release, a
+        # transport frame where the gel loses the object, an egg held lightly).
+        idx = state["closed_idx"]
+        if idx is not None and (n - idx) > self.VETO_RECOVERY_REPLANS:
+            state["closed_idx"] = idx = None
+        if idx is not None and p_none > v.p_none:
+            state["closed_idx"] = None
             state["retries"] += 1
             rec["retries"] = state["retries"]
             if state["retries"] > v.max_retries:
@@ -392,6 +460,7 @@ class PlannerLoop:
             cum = np.cumsum(a[:, 2])
             cum = np.minimum(cum, 0.0)
             a[:, 2] = np.diff(np.concatenate([[0.0], cum]))
+            self._invalidate_cpk(plan)
             rec["action"] = "recovery_open"
             log.warning("terminal veto: phantom grasp (p_none=%.2f) — opening to "
                         "%.2f and forbidding lift (retry %d/%d)",
@@ -400,33 +469,58 @@ class PlannerLoop:
 
         # ---- (a) close mask -------------------------------------------------
         g_max = float(np.max(a[:, 6]))
-        closing = g_max > v.close_pos and (g_max - grip_now) > v.close_rise
+        g_min = state["g_min"] if state["g_min"] is not None else grip_now
+        closing = g_max > v.close_pos and (g_max - g_min) > v.close_rise
         if not closing:
             rec["action"] = "none"
             return rec
-        at_floor = (v.z_floor is not None and z_now <= v.z_floor + v.z_margin)
+        z_ref = v.z_ref if v.z_ref is not None else v.z_floor
+        at_floor = (z_ref is not None and z_now <= z_ref + v.z_margin)
         if p_contact > v.p_close or at_floor:
-            # `closed_at` is committed by run() only if the executor ACCEPTS
-            # this plan — a rejected chunk was never commanded, so it cannot
-            # be the close the recovery rule reacts to.
+            # the latch is armed later, by `_note_executed_close`, from the
+            # gripper steps the executor actually ENTERED — a plan that is
+            # accepted but never played is not the close the recovery reacts to.
             rec["action"] = "close_allowed"
             rec["at_floor"] = bool(at_floor)
             return rec
         a[:, 6] = grip_now                       # hold the current aperture
+        self._invalidate_cpk(plan)
         rec["action"] = "close_masked"
         log.warning("terminal veto: close masked (p_contact=%.2f <= %.2f, "
                     "z=%.0f mm) — holding aperture %.2f",
                     p_contact, v.p_close, z_now * 1000, grip_now)
         return rec
 
-    def run(self, max_replans: int | None = None) -> None:
+    @staticmethod
+    def _invalidate_cpk(plan) -> None:
+        """Drop the contact package of a chunk the veto rewrote.
+
+        `plan.cpk` is the model's IMAGINED contact for the chunk it proposed,
+        and the next replan feeds it back as `prev_cpk` (policy.py:244). After
+        a rewrite it describes motion the arm was never asked to make, so it
+        must not condition the next chunk (Codex, 2026-08-30)."""
+        plan.cpk = None
+
+    def run(self, max_replans: int | None = None,
+            max_episode_s: float | None = None) -> None:
+        """Replan until a cap, a stop or the wall-clock budget.
+
+        `max_episode_s` is the budget the replan COUNT was standing in for:
+        episode wall-time is `max_replans x latency`, so the same cap of 40 is
+        a 35 s episode at the NFE-5 cadence (865 ms) and a 7 s one at `--nfe 1`
+        (172 ms) — against demos that run 16-31 s (VALIDATION_0830 P0 #4)."""
         n = 0
+        t_start = time.perf_counter()
+        self.stop_reason = None
         prev_plan: Plan | None = None
         prev_tcp = prev_cmd = None
         strikes = 0
-        # per-episode terminal-veto state: when the last ACCEPTED chunk carried
-        # a commanded close, and how many open->re-descend cycles have run
-        veto_state = {"closed_at": None, "retries": 0}
+        # per-episode terminal-veto state: the replan index at which an
+        # EXECUTED close was observed, how many open->re-descend cycles have
+        # run, the running minimum of the measured aperture, and how far the
+        # executed-gripper-step scan has read.
+        veto_state = {"closed_idx": None, "retries": 0, "g_min": None,
+                      "in_close": False, "grip_seen_t": float("-inf")}
         while not self._stop.is_set():
             # BEFORE building a snapshot: a safety stop raised by the executor
             # (e.g. camera_scene_stale) must end the episode through this clean
@@ -468,33 +562,50 @@ class PlannerLoop:
             prev_tcp, prev_cmd = tcp_pose.copy(), cmd
             plan = self.policy.replan(snap, prev_plan, tcp_pose)
             grip_now = float(snap.ur_state[-2]) if np.size(snap.ur_state) >= 2 else 0.0
-            veto_rec = self._apply_veto(plan, tcp_pose, grip_now, veto_state)
+            # the PROPOSAL, before the veto rewrites the chunk in place: on a
+            # vetoed replan `actions` is the veto's arithmetic, and G0's
+            # trace_in_spread / trace_head_dz score against it (P1 #12)
+            pre_veto = (np.array(plan.actions, copy=True)
+                        if self.veto is not None else None)
+            tcp_row = [float(x) for x in np.asarray(tcp_pose).ravel()]
+            veto_rec = self._apply_veto(plan, tcp_pose, grip_now, veto_state, n)
             if veto_rec is not None and veto_rec.get("action") == "retry_cap":
                 self.trace.append({"t": snap.t, "latency_s": plan.latency_s,
                                    "gate": plan.gate, "p_evt": plan.p_evt.tolist(),
                                    "sigma": plan.sigma.tolist(), "accepted": False,
                                    "actions": plan.actions.tolist(), "diag": {},
+                                   "tcp_pose": tcp_row,
                                    "terminal_veto": veto_rec})
                 log.error("terminal veto: %d open/re-descend retries exhausted — "
                           "ending the episode", self.veto.max_retries)
                 self.executor.request_stop("veto_retry_cap")
                 break
             accepted = self.executor.submit(plan)
-            if veto_rec is not None and veto_rec.get("action") == "close_allowed" \
-                    and accepted:
-                veto_state["closed_at"] = plan.t_created
-            self.trace.append({
+            row = {
                 "t": snap.t, "latency_s": plan.latency_s, "gate": plan.gate,
                 "p_evt": plan.p_evt.tolist(), "sigma": plan.sigma.tolist(),
                 "accepted": accepted,
                 "actions": plan.actions.tolist(),
+                # measured TCP pose this chunk was planned from: without it
+                # even "z at close" needed a clock-calibrated join against
+                # arm_tcp_pose.zarr (P3 #32)
+                "tcp_pose": tcp_row,
                 # terminal-veto decision for this replan (None => veto off)
                 "terminal_veto": veto_rec,
-                # provenance: nfe/guidance/... per replan (audit 2026-08-20 —
-                # the A/B condition lived only in the operator's memory)
+                # provenance: nfe/guidance/head_dz_mm/... per replan (audit
+                # 2026-08-20 — the A/B condition lived only in the operator's
+                # memory). Numeric LISTS are kept too: _select_seed's per-seed
+                # head_dz_mm is the only record of what the K seeds proposed
+                # and the quantity replay_rig's spread is validated against.
                 "diag": {k: v for k, v in (getattr(plan, "diag", None) or {}).items()
-                         if isinstance(v, (int, float, str, bool))},
-            })
+                         if isinstance(v, (int, float, str, bool))
+                         or (isinstance(v, (list, tuple))
+                             and all(isinstance(x, (int, float)) for x in v))},
+            }
+            if pre_veto is not None and veto_rec is not None \
+                    and veto_rec.get("action") in ("close_masked", "recovery_open"):
+                row["actions_pre_veto"] = pre_veto.tolist()
+            self.trace.append(row)
             from phantom.config.model import EVENTS
             k_evt = int(np.argmax(plan.p_evt))
             log.info("replan %d: latency=%.2fs gate=%.2f sigma_max=%.2f "
@@ -521,6 +632,19 @@ class PlannerLoop:
                 prev_plan = plan
             n += 1
             if max_replans is not None and n >= max_replans:
+                # NOT silent any more: this used to break with stopped_reason
+                # None, so a capped episode was indistinguishable from a
+                # completed one in the ledger (P0 #4).
+                self.stop_reason = "replan_cap"
+                log.warning("replan cap reached (%d replans, %.1f s) — ending "
+                            "the episode", n, time.perf_counter() - t_start)
+                break
+            if max_episode_s is not None and \
+                    (time.perf_counter() - t_start) >= max_episode_s:
+                self.stop_reason = "episode_time_cap"
+                log.warning("episode budget reached (%.1f s of %.1f s, %d "
+                            "replans) — ending the episode",
+                            time.perf_counter() - t_start, max_episode_s, n)
                 break
             if self._executor_stopped():
                 break
