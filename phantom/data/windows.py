@@ -33,7 +33,7 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
                                  STREAM_GRIPPER, EpisodeMeta, NormStats,
                                  is_failure_demo, is_trainable_episode,
-                                 tactile_stream)
+                                 needs_rederive, tactile_stream)
 
 log = logging.getLogger(__name__)
 
@@ -206,6 +206,16 @@ class WindowSampler:
                             "tags=%s policy=%r success=%r)", ep.name,
                             meta.status, meta.tags, meta.policy, meta.success)
                 continue
+            if needs_rederive(ep, meta):
+                # not fatal here (the intake manifest REFUSES it — F13), but
+                # the --extra-data path bypasses the manifest entirely and
+                # would train on the executor's pre-clamp proposal at the
+                # wrong cadence with no sign anything is wrong
+                log.warning("%s: policy rollout with NO re-derived actions "
+                            "(no actions_plan.zarr) — its actions stream is "
+                            "the executor PROPOSAL; run "
+                            "tools/rederive_rollout_actions.py before training "
+                            "on it", ep.name)
             try:
                 lo, hi = self.valid_range(ep)
             except (ValueError, KeyError, FileNotFoundError) as e:
