@@ -551,8 +551,10 @@ def test_mock_dry_run_still_completes_two_episodes(tmp_path):
     with DeploymentRuntime(hw, pol, mode="vision_only", out_root=tmp_path) as rt:
         first = rt.run_episode(task="whiteboard", max_replans=3)
         second = rt.run_episode(task="whiteboard", max_replans=2)
-    assert (first.stopped_reason, first.fatal_reason) == (None, None)
-    assert (second.stopped_reason, second.fatal_reason) == (None, None)
+    # the replan cap is NAMED since 2026-08-30 (it used to break silently with
+    # stopped_reason None, indistinguishable from a completed episode)
+    assert (first.stopped_reason, first.fatal_reason) == ("replan_cap", None)
+    assert (second.stopped_reason, second.fatal_reason) == ("replan_cap", None)
     assert (first.n_replans, second.n_replans) == (3, 2)
     assert set(pol.windows) == {(hw.wrist_ft.window_len, 6)}
 

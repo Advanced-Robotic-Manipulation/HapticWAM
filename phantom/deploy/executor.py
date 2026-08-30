@@ -29,10 +29,28 @@ from phantom.inference.policy import Plan
 log = logging.getLogger(__name__)
 
 
+#: Stop conditions that mean "let go of whatever is in the fingers".
+#: `_halt` commands the gripper open on these before it kills the workers: the
+#: tactile guards exist to protect the gel fingertips, and leaving the fingers
+#: squeezing at the pad ceiling through the label prompt and the "clear the
+#: arm's path" prompt — minutes, unattended — is the opposite of that
+#: (validation_0830/safety-final.md §4).
+LETGO_STOP_REASONS = ("wrench_limit", "hitbox_exit", "veto_retry_cap")
+
+
+def is_letgo_reason(name: str | None) -> bool:
+    return bool(name) and (str(name).startswith("tactile_")
+                           or str(name) in LETGO_STOP_REASONS)
+
+
 class ChunkExecutor:
     def __init__(self, hw: HardwareConfig, arm: Arm, gripper: Gripper,
-                 safety: SafetyMonitor, *, record_action=None, gripper_ring=None):
+                 safety: SafetyMonitor, *, record_action=None, gripper_ring=None,
+                 open_aperture: float = 0.0):
         self.hw = hw
+        # aperture the gripper is commanded to on a "let go" stop (the task's
+        # demo START aperture; 0.0 = fully open when the task is unknown)
+        self.open_aperture = float(open_aperture)
         self.arm = arm
         self.gripper = gripper
         self.safety = safety
@@ -128,14 +146,39 @@ class ChunkExecutor:
             if self.stopped_reason is None:
                 self.stopped_reason = reason
 
-    def _halt(self, reason: str) -> None:
+    def _halt(self, reason: str, *, events=None) -> None:
         """Stop BOTH threads and invalidate the gripper mailbox. Safety stops
         used to only break the servo loop — the gripper worker could still
         consume the previous tick's target (possibly a close) on an arm that
-        had already stopped (review 2026-08-20)."""
+        had already stopped (review 2026-08-20).
+
+        On a stop that means "let go" (`is_letgo_reason` over the reason and
+        over the safety events behind a generic `safety_stop`) the gripper is
+        commanded OPEN once, synchronously, BEFORE `_stop` is set — after that
+        the gripper worker exits without sending anything and the next
+        `gripper.move` in the whole deploy path is the NEXT episode's homing
+        (start_pose.py:208)."""
         self._set_reason(reason)
+        kinds = [getattr(e, "kind", "") for e in (events or [])]
+        if is_letgo_reason(reason) or any(is_letgo_reason(k) for k in kinds):
+            self._release_gripper(reason if is_letgo_reason(reason)
+                                  else next(k for k in kinds if is_letgo_reason(k)))
         self._grip_target = None
         self._stop.set()
+
+    def _release_gripper(self, why: str) -> None:
+        """One blocking `move` to the open aperture. Best-effort: a stop must
+        never be lost because the Robotiq socket is unhappy."""
+        if self.gripper is None:
+            return
+        try:
+            self.gripper.move(self.open_aperture, self.hw.gripper.default_speed,
+                              self.hw.gripper.default_force)
+            log.warning("stop (%s): gripper RELEASED to %.2f — if it is still "
+                        "closed, run ./GRIPPER_OPEN.sh", why, self.open_aperture)
+        except Exception:
+            log.exception("stop (%s): could not command the gripper open — open "
+                          "it by hand / with ./GRIPPER_OPEN.sh", why)
 
     def request_stop(self, reason: str) -> None:
         """External stop (planner watchdog): record the reason (first writer
@@ -165,6 +208,16 @@ class ChunkExecutor:
         idx = np.searchsorted(ts, times, side="right") - 1
         out = np.where(idx >= 0, gs[np.clip(idx, 0, len(gs) - 1)], np.nan)
         return out.astype(np.float64)
+
+    def entered_grip_after(self, t: float) -> list[tuple[float, float]]:
+        """(t, gripper command) of every action-grid step playback ENTERED
+        strictly after `t`.
+
+        The terminal veto latches its phantom-grasp recovery on this, not on
+        plan acceptance: an accepted chunk whose close lives in a tail the
+        playback never reached was never commanded (VALIDATION_0830 P0 #3)."""
+        with self._lock:
+            return [(ts, g) for ts, g in self._grip_hist if ts > t]
 
     # ------------------------------------------------------------------
     def _pose_at(self, plan: Plan, play_time: float) -> tuple[np.ndarray, float]:
@@ -251,7 +304,9 @@ class ChunkExecutor:
                 break
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
-                self._halt("safety_stop")
+                # the EVENTS carry the granularity `safety_stop` loses: a
+                # tactile/wrench/hitbox stop must also open the fingers
+                self._halt("safety_stop", events=verdict.events)
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
