@@ -5,18 +5,47 @@ rig's 3-6 cm grasp miss (13/13 episodes closed 35-80 mm above grasp height).
 This evaluates windows anchored in the last 1.5 s before the demo's first
 gripper close, sampled exactly like deploy, and reports:
 
-  endpoint_err_mm   |cum(pred dpos) - cum(gt dpos)| at chunk end (xyz)
-  z_end_err_mm      pred z-at-end - gt z-at-end  (POSITIVE = ends HIGH)
-  close_step_err    (first step pred gripper > 0.45) - (same for gt); +ve = late
-  commit_ratio      |pred descent| / |gt descent| over the chunk
+  endpoint_err_mm       |cum(pred dpos) - cum(gt dpos)| at chunk end (xyz)
+  z_end_err_mm          pred z-at-end - gt z-at-end  (POSITIVE = ends HIGH)
+  close_step_err        (first step pred gripper > 0.45) - (same for gt); +ve = late
+  commit_ratio          |pred descent| / |gt descent| over the chunk
+  pred_close_height_mm  absolute TCP z at the PREDICTED close (window-start z
+                        + cum dz up to that step) — the rig's actual failure
+                        mode (closing 65-120 mm high) expressed in mm
 
     python tools/terminal_eval.py --ckpt <pt> --data <root>/tasks \
         --hardware configs/hardware.nuc.yaml [--nfe 5] [--guidance 1.0]
 Bars (from demos): endpoint < 15 mm, |z_end_err| < 10 mm, commit_ratio ~ 1.
+
+Conditioning ablations (REVIEW_SYNTHESIS P1.2 / experiment E9) — `--null`:
+
+  none        as-is (teacher-forced demo observations; the historical default)
+  tactile     gel / fields / contact_state zeroed — what the "sensor-free"
+              student's layout drops. wrist F/T is deliberately KEPT (it is
+              `source: ur_internal`, present in both arms of the contrast).
+  wrist       the wrist F/T window zeroed
+  prev_cpk    the previous-replan contact package zeroed (the ACC intent
+              channel), the previous-window chunk itself untouched
+  obs         `PhantomRectifiedFlow._null_obs_batch` (gel/fields/contact_state/
+              wrist/ur_state/reactive/text) plus the video conditioning frame
+              blacked — the classifier-free null branch. Blacking the pixels
+              is safe HERE only because sampling encodes frame 0 alone
+              (build_x0(encode_gen=False)), so the causal-VAE bleed that
+              `_null_obs_batch` avoids cannot happen.
+  contact_gt  the OPPOSITE of a null and the P7 probe: the CONTACT frames are
+              cond-PINNED to the GT package instead of being co-denoised from
+              zeros. A large shift means the ACTION head leans on future
+              contact tokens it never has at deploy.
+  all         obs + prev_cpk (every perceived channel and the intent package)
+
+Interpretation (REVIEW_SYNTHESIS §2 E9, gate G1b): if tactile-null lands on
+top of the real run (|Δ endpoint| < 3 mm and |Δ close_step| < 1 step), the
+tactile-teacher premise does not survive and the paper pivots.
 """
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 from pathlib import Path
 
@@ -27,8 +56,14 @@ from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.data.schema import NormStats
 from phantom.data.windows import WindowSampler
+from phantom.model.rf import PhantomRectifiedFlow
+from phantom.model.sequence import FrameGroup
 from phantom.train import common as C
 from phantom.train.builder import build_model
+
+NULL_MODES = ("none", "tactile", "wrist", "prev_cpk", "obs", "contact_gt", "all")
+METRICS = ("endpoint_err_mm", "z_end_err_mm", "commit_ratio", "close_step_err",
+           "pred_close_height_mm")
 
 
 def close_steps(gt_grip: np.ndarray, pr_grip: np.ndarray) -> tuple[int | None, int]:
@@ -50,7 +85,152 @@ def close_steps(gt_grip: np.ndarray, pr_grip: np.ndarray) -> tuple[int | None, i
     return int(gi), (int(hit[0]) if len(hit) else len(pr_grip))
 
 
-def main() -> int:
+# ---------------------------------------------------------------------------
+# conditioning ablations
+# ---------------------------------------------------------------------------
+
+def null_batch(batch: dict, mode: str) -> dict:
+    """Shallow copy of `batch` with the channels named by `mode` zeroed.
+
+    Only what the model PERCEIVES is touched; targets (action_chunk) and the
+    intent chunk (prev_chunk) are never nulled here. `prev_cpk` and
+    `contact_gt` are not batch edits — see `nulls_prev_cpk` / `pins_contact`."""
+    if mode not in NULL_MODES:
+        raise SystemExit(f"--null {mode!r} not in {NULL_MODES}")
+    out = dict(batch)
+
+    def zero(*keys):
+        for k in keys:
+            if k in out and torch.is_tensor(out[k]):
+                out[k] = torch.zeros_like(out[k])
+
+    if mode in ("tactile",):
+        # exactly the streams the student layout has no frames for
+        zero("gel", "fields", "contact_state")
+    if mode in ("wrist",):
+        zero("wrist")
+    if mode in ("obs", "all"):
+        out = PhantomRectifiedFlow._null_obs_batch(out)
+        zero("video")          # safe at sampling: only frame 0 is encoded
+    return out
+
+
+def nulls_prev_cpk(mode: str) -> bool:
+    return mode in ("prev_cpk", "all")
+
+
+def pins_contact(mode: str) -> bool:
+    return mode == "contact_gt"
+
+
+def zero_package(pkg):
+    """Copy of a ContactPackage with every tensor field zeroed."""
+    fields = {f.name: getattr(pkg, f.name) for f in dataclasses.fields(pkg)}
+    return type(pkg)(**{k: (torch.zeros_like(v) if torch.is_tensor(v) else v)
+                        for k, v in fields.items()})
+
+
+def contact_pinned_layout(layout):
+    """`layout` with the CONTACT frames added to the FRAME_REPLACE cond mask,
+    i.e. held at their x0 (the GT package) through every denoise step."""
+    class _ContactPinned(type(layout)):
+        def cond_mask_T(self):
+            m = super().cond_mask_T()
+            m[self.frame_slice(FrameGroup.CONTACT)] = True
+            return m
+    vals = {f.name: getattr(layout, f.name) for f in dataclasses.fields(layout)}
+    return _ContactPinned(**vals)
+
+
+def ur_z_moments(ns: dict, z_idx: int) -> tuple[float, float]:
+    """(mean, std) of the TCP-z channel of `ur_state`; identity if the
+    checkpoint carries no ur_state stats (then ur_state is unnormalized)."""
+    m, s = ns.get("mean", {}).get("ur_state"), ns.get("std", {}).get("ur_state")
+    if m is None or s is None:
+        return 0.0, 1.0
+    return (float(np.asarray(m, dtype=np.float64)[z_idx]),
+            float(np.asarray(s, dtype=np.float64)[z_idx]))
+
+
+def resolve_episodes(data_root: Path, split: str) -> list[Path] | None:
+    """Episode dirs for `split`, or a hard failure.
+
+    `manifest_split` falls back to EVERY episode when the manifest is missing
+    (common.py:370) — silently turning "val" into "train + val". A checkpoint
+    decision made on that number is worthless, so refuse (REVIEW_SYNTHESIS
+    P1). `--split all` is the deliberate opt-in."""
+    if split == "all":
+        return None
+    mf = Path(data_root).parent / "manifests" / "all.jsonl"
+    if not mf.exists():
+        raise SystemExit(
+            f"no manifest at {mf} — refusing to evaluate every episode under "
+            f"{data_root} as if it were held out. Point --data at a "
+            f"<root>/tasks whose ../manifests/all.jsonl exists, or pass "
+            f"--split all to opt in deliberately.")
+    eps = C.manifest_split(Path(data_root), split)
+    if not eps:
+        raise SystemExit(f"manifest {mf} has no {split!r} episodes")
+    return eps
+
+
+# ---------------------------------------------------------------------------
+# statistics
+# ---------------------------------------------------------------------------
+
+def _finite(rows: list[dict], key: str) -> np.ndarray:
+    return np.array([r[key] for r in rows if np.isfinite(r.get(key, np.nan))])
+
+
+def _mean(rows, key):
+    v = _finite(rows, key)
+    return float(v.mean()) if len(v) else float("nan")
+
+
+def _median(rows, key):
+    v = _finite(rows, key)
+    return float(np.median(v)) if len(v) else float("nan")
+
+
+def _seed_std(rows, key):
+    """Mean over windows of the ACROSS-SEED std of `key`.
+
+    A window is (episode, t0); every seed contributed one row. With one seed
+    this is 0 by construction and reported as NaN instead."""
+    by_win: dict[tuple, list[float]] = {}
+    for r in rows:
+        v = r.get(key, np.nan)
+        if np.isfinite(v):
+            by_win.setdefault((r["episode"], round(float(r["t0"]), 4)), []).append(float(v))
+    stds = [float(np.std(v, ddof=1)) for v in by_win.values() if len(v) > 1]
+    return float(np.mean(stds)) if stds else float("nan")
+
+
+def block(rows: list[dict]) -> dict:
+    """mean / median / across-seed std for every metric over `rows`."""
+    out = {}
+    for k in METRICS:
+        out[k] = _mean(rows, k)
+        out["median_" + k] = _median(rows, k)
+        out["seed_std_" + k] = _seed_std(rows, k)
+    return out
+
+
+def summarize(rows: list[dict], **meta) -> dict:
+    tasks = sorted({r["task"] for r in rows})
+    summary = {**meta, "n": len(rows),
+               "n_windows": len({(r["episode"], round(float(r["t0"]), 4)) for r in rows}),
+               "n_episodes": len({r["episode"] for r in rows})}
+    summary.update(block(rows))
+    summary["per_task"] = {t: {**block([r for r in rows if r["task"] == t]),
+                              "n": sum(r["task"] == t for r in rows)}
+                           for t in tasks}
+    return summary
+
+
+# ---------------------------------------------------------------------------
+
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--data", required=True)
@@ -62,37 +242,52 @@ def main() -> int:
                     help="anchor t0 this many seconds before the first close "
                          "(default: the chunk duration, so the chunk ENDS at "
                          "the close — no post-grasp lift inside the window)")
-    ap.add_argument("--max-episodes", type=int, default=80)
+    ap.add_argument("--max-episodes", type=int, default=None,
+                    help="cap the (task-sorted) window index; default is ALL")
+    ap.add_argument("--split", default="val", choices=("val", "train", "all"),
+                    help="manifest split; 'all' deliberately bypasses the manifest")
+    ap.add_argument("--null", default="none", choices=NULL_MODES,
+                    help="conditioning ablation (see the module docstring)")
+    ap.add_argument("--persistent-noise", action="store_true",
+                    help="hold the initial noise draw fixed across the replans "
+                         "of one window (deploy's reuse_noise)")
     ap.add_argument("--no-ema", dest="ema", action="store_false", default=True,
                     help="GO scripts deploy with --ema; match that by default")
+    ap.add_argument("--tiny", action="store_true",
+                    help="tiny random-init backbone (tests only)")
     ap.add_argument("--out", default="")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     dev, dt = ("cuda" if torch.cuda.is_available() else "cpu"), torch.bfloat16
-    if dev == "cpu":
+    if dev == "cpu" or args.tiny:
         dt = torch.float32
     hw = load_hardware(args.hardware)
     paths = load_paths()
     from phantom.config.model import PhantomModelConfig
     payload = torch.load(args.ckpt, map_location="cpu", weights_only=False)
     mc = PhantomModelConfig.from_dict(payload["configs"]["model"])
-    pm = build_model(hw, paths, student=False, tiny=False, mc=mc, device=dev, dtype=dt)
+    pm = build_model(hw, paths, student=False, tiny=args.tiny, mc=mc, device=dev, dtype=dt)
     C.load_phantom_checkpoint(Path(args.ckpt), pm.rf, hw=hw, load_ema=args.ema, payload=payload)
     ns = payload["norm_stats"]
     a_mean = np.asarray(ns["mean"]["action"], dtype=np.float64)
     a_std = np.asarray(ns["std"]["action"], dtype=np.float64)
+    z_idx = 2 * hw.arm.dof + 2          # q, qd, tcp_pose[x,y,Z], ... (hardware.py:505)
+    z_mean, z_std = ur_z_moments(ns, z_idx)
     norm = NormStats(mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
                      std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
 
     data_root = Path(args.data)
     sampler = WindowSampler(hw, pm.bb, norm, student=False, seed=0)
-    val_eps = C.manifest_split(data_root, "val")     # None = every episode
+    val_eps = resolve_episodes(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=val_eps, windows_per_episode=1,
                          resample=False, seed=0)
     pm.rf.eval()
+    if pins_contact(args.null):
+        pm.rf.layout = contact_pinned_layout(pm.rf.layout)
     rows = []
     chunk_s = hw.control.chunk_horizon / hw.control.action_rate_hz
     lead = args.lead_s if args.lead_s is not None else chunk_s
+
     def make_batch(ep, t0):
         item = sampler.sample(ep, t0)
         batch = {}
@@ -108,11 +303,14 @@ def main() -> int:
             else:
                 batch[k] = v
         batch = C.to_device(batch, dev, dt)
-        # no privileged future contact package (deploy never has it)
-        for k in list(batch):
-            if k == "events" or k.startswith("cpk_"):
-                batch[k] = torch.zeros_like(batch[k])
-        return item, batch
+        if not pins_contact(args.null):
+            # no privileged future contact package (deploy never has it).
+            # --null contact_gt is exactly the opposite condition: keep the
+            # GT package AND cond-pin its frames.
+            for k in list(batch):
+                if k == "events" or k.startswith("cpk_"):
+                    batch[k] = torch.zeros_like(batch[k])
+        return item, null_batch(batch, args.null)
 
     skipped = 0
     for wi in ds.index[: args.max_episodes]:
@@ -126,10 +324,15 @@ def main() -> int:
             continue
         item, batch = make_batch(wi.episode, t0)
         gt = batch["action_chunk"][0].float().cpu().numpy().astype(np.float64) * a_std + a_mean
+        # absolute TCP z at the window start, for pred_close_height_mm
+        ur0 = item["ur_state"]
+        ur0 = ur0.numpy() if torch.is_tensor(ur0) else np.asarray(ur0)
+        z0 = float(np.asarray(ur0, dtype=np.float64)[z_idx] * z_std + z_mean)
         preds = []
         with torch.no_grad():
             for s in range(args.seeds):
                 pm.rf._gen = torch.Generator().manual_seed(1000 + s)
+                pm.rf.reset_episode_noise()
                 # steady-state deploy path: every rig replan after the first
                 # passes the TRUE previous package — reproduce it with a prior
                 # window one chunk earlier (first-replan path otherwise)
@@ -137,11 +340,15 @@ def main() -> int:
                 t_prev = t0 - chunk_s
                 if t_prev >= wi.lo:
                     _, pb = make_batch(wi.episode, t_prev)
-                    prev_cpk = pm.rf.sample(pb, nfe=args.nfe, guidance_scale=args.guidance).cpk
+                    prev_cpk = pm.rf.sample(pb, nfe=args.nfe, guidance_scale=args.guidance,
+                                            reuse_noise=args.persistent_noise).cpk
+                    if nulls_prev_cpk(args.null):
+                        prev_cpk = zero_package(prev_cpk)
                 p = pm.rf.sample(batch, nfe=args.nfe, guidance_scale=args.guidance,
-                                 prev_cpk=prev_cpk)
-                preds.append(p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64) * a_std + a_mean)
-        for pr in preds:
+                                 prev_cpk=prev_cpk, reuse_noise=args.persistent_noise)
+                preds.append((s, p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64)
+                              * a_std + a_mean))
+        for s, pr in preds:
             cg, cp = np.cumsum(gt[:, :3], axis=0), np.cumsum(pr[:, :3], axis=0)
             end_err = float(np.linalg.norm(cp[-1] - cg[-1]) * 1000)
             z_err = float((cp[-1, 2] - cg[-1, 2]) * 1000)
@@ -149,26 +356,29 @@ def main() -> int:
             commit = pr_desc / gt_desc if abs(gt_desc) > 2e-3 else float("nan")
             gt_i, pr_i = close_steps(gt[:, 6], pr[:, 6])
             rows.append({"episode": wi.episode.name, "task": item.get("text", "?"),
+                         "t0": float(t0), "seed": int(s), "z_start_mm": z0 * 1000,
                          "endpoint_err_mm": end_err, "z_end_err_mm": z_err,
                          "commit_ratio": commit,
                          "close_step_err": (pr_i - gt_i) if gt_i is not None else float("nan"),
+                         # absolute height at the close each side predicts
+                         "pred_close_height_mm": ((z0 + cp[pr_i, 2]) * 1000
+                                                  if pr_i < len(pr) else float("nan")),
+                         "gt_close_height_mm": ((z0 + cg[gt_i, 2]) * 1000
+                                                if gt_i is not None else float("nan")),
                          "gt_close_aperture": float(gt[gt_i, 6]) if gt_i is not None else float("nan"),
                          "pr_max_aperture": float(pr[:, 6].max())})
     if not rows:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
-    tasks = sorted({r["task"] for r in rows})
-    def mean(key, sel):
-        v = np.array([r[key] for r in sel if np.isfinite(r[key])])
-        return float(v.mean()) if len(v) else float("nan")
-    summary = {"nfe": args.nfe, "guidance": args.guidance, "n": len(rows),
-               "endpoint_err_mm": mean("endpoint_err_mm", rows),
-               "z_end_err_mm": mean("z_end_err_mm", rows),
-               "commit_ratio": mean("commit_ratio", rows),
-               "close_step_err": mean("close_step_err", rows),
-               "per_task": {t: {k: mean(k, [r for r in rows if r["task"] == t])
-                                for k in ("endpoint_err_mm", "z_end_err_mm", "commit_ratio", "close_step_err")}
-                            for t in tasks}}
+    summary = summarize(rows, nfe=args.nfe, guidance=args.guidance, seeds=args.seeds,
+                        null=args.null, split=args.split,
+                        persistent_noise=bool(args.persistent_noise),
+                        max_episodes=args.max_episodes, ema=bool(args.ema),
+                        skipped=skipped)
+    # gt_close_height_mm is a property of the demos, not of a condition —
+    # reported once so a --null run can be read against it
+    summary["gt_close_height_mm"] = _mean(rows, "gt_close_height_mm")
+    summary["median_gt_close_height_mm"] = _median(rows, "gt_close_height_mm")
     print(json.dumps(summary, indent=1))
     if args.out:
         Path(args.out).write_text(json.dumps({"summary": summary, "rows": rows}, indent=1))
