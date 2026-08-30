@@ -201,10 +201,18 @@ assert not (tr & va), "a path is in both train and val"
 print("manifest: bijection onto disk, unique, disjoint splits OK", flush=True)
 PYEOF
 
-echo "== 20k teacher checkpoint (fine-tune init)"
-hfget $HUB teacher_v4_790eps/teacher_020000.pt "$W/dl" >/dev/null
-mkdir -p "$W/runs/teacher/teacher_v4_790eps"
-cp "$W/dl/teacher_v4_790eps/teacher_020000.pt" "$W/runs/teacher/teacher_v4_790eps/"
+echo "== FT-A init checkpoint: v5_6 (teacher_v5_batch0822/teacher_003000.pt)"
+# the plan of record is "FT-A: 3k steps FROM v5_6" (REVIEW_SYNTHESIS.md:478).
+# v5_6 is byte-identical to compute3's DEMO.pt and is what the rig ran.
+hfget $HUB teacher_v5_batch0822/teacher_003000.pt "$W/dl" >/dev/null
+mkdir -p "$W/runs/teacher/teacher_v5_batch0822"
+cp "$W/dl/teacher_v5_batch0822/teacher_003000.pt" "$W/runs/teacher/teacher_v5_batch0822/"
+FTA_INIT="$W/runs/teacher/teacher_v5_batch0822/teacher_003000.pt"
+# v4 control (an objective-only ablation initialised from the 20k v4 teacher).
+# Uncomment both lines and re-point FTA_INIT to run it instead:
+# hfget $HUB teacher_v4_790eps/teacher_020000.pt "$W/dl" >/dev/null
+# mkdir -p "$W/runs/teacher/teacher_v4_790eps" && cp "$W/dl/teacher_v4_790eps/teacher_020000.pt" "$W/runs/teacher/teacher_v4_790eps/"
+# FTA_INIT="$W/runs/teacher/teacher_v4_790eps/teacher_020000.pt"
 
 echo "== paths.local.yaml"
 cat > configs/paths.local.yaml <<EOF2
@@ -242,18 +250,30 @@ print("text cache covers", sorted(need), flush=True)
 EOF3
 
 echo "== verify: pytest"
-python -m pytest tests/ -q 2>&1 | tail -1; [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "PYTEST FAILED — fix before launch"; exit 1; }
+# `set -euo pipefail` + a failing pipeline exits BEFORE a trailing || clause,
+# so the gate used to die silently after the ~100 GB pull. `if !` keeps the
+# failure inside a tested command, and the log tail says which test failed.
+if ! python -m pytest tests/ -q > "$W/pytest_gate.log" 2>&1; then
+  tail -25 "$W/pytest_gate.log"
+  echo "PYTEST FAILED — full log: $W/pytest_gate.log — fix before launch"
+  exit 1
+fi
+tail -1 "$W/pytest_gate.log"
 
 NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
 BS=${BS:-4}; GA=${GA:-2}     # effective batch 8; export BS=1 GA=8 on a 24-32GB card, BS=2 GA=4 on 40GB
-echo "== verify: 2-step REAL training smoke (same flags as the launch line, incl. the"
-echo "   --init-weights / --grasp-frac guards that would otherwise first run at paid launch)"
+echo "== verify: 2-step REAL training smoke — the WHOLE FT-A bundle, exactly the"
+echo "   launch line below (the drift guard on --init-weights + the objective"
+echo "   knobs used to first run at paid launch)"
 python -m phantom.train.train_teacher \
     --data "$W/data/phantom-episodes/tasks" --hardware configs/hardware.nuc.yaml \
     --allow-config-drift --run-name provision_smoke --max-steps 2 \
-    --init-weights "$W/runs/teacher/teacher_v4_790eps/teacher_020000.pt" \
+    --init-weights "$FTA_INIT" \
     --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
     --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 \
+    --event-band-weight 0 --ema-decay 0.995 --cond-dropout 0 \
+    --contact-nll-beta 0.5 --contact-self-forcing \
+    --action-noise-per-strip --no-action-t-max-of-two \
     --batch-size $BS --grad-accum $GA --num-workers $NW \
     --device cuda 2>&1 | tail -3
 rm -rf "$W/runs/teacher/provision_smoke"
@@ -267,30 +287,42 @@ echo "READY. Launch (only on explicit GO):"
 echo "  unset HF_TOKEN   # training does not need it; keep it out of the process environment"
 echo "  cd $W/phantom && nohup $W/.venv/bin/python -m phantom.train.train_teacher \\"
 echo "    --data $W/data/phantom-episodes/tasks --hardware configs/hardware.nuc.yaml \\"
-echo "    --allow-config-drift --run-name teacher_v5_batch0822 --max-steps 3000 \\"
-echo "    --init-weights $W/runs/teacher/teacher_v4_790eps/teacher_020000.pt \\"
+echo "    --allow-config-drift --run-name teacher_v5_ftA --max-steps 3000 \\"
+echo "    --init-weights $FTA_INIT \\"
 echo "    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \\"
 echo "    --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 --ckpt-every 500 --eval-every 500 \\"
 echo "    --event-band-weight 0 --ema-decay 0.995 --cond-dropout 0 \\"
 echo "    --contact-nll-beta 0.5 --contact-self-forcing \\"
 echo "    --action-noise-per-strip --no-action-t-max-of-two \\"
 echo "    --batch-size $BS --grad-accum $GA --num-workers $NW \\"
-echo "    --device cuda > train_v5.log 2>&1 &"
+echo "    --device cuda > train_ftA.log 2>&1 &"
+echo "  # --run-name teacher_v5_ftA, NEVER teacher_v5_batch0822: that run dir AND that hub"
+echo "  #   folder hold the six SHIPPED v5 checkpoints (v5_6 = the deployed model), and"
+echo "  #   train_teacher does not refuse a populated run dir — an egress would overwrite them."
 echo "  # fine-tune LR = 1/5 of the from-scratch peak (audit 2026-08-26: full peak = 2.7x LoRA-B"
 echo "  #   weight-scale displacement budget); --init-ema (default) starts from the deployed EMA weights;"
 echo "  #   --event-band-weight 0: the 20k ckpt never learned the packed event band (probe: that MSE ~0.9 vs"
 echo "  #   action ~0.1 at weight 0.5 = 4x the action gradient) — keep the fine-tune on the action objective"
-echo "  #   ckpt/eval every 500 -> SELECT the best checkpoint with tools/terminal_eval.py, do not ship step 3000"
+echo "  #   ckpt/eval every 500 -> SELECT the best checkpoint on REPLAY, not terminal_eval"
+echo "  #     (REVIEW_SYNTHESIS.md:482 — terminal_eval teacher-forces GT video/ur_state/prev_chunk and"
+echo "  #      structurally cannot see the rig failure; v5_6 was blessed that way and then went 0/26):"
+echo "  #        scp the 08-28 rig session to \$W/data/rig_0828/ BEFORE the run ends, then per checkpoint,"
+echo "  #        RAW and EMA:  python tools/replay_rig.py --ckpt <ckpt> --hardware configs/hardware.nuc.yaml \\"
+echo "  #                        --episodes \$W/data/rig_0828/ep_* --parity-fixes --out replay_<step>.json"
+echo "  #     terminal_eval stays a per-task val diagnostic only. Do not ship step 3000 by default."
+echo "  #   EGRESS after every checkpoint (a destroyed rental loses the run):"
+echo "  #        HF_TOKEN=hf_... python tools/upload_run_ckpts.py $W/runs/teacher/teacher_v5_ftA"
+echo "  #     (idempotent: re-run it as checkpoints land; it skips what is already on the hub)"
 echo "  #   FT-A bundle (review 2026-08-28, docs/training_playbook.md 'FT-A'): --contact-nll-beta 0.5 rebalances"
 echo "  #     the trunk gradient off the contact NLL (P5); --contact-self-forcing denoises ACTION alongside the"
 echo "  #     model's OWN contact package (P7, needs --acc-two-pass, no extra pass); --action-noise-per-strip +"
 echo "  #     --no-action-t-max-of-two fix the ACTION noise/timestep mismatch with 5-step sampling (P6);"
 echo "  #     --ema-decay 0.995 (0.999 averages ~1/3 of a 3000-step run); --cond-dropout 0 keeps the short"
 echo "  #     fine-tune's gradient on conditioned windows. Drop the whole bundle to reproduce v5 exactly."
-echo "  #     The 2-step smoke above runs the v5 flags — re-run it with the bundle appended before launching."
+echo "  #     The 2-step smoke above already runs this exact bundle — nothing to re-run by hand."
 echo "  #   val = frozen v4 78 eps + the last whole session(s) per task of batch_20260822 (>=10 eps/task),"
 echo "  #   see manifests/intake_holdout.json — in-run val_* mixes both; terminal_eval per task for the split"
 echo "  # effective batch 8 everywhere: 4x2 needs ~62GB (H100 NVL/80GB, measured 61.5GB);"
 echo "  # 40GB -> --batch-size 2 --grad-accum 4; 5090 32GB / 4090 24GB -> --batch-size 1 --grad-accum 8"
 echo "  # (4090 measured 19.9GiB at 1x8 with --acc-two-pass; batch 2 on a 5090 is unmeasured)"
-echo "  # 3000 steps ~= 5h on H100 NVL. Offline check: tools/terminal_eval.py + tools/episode_qc.py"
+echo "  # 3000 steps ~= 5h on H100 NVL. Offline diagnostics: tools/terminal_eval.py + tools/episode_qc.py"
