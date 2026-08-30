@@ -1,0 +1,36 @@
+NOT READY — checkpoint decisions are not yet safe from these eval tools because post-fix rig episodes cannot be faithfully replayed, `terminal_eval`’s tactile ablation is not the claimed student contrast, and `rig_trace_decompose` can mis-measure executed motion.
+
+1. High — `tools/replay_deploy_path.py:57-60,73-82`; `phantom/scripts/run_deploy.py:519-532,665-671`. Claim: `replay_deploy_path --deploy-rng` only models the pre-fix constant-seed deploy and ignores the recorded per-episode `seed`, `parity`, and `kseeds` levers.
+Evidence: `rg -n "parity_fixes=False|k_seeds=1|manual_seed\\(0\\)|manual_seed\\(1000 \\+ j\\)|seed:" tools/replay_deploy_path.py phantom/scripts/run_deploy.py` -> `run_deploy.py:522 ... "seed:..."`, `run_deploy.py:529 ... "parity:..."`, `run_deploy.py:532 ... "kseeds:..."`, but `replay_deploy_path.py:59 k_seeds=1`, `:60 parity_fixes=False`, `:76 manual_seed(0)`, `:82 manual_seed(1000 + j)`.
+Failure scenario: a Session-4 rollout recorded with seeded episodes, `--parity-fixes`, or `--k-seeds` will replay under different policy state than the rig actually used, so any “replay matches/doesn’t match rig” conclusion is invalid.
+Minimal fix: add a post-fix replay mode that reads `meta.tags` by default (`seed:<n>`, `parity:on|off`, `kseeds:<K>`) and only keep `--deploy-rng` as an explicitly documented pre-fix mode.
+
+2. High — `tools/replay_rig.py:188-205`; `phantom/data_collect/session.py:733-750`; `tools/rederive_rollout_actions.py:80-87,134-143`. Claim: `replay_rig --prev-chunk measured` does not reproduce training’s action-stream semantics because it uses the gripper’s measured aperture and nearest raw TCP rows instead of the recorded action-command stream / latest-at-or-before grid.
+Evidence: `/Users/sannikov/GitHub/phantom/.venv/bin/python -c ...` comparing replay vs rollout streams on `data/episodes/deploy/20260827/ep_teacher_smoke_1787827101_000` printed `[(0, 0.0, 0.0, 0.230237, ...), ...]`, i.e. replay `prev[k,6]=0.0` from `gripper.zarr` while the rollout command stream at the same grid point was `0.230237`; a second probe printed `{'t': ..., 'nearest_idx': 1, 'latest_idx': 0, ...}`, showing the raw-pose reconstruction can also pick a future sample.
+Failure scenario: P2/E3 parity experiments can understate close intent or leak future arm state, so replay-based conclusions about the `prev_chunk` loop are not trustworthy.
+Minimal fix: when `actions.zarr` already has measured semantics, read it directly; otherwise reconstruct from latest-at-or-before TCP rows and the actual gripper command source (`actions_plan` / executor history), not `gripper.zarr`.
+
+3. High — `tools/terminal_eval.py:107-115`; `phantom/model/rf.py:213-219`; `phantom/model/acc.py:95-102`. Claim: `terminal_eval --null tactile` is not the claimed sensor-free-student ablation because it leaves `reactive` live, while the student path drops that signal entirely.
+Evidence: `nl -ba tools/terminal_eval.py | sed -n '92,116p'` shows tactile null only does `zero("gel", "fields", "contact_state")`; `nl -ba phantom/model/rf.py | sed -n '204,230p'` shows `react_score_B=None if (self.layout.student or react is None)`; `nl -ba phantom/model/acc.py | sed -n '88,110p'` shows the student then forces `g_react = 0`.
+Failure scenario: E9-style “tactile nulled” numbers can still benefit from a tactile-derived channel that the student never gets, overstating the viability of the student/pivot claim.
+Minimal fix: in `tactile` mode also zero/remove `reactive`, or rename the mode to state explicitly that CASA `reactive` remains enabled.
+
+4. Medium — `tools/replay_rig.py:161-184`; `phantom/deploy/planner.py:265-285`. Claim: `replay_rig` still rebuilds teacher tactile inputs with legacy semantics, so it cannot faithfully replay `--parity-fixes` episodes even before sampling.
+Evidence: `nl -ba tools/replay_rig.py | sed -n '161,184p'` shows `derive_timestep(cur, prev, dt_field, hw)` and `snap.reactive = dv.reactive_score(ds_now, prev_fields)`; `nl -ba phantom/deploy/planner.py | sed -n '265,285p'` shows parity-fixed deploy instead uses measured `ts_t[-1]-ts_t[0]` and consecutive `fields_ds` frames. A synthetic probe printed `{'consecutive_gap_s': 0.008333, 'long_gap_s': 4.0, 'reactive_consecutive': 0.001478, 'reactive_long_gap': 0.076784}`.
+Failure scenario: replay of post-fix episodes feeds the ACC gate different slip/reactive inputs than the rig saw, so seed-spread or parity-lever conclusions can be wrong even if the action sampler is correct.
+Minimal fix: add a replay parity mode keyed off `parity:on` (or an explicit flag) and mirror the exact `SnapshotBuilder` branches for tactile `dt` and `reactive`.
+
+5. Medium — `tools/rig_trace_decompose.py:28-29,65`. Claim: `rig_trace_decompose` samples stream values from the first future row, not the latest-at-or-before row it claims to align to the executed window.
+Evidence: `/Users/sannikov/GitHub/phantom/.venv/bin/python -c ...` on the checked-in smoke episode printed `{'t': 173095.083882, 'left_idx': 0, 'future_idx': 1, 'left_ts': 173095.080078, 'future_ts': 173095.087687, 'future_minus_t_ms': 3.804}` while `at()` is `np.searchsorted(ts, t)` with no `side="right"-1`.
+Failure scenario: reported `xyz@close`, `ACTUAL window dz`, and `grip_actual` can be biased forward at each boundary, weakening any claim that the executor tracked or missed a commanded prefix by only a few mm.
+Minimal fix: change `at()` to latest-at-or-before (`searchsorted(..., side="right") - 1`) or explicitly switch the whole script to nearest-neighbor and document that choice.
+
+6. Medium — `tools/rig_trace_decompose.py:42,54-55`; `phantom/data/schema.py:30-38`; `tools/rederive_rollout_actions.py:15-29,153-155`. Claim: after rollout rederivation, `rig_trace_decompose` will mislabel measured `actions.zarr` as commanded motion.
+Evidence: `nl -ba phantom/data/schema.py | sed -n '26,38p'` says deploy proposals are moved aside to `actions_plan.zarr`; `nl -ba tools/rederive_rollout_actions.py | sed -n '150,155p'` shows exactly that rename; `nl -ba tools/rig_trace_decompose.py | sed -n '42,55p'` still loads `actions` and prints `cmd_dz_sum` / `cmd_dy` from it.
+Failure scenario: once rollout episodes are rederived for DAgger or audit, the script’s summary row will compare measured motion against measured motion while calling one side “commanded,” invalidating executor-vs-policy diagnosis.
+Minimal fix: prefer `actions_plan.zarr` for commanded summaries when present, and keep `actions.zarr` as measured motion.
+
+7. Low — `phantom/eval/grasp_label.py:104-116`; `configs/start_poses.yaml:17-65`. Claim: grasp-label close-height thresholds are hardcoded in code and are not coupled to the generated task-stat config, so they can silently drift after rig-geometry or TCP-offset changes.
+Evidence: `nl -ba phantom/eval/grasp_label.py | sed -n '100,130p'` shows a fixed `Z_MAX_MM` table; `nl -ba configs/start_poses.yaml | sed -n '17,65p'` shows the current generated task stats, but no code path loads those values into the labeler.
+Failure scenario: deploy safety stats can be refreshed for a new geometry while `label_grasps` keeps stale close-height thresholds, shifting reported grasp rates and checkpoint comparisons.
+Minimal fix: move `Z_MAX` into generated task stats or derive it from current demo stats in a versioned artifact that `grasp_label.py` loads.
