@@ -49,7 +49,7 @@ def _cosmos_available() -> bool:
 def _fake_batch():
     g = torch.Generator().manual_seed(0)
     keys = ("gel", "fields", "contact_state", "wrist", "ur_state", "video",
-            "prev_chunk", "action_chunk")
+            "reactive", "prev_chunk", "action_chunk")
     b = {k: torch.rand(2, 4, generator=g) + 1.0 for k in keys}
     b["text"] = ["pick the egg", "pick the egg"]
     return b
@@ -69,8 +69,11 @@ def test_null_none_is_the_identity():
 def test_tactile_null_drops_exactly_the_student_deleted_streams():
     out = TE.null_batch(_fake_batch(), "tactile")
     # the student layout has no OBS_GEL/OBS_MECH frames; wrist F/T is
-    # ur_internal and survives in both arms of the sensor-free contrast
-    assert _zeroed(out) == {"gel", "fields", "contact_state"}
+    # ur_internal and survives in both arms of the sensor-free contrast.
+    # `reactive` is derived from two fields_ds frames, so it is tactile too
+    # and must go with them (F12) — leaving it live made the mode a partial
+    # null and the E9 "tactile nulled" row an overstatement of what survived.
+    assert _zeroed(out) == {"gel", "fields", "contact_state", "reactive"}
     assert float(out["wrist"].abs().sum()) > 0
     assert float(out["ur_state"].abs().sum()) > 0
 
@@ -315,6 +318,7 @@ def test_every_null_mode_runs_and_nulls_what_it_names(tiny_eval_setup, tmp_path,
     tactile = {"gel", "fields", "contact_state"}
     expect_zero = {
         "none": set(), "prev_cpk": set(), "contact_gt": set(),
+        "contact_zero": set(),
         "tactile": tactile, "wrist": {"wrist"},
         "obs": tactile | {"wrist", "ur_state", "video"},
         "all": tactile | {"wrist", "ur_state", "video"},
@@ -322,10 +326,14 @@ def test_every_null_mode_runs_and_nulls_what_it_names(tiny_eval_setup, tmp_path,
     for k in tactile | {"wrist", "ur_state", "video"}:
         assert rec.zeroed(k) is (k in expect_zero), f"{null}: {k}"
 
-    # the GT contact package: zeroed everywhere except --null contact_gt
-    assert rec.zeroed("events") is (null != "contact_gt")
-    assert rec.zeroed("cpk_wrench") is (null != "contact_gt")
-    # ... where the CONTACT frames are additionally cond-pinned
+    # the GT contact package: zeroed everywhere except --null contact_gt --
+    # THE DEFAULT INCLUDED (the deploy condition; E9's row 1 is this, not
+    # "everything on", which is how the published table was read)
+    assert rec.zeroed("events") is not TE.keeps_gt_package(null)
+    assert rec.zeroed("cpk_wrench") is not TE.keeps_gt_package(null)
+    assert TE.keeps_gt_package(null) is (null == "contact_gt")
+    # ... and the CONTACT frames are cond-pinned in BOTH P7 arms:
+    # contact_gt pins them to that GT package, contact_zero to the zeros
     lay = None
     from phantom.config.backbone import BackboneConfig
     from phantom.config.model import PhantomModelConfig
@@ -334,13 +342,29 @@ def test_every_null_mode_runs_and_nulls_what_it_names(tiny_eval_setup, tmp_path,
                                tiny_eval_setup[0])
     sl = lay.frame_slice(FrameGroup.CONTACT)
     pinned = [bool(m[sl].all()) for m in rec.cond_masks]
-    assert all(pinned) is (null == "contact_gt")
+    assert all(pinned) is TE.pins_contact(null)
+    assert TE.pins_contact(null) is (null in ("contact_gt", "contact_zero"))
+
+    # the JSON says what the condition WAS, so no table can be relabelled by
+    # hand again (F18)
+    sem = s["null_semantics"]
+    assert sem["mode"] == null
+    assert sem["gt_contact_package"] == ("kept" if null == "contact_gt" else "zeroed")
+    assert sem["contact_frames"] == ("cond_pinned" if TE.pins_contact(null)
+                                     else "co_denoised_from_noise")
+    assert sem["is_deploy_condition"] is (null == "none")
 
     # prev_cpk: a real package for the steady-state windows, zeros when nulled
     pkgs = [p for p in rec.prev_cpks if p is not None]
     assert pkgs, "no steady-state window exercised the prev_cpk path"
     zeroed = all(float(p.wrench.abs().sum()) == 0.0 for p in pkgs)
-    assert zeroed is TE.nulls_prev_cpk(null)
+    # contact_zero pins the PREVIOUS window's CONTACT frames to zeros too, so
+    # the package it chains forward is zero by construction (recorded in
+    # null_semantics as prev_cpk=zero_by_pinning), not by a separate null
+    assert zeroed is (TE.nulls_prev_cpk(null) or null == "contact_zero")
+    assert s["null_semantics"]["prev_cpk"] == (
+        "zeroed" if TE.nulls_prev_cpk(null) else
+        "zero_by_pinning" if null == "contact_zero" else "as_sampled")
 
     # action targets and the intent chunk are never nulled
     assert not rec.zeroed("action_chunk") and not rec.zeroed("prev_chunk")
@@ -392,3 +416,62 @@ def test_max_episodes_still_caps(tiny_eval_setup, tmp_path):
     full = _run(tiny_eval_setup, tmp_path / "f", "none")
     one = _run(tiny_eval_setup, tmp_path / "o", "none", ["--max-episodes", "1"])
     assert one["summary"]["n_episodes"] <= full["summary"]["n_episodes"]
+
+
+# ---------------------------------------------------------------------------
+# F12 / F18 (validation 2026-08-30): the mode semantics are explicit, the
+# default is the DEPLOY condition, and a student checkpoint runs at all
+# ---------------------------------------------------------------------------
+
+def test_null_semantics_names_both_switches_for_every_mode():
+    """Every mode is (package kept|zeroed) x (frames pinned|co-denoised)."""
+    sem = {m: TE.null_semantics(m) for m in TE.NULL_MODES}
+    kept = {m for m, s in sem.items() if s["gt_contact_package"] == "kept"}
+    pinned = {m for m, s in sem.items() if s["contact_frames"] == "cond_pinned"}
+    assert kept == {"contact_gt"}, "only contact_gt keeps the GT package"
+    assert pinned == {"contact_gt", "contact_zero"}
+    # the default is the deploy condition, NOT "everything on"
+    assert sem["none"]["gt_contact_package"] == "zeroed"
+    assert sem["none"]["is_deploy_condition"] is True
+    assert sem["none"]["contact_frames"] == "co_denoised_from_noise"
+    # the P7 pair differs ONLY in what the pinned frames hold
+    a, b = sem["contact_zero"], sem["contact_gt"]
+    assert a["contact_frames_pinned_to"] == "zero_package"
+    assert b["contact_frames_pinned_to"] == "gt_package"
+    assert sem["tactile"]["batch_streams_zeroed"] == \
+        ["contact_state", "fields", "gel", "reactive"]
+    with pytest.raises(SystemExit):
+        TE.null_semantics("contact_maybe")
+
+
+def test_contact_zero_zeroes_the_package_and_pins_it():
+    """P7's control arm: same package as the default, pinned like contact_gt."""
+    assert TE.pins_contact("contact_zero") and not TE.keeps_gt_package("contact_zero")
+    assert not TE.pins_contact("none") and not TE.keeps_gt_package("none")
+    # it is not a batch edit either — the package zeroing happens in main()
+    assert _zeroed(TE.null_batch(_fake_batch(), "contact_zero")) == set()
+
+
+@pytestmark_e2e
+def test_terminal_eval_runs_a_student_checkpoint(tiny_eval_setup, tmp_path):
+    """F12: build_model got a hardcoded student=False, so builder.py:48
+    ('mc.student must agree with the student flag') killed every student
+    checkpoint — the ones D9/D12 evaluate offline."""
+    from phantom.config.training import CommonTrainConfig
+    from phantom.train import common as C
+    from phantom.train.builder import build_model
+    hw, root, _, hw_yaml = tiny_eval_setup
+    ns = NormStats(mean={"action": np.zeros(hw.control.action_dim, np.float32),
+                         "ur_state": np.zeros(hw.ur_state_dim, np.float32)},
+                   std={"action": np.ones(hw.control.action_dim, np.float32),
+                        "ur_state": np.ones(hw.ur_state_dim, np.float32)})
+    pm = build_model(hw, load_paths(), student=True, tiny=True, load_base=False)
+    ckpt = Path(tmp_path) / "tiny_student.pt"
+    C.save_phantom_checkpoint(ckpt, pm.rf, hw=hw, bb=pm.bb, mc=pm.mc,
+                              train_cfg=CommonTrainConfig(), step=0, norm_stats=ns)
+    out = Path(tmp_path) / "student.json"
+    assert TE.main(["--ckpt", str(ckpt), "--data", str(root / "tasks"),
+                    "--hardware", str(hw_yaml), "--nfe", "1", "--seeds", "1",
+                    "--no-ema", "--tiny", "--out", str(out)]) == 0
+    s = json.loads(out.read_text())["summary"]
+    assert s["student"] is True and s["n"] > 0
