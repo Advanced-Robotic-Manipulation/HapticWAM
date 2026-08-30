@@ -92,6 +92,14 @@ class EpisodeMeta:
     # Recorded so the envelope an episode actually ran under stays auditable.
     deploy_overrides: dict = field(default_factory=dict)
     status: str = "recording"        # recording | finalized | aborted
+    # per-episode ACTION-loss multiplier (D8 self-improvement, added
+    # 2026-08-30 F19). 1.0 = an ordinary demo; failure demos are forced to 0
+    # by `is_failure_demo` regardless of this value; intake writes >1 to
+    # oversample a small on-policy rollout pool
+    # (`clip(1/(p_task+0.2), 1, 3)`). Default 1.0 keeps every existing
+    # meta.json (and every EpisodeMeta() call site) behaving exactly as
+    # before — `from_dict` is tolerant, so old files simply take the default.
+    weight: float = 1.0
 
     # ------------------------------------------------------------------
     def to_dict(self) -> dict:

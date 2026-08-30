@@ -463,7 +463,7 @@ class WindowDataset(Dataset):
                  episodes: list[Path] | None = None, resample: bool = True,
                  seed: int = 0, grasp_frac: float = 0.0,
                  grasp_window_s: tuple[float, float] = (1.5, 0.2),
-                 photo_aug: float = 0.0):
+                 photo_aug: float = 0.0, commit_band_weight: float = 1.0):
         self.sampler = sampler
         self.index = sampler.build_index(root, windows_per_episode, episodes)
         # A frozen index replays the same anchors every epoch (~35x over a long
@@ -488,6 +488,12 @@ class WindowDataset(Dataset):
         # ablation). One jitter per window (lighting is constant within an
         # episode), same jitter for every frame of the window.
         self.photo_aug = float(photo_aug)
+        # D8's "x2 window multiplier in the commit band" (validation
+        # 2026-08-30 F19): an extra ACTION-loss multiplier for windows whose
+        # t0 lands inside the same pre-close band `grasp_frac` anchors in.
+        # 1.0 = off (the default); it composes with the per-episode
+        # EpisodeMeta.weight and never rescues a failure demo's 0.
+        self.commit_band_weight = float(commit_band_weight)
 
     def __len__(self) -> int:
         return len(self.index)
@@ -551,6 +557,11 @@ class WindowDataset(Dataset):
             x = ((x - 0.5) * contrast + 0.5) * gain \
                 * _t.as_tensor(ch, dtype=x.dtype).view(1, 3, 1, 1)
             item["video"] = (x.clamp(0.0, 1.0) * 2.0 - 1.0).to(v.dtype)
+        if self.commit_band_weight != 1.0 and item.get("action_weight", 0.0):
+            tc = self._close_time(wi.episode)
+            if tc is not None and \
+                    tc - self.grasp_window_s[0] <= t0 <= tc - self.grasp_window_s[1]:
+                item["action_weight"] = float(item["action_weight"]) * self.commit_band_weight
         return item
 
 
