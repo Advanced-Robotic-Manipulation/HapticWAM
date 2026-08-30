@@ -65,15 +65,42 @@ mean, the most committed descent in the sweep and 172 ms replans instead of 865)
 the contact gate agrees or the gripper is at the demo grasp band; a close on air reopens and re-descends, 3 tries),
 `--parity-fixes` (train/deploy input parity), `--k-seeds K` (multi-seed selection; only affordable at NFE ≤ 3).
 
-Arms for the first clean session (waffles, centre cell, interleaved, ≥10 episodes per arm, both from `GO_v5_waffles.sh`):
+Arms for the first clean session (waffles first — `q_n=37`, the best-covered envelope; then Carton).
+**One process per arm block**, ≥16 episodes per arm so G2's 3/16 is readable:
 ```
-EXTRA="--nfe 1 --terminal-veto"            ./GO_v5_waffles.sh 1    # arm B: deterministic + veto
-EXTRA="--seed 4242"                         ./GO_v5_waffles.sh 1    # arm A: as before (NFE 5), seeded per episode
+# arm A — v5_6 baseline, NFE 5, no levers.  ONE process for the whole block:
+EXTRA=""                                                    ./GO_v5_waffles.sh 10
+# arm B — the lever bundle:
+EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 35" \
+                                                            ./GO_v5_waffles.sh 10
 ```
-(`EXTRA` is appended after the GO script's own flags, so its `--nfe` wins.) Alternate A/B per placement; note the
+(`EXTRA` is appended after the GO script's own flags, so its `--nfe` wins.)
+
+**Do NOT pass `--seed` to a single-episode process.** `episode_seed(base, i) = base + i` uses the *within-process*
+episode index, so `EXTRA="--seed 4242" ./GO_v5_waffles.sh 1` repeated ten times gives seed 4242 ten times — with
+`--persistent-noise` that is one identical noise tensor for the whole arm, i.e. exactly the constant-seed bug this
+session exists to escape (VALIDATION_0830 P0 #6). If a seeded arm is wanted, run the whole block in ONE process; the
+unseeded path already records `seed:<n>` per episode (and since 08-30 the homing jitter is drawn from that same
+per-episode seed, with the realised start pose tagged `start:<x,y,z>mm/g<aperture>`).
+
+`--max-episode-s 35` is the wall-clock budget: `--max-replans` is a COUNT, and at `--nfe 1` (172 ms replans) 40
+replans is a ~7 s episode against 16-31 s demos. Arm A at NFE 5 (~0.9 s replans) reaches the budget at ~40 replans
+anyway; the stop reason is logged as `episode_time_cap` / `replan_cap` instead of a silent `None`.
+
+Interleave A/B per placement cell on the taped 3×3 grid and alternate which arm goes first per cell; note the
 cell id in the verdict prompt (`s`/`f`/`c`, optionally `d` for damage). The z floor, hitbox and joint gate are on by
 default; if the joint gate refuses after a protective stop, unwind wrist 3 on the pendant. Judge with
-`tools/label_grasps.py` (tactile hold + lift) in addition to the operator verdict.
+`tools/label_grasps.py` (tactile hold + lift) in addition to the operator verdict, and treat any `hold_truncated`
+episode as unmeasurable rather than as a failure.
+
+**Abort rules.**
+- Two consecutive `safety_stop`s that need an RTDE control rebuild → stop and inspect the envelope before continuing.
+- Any protective stop or manual jog → re-run the joint gate before the next episode (the 08-28 session lost 16 of 26
+  episodes to a wrist wrapped 360° / a flipped IK branch that the TCP-only gate passed).
+- Any `veto_retry_cap` → check the gripper before touching the rig. A let-go stop (`tactile_*`, `wrench_limit`,
+  `hitbox_exit`, `veto_retry_cap`) now commands the fingers open itself; if they are still closed, `./GRIPPER_OPEN.sh`.
+- `--hitbox-margin` must stay above `--z-floor-margin` — `run_deploy` refuses the run otherwise (the floor-is-a-clamp
+  fix inverts below it and every deep descent becomes a `hitbox_exit`).
 
 ## Safety batch (2026-08-28 evening) — what changed after the first v5 session
 
