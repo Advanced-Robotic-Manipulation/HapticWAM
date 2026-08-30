@@ -128,7 +128,8 @@ class DeploymentRuntime:
                  out_root: Path, *, parity_fixes: bool = False,
                  veto: TerminalVeto | None = None,
                  base_hw: HardwareConfig | None = None,
-                 deploy_overrides: dict | None = None):
+                 deploy_overrides: dict | None = None,
+                 open_aperture: float = 0.0):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
         with model_copy). Episodes are stamped with ITS config_hash so a
@@ -148,6 +149,8 @@ class DeploymentRuntime:
         # can attribute each one; run_deploy tags every episode with the state
         self.parity_fixes = bool(parity_fixes)
         self.veto = veto
+        # the aperture a "let go" stop reopens to (task demo start aperture)
+        self.open_aperture = float(open_aperture)
         self.rig = make_rig(hw, control=True)
         self.rig.worker_owned_tactile = True    # real DM-Tac is single-open
         self.session: SensorSession | None = None
@@ -169,8 +172,8 @@ class DeploymentRuntime:
 
     # ------------------------------------------------------------------
     def run_episode(self, *, task: str, text: str = "", tags: list[str] | None = None,
-                    max_replans: int = 20, policy_name: str = "",
-                    dagger_round: int = 0) -> EpisodeResult:
+                    max_replans: int = 20, max_episode_s: float | None = None,
+                    policy_name: str = "", dagger_round: int = 0) -> EpisodeResult:
         assert self.session is not None and self.recorder is not None
         hw = self.hw
         # Fail closed BEFORE anything is recorded or the arm is driven: a
@@ -201,7 +204,8 @@ class DeploymentRuntime:
         safety = SafetyMonitor(hw, self.session.rings)
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
                                  record_action=self.recorder.record_action,
-                                 gripper_ring=self.session.rings["gripper"])
+                                 gripper_ring=self.session.rings["gripper"],
+                                 open_aperture=self.open_aperture)
         snapshots = SnapshotBuilder(hw, self.session, self.mode,
                                     parity_fixes=self.parity_fixes,
                                     executor=executor)
@@ -226,7 +230,8 @@ class DeploymentRuntime:
                     except Exception:
                         log.exception("zero_ft failed (continuing)")
 
-                planner.run(max_replans=max_replans)
+                planner.run(max_replans=max_replans,
+                            max_episode_s=max_episode_s)
             except AssertionError as e:
                 # Last net for the snapshot's hard requirements (PlannerLoop.run
                 # catches its own; this covers _wait_rings_warm timing out and
@@ -272,6 +277,9 @@ class DeploymentRuntime:
                     trace_path.write_text(json.dumps(trace, indent=1),
                                           encoding="utf-8")
         return EpisodeResult(
-            episode_path=saved, stopped_reason=executor.stopped_reason,
+            episode_path=saved,
+            # the executor's reason wins; the planner's own caps (replan_cap /
+            # episode_time_cap) are what used to read as stopped_reason None
+            stopped_reason=executor.stopped_reason or planner.stop_reason,
             n_replans=len(trace), safety_events=len(safety.log_events),
             trace_path=trace_path, fatal_reason=fatal_reason(executor))
