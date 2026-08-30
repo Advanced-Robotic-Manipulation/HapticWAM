@@ -132,11 +132,16 @@ def main() -> int:
         print(f"{'':12s} {'op=s':>6s} {'op=f':>6s} {'op=none':>8s}")
         print(f"{'grasp_ok':12s} {c['ok_s']:6d} {c['ok_f']:6d} {c['ok_none']:8d}")
         print(f"{'not ok':12s} {c['no_s']:6d} {c['no_f']:6d} {c['no_none']:8d}")
+        # NOT negatives: the recording ended inside the hold window, so the
+        # rule abstains (grasp_label.hold_truncated)
+        print(f"{'truncated':12s} {c['trunc_s']:6d} {c['trunc_f']:6d} "
+              f"{c['trunc_none']:8d}")
         lab_n = c["ok_s"] + c["ok_f"] + c["no_s"] + c["no_f"]
         if lab_n:
             agree = c["ok_s"] + c["no_f"]
             print(f"  agreement on the {lab_n} operator-labeled episodes: "
-                  f"{agree / lab_n:.1%}")
+                  f"{agree / lab_n:.1%} (truncated episodes excluded — the "
+                  f"rule abstains on them)")
 
     if args.json_out:
         Path(args.json_out).write_text(
