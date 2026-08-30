@@ -73,7 +73,7 @@ def apply_overrides(cfg, args, compute=None):
     # ~2.7x the LoRA-B weight scale — a rewrite, not a fine-tune. Explicit
     # CLI values beat the compute profile.
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
-                 "eval_every", "ema_decay"):
+                 "eval_every", "ema_decay", "event_band_weight"):
         v = getattr(args, name, None)
         if v is not None:
             updates[name] = v
@@ -348,6 +348,27 @@ def main(argv=None) -> int:
         if hard:
             raise SystemExit(f"--resume model-config drift vs checkpoint: {hard} "
                              f"— pass the flags the original run used")
+        # ... including the objective knob that is NOT part of `mc`: the
+        # event-band weight rides in configs.train, so a resume without the
+        # flag restores it instead of silently reinstating mc.loss.event
+        # (validation 2026-08-30 F11).
+        saved_train = resume_payload["configs"].get("train") or {}
+        if "event_band_weight" not in saved_train:
+            if args.event_band_weight is not None:
+                log.warning("--resume: checkpoint predates event_band_weight persistence "
+                            "— using the CLI value %.3g", args.event_band_weight)
+        else:
+            saved_ebw = saved_train["event_band_weight"]
+            if args.event_band_weight is None:
+                cfg = dataclasses.replace(cfg, event_band_weight=saved_ebw)
+                if saved_ebw is not None:
+                    log.info("--resume: packed event-band MSE weight %.3g restored "
+                             "from the checkpoint", float(saved_ebw))
+            elif saved_ebw is None or float(saved_ebw) != float(args.event_band_weight):
+                raise SystemExit(
+                    f"--resume event-band weight drift: checkpoint {saved_ebw}, "
+                    f"this run {args.event_band_weight} — a resume continues ONE "
+                    f"run; drop --event-band-weight or pass the original value")
         log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
 
     if args.tactile_pretrain:
