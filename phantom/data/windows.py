@@ -420,5 +420,13 @@ class WindowSampler:
         # or (as recorded on this rig) a `<task>_fail` task name with
         # success=True meaning "the episode successfully captured the intended
         # failure". Any of the three disables the action loss for the window.
-        w["action_weight"] = 0.0 if is_failure_demo(c.reader.meta) else 1.0
+        # ... and a per-episode multiplier on top (D8 self-improvement,
+        # validation 2026-08-30 F19): intake writes `weight` into meta.json
+        # (1.0 demos and recoveries, >1 to oversample a small on-policy
+        # rollout pool). It can only scale a window that is already allowed to
+        # supervise actions — a failure demo stays at 0 whatever it says.
+        meta = c.reader.meta
+        ew = getattr(meta, "weight", 1.0)
+        ew = 1.0 if ew is None else max(0.0, float(ew))
+        w["action_weight"] = 0.0 if is_failure_demo(meta) else ew
         return w

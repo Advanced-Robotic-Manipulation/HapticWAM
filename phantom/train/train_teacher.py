@@ -135,6 +135,11 @@ def main(argv=None) -> int:
                     help="fraction of training windows anchored in the 1.5 s "
                          "before the first gripper close (terminal-phase "
                          "fine-tune; 0 = uniform)")
+    ap.add_argument("--commit-band-weight", type=float, default=1.0,
+                    help="extra ACTION-loss multiplier for windows anchored "
+                         "inside the pre-close commit band (plan D8; 1.0 = "
+                         "off). Composes with the per-episode "
+                         "EpisodeMeta.weight; failure demos stay at 0")
     ap.add_argument("--photo-aug", type=float, default=0.0,
                     help="photometric jitter strength on the scene camera "
                          "(0 disables; 1.0 = brightness +-30%%, contrast "
@@ -397,14 +402,15 @@ def main(argv=None) -> int:
                         raise SystemExit(f"--init-weights norm_stats[{k}].{which} differ from "
                                          f"the fine-tune data root's norm_stats.json — the "
                                          f"checkpoint's normalization would not match the data")
-    if args.event_band_weight is not None:
-        pm.rf.event_band_weight = args.event_band_weight
+    if cfg.event_band_weight is not None:
+        pm.rf.event_band_weight = cfg.event_band_weight
         log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
-                 args.event_band_weight, pm.mc.loss.event)
+                 cfg.event_band_weight, pm.mc.loss.event)
     sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed)
     train_eps = C.manifest_split(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
-                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug)
+                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug,
+                         commit_band_weight=args.commit_band_weight)
     if args.grasp_frac > 0:
         cov = ds.grasp_coverage()
         log.info("terminal-phase weighting: %.0f%% of windows anchored before "
