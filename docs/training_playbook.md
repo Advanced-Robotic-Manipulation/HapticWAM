@@ -22,6 +22,14 @@ dataclass defaults < profile < explicit CLI flags.
 | `h100x8` | `torchrun --nproc_per_node 8 -m phantom.train.<prog> …` | bf16 | 1×1 (×8 ranks) | 8 |
 | `a100x8` | `torchrun --nproc_per_node 8 -m phantom.train.<prog> …` | bf16 | 1×1 (×8 ranks) | 8 |
 
+Selecting a multi-GPU profile **without** `torchrun` is now fatal
+(`ComputeProfile.check_world`): `h100x8` on one process is per-GPU batch 1 ×
+accum 1 = effective batch 1, i.e. a rented 8-GPU node silently training the
+wrong recipe. `PHANTOM_ALLOW_WORLD_MISMATCH=1` overrides it for a deliberate
+single-GPU debug run. Validation loaders are built unsharded
+(`make_loader(..., shard=False)`): only rank 0 evaluates, so a
+`DistributedSampler` made `val_*` a shuffled, `drop_last` 1/world sample.
+
 Effective batch is preserved on purpose — no automatic lr scaling; override
 lr/warmup in the profile explicitly if you scale batch. Under torchrun the
 programs shard data with a `DistributedSampler` (per-epoch reshuffle), build
@@ -53,7 +61,7 @@ schedule semantics — prefer finishing a run on the target it started on.
 | Data | all 5 tasks co-trained; `WindowSampler` windows; `norm_stats.json` beside the data (rerun `dump_norm_stats` after unit changes — raw force channels can be O(10³) in SDK units and the stats absorb that) |
 | Init | `--tactile-pretrain <program-1 ckpt>` |
 | Scale | single 5090 (default `rtx5090` target) or 8×H100 / 8×A100 (`configs/compute.yaml` target `h100x8`/`a100x8` + torchrun), batch 1–2/GPU + grad accum, bf16, activation checkpointing (cosmos SAC is on by default). Teacher sequence is 4160 tokens at full res — measure VRAM with `smoke_test --synthetic --device cuda` first |
-| Output | `runs/teacher/<run>/teacher_XXXXXX.pt` |
+| Output | `runs/teacher/<run>/teacher_XXXXXX.pt` — on a rental, egress them as they land: `HF_TOKEN=… python tools/upload_run_ckpts.py runs/teacher/<run> --log train_<run>.log` (idempotent, skips what is already on the hub; the destination folder is the run name, so never reuse `teacher_v5_batch0822`) |
 
 ACC self-anticipation during training defaults to `"gt_noised"` (GT package +
 noise stands in for the previous replan). For the final headline runs and the
@@ -88,6 +96,23 @@ bit-identical to v4/v5 — so the shipped checkpoints stay reproducible.
 checkpoint's — changing them *is* the fine-tune — while `--resume`, which
 continues one run, still refuses any difference. Everything else
 (`rope_time_mode`, `acc.self_anticipation`, …) still hard-fails on both.
+(Until 2026-08-30 that was only half true: the P10B assert inside
+`load_phantom_checkpoint` ran *before* the tolerant check and killed the whole
+bundle at load — `--cond-dropout 0` alone was enough. `--init-weights` now
+passes `FINETUNE_MUTABLE_MODEL_FIELDS` down as `tolerate_model_fields`;
+`tests/test_fixnow_train_0830.py` runs the documented bundle through
+`train_teacher.main` end to end so the CLI itself is covered.)
+
+`--event-band-weight` is persisted in the checkpoint's `configs.train` and
+re-applied on `--resume`: a spot-instance kill used to bring the term back at
+`mc.loss.event` (0.5) for the rest of the run, unrecorded. Passing a
+*different* value on a resume is refused.
+
+Two D8 weighting knobs, both default-off: `EpisodeMeta.weight` (meta.json,
+default 1.0) multiplies a window's `action_weight` per episode — failure demos
+stay at 0 — and `--commit-band-weight` multiplies it again for windows
+anchored inside the pre-close commit band. `group_velocity_mse` normalises by
+the batch's weight sum, so these are *relative* weights within a batch.
 
 Verify before spending the run: the per-term LoRA grad-norm probe
 (`scratchpad/research/gradprobe.py`, ~10 GPU-min on the real v5 checkpoint) —
@@ -102,7 +127,7 @@ per-term norms should land within ~10× of each other instead of the current
 | Student | same classes with `student=True` layout (no OBS_GEL/OBS_MECH frames), initialized from the teacher's shared weights (teacher-only keys dropped automatically) |
 | Losses | (i) trajectory distillation: student CONTACT x0 → teacher's imagined package, weighted w_τ = s_τ·c_τ (saliency from teacher event probs, confidence from teacher σ); (ii) soft event KL vs teacher; (iii) behavior: ACTION-frame velocity matching at shared (x_t, t) with identical noise on shared groups; (iv) GT grounding on real actions/video/wrist + ACC auxiliaries |
 | Data | the same demo windows (windows still carry tactile TARGETS — the rig's sensors label; the student model just never receives tactile INPUTS) |
-| Flags | `--dagger-round k --extra-data <rollout roots>`; `HIDConfig(feature_align=True)` for the ablation row |
+| Flags | `--split train` (**default**, since 2026-08-30 — both HID programs used to index every episode, val included), `--dagger-round k --extra-data <rollout roots>`; `HIDConfig(feature_align=True)` for the ablation row |
 | Output | `runs/hid/<run>_rK/student_XXXXXX.pt` |
 
 ## (3b) `phantom.train.dagger_driver` — DAgger rounds (mandatory, ×2)
@@ -113,6 +138,15 @@ per-term norms should land within ~10× of each other instead of the current
 2. `dagger_driver --round k` → offline teacher relabeling
    (`dagger/relabel.py`, writes `<episode>/relabels/teacher.pt`) → manifest →
    re-invokes `distill_hid` with rollouts merged.
+
+**Run `tools/rederive_rollout_actions.py` on every rollout root first.** A
+deploy rollout's `actions` stream is the executor's raw *proposal* on the
+governor-warped clock (pre-clamp, pre-rate-limit); training on it imitates
+commands the safety layer refused. `intake_recovery.py manifest` now REFUSES a
+policy rollout with no `actions_plan.zarr`, and `WindowSampler.build_index`
+(the `--extra-data` path, which sees no manifest) warns loudly. The re-derived
+gripper channel is the **commanded** aperture, not the measured position — the
+measured one is the grasp outcome and would leak it into the action target.
 
 ## (4) `phantom.train.finetune_hids` — HID-S safety fine-tune (optional row)
 

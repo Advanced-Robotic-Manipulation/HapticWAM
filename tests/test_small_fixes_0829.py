@@ -290,9 +290,11 @@ def test_rederived_actions_integrate_to_the_measured_tcp(synthetic_rollout):
 
     # rotation is a real delta too, not zeros
     assert np.abs(act[:, 3:6]).max() > 0
-    # gripper column is the MEASURED position on the same grid
-    assert np.abs(act[:, 6] - np.clip(0.05 * ts, 0.0, 0.9)).max() < 0.01
-    # and it is emphatically not the proposal any more
+    # gripper column is the COMMANDED aperture (validation 2026-08-30 F20):
+    # a demo records grip_cmd, and the measured position is the grasp OUTCOME
+    assert np.allclose(act[:, 6], plan[0, 6])
+    assert np.abs(act[:, 6] - np.clip(0.05 * ts, 0.0, 0.9)).max() > 0.01
+    # the POSE channels are emphatically not the proposal any more
     assert np.abs(act[:, 0] - plan[0, 0]).min() > 1e-4
 
 

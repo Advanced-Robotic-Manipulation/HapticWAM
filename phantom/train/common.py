@@ -5,11 +5,11 @@ programs. Plain PyTorch — no imaginaire trainer (user decision)."""
 from __future__ import annotations
 
 import contextlib
-
 import json
 import logging
 import os
 import time
+from collections.abc import Iterable
 from pathlib import Path
 
 import numpy as np
@@ -233,7 +233,8 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
              path, step, len(lora), len(phantom))
 
 
-def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
+def assert_model_config_matches(payload: dict, model: torch.nn.Module, *,
+                                tolerate: frozenset[str] | Iterable[str] = frozenset()) -> None:
     """Refuse a checkpoint whose saved PhantomModelConfig differs from the one
     the model was BUILT with (P10B, review 2026-08-28).
 
@@ -256,12 +257,20 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
     or the sampler reads them, so a checkpoint fine-tuned with a different
     contact-loss balance is the same model at deploy. `action_noise_per_strip`
     is deliberately NOT in that set: it changes `sample()`.
+
+    `tolerate` widens that ignore set for ONE caller class: a fine-tune that
+    deliberately flips a training-objective knob relative to the checkpoint it
+    initializes from (`train_teacher --init-weights` passes
+    `FINETUNE_MUTABLE_MODEL_FIELDS`; validation 2026-08-30 F1). Every other
+    caller — `--resume`, deploy, distill, replay — stays strict, and the
+    fine-tune path re-checks the same fields itself via `model_config_drift`
+    so the difference is warned about rather than silently accepted.
     """
     saved = (payload.get("configs") or {}).get("model")
     mc = getattr(model, "mc", None)          # PhantomRectifiedFlow.mc
     if not isinstance(saved, dict) or mc is None:
         return
-    ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS)
+    ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS, *tolerate)
     cur = {k: v for k, v in mc.to_dict().items() if k not in ignore}
     drift = {k: {"checkpoint": saved.get(k), "model": v}
              for k, v in cur.items() if k in saved and saved[k] != v}
@@ -277,11 +286,14 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module) -> None:
 def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             hw: HardwareConfig, load_ema: bool = False,
                             allow_missing: bool = False,
-                            payload: dict | None = None) -> dict:
+                            payload: dict | None = None,
+                            tolerate_model_fields: frozenset[str] | Iterable[str] = frozenset()) -> dict:
     """Load lora+phantom weights into a built model; asserts hardware
     shape-compat (value-only drift warns via hash). `payload` lets callers
     that already torch.load'ed the file (e.g. to reconstruct the saved model
-    config BEFORE building — see run_deploy) skip the second 286MB read."""
+    config BEFORE building — see run_deploy) skip the second 286MB read.
+    `tolerate_model_fields` is forwarded to `assert_model_config_matches` —
+    only the `--init-weights` fine-tune path passes it."""
     if payload is None:
         payload = torch.load(str(path), map_location="cpu", weights_only=False)
     assert payload["format_version"] == CKPT_FORMAT_VERSION
@@ -295,7 +307,7 @@ def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
     if payload["configs"]["hardware_hash"] != hw.config_hash():
         log.warning("hardware config VALUES differ from checkpoint provenance "
                     "(shape-compatible — proceeding)")
-    assert_model_config_matches(payload, model)
+    assert_model_config_matches(payload, model, tolerate=tolerate_model_fields)
     weights = dict(payload["lora"])
     weights.update(payload["phantom_modules"])
     if load_ema and payload.get("ema"):
@@ -451,7 +463,7 @@ class WindowDataset(Dataset):
                  episodes: list[Path] | None = None, resample: bool = True,
                  seed: int = 0, grasp_frac: float = 0.0,
                  grasp_window_s: tuple[float, float] = (1.5, 0.2),
-                 photo_aug: float = 0.0):
+                 photo_aug: float = 0.0, commit_band_weight: float = 1.0):
         self.sampler = sampler
         self.index = sampler.build_index(root, windows_per_episode, episodes)
         # A frozen index replays the same anchors every epoch (~35x over a long
@@ -476,6 +488,12 @@ class WindowDataset(Dataset):
         # ablation). One jitter per window (lighting is constant within an
         # episode), same jitter for every frame of the window.
         self.photo_aug = float(photo_aug)
+        # D8's "x2 window multiplier in the commit band" (validation
+        # 2026-08-30 F19): an extra ACTION-loss multiplier for windows whose
+        # t0 lands inside the same pre-close band `grasp_frac` anchors in.
+        # 1.0 = off (the default); it composes with the per-episode
+        # EpisodeMeta.weight and never rescues a failure demo's 0.
+        self.commit_band_weight = float(commit_band_weight)
 
     def __len__(self) -> int:
         return len(self.index)
@@ -539,6 +557,11 @@ class WindowDataset(Dataset):
             x = ((x - 0.5) * contrast + 0.5) * gain \
                 * _t.as_tensor(ch, dtype=x.dtype).view(1, 3, 1, 1)
             item["video"] = (x.clamp(0.0, 1.0) * 2.0 - 1.0).to(v.dtype)
+        if self.commit_band_weight != 1.0 and item.get("action_weight", 0.0):
+            tc = self._close_time(wi.episode)
+            if tc is not None and \
+                    tc - self.grasp_window_s[0] <= t0 <= tc - self.grasp_window_s[1]:
+                item["action_weight"] = float(item["action_weight"]) * self.commit_band_weight
         return item
 
 
@@ -572,16 +595,23 @@ def ensure_synthetic_dataset(root: Path, hw: HardwareConfig, n_episodes: int = 4
 
 
 def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
-                collate_fn=collate_windows, shuffle: bool | None = None) -> DataLoader:
+                collate_fn=collate_windows, shuffle: bool | None = None,
+                shard: bool = True) -> DataLoader:
     """The one training DataLoader for all four programs. world==1 reproduces
     the historical construction exactly (shuffle=True, drop_last=True,
     synthetic -> workers 0); under torchrun a DistributedSampler shards the
     window index disjointly per rank (train_loop's re-iteration calls
     set_epoch for the reshuffle). Construct AFTER any ds.index mutation
-    (distill_hid --extra-data) — the sampler snapshots len(ds)."""
+    (distill_hid --extra-data) — the sampler snapshots len(ds).
+
+    `shard=False` for VALIDATION loaders (validation 2026-08-30, §1 row 2c):
+    only rank 0 evaluates (`train_loop`), so a DistributedSampler's shuffled,
+    drop_last rank-0 shard made `val_*` a 1/world sample that moved with the
+    shard composition — the in-run health signal checkpoint selection reads on
+    a rented H100 node."""
     rank, world = setup_ddp()          # idempotent
     sampler = None
-    if world > 1:
+    if world > 1 and shard:
         from torch.utils.data.distributed import DistributedSampler
         sampler = DistributedSampler(ds, num_replicas=world, rank=rank,
                                      shuffle=True, seed=cfg.seed, drop_last=True)
@@ -592,7 +622,10 @@ def make_loader(ds: Dataset, cfg: CommonTrainConfig, *,
                       shuffle=((sampler is None) if shuffle is None else shuffle),
                       sampler=sampler,
                       num_workers=0 if cfg.synthetic else cfg.num_workers,
-                      collate_fn=collate_fn, drop_last=True,
+                      collate_fn=collate_fn,
+                      # an eval pass must see every window, including a
+                      # partial tail batch; training keeps fixed-size steps
+                      drop_last=shard,
                       worker_init_fn=_seed_worker_rng)
 
 

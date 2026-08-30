@@ -36,7 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from phantom.data.schema import (NON_TRAINING_TAGS, EpisodeMeta,  # noqa: E402
-                                 is_trainable_episode)
+                                 is_trainable_episode, needs_rederive)
 
 CANON = {"carton": "Carton", "waffles": "waffles", "egg": "egg", "whiteboard": "whiteboard"}
 
@@ -149,12 +149,22 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
         # manifest row entirely — admitting them trains the model's own
         # on-policy mistakes at action_weight 1.0, which is exactly what a
         # DAgger round must not do.
-        if not is_trainable_episode(EpisodeMeta.from_dict(
-                {**m, "status": m.get("status", "finalized")})):
+        meta_obj = EpisodeMeta.from_dict({**m, "status": m.get("status", "finalized")})
+        if not is_trainable_episode(meta_obj):
             why = ",".join(sorted({str(t) for t in (m.get("tags") or [])}
                                   & set(NON_TRAINING_TAGS))) \
                   or f"unjudged rollout (policy={m.get('policy')!r}, success=None)"
             print(f"manifest: REFUSING {ep.name} — {why}")
+            n_refused += 1
+            continue
+        # D6 ordering gate (validation 2026-08-30 F13): a policy rollout whose
+        # `actions` stream is still the executor PROPOSAL trains on commands
+        # the safety layer refused, stamped on the governor-warped clock. Run
+        # tools/rederive_rollout_actions.py first; nothing downstream checks.
+        if needs_rederive(ep, meta_obj):
+            print(f"manifest: REFUSING {ep.name} — rollout actions not "
+                  f"re-derived (no actions_plan.zarr): run "
+                  f"tools/rederive_rollout_actions.py on it first")
             n_refused += 1
             continue
         # anything not already in the manifest is a new intake episode
@@ -183,7 +193,8 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
           f"({n_val} held out as val from {len(hold)} sessions: {info['holdout_sessions']})")
     if n_refused:
         print(f"manifest: REFUSED {n_refused} episodes (unlabeled / contaminated / "
-              f"unjudged policy rollouts) — label them and re-run to admit them")
+              f"unjudged policy rollouts / rollouts with un-re-derived actions) "
+              f"— fix them and re-run to admit them")
     return 0
 
 
