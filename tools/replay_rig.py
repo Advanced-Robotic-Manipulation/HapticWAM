@@ -56,6 +56,16 @@ which other episodes were dropped:
                      and earlier), where the rig ran the generator's
                      constructor seed through one warm-up replan and no
                      `seed:<n>` tag exists.
+                     K comes from the episode's own `kseeds:<K>` tag: deploy
+                     hands rf.sample a B=1 batch and expands to K INSIDE it, so
+                     the replay does the same (`k_seeds=K`, not a pre-tiled
+                     B=K batch — build_x0 draws at B, so tiling first shifts the
+                     whole stream and reproduces nothing). The trace is then
+                     scored against row `diag.k_pick`, the chunk the rig's
+                     selector actually executed (`k_pick != 0` in 310/400
+                     recorded replans), while the K-spread is still reported for
+                     E2. Passing a `--seeds` that disagrees with `kseeds:<K>`
+                     is refused.
 
 --parity-fixes reproduces `SnapshotBuilder(parity_fixes=True)` +
 `PhantomPolicy.replan`'s parity branch, by CALLING the deploy code rather than
@@ -68,9 +78,11 @@ restating it (`SnapshotBuilder.prev_chunk_from_history`):
  4. prev_cpk_step = round(previous replan's latency / latent_dt).
 
 Known fidelity gaps, all in the replay's favour to state plainly:
- - without `--seed-from-meta` the K seeds denoise as ONE batch of K, so a seed
-   is "an independent noise draw", not the rig's; `--persistent-noise` holds
-   that K-batch draw across the episode the way deploy holds its single draw;
+ - without `--seed-from-meta` the batch is pre-tiled to B=K, so build_x0 draws
+   at B=K and a seed is "an independent noise draw", not the rig's;
+   `--persistent-noise` holds that K-batch draw across the episode the way
+   deploy holds its single draw. WITH `--seed-from-meta` the expansion moves
+   inside rf.sample (`k_seeds=K`) and this gap closes;
  - deploy stamps `snap.t` BEFORE it reads the rings, so the rebuilt arm row
    can be one 125 Hz sample older than the one the rig used;
  - `reactive` is 0 at the first replan without `--parity-fixes`; on the rig the
@@ -105,7 +117,8 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
                                  STREAM_GRIPPER, NormStats, tactile_stream)
-from phantom.inference.policy import ObsSnapshot, PhantomPolicy, Plan
+from phantom.inference.policy import (ObsSnapshot, PhantomPolicy, Plan,
+                                      _cpk_row)
 from phantom.train import common as C
 from phantom.train.builder import build_model
 
@@ -137,6 +150,22 @@ def meta_seed(meta) -> int | None:
             v = tag.split(":", 1)[1]
             try:
                 return int(v)
+            except ValueError:
+                return None
+    return None
+
+
+def meta_kseeds(meta) -> int | None:
+    """`kseeds:<K>` from meta.tags (run_deploy:630), else None.
+
+    K is the number of chunks the rig's selector actually sampled in ONE
+    denoise; reproducing the executed chunk needs the same K (rf.build_x0
+    draws at B=K, so a different K shifts the whole noise stream) and the
+    per-replan `diag.k_pick` that says which of the K was executed."""
+    for tag in (meta.tags or []):
+        if isinstance(tag, str) and tag.startswith("kseeds:"):
+            try:
+                return max(1, int(tag.split(":", 1)[1]))
             except ValueError:
                 return None
     return None
@@ -371,7 +400,8 @@ def chunk_metrics(a: np.ndarray) -> dict:
 KEYS = ("head_dz", "tail_dz", "chunk_dz", "head_dxy", "close_step", "grip_max")
 
 
-def summarize(seed_metrics: list[dict], trace_m: dict) -> dict:
+def summarize(seed_metrics: list[dict], trace_m: dict,
+              k_pick: int | None = None) -> dict:
     row: dict = {}
     for k in KEYS:
         v = np.array([m[k] for m in seed_metrics], dtype=np.float64)
@@ -385,6 +415,16 @@ def summarize(seed_metrics: list[dict], trace_m: dict) -> dict:
     # collapse / bimodality) and the rig's own unrecorded seed must be placed in it
     for k in ("head_dz", "chunk_dz", "close_step", "grip_max"):
         row[f"seed_{k}"] = [float(m[k]) for m in seed_metrics]
+    # ... and, when the trace recorded WHICH of the K the selector executed
+    # (diag.k_pick), score the trace against THAT row. The K-spread above stays:
+    # it is E2's signal, but it is not the reproduction check.
+    if k_pick is not None and 0 <= int(k_pick) < len(seed_metrics):
+        kp = int(k_pick)
+        row["k_pick"] = kp
+        for k in KEYS:
+            row[f"pick_{k}"] = float(seed_metrics[kp][k])
+        row["head_dz_pick_err"] = float(trace_m["head_dz"]
+                                        - seed_metrics[kp]["head_dz"])
     return row
 
 
@@ -492,6 +532,27 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
         log.warning("%s was RECORDED at nfe=%s guidance=%s; replaying at "
                     "nfe=%s guidance=%s", ep.path.name, diag.get("nfe"),
                     diag.get("guidance"), args.nfe, args.guidance)
+    # --seed-from-meta reproduces the rig's own draw, so it must also reproduce
+    # the rig's own K: rf.build_x0 draws at B=K before the K-seed expansion, so
+    # replaying a kseeds:4 episode at K!=4 shifts the whole noise stream and
+    # reproduces nothing (validation 2026-08-31).
+    rec_kseeds = meta_kseeds(ep.meta)
+    seeds = int(args.seeds)
+    use_k_seeds = False          # expand inside rf.sample, the way deploy does
+    if args.seed_from_meta and rec_kseeds is not None:
+        if getattr(args, "seeds_explicit", False) and seeds != rec_kseeds:
+            raise SystemExit(
+                f"{ep.path.name}: --seed-from-meta with --seeds {seeds}, but the "
+                f"episode was recorded at `kseeds:{rec_kseeds}`. build_x0 draws "
+                f"at B=K, so a different K reproduces nothing. Pass "
+                f"--seeds {rec_kseeds} or drop --seeds and let the recorded tag "
+                f"decide.")
+        seeds = rec_kseeds
+        use_k_seeds = True
+    elif args.seed_from_meta and seeds > 1:
+        log.warning("%s: --seed-from-meta with --seeds %d and no `kseeds:` tag "
+                    "— the K seeds are drawn as one batch, so no element is the "
+                    "rig's recorded draw. Pass --seeds 1.", ep.path.name, seeds)
     rec_parity = meta_parity(ep.meta)
     if rec_parity is not None and rec_parity != bool(args.parity_fixes):
         log.warning("%s was RECORDED with parity:%s but is being replayed with "
@@ -546,7 +607,15 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
             actions=np.asarray(pa, dtype=np.float32),
             action_times=np.zeros(1), sigma=np.zeros(1), gate=0.0,
             p_evt=np.zeros(1), cpk=None)
-        batch = _tile(policy._batch_from_obs(snap, stub), args.seeds)
+        b1 = policy._batch_from_obs(snap, stub)
+        # deploy takes ONE B=1 batch through build_x0 and expands to K inside
+        # rf.sample. _tile expands FIRST, so build_x0 draws at B=K and the
+        # generator stream no longer matches the rig's.
+        k_arg = 1
+        if use_k_seeds:
+            batch, k_arg = b1, seeds
+        else:
+            batch = _tile(b1, seeds)
         # deploy's parity branch (policy.py) realigns which future step of the
         # one-replan-old package ACC summarises
         cpk_step = 0
@@ -557,11 +626,22 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
                 batch, nfe=policy.nfe, guidance_scale=policy.guidance,
                 prev_cpk=prev_cpk if args.prev_cpk == "chained" else None,
                 prev_cpk_step=cpk_step,
-                reuse_noise=policy.persistent_noise)
+                reuse_noise=policy.persistent_noise,
+                k_seeds=k_arg)
         acts = [np.asarray(policy.norm.denormalize(
             "action", pred.actions_B_H_A[k].float().cpu()), dtype=np.float64)
-            for k in range(args.seeds)]
-        prev_cpk = pred.cpk.detach()
+            for k in range(seeds)]
+        # which of the K the rig's selector actually executed (policy.py:234)
+        k_pick = (r.get("diag") or {}).get("k_pick") if use_k_seeds else None
+        if k_pick is not None and not (0 <= int(k_pick) < seeds):
+            log.warning("%s replan %d: diag.k_pick=%s is out of range for K=%d",
+                        ep.path.name, i, k_pick, seeds)
+            k_pick = None
+        # deploy feeds the NEXT replan the package of the chunk it SELECTED
+        # (policy._cpk_row), keeping prev_cpk at B=1; chaining the whole K-batch
+        # would grow the ACC input by a factor of K at every replan.
+        prev_cpk = (_cpk_row(pred.cpk, int(k_pick or 0)) if use_k_seeds
+                    else pred.cpk.detach())
         # CONDITIONING carries the chunk deploy actually kept as prev_plan —
         # post-veto, since _apply_veto rewrites plan.actions in place. The
         # COMPARISON instead wants the model's own sample: on a vetoed replan
@@ -569,12 +649,23 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
         # zeroed z), so trace_in_spread against it is uninformative (G0).
         prev_actions = np.asarray(r["actions"], dtype=np.float32)
         pre_veto = r.get("actions_pre_veto")
-        vetoed = bool(r.get("terminal_veto")) or pre_veto is not None
+        # _apply_veto writes a record on EVERY replan while the veto is on, so its
+        # mere existence is not a rewrite: only close_masked / recovery_open touch
+        # plan.actions (planner.py:606 writes actions_pre_veto on exactly those).
+        veto_act = (r.get("terminal_veto") or {}).get("action")
+        vetoed = veto_act in ("close_masked", "recovery_open") or pre_veto is not None
         trace_chunk = np.asarray(pre_veto if pre_veto is not None else r["actions"],
                                  dtype=np.float64)
         prev_latency = r.get("latency_s")
         row = summarize([chunk_metrics(a) for a in acts],
-                        chunk_metrics(trace_chunk))
+                        chunk_metrics(trace_chunk), k_pick=k_pick)
+        if k_pick is not None:
+            kp = int(k_pick)
+            # the reproduction check proper: the executed chunk, element-wise
+            row["pick_abs_err"] = float(np.abs(acts[kp] - trace_chunk).max())
+            errs = [float(np.abs(a - trace_chunk).max()) for a in acts]
+            row["best_seed"] = int(np.argmin(errs))
+            row["best_abs_err"] = float(min(errs))
         row.update(episode=ep.path.name, replan=i, t=t, gate=r.get("gate"),
                    latency_s=r.get("latency_s"),
                    # what the trace_* columns were measured on
@@ -599,6 +690,8 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
             "success": ep.meta.success, "n_replans": len(rows),
             "nfe": policy.nfe, "guidance": policy.guidance,
             "seed": int(seed), "seed_source": seed_src,
+            "seeds": int(seeds), "recorded_kseeds": rec_kseeds,
+            "k_seeds_expansion": bool(use_k_seeds),
             "parity_fixes": bool(args.parity_fixes),
             "recorded_parity": rec_parity,
             "n_uncomparable_vetoed": n_vetoed, "rows": rows,
@@ -624,7 +717,11 @@ def main() -> int:
     ap.add_argument("--episodes", nargs="+", required=True)
     ap.add_argument("--nfe", type=int, default=5)
     ap.add_argument("--guidance", type=float, default=1.0)
-    ap.add_argument("--seeds", type=int, default=8)
+    ap.add_argument("--seeds", type=int, default=None,
+                    help="K sampled chunks per replan (default 8). Under "
+                         "--seed-from-meta this defaults to the episode's "
+                         "recorded `kseeds:<K>` tag, and a value that "
+                         "disagrees with that tag is refused")
     ap.add_argument("--persistent-noise", action="store_true")
     ap.add_argument("--prev-chunk", choices=("proposal", "measured", "zeros"),
                     default=None,
@@ -650,11 +747,12 @@ def main() -> int:
     ap.add_argument("--seed-from-meta", action="store_true",
                     help="seed each episode from its recorded `seed:<n>` tag "
                          "instead — reproduces the rig's ACTUAL noise draw for "
-                         "episodes recorded after ba61354. Use with --seeds 1: "
-                         "the K seeds denoise as ONE batch, so K>1 does not "
-                         "hand element 0 the rig's draw. Refuses episodes with "
-                         "no tag (use replay_deploy_path --deploy-rng for "
-                         "pre-fix traces)")
+                         "episodes recorded after ba61354. K comes from the "
+                         "episode's `kseeds:<K>` tag and the expansion happens "
+                         "inside rf.sample (as deploy does), so the executed "
+                         "chunk is reproduced at row `diag.k_pick`. Refuses "
+                         "episodes with no seed tag (use replay_deploy_path "
+                         "--deploy-rng for pre-fix traces)")
     ap.add_argument("--jpeg-quality", type=int, default=None,
                     help="re-encode the scene frame at this JPEG quality (image-fragility probe)")
     ap.add_argument("--merge-lora", action="store_true",
@@ -666,14 +764,14 @@ def main() -> int:
     assert args.ckpt or args.tiny, "--ckpt is required unless --tiny"
     if args.prev_chunk is None:
         args.prev_chunk = "measured" if args.parity_fixes else "proposal"
-    if args.seed_from_meta and args.seeds > 1:
-        # rf.sample draws randn over the WHOLE x0, so a batch of K is not K
-        # independent draws of the B=1 tensor: element 0 of a K-batch is not
-        # the chunk the rig sampled. Reproducing a recorded draw needs K=1.
-        log.warning("--seed-from-meta with --seeds %d: the K seeds denoise as "
-                    "one batch, so no single element is the rig's recorded "
-                    "draw. Pass --seeds 1 for an exact reproduction.",
-                    args.seeds)
+    # K is per-EPISODE under --seed-from-meta (its `kseeds:<K>` tag), so remember
+    # whether the user pinned it: an explicit disagreement is a hard failure,
+    # silence means "take the recorded K". See replay_episode.
+    args.seeds_explicit = args.seeds is not None
+    if args.seeds is None:
+        args.seeds = 8
+    if args.seeds < 1:
+        raise SystemExit("--seeds must be >= 1")
 
     hw = load_hardware(args.hardware, quiet=True)
     policy = build_policy(args, hw)

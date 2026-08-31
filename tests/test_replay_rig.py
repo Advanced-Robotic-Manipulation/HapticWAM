@@ -243,12 +243,18 @@ def _set_tags(ep: Path, tags: list[str]) -> None:
     (ep / "meta.json").write_text(json.dumps(meta))
 
 
-def _run_cli(monkeypatch, hw_yaml, episodes, out: Path, *extra) -> dict:
-    """replay_rig.main() exactly as an operator runs it."""
+def _run_cli(monkeypatch, hw_yaml, episodes, out: Path, *extra,
+             seeds: str | None = "2") -> dict:
+    """replay_rig.main() exactly as an operator runs it.
+
+    `seeds=None` omits --seeds entirely, which is what lets --seed-from-meta
+    take K from the episode's own `kseeds:<K>` tag."""
     import replay_rig
     argv = ["replay_rig.py", "--tiny", "--hardware", str(hw_yaml), "--episodes"]
     argv += [str(e) for e in episodes]
-    argv += ["--seeds", "2", "--nfe", "1", "--out", str(out), *extra]
+    if seeds is not None:
+        argv += ["--seeds", seeds]
+    argv += ["--nfe", "1", "--out", str(out), *extra]
     monkeypatch.setattr(sys, "argv", argv)
     assert replay_rig.main() == 0
     return json.loads(out.read_text())
@@ -455,6 +461,94 @@ def test_seed_from_meta_refuses_a_pre_fix_episode(mock_deploy_episode, tmp_path,
     assert "seed:" in str(e.value) and "deploy-rng" in str(e.value)
 
 
+# --- the K-seed lever: kseeds:<K> + diag.k_pick ------------------------------
+
+def _spy_on_sample(monkeypatch):
+    """Record (k_seeds, batch B) of every rf.sample call."""
+    from phantom.model.rf import PhantomRectifiedFlow
+    calls: list[tuple[int, int]] = []
+    real = PhantomRectifiedFlow.sample
+
+    def spy(self, batch, **kw):
+        b = next(int(v.shape[0]) for v in batch.values() if torch.is_tensor(v))
+        calls.append((int(kw.get("k_seeds", 1)), b))
+        return real(self, batch, **kw)
+
+    monkeypatch.setattr(PhantomRectifiedFlow, "sample", spy)
+    return calls
+
+
+def _tag_k(ep: Path, k: int, seed: int = 4242) -> None:
+    _set_tags(ep, ["nfe5", f"seed:{seed}", "parity:off", f"kseeds:{k}"])
+
+
+def test_seed_from_meta_takes_k_from_the_kseeds_tag_and_expands_like_deploy(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    """`run_deploy` tags `kseeds:<K>` and deploy hands rf.sample a B=1 batch,
+    expanding to K INSIDE it. The replay pre-tiled to B=K instead, so build_x0
+    drew at B=K and the noise stream no longer matched the rig's — `--seeds 4`
+    reproduced nothing and `--seeds 1` (what the help prescribed) reproduced
+    candidate 0, which is not the chunk the selector executed."""
+    import replay_rig
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "k3", "ep_kseeds_1788000000_001")
+    _tag_k(ep, 3)
+    assert replay_rig.meta_kseeds(replay_rig.RigEpisode(ep, hw).meta) == 3
+
+    calls = _spy_on_sample(monkeypatch)
+    got = _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "k.json",
+                   "--seed-from-meta", seeds=None)
+    e = got["episodes"][0]
+    assert (e["recorded_kseeds"], e["seeds"], e["k_seeds_expansion"]) == (3, 3, True)
+    assert calls and all(c == (3, 1) for c in calls), calls
+    assert all(len(r["seed_head_dz"]) == 3 for r in e["rows"])
+
+    # ... and the legacy path still pre-tiles when there is nothing to reproduce
+    calls.clear()
+    _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "plain.json")
+    assert calls and all(c == (1, 2) for c in calls), calls
+
+
+def test_seed_from_meta_scores_the_trace_against_the_executed_k_pick(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    """`diag.k_pick` names WHICH of the K the selector executed (k_pick != 0 in
+    310/400 recorded replans), so that is the row the trace must be scored
+    against. The K-spread stays — it is E2's signal, not the reproduction."""
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "kp", "ep_kpick_1788000000_001")
+    _tag_k(ep, 3)
+    trace = json.loads((ep / "planner_trace.json").read_text())
+    for r in trace:
+        r.setdefault("diag", {})["k_pick"] = 2
+    (ep / "planner_trace.json").write_text(json.dumps(trace))
+
+    got = _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "kp.json",
+                   "--seed-from-meta", seeds=None)
+    rows = got["episodes"][0]["rows"]
+    assert rows
+    for r in rows:
+        assert r["k_pick"] == 2
+        assert r["pick_head_dz"] == pytest.approx(r["seed_head_dz"][2])
+        assert r["head_dz_pick_err"] == pytest.approx(
+            r["trace_head_dz"] - r["seed_head_dz"][2])
+        # the reproduction check proper, and the K-spread still reported
+        assert r["pick_abs_err"] >= r["best_abs_err"] >= 0.0
+        assert 0 <= r["best_seed"] < 3
+        assert "head_dz_std" in r and len(r["seed_head_dz"]) == 3
+
+
+def test_seeds_that_disagree_with_the_recorded_kseeds_is_a_hard_failure(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    """F16's rule: a flag that contradicts the recording is refused, not warned."""
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    ep = _copy_episode(ep_path, tmp_path / "bad", "ep_kmismatch_1788000000_001")
+    _tag_k(ep, 3)
+    with pytest.raises(SystemExit) as e:
+        _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "bad.json",
+                 "--seed-from-meta", seeds="2")
+    assert "kseeds:3" in str(e.value) and "--seeds 2" in str(e.value)
+
+
 # --- the veto's arithmetic is not a model sample ----------------------------
 
 def test_actions_pre_veto_is_what_the_trace_columns_measure(mock_deploy_episode,
@@ -469,8 +563,14 @@ def test_actions_pre_veto_is_what_the_trace_columns_measure(mock_deploy_episode,
     pre = np.asarray(trace[acc[0]]["actions"], dtype=np.float64).copy()
     pre[:, 2] = -0.002                      # the model's own descent
     trace[acc[0]]["actions_pre_veto"] = pre.tolist()
-    trace[acc[0]]["terminal_veto"] = "recovery_open"
-    trace[acc[1]]["terminal_veto"] = "close_masked"    # rewritten, NOT recorded
+    # the REAL shape planner._apply_veto writes: a dict on every replan while the
+    # veto is on, `action` naming what it actually did.
+    trace[acc[0]]["terminal_veto"] = {"action": "recovery_open"}
+    trace[acc[1]]["terminal_veto"] = {"action": "close_masked"}  # rewritten, NOT recorded
+    # ... and the two no-op records that must NOT count as vetoed: nothing in
+    # plan.actions was touched, so these rows are perfectly comparable (G0).
+    trace[acc[2]]["terminal_veto"] = {"action": "none"}
+    trace[acc[3]]["terminal_veto"] = {"action": "close_allowed"}
     (ep / "planner_trace.json").write_text(json.dumps(trace))
 
     got = _run_cli(monkeypatch, hw_yaml, [ep], tmp_path / "v.json")
@@ -482,6 +582,9 @@ def test_actions_pre_veto_is_what_the_trace_columns_measure(mock_deploy_episode,
     assert r0["trace_head_dz"] == pytest.approx(-18.0, abs=1e-6)
     r1 = rows[acc[1]]
     assert r1["trace_source"] == "actions" and r1["trace_comparable"] is False
+    for k in (acc[2], acc[3]):
+        assert rows[k]["trace_vetoed"] is False, "a no-op veto record is not a veto"
+        assert rows[k]["trace_comparable"] is True
     assert got["episodes"][0]["n_uncomparable_vetoed"] == 1
     # conditioning still uses the POST-veto chunk deploy carried forward
     assert got["prev_chunk"] == "proposal"
