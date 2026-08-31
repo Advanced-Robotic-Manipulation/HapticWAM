@@ -1,0 +1,3 @@
+v5_6	runs/teacher_v5_batch0822/v5_6.pt	LEAD (arm B) - val124 endpoint 18.23mm mean / 15.74 median, ends +4.2mm; the Session-4 model
+v4	runs/teacher_v4_790eps/teacher_020000.pt	CONTROL (arm A) - 20.82mm mean; unchanged v4 teacher
+ftA	runs/teacher_v5_ftA/BEST.pt	EXPERIMENTAL (arm C) - best median 13.4mm but 21.0 mean, ends ~12mm high, under-commits; try only after arms A/B read out

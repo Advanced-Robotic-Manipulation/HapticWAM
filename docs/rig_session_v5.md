@@ -31,6 +31,23 @@ slowly to the task's demo start pose (clear its path, e-stop in hand); the sigma
 and refuses > 2.5 sigma (jog and Enter to re-check); **Enter #2** starts the episode; at the end answer the
 outcome prompt: `s` success / `f` failure / `c` contaminated (a hand in frame etc.).
 
+## Or: the interactive launcher (PICK.sh) — pick model x preset from a menu
+
+```
+cd ~/phantom-icra-2027 && ./PICK.sh
+```
+Asks four questions and launches:
+1. **Model** — the curated list from `MODELS.tsv` (only builds worth running): `v5_6` (LEAD, val124
+   endpoint 18.23 mm), `v4` (CONTROL, 20.82 mm), `ftA` (EXPERIMENTAL: best median 13.4 mm but 21.0 mean,
+   ends ~12 mm high and under-commits — try only after arms A/B read out).
+2. **Preset** — `LEVERS` (recommended arm-B stack: nfe 1 + terminal-veto + parity-fixes + k-seeds 4 +
+   max-episode-s 35 + max-replans 200), `PLAIN` (nfe 5, pre-fix style, attribution control only),
+   `VETO` (nfe 5 + veto + parity), or `CUSTOM`.
+3. Task + episode count, plus optional extra flags.
+It prints the exact command and waits for Enter. To add a new model to the menu: put the concrete `.pt`
+under `phantom/runs/...` and add a `label<TAB>path<TAB>note` row to `MODELS.tsv` (no DEMO symlinks there).
+Tracked copies of PICK.sh / MODELS.tsv / the GO family live in the repo at `tools/rig/`.
+
 ## Protocol for a comparable A/B
 - One task first (waffles). Per grid cell: one v4 episode, then one v5 episode (interleaved), same placement.
 - >= 10 episodes per arm per task (20 to see anything smaller than a night-and-day effect).
