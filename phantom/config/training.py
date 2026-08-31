@@ -66,6 +66,14 @@ class TeacherTrainConfig(CommonTrainConfig):
     # attribute on pm.rf, so a spot-instance kill + resume silently brought
     # the term back at 0.5 (validation 2026-08-30 F11).
     event_band_weight: float | None = None
+    # ... and the rest of the recipe, for exactly the same reason: these four
+    # were read straight off `args` and reached NO part of the checkpoint, so
+    # a resume reverted them to the defaults below AND recorded the reverted
+    # values as if they had governed the whole run (revalidation 2026-08-31 #8).
+    split: str = "train"                 # manifest subset the run trains on
+    grasp_frac: float = 0.0              # windows anchored in the pre-close band
+    photo_aug: float = 0.0               # scene-camera photometric jitter strength
+    commit_band_weight: float = 1.0      # ACTION-loss multiplier in the commit band
 
 
 @dataclass(frozen=True)
