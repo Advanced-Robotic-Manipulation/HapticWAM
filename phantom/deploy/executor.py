@@ -66,6 +66,12 @@ class ChunkExecutor:
         self._grip_poll_period = 1.0 / hw.gripper.feedback_rate_hz
         self._grip_target: float | None = None
         self._grip_thread: threading.Thread | None = None
+        # single lock over ALL gripper.move calls (worker + release): the
+        # ordering swap in _halt alone leaves a window where a latched close
+        # lands AFTER the release (measured 1/30..23/70 depending on socket
+        # RTT — revalidation 2026-08-31 §2 #5); the lock is the load-bearing
+        # half of the fix
+        self._grip_io_lock = threading.Lock()
         self._last_grip_poll = 0.0
         self._plan: Plan | None = None
         self._prev_plan: Plan | None = None
@@ -159,12 +165,14 @@ class ChunkExecutor:
         `gripper.move` in the whole deploy path is the NEXT episode's homing
         (start_pose.py:208)."""
         self._set_reason(reason)
+        # order matters: kill the mailbox and the worker's while-condition
+        # BEFORE releasing, or a latched close can land after the release
+        self._grip_target = None
+        self._stop.set()
         kinds = [getattr(e, "kind", "") for e in (events or [])]
         if is_letgo_reason(reason) or any(is_letgo_reason(k) for k in kinds):
             self._release_gripper(reason if is_letgo_reason(reason)
                                   else next(k for k in kinds if is_letgo_reason(k)))
-        self._grip_target = None
-        self._stop.set()
 
     def _release_gripper(self, why: str) -> None:
         """One blocking `move` to the open aperture. Best-effort: a stop must
@@ -172,8 +180,9 @@ class ChunkExecutor:
         if self.gripper is None:
             return
         try:
-            self.gripper.move(self.open_aperture, self.hw.gripper.default_speed,
-                              self.hw.gripper.default_force)
+            with self._grip_io_lock:
+                self.gripper.move(self.open_aperture, self.hw.gripper.default_speed,
+                                  self.hw.gripper.default_force)
             log.warning("stop (%s): gripper RELEASED to %.2f — if it is still "
                         "closed, run ./GRIPPER_OPEN.sh", why, self.open_aperture)
         except Exception:
@@ -300,7 +309,11 @@ class ChunkExecutor:
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
-                self._halt("protective_stop")
+                # a hard press into the table raises tactile_fz AND the UR
+                # protective stop in the same tick; PROTECTIVE_STOP outranks
+                # STOP_EPISODE, so without the events the letgo release never
+                # ran on exactly that coincidence (revalidation §2 #5)
+                self._halt("protective_stop", events=verdict.events)
                 break
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
@@ -397,11 +410,15 @@ class ChunkExecutor:
                     or abs(tgt - last_sent) > self.GRIP_DEADBAND
                     or (stable_for == self.GRIP_FLUSH_CYCLES and tgt != last_sent))
                 if due and not self._stop.is_set():
-                    # re-check the stop flag right before I/O: a stop between
-                    # reading the mailbox and move() must not close the gripper
-                    self.gripper.move(tgt, hw.gripper.default_speed,
-                                      hw.gripper.default_force)
-                    last_sent = tgt
+                    # re-check the stop flag INSIDE the shared I/O lock: a stop
+                    # between reading the mailbox and move() must not close the
+                    # gripper, and without the lock a move already past the
+                    # check lands after _halt's release
+                    with self._grip_io_lock:
+                        if not self._stop.is_set():
+                            self.gripper.move(tgt, hw.gripper.default_speed,
+                                              hw.gripper.default_force)
+                            last_sent = tgt
                 if self.gripper_ring is not None:
                     gs = self.gripper.get_state()
                     self.gripper_ring.push(gs.t_host, state=np.array(

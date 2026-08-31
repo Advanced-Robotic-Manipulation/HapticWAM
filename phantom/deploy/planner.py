@@ -226,7 +226,12 @@ class SnapshotBuilder:
             # inside HHT, so the two paths agree.
             wrist_window = np.zeros_like(wrist_window)
 
-        _, arm1 = rings["arm"].latest(1)
+        # SAME fetch as the wrist anchor above: a second latest(1) could be a
+        # row newer than ts_a[-1] (125 Hz sample landing between the reads),
+        # leaving ur_state inconsistent with its own wrist window — the race
+        # behind the flaky snapshot-parity test AND a real deploy-side skew
+        # (revalidation 2026-08-31 §2 #7)
+        arm1 = {k: v[-1:] for k, v in arm.items()}
         _, grip = rings["gripper"].latest(1)
         # HARD requirement, not a fallback: a zeros(2) substitute is a frozen
         # -1.85sigma gripper-position input that collapses the sampled action
@@ -409,7 +414,20 @@ class PlannerLoop:
             # unbounded again by another route.
             closed = g > v.close_pos and (g - g_min) > v.close_rise
             if closed and not state["in_close"]:
-                state["closed_idx"] = n
+                # arm the latch only for a close the veto PERMITTED: after
+                # `close_masked` the executor holds the aperture, but on an
+                # open-loop ramp the MEASURED aperture can rise anyway and
+                # this read it back as an executed close, arming the
+                # phantom-grasp recovery on a close the veto itself prevented
+                # (revalidation 2026-08-31 §2 #3).
+                if state.get("close_permitted"):
+                    state["closed_idx"] = n
+                    # a close allowed ONLY by the at_floor hatch carries no
+                    # gate evidence, and on the 08-28 statistics (p_none>0.9 on
+                    # 80% of replans) the recovery would reopen 5/18 real
+                    # grasps: never fire it on a floor-only close.
+                    state["closed_floor_only"] = state.get("allowed_floor_only",
+                                                           False)
             state["in_close"] = closed
 
     def _apply_veto(self, plan, tcp_pose: np.ndarray, grip_now: float,
@@ -444,6 +462,17 @@ class PlannerLoop:
         idx = state["closed_idx"]
         if idx is not None and (n - idx) > self.VETO_RECOVERY_REPLANS:
             state["closed_idx"] = idx = None
+        if idx is not None and p_none > v.p_none and state.get("closed_floor_only"):
+            # the only door open on the 08-28 data is the floor hatch; a
+            # recovery keyed on p_none would self-cancel those closes (the
+            # voters split on whether that is protection or an anti-grasp —
+            # unresolvable without a successful rig grasp, so the guard takes
+            # the tail risk off the table either way)
+            state["closed_idx"] = None
+            rec["action"] = "recovery_skipped_floor_close"
+            log.info("terminal veto: high p_none (%.2f) after a FLOOR-ONLY "
+                     "close — recovery suppressed, latch cleared", p_none)
+            return rec
         if idx is not None and p_none > v.p_none:
             state["closed_idx"] = None
             state["retries"] += 1
@@ -482,9 +511,12 @@ class PlannerLoop:
             # accepted but never played is not the close the recovery reacts to.
             rec["action"] = "close_allowed"
             rec["at_floor"] = bool(at_floor)
+            state["close_permitted"] = True
+            state["allowed_floor_only"] = bool(at_floor and not (p_contact > v.p_close))
             return rec
         a[:, 6] = grip_now                       # hold the current aperture
         self._invalidate_cpk(plan)
+        state["close_permitted"] = False
         rec["action"] = "close_masked"
         log.warning("terminal veto: close masked (p_contact=%.2f <= %.2f, "
                     "z=%.0f mm) — holding aperture %.2f",
@@ -520,7 +552,9 @@ class PlannerLoop:
         # run, the running minimum of the measured aperture, and how far the
         # executed-gripper-step scan has read.
         veto_state = {"closed_idx": None, "retries": 0, "g_min": None,
-                      "in_close": False, "grip_seen_t": float("-inf")}
+                      "in_close": False, "grip_seen_t": float("-inf"),
+                      "close_permitted": False, "allowed_floor_only": False,
+                      "closed_floor_only": False}
         while not self._stop.is_set():
             # BEFORE building a snapshot: a safety stop raised by the executor
             # (e.g. camera_scene_stale) must end the episode through this clean
@@ -648,6 +682,24 @@ class PlannerLoop:
                 break
             if self._executor_stopped():
                 break
+
+        self._log_gate_calibration()
+    def _log_gate_calibration(self) -> None:
+        """One line per episode: the p_none distribution the veto thresholds
+        were never fitted on (revalidation 2026-08-31 §2 #3 — Session 4 must
+        produce this calibration whether or not the veto fires)."""
+        try:
+            pn = [float(r["p_evt"][0]) for r in self.trace if r.get("p_evt")]
+            if not pn:
+                return
+            q = np.percentile(np.asarray(pn), [0, 25, 50, 75, 100])
+            log.info("gate calibration: p_none over %d replans min/q25/med/q75/max "
+                     "= %.2f/%.2f/%.2f/%.2f/%.2f  (veto p_close=%s p_none=%s)",
+                     len(pn), *q,
+                     getattr(self.veto, "p_close", None),
+                     getattr(self.veto, "p_none", None))
+        except Exception:
+            log.exception("gate calibration failed (telemetry only)")
 
     def _workers_dead(self) -> bool:
         """A dead sensor/arm worker leaves its ring frozen (or gapped) with no
