@@ -1,0 +1,3 @@
+DO NOT propose a plan or ask for approval — REPORT FINDINGS ONLY with file:line evidence. Do not modify files.
+
+Review the merged diff d9c40f2..820b4eb in this repo for bugs INTRODUCED by the fixes: run 'git diff d9c40f2..820b4eb -- phantom/ tools/' and audit hunk by hunk for logic errors, changed defaults, deleted guards, order-dependent behaviour. Focus files: phantom/deploy/planner.py, executor.py, phantom/scripts/run_deploy.py, phantom/train/train_teacher.py, phantom/train/common.py, tools/replay_rig.py, tools/terminal_eval.py, phantom/eval/grasp_label.py.
