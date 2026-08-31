@@ -620,10 +620,17 @@ def test_printed_launch_line_never_reuses_the_shipped_v5_run_name():
 
 def test_the_smoke_runs_the_whole_ft_a_bundle():
     smoke = _provision().split("2-step REAL training smoke")[1].split("READY. Launch")[0]
-    for flag in ("--contact-nll-beta 0.5", "--contact-self-forcing",
+    for flag in ("--contact-nll-beta 0.5",
                  "--action-noise-per-strip", "--no-action-t-max-of-two",
                  "--cond-dropout 0", "--event-band-weight 0", '"$FTA_INIT"'):
         assert flag in smoke, f"{flag} missing from the provisioning smoke"
+    # retracted 2026-08-31 (E9_premise_test.md:88-93): the smoke must not spend the
+    # bundle on --contact-self-forcing; it stays only as a commented ablation line.
+    cmd = smoke.split("\n# ablation only")[0]
+    assert "--contact-self-forcing" not in cmd, (
+        "--contact-self-forcing is back in the provisioning smoke command")
+    assert "# ablation only" in smoke and "--contact-self-forcing" in smoke, (
+        "keep --contact-self-forcing as a commented ablation line")
 
 
 def test_the_pytest_gate_can_report_its_own_failure():
@@ -655,26 +662,54 @@ def test_upload_run_ckpts_collects_and_skips(tmp_path, monkeypatch):
                                        "teacher_001000.pt", "train_ftA.log"]
 
     uploaded: list[str] = []
+    same = URC.sha256_file(run / "teacher_000500.pt")
 
-    class _Api:
-        def __init__(self, *a, **k):
-            pass
+    def _api(tree):
+        class _Api:
+            def __init__(self, *a, **k):
+                pass
 
-        def list_repo_tree(self, repo, path_in_repo=None, repo_type=None,
-                           recursive=False):
-            return [SimpleNamespace(path=f"{path_in_repo}/teacher_000500.pt", size=10)]
+            def list_repo_tree(self, repo, path_in_repo=None, repo_type=None,
+                               recursive=False, expand=False):
+                # the sha256 only exists in the EXPANDED listing
+                assert expand is True, "list without expand=True has no lfs.sha256"
+                return tree(path_in_repo)
 
-        def upload_file(self, *, path_or_fileobj, path_in_repo, repo_id, repo_type):
-            uploaded.append(path_in_repo)
+            def upload_file(self, *, path_or_fileobj, path_in_repo, repo_id,
+                            repo_type):
+                uploaded.append(path_in_repo)
+        return _Api
 
     import huggingface_hub
-    monkeypatch.setattr(huggingface_hub, "HfApi", _Api)
     monkeypatch.setenv("HF_TOKEN", "hf_test")
+
+    # 1. the hub file is byte-identical -> skipped
+    monkeypatch.setattr(huggingface_hub, "HfApi", _api(lambda pre: [
+        SimpleNamespace(path=f"{pre}/teacher_000500.pt", size=10,
+                        lfs=SimpleNamespace(sha256=same))]))
     assert URC.main([str(run), "--log", str(extra)]) == 0
-    # idempotent: the same-size checkpoint already on the hub is skipped
     assert uploaded == ["teacher_v5_ftA/run.log",
                         "teacher_v5_ftA/teacher_001000.pt",
                         "teacher_v5_ftA/train_ftA.log"]
+
+    # 2. SAME NAME, SAME SIZE, different content -> must NOT be skipped. Every
+    #    PHANTOM teacher checkpoint is exactly 393,115,861 bytes, so the old
+    #    size-only rule called every re-upload "already present".
+    uploaded.clear()
+    monkeypatch.setattr(huggingface_hub, "HfApi", _api(lambda pre: [
+        SimpleNamespace(path=f"{pre}/teacher_000500.pt", size=10,
+                        lfs=SimpleNamespace(sha256="0" * 64))]))
+    assert URC.main([str(run), "--log", str(extra)]) == 0
+    assert "teacher_v5_ftA/teacher_000500.pt" in uploaded
+
+    # 3. no LFS metadata -> fall back to the byte size, as before
+    uploaded.clear()
+    monkeypatch.setattr(huggingface_hub, "HfApi", _api(lambda pre: [
+        SimpleNamespace(path=f"{pre}/teacher_000500.pt", size=10, lfs=None),
+        SimpleNamespace(path=f"{pre}/teacher_001000.pt", size=999, lfs=None)]))
+    assert URC.main([str(run), "--log", str(extra)]) == 0
+    assert "teacher_v5_ftA/teacher_000500.pt" not in uploaded
+    assert "teacher_v5_ftA/teacher_001000.pt" in uploaded
 
 
 def test_upload_run_ckpts_refuses_without_a_token(tmp_path, monkeypatch):

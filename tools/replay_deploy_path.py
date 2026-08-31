@@ -155,12 +155,16 @@ def main() -> int:
             pre = acc[k].get("actions_pre_veto")
             trace_chunk = np.asarray(pre if pre is not None else acc[k]["actions"],
                                      dtype=np.float64)
+            # a veto record exists on every replan; only close_masked /
+            # recovery_open actually rewrote plan.actions (same rule as replay_rig)
+            veto_act = (acc[k].get("terminal_veto") or {}).get("action")
+            vetoed = (veto_act in ("close_masked", "recovery_open")
+                      or pre is not None)
             row = summarize([chunk_metrics(per_seed[j][k]) for j in range(args.seeds)],
                             chunk_metrics(trace_chunk))
             row.update(episode=ep.path.name, replan=k,
                        trace_source="actions_pre_veto" if pre is not None else "actions",
-                       trace_comparable=bool(pre is not None
-                                             or not acc[k].get("terminal_veto")))
+                       trace_comparable=bool(pre is not None or not vetoed))
             rows.append(row)
             log.info("%s replan %2d: head_dz %7.1f +-%5.1f mm (trace %7.1f, in-spread %s) "
                      "grip_max %.2f", ep.path.name, k, row["head_dz"], row["head_dz_std"],

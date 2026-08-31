@@ -97,12 +97,19 @@ fine-tune data could not have leaked into by session.
 
 ### Overall (mean over all terminal windows)
 
-| split | run | eps | windows | endpoint err mm | z-at-end err mm | commit ratio | close step err | pred close height mm |
-|---|---|---|---|---|---|---|---|---|
-| val124 | v4 | 124 | 496 | 20.82 | +2.76 | 1.28 | +0.19 | 117.44 |
-| val124 | **v5_6** | 124 | 496 | **18.23** | +4.16 | 1.10 | −0.67 | 115.30 |
-| val78 | v4 | 78 | 312 | 22.17 | +6.93 | 1.18 | +0.36 | 112.50 |
-| val78 | **v5_6** | 78 | 312 | **20.86** | +8.53 | 0.94 | −0.60 | 110.80 |
+| split | run | eps | windows | endpoint err mm | z-at-end err mm | commit ratio | close step err | pred close height mm | **GT close height mm (mean)** |
+|---|---|---|---|---|---|---|---|---|---|
+| val124 | v4 | 124 | 496 | 20.82 | +2.76 | 1.28 | +0.19 | 117.44 | 109.94 |
+| val124 | **v5_6** | 124 | 496 | **18.23** | +4.16 | 1.10 | −0.67 | 115.30 | 109.94 |
+| val78 | v4 | 78 | 312 | 22.17 | +6.93 | 1.18 | +0.36 | 112.50 | — |
+| val78 | **v5_6** | 78 | 312 | **20.86** | +8.53 | 0.94 | −0.60 | 110.80 | — |
+
+The GT close-height column was added 2026-08-31 and is what makes the mean table self-contained:
+`pred_close_height_mm` is a **mean**, so the only number it may be differenced against is the mean of
+the same quantity over the demos. The val124 pooled mean is 109.94 mm (per-task GT means: whiteboard
+159.2, Carton 108.2, waffles 76.8, egg 72.7 — the distribution is strongly multi-modal across tasks,
+which is why its mean and its median are 12 mm apart). The val78 mean has not been re-derived on
+compute3; use the median table for that split, or re-run `terminal_eval` before quoting one.
 
 ### Medians (same runs; GT close height is a property of the demos)
 
@@ -151,13 +158,37 @@ than v4 offline, and most of the visible gain is in-distribution to the new batc
 Two caveats that matter more than the headline. (1) The per-window across-seed std is 6-7 mm — larger
 than the entire v4→v5_6 difference — so a single-seed comparison of these checkpoints is meaningless;
 the means above are over 496 (or 312) windows and are separated, but any per-episode claim is not.
-(2) **Neither checkpoint solves the rig failure.** Predicted close height is 115-117 mm on val124 while
-the demos close at 98 mm: both models still commit the grasp ~17-19 mm above where the demos do, and
-v5_6 buys only 2 mm of that. That is the same direction and roughly the same magnitude as the 3-6 cm
-closed-loop miss seen on the rig, and it is not fixed by the fine-tune. v5_6's real change is in
-*timing*, not height: close-step error goes from +0.19 to −0.67 steps (median +2 → +1) and commit ratio
-from 1.28 to 1.10 — it stops over-descending and closes earlier, which is the intended FT-A effect, but
-the absolute height it closes at is essentially unchanged.
+(2) **Neither checkpoint solves the rig failure, but the size of the height gap is much smaller than
+this document first claimed.** The first version of this paragraph differenced a **mean**
+(`pred_close_height_mm` = 115.30 / 117.44) against a **median** (`median_gt_close_height_mm` = 98.11)
+and reported "~17-19 mm". That is not a statistic; it is the 12 mm gap between the GT distribution's
+own mean and median (the GT is strongly multi-modal across tasks: whiteboard 159.2, Carton 108.2,
+waffles 76.8, egg 72.7 mm) added to a real difference of about half that size. Corrected, like for
+like on val124:
+
+| statistic | v4 | v5_6 | v5_6 − v4 |
+|---|---|---|---|
+| mean pred − mean GT (117.44 / 115.30 vs 109.94) | **+7.50 mm** | **+5.37 mm** | −2.13 mm |
+| median pred − median GT (116.14 / 110.03 vs 98.11) | +18.03 mm | +11.92 mm | −6.11 mm |
+| paired per-window difference (mean over shared windows) | **+4.79 mm** | **+6.00 mm** | +1.21 mm |
+
+**The statistic this project quotes is the paired per-window mean: v4 +4.8 mm, v5_6 +6.0 mm.** It is
+the only one of the three computed over identical rows — the mean and median aggregates above are each
+taken over a different row subset, which is why they disagree with the paired number about the *sign*
+of the v4→v5_6 change. The other two rows are kept for context and must never be mixed (a mean-vs-median
+difference is what produced the retracted "17-19 mm").
+
+Three consequences. First, both models close **~5-6 mm** above where the demos do, not 17-19 mm; the
+earlier sentence that this was "roughly the same magnitude as the 3-6 cm closed-loop miss" is
+withdrawn — a 5-6 mm offline gap is an order of magnitude smaller than the rig's 30-60 mm miss, so the
+rig failure is **not** explained by the terminal height this metric measures, and the closed-loop trace
+decomposition is the only thing that can explain it. Second, "the absolute height it closes at is
+essentially unchanged" is also withdrawn: on the paired statistic v5_6 closes 1.2 mm **higher** than v4,
+and on the median statistic 6.1 mm lower — the two disagree, so this document makes no claim about the
+direction of the height change and the paper must not either. Third, what does survive is the *timing*
+result, which is measured per window and does not have this problem: close-step error goes from +0.19
+to −0.67 steps (median +2 → +1) and commit ratio from 1.28 to 1.10, i.e. v5_6 stops over-descending and
+closes earlier, which is the intended FT-A effect.
 
 Practical consequence for the A/B on the rig: v5_6 vs v4 is worth running, but a 2.6 mm offline endpoint
 difference should not be expected to show up as a large success-rate difference. The decision-grade
