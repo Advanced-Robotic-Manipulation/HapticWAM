@@ -72,16 +72,87 @@ def apply_overrides(cfg, args, compute=None):
     # gives a converged checkpoint a per-element Adam displacement budget of
     # ~2.7x the LoRA-B weight scale — a rewrite, not a fine-tune. Explicit
     # CLI values beat the compute profile.
+    #
+    # Every one of these parses to None when absent, so "the operator chose
+    # the default" and "nobody said anything" stay distinguishable — that is
+    # what `--resume` needs to decide restore-vs-refuse (revalidation
+    # 2026-08-31 #8). `hasattr` because distill_hid/finetune_hids share this
+    # helper with configs that have no data-recipe fields.
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
-                 "eval_every", "ema_decay", "event_band_weight"):
+                 "eval_every", "ema_decay", "event_band_weight",
+                 "split", "grasp_frac", "photo_aug", "commit_band_weight"):
         v = getattr(args, name, None)
-        if v is not None:
+        if v is not None and hasattr(cfg, name):
             updates[name] = v
     if args.max_steps is not None:
         for name in ("ckpt_every", "eval_every"):
             if name in updates:
                 updates[name] = min(updates[name], args.max_steps)
     return dataclasses.replace(cfg, **updates)
+
+
+#: `configs.train` keys a `--resume` may legitimately change: the run's
+#: identity/placement, its length and cadence, and the memory knobs a spot
+#: instance forces. EVERYTHING ELSE in configs.train is the recipe and comes
+#: back from the checkpoint.
+RESUME_OPERATIONAL_KEYS = frozenset({
+    "run_name", "out_dir", "device", "num_workers", "max_steps", "log_every",
+    "ckpt_every", "eval_every", "synthetic", "tiny", "batch_size",
+    "grad_accum", "activation_checkpointing", "fp32_master",
+})
+
+#: prettier names for the refusal message (F11's wording is load-bearing for
+#: the launch scripts' grep and for tests written against it)
+_RESUME_KEY_LABEL = {"event_band_weight": "event-band weight"}
+
+
+def _train_value_differs(saved, cli) -> bool:
+    if saved is None or cli is None:
+        return (saved is None) != (cli is None)
+    if (isinstance(saved, (int, float)) and isinstance(cli, (int, float))
+            and not isinstance(saved, bool) and not isinstance(cli, bool)):
+        return float(saved) != float(cli)
+    return saved != cli
+
+
+def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log):
+    """`--resume` continues ONE run, so its recipe comes back with it.
+
+    For every non-operational `configs.train` key: if the CLI did not name it,
+    restore the checkpoint's value; if the CLI named a DIFFERENT value, refuse
+    the resume. This is the accept/refuse rule F11 wrote for
+    `event_band_weight`, generalized — `grasp_frac`, `photo_aug`,
+    `commit_band_weight` and `split` reached no part of the checkpoint at all,
+    and `ema_decay` was recorded but never re-applied (`train_loop` builds the
+    EMA from `cfg.ema_decay`), so a resume with only the model flags re-passed
+    reverted the whole recipe to the dataclass defaults and then wrote those
+    defaults into the next checkpoint as if they had governed the run
+    (revalidation 2026-08-31 #8)."""
+    updates: dict = {}
+    for key in sorted(cfg.to_dict()):
+        if key in RESUME_OPERATIONAL_KEYS:
+            continue
+        cli = getattr(args, key, None)
+        label = _RESUME_KEY_LABEL.get(key, key)
+        if key not in saved_train:
+            if cli is not None:
+                log.warning("--resume: checkpoint predates %s persistence — "
+                            "using the CLI value %r", label, cli)
+            continue
+        saved = saved_train[key]
+        if cli is None:
+            if _train_value_differs(saved, getattr(cfg, key)):
+                updates[key] = saved
+                log.info("--resume: %s %r restored from the checkpoint "
+                         "(this run would have used %r)", label, saved,
+                         getattr(cfg, key))
+            continue
+        if _train_value_differs(saved, cli):
+            raise SystemExit(
+                f"--resume {label} drift: checkpoint {saved!r}, this run "
+                f"{cli!r} — a resume continues ONE run; drop the flag to "
+                f"restore the checkpoint's value, or pass the original one")
+    return dataclasses.replace(cfg, **updates) if updates else cfg
 
 
 def model_config_drift(saved_mc: dict, mc, *,
@@ -127,22 +198,25 @@ def main(argv=None) -> int:
                     help="train even though episodes were recorded under a "
                          "different hardware config (checkpoint may not load "
                          "on the rig)")
-    ap.add_argument("--split", default="train", choices=["train", "val", "all"],
+    # The four data-recipe knobs default to None so `--resume` can tell an
+    # explicit value from an unspoken one; the dataclass carries the real
+    # default (train / 0.0 / 1.0 / 0.0) — revalidation 2026-08-31 #8.
+    ap.add_argument("--split", default=None, choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default train; "
                          "'all' reproduces the pre-split behaviour)")
     ap.add_argument("--tactile-pretrain", default="", help="program-1 checkpoint")
-    ap.add_argument("--grasp-frac", type=float, default=0.0,
+    ap.add_argument("--grasp-frac", type=float, default=None,
                     help="fraction of training windows anchored in the 1.5 s "
                          "before the first gripper close (terminal-phase "
-                         "fine-tune; 0 = uniform)")
-    ap.add_argument("--commit-band-weight", type=float, default=1.0,
+                         "fine-tune; default 0 = uniform)")
+    ap.add_argument("--commit-band-weight", type=float, default=None,
                     help="extra ACTION-loss multiplier for windows anchored "
-                         "inside the pre-close commit band (plan D8; 1.0 = "
-                         "off). Composes with the per-episode "
+                         "inside the pre-close commit band (plan D8; default "
+                         "1.0 = off). Composes with the per-episode "
                          "EpisodeMeta.weight; failure demos stay at 0")
-    ap.add_argument("--photo-aug", type=float, default=0.0,
+    ap.add_argument("--photo-aug", type=float, default=None,
                     help="photometric jitter strength on the scene camera "
-                         "(0 disables; 1.0 = brightness +-30%%, contrast "
+                         "(default 0 disables; 1.0 = brightness +-30%%, contrast "
                          "+-25%%, per-channel +-8%% — one draw per window)")
     ap.add_argument("--init-weights", default="",
                     help="teacher checkpoint to initialize WEIGHTS from, with a "
@@ -353,27 +427,13 @@ def main(argv=None) -> int:
         if hard:
             raise SystemExit(f"--resume model-config drift vs checkpoint: {hard} "
                              f"— pass the flags the original run used")
-        # ... including the objective knob that is NOT part of `mc`: the
-        # event-band weight rides in configs.train, so a resume without the
-        # flag restores it instead of silently reinstating mc.loss.event
-        # (validation 2026-08-30 F11).
+        # ... including every objective/data knob that is NOT part of `mc`.
+        # They ride in configs.train, so a resume restores what the checkpoint
+        # recorded unless the CLI explicitly says otherwise — and refuses when
+        # it says something different (validation 2026-08-30 F11, generalized
+        # to the whole recipe by revalidation 2026-08-31 #8).
         saved_train = resume_payload["configs"].get("train") or {}
-        if "event_band_weight" not in saved_train:
-            if args.event_band_weight is not None:
-                log.warning("--resume: checkpoint predates event_band_weight persistence "
-                            "— using the CLI value %.3g", args.event_band_weight)
-        else:
-            saved_ebw = saved_train["event_band_weight"]
-            if args.event_band_weight is None:
-                cfg = dataclasses.replace(cfg, event_band_weight=saved_ebw)
-                if saved_ebw is not None:
-                    log.info("--resume: packed event-band MSE weight %.3g restored "
-                             "from the checkpoint", float(saved_ebw))
-            elif saved_ebw is None or float(saved_ebw) != float(args.event_band_weight):
-                raise SystemExit(
-                    f"--resume event-band weight drift: checkpoint {saved_ebw}, "
-                    f"this run {args.event_band_weight} — a resume continues ONE "
-                    f"run; drop --event-band-weight or pass the original value")
+        cfg = restore_train_config_on_resume(cfg, saved_train, args)
         log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
 
     if args.tactile_pretrain:
@@ -407,19 +467,19 @@ def main(argv=None) -> int:
         log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
                  cfg.event_band_weight, pm.mc.loss.event)
     sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed)
-    train_eps = C.manifest_split(data_root, args.split)
+    train_eps = C.manifest_split(data_root, cfg.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
-                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug,
-                         commit_band_weight=args.commit_band_weight)
-    if args.grasp_frac > 0:
+                         grasp_frac=cfg.grasp_frac, photo_aug=cfg.photo_aug,
+                         commit_band_weight=cfg.commit_band_weight)
+    if cfg.grasp_frac > 0:
         cov = ds.grasp_coverage()
         log.info("terminal-phase weighting: %.0f%% of windows anchored before "
-                 "the first gripper close — coverage %s", 100 * args.grasp_frac, cov)
+                 "the first gripper close — coverage %s", 100 * cfg.grasp_frac, cov)
         if cov["weightable"] < 0.5 * max(cov["episodes"], 1):
             raise SystemExit(f"grasp weighting would silently degrade: only "
                              f"{cov['weightable']}/{cov['episodes']} episodes "
                              f"weightable ({cov}) — check gripper.zarr ts/pos")
-    log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, args.split)
+    log.info("dataset: %d windows from %s (split=%s)", len(ds), data_root, cfg.split)
     if train_eps is not None:
         # WindowSampler.build_index drops episodes with insufficient stream
         # overlap with only a log line; a fine-tune whose new episodes were
@@ -449,7 +509,7 @@ def main(argv=None) -> int:
     loader = C.make_loader(ds, cfg)
 
     val_loader = None
-    if args.split == "train":
+    if cfg.split == "train":
         val_eps = C.manifest_split(data_root, "val")
         if val_eps:
             # frozen anchors on the held-out set so successive evals compare
