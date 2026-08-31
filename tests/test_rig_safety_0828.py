@@ -223,9 +223,15 @@ def test_resolve_z_floor_rules():
 
 
 def test_run_deploy_parser_defaults():
-    from phantom.scripts.run_deploy import build_parser
+    from phantom.scripts.run_deploy import (DEFAULT_MAX_REPLANS, build_parser,
+                                            resolve_max_replans)
     a = build_parser().parse_args(["--system", "teacher", "--task", "waffles"])
-    assert a.max_replans == 40 and a.hitbox_margin == 0.03 and a.z_floor_margin == 0.01
+    # --max-replans parses to None so main can tell "40" from "unspoken"
+    # (revalidation 2026-08-31 #1); 40 is still the cap with no wall clock.
+    assert a.max_replans is None and DEFAULT_MAX_REPLANS == 40
+    a.max_episode_s = 0
+    assert resolve_max_replans(a) == 40
+    assert a.hitbox_margin == 0.03 and a.z_floor_margin == 0.01
     assert not a.home_joints and not a.no_hitbox and not a.no_z_floor and a.max_tcp_speed is None
 
 

@@ -188,6 +188,29 @@ def recover_control(arm, reason: str) -> bool:
     return False
 
 
+#: the count cap that stands in for a time budget when no wall clock is set.
+#: `--max-replans` parses to None so `main` can tell "the operator chose 40"
+#: from "nobody said anything" (revalidation 2026-08-31 #1).
+DEFAULT_MAX_REPLANS = 40
+
+
+def resolve_max_replans(args) -> int | None:
+    """The replan cap the episode actually runs with.
+
+    `PlannerLoop.run` checks the replan COUNT before the wall clock, so a
+    default of 40 makes `--max-episode-s` dead at any latency below
+    `budget / 40`: the documented arm-B line (`--nfe 1`, 172 ms replans,
+    `--max-episode-s 35`) stopped at `replan_cap` after 7.2 s against 16-31 s
+    demos. When a wall-clock budget is in force and the operator did not name a
+    count, LIFT the count entirely and let the clock govern. An explicit
+    `--max-replans` always wins — including alongside `--max-episode-s`."""
+    if args.max_replans is not None:
+        return int(args.max_replans)
+    if float(args.max_episode_s) > 0:
+        return None
+    return DEFAULT_MAX_REPLANS
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--system", choices=SYSTEM_MODES, required=True)
@@ -195,14 +218,20 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--task", required=True)
     ap.add_argument("--text", default="")
     ap.add_argument("--episodes", type=int, default=1)
-    ap.add_argument("--max-replans", type=int, default=40,
-                    help="episode cap in replans (~0.9 s each). Demos take 16-31 s and a "
-                         "rollout that retries needs room: 20 cut every 08-28 retry short")
+    ap.add_argument("--max-replans", type=int, default=None,
+                    help=f"episode cap in replans (~0.9 s each; default "
+                         f"{DEFAULT_MAX_REPLANS}). Demos take 16-31 s and a "
+                         f"rollout that retries needs room: 20 cut every 08-28 "
+                         f"retry short. LEFT UNSET the count cap is LIFTED "
+                         f"whenever --max-episode-s > 0, so the wall clock is "
+                         f"the only budget; pass it explicitly to bind it")
     ap.add_argument("--max-episode-s", type=float, default=35.0,
-                    help="episode WALL-CLOCK cap (s), checked beside --max-replans. "
-                         "The replan cap is not a time budget: at --nfe 1 (172 ms "
-                         "replans) 40 replans is a ~7 s episode against 16-31 s "
-                         "demos. 0 or negative disables it")
+                    help="episode WALL-CLOCK cap (s). The replan cap is not a "
+                         "time budget: at --nfe 1 (172 ms replans) 40 replans "
+                         "is a ~7 s episode against 16-31 s demos, and "
+                         "PlannerLoop checks the COUNT first — so unless "
+                         "--max-replans is passed explicitly this budget "
+                         "replaces it. 0 or negative disables it")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
                          "LATENCY LEVER (review P4): the loop is compute-bound and "
@@ -526,6 +555,16 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
 def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = build_parser().parse_args(argv)
+    explicit_max_replans = args.max_replans is not None
+    args.max_replans = resolve_max_replans(args)
+    if args.max_replans is None:
+        log.info("replan cap LIFTED: --max-episode-s %.1f s is the episode "
+                 "budget (pass --max-replans to bind a count as well)",
+                 float(args.max_episode_s))
+    elif explicit_max_replans and float(args.max_episode_s) > 0:
+        log.info("episode budget: %d replans OR %.1f s, whichever comes first "
+                 "(the count is checked first)", args.max_replans,
+                 float(args.max_episode_s))
 
     hw = load_hardware(args.hardware)
     # The per-task safety overrides below are model_copy()s, so each one changes
