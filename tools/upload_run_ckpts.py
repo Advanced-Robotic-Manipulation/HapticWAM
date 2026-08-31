@@ -15,9 +15,13 @@ plus every `*.log` in the run dir and any `--log` given explicitly, to
 which is why the launch line must say `--run-name teacher_v5_ftA` and never
 `teacher_v5_batch0822` (that hub folder holds the six SHIPPED v5 checkpoints).
 
-IDEMPOTENT: the destination folder is listed first and a file already there
-with the same byte size is skipped, so this is safe to re-run in a loop as
-checkpoints land:
+IDEMPOTENT: the destination folder is listed first (with `expand=True`) and a
+file whose hub-side `lfs.sha256` matches the local file's sha256 is skipped, so
+this is safe to re-run in a loop as checkpoints land. Byte SIZE is not a content
+check here — every PHANTOM teacher checkpoint is exactly 393,115,861 bytes, so a
+size-only rule made every same-name file "already present" whatever it held; the
+size comparison survives only as the fallback for a file the hub reports no LFS
+metadata for.
 
     while sleep 600; do HF_TOKEN=... python tools/upload_run_ckpts.py <run>; done
 
@@ -28,6 +32,7 @@ The token is read from HF_TOKEN / HUGGINGFACE_HUB_TOKEN only — never a flag
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 import os
 import sys
@@ -55,21 +60,53 @@ def local_files(run_dir: Path, extra_logs: list[Path]) -> list[Path]:
     return [found[k] for k in sorted(found)]
 
 
-def remote_sizes(api, repo: str, prefix: str) -> dict[str, int]:
-    """{filename: size} already under `<repo>/<prefix>/` (empty if absent)."""
+def sha256_file(path: Path, chunk: int = 1 << 22) -> str:
+    """Streaming sha256 of a local file — the same digest the hub stores."""
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for block in iter(lambda: fh.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def remote_files(api, repo: str, prefix: str) -> dict[str, dict]:
+    """{filename: {"sha256": str|None, "size": int}} under `<repo>/<prefix>/`.
+
+    `expand=True` is what makes `e.lfs.sha256` available: without it the hub
+    hands back sizes only, and EVERY PHANTOM teacher checkpoint is exactly
+    393,115,861 bytes — so a same-name file was always "already present"
+    regardless of its content, and a re-upload of a BETTER checkpoint over a
+    worse one of the same step number was silently skipped (validation
+    2026-08-31 #8). LFS metadata can still be missing (a small non-LFS file,
+    or an older tree response); there the size comparison is the fallback.
+    """
     from huggingface_hub.utils import HfHubHTTPError
-    out: dict[str, int] = {}
+    out: dict[str, dict] = {}
     try:
         for e in api.list_repo_tree(repo, path_in_repo=prefix, repo_type="model",
-                                    recursive=False):
+                                    recursive=False, expand=True):
             size = getattr(e, "size", None)
             if size is None:                      # a directory entry
                 continue
-            out[Path(e.path).name] = int(size)
+            lfs = getattr(e, "lfs", None)
+            sha = getattr(lfs, "sha256", None) if lfs is not None else None
+            if sha is None and isinstance(lfs, dict):
+                sha = lfs.get("sha256")
+            out[Path(e.path).name] = {"sha256": sha, "size": int(size)}
     except (HfHubHTTPError, OSError, ValueError) as e:   # folder not created yet
         log.info("no existing %s/%s on the hub (%s)", repo, prefix,
                  type(e).__name__)
     return out
+
+
+def already_uploaded(remote: dict, path: Path, size: int) -> bool:
+    """Is `path` byte-identical to what the hub already holds under its name?"""
+    if remote is None:
+        return False
+    sha = remote.get("sha256")
+    if sha is None:                               # no LFS metadata -> size only
+        return int(remote.get("size", -1)) == size
+    return sha == sha256_file(path)
 
 
 def main(argv=None) -> int:
@@ -84,7 +121,7 @@ def main(argv=None) -> int:
                     help="extra log files to ship (nohup writes train_*.log "
                          "next to the repo, not into the run dir)")
     ap.add_argument("--force", action="store_true",
-                    help="re-upload even when a same-size file is already there")
+                    help="re-upload even when an identical file is already there")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -104,13 +141,13 @@ def main(argv=None) -> int:
 
     from huggingface_hub import HfApi
     api = HfApi(token=token)
-    have = {} if args.force else remote_sizes(api, args.repo, run_name)
+    have = {} if args.force else remote_files(api, args.repo, run_name)
 
     up = skipped = 0
     for p in files:
         dest = f"{run_name}/{p.name}"
         size = p.stat().st_size
-        if have.get(p.name) == size:
+        if already_uploaded(have.get(p.name), p, size):
             log.info("skip %s (already on the hub, %.2f GB)", dest, size / 1e9)
             skipped += 1
             continue
