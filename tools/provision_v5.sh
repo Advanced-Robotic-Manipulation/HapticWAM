@@ -272,10 +272,13 @@ python -m phantom.train.train_teacher \
     --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
     --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 \
     --event-band-weight 0 --ema-decay 0.995 --cond-dropout 0 \
-    --contact-nll-beta 0.5 --contact-self-forcing \
+    --contact-nll-beta 0.5 \
     --action-noise-per-strip --no-action-t-max-of-two \
     --batch-size $BS --grad-accum $GA --num-workers $NW \
     --device cuda 2>&1 | tail -3
+# ablation only (NOT in the FT-A bundle): append --contact-self-forcing to the line
+# above to smoke the P7 arm. E9_premise_test.md provides no evidence for it; do not
+# spend the primary FT-A run on it.
 rm -rf "$W/runs/teacher/provision_smoke"
 rm -rf "$W/dl"
 EPS=$(find -L "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
@@ -292,7 +295,7 @@ echo "    --init-weights $FTA_INIT \\"
 echo "    --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \\"
 echo "    --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 --ckpt-every 500 --eval-every 500 \\"
 echo "    --event-band-weight 0 --ema-decay 0.995 --cond-dropout 0 \\"
-echo "    --contact-nll-beta 0.5 --contact-self-forcing \\"
+echo "    --contact-nll-beta 0.5 \\"
 echo "    --action-noise-per-strip --no-action-t-max-of-two \\"
 echo "    --batch-size $BS --grad-accum $GA --num-workers $NW \\"
 echo "    --device cuda > train_ftA.log 2>&1 &"
@@ -314,12 +317,16 @@ echo "  #   EGRESS after every checkpoint (a destroyed rental loses the run):"
 echo "  #        HF_TOKEN=hf_... python tools/upload_run_ckpts.py $W/runs/teacher/teacher_v5_ftA"
 echo "  #     (idempotent: re-run it as checkpoints land; it skips what is already on the hub)"
 echo "  #   FT-A bundle (review 2026-08-28, docs/training_playbook.md 'FT-A'): --contact-nll-beta 0.5 rebalances"
-echo "  #     the trunk gradient off the contact NLL (P5); --contact-self-forcing denoises ACTION alongside the"
-echo "  #     model's OWN contact package (P7, needs --acc-two-pass, no extra pass); --action-noise-per-strip +"
+echo "  #     the trunk gradient off the contact NLL (P5); --action-noise-per-strip +"
 echo "  #     --no-action-t-max-of-two fix the ACTION noise/timestep mismatch with 5-step sampling (P6);"
 echo "  #     --ema-decay 0.995 (0.999 averages ~1/3 of a 3000-step run); --cond-dropout 0 keeps the short"
 echo "  #     fine-tune's gradient on conditioned windows. Drop the whole bundle to reproduce v5 exactly."
 echo "  #     The 2-step smoke above already runs this exact bundle — nothing to re-run by hand."
+echo "  #   NOT in the bundle: --contact-self-forcing (P7). The corrected E9"
+echo "  #     (docs/review_20260828/E9_premise_test.md:88-93) measures the deploy condition as the BEST"
+echo "  #     of the three arms — there is no GT-vs-imagined gap of the P7 shape to close, so E9 cannot"
+echo "  #     be quoted as its justification. Append it (with --acc-two-pass, already on) only as a"
+echo "  #     controlled ablation arm; do not spend the primary FT-A run on it."
 echo "  #   val = frozen v4 78 eps + the last whole session(s) per task of batch_20260822 (>=10 eps/task),"
 echo "  #   see manifests/intake_holdout.json — in-run val_* mixes both; terminal_eval per task for the split"
 echo "  # effective batch 8 everywhere: 4x2 needs ~62GB (H100 NVL/80GB, measured 61.5GB);"

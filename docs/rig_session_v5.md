@@ -71,7 +71,7 @@ Arms for the first clean session (waffles first — `q_n=37`, the best-covered e
 # arm A — v5_6 baseline, NFE 5, no levers.  ONE process for the whole block:
 EXTRA=""                                                    ./GO_v5_waffles.sh 10
 # arm B — the lever bundle:
-EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 35" \
+EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 35 --max-replans 200" \
                                                             ./GO_v5_waffles.sh 10
 ```
 (`EXTRA` is appended after the GO script's own flags, so its `--nfe` wins.)
@@ -83,9 +83,12 @@ session exists to escape (VALIDATION_0830 P0 #6). If a seeded arm is wanted, run
 unseeded path already records `seed:<n>` per episode (and since 08-30 the homing jitter is drawn from that same
 per-episode seed, with the realised start pose tagged `start:<x,y,z>mm/g<aperture>`).
 
-`--max-episode-s 35` is the wall-clock budget: `--max-replans` is a COUNT, and at `--nfe 1` (172 ms replans) 40
-replans is a ~7 s episode against 16-31 s demos. Arm A at NFE 5 (~0.9 s replans) reaches the budget at ~40 replans
-anyway; the stop reason is logged as `episode_time_cap` / `replan_cap` instead of a silent `None`.
+`--max-episode-s 35` is the wall-clock budget, and **`--max-replans 200` is what lets arm B reach it**.
+`PlannerLoop.run` checks the replan COUNT before the wall clock, so the default 40 ends an `--nfe 1` episode
+(172 ms replans) at `replan_cap` after **7.2 s** — measured through the real loop — against a 35 s arm A and
+16-31 s demos. Without the raise the two arms are not the same experiment and arm B never reaches the terminal
+phase. Arm A at NFE 5 (~0.9 s replans) hits 40 replans at 34.8 s and does not need it. The stop reason is logged
+as `episode_time_cap` / `replan_cap` instead of a silent `None`.
 
 Interleave A/B per placement cell on the taped 3×3 grid and alternate which arm goes first per cell; note the
 cell id in the verdict prompt (`s`/`f`/`c`, optionally `d` for damage). The z floor, hitbox and joint gate are on by
@@ -116,8 +119,20 @@ New in `run_deploy` (all default-on, tags land in `meta.json` as `zfloor:`, `hit
   gates out. Fix it on the pendant (joint jog wrist 3 by -360 deg, or move back to the demo branch), then Enter.
   `--home-joints` does a slow moveJ to the demo joint configuration BEFORE the moveL homing — path must be clear,
   a base rotation sweeps the bin; E-stop in hand.
-- **z no-go floor** (clamp): commanded TCP z >= task demo `tcp_z_min` - 10 mm (waffles 42, Carton 66,
-  whiteboard 65, egg 50 mm). Override `--z-floor <m>`, margin `--z-floor-margin`, off `--no-z-floor`.
+- **z no-go floor** (clamp): commanded TCP z >= task demo `tcp_z_min` - 10 mm. Regenerated from
+  `configs/start_poses.yaml` after F17 re-fitted the envelope over all 250 episodes/task (E13_rescore.md §1):
+
+  | task | `tcp_z_min` mm | floor mm |
+  |---|---|---|
+  | waffles | 41.5 | **31.5** |
+  | egg | 59.5 | **49.5** |
+  | whiteboard | 67.5 | **57.5** |
+  | Carton | 76.1 | **66.1** |
+
+  A live run prints these as `zfloor:32mm` etc. in the meta tags — if the tag and this table disagree, the
+  binary is not the one this page documents. (The pre-F17 subset floors were 10.5 mm too HIGH on waffles and
+  7.1 mm too high on whiteboard — the wrong direction of error on a task whose failure mode is closing too
+  high.) Override `--z-floor <m>`, margin `--z-floor-margin`, off `--no-z-floor`.
 - **STOP hitbox**: the task's demo TCP envelope (`tcp_min/tcp_max`, all frames) +/- 30 mm; a commanded target
   outside ENDS the episode (stop reason `safety_stop`, event `hitbox_exit`). `--hitbox-margin`, `--no-hitbox`.
 - **Speed cap**: `--max-tcp-speed <m/s>` lowers the executor's commanded-TCP cap below hardware.yaml's 0.25.
@@ -150,6 +165,10 @@ between the NUC, the tactile sensors and the robot checked before the next sessi
   between episodes and refuses the next episode if the script did not come back (exit code 4/5 = restart the process).
 - Stale camera / stale arm stream now end the episode cleanly (stop reason in the log) instead of crashing.
 
-## Offline numbers behind v5_6 (terminal_eval, 124 val episodes x 2 seeds, EMA)
-endpoint error v4 20.7 mm -> v5_6 17.4 mm; z-at-end -4.7 -> -2.4 mm; commit ratio 1.72 -> 1.43; close timing +0.7 -> -0.1 steps;
-new-batch holdout 20.7 -> 14.9 mm; every task improved. Offline != rig: the rig decides.
+## Offline numbers behind v5_6 (terminal_eval, val124, 4 seeds, EMA — re-scored 2026-08-30)
+Endpoint error v4 **20.82 mm -> v5_6 18.23 mm** (2.6 mm / 12%); z-at-end **+2.76 -> +4.16 mm**; commit ratio
+**1.28 -> 1.10**; close-step error **+0.19 -> -0.67 steps**; new-batch holdout (the 46 `batch_20260822`
+episodes) **18.54 -> 13.78 mm**. The per-window across-seed std is 6-7 mm — larger than the whole v4->v5_6
+difference — so no per-episode claim follows from these, and most of the val124 gain is in-distribution to the
+new batch (on the frozen v4-only half it is 22.17 -> 20.86 mm). Full derivation, caveats and the retracted
+close-height statistic: **`docs/review_20260828/E13_rescore.md`**. Offline != rig: the rig decides.

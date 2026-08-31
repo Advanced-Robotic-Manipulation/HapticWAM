@@ -293,10 +293,17 @@ def test_provision_launch_line_carries_the_ft_a_bundle():
     src = (Path(__file__).resolve().parents[1] / "tools" / "provision_v5.sh"
            ).read_text(encoding="utf-8")
     launch = src.split("READY. Launch")[1]
-    for flag in ("--contact-nll-beta 0.5", "--contact-self-forcing",
+    for flag in ("--contact-nll-beta 0.5",
                  "--action-noise-per-strip", "--no-action-t-max-of-two",
                  "--ema-decay 0.995", "--cond-dropout 0"):
         assert flag in launch, f"{flag} missing from the printed FT-A launch line"
+    # --contact-self-forcing was retracted from the bundle (E9_premise_test.md:88-93
+    # provides no exposure-bias gap); it survives only as a commented ablation note.
+    cmd = launch.split('echo "  #')[0]
+    assert "--contact-self-forcing" not in cmd, (
+        "--contact-self-forcing is back in the printed FT-A launch command")
+    assert "E9_premise_test.md" in launch, (
+        "the launch block must cite E9_premise_test.md for the retraction")
 
 
 # ---------------------------------------------------------------- tiny model
