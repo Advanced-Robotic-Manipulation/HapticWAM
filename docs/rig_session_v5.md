@@ -46,13 +46,29 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   move, 3 s countdown — e-stop if the path is not clear) and re-checks, twice, before
   ever asking the operator. Same on the re-gate after "place the object". A wrapped
   wrist unwinds itself.
-- **`lift_complete` success auto-stop**: both tactile pads loaded (>3 N) with the TCP
-  above 0.35 m, held 0.5 s -> the episode ends cleanly HOLDING the object, reason
-  `lift_complete`. This ends episodes at the success, before the post-lift "carry"
-  (OOD — it twice drove the arm into the full-extension singularity). Knobs:
-  `--lift-complete-z/-fz/-hold`; 0 disables.
-- **Singularity guards**: measured joint speed > 2.0 rad/s stops the episode
-  (non-release); commanded TCP radius is clamped at 0.62 m.
+- **`lift_complete` success auto-stop**: both tactile pads loaded (>2.5 N over the
+  per-episode baseline — the left pad carries a drifting 0.7-2.2 N zero offset) with
+  the TCP above 0.32 m, held 0.4 s -> the episode ends cleanly HOLDING the object,
+  reason `lift_complete`. Validated on all 22 09-01 episodes: fires in all 4 real
+  lifted grasps 1.8-2.7 s before any whip, 0 spurious. Knobs `--lift-complete-z/-fz/-hold`.
+- **Singularity guards, layered** (root cause = IK branch flip at the elbow-straight
+  boundary, wrist-centre 470.5 mm): (1) `servo_l` seeds IK with the previous solution
+  and REFUSES branch-flipped solutions (driver-level, the actual fix); (2)
+  `wrist_extension` stop at wd > 0.45 m — pure elbow geometry, 0.3-1.4 s of lead on
+  every 09-01 whip, non-release; (3) measured joint speed > 2.0 rad/s stop (last-ditch,
+  8-56 ms lead — insurance only); (4) commanded TCP radius clamp at 0.62 m.
+
+## Session-5 A/B protocol (from the 09-01 run analysis — do it THIS way)
+1. Same inference config both arms: nfe1 / k-seeds 4 / veto on / parity on (LEVERS).
+2. **Paired seeds AND paired start poses**, alternating v5_6 / ftA_1500 per cell,
+   >= 8 pairs. (09-01 spanned 4 configs x 3 git revisions x all-different seeds and
+   starts — no within-day comparison was valid.)
+3. Let episodes reach a TERMINAL condition (lift_complete / a guard / the 150 s
+   budget). An operator-Enter end measures patience, not the policy.
+4. Primary metric: tactile-confirmed grasp rate (the lift_complete rule); secondary:
+   apex z and time-to-fire. Do not chase offline endpoint-mm on the rig.
+5. The one v5_6 episode of 09-01 (3.7 s, 4 replans) says NOTHING about v5_6 — and its
+   "sideways press" start-pose region made ftA drift even harder. Not a finding.
 
 ## Or: the interactive launcher (PICK.sh) — pick model x preset from a menu
 

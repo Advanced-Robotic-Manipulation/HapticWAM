@@ -134,6 +134,21 @@ class SafetyMonitor:
             # see SafetyConfig.joint_speed_stop_rad_s. No debounce: one tick
             # over 3 rad/s is already a whip, and a spurious stop is benign
             # next to 400 ms of uncontrolled wrist at 7 rad/s.
+            # wrist-extension (elbow-straight) guard — see
+            # SafetyConfig.wrist_extension_stop_m. Fires 0.3-1.4 s BEFORE an
+            # IK branch flip can even be attempted; non-letgo.
+            wd_max = hw.safety.wrist_extension_stop_m
+            q_raw = arm.get("q") if hasattr(arm, "get") else None
+            if wd_max is not None and q_raw is not None:
+                a2, a3, d4 = hw.safety.ur_dh_a2_a3_d4_m
+                q_elbow = float(np.asarray(q_raw[0]).reshape(-1)[2])
+                wd = float(np.sqrt(a2 * a2 + a3 * a3
+                                   + 2.0 * a2 * a3 * np.cos(q_elbow)
+                                   + d4 * d4))
+                if wd > wd_max:
+                    events.append(SafetyEvent(t_now, "wrist_extension", wd,
+                                              SafetyAction.STOP_EPISODE))
+                    action = _max(action, SafetyAction.STOP_EPISODE)
             qd_raw = arm.get("qd") if hasattr(arm, "get") else None
             qd = (np.asarray(qd_raw[0], dtype=np.float64).reshape(-1)
                   if qd_raw is not None else np.zeros(0))
