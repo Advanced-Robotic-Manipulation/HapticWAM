@@ -218,3 +218,58 @@ def test_make_lift_complete_closure_thresholds():
     assert chk()                                # sustained -> fire
     set_state(z=0.40, fl=0.0, fr=6.0)          # condition drops -> re-arm
     assert not chk()
+
+
+def test_servo_l_rejects_ik_branch_flip():
+    """Rig 2026-09-01 root cause (Opus analysis): host-side IK with no qnear
+    seed returned a different solution branch at the elbow-straight boundary
+    and servoJ swept a ballistic arc to it. servo_l must (a) seed IK with the
+    previous solution, (b) refuse to stream a flipped solution, (c) give up
+    loudly after sustained rejects — and never send the flipped q."""
+    from types import SimpleNamespace
+
+    from phantom.drivers.real.ur import URArm
+
+    hw = make_small_hw()
+    arm = URArm.__new__(URArm)          # no hardware: wire the internals
+    arm._servo_active = False
+    arm._recv = None
+    arm._seq = 0
+    arm._want_control = False
+    arm._last_qsol = [0.0] * 6
+    arm._ik_rejects = 0
+    import threading as _th
+    arm._ctrl_lock = _th.Lock()
+    sent = []
+    flipped = [0.0, 0.0, 0.0, 0.0, 0.0, 3.0]      # wrist flipped a branch
+
+    class _Ctrl:
+        def __init__(self, sol):
+            self.sol = sol
+            self.qnear_seen = []
+
+        def getInverseKinematics(self, pose, qnear=None):
+            self.qnear_seen.append(qnear)
+            return list(self.sol)
+
+        def servoJ(self, q, *a):
+            sent.append(list(q))
+            return True
+
+    ctrl = _Ctrl(flipped)
+    arm._require_ctrl = lambda: ctrl
+    # flipped solution: never streamed, seed passed, reject counted
+    arm.servo_l(np.zeros(6), 0.008, 0.03, 300)
+    assert sent == [] and arm._ik_rejects == 1
+    assert ctrl.qnear_seen[-1] == [0.0] * 6
+    # sustained rejects end in a loud error, still nothing streamed
+    import pytest as _pytest
+    with _pytest.raises(RuntimeError, match="branch"):
+        for _ in range(URArm.IK_REJECT_LIMIT + 1):
+            arm.servo_l(np.zeros(6), 0.008, 0.03, 300)
+    assert sent == []
+    # an on-branch solution streams normally and re-seeds
+    ctrl.sol = [0.01, 0.0, 0.0, 0.0, 0.0, 0.0]
+    arm.servo_l(np.zeros(6), 0.008, 0.03, 300)
+    assert len(sent) == 1 and arm._ik_rejects == 0
+    assert arm._last_qsol == ctrl.sol
