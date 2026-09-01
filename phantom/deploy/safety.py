@@ -314,6 +314,27 @@ class SafetyMonitor:
             if (np.linalg.norm(dev[:3]) > frac * hw.safety.wrench_limit_N
                     or np.linalg.norm(dev[3:]) > frac * hw.safety.wrench_limit_Nm):
                 return False
+            # the two 09-01 STOP kinds must also clear, or the shared
+            # teleop/collection loop livelocks in safety_hold after the
+            # operator lifts near full extension (verification 09-01):
+            # wrist back inside the guard with the same `frac` hysteresis,
+            # joints back to quasi-static speed
+            wd_max = hw.safety.wrist_extension_stop_m
+            q_raw = arm.get("q") if hasattr(arm, "get") else None
+            if wd_max is not None and q_raw is not None:
+                a2, a3, d4 = hw.safety.ur_dh_a2_a3_d4_m
+                q_elbow = float(np.asarray(q_raw[0]).reshape(-1)[2])
+                wd = float(np.sqrt(a2 * a2 + a3 * a3
+                                   + 2.0 * a2 * a3 * np.cos(q_elbow)
+                                   + d4 * d4))
+                if wd > wd_max - (1.0 - frac) * 0.05:   # ~10 mm hysteresis
+                    return False
+            qd_raw = arm.get("qd") if hasattr(arm, "get") else None
+            if qd_raw is not None:
+                qd = np.asarray(qd_raw[0], dtype=np.float64).reshape(-1)
+                if qd.size and float(np.max(np.abs(qd))) \
+                        > frac * hw.safety.joint_speed_stop_rad_s:
+                    return False
         from phantom.data.derived import channel_slices
         ch = channel_slices(hw.tactile)
         for s in hw.tactile.sensors:

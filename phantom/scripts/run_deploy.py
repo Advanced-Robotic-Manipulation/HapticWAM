@@ -1022,6 +1022,13 @@ def main(argv=None) -> int:
                 # run_episode has already filed this episode as
                 # status='aborted' + tag 'unlabeled' (P9): a verdict PROMOTES
                 # it back to 'finalized', no verdict leaves it excluded.
+                # drain Enter presses buffered during the episode (a second
+                # operator-stop tap otherwise answers this prompt with an
+                # empty line and the label is silently discarded —
+                # verification 09-01)
+                if sys.stdin.isatty():
+                    while select.select([sys.stdin], [], [], 0)[0]:
+                        sys.stdin.readline()
                 ans = input(VERDICT_PROMPT).strip()
                 label_episode(rt.recorder, Path(res.episode_path), ans)
             elif res.episode_path:

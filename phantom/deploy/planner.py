@@ -531,8 +531,15 @@ class PlannerLoop:
         `plan.cpk` is the model's IMAGINED contact for the chunk it proposed,
         and the next replan feeds it back as `prev_cpk` (policy.py:244). After
         a rewrite it describes motion the arm was never asked to make, so it
-        must not condition the next chunk (Codex, 2026-08-30)."""
+        must not condition the next chunk (Codex, 2026-08-30).
+
+        With a policy server the package lives SERVER-side, addressed by
+        `_cpk_token` — clearing only `cpk` (always None on the remote path)
+        would leave the token alive and the invalidation a silent no-op
+        (verification 09-01)."""
         plan.cpk = None
+        if hasattr(plan, "_cpk_token"):
+            plan._cpk_token = None
 
     def run(self, max_replans: int | None = None,
             max_episode_s: float | None = None,
