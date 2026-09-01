@@ -245,6 +245,8 @@ def test_servo_l_rejects_ik_branch_flip():
     arm._want_control = False
     arm._last_qsol = [0.0] * 6
     arm._ik_rejects = 0
+    arm._ik_dev_max = 0.0
+    arm._ik_rejects_total = 0
     import threading as _th
     arm._ctrl_lock = _th.Lock()
     sent = []

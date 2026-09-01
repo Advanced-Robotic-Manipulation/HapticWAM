@@ -990,6 +990,15 @@ def main(argv=None) -> int:
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
+            if (res.stopped_reason in ("safety_stop", "wrist_extension")
+                    and lift_done is not None and lift_done()):
+                # the 500 Hz wrist-extension stop can beat the per-replan
+                # lift detector on a good grasp (they sit ~20 mm of wd
+                # apart) — do not let a SUCCESS get logged as an abort
+                log.info("NOTE: the safety stop fired DURING a confirmed "
+                         "hold (pads loaded, lifted) — label this episode "
+                         "a SUCCESS; the object should still be in the "
+                         "gripper.")
             prev_reason = res.stopped_reason
             if res.fatal_reason:
                 # Not recoverable by recover_control(): either a sensor worker
