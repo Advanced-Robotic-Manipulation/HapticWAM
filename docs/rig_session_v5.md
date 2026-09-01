@@ -256,3 +256,17 @@ episodes) **18.54 -> 13.78 mm**. The per-window across-seed std is 6-7 mm — la
 difference — so no per-episode claim follows from these, and most of the val124 gain is in-distribution to the
 new batch (on the frozen v4-only half it is 22.17 -> 20.86 mm). Full derivation, caveats and the retracted
 close-height statistic: **`docs/review_20260828/E13_rescore.md`**. Offline != rig: the rig decides.
+
+## Audit trail (2026-09-01)
+Every command execution and every file deletion/rename by ANY user (local or ssh)
+is logged by auditd on compute3 (kernel-level, cannot be bypassed from a shell).
+- `who-deleted [path-substring]` / `who-ran [string]` — helpers in /usr/local/bin
+- raw: `sudo ausearch -k delete -i` / `-k exec`, log at /var/log/audit/
+- rotation: hard 800 MB ring (8 x 100 MB), oldest overwritten — never bloats.
+
+## Rig helper scripts (tracked in `tools/rig/`, box copies may be wiped from /tmp on reboot)
+- `probe_rig.py` — pre-session wiring probe (arm RTDE + Robotiq + RealSense):
+  `.venv/bin/python tools/rig/probe_rig.py`
+- `gate_check.py` — print the live joint-gate sigma table without launching deploy
+- `WRIST.sh` — live wrist-3 internal-angle readout while jogging (the pendant
+  always displays 0-360; the internal value is what the gate reads)
