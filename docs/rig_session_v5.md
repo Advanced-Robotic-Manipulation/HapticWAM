@@ -54,8 +54,8 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
 - **Singularity guards, layered** (root cause = IK branch flip at the elbow-straight
   boundary, wrist-centre 470.5 mm): (1) `servo_l` seeds IK with the previous solution
   and REFUSES branch-flipped solutions (driver-level, the actual fix); (2)
-  `wrist_extension` stop at wd > 0.45 m — pure elbow geometry, 0.3-1.4 s of lead on
-  every 09-01 whip, non-release; (3) chunk-tail cap — playback holds after
+  `wrist_extension` stop at wd > 0.462 m — pure elbow geometry, above every demo
+  ever recorded (max 461 mm) and below the whip zone (465+), non-release; (3) chunk-tail cap — playback holds after
   10 action steps (`--max-play-steps`; steps past HEAD_STEPS are never validated by a
   replan and all four whips began there); (4) measured joint speed > 1.2 rad/s stop
   (last-ditch — max whip-free qd all session was 0.73). The 0.62 m TCP-radius clamp is

@@ -302,7 +302,7 @@ def test_wrist_extension_guard_stops_before_the_boundary():
 
     assert not is_letgo_reason("wrist_extension")
     hw = make_small_hw()
-    assert hw.safety.wrist_extension_stop_m == 0.45
+    assert hw.safety.wrist_extension_stop_m == 0.462
     ws = hw.safety.workspace_m
     mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
     uid = _uuid.uuid4().hex[:8]
@@ -325,7 +325,7 @@ def test_wrist_extension_guard_stops_before_the_boundary():
                           q=bent, qd=np.zeros(hw.arm.dof))
         rings["camera_scene"].push(t, color=np.zeros((h, w, c), dtype=np.uint8))
         assert mon.check(t, mid).action == SafetyAction.OK
-        near_straight = np.zeros(hw.arm.dof); near_straight[2] = np.radians(20)  # wd ~461 mm
+        near_straight = np.zeros(hw.arm.dof); near_straight[2] = np.radians(15)  # wd ~467 mm
         rings["arm"].push(t + 0.01, ft=np.zeros(6), protective_stop=np.uint8(0),
                           q=near_straight, qd=np.zeros(hw.arm.dof))
         v = mon.check(t + 0.01, mid)
