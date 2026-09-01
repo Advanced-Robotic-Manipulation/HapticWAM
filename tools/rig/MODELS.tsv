@@ -1,3 +1,2 @@
-v5_6	runs/teacher_v5_batch0822/v5_6.pt	LEAD (arm B) - val124 endpoint 18.23mm mean / 15.74 median, ends +4.2mm; the Session-4 model
-v4	runs/teacher_v4_790eps/teacher_020000.pt	CONTROL (arm A) - 20.82mm mean; unchanged v4 teacher
-ftA	runs/teacher_v5_ftA/BEST.pt	EXPERIMENTAL (arm C) = ftA_1500: best-in-table on waffles (24.4mm vs v5_6 26.2) + median 13.7, but overall 19.6 & ends ~11mm high / under-commits; a few eps after A/B reads out
+v5_6	runs/teacher_v5_batch0822/v5_6.pt	LEAD - best overall (val124 18.2mm); arm A in the Session-5 pairing
+ftA	runs/teacher_v5_ftA/BEST.pt	EXPERIMENTAL ftA_1500 - best on waffles (24.4mm) + all of 09-01 grasps; arm B in the pairing
