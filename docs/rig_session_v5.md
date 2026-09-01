@@ -41,10 +41,10 @@ Asks four questions and launches:
    endpoint 18.23 mm), `v4` (CONTROL, 20.82 mm), `ftA` (EXPERIMENTAL: best median 13.4 mm but 21.0 mean,
    ends ~12 mm high and under-commits — try only after arms A/B read out).
 2. **Preset** — `LEVERS` (recommended arm-B stack: nfe 1 + terminal-veto + parity-fixes + k-seeds 4 +
-   max-episode-s 35 + max-replans 200), `PLAIN` (nfe 5, pre-fix style, attribution control only),
+   max-episode-s 150 + max-replans 200), `PLAIN` (nfe 5, pre-fix style, attribution control only),
    `VETO` (nfe 5 + veto + parity), or `CUSTOM`.
 3. Task + episode count, plus optional extra flags.
-It prints the exact command and waits for Enter. To add a new model to the menu: put the concrete `.pt`
+It prints the exact command and waits for Enter. **During an episode, pressing Enter ends it cleanly** (stop_reason `operator_stop`: motion stops, the gripper is NOT opened — a held object stays held); the 150 s budget is the backstop, the operator is the normal end. To add a new model to the menu: put the concrete `.pt`
 under `phantom/runs/...` and add a `label<TAB>path<TAB>note` row to `MODELS.tsv` (no DEMO symlinks there).
 Tracked copies of PICK.sh / MODELS.tsv / the GO family live in the repo at `tools/rig/`.
 
@@ -88,7 +88,7 @@ Arms for the first clean session (waffles first — `q_n=37`, the best-covered e
 # arm A — v5_6 baseline, NFE 5, no levers.  ONE process for the whole block:
 EXTRA=""                                                    ./GO_v5_waffles.sh 10
 # arm B — the lever bundle:
-EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 35 --max-replans 200" \
+EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 150 --max-replans 200" \
                                                             ./GO_v5_waffles.sh 10
 ```
 (`EXTRA` is appended after the GO script's own flags, so its `--nfe` wins.)
@@ -100,7 +100,7 @@ session exists to escape (VALIDATION_0830 P0 #6). If a seeded arm is wanted, run
 unseeded path already records `seed:<n>` per episode (and since 08-30 the homing jitter is drawn from that same
 per-episode seed, with the realised start pose tagged `start:<x,y,z>mm/g<aperture>`).
 
-`--max-episode-s 35` is the wall-clock budget, and **`--max-replans 200` is what lets arm B reach it**.
+`--max-episode-s 150` is the wall-clock budget, and **`--max-replans 200` is what lets arm B reach it**.
 `PlannerLoop.run` checks the replan COUNT before the wall clock, so the default 40 ends an `--nfe 1` episode
 (172 ms replans) at `replan_cap` after **7.2 s** — measured through the real loop — against a 35 s arm A and
 16-31 s demos. Without the raise the two arms are not the same experiment and arm B never reaches the terminal

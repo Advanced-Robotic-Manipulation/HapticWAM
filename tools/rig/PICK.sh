@@ -23,13 +23,13 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}
 [ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
-echo "  1) LEVERS  (recommended): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-episode-s 35 + max-replans 200"
+echo "  1) LEVERS  (recommended): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-episode-s 150 + max-replans 200"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
 echo "  4) CUSTOM  type your own nfe + flags"
 read -p "preset [1]: " p; p=${p:-1}
 case $p in
-  1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 35 --max-replans 200"; PRESET=LEVERS;;
+  1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
   4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
@@ -44,5 +44,6 @@ echo
 echo ">> $MODEL ($CKPT) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
 echo ">> reminders: no --seed on 1-episode processes; interleave arms within each grid cell;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
+echo ">>            during an episode: press ENTER to end it cleanly (motion stops, gripper stays)."
 read -p "Enter to launch (Ctrl-C to abort) "
 CKPT="$CKPT" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0

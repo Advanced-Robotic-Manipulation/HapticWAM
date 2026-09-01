@@ -205,12 +205,13 @@ def test_arm_b_reaches_the_wall_clock_budget_it_documents():
     """C1 / VALIDATION_0830 P0 #4. `PlannerLoop.run` checks the replan COUNT
     before the wall clock, so `--max-episode-s 35` is dead at the default 40
     replans: at --nfe 1 (172 ms) the episode ends at `replan_cap` after 7.2 s
-    against a 35 s arm A. Only a raised --max-replans reaches the budget."""
+    against the documented budget (150 s since 2026-09-01: the 35 s cap ended
+    rig episodes mid-approach; the operator-stop Enter is the normal end now). Only a raised --max-replans reaches the budget."""
     arm_b = [e for e in _extra_lines() if "--terminal-veto" in e]
     assert len(arm_b) == 1, f"expected exactly one arm-B EXTRA line, got {arm_b}"
     a = _parse_extra(arm_b[0])
     assert a.nfe == 1 and a.terminal_veto and a.parity_fixes and a.k_seeds == 4
-    assert a.max_episode_s == 35.0
+    assert a.max_episode_s == 150.0
     assert a.max_replans >= 200, (
         "arm B's EXTRA must raise --max-replans (>=200): at nfe=1 the default "
         f"{a.max_replans} replans is a ~7 s episode, not the documented 35 s")
