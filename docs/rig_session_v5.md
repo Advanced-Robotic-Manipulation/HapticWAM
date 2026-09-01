@@ -1,5 +1,26 @@
 # Rig session — v5 fine-tune vs v4 (how to run inference on compute3)
 
+## ⚡ Morning quickstart (Session 5) — the whole flow
+
+```
+# terminal A (once, ~3 min):        # terminal B (every run, seconds):
+cd ~/phantom-icra-2027              cd ~/phantom-icra-2027
+./SERVE.sh                          ./PICK.sh
+```
+1. `SERVE.sh` picks + holds the model on the GPU. `PICK.sh` attaches to it automatically.
+2. A failed start gate now FIXES ITSELF: 3 s countdown, slow joint-space auto-home,
+   re-check. You never jog or restart for a start-pose problem.
+3. Episodes END THEMSELVES: `lift_complete` (grasp confirmed + lifted -> SUCCESS,
+   object held), a guard stop, the 150 s budget — or press Enter anytime for a clean
+   manual end (gripper stays as-is). Label honestly at the prompt.
+4. If a safety stop prints the "label this episode a SUCCESS" NOTE, believe it: the
+   guard beat the success detector on a good grasp.
+5. TAKE THE OBJECT OUT OF THE GRIPPER before confirming the next episode's homing —
+   homing opens the fingers to the start aperture (this is what dropped the 09-01 grab).
+6. A/B protocol for the session: see "Session-5 A/B protocol" below. Interleave
+   v5_6 / ftA_1500 per cell, same config, let episodes terminate, >= 8 pairs.
+
+
 State as of 2026-08-28. Everything below was verified live on compute3 (repo `b0e87b5`, torch 2.13 + CUDA OK).
 
 ## What is on the box
