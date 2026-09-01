@@ -383,9 +383,11 @@ class SafetyConfig(_Frozen):
     # CENTRE's distance from the shoulder is pure elbow geometry —
     # sqrt(a2^2 + a3^2 + 2*a2*a3*cos(q_elbow) + d4^2), boundary at full
     # extension sqrt((a2+a3)^2 + d4^2) = 470.5 mm on the UR3. All four 09-01
-    # whips touched it; wd > 0.45 m led them by 0.27-1.41 s and fired only on
-    # genuine near-misses. None disables (non-UR3 arms until DH is set).
-    wrist_extension_stop_m: float | None = Field(default=0.45)
+    # whips touched it. Threshold set from DATA on both sides: every demo ever
+    # recorded stays <= 0.461 (waffles p95 0.451, 7% above 0.450 — a 0.45
+    # guard would fight demo-faithful lifts), every 09-01 whip/near-miss sat
+    # at 0.465+. None disables (non-UR3 arms until DH is set).
+    wrist_extension_stop_m: float | None = Field(default=0.462)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one
