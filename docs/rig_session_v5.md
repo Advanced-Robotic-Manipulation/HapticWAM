@@ -31,6 +31,29 @@ slowly to the task's demo start pose (clear its path, e-stop in hand); the sigma
 and refuses > 2.5 sigma (jog and Enter to re-check); **Enter #2** starts the episode; at the end answer the
 outcome prompt: `s` success / `f` failure / `c` contaminated (a hand in frame etc.).
 
+## Fast launches: hold the model warm with SERVE.sh (terminal A)
+
+```
+cd ~/phantom-icra-2027 && ./SERVE.sh     # pick the model once; it stays on the GPU
+```
+Then every `./PICK.sh` launch in terminal B attaches to it in seconds instead of the
+~3 min in-process load (PICK auto-detects; if the server holds a different model it
+says so and loads locally — restart SERVE.sh to switch). The robot process can crash,
+be Ctrl-C'd and relaunched freely; the model never reloads.
+
+## Session-4.1 behavior changes (2026-09-01, post-session fixes)
+- **Start gate self-corrects**: a failed joint gate now AUTO-HOMES (slow joint-space
+  move, 3 s countdown — e-stop if the path is not clear) and re-checks, twice, before
+  ever asking the operator. Same on the re-gate after "place the object". A wrapped
+  wrist unwinds itself.
+- **`lift_complete` success auto-stop**: both tactile pads loaded (>3 N) with the TCP
+  above 0.35 m, held 0.5 s -> the episode ends cleanly HOLDING the object, reason
+  `lift_complete`. This ends episodes at the success, before the post-lift "carry"
+  (OOD — it twice drove the arm into the full-extension singularity). Knobs:
+  `--lift-complete-z/-fz/-hold`; 0 disables.
+- **Singularity guards**: measured joint speed > 2.0 rad/s stops the episode
+  (non-release); commanded TCP radius is clamped at 0.62 m.
+
 ## Or: the interactive launcher (PICK.sh) — pick model x preset from a menu
 
 ```

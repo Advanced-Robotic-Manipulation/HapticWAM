@@ -373,9 +373,11 @@ class SafetyConfig(_Frozen):
     # servoL turns a LEGAL Cartesian step into a joint whip (wrists hit
     # 5-7 rad/s carrying a grasped object toward full extension) — the
     # Cartesian rate limiter cannot see it, only the measured qd can. Normal
-    # deploy motion stays under ~1 rad/s; the stop is NOT a let-go (a held
-    # object stays held).
-    joint_speed_stop_rad_s: float = Field(default=3.0, gt=0)
+    # deploy motion stays under ~1 rad/s (max 0.73 measured over 19 whip-free
+    # rig episodes 09-01); whips pass 2 well before their 3.4-6.9 peak, so 2.0
+    # cuts them materially earlier. The stop is NOT a let-go (a held object
+    # stays held).
+    joint_speed_stop_rad_s: float = Field(default=2.0, gt=0)
     # Predictive layer for the same failure: cap the commanded TCP radius from
     # the base below the singular zone (UR3: whip measured at 623 mm; demo
     # envelope p95 = 605 mm, tail 636). None disables.

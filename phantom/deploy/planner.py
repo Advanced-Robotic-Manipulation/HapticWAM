@@ -536,7 +536,8 @@ class PlannerLoop:
 
     def run(self, max_replans: int | None = None,
             max_episode_s: float | None = None,
-            stop_check: Callable[[], bool] | None = None) -> None:
+            stop_check: Callable[[], bool] | None = None,
+            success_check: Callable[[], bool] | None = None) -> None:
         """Replan until a cap, a stop or the wall-clock budget.
 
         `max_episode_s` is the budget the replan COUNT was standing in for:
@@ -681,6 +682,17 @@ class PlannerLoop:
                 log.warning("episode budget reached (%.1f s of %.1f s, %d "
                             "replans) — ending the episode",
                             time.perf_counter() - t_start, max_episode_s, n)
+                break
+            if success_check is not None and success_check():
+                # Grasp confirmed on tactile AND lifted clear (rig 2026-09-01:
+                # demos END right after the lift; every extra second of "carry"
+                # is out-of-distribution and twice ran the arm into the
+                # full-extension singularity). Clean exit, gripper held.
+                self.stop_reason = "lift_complete"
+                log.info("LIFT COMPLETE — tactile-confirmed grasp held above "
+                         "the lift height (%.1f s, %d replans). Episode ends "
+                         "as a SUCCESS candidate; gripper stays closed.",
+                         time.perf_counter() - t_start, n)
                 break
             if stop_check is not None and stop_check():
                 # Operator ended the episode. Same clean exit as the caps:
