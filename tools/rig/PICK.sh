@@ -40,6 +40,25 @@ read -p "episodes [3]: " EPS; EPS=${EPS:-3}
 read -p "append flags (Enter for none): " MORE
 [ -n "$MORE" ] && EXTRA="$EXTRA $MORE"
 
+# attach to a warm policy server when one holds the SAME model (start one in
+# another terminal with ./SERVE.sh — launches then take seconds, not minutes)
+if [[ "$EXTRA" != *"--policy-server"* ]]; then
+  SRV_CKPT=$(cd $BASE/phantom && .venv/bin/python -m phantom.scripts.policy_server --probe 2>/dev/null || true)
+  if [ -n "$SRV_CKPT" ]; then
+    if [ "$(basename "$SRV_CKPT")" = "$(basename "$CKPT")" ] || \
+       [ "$(basename "$(readlink -f "$BASE/phantom/$CKPT" 2>/dev/null)")" = "$(basename "$(readlink -f "$BASE/phantom/$SRV_CKPT" 2>/dev/null)")" ]; then
+      echo ">> warm policy server holds $SRV_CKPT — attaching (fast start)"
+      EXTRA="$EXTRA --policy-server auto"
+    else
+      echo ">> NOTE: policy server holds $SRV_CKPT but you picked $CKPT."
+      echo ">>       loading locally (slow). Restart ./SERVE.sh with this model to go fast."
+    fi
+  else
+    echo ">> no policy server running — loading the model in-process (~3 min)."
+    echo ">>    tip: run ./SERVE.sh in another terminal once; every later launch attaches in seconds."
+  fi
+fi
+
 echo
 echo ">> $MODEL ($CKPT) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
 echo ">> reminders: no --seed on 1-episode processes; interleave arms within each grid cell;"

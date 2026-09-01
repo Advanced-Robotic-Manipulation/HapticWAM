@@ -295,6 +295,20 @@ def build_parser() -> argparse.ArgumentParser:
                          "paired trials")
     ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
                     default=True, help="skip the post-episode success/notes prompt")
+    ap.add_argument("--lift-complete-z", type=float, default=0.35,
+                    help="success auto-stop: tactile-confirmed grasp held "
+                         "above this TCP z (m) ends the episode cleanly, "
+                         "gripper held. 0 disables.")
+    ap.add_argument("--lift-complete-fz", type=float, default=3.0,
+                    help="per-pad |fz| (N) that counts as a confirmed grasp "
+                         "for the success auto-stop")
+    ap.add_argument("--lift-complete-hold", type=float, default=0.5,
+                    help="seconds the grasp+height condition must hold")
+    ap.add_argument("--policy-server", default=None, metavar="ADDR",
+                    help="attach to a resident policy server instead of "
+                         "loading the model here ('auto' = try 127.0.0.1:7777 "
+                         "and fall back to a local load; 'host:port' = "
+                         "require it). See phantom.scripts.policy_server.")
     ap.add_argument("--home-joints", action="store_true",
                     help="before the slow moveL homing, moveJ to the task's demo JOINT "
                          "configuration (start_poses.yaml q_mean). Fixes a wrapped wrist / "
@@ -481,6 +495,38 @@ def assert_acc_head(payload: dict, ckpt: str) -> None:
 
 
 
+def make_lift_complete(rt, z_m: float, fz_n: float, hold_s: float):
+    """Success auto-stop (rig 2026-09-01): both tactile pads loaded AND the
+    TCP above the lift height, sustained -> the episode ends cleanly holding
+    the object. Demos end right after the lift; the "carry" beyond it is
+    out-of-distribution and twice ran the arm into the full-extension
+    singularity. Returns None (disabled) when thresholds are non-positive."""
+    if z_m <= 0 or fz_n <= 0:
+        return None
+    state = {"since": None}
+
+    def check() -> bool:
+        try:
+            _, arm = rt.session.rings["arm"].latest(1)
+            z = float(np.asarray(arm["tcp_pose"][0]).reshape(-1)[2])
+            fzs = []
+            for side in ("left", "right"):
+                _, tac = rt.session.rings[f"tactile_{side}"].latest(1)
+                fzs.append(abs(float(np.asarray(tac["wrench"][0]).reshape(-1)[2])))
+        except Exception:
+            return False
+        good = z > z_m and all(f > fz_n for f in fzs)
+        now = time.perf_counter()
+        if good:
+            if state["since"] is None:
+                state["since"] = now
+            return (now - state["since"]) >= hold_s
+        state["since"] = None
+        return False
+
+    return check
+
+
 def make_operator_stop():
     """Episode-scoped stop button: pressing Enter DURING the episode ends it
     cleanly (`planner.run` breaks with stop_reason "operator_stop"; the
@@ -647,10 +693,40 @@ def main(argv=None) -> int:
     out_root = Path(args.out) if args.out else \
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
 
-    policy = build_policy(args, hw, paths)
+    policy = None
+    if args.policy_server:
+        from phantom.inference.remote import DEFAULT_PORT, RemotePolicy
+        addr = args.policy_server
+        host, port = (("127.0.0.1", DEFAULT_PORT) if addr == "auto"
+                      else (addr.rsplit(":", 1)[0], int(addr.rsplit(":", 1)[1])))
+        cfg = dict(nfe=args.nfe, guidance=getattr(args, "guidance", 1.0),
+                   k_seeds=getattr(args, "k_seeds", 1),
+                   parity_fixes=getattr(args, "parity_fixes", False),
+                   persistent_noise=getattr(args, "persistent_noise", False),
+                   task_text=(args.text or args.task),
+                   drop_video=args.drop_video,
+                   close_p=getattr(args, "veto_p_close", 0.5))
+        try:
+            policy = RemotePolicy((host, port), cfg)
+            log.info("using policy server at %s:%d (ckpt %s, warm=%s) — "
+                     "no local model load", host, port,
+                     policy.info.get("ckpt"), policy.info.get("warmed"))
+            if args.ckpt and str(args.ckpt) not in str(policy.info.get("ckpt")) \
+                    and str(policy.info.get("ckpt")) not in str(args.ckpt):
+                log.warning("policy server holds %s but --ckpt asked for %s — "
+                            "the SERVER's model runs. Restart the server to "
+                            "switch models.", policy.info.get("ckpt"), args.ckpt)
+        except Exception:
+            if addr != "auto":
+                log.exception("policy server %s required but unreachable", addr)
+                return 3
+            log.info("no policy server on %s:%d — loading locally", host, port)
+    if policy is None:
+        policy = build_policy(args, hw, paths)
+    remote = policy.__class__.__name__ == "RemotePolicy"
     any_real = hw.mode.drivers == "real" or "real" in hw.mode.overrides.values()
     arm_real = hw.mode.resolve("arm") == "real"
-    if getattr(args, "compile", False) or (any_real and not args.tiny):
+    if not remote and (getattr(args, "compile", False) or (any_real and not args.tiny)):
         # Warmup on the first forward — OUTSIDE the episode. Compile ate 1-2
         # min inside the first episode; even uncompiled, the first replan ran
         # 1.66-1.86 s vs the 1.6 s chunk budget in EVERY postmortem episode
@@ -677,6 +753,9 @@ def main(argv=None) -> int:
     except Exception:
         sha = "nogit"
     ckpt_real = str(Path(args.ckpt).resolve()) if args.ckpt else ""
+    if remote:
+        # provenance must name the model that actually ran — the server's
+        ckpt_real = str(policy.info.get("ckpt", ckpt_real))
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
@@ -791,6 +870,7 @@ def main(argv=None) -> int:
                                       "re-checks before anything runs")
                 # -- stage 2: gate loop + operator confirm ------------------
                 if stats is not None:
+                    auto_homes = 0
                     while True:
                         worst, settled = _gate(rt)
                         ok = worst <= args.max_start_sigma and settled
@@ -805,6 +885,25 @@ def main(argv=None) -> int:
                                         "waiting up to 10 s...")
                             if sp.wait_gripper_settled(rt.rig.gripper):
                                 continue
+                        if args.home and auto_homes < 2:
+                            # self-correct instead of asking the operator to
+                            # jog + restart: a JOINT-space home fixes exactly
+                            # what the joint gate measures (incl. a wrapped
+                            # wrist — it unwinds). Slow move; countdown so the
+                            # operator can e-stop if the path is not clear.
+                            auto_homes += 1
+                            log.warning("START GATE: %.1f sigma — AUTO-HOMING "
+                                        "(slow joint-space move) in 3 s. "
+                                        "E-stop if the path is not clear.",
+                                        worst)
+                            time.sleep(3.0)
+                            try:
+                                sp.move_to_start(rt.rig.arm, rt.rig.gripper,
+                                                 hw, stats, home_joints=True,
+                                                 rng=rng)
+                                continue
+                            except Exception:
+                                log.exception("auto-home FAILED — manual fix")
                         log.error("START GATE: %.1f sigma from the demo start "
                                   "(max %.1f) or gripper unsettled. Fix it "
                                   "(re-run homing / jog / reactivate gripper), "
@@ -820,6 +919,17 @@ def main(argv=None) -> int:
                         if (worst <= args.max_start_sigma and settled) \
                                 or args.allow_ood_start:
                             break
+                        if args.home:
+                            log.warning("bumped off the start (%.1f sigma) — "
+                                        "AUTO-HOMING in 3 s. E-stop if the "
+                                        "path is not clear.", worst)
+                            time.sleep(3.0)
+                            try:
+                                sp.move_to_start(rt.rig.arm, rt.rig.gripper,
+                                                 hw, stats, home_joints=True,
+                                                 rng=rng)
+                            except Exception:
+                                log.exception("auto-home FAILED — fix by hand")
                         log.error("state drifted while setting the scene "
                                   "(%.1f sigma, settled=%s) — fix it (jog / "
                                   "re-settle gripper), then Enter to re-check",
@@ -841,7 +951,9 @@ def main(argv=None) -> int:
             # one identical persistent-noise tensor — a 6th-percentile "slow"
             # draw (16-seed replay, 2026-08-29: the rig's chunk == the slowest
             # of 16 seeds at every replan of every episode-0 trace).
-            if hasattr(policy.rf, "reset_episode_noise"):
+            if hasattr(policy, "remote_reset"):
+                policy.remote_reset(ep_seed)
+            elif hasattr(policy.rf, "reset_episode_noise"):
                 policy.rf._gen = torch.Generator().manual_seed(ep_seed)
                 policy.rf.reset_episode_noise()
             else:                       # test stubs without a sampler
@@ -854,11 +966,15 @@ def main(argv=None) -> int:
             if op_stop is not None:
                 print(">> press Enter at any time to END the episode cleanly "
                       "(motion stops, gripper stays as-is)")
+            lift_done = make_lift_complete(rt, args.lift_complete_z,
+                                           args.lift_complete_fz,
+                                           args.lift_complete_hold)
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
                                  max_episode_s=budget if budget > 0 else None,
                                  policy_name=f"{args.system}", tags=ep_tags,
-                                 stop_check=op_stop)
+                                 stop_check=op_stop,
+                                 success_check=lift_done)
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)

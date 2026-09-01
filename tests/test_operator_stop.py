@@ -168,3 +168,53 @@ def test_reach_clamp_caps_commanded_radius():
         near = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
         if np.linalg.norm(near[:3]) < r_max:
             assert np.allclose(mon.clamp_target(near)[:3], near[:3])
+
+
+def test_lift_complete_ends_episode_holding():
+    """Success auto-stop through the real planner loop: tactile-confirmed
+    grasp above the lift height -> stop_reason 'lift_complete', no executor
+    safety stop (gripper held)."""
+    hw = make_small_hw()
+    ex = _Ex()
+    lp = PlannerLoop(hw, _Pol(hw, p_none=[0.05], grip_cmd=[0.8]),
+                     _Snaps(hw, z=0.40, grips=(0.30,)), ex, veto=VETO)
+    lp.run(max_replans=50, success_check=lambda: True)
+    assert lp.stop_reason == "lift_complete"
+    assert ex.stopped_reason is None
+
+
+def test_make_lift_complete_closure_thresholds():
+    """The run_deploy closure against fake rings: fires only when BOTH pads
+    are loaded AND z is above the lift height, sustained past hold_s."""
+    import time as _time
+    from types import SimpleNamespace
+
+    from phantom.scripts.run_deploy import make_lift_complete
+
+    class _Ring:
+        def __init__(self):
+            self.sample = {}
+
+        def latest(self, n):
+            return np.array([_time.time()]), self.sample
+
+    rings = {"arm": _Ring(), "tactile_left": _Ring(), "tactile_right": _Ring()}
+    rt = SimpleNamespace(session=SimpleNamespace(rings=rings))
+
+    def set_state(z, fl, fr):
+        rings["arm"].sample = {"tcp_pose": [np.array([0, 0, z, 0, 3.14, 0])]}
+        rings["tactile_left"].sample = {"wrench": [np.array([0, 0, fl, 0, 0, 0])]}
+        rings["tactile_right"].sample = {"wrench": [np.array([0, 0, fr, 0, 0, 0])]}
+
+    assert make_lift_complete(rt, 0.0, 3.0, 0.5) is None      # disabled
+    chk = make_lift_complete(rt, 0.35, 3.0, hold_s=0.05)
+    set_state(z=0.40, fl=8.0, fr=0.1)          # one pad only -> never
+    assert not chk()
+    set_state(z=0.20, fl=8.0, fr=6.0)          # grasped but not lifted
+    assert not chk()
+    set_state(z=0.40, fl=8.0, fr=6.0)          # good: arms the hold window
+    assert not chk()
+    _time.sleep(0.06)
+    assert chk()                                # sustained -> fire
+    set_state(z=0.40, fl=0.0, fr=6.0)          # condition drops -> re-arm
+    assert not chk()
