@@ -46,8 +46,15 @@ def is_letgo_reason(name: str | None) -> bool:
 class ChunkExecutor:
     def __init__(self, hw: HardwareConfig, arm: Arm, gripper: Gripper,
                  safety: SafetyMonitor, *, record_action=None, gripper_ring=None,
-                 open_aperture: float = 0.0):
+                 open_aperture: float = 0.0, max_play_steps: int | None = None):
         self.hw = hw
+        # Chunk-tail cap (run analysis 09-01 P1 #5): steps beyond
+        # HEAD_STEPS are never validated by a subsequent replan, and ALL
+        # four whips began in that unsupervised tail, 0.08-0.43 s after the
+        # last trace row, while the planner was blocked in inference.
+        # Playback holds at the cap point until the next plan lands.
+        # None = uncapped (legacy behaviour, and every pre-09-01 test).
+        self.max_play_steps = max_play_steps
         # aperture the gripper is commanded to on a "let go" stop (the task's
         # demo START aperture; 0.0 = fully open when the task is unknown)
         self.open_aperture = float(open_aperture)
@@ -125,8 +132,10 @@ class ChunkExecutor:
             # rig's ~1.4 s replans that discarded ~14 of 16 actions, so the arm
             # only ever played chunk tails (review find 2026-08-20; the
             # postmortem's 35 executed actions / 17 replans).
+            u_hi = (min(H, self.max_play_steps)
+                    if self.max_play_steps else H) - 1e-6
             u0 = float(np.clip((now - float(plan.action_times[0])) * rate,
-                               0.0, H - 1e-6))
+                               0.0, u_hi))
             k0 = int(u0)
             cum = np.cumsum(plan.actions[:, :6], axis=0)
             prev0 = cum[k0 - 1] if k0 > 0 else np.zeros(6)
@@ -233,7 +242,9 @@ class ChunkExecutor:
         """Pose target from cumulative deltas at governed playback time."""
         rate = self.hw.control.action_rate_hz
         H = plan.actions.shape[0]
-        u = np.clip(play_time * rate, 0.0, H - 1e-6)
+        u_hi = (min(H, self.max_play_steps)
+                if self.max_play_steps else H) - 1e-6
+        u = np.clip(play_time * rate, 0.0, u_hi)
         k = int(u)
         frac = u - k
         cum = np.cumsum(plan.actions[:, :6], axis=0)
