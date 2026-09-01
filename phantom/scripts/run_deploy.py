@@ -295,6 +295,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "paired trials")
     ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
                     default=True, help="skip the post-episode success/notes prompt")
+    ap.add_argument("--max-play-steps", type=int, default=10,
+                    help="cap chunk playback at this many action steps and "
+                         "hold until the next plan (steps beyond HEAD_STEPS=9 "
+                         "are never validated by a replan; all four 09-01 "
+                         "whips began in that tail). 0 = uncapped.")
     ap.add_argument("--lift-complete-z", type=float, default=0.32,
                     help="success auto-stop: tactile-confirmed grasp held "
                          "above this TCP z (m) ends the episode cleanly, "
@@ -820,7 +825,8 @@ def main(argv=None) -> int:
     with DeploymentRuntime(hw, policy, mode=args.system, out_root=out_root,
                            parity_fixes=args.parity_fixes, veto=veto,
                            base_hw=base_hw, open_aperture=open_aperture,
-                           deploy_overrides=deploy_overrides) as rt:
+                           deploy_overrides=deploy_overrides,
+                           max_play_steps=(args.max_play_steps or None)) as rt:
         for i in range(args.episodes):
             # ONE seed per episode, drawn before anything random happens: the
             # sampler noise AND the homing jitter come from it. The jitter used

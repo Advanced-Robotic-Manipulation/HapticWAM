@@ -147,8 +147,12 @@ def test_reach_clamp_caps_commanded_radius():
     from test_rig_safety_0828 import _fresh, _rings
 
     hw = make_small_hw()
+    # retired as a DEFAULT (0/4 whips; fought one lift) but the mechanism
+    # stays available — enable it explicitly here
+    assert hw.safety.reach_clamp_m is None
+    hw = hw.model_copy(update={"safety": hw.safety.model_copy(
+        update={"reach_clamp_m": 0.62})})
     r_max = hw.safety.reach_clamp_m
-    assert r_max is not None and r_max > 0
     with _rings(hw) as rings:
         mon = SafetyMonitor(hw, rings)
         t = _time.perf_counter(); _fresh(rings, hw, t)
@@ -327,3 +331,38 @@ def test_wrist_extension_guard_stops_before_the_boundary():
         v = mon.check(t + 0.01, mid)
         assert v.action == SafetyAction.STOP_EPISODE
         assert any(e.kind == "wrist_extension" for e in v.events)
+
+
+def test_chunk_tail_cap_holds_at_the_cap_point():
+    """P1 #5 (run analysis 09-01): all four whips began in the unsupervised
+    chunk tail (steps >= HEAD_STEPS, played while the planner was blocked in
+    inference). With max_play_steps the playback pose FREEZES at the cap and
+    the gripper command freezes with it; uncapped keeps advancing (legacy)."""
+    import time as _time
+
+    from phantom.deploy.executor import ChunkExecutor
+    from phantom.inference.policy import Plan
+
+    hw = make_small_hw()
+    H = hw.control.chunk_horizon
+    rate = hw.control.action_rate_hz
+    acts = np.zeros((H, 7)); acts[:, 2] = 0.01; acts[:, 6] = np.linspace(0, 1, H)
+    plan = Plan(t_created=0.0, t0_pose=np.zeros(6), actions=acts,
+                action_times=np.arange(H) / rate, sigma=np.zeros(3), gate=0.0,
+                p_evt=np.zeros(5), cpk=None, latency_s=0.0)
+    cap = 4
+    ex_capped = ChunkExecutor.__new__(ChunkExecutor)
+    ex_capped.hw = hw; ex_capped.max_play_steps = cap
+    ex_free = ChunkExecutor.__new__(ChunkExecutor)
+    ex_free.hw = hw; ex_free.max_play_steps = None
+    late = (H - 1) / rate                       # deep in the tail
+    pose_c, grip_c = ex_capped._pose_at(plan, late)
+    pose_f, grip_f = ex_free._pose_at(plan, late)
+    assert pose_c[2] < pose_f[2]                # capped stopped climbing
+    assert abs(pose_c[2] - cap * 0.01) < 1e-6   # exactly at the cap point
+    assert grip_c == acts[cap - 1, 6]           # gripper frozen with it
+    # before the cap, identical
+    early = 2.0 / rate
+    pc, _ = ex_capped._pose_at(plan, early)
+    pf, _ = ex_free._pose_at(plan, early)
+    assert np.allclose(pc, pf)

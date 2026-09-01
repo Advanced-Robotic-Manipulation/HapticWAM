@@ -374,10 +374,11 @@ class SafetyConfig(_Frozen):
     # 5-7 rad/s carrying a grasped object toward full extension) — the
     # Cartesian rate limiter cannot see it, only the measured qd can. Normal
     # deploy motion stays under ~1 rad/s (max 0.73 measured over 19 whip-free
-    # rig episodes 09-01); whips pass 2 well before their 3.4-6.9 peak, so 2.0
-    # cuts them materially earlier. The stop is NOT a let-go (a held object
-    # stays held).
-    joint_speed_stop_rad_s: float = Field(default=2.0, gt=0)
+    # rig episodes 09-01, so 1.2 is free); a whip crosses it within ~2-4
+    # ticks of onset. Last-ditch only — the wd guard and the IK branch guard
+    # lead it by 0.3-1.4 s. The stop is NOT a let-go (a held object stays
+    # held).
+    joint_speed_stop_rad_s: float = Field(default=1.2, gt=0)
     # The guard that actually leads the whips (run analysis 09-01): the wrist
     # CENTRE's distance from the shoulder is pure elbow geometry —
     # sqrt(a2^2 + a3^2 + 2*a2*a3*cos(q_elbow) + d4^2), boundary at full
@@ -386,10 +387,11 @@ class SafetyConfig(_Frozen):
     # genuine near-misses. None disables (non-UR3 arms until DH is set).
     wrist_extension_stop_m: float | None = Field(default=0.45)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
-    # Predictive layer for the same failure: cap the commanded TCP radius from
-    # the base below the singular zone (UR3: whip measured at 623 mm; demo
-    # envelope p95 = 605 mm, tail 636). None disables.
-    reach_clamp_m: float | None = Field(default=0.62)
+    # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
+    # 0 of 4 whips (their commanded radius peaked just under it) and in the one
+    # episode it did engage it dragged commanded z down 32 mm mid-lift. The
+    # wrist_extension guard above measures the actual boundary. None = off.
+    reach_clamp_m: float | None = Field(default=None)
     tactile_fz_limit_N: float = Field(gt=0)
     tactile_depth_limit: float = Field(gt=0)
     workspace_m: WorkspaceBox
