@@ -58,6 +58,8 @@ class URArm(Arm):
         self._want_control = False
         self._last_qsol: list[float] | None = None
         self._ik_rejects = 0
+        self._ik_dev_max = 0.0            # max per-tick |q_ik - q_seed| seen
+        self._ik_rejects_total = 0
         # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
         # disconnect(). The teleop streamer calls servo_j from its own thread
         # while the record loop (zero_ft) and teardown (disconnect /
@@ -346,17 +348,21 @@ class URArm(Arm):
             else:
                 q = ctrl.getInverseKinematics(
                     list(np.asarray(tcp_pose, dtype=float)))
-            if qref is not None and q and \
-                    max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
+            dev = (max(abs(a - b) for a, b in zip(q, qref))
+                   if (qref is not None and q) else 0.0)
+            if dev > self._ik_dev_max:
+                self._ik_dev_max = dev
+            if qref is not None and q and dev > self.IK_BRANCH_TOL_RAD:
                 # branch flip / degenerate solve: DO NOT stream it. Holding
                 # the previous setpoint for a tick is safe; a sustained
                 # inability to solve on-branch ends the episode instead of
                 # whipping the arm.
                 self._ik_rejects += 1
+                self._ik_rejects_total += 1
                 if self._ik_rejects == 1:
                     log.warning("IK solution jumped %.2f rad off the current "
                                 "branch — holding pose (kinematic boundary?)",
-                                max(abs(a - b) for a, b in zip(q, qref)))
+                                dev)
                 if self._ik_rejects >= self.IK_REJECT_LIMIT:
                     raise RuntimeError(
                         "IK cannot stay on the current joint branch "
@@ -398,11 +404,15 @@ class URArm(Arm):
                                "(pendant popup / protective stop / Local mode)")
 
     def stop(self, decel: float) -> None:
+        # stopJ, not stopL (run analysis 09-01): a safety stop is most often
+        # fired DURING joint-space trouble (a whip, a singular configuration),
+        # exactly where the tool-space controller behind stopL is ill-posed.
+        # Joint-space deceleration is well-defined in every configuration.
         try:
             with self._ctrl_lock:
-                self._require_ctrl().stopL(decel)
+                self._require_ctrl().stopJ(decel)
         except Exception:
-            log.exception("stopL failed")
+            log.exception("stopJ failed")
 
     def zero_ft(self) -> None:
         with self._ctrl_lock:
@@ -434,8 +444,17 @@ class URArm(Arm):
         against a script that IS still playing: there the stream may genuinely
         still be live, so the caller gets the exception and move_l stays
         refused."""
+        # IK-guard telemetry (run analysis 09-01 note 1: without the IK
+        # OUTPUT distribution the 0.35 rad threshold cannot be judged —
+        # measured q is the servo's smoothed response and hides a flip)
+        if self._ik_dev_max > 0.0 or self._ik_rejects_total:
+            log.info("IK guard: max per-tick deviation %.4f rad, %d rejects "
+                     "this servo session", self._ik_dev_max,
+                     self._ik_rejects_total)
         self._last_qsol = None
         self._ik_rejects = 0
+        self._ik_dev_max = 0.0
+        self._ik_rejects_total = 0
         with self._ctrl_lock:
             try:
                 self._require_ctrl().servoStop()
