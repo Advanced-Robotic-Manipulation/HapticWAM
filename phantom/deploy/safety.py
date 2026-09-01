@@ -130,6 +130,18 @@ class SafetyMonitor:
                 events.append(SafetyEvent(t_now, "protective_stop", 1.0,
                                           SafetyAction.PROTECTIVE_STOP))
                 action = SafetyAction.PROTECTIVE_STOP
+            # singularity whip detector: measured joint speed, not commanded —
+            # see SafetyConfig.joint_speed_stop_rad_s. No debounce: one tick
+            # over 3 rad/s is already a whip, and a spurious stop is benign
+            # next to 400 ms of uncontrolled wrist at 7 rad/s.
+            qd_raw = arm.get("qd") if hasattr(arm, "get") else None
+            qd = (np.asarray(qd_raw[0], dtype=np.float64).reshape(-1)
+                  if qd_raw is not None else np.zeros(0))
+            qd_max = float(np.max(np.abs(qd))) if qd.size else 0.0
+            if qd_max > hw.safety.joint_speed_stop_rad_s:
+                events.append(SafetyEvent(t_now, "joint_speed", qd_max,
+                                          SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
             ft = np.asarray(arm["ft"][0], dtype=np.float64).reshape(-1)
             if self._wrench_base is None:
                 self._wrench_base = ft.copy()   # episode starts at rest: bias
@@ -194,6 +206,13 @@ class SafetyMonitor:
                                           t_now - ts_c, SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
+        # reach clamp on the commanded target (see clamp_target)
+        if (hw.safety.reach_clamp_m is not None
+                and float(np.linalg.norm(tcp_target[:3])) > hw.safety.reach_clamp_m):
+            events.append(SafetyEvent(t_now, "reach_clamp",
+                                      float(np.linalg.norm(tcp_target[:3])),
+                                      SafetyAction.CLAMP))
+            action = _max(action, SafetyAction.CLAMP)
         # workspace clamp on the commanded target
         if not hw.safety.workspace_m.contains(tcp_target[:3]):
             events.append(SafetyEvent(t_now, "workspace_clamp",
@@ -306,6 +325,16 @@ class SafetyMonitor:
     def clamp_target(self, tcp_target: np.ndarray) -> np.ndarray:
         ws = self.hw.safety.workspace_m
         out = tcp_target.copy()
+        # Reach clamp FIRST (rig 2026-09-01 #2): commanded TCP radius from the
+        # base is capped below the arm's singular zone — near full extension
+        # servoL's IK turns a legal Cartesian step into a wrist whip
+        # (measured: whip at 623 mm on the UR3; demos p95 = 605, tail 636).
+        # Radial scaling, so the direction of the command is preserved and
+        # the policy simply cannot extend further.
+        r_max = self.hw.safety.reach_clamp_m
+        r = float(np.linalg.norm(out[:3]))
+        if r_max is not None and r > r_max:
+            out[:3] *= r_max / r
         out[0] = np.clip(out[0], *ws.x)
         out[1] = np.clip(out[1], *ws.y)
         out[2] = np.clip(out[2], *ws.z)

@@ -93,3 +93,78 @@ def test_hitbox_top_exit_is_not_a_letgo():
         side = np.array([hb.x[1] + 0.02, centre[1], centre[2], 0, 3.14, 0])
         v2 = mon.check(t + 1.0, side)
         assert any(e.kind == "hitbox_exit" for e in v2.events)
+
+
+def test_joint_speed_whip_stops_without_letgo():
+    """Rig 2026-09-01 #2: carrying the grasp toward full extension, servoL
+    whipped the wrists to 5-7 rad/s on a legal Cartesian step (elbow
+    singularity) — the Cartesian rate limiter cannot see it. The measured-qd
+    guard must stop the episode, and the reason must NOT be a let-go."""
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.executor import is_letgo_reason
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    assert not is_letgo_reason("joint_speed")
+    hw = make_small_hw()
+    ws = hw.safety.workspace_m
+    mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+    uid = _uuid.uuid4().hex[:8]
+    h, w, c = hw.cameras.scene.color.hwc
+    rings = {
+        "arm": SharedRingBuffer(f"s_jsa_{uid}", 16, {
+            "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+            "qd": ((hw.arm.dof,), "float64")}, create=True),
+        "camera_scene": SharedRingBuffer(f"s_jsc_{uid}", 4, {
+            "color": ((h, w, c), "uint8")}, create=True),
+    }
+    with contextlib.ExitStack() as stack:
+        for r in rings.values():
+            stack.callback(r.close)
+        mon = SafetyMonitor(hw, rings)
+        t = _time.perf_counter()
+        calm = np.zeros(hw.arm.dof)
+        rings["arm"].push(t, ft=np.zeros(6), protective_stop=np.uint8(0), qd=calm)
+        rings["camera_scene"].push(t, color=np.zeros((h, w, c), dtype=np.uint8))
+        assert mon.check(t, mid).action == SafetyAction.OK
+        whip = calm.copy(); whip[-1] = 6.9
+        rings["arm"].push(t + 0.01, ft=np.zeros(6), protective_stop=np.uint8(0), qd=whip)
+        v = mon.check(t + 0.01, mid)
+        assert v.action == SafetyAction.STOP_EPISODE
+        assert any(e.kind == "joint_speed" for e in v.events)
+
+
+def test_reach_clamp_caps_commanded_radius():
+    """Predictive layer: a command past the singular radius is scaled back
+    (direction preserved) and reported as a CLAMP, never a stop — the policy
+    just cannot extend the arm into IK-degenerate territory."""
+    import time as _time
+
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor
+    from test_rig_safety_0828 import _fresh, _rings
+
+    hw = make_small_hw()
+    r_max = hw.safety.reach_clamp_m
+    assert r_max is not None and r_max > 0
+    with _rings(hw) as rings:
+        mon = SafetyMonitor(hw, rings)
+        t = _time.perf_counter(); _fresh(rings, hw, t)
+        far = np.array([2.0, 2.0, 2.0, 0, 3.14, 0])
+        out = mon.clamp_target(far)
+        # radial scaling happened before the box clamp
+        direction = far[:3] / np.linalg.norm(far[:3])
+        assert np.linalg.norm(far[:3]) > r_max
+        scaled = direction * r_max
+        ws = hw.safety.workspace_m
+        expect = np.array([np.clip(scaled[0], *ws.x), np.clip(scaled[1], *ws.y),
+                           np.clip(scaled[2], *ws.z)])
+        assert np.allclose(out[:3], expect)
+        v = mon.check(t, far)
+        assert any(e.kind == "reach_clamp" for e in v.events)
+        assert v.action in (SafetyAction.CLAMP, SafetyAction.STOP_EPISODE)
+        near = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+        if np.linalg.norm(near[:3]) < r_max:
+            assert np.allclose(mon.clamp_target(near)[:3], near[:3])

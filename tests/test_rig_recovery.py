@@ -372,7 +372,9 @@ def _push_arm(rings, ts):
 
 
 IN_BOX = np.array([0.0, -0.45, 0.25, 0.0, 3.14, 0.0])
-OUT_OF_BOX = np.array([0.0, 5.0, 0.25, 0.0, 3.14, 0.0])
+# outside the workspace box (y above its -0.2 ceiling) but INSIDE the
+# reach_clamp_m radius, so exactly ONE condition (workspace_clamp) fires
+OUT_OF_BOX = np.array([0.0, -0.1, 0.25, 0.0, 3.14, 0.0])
 
 
 def test_stale_scene_camera_stops_the_episode():

@@ -369,6 +369,17 @@ class SafetyConfig(_Frozen):
     wrench_limit_Nm: float = Field(gt=0)
     wrench_baseline_tau_s: float = Field(default=2.0, gt=0)   # rolling-baseline time constant
     wrench_debounce_ticks: int = Field(default=3, ge=1)       # consecutive over-limit checks to trip
+    # Measured joint-speed stop (rig 2026-09-01): near a singular configuration
+    # servoL turns a LEGAL Cartesian step into a joint whip (wrists hit
+    # 5-7 rad/s carrying a grasped object toward full extension) — the
+    # Cartesian rate limiter cannot see it, only the measured qd can. Normal
+    # deploy motion stays under ~1 rad/s; the stop is NOT a let-go (a held
+    # object stays held).
+    joint_speed_stop_rad_s: float = Field(default=3.0, gt=0)
+    # Predictive layer for the same failure: cap the commanded TCP radius from
+    # the base below the singular zone (UR3: whip measured at 623 mm; demo
+    # envelope p95 = 605 mm, tail 636). None disables.
+    reach_clamp_m: float | None = Field(default=0.62)
     tactile_fz_limit_N: float = Field(gt=0)
     tactile_depth_limit: float = Field(gt=0)
     workspace_m: WorkspaceBox
