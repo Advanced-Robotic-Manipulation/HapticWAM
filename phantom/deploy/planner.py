@@ -14,6 +14,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 
@@ -534,7 +535,8 @@ class PlannerLoop:
         plan.cpk = None
 
     def run(self, max_replans: int | None = None,
-            max_episode_s: float | None = None) -> None:
+            max_episode_s: float | None = None,
+            stop_check: Callable[[], bool] | None = None) -> None:
         """Replan until a cap, a stop or the wall-clock budget.
 
         `max_episode_s` is the budget the replan COUNT was standing in for:
@@ -679,6 +681,16 @@ class PlannerLoop:
                 log.warning("episode budget reached (%.1f s of %.1f s, %d "
                             "replans) — ending the episode",
                             time.perf_counter() - t_start, max_episode_s, n)
+                break
+            if stop_check is not None and stop_check():
+                # Operator ended the episode. Same clean exit as the caps:
+                # the replan loop breaks, the executor is stopped by the
+                # runtime teardown, and the gripper is NOT touched — an
+                # operator stop after a successful grasp must not drop the
+                # object the way a let-go safety stop would.
+                self.stop_reason = "operator_stop"
+                log.info("operator stop (%.1f s, %d replans) — ending the "
+                         "episode", time.perf_counter() - t_start, n)
                 break
             if self._executor_stopped():
                 break

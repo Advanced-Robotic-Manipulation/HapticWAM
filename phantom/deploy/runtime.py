@@ -173,7 +173,8 @@ class DeploymentRuntime:
     # ------------------------------------------------------------------
     def run_episode(self, *, task: str, text: str = "", tags: list[str] | None = None,
                     max_replans: int = 20, max_episode_s: float | None = None,
-                    policy_name: str = "", dagger_round: int = 0) -> EpisodeResult:
+                    policy_name: str = "", dagger_round: int = 0,
+                    stop_check=None) -> EpisodeResult:
         assert self.session is not None and self.recorder is not None
         hw = self.hw
         # Fail closed BEFORE anything is recorded or the arm is driven: a
@@ -231,7 +232,8 @@ class DeploymentRuntime:
                         log.exception("zero_ft failed (continuing)")
 
                 planner.run(max_replans=max_replans,
-                            max_episode_s=max_episode_s)
+                            max_episode_s=max_episode_s,
+                            stop_check=stop_check)
             except AssertionError as e:
                 # Last net for the snapshot's hard requirements (PlannerLoop.run
                 # catches its own; this covers _wait_rings_warm timing out and

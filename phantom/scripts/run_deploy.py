@@ -25,6 +25,8 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import logging
+import select
+import sys
 import time
 from pathlib import Path
 
@@ -478,6 +480,31 @@ def assert_acc_head(payload: dict, ckpt: str) -> None:
             "an ACC checkpoint or drop --terminal-veto.")
 
 
+
+def make_operator_stop():
+    """Episode-scoped stop button: pressing Enter DURING the episode ends it
+    cleanly (`planner.run` breaks with stop_reason "operator_stop"; the
+    gripper is not touched, so a held object is not dropped). Any Enter
+    presses still buffered from the start prompts are drained on arming so a
+    double-tap cannot instantly end the episode. Polling stdin is a zero-
+    timeout select in the planner's own loop — no thread, no race with the
+    outcome prompt that follows the episode."""
+    if not sys.stdin.isatty():        # piped/test runs: no stop button
+        return None
+    while select.select([sys.stdin], [], [], 0)[0]:
+        sys.stdin.readline()          # drain buffered lines
+    fired = {"v": False}
+    def check() -> bool:
+        if fired["v"]:
+            return True
+        if select.select([sys.stdin], [], [], 0)[0]:
+            sys.stdin.readline()
+            fired["v"] = True
+            log.info("operator stop requested — ending the episode cleanly")
+            return True
+        return False
+    return check
+
 VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
                   "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
                   "then optional notes "
@@ -823,10 +850,15 @@ def main(argv=None) -> int:
             if start_tag is not None:
                 ep_tags.append(start_tag)
             budget = float(args.max_episode_s)
+            op_stop = make_operator_stop()
+            if op_stop is not None:
+                print(">> press Enter at any time to END the episode cleanly "
+                      "(motion stops, gripper stays as-is)")
             res = rt.run_episode(task=args.task, text=args.text,
                                  max_replans=args.max_replans,
                                  max_episode_s=budget if budget > 0 else None,
-                                 policy_name=f"{args.system}", tags=ep_tags)
+                                 policy_name=f"{args.system}", tags=ep_tags,
+                                 stop_check=op_stop)
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
