@@ -58,3 +58,38 @@ def test_make_operator_stop_disabled_off_tty():
     # piped/test stdin returns None and the episode keeps cap semantics
     from phantom.scripts.run_deploy import make_operator_stop
     assert make_operator_stop() is None
+
+
+def test_hitbox_top_exit_is_not_a_letgo():
+    """Rig 2026-09-01: the first tactile-confirmed grasp lifted past the
+    hitbox ceiling and 'hitbox_exit' (a let-go reason) opened the fingers at
+    z=0.49 m — the object was dropped. A pure top-face exit must stop the
+    episode WITHOUT releasing; every other face keeps let-go semantics."""
+    import time as _time
+
+    import pytest
+    from phantom.deploy.executor import is_letgo_reason
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor, apply_hitbox
+    from test_rig_safety_0828 import _fresh, _rings
+
+    assert not is_letgo_reason("hitbox_exit_top")
+    assert is_letgo_reason("hitbox_exit")
+
+    hw = make_small_hw()
+    ws = hw.safety.workspace_m
+    lo = np.array([np.mean(ws.x) - 0.05, np.mean(ws.y) - 0.05, ws.z[0] + 0.02])
+    hi = lo + np.array([0.10, 0.10, 0.10])
+    hw2 = apply_hitbox(hw, lo, hi, margin_m=0.01)
+    hb = hw2.safety.hitbox_m
+    with _rings(hw2) as rings:
+        mon = SafetyMonitor(hw2, rings)
+        t = _time.perf_counter(); _fresh(rings, hw2, t)
+        centre = (lo + hi) / 2
+        top = np.array([*centre[:2], hb.z[1] + 0.02, 0, 3.14, 0])
+        v = mon.check(t, top)
+        assert v.action == SafetyAction.STOP_EPISODE
+        kinds = [e.kind for e in v.events]
+        assert "hitbox_exit_top" in kinds and "hitbox_exit" not in kinds, kinds
+        side = np.array([hb.x[1] + 0.02, centre[1], centre[2], 0, 3.14, 0])
+        v2 = mon.check(t + 1.0, side)
+        assert any(e.kind == "hitbox_exit" for e in v2.events)

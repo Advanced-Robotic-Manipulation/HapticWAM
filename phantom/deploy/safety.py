@@ -208,11 +208,23 @@ class SafetyMonitor:
         # 2026-08-28: floor == hitbox lower edge turned every deep descent
         # into a STOP and would have biased the A/B against the better arm)
         hb = hw.safety.hitbox_m
-        if hb is not None and not hb.contains(self.clamp_target(np.asarray(tcp_target, dtype=np.float64))[:3]):
-            events.append(SafetyEvent(t_now, "hitbox_exit",
-                                      float(np.linalg.norm(tcp_target[:3])),
-                                      SafetyAction.STOP_EPISODE))
-            action = _max(action, SafetyAction.STOP_EPISODE)
+        if hb is not None:
+            p3 = self.clamp_target(np.asarray(tcp_target, dtype=np.float64))[:3]
+            if not hb.contains(p3):
+                # A pure TOP-face exit is a successful lift outgrowing the
+                # demo envelope, not the policy getting lost sideways — stop
+                # the episode but do NOT let go: "hitbox_exit" is a let-go
+                # reason in the executor, and opening the fingers half a
+                # metre up drops a held object (rig 2026-09-01: the first
+                # tactile-confirmed grasp was dropped exactly this way).
+                only_top = (p3[2] > hb.z[1]
+                            and hb.x[0] <= p3[0] <= hb.x[1]
+                            and hb.y[0] <= p3[1] <= hb.y[1])
+                kind = "hitbox_exit_top" if only_top else "hitbox_exit"
+                events.append(SafetyEvent(t_now, kind,
+                                          float(np.linalg.norm(tcp_target[:3])),
+                                          SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
 
         self._record(t_now, events)
         return SafetyVerdict(action=action, events=events)
