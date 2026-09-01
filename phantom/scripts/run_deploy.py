@@ -295,14 +295,14 @@ def build_parser() -> argparse.ArgumentParser:
                          "paired trials")
     ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
                     default=True, help="skip the post-episode success/notes prompt")
-    ap.add_argument("--lift-complete-z", type=float, default=0.35,
+    ap.add_argument("--lift-complete-z", type=float, default=0.32,
                     help="success auto-stop: tactile-confirmed grasp held "
                          "above this TCP z (m) ends the episode cleanly, "
                          "gripper held. 0 disables.")
-    ap.add_argument("--lift-complete-fz", type=float, default=3.0,
+    ap.add_argument("--lift-complete-fz", type=float, default=2.5,
                     help="per-pad |fz| (N) that counts as a confirmed grasp "
                          "for the success auto-stop")
-    ap.add_argument("--lift-complete-hold", type=float, default=0.5,
+    ap.add_argument("--lift-complete-hold", type=float, default=0.4,
                     help="seconds the grasp+height condition must hold")
     ap.add_argument("--policy-server", default=None, metavar="ADDR",
                     help="attach to a resident policy server instead of "
@@ -500,21 +500,33 @@ def make_lift_complete(rt, z_m: float, fz_n: float, hold_s: float):
     TCP above the lift height, sustained -> the episode ends cleanly holding
     the object. Demos end right after the lift; the "carry" beyond it is
     out-of-distribution and twice ran the arm into the full-extension
-    singularity. Returns None (disabled) when thresholds are non-positive."""
+    singularity. Returns None (disabled) when thresholds are non-positive.
+
+    |fz| is BASELINE-CORRECTED per episode: the left pad carried a 0.7-2.2 N
+    zero offset that drifted through the 09-01 session (right 0.01-0.05 N),
+    so a raw absolute threshold partly measures bias. The first call (arm
+    still at the start pose, pads untouched) captures the baseline.
+    Thresholds from the 22-episode evaluation: 2.5 N / 0.4 s / z 0.32 m fires
+    in all 4 real lifted grasps, 1.8-2.7 s ahead of every whip it can see,
+    and in 0 of the other 18 episodes."""
     if z_m <= 0 or fz_n <= 0:
         return None
-    state = {"since": None}
+    state = {"since": None, "base": None}
 
     def check() -> bool:
         try:
             _, arm = rt.session.rings["arm"].latest(1)
             z = float(np.asarray(arm["tcp_pose"][0]).reshape(-1)[2])
-            fzs = []
+            raw = []
             for side in ("left", "right"):
                 _, tac = rt.session.rings[f"tactile_{side}"].latest(1)
-                fzs.append(abs(float(np.asarray(tac["wrench"][0]).reshape(-1)[2])))
+                raw.append(float(np.asarray(tac["wrench"][0]).reshape(-1)[2]))
         except Exception:
             return False
+        if state["base"] is None:
+            state["base"] = raw                # first replan: pads untouched
+            return False
+        fzs = [abs(r - b) for r, b in zip(raw, state["base"])]
         good = z > z_m and all(f > fz_n for f in fzs)
         now = time.perf_counter()
         if good:

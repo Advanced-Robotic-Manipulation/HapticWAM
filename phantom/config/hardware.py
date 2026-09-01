@@ -378,6 +378,14 @@ class SafetyConfig(_Frozen):
     # cuts them materially earlier. The stop is NOT a let-go (a held object
     # stays held).
     joint_speed_stop_rad_s: float = Field(default=2.0, gt=0)
+    # The guard that actually leads the whips (run analysis 09-01): the wrist
+    # CENTRE's distance from the shoulder is pure elbow geometry —
+    # sqrt(a2^2 + a3^2 + 2*a2*a3*cos(q_elbow) + d4^2), boundary at full
+    # extension sqrt((a2+a3)^2 + d4^2) = 470.5 mm on the UR3. All four 09-01
+    # whips touched it; wd > 0.45 m led them by 0.27-1.41 s and fired only on
+    # genuine near-misses. None disables (non-UR3 arms until DH is set).
+    wrist_extension_stop_m: float | None = Field(default=0.45)
+    ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
     # Predictive layer for the same failure: cap the commanded TCP radius from
     # the base below the singular zone (UR3: whip measured at 623 mm; demo
     # envelope p95 = 605 mm, tail 636). None disables.

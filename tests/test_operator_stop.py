@@ -208,15 +208,22 @@ def test_make_lift_complete_closure_thresholds():
 
     assert make_lift_complete(rt, 0.0, 3.0, 0.5) is None      # disabled
     chk = make_lift_complete(rt, 0.35, 3.0, hold_s=0.05)
-    set_state(z=0.40, fl=8.0, fr=0.1)          # one pad only -> never
+    # first call captures the per-episode tactile BASELINE (rig 09-01: the
+    # left pad carried a drifting 0.7-2.2 N zero offset) — simulate a biased
+    # untouched pad and verify later readings are judged vs that baseline
+    set_state(z=0.20, fl=1.5, fr=0.05)
+    assert not chk()                            # baseline capture, never fires
+    set_state(z=0.40, fl=9.5, fr=0.15)          # one pad only (vs baseline)
     assert not chk()
-    set_state(z=0.20, fl=8.0, fr=6.0)          # grasped but not lifted
+    set_state(z=0.20, fl=9.5, fr=6.1)           # grasped but not lifted
     assert not chk()
-    set_state(z=0.40, fl=8.0, fr=6.0)          # good: arms the hold window
+    set_state(z=0.40, fl=3.5, fr=2.1)           # only 2.0 N over baseline -> no
+    assert not chk()
+    set_state(z=0.40, fl=9.5, fr=6.1)           # good: arms the hold window
     assert not chk()
     _time.sleep(0.06)
     assert chk()                                # sustained -> fire
-    set_state(z=0.40, fl=0.0, fr=6.0)          # condition drops -> re-arm
+    set_state(z=0.40, fl=1.5, fr=6.1)           # condition drops -> re-arm
     assert not chk()
 
 
@@ -273,3 +280,48 @@ def test_servo_l_rejects_ik_branch_flip():
     arm.servo_l(np.zeros(6), 0.008, 0.03, 300)
     assert len(sent) == 1 and arm._ik_rejects == 0
     assert arm._last_qsol == ctrl.sol
+
+
+def test_wrist_extension_guard_stops_before_the_boundary():
+    """The guard with real lead (run analysis 09-01): wrist-centre distance
+    from the shoulder is pure elbow geometry; > 0.45 m stops the episode
+    0.3-1.4 s before an IK branch flip is even reachable. Non-letgo."""
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.executor import is_letgo_reason
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    assert not is_letgo_reason("wrist_extension")
+    hw = make_small_hw()
+    assert hw.safety.wrist_extension_stop_m == 0.45
+    ws = hw.safety.workspace_m
+    mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+    uid = _uuid.uuid4().hex[:8]
+    h, w, c = hw.cameras.scene.color.hwc
+    rings = {
+        "arm": SharedRingBuffer(f"s_wea_{uid}", 16, {
+            "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+            "q": ((hw.arm.dof,), "float64"),
+            "qd": ((hw.arm.dof,), "float64")}, create=True),
+        "camera_scene": SharedRingBuffer(f"s_wec_{uid}", 4, {
+            "color": ((h, w, c), "uint8")}, create=True),
+    }
+    with contextlib.ExitStack() as stack:
+        for r in rings.values():
+            stack.callback(r.close)
+        mon = SafetyMonitor(hw, rings)
+        t = _time.perf_counter()
+        bent = np.zeros(hw.arm.dof); bent[2] = np.radians(77)   # wd ~375 mm
+        rings["arm"].push(t, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          q=bent, qd=np.zeros(hw.arm.dof))
+        rings["camera_scene"].push(t, color=np.zeros((h, w, c), dtype=np.uint8))
+        assert mon.check(t, mid).action == SafetyAction.OK
+        near_straight = np.zeros(hw.arm.dof); near_straight[2] = np.radians(20)  # wd ~461 mm
+        rings["arm"].push(t + 0.01, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          q=near_straight, qd=np.zeros(hw.arm.dof))
+        v = mon.check(t + 0.01, mid)
+        assert v.action == SafetyAction.STOP_EPISODE
+        assert any(e.kind == "wrist_extension" for e in v.events)
