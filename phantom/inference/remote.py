@@ -57,9 +57,36 @@ class RemotePolicy:
     run_deploy use: `.replan`, `.task_text`, plus `remote_reset(seed)` in
     place of the local `rf` seeding dance."""
 
+    CONNECT_TIMEOUT_S = 6.0
+
     def __init__(self, address: tuple[str, int], config: dict | None = None):
+        # multiprocessing Client has NO timeout: against a server that is
+        # busy with another client the TCP connect succeeds (listen backlog)
+        # and the authkey handshake then blocks FOREVER — '--policy-server
+        # auto' would hang instead of falling back, and PICK.sh's probe with
+        # it (verification 09-01). Connect in a worker thread and give up.
+        import threading
         from multiprocessing.connection import Client
-        self._conn = Client(address, authkey=PHANTOM_AUTHKEY)
+        box: dict = {}
+
+        def _connect():
+            try:
+                box["conn"] = Client(address, authkey=PHANTOM_AUTHKEY)
+            except Exception as e:      # noqa: BLE001 — reported below
+                box["err"] = e
+
+        t = threading.Thread(target=_connect, daemon=True)
+        t.start()
+        t.join(self.CONNECT_TIMEOUT_S)
+        if "conn" not in box:
+            if "err" in box:
+                raise ConnectionError(f"policy server at {address}: {box['err']}")
+            raise ConnectionError(
+                f"policy server at {address} did not answer within "
+                f"{self.CONNECT_TIMEOUT_S:.0f}s — most likely another "
+                "run_deploy is still attached (it serves one client at a "
+                "time). Ctrl-C the other one or restart SERVE.sh.")
+        self._conn = box["conn"]
         self.info = self._call("info")
         cfg = {k: v for k, v in (config or {}).items()
                if k in CONFIGURABLE and v is not None}

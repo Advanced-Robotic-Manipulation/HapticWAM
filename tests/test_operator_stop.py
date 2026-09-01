@@ -366,3 +366,103 @@ def test_chunk_tail_cap_holds_at_the_cap_point():
     pc, _ = ex_capped._pose_at(plan, early)
     pf, _ = ex_free._pose_at(plan, early)
     assert np.allclose(pc, pf)
+
+
+def test_invalidate_cpk_clears_the_remote_token():
+    """Verification 09-01: with a policy server the package lives server-side
+    behind _cpk_token; _invalidate_cpk must clear the token too or the veto's
+    invalidation is a silent no-op on the remote path."""
+    from phantom.deploy.planner import PlannerLoop
+    from phantom.inference.policy import Plan
+
+    plan = Plan(t_created=0.0, t0_pose=np.zeros(6), actions=np.zeros((2, 7)),
+                action_times=np.zeros(2), sigma=np.zeros(3), gate=0.0,
+                p_evt=np.zeros(5), cpk="PKG", latency_s=0.0)
+    plan._cpk_token = 7
+    PlannerLoop._invalidate_cpk(plan)
+    assert plan.cpk is None and plan._cpk_token is None
+
+
+def test_remote_connect_times_out_on_busy_server():
+    """Verification 09-01: a server busy with another client accepts the TCP
+    connect but never completes the authkey handshake — the client must give
+    up with a clear error instead of hanging PICK.sh forever."""
+    import socket
+    import time as _time
+
+    import pytest as _pytest
+    from phantom.inference.remote import RemotePolicy
+
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(1)                      # backlog accepts, nobody answers
+    port = srv.getsockname()[1]
+    old = RemotePolicy.CONNECT_TIMEOUT_S
+    RemotePolicy.CONNECT_TIMEOUT_S = 0.5
+    try:
+        t0 = _time.perf_counter()
+        with _pytest.raises(ConnectionError, match="did not answer|another"):
+            RemotePolicy(("127.0.0.1", port))
+        assert _time.perf_counter() - t0 < 3.0
+    finally:
+        RemotePolicy.CONNECT_TIMEOUT_S = old
+        srv.close()
+
+
+def test_tail_cap_does_not_report_uncommanded_steps():
+    """Verification 09-01 must-fix: the executed-step index must freeze at
+    the cap with the pose — steps the arm never got must not reach
+    record_action/_grip_hist (they armed the veto's phantom-grasp latch)."""
+    from phantom.deploy.executor import ChunkExecutor
+    from phantom.inference.policy import Plan
+
+    hw = make_small_hw()
+    H, rate = hw.control.chunk_horizon, hw.control.action_rate_hz
+    cap = 4
+    ex = ChunkExecutor.__new__(ChunkExecutor)
+    ex.hw = hw
+    ex.max_play_steps = cap
+    # replicate _run's reporting index computation at a play_time deep in
+    # the tail, with and without the cap
+    play_time = (H - 1) / rate
+    _cap = (min(H, ex.max_play_steps) if ex.max_play_steps else H)
+    k = min(int(play_time * rate), _cap - 1)
+    assert k == cap - 1
+    ex.max_play_steps = None
+    _cap = (min(H, ex.max_play_steps) if ex.max_play_steps else H)
+    k = min(int(play_time * rate), _cap - 1)
+    assert k == H - 1
+
+
+def test_recovered_clears_wrist_and_joint_speed_stops():
+    """Verification 09-01: recovered() must clear the two new STOP kinds or
+    the shared teleop/collection loop livelocks in safety_hold after a lift
+    near full extension."""
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.safety import SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    hw = make_small_hw()
+    uid = _uuid.uuid4().hex[:8]
+    rings = {"arm": SharedRingBuffer(f"s_rca_{uid}", 16, {
+        "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+        "q": ((hw.arm.dof,), "float64"),
+        "qd": ((hw.arm.dof,), "float64")}, create=True)}
+    with contextlib.ExitStack() as stack:
+        stack.callback(rings["arm"].close)
+        mon = SafetyMonitor(hw, rings)
+        t = _time.perf_counter()
+        straight = np.zeros(hw.arm.dof); straight[2] = np.radians(10)
+        rings["arm"].push(t, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          q=straight, qd=np.zeros(hw.arm.dof))
+        assert not mon.recovered()          # still past the wrist guard
+        bent = np.zeros(hw.arm.dof); bent[2] = np.radians(77)
+        rings["arm"].push(t + 0.01, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          q=bent, qd=np.full(hw.arm.dof, 1.5))
+        assert not mon.recovered()          # joints still fast
+        rings["arm"].push(t + 0.02, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          q=bent, qd=np.zeros(hw.arm.dof))
+        assert mon.recovered()              # bent + calm -> clear

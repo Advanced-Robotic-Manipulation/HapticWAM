@@ -305,8 +305,16 @@ class ChunkExecutor:
                 # report each newly-entered action-grid step (DAgger rollout
                 # episodes need the executed STREAM_ACTIONS like teleop demos)
                 # and remember its gripper command (parity prev_chunk, P2).
+                # capped by max_play_steps like _pose_at: steps past the cap
+                # were NEVER commanded and must not be reported as executed
+                # (verification 09-01: an uncapped k fed never-sent closes to
+                # _grip_hist / record_action, arming the veto's phantom-grasp
+                # recovery and corrupting STREAM_ACTIONS)
+                _H = plan.actions.shape[0]
+                _cap = (min(_H, self.max_play_steps)
+                        if self.max_play_steps else _H)
                 k = min(int(self._play_time * hw.control.action_rate_hz),
-                        plan.actions.shape[0] - 1)
+                        _cap - 1)
                 while self._last_action_k < k:
                     self._last_action_k += 1
                     a = plan.actions[self._last_action_k]
