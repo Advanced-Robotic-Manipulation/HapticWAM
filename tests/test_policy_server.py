@@ -133,3 +133,59 @@ def test_wire_format_drops_cpk():
     assert "cpk" not in d
     back = plan_from_wire(d, cpk=None)
     assert back.cpk is None and back.actions.shape == (2, 7)
+
+
+def test_real_tiny_policy_over_the_wire():
+    """The riskiest plumbing: a REAL PhantomPolicy (tiny, CPU) served over the
+    localhost protocol — two replans with the ContactPackage held server-side
+    and the prev_plan token swapped back on the second call."""
+    from multiprocessing.connection import Listener
+
+    from phantom.config.model import AccConfig, PhantomModelConfig
+    from phantom.config.paths import load_paths
+    from phantom.data.schema import NormStats
+    from phantom.inference.policy import PhantomPolicy
+    from phantom.scripts.bench_inference import fake_obs
+    from phantom.train.builder import build_model
+    from phantom_test_utils import make_small_hw
+
+    hw = make_small_hw()
+    mc = PhantomModelConfig(acc=AccConfig(self_anticipation="two_pass"))
+    pm = build_model(hw, load_paths(), student=False, tiny=True, load_base=False,
+                     mc=mc)
+    policy = PhantomPolicy(pm, NormStats.identity(), nfe=1, persistent_noise=True)
+    srv = PolicyServer(policy, ckpt="tiny.pt")
+    listener = Listener(("127.0.0.1", 0), authkey=PHANTOM_AUTHKEY)
+    port = listener.address[1]
+
+    def serve_one():
+        with listener.accept() as conn:
+            try:
+                while True:
+                    msg = conn.recv()
+                    try:
+                        conn.send(("ok", srv.handle(msg)))
+                    except Exception:
+                        import traceback
+                        conn.send(("err", traceback.format_exc()))
+            except EOFError:
+                pass
+
+    t = threading.Thread(target=serve_one, daemon=True)
+    t.start()
+    client = RemotePolicy(("127.0.0.1", port), {"nfe": 1, "k_seeds": 1})
+    try:
+        client.remote_reset(42)
+        obs = fake_obs(hw, teacher=True)
+        p1 = client.replan(obs, None, np.zeros(6))
+        assert p1.cpk is None and p1.actions.ndim == 2
+        assert np.isfinite(p1.actions).all()
+        p2 = client.replan(obs, p1, np.zeros(6))
+        assert np.isfinite(p2.actions).all()
+        assert p2._cpk_token != p1._cpk_token
+        # the second replan consumed the stored package as prev_cpk (the
+        # store had it under p1's token)
+        assert srv._store, "server-side package store is empty"
+    finally:
+        client.close()
+        listener.close()
