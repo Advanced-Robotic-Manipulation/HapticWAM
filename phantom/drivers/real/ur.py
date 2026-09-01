@@ -41,6 +41,14 @@ class URArm(Arm):
     # new RTDEControlInterface hits "Failed to start control script".
     _reconnect_settle_s = 0.2
 
+    # IK branch guard (rig 2026-09-01): host-side getInverseKinematics with
+    # no qnear seed returned a DIFFERENT solution branch at the elbow-straight
+    # boundary (wrist centre 470.5 mm) and servoJ swept a ballistic joint-space
+    # arc to it (wrists 3.4-6.9 rad/s, four episodes). Seed every solve with
+    # the previous solution and reject any solution that jumps a branch.
+    IK_BRANCH_TOL_RAD = 0.35          # >> one 8 ms tick of motion, << any flip
+    IK_REJECT_LIMIT = 25              # consecutive rejects (~0.2 s) -> give up
+
     def __init__(self, hw: HardwareConfig):
         super().__init__(hw)
         self._servo_active = False
@@ -48,6 +56,8 @@ class URArm(Arm):
         self._ctrl = None
         self._seq = 0
         self._want_control = False
+        self._last_qsol: list[float] | None = None
+        self._ik_rejects = 0
         # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
         # disconnect(). The teleop streamer calls servo_j from its own thread
         # while the record loop (zero_ft) and teardown (disconnect /
@@ -327,7 +337,35 @@ class URArm(Arm):
         with self._ctrl_lock:
             self._servo_active = True
             ctrl = self._require_ctrl()
-            q = ctrl.getInverseKinematics(list(np.asarray(tcp_pose, dtype=float)))
+            qref = self._last_qsol
+            if qref is None and self._recv is not None:
+                qref = list(self._recv.getActualQ())
+            if qref is not None:
+                q = ctrl.getInverseKinematics(
+                    list(np.asarray(tcp_pose, dtype=float)), list(qref))
+            else:
+                q = ctrl.getInverseKinematics(
+                    list(np.asarray(tcp_pose, dtype=float)))
+            if qref is not None and q and \
+                    max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
+                # branch flip / degenerate solve: DO NOT stream it. Holding
+                # the previous setpoint for a tick is safe; a sustained
+                # inability to solve on-branch ends the episode instead of
+                # whipping the arm.
+                self._ik_rejects += 1
+                if self._ik_rejects == 1:
+                    log.warning("IK solution jumped %.2f rad off the current "
+                                "branch — holding pose (kinematic boundary?)",
+                                max(abs(a - b) for a, b in zip(q, qref)))
+                if self._ik_rejects >= self.IK_REJECT_LIMIT:
+                    raise RuntimeError(
+                        "IK cannot stay on the current joint branch "
+                        f"({self._ik_rejects} consecutive solves rejected) — "
+                        "the target is at/beyond a kinematic boundary")
+                return
+            self._ik_rejects = 0
+            if q:
+                self._last_qsol = list(q)
             ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
         if ok is False:
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
@@ -378,6 +416,10 @@ class URArm(Arm):
     def servo_stop(self) -> None:
         """End the servo stream.
 
+        Also drops the IK branch seed: after servo mode ends the arm may be
+        moved by moveJ/moveL/hand, so the next servo session must re-seed
+        from the MEASURED q, not a stale solution.
+
         INVARIANT for `_servo_active`: it is True only while a servo session
         may still be live on the control script that is running RIGHT NOW. It
         must never outlive that script — a sticky True is what refuses every
@@ -392,6 +434,8 @@ class URArm(Arm):
         against a script that IS still playing: there the stream may genuinely
         still be live, so the caller gets the exception and move_l stays
         refused."""
+        self._last_qsol = None
+        self._ik_rejects = 0
         with self._ctrl_lock:
             try:
                 self._require_ctrl().servoStop()
