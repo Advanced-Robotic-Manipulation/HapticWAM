@@ -43,19 +43,26 @@ read -p "append flags (Enter for none): " MORE
 # attach to a warm policy server when one holds the SAME model (start one in
 # another terminal with ./SERVE.sh — launches then take seconds, not minutes)
 if [[ "$EXTRA" != *"--policy-server"* ]]; then
-  SRV_CKPT=$(cd $BASE/phantom && .venv/bin/python -m phantom.scripts.policy_server --probe 2>/dev/null || true)
-  if [ -n "$SRV_CKPT" ]; then
-    if [ "$(basename "$SRV_CKPT")" = "$(basename "$CKPT")" ] || \
-       [ "$(basename "$(readlink -f "$BASE/phantom/$CKPT" 2>/dev/null)")" = "$(basename "$(readlink -f "$BASE/phantom/$SRV_CKPT" 2>/dev/null)")" ]; then
-      echo ">> warm policy server holds $SRV_CKPT — attaching (fast start)"
-      EXTRA="$EXTRA --policy-server auto"
-    else
-      echo ">> NOTE: policy server holds $SRV_CKPT but you picked $CKPT."
-      echo ">>       loading locally (slow). Restart ./SERVE.sh with this model to go fast."
+  ATTACHED=""; FOUND=""
+  WANT=$(basename "$(readlink -f "$BASE/phantom/$CKPT" 2>/dev/null || echo "$CKPT")")
+  for PORT in 7777 7778 7779; do
+    SRV_CKPT=$(cd $BASE/phantom && timeout 10 .venv/bin/python -m phantom.scripts.policy_server --probe --port $PORT 2>/dev/null || true)
+    [ -n "$SRV_CKPT" ] || continue
+    FOUND="$FOUND $PORT:$(basename "$SRV_CKPT")"
+    HAVE=$(basename "$(readlink -f "$BASE/phantom/$SRV_CKPT" 2>/dev/null || echo "$SRV_CKPT")")
+    if [ "$HAVE" = "$WANT" ] || [ "$(basename "$SRV_CKPT")" = "$(basename "$CKPT")" ]; then
+      echo ">> warm policy server on :$PORT holds $SRV_CKPT — attaching (fast start)"
+      EXTRA="$EXTRA --policy-server 127.0.0.1:$PORT"; ATTACHED=1; break
     fi
-  else
-    echo ">> no policy server running — loading the model in-process (~3 min)."
-    echo ">>    tip: run ./SERVE.sh in another terminal once; every later launch attaches in seconds."
+  done
+  if [ -z "$ATTACHED" ]; then
+    if [ -n "$FOUND" ]; then
+      echo ">> NOTE: running servers hold [$FOUND ] but you picked $CKPT."
+      echo ">>       loading locally (slow). ./SERVE.sh with this model makes it fast next time."
+    else
+      echo ">> no policy server running — loading the model in-process (~3 min)."
+      echo ">>    tip: run ./SERVE.sh in another terminal once per model; later launches attach in seconds."
+    fi
   fi
 fi
 
