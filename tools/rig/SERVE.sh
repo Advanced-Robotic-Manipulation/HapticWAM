@@ -17,6 +17,11 @@ done < "$TSV"
 read -p "model to hold [1]: " m; m=${m:-1}
 CKPT=${ckpts[$m]}
 [ -n "$CKPT" ] || { echo "bad choice"; exit 1; }
+# one port per menu slot (7777, 7778, ...) so several models can stay warm at
+# once — PICK.sh probes all of them and attaches to the matching one (A/B
+# alternation with no reload)
+PORT=$((7776 + m))
 cd $BASE/phantom
+echo ">> serving ${labels[$m]} on 127.0.0.1:$PORT"
 exec .venv/bin/python -m phantom.scripts.policy_server \
-    --ckpt "$CKPT" --hardware configs/hardware.nuc.yaml
+    --ckpt "$CKPT" --hardware configs/hardware.nuc.yaml --port $PORT
