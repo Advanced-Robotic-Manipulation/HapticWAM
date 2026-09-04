@@ -300,15 +300,18 @@ def build_parser() -> argparse.ArgumentParser:
                          "hold until the next plan (steps beyond HEAD_STEPS=9 "
                          "are never validated by a replan; all four 09-01 "
                          "whips began in that tail). 0 = uncapped.")
-    ap.add_argument("--lift-complete-z", type=float, default=0.30,
+    ap.add_argument("--lift-complete-z", type=float, default=0.32,
                     help="success auto-stop: tactile-confirmed grasp held "
                          "above this TCP z (m) ends the episode cleanly, "
                          "gripper held. 0 disables.")
-    ap.add_argument("--lift-complete-fz", type=float, default=2.5,
+    ap.add_argument("--lift-complete-fz", type=float, default=4.0,
                     help="per-pad |fz| (N) that counts as a confirmed grasp "
                          "for the success auto-stop")
     ap.add_argument("--lift-complete-hold", type=float, default=0.4,
                     help="seconds the grasp+height condition must hold")
+    ap.add_argument("--no-grip-latch", action="store_true",
+                    help="disable the aperture latch (commanded closure may "
+                         "not decrease once both pads carry load)")
     ap.add_argument("--policy-server", default=None, metavar="ADDR",
                     help="attach to a resident policy server instead of "
                          "loading the model here ('auto' = try 127.0.0.1:7777 "
@@ -705,7 +708,8 @@ def main(argv=None) -> int:
     hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
         "lift_complete_z_m": max(0.0, float(args.lift_complete_z)),
         "lift_complete_fz_n": max(0.0, float(args.lift_complete_fz)),
-        "lift_complete_hold_s": max(0.0, float(args.lift_complete_hold))})})
+        "lift_complete_hold_s": max(0.0, float(args.lift_complete_hold)),
+        "grip_latch_fz_n": 0.0 if args.no_grip_latch else hw.safety.grip_latch_fz_n})})
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)

@@ -393,9 +393,22 @@ class SafetyConfig(_Frozen):
     # the episode ends HOLDING. Evaluated in SafetyMonitor.check() at the
     # executor rate so it wins the race against wrist_extension (the
     # per-replan planner check lost 4 real grasps to the guard on 09-04).
-    lift_complete_z_m: float = Field(default=0.30, ge=0)      # 0 disables
-    lift_complete_fz_n: float = Field(default=2.5, ge=0)
+    # Thresholds from the 29-episode 09-04 evaluation: trailing-window max of
+    # the baseline-corrected pad force (the pads drop out for up to 40% of
+    # frames on a real carry — an instantaneous test is unsatisfiable on one
+    # of the six carried grasps), 4.0 N (weakest carry 7.3 N, strongest
+    # touch-lost already at noise by 0.32 m), z 0.32 m (0.30 false-fires on
+    # one empty lift with a trailing window). 6/6 carried, 0/11 empty lifts.
+    lift_complete_z_m: float = Field(default=0.32, ge=0)      # 0 disables
+    lift_complete_fz_n: float = Field(default=4.0, ge=0)
     lift_complete_hold_s: float = Field(default=0.4, ge=0)
+    lift_complete_window_s: float = Field(default=0.6, ge=0)  # trailing-max window
+    # Aperture latch (09-04 touch-lost mechanism): in 4 of 5 lost objects the
+    # policy was commanding the fingers OPEN while carrying (demos never
+    # contain a post-lift release). Once both pads register this much load
+    # the commanded closure can no longer decrease until an intended release
+    # (episode end or a veto recovery). 0 disables.
+    grip_latch_fz_n: float = Field(default=2.5, ge=0)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one

@@ -110,6 +110,10 @@ class SafetyMonitor:
         self._lift_base: dict[str, float] = {}
         self._lift_since: float | None = None
         self._tcp_z: float | None = None
+        # per-pad (t, baseline-corrected |fz|) history for the trailing-max
+        # windows; `contact_load` is the executor's read-only view (latch)
+        self._pad_hist: dict[str, list[tuple[float, float]]] = {}
+        self.contact_load: dict[str, float] = {}
 
     # ------------------------------------------------------------------
     def check(self, t_now: float, tcp_target: np.ndarray) -> SafetyVerdict:
@@ -208,7 +212,13 @@ class SafetyMonitor:
                 fz = float(np.asarray(w_raw[0]).reshape(-1)[2])
                 if s.name not in self._lift_base:
                     self._lift_base[s.name] = fz     # first tick: pads untouched
-                pad_load[s.name] = abs(fz - self._lift_base[s.name])
+                load = abs(fz - self._lift_base[s.name])
+                hist = self._pad_hist.setdefault(s.name, [])
+                hist.append((t_now, load))
+                win = hw.safety.lift_complete_window_s
+                while hist and t_now - hist[0][0] > max(win, 1e-3):
+                    hist.pop(0)
+                pad_load[s.name] = max(v for _, v in hist)   # trailing max
             f_raw = tac.get("fields_ds") if hasattr(tac, "get") else None
             if f_raw is None:
                 continue
@@ -230,6 +240,7 @@ class SafetyMonitor:
         # above lift_complete_z_m, sustained lift_complete_hold_s -> SUCCESS
         # stop (non-letgo: the object stays held). Needs at least two pads
         # reporting so a single wired sensor can never fire it alone.
+        self.contact_load = dict(pad_load)
         lc_z = hw.safety.lift_complete_z_m
         if lc_z > 0 and len(pad_load) >= 2 and self._tcp_z is not None:
             good = (self._tcp_z > lc_z

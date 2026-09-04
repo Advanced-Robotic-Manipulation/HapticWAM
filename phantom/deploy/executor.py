@@ -80,6 +80,10 @@ class ChunkExecutor:
         self.gripper_ring = gripper_ring
         self._grip_poll_period = 1.0 / hw.gripper.feedback_rate_hz
         self._grip_target: float | None = None
+        # aperture latch (SafetyConfig.grip_latch_fz_n): once both pads carry
+        # load, the commanded closure may not DECREASE until an intended
+        # release — clear_grip_latch() (veto recovery) or the episode end
+        self._grip_latch: float | None = None
         self._grip_thread: threading.Thread | None = None
         # single lock over ALL gripper.move calls (worker + release): the
         # ordering swap in _halt alone leaves a window where a latched close
@@ -182,6 +186,7 @@ class ChunkExecutor:
         `gripper.move` in the whole deploy path is the NEXT episode's homing
         (start_pose.py:208)."""
         self._set_reason(reason)
+        self._grip_latch = None
         # order matters: kill the mailbox and the worker's while-condition
         # BEFORE releasing, or a latched close can land after the release
         self._grip_target = None
@@ -390,9 +395,10 @@ class ChunkExecutor:
             self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
                              hw.arm.servoj.gain)
             if grip is not None:
+                grip = self._latched_grip(float(np.clip(grip, 0, 1)))
                 # hand the gripper target to the gripper thread (non-blocking):
                 # a synchronous socket round-trip here throttled the servo loop
-                self._grip_target = float(np.clip(grip, 0, 1))
+                self._grip_target = grip
 
             wait = period - (time.perf_counter() - t0)
             if wait > 0:
@@ -411,6 +417,34 @@ class ChunkExecutor:
             log.exception("executor thread crashed")
             self._halt("executor_crash")
             self._set_reason("executor_crash")
+
+    def _latched_grip(self, grip: float) -> float:
+        """Aperture latch (rig 09-04): in 4 of the 5 objects lost mid-carry
+        the policy was commanding the fingers OPEN while carrying. Once both
+        pads register `grip_latch_fz_n` of load (trailing-window, dropout
+        tolerant) the commanded closure is floored at its value at that
+        moment; it can still close further, never open, until an intended
+        release clears the latch."""
+        thr = float(getattr(self.hw.safety, "grip_latch_fz_n", 0.0) or 0.0)
+        if thr <= 0:
+            return grip
+        loads = getattr(self.safety, "contact_load", None) or {}
+        if self._grip_latch is None:
+            if len(loads) >= 2 and all(v > thr for v in loads.values()):
+                self._grip_latch = grip
+                log.info("aperture latched at %.2f (both pads loaded: %s)",
+                         grip, {k: round(v, 1) for k, v in loads.items()})
+            return grip
+        # RUNNING MAX since contact (09-04 analysis): contact registers at
+        # ~0.58 and the fingers then close a further ~0.05 into the object;
+        # latching at the contact value would under-grip on the way back.
+        if grip > self._grip_latch:
+            self._grip_latch = grip
+        return self._grip_latch
+
+    def clear_grip_latch(self) -> None:
+        """An INTENDED release (veto recovery / end of episode) drops the latch."""
+        self._grip_latch = None
 
     GRIP_DEADBAND = 0.008  # ~2/255 counts, same as collection (GripperTuning):
                            # re-sending an unchanged target makes the Robotiq

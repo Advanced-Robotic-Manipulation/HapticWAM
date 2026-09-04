@@ -269,8 +269,13 @@ class DeploymentRuntime:
                     # Same guard the collect app got (data_collect/session.py
                     # _file_unlabeled) — deploy was missed.
                     try:
+                        # + the stop reason (analyst 09-04 P3: every end
+                        # condition of a 29-episode session had to be
+                        # reconstructed from the streams)
+                        reason = executor.stopped_reason or planner.stop_reason
                         self.recorder.relabel(saved, status="aborted",
-                                              tags=["unlabeled"])
+                                              tags=["unlabeled",
+                                                    f"stop:{reason or 'none'}"])
                     except Exception:
                         log.exception("could not file %s as unlabeled", saved)
             finally:
