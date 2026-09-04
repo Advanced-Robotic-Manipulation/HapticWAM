@@ -107,6 +107,8 @@ import zlib
 from pathlib import Path
 
 import numpy as np
+
+from phantom.deploy.planner import VETO_REWRITE_ACTIONS
 import torch
 
 from phantom.config.hardware import load_hardware
@@ -653,7 +655,7 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
         # mere existence is not a rewrite: only close_masked / recovery_open touch
         # plan.actions (planner.py:606 writes actions_pre_veto on exactly those).
         veto_act = (r.get("terminal_veto") or {}).get("action")
-        vetoed = veto_act in ("close_masked", "recovery_open") or pre_veto is not None
+        vetoed = veto_act in VETO_REWRITE_ACTIONS or pre_veto is not None
         trace_chunk = np.asarray(pre_veto if pre_veto is not None else r["actions"],
                                  dtype=np.float64)
         prev_latency = r.get("latency_s")
