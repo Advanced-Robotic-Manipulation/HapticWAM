@@ -38,6 +38,14 @@ log = logging.getLogger(__name__)
 LETGO_STOP_REASONS = ("wrench_limit", "hitbox_exit", "veto_retry_cap")
 
 
+def halt_reason_for(events) -> str:
+    """Executor stop reason for a STOP_EPISODE verdict: a stop made ONLY of
+    lift_complete events is the SUCCESS end (never a let-go); anything else
+    stays the generic safety_stop whose events carry the let-go granularity."""
+    kinds = {getattr(e, "kind", "") for e in (events or [])}
+    return "lift_complete" if kinds and kinds == {"lift_complete"} else "safety_stop"
+
+
 def is_letgo_reason(name: str | None) -> bool:
     return bool(name) and (str(name).startswith("tactile_")
                            or str(name) in LETGO_STOP_REASONS)
@@ -338,7 +346,7 @@ class ChunkExecutor:
                 self.arm.stop(2.0)
                 # the EVENTS carry the granularity `safety_stop` loses: a
                 # tactile/wrench/hitbox stop must also open the fingers
-                self._halt("safety_stop", events=verdict.events)
+                self._halt(halt_reason_for(verdict.events), events=verdict.events)
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
