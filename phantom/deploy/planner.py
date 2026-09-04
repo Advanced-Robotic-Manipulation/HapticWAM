@@ -344,6 +344,19 @@ class TerminalVeto:
     # minimum of the measured aperture.
     close_pos: float = 0.45
     close_rise: float = 0.15
+    # Tactile-grounded phantom / lost-object recovery (rig 09-04, evaluated
+    # on all 17 closes of the session: 6/6 phantoms + 5/5 lost objects flagged,
+    # 0/6 carried grasps): gripper measured closed AND the TCP has risen more
+    # than `phantom_dz` above its height at the close AND the trailing
+    # `phantom_window` max of the baseline-corrected pad force is below
+    # `phantom_f` on BOTH pads, sustained `phantom_t` -> open + re-descend
+    # through the same recovery arm as the p_none rule. A time-only gate has
+    # no clean cell (force ramp after a real close spans 0.4-3.2 s); the lift
+    # gate defers the question to the moment it becomes answerable.
+    phantom_dz: float = 0.03
+    phantom_f: float = 2.5
+    phantom_t: float = 0.3
+    phantom_window: float = 1.0
 
 
 class PlannerLoop:
@@ -491,10 +504,54 @@ class PlannerLoop:
             cum = np.minimum(cum, 0.0)
             a[:, 2] = np.diff(np.concatenate([[0.0], cum]))
             self._invalidate_cpk(plan)
+            if hasattr(self.executor, "clear_grip_latch"):
+                self.executor.clear_grip_latch()
             rec["action"] = "recovery_open"
             log.warning("terminal veto: phantom grasp (p_none=%.2f) — opening to "
                         "%.2f and forbidding lift (retry %d/%d)",
                         p_none, v.open_aperture, state["retries"], v.max_retries)
+            return rec
+
+        # ---- (b2) tactile-grounded phantom / lost-object recovery -----------
+        # z at the moment the MEASURED aperture crossed close_pos upward
+        if grip_now > v.close_pos:
+            if state.get("close_z") is None:
+                state["close_z"] = z_now
+        else:
+            state["close_z"] = None
+            state["phantom_since"] = None
+        loads = self._pad_loads(state, v.phantom_window)
+        empty = (state.get("close_z") is not None
+                 and z_now - state["close_z"] > v.phantom_dz
+                 and len(loads) >= 2 and all(f < v.phantom_f for f in loads.values()))
+        t_rep = time.perf_counter()
+        if empty:
+            if state.get("phantom_since") is None:
+                state["phantom_since"] = t_rep
+        else:
+            state["phantom_since"] = None
+        if empty and (t_rep - state["phantom_since"]) >= v.phantom_t:
+            rise_mm = (z_now - state["close_z"]) * 1000.0
+            state["close_z"] = None
+            state["phantom_since"] = None
+            state["closed_idx"] = None
+            state["retries"] += 1
+            rec["retries"] = state["retries"]
+            rec["pad_load"] = {k: round(f, 2) for k, f in loads.items()}
+            if state["retries"] > v.max_retries:
+                rec["action"] = "retry_cap"
+                return rec
+            a[:, 6] = v.open_aperture
+            cum = np.minimum(np.cumsum(a[:, 2]), 0.0)
+            a[:, 2] = np.diff(np.concatenate([[0.0], cum]))
+            self._invalidate_cpk(plan)
+            if hasattr(self.executor, "clear_grip_latch"):
+                self.executor.clear_grip_latch()
+            rec["action"] = "recovery_tactile"
+            log.warning("terminal veto: gripper closed and lifted %.0f mm with "
+                        "NO pad load (%s) — opening to %.2f and re-descending "
+                        "(retry %d/%d)", rise_mm, rec["pad_load"],
+                        v.open_aperture, state["retries"], v.max_retries)
             return rec
 
         # ---- (a) close mask -------------------------------------------------
@@ -523,6 +580,36 @@ class PlannerLoop:
                     "z=%.0f mm) — holding aperture %.2f",
                     p_contact, v.p_close, z_now * 1000, grip_now)
         return rec
+
+    def _pad_loads(self, state: dict, window_s: float) -> dict[str, float]:
+        """Trailing-`window_s` max of the baseline-corrected |fz| per pad from
+        the tactile rings; {} when no session/rings (tests, student stubs).
+        The baseline is the first replan's reading (pads untouched at the
+        start pose) — the left pad idles 0.7-2.2 N above zero."""
+        session = self.session or getattr(self.snapshots, "session", None)
+        rings = getattr(session, "rings", None)
+        if not rings:
+            return {}
+        rate = float(getattr(self.hw.tactile, "rate_hz", 8.0) or 8.0)
+        k = max(1, int(round(window_s * rate)))
+        out = {}
+        base = state.setdefault("pad_base", {})
+        for s_ in self.hw.tactile.sensors:
+            ring = rings.get(f"tactile_{s_.name}")
+            if ring is None:
+                continue
+            try:
+                ts_t, tac = ring.latest(k)
+                w = tac.get("wrench") if hasattr(tac, "get") else None
+            except Exception:
+                continue
+            if w is None or not len(ts_t):
+                continue
+            fz = np.asarray(w, dtype=np.float64).reshape(len(ts_t), -1)[:, 2]
+            if s_.name not in base:
+                base[s_.name] = float(fz[-1])
+            out[s_.name] = float(np.max(np.abs(fz - base[s_.name])))
+        return out
 
     @staticmethod
     def _invalidate_cpk(plan) -> None:

@@ -535,6 +535,172 @@ def test_tick_rate_lift_complete_in_safety_monitor():
         assert v.action == SafetyAction.STOP_EPISODE
         assert [e.kind for e in v.events] == ["lift_complete"]
         assert halt_reason_for(v.events) == "lift_complete"
-        # one pad only 2.0 N over its 1.5 N baseline (3.5 raw) -> not enough
-        push(0.36, [3.5] + [9.0] * (len(names) - 1), t + 0.20)
-        assert mon.check(t + 0.20, mid).action == SafetyAction.OK
+        # one pad only 2.0 N over its 1.5 N baseline (3.5 raw) -> not enough,
+        # once the 0.6 s trailing window has forgotten the 9 N sample
+        push(0.36, [3.5] + [9.0] * (len(names) - 1), t + 0.90)
+        assert mon.check(t + 0.90, mid).action == SafetyAction.OK
+
+
+def test_lift_complete_trailing_window_survives_dropout():
+    """09-04: one carried grasp had NO 0.4 s window with both pads
+    continuously above threshold (sensor dropout). The trailing-window max
+    must ride through a dropout tick; and 4.0 N must reject a weak
+    (touch-lost) hold."""
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    hw = make_small_hw()
+    assert hw.safety.lift_complete_fz_n == 4.0 and hw.safety.lift_complete_z_m == 0.32
+    hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
+        "lift_complete_hold_s": 0.05, "lift_complete_window_s": 0.6})})
+    ws = hw.safety.workspace_m
+    mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+    uid = _uuid.uuid4().hex[:8]
+    h, w, c = hw.cameras.scene.color.hwc
+    names = [s.name for s in hw.tactile.sensors]
+    rings = {"arm": SharedRingBuffer(f"s_twa_{uid}", 16, {
+        "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+        "tcp_pose": ((6,), "float64")}, create=True),
+        "camera_scene": SharedRingBuffer(f"s_twc_{uid}", 4, {
+            "color": ((h, w, c), "uint8")}, create=True)}
+    for n in names:
+        rings[f"tactile_{n}"] = SharedRingBuffer(f"s_twt_{uid}_{n[:3]}", 16, {
+            "wrench": ((6,), "float32")}, create=True)
+    with contextlib.ExitStack() as stack:
+        for r in rings.values():
+            stack.callback(r.close)
+        mon = SafetyMonitor(hw, rings)
+        t0 = _time.perf_counter()
+
+        def push(z, loads, tt):
+            rings["arm"].push(tt, ft=np.zeros(6), protective_stop=np.uint8(0),
+                              tcp_pose=np.array([0, 0, z, 0, 3.14, 0.0]))
+            rings["camera_scene"].push(tt, color=np.zeros((h, w, c), dtype=np.uint8))
+            for n, fz in zip(names, loads):
+                rings[f"tactile_{n}"].push(tt, wrench=np.array([0, 0, fz, 0, 0, 0], np.float32))
+            return mon.check(tt, mid)
+
+        push(0.10, [0.0] * len(names), t0)                    # baseline
+        push(0.40, [9.0] * len(names), t0 + 0.01)             # lifted + loaded
+        r = push(0.40, [0.0] * len(names), t0 + 0.02)         # DROPOUT tick
+        assert r.action == SafetyAction.OK                     # window still 9 N -> keeps counting
+        r = push(0.40, [9.0] * len(names), t0 + 0.08)
+        assert r.action == SafetyAction.STOP_EPISODE and r.events[0].kind == "lift_complete"
+        assert mon.contact_load and all(v >= 9.0 for v in mon.contact_load.values())
+        # a 3.5 N hold (touch-lost class) never qualifies at 4.0 N
+        mon2 = SafetyMonitor(hw, rings)
+        rings["arm"].push(t0 + 1.0, ft=np.zeros(6), protective_stop=np.uint8(0),
+                          tcp_pose=np.array([0, 0, 0.4, 0, 3.14, 0.0]))
+        for n in names:
+            rings[f"tactile_{n}"].push(t0 + 1.0, wrench=np.zeros(6, np.float32))
+        mon2.check(t0 + 1.0, mid)
+        for k in range(5):
+            tt = t0 + 1.1 + 0.02 * k
+            rings["arm"].push(tt, ft=np.zeros(6), protective_stop=np.uint8(0),
+                              tcp_pose=np.array([0, 0, 0.4, 0, 3.14, 0.0]))
+            rings["camera_scene"].push(tt, color=np.zeros((h, w, c), dtype=np.uint8))
+            for n in names:
+                rings[f"tactile_{n}"].push(tt, wrench=np.array([0, 0, 3.5, 0, 0, 0], np.float32))
+            assert mon2.check(tt, mid).action == SafetyAction.OK
+
+
+def test_aperture_latch_never_lets_a_held_grasp_open():
+    """09-04 touch-lost mechanism: 4/5 lost objects were RELEASED by the
+    policy mid-carry. Once both pads carry load the commanded closure is
+    floored; it can close further, never open, until clear_grip_latch()."""
+    from types import SimpleNamespace
+
+    from phantom.deploy.executor import ChunkExecutor
+
+    hw = make_small_hw()
+    assert hw.safety.grip_latch_fz_n == 2.5
+    ex = ChunkExecutor.__new__(ChunkExecutor)
+    ex.hw = hw
+    ex.safety = SimpleNamespace(contact_load={})
+    ex._grip_latch = None
+    assert ex._latched_grip(0.30) == 0.30            # no contact: pass-through
+    ex.safety.contact_load = {"left": 6.0, "right": 0.5}
+    assert ex._latched_grip(0.55) == 0.55            # one pad: still free
+    ex.safety.contact_load = {"left": 6.0, "right": 5.0}
+    assert ex._latched_grip(0.60) == 0.60            # latch armed at 0.60
+    assert ex._grip_latch == 0.60
+    assert ex._latched_grip(0.52) == 0.60            # policy tries to open -> floored
+    assert ex._latched_grip(0.70) == 0.70            # closing further allowed ...
+    assert ex._latched_grip(0.60) == 0.70            # ... and becomes the new floor (running max)
+    ex.clear_grip_latch()
+    assert ex._latched_grip(0.40) == 0.40            # intended release
+    hw0 = hw.model_copy(update={"safety": hw.safety.model_copy(update={"grip_latch_fz_n": 0.0})})
+    ex.hw = hw0; ex._grip_latch = None
+    assert ex._latched_grip(0.10) == 0.10            # disabled
+
+
+def test_tactile_phantom_recovery_opens_and_redescends():
+    """09-04: 6 phantom lifts (closed on air, lifted 40 cm). Rule evaluated on
+    all 17 closes of the session: closed + lifted > 30 mm above the close
+    height + trailing-1 s pad load < 2.5 N on both pads, sustained 0.3 s ->
+    open + forbid lift. A loaded (carried) gripper is never touched."""
+    import time as _time
+    from types import SimpleNamespace
+
+    from phantom.deploy.planner import PlannerLoop, TerminalVeto
+
+    hw = make_small_hw()
+    names = [s.name for s in hw.tactile.sensors]
+
+    class _Ring:
+        def __init__(self):
+            self.fz = 0.0
+
+        def latest(self, k):
+            return np.full(k, _time.perf_counter()), {"wrench": np.tile(
+                np.array([0, 0, self.fz, 0, 0, 0], np.float32), (k, 1))}
+
+    rings = {f"tactile_{n}": _Ring() for n in names}
+    veto = TerminalVeto(p_close=0.5, p_none=0.9, max_retries=3, z_floor=0.05,
+                        z_margin=0.015, open_aperture=0.20, phantom_t=0.0)
+
+    class _ExL(_Ex):
+        cleared = 0
+
+        def clear_grip_latch(self):
+            self.cleared += 1
+
+    def run_case(loads, z_seq):
+        ex = _ExL()
+        snaps = _Snaps(hw, z=0.25, grips=(0.30,))
+        lp = PlannerLoop(hw, _Pol(hw, p_none=[0.05], grip_cmd=[0.8]), snaps, ex, veto=veto,
+                         session=SimpleNamespace(rings=rings))
+        # the FIRST replan captures the per-episode baseline with the pads
+        # untouched (as at the real start pose); loads apply from then on
+        for r in rings.values():
+            r.fz = 0.0
+        lp._pad_loads({}, 1.0)          # warm nothing — baseline lives in `state`
+        state = {"closed_idx": None, "retries": 0, "g_min": None, "in_close": False,
+                 "grip_seen_t": float("-inf"), "close_permitted": False,
+                 "allowed_floor_only": False, "closed_floor_only": False}
+        acts = []
+        for i, z in enumerate(z_seq):
+            if i == 1:
+                for r in rings.values():
+                    r.fz = loads
+            H, A = hw.control.chunk_horizon, hw.control.action_dim
+            a = np.zeros((H, A)); a[:, 2] = +0.01; a[:, 6] = 0.8
+            plan = SimpleNamespace(actions=a, p_evt=np.array([0.05, 0.95, 0, 0, 0]),
+                                   cpk=None, latency_s=0.5)
+            rec = lp._apply_veto(plan, np.array([0, 0, z, 0, 3.14, 0.0]), 0.8, state, i)
+            acts.append((rec["action"], float(plan.actions[0, 6]), float(np.sum(plan.actions[:, 2]))))
+        return acts, ex
+
+    # phantom: closed at 0.08, rising to 0.14 with no pad load -> recovery
+    acts, ex = run_case(0.0, [0.08, 0.10, 0.14])
+    assert acts[-1][0] == "recovery_tactile", acts
+    assert acts[-1][1] == 0.20 and acts[-1][2] <= 0.0     # opened + no lift
+    assert ex.cleared == 1
+    # carried: same motion with 9 N on both pads -> untouched
+    acts, ex = run_case(9.0, [0.08, 0.10, 0.14, 0.30])
+    assert all(a[0] != "recovery_tactile" for a in acts), acts
+    assert ex.cleared == 0
