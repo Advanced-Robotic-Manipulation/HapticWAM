@@ -38,6 +38,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+
+from phantom.deploy.planner import VETO_REWRITE_ACTIONS
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -158,7 +160,7 @@ def main() -> int:
             # a veto record exists on every replan; only close_masked /
             # recovery_open actually rewrote plan.actions (same rule as replay_rig)
             veto_act = (acc[k].get("terminal_veto") or {}).get("action")
-            vetoed = (veto_act in ("close_masked", "recovery_open")
+            vetoed = (veto_act in VETO_REWRITE_ACTIONS
                       or pre is not None)
             row = summarize([chunk_metrics(per_seed[j][k]) for j in range(args.seeds)],
                             chunk_metrics(trace_chunk))

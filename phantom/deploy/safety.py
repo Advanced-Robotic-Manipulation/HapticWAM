@@ -242,7 +242,8 @@ class SafetyMonitor:
         # reporting so a single wired sensor can never fire it alone.
         self.contact_load = dict(pad_load)
         lc_z = hw.safety.lift_complete_z_m
-        if lc_z > 0 and len(pad_load) >= 2 and self._tcp_z is not None:
+        if (lc_z > 0 and hw.safety.lift_complete_fz_n > 0 and len(pad_load) >= 2
+                and self._tcp_z is not None):
             good = (self._tcp_z > lc_z
                     and all(v > hw.safety.lift_complete_fz_n for v in pad_load.values()))
             if good:

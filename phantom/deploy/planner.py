@@ -37,6 +37,9 @@ TACTILE_INPUT_MODES = ("teacher",)   # modes whose MODEL consumes tactile stream
 # surviving wrist signal. The window is still RECORDED (the rig wears the
 # sensors in every mode) — it is zeroed on the way into the model only.
 WRIST_MASKED_MODES = ("vision_only", "drop_tactile")
+# veto actions that REWRITE the chunk (the trace then carries actions_pre_veto and
+# the replay tools must not score the veto's arithmetic as a model sample — F9)
+VETO_REWRITE_ACTIONS = ("close_masked", "recovery_open", "recovery_tactile")
 
 
 class StaleStreamError(AssertionError):
@@ -488,6 +491,16 @@ class PlannerLoop:
                      "close — recovery suppressed, latch cleared", p_none)
             return rec
         if idx is not None and p_none > v.p_none:
+            # tactile veto over the model's opinion (verification 09-04): with
+            # both pads loaded the object IS held — never open on p_none alone
+            held = self._pad_loads(state, v.phantom_window)
+            if len(held) >= 2 and all(f >= v.phantom_f for f in held.values()):
+                state["closed_idx"] = None
+                rec["action"] = "recovery_skipped_loaded"
+                rec["pad_load"] = {k: round(f, 2) for k, f in held.items()}
+                log.info("terminal veto: high p_none (%.2f) but both pads loaded "
+                         "(%s) — recovery suppressed", p_none, rec["pad_load"])
+                return rec
             state["closed_idx"] = None
             state["retries"] += 1
             rec["retries"] = state["retries"]
@@ -734,7 +747,7 @@ class PlannerLoop:
                              and all(isinstance(x, (int, float)) for x in v))},
             }
             if pre_veto is not None and veto_rec is not None \
-                    and veto_rec.get("action") in ("close_masked", "recovery_open"):
+                    and veto_rec.get("action") in VETO_REWRITE_ACTIONS:
                 row["actions_pre_veto"] = pre_veto.tolist()
             self.trace.append(row)
             from phantom.config.model import EVENTS

@@ -704,3 +704,91 @@ def test_tactile_phantom_recovery_opens_and_redescends():
     acts, ex = run_case(9.0, [0.08, 0.10, 0.14, 0.30])
     assert all(a[0] != "recovery_tactile" for a in acts), acts
     assert ex.cleared == 0
+
+
+def test_latched_grip_is_what_gets_recorded():
+    """Verification 09-04 must-fix: the latch floors the command the arm
+    receives — STREAM_ACTIONS / _grip_hist must carry that SENT value, not
+    the policy's proposal (else the next fine-tune learns 'open mid-carry'
+    and the veto's close detector sees phantom transitions)."""
+    from phantom.deploy.planner import VETO_REWRITE_ACTIONS
+    assert "recovery_tactile" in VETO_REWRITE_ACTIONS
+    import re
+    src = open("/Users/sannikov/GitHub/phantom/phantom/deploy/executor.py").read()
+    body = src[src.index("while self._last_action_k < k:"):src.index("verdict = self.safety.check")]
+    assert "g_sent" in body and "self._grip_latch" in body
+    assert "_grip_hist.append((t0, g_sent))" in body
+    assert "record_action(t0, a)" in body and "a[6] = g_sent" in body
+
+
+def test_lift_complete_fz_zero_disables_tick_detector():
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.safety import SafetyAction, SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    hw = make_small_hw()
+    hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
+        "lift_complete_fz_n": 0.0, "lift_complete_hold_s": 0.0})})
+    ws = hw.safety.workspace_m
+    mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+    uid = _uuid.uuid4().hex[:8]
+    h, w, c = hw.cameras.scene.color.hwc
+    names = [s.name for s in hw.tactile.sensors]
+    rings = {"arm": SharedRingBuffer(f"s_fza_{uid}", 16, {
+        "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+        "tcp_pose": ((6,), "float64")}, create=True),
+        "camera_scene": SharedRingBuffer(f"s_fzc_{uid}", 4, {"color": ((h, w, c), "uint8")}, create=True)}
+    for n in names:
+        rings[f"tactile_{n}"] = SharedRingBuffer(f"s_fzt_{uid}_{n[:3]}", 16, {"wrench": ((6,), "float32")}, create=True)
+    with contextlib.ExitStack() as stack:
+        for r in rings.values():
+            stack.callback(r.close)
+        mon = SafetyMonitor(hw, rings)
+        for k in range(3):
+            tt = _time.perf_counter() + 0.01 * k
+            rings["arm"].push(tt, ft=np.zeros(6), protective_stop=np.uint8(0),
+                              tcp_pose=np.array([0, 0, 0.40, 0, 3.14, 0.0]))
+            rings["camera_scene"].push(tt, color=np.zeros((h, w, c), dtype=np.uint8))
+            for n in names:
+                rings[f"tactile_{n}"].push(tt, wrench=np.array([0, 0, 0.3 * k, 0, 0, 0], np.float32))
+            assert mon.check(tt, mid).action == SafetyAction.OK
+
+
+def test_p_none_recovery_never_opens_loaded_fingers():
+    """Defensive (verification 09-04): the model-opinion recovery arm must
+    yield to the pads — both loaded means the object is held."""
+    import time as _time
+    from types import SimpleNamespace
+
+    from phantom.deploy.planner import PlannerLoop, TerminalVeto
+
+    hw = make_small_hw()
+    names = [s.name for s in hw.tactile.sensors]
+
+    class _Ring:
+        fz = 0.0
+
+        def latest(self, k):
+            return np.full(k, _time.perf_counter()), {"wrench": np.tile(
+                np.array([0, 0, self.fz, 0, 0, 0], np.float32), (k, 1))}
+
+    rings = {f"tactile_{n}": _Ring() for n in names}
+    veto = TerminalVeto(p_close=0.5, p_none=0.9, max_retries=3, z_floor=0.05,
+                        z_margin=0.015, open_aperture=0.20)
+    lp = PlannerLoop(hw, _Pol(hw, p_none=[0.05], grip_cmd=[0.8]), _Snaps(hw), _Ex(), veto=veto,
+                     session=SimpleNamespace(rings=rings))
+    state = {"closed_idx": 3, "retries": 0, "g_min": 0.2, "in_close": True,
+             "grip_seen_t": float("-inf"), "close_permitted": True,
+             "allowed_floor_only": False, "closed_floor_only": False}
+    lp._pad_loads(state, 1.0)              # baseline with untouched pads
+    for r in rings.values():
+        r.fz = 9.0                          # now firmly loaded
+    H, A = hw.control.chunk_horizon, hw.control.action_dim
+    a = np.zeros((H, A)); a[:, 6] = 0.8; a[:, 2] = 0.01
+    plan = SimpleNamespace(actions=a, p_evt=np.array([0.95, 0.05, 0, 0, 0]), cpk=None, latency_s=0.5)
+    rec = lp._apply_veto(plan, np.array([0, 0, 0.20, 0, 3.14, 0.0]), 0.8, state, 4)
+    assert rec["action"] == "recovery_skipped_loaded", rec
+    assert float(plan.actions[0, 6]) == 0.8 and state["retries"] == 0

@@ -331,13 +331,22 @@ class ChunkExecutor:
                 while self._last_action_k < k:
                     self._last_action_k += 1
                     a = plan.actions[self._last_action_k]
+                    # report the command that actually GOES OUT: the aperture
+                    # latch floors the gripper channel (verification 09-04:
+                    # recording the raw proposal wrote "open mid-carry" into
+                    # STREAM_ACTIONS and confused the veto's close detector)
+                    g_sent = float(np.clip(a[6], 0.0, 1.0))
+                    if self._grip_latch is not None:
+                        g_sent = max(g_sent, self._grip_latch)
+                    if g_sent != a[6]:
+                        a = np.array(a, copy=True); a[6] = g_sent
                     if self.record_action is not None:
                         self.record_action(t0, a)
                     # locked: the planner thread reads this deque, and a full
                     # maxlen deque pops-left on append — an unsynchronised
                     # list() over it can raise "mutated during iteration"
                     with self._lock:
-                        self._grip_hist.append((t0, float(np.clip(a[6], 0.0, 1.0))))
+                        self._grip_hist.append((t0, g_sent))
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
