@@ -106,6 +106,10 @@ class SafetyMonitor:
         self._wrench_base: np.ndarray | None = None
         self._wrench_over_since: float | None = None
         self._wrench_last_t: float | None = None
+        # lift_complete state (per episode — the monitor is built per episode)
+        self._lift_base: dict[str, float] = {}
+        self._lift_since: float | None = None
+        self._tcp_z: float | None = None
 
     # ------------------------------------------------------------------
     def check(self, t_now: float, tcp_target: np.ndarray) -> SafetyVerdict:
@@ -130,6 +134,9 @@ class SafetyMonitor:
                 events.append(SafetyEvent(t_now, "protective_stop", 1.0,
                                           SafetyAction.PROTECTIVE_STOP))
                 action = SafetyAction.PROTECTIVE_STOP
+            tp_raw = arm.get("tcp_pose") if hasattr(arm, "get") else None
+            if tp_raw is not None:
+                self._tcp_z = float(np.asarray(tp_raw[0]).reshape(-1)[2])
             # singularity whip detector: measured joint speed, not commanded —
             # see SafetyConfig.joint_speed_stop_rad_s. No debounce: one tick
             # over 3 rad/s is already a whip, and a spurious stop is benign
@@ -182,6 +189,7 @@ class SafetyMonitor:
                     self._wrench_base += alpha * (ft - self._wrench_base)
 
         # fingertip force / indentation e-stop (teacher rigs always record tactile)
+        pad_load: dict[str, float] = {}
         for s in hw.tactile.sensors:
             ring = self.rings.get(f"tactile_{s.name}")
             if ring is None:
@@ -194,7 +202,17 @@ class SafetyMonitor:
                                           t_now - ts_t[0], SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
                 continue
-            fields = np.asarray(tac["fields_ds"][0], dtype=np.float32)
+            # lift_complete bookkeeping: baseline-corrected |fz| per pad
+            w_raw = tac.get("wrench") if hasattr(tac, "get") else None
+            if w_raw is not None:
+                fz = float(np.asarray(w_raw[0]).reshape(-1)[2])
+                if s.name not in self._lift_base:
+                    self._lift_base[s.name] = fz     # first tick: pads untouched
+                pad_load[s.name] = abs(fz - self._lift_base[s.name])
+            f_raw = tac.get("fields_ds") if hasattr(tac, "get") else None
+            if f_raw is None:
+                continue
+            fields = np.asarray(f_raw[0], dtype=np.float32)
             from phantom.data.derived import channel_slices
             ch = channel_slices(hw.tactile)
             if hw.tactile.force_calibrated:
@@ -207,6 +225,25 @@ class SafetyMonitor:
             if peak > limit:
                 events.append(SafetyEvent(t_now, kind, peak, SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
+
+        # lift_complete: every pad loaded above lift_complete_fz_n AND tcp z
+        # above lift_complete_z_m, sustained lift_complete_hold_s -> SUCCESS
+        # stop (non-letgo: the object stays held). Needs at least two pads
+        # reporting so a single wired sensor can never fire it alone.
+        lc_z = hw.safety.lift_complete_z_m
+        if lc_z > 0 and len(pad_load) >= 2 and self._tcp_z is not None:
+            good = (self._tcp_z > lc_z
+                    and all(v > hw.safety.lift_complete_fz_n for v in pad_load.values()))
+            if good:
+                if self._lift_since is None:
+                    self._lift_since = t_now
+                if t_now - self._lift_since >= hw.safety.lift_complete_hold_s:
+                    events.append(SafetyEvent(t_now, "lift_complete",
+                                              min(pad_load.values()),
+                                              SafetyAction.STOP_EPISODE))
+                    action = _max(action, SafetyAction.STOP_EPISODE)
+            else:
+                self._lift_since = None
 
         # scene-camera freshness: a wedged RealSense pipeline stops pushing and
         # the ring keeps serving the pre-stall frame, so every replan conditions

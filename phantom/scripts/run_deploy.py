@@ -300,7 +300,7 @@ def build_parser() -> argparse.ArgumentParser:
                          "hold until the next plan (steps beyond HEAD_STEPS=9 "
                          "are never validated by a replan; all four 09-01 "
                          "whips began in that tail). 0 = uncapped.")
-    ap.add_argument("--lift-complete-z", type=float, default=0.32,
+    ap.add_argument("--lift-complete-z", type=float, default=0.30,
                     help="success auto-stop: tactile-confirmed grasp held "
                          "above this TCP z (m) ends the episode cleanly, "
                          "gripper held. 0 disables.")
@@ -700,6 +700,12 @@ def main(argv=None) -> int:
     if conflict is not None:
         log.error("%s", conflict)
         return 2
+    # lift_complete thresholds reach the TICK-RATE detector in SafetyMonitor
+    # through hw.safety (the per-replan closure below stays as a fallback)
+    hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
+        "lift_complete_z_m": max(0.0, float(args.lift_complete_z)),
+        "lift_complete_fz_n": max(0.0, float(args.lift_complete_fz)),
+        "lift_complete_hold_s": max(0.0, float(args.lift_complete_hold))})})
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)

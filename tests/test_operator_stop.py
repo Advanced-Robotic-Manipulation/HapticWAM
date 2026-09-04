@@ -466,3 +466,75 @@ def test_recovered_clears_wrist_and_joint_speed_stops():
         rings["arm"].push(t + 0.02, ft=np.zeros(6), protective_stop=np.uint8(0),
                           q=bent, qd=np.zeros(hw.arm.dof))
         assert mon.recovered()              # bent + calm -> clear
+
+
+def test_tick_rate_lift_complete_in_safety_monitor():
+    """Rig 09-04: 4 real grasps were ended by the 500 Hz wrist guard because
+    the per-replan lift detector lost the race. The detector now lives in
+    SafetyMonitor.check(): baseline-corrected pad loads + tcp z, sustained
+    -> a STOP whose executor reason is 'lift_complete' (never a let-go)."""
+    import contextlib
+    import time as _time
+    import uuid as _uuid
+
+    from phantom.deploy.executor import halt_reason_for, is_letgo_reason
+    from phantom.deploy.safety import SafetyAction, SafetyEvent, SafetyMonitor
+    from phantom.recording.ringbuffer import SharedRingBuffer
+
+    assert not is_letgo_reason("lift_complete")
+    assert halt_reason_for([SafetyEvent(0, "lift_complete", 5, SafetyAction.STOP_EPISODE)]) == "lift_complete"
+    assert halt_reason_for([SafetyEvent(0, "lift_complete", 5, SafetyAction.STOP_EPISODE),
+                            SafetyEvent(0, "wrench_limit", 90, SafetyAction.STOP_EPISODE)]) == "safety_stop"
+    assert halt_reason_for([]) == "safety_stop"
+
+    hw = make_small_hw()
+    hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
+        "lift_complete_z_m": 0.30, "lift_complete_fz_n": 2.5,
+        "lift_complete_hold_s": 0.05})})
+    ws = hw.safety.workspace_m
+    mid = np.array([np.mean(ws.x), np.mean(ws.y), np.mean(ws.z), 0, 3.14, 0])
+    uid = _uuid.uuid4().hex[:8]
+    h, w, c = hw.cameras.scene.color.hwc
+    names = [s.name for s in hw.tactile.sensors]
+    assert len(names) >= 2
+    rings = {
+        "arm": SharedRingBuffer(f"s_lca_{uid}", 16, {
+            "ft": ((6,), "float64"), "protective_stop": ((), "uint8"),
+            "tcp_pose": ((6,), "float64")}, create=True),
+        "camera_scene": SharedRingBuffer(f"s_lcc_{uid}", 4, {
+            "color": ((h, w, c), "uint8")}, create=True),
+    }
+    for n in names:
+        rings[f"tactile_{n}"] = SharedRingBuffer(f"s_lct_{uid}_{n[:3]}", 16, {
+            "wrench": ((6,), "float32")}, create=True)
+    with contextlib.ExitStack() as stack:
+        for r in rings.values():
+            stack.callback(r.close)
+        mon = SafetyMonitor(hw, rings)
+        t = _time.perf_counter()
+
+        def push(z, loads, tt):
+            rings["arm"].push(tt, ft=np.zeros(6), protective_stop=np.uint8(0),
+                              tcp_pose=np.array([0, 0, z, 0, 3.14, 0.0]))
+            rings["camera_scene"].push(tt, color=np.zeros((h, w, c), dtype=np.uint8))
+            for n, fz in zip(names, loads):
+                rings[f"tactile_{n}"].push(tt, wrench=np.array([0, 0, fz, 0, 0, 0], np.float32))
+
+        # first tick: untouched pads carry a BIAS -> captured as baseline
+        push(0.10, [1.5] * len(names), t)
+        assert mon.check(t, mid).action == SafetyAction.OK
+        # grasped at the floor: loaded but low -> no
+        push(0.10, [9.0] * len(names), t + 0.01)
+        assert mon.check(t + 0.01, mid).action == SafetyAction.OK
+        # lifted + loaded: arms the hold window
+        push(0.35, [9.0] * len(names), t + 0.02)
+        assert mon.check(t + 0.02, mid).action == SafetyAction.OK
+        # sustained past hold -> SUCCESS stop
+        push(0.36, [9.0] * len(names), t + 0.10)
+        v = mon.check(t + 0.10, mid)
+        assert v.action == SafetyAction.STOP_EPISODE
+        assert [e.kind for e in v.events] == ["lift_complete"]
+        assert halt_reason_for(v.events) == "lift_complete"
+        # one pad only 2.0 N over its 1.5 N baseline (3.5 raw) -> not enough
+        push(0.36, [3.5] + [9.0] * (len(names) - 1), t + 0.20)
+        assert mon.check(t + 0.20, mid).action == SafetyAction.OK

@@ -388,6 +388,14 @@ class SafetyConfig(_Frozen):
     # guard would fight demo-faithful lifts), every 09-01 whip/near-miss sat
     # at 0.465+. None disables (non-UR3 arms until DH is set).
     wrist_extension_stop_m: float | None = Field(default=0.462)
+    # Tick-rate SUCCESS stop (rig 09-04): both pads loaded over their
+    # per-episode baseline AND tcp z above the lift height, sustained ->
+    # the episode ends HOLDING. Evaluated in SafetyMonitor.check() at the
+    # executor rate so it wins the race against wrist_extension (the
+    # per-replan planner check lost 4 real grasps to the guard on 09-04).
+    lift_complete_z_m: float = Field(default=0.30, ge=0)      # 0 disables
+    lift_complete_fz_n: float = Field(default=2.5, ge=0)
+    lift_complete_hold_s: float = Field(default=0.4, ge=0)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one
