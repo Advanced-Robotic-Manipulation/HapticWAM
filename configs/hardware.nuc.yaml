@@ -229,6 +229,10 @@ teleop:
     gripper_ema_alpha: 0.2
     gripper_deadband: 0.02
 safety:
+  # 09-04: raised from the 0.462 code default. With lift_complete off, 4/5 carries
+  # ended here at 0.462-0.464 with qd=0 (no whip). IK branch flip sits at 0.4705;
+  # the driver-level branch guard + the 1.2 rad/s joint-speed stop remain.
+  wrist_extension_stop_m: 0.468
   # CB3 has no F/T sensor: wrist "force" is a current-based ESTIMATE with a
   # large pose-dependent static bias (~18 N / ~5 Nm measured at rest) plus
   # acceleration spikes. ArmGuard no longer compares the RAW estimate to these

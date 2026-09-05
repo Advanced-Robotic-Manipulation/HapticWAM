@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 import threading
 import time
 from collections import deque
@@ -424,9 +425,11 @@ class ChunkExecutor:
             self._run()
         except Exception:
             log.exception("executor thread crashed")
+            self.crash_text = traceback.format_exc()[-3000:]
             self._halt("executor_crash")
             self._set_reason("executor_crash")
 
+    crash_text: str | None = None  # traceback of an executor_crash (stop.json)
     def _latched_grip(self, grip: float) -> float:
         """Aperture latch (rig 09-04): in 4 of the 5 objects lost mid-carry
         the policy was commanding the fingers OPEN while carrying. Once both
@@ -495,6 +498,7 @@ class ChunkExecutor:
                         [gs.position, gs.obj], dtype=np.float32))
             except Exception:
                 log.exception("gripper worker error")
+                self.crash_text = "gripper worker: " + traceback.format_exc()[-3000:]
                 self._halt("executor_crash")
                 break
             wait = self._grip_poll_period - (time.perf_counter() - t0)

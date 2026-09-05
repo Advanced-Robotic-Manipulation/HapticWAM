@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -121,9 +121,37 @@ class EpisodeResult:
     # non-None => this PROCESS must not start another episode (see
     # _SESSION_FATAL_REASONS and ChunkExecutor.join_failed). run_deploy exits.
     fatal_reason: str | None = None
+    # per-condition safety events (kind/value/t/count) and the arm state at
+    # the stop — persisted by run_deploy into stop.json + meta tags so a stop
+    # can be diagnosed from disk instead of from terminal scrollback (09-04)
+    events: list = field(default_factory=list)
+    stop_state: dict = field(default_factory=dict)
 
 
 class DeploymentRuntime:
+    def _arm_state_now(self) -> dict:
+        """Latest arm sample as plain floats (tcp_pose, q, qd, wrist-centre
+        distance) — best effort, never raises."""
+        try:
+            _, arm = self.session.rings["arm"].latest(1)
+            q = np.asarray(arm["q"][0], dtype=float).reshape(-1)
+            out = {"tcp_pose": np.asarray(arm["tcp_pose"][0], dtype=float).reshape(-1).tolist(),
+                   "q_deg": np.degrees(q).tolist(),
+                   "qd_max": float(np.max(np.abs(np.asarray(arm["qd"][0], dtype=float))))}
+            dh = getattr(self.hw.safety, "ur_dh_a2_a3_d4_m", None)
+            if dh is not None and q.size >= 3:
+                a2, a3, d4 = dh
+                out["wrist_dist_m"] = float(np.sqrt(a2 * a2 + a3 * a3 + 2 * a2 * a3 * np.cos(q[2]) + d4 * d4))
+            arm_drv = getattr(getattr(self, "rig", None), "arm", None)
+            live = {"hits": getattr(arm_drv, "_limiter_hits", None),
+                    "holds": getattr(arm_drv, "_limiter_holds", None)}
+            last = getattr(arm_drv, "limiter_last", None) or {}
+            if last or live["hits"]:
+                out["servo_limiter"] = last if last else live
+            return out
+        except Exception:
+            return {}
+
     def __init__(self, hw: HardwareConfig, policy: PhantomPolicy, mode: str,
                  out_root: Path, *, parity_fixes: bool = False,
                  veto: TerminalVeto | None = None,
@@ -293,4 +321,11 @@ class DeploymentRuntime:
             # episode_time_cap) are what used to read as stopped_reason None
             stopped_reason=executor.stopped_reason or planner.stop_reason,
             n_replans=len(trace), safety_events=len(safety.log_events),
-            trace_path=trace_path, fatal_reason=fatal_reason(executor))
+            trace_path=trace_path, fatal_reason=fatal_reason(executor),
+            events=[{"t": float(e.t), "kind": str(e.kind),
+                     "value": float(e.value), "action": getattr(e.action, "value", str(e.action)),
+                     "count": int(getattr(e, "count", 1))}
+                    for e in safety.log_events],
+            stop_state={**self._arm_state_now(),
+                        **({"crash": executor.crash_text}
+                           if getattr(executor, "crash_text", None) else {})})

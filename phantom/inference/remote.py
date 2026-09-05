@@ -134,6 +134,8 @@ class PolicyServer:
     """Server half: owns one loaded PhantomPolicy, serves one client at a
     time, keeps the last few contact packages addressable by token."""
 
+    ACCEPT_FAILURE_LIMIT = 20
+
     def __init__(self, policy, ckpt: str, keep_packages: int = 4):
         self.policy = policy
         self.ckpt = ckpt
@@ -191,13 +193,36 @@ class PolicyServer:
         log.info("warmup replan done in %.1f s", time.perf_counter() - t0)
 
     def serve_forever(self, port: int = DEFAULT_PORT) -> None:
+        import multiprocessing
         from multiprocessing.connection import Listener
         with Listener(("127.0.0.1", port), authkey=PHANTOM_AUTHKEY) as srv:
             log.info("policy server READY on 127.0.0.1:%d (ckpt %s)",
                      port, self.ckpt)
             print(f"READY ckpt={self.ckpt} port={port}", flush=True)
+            accept_failures = 0
             while True:
-                with srv.accept() as conn:
+                try:
+                    conn = srv.accept()
+                except (EOFError, OSError, ConnectionError,
+                        multiprocessing.AuthenticationError) as e:
+                    # a client that dies mid-handshake (Ctrl-Z'd / killed
+                    # deploy, a probe that timed out) used to take the whole
+                    # warm server down with it (rig 2026-09-04 19:47).
+                    # A broken LISTENER raises the same way every time:
+                    # back off, and give up after a run of failures instead
+                    # of spinning at 100% CPU (review 09-05).
+                    accept_failures += 1
+                    log.warning("client dropped during accept (%s) — "
+                                "serving on (%d in a row)", type(e).__name__,
+                                accept_failures)
+                    if accept_failures >= self.ACCEPT_FAILURE_LIMIT:
+                        raise RuntimeError(
+                            f"{accept_failures} consecutive accept() failures "
+                            "— the listener itself is broken") from e
+                    time.sleep(min(0.05 * accept_failures, 1.0))
+                    continue
+                accept_failures = 0
+                with conn:
                     log.info("client connected")
                     try:
                         while True:
