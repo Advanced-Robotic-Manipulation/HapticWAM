@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 import threading
 import time
 from collections import deque
@@ -401,9 +402,11 @@ class ChunkExecutor:
             self._run()
         except Exception:
             log.exception("executor thread crashed")
+            self.crash_text = traceback.format_exc()[-3000:]
             self._halt("executor_crash")
             self._set_reason("executor_crash")
 
+    crash_text: str | None = None  # traceback of an executor_crash (stop.json)
     GRIP_DEADBAND = 0.008  # ~2/255 counts, same as collection (GripperTuning):
                            # re-sending an unchanged target makes the Robotiq
                            # report OBJ=0 ("moving") for a cycle — the flicker
@@ -444,6 +447,7 @@ class ChunkExecutor:
                         [gs.position, gs.obj], dtype=np.float32))
             except Exception:
                 log.exception("gripper worker error")
+                self.crash_text = "gripper worker: " + traceback.format_exc()[-3000:]
                 self._halt("executor_crash")
                 break
             wait = self._grip_poll_period - (time.perf_counter() - t0)

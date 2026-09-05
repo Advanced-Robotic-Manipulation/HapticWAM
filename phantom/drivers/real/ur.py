@@ -23,6 +23,7 @@ import numpy as np
 
 from phantom.config.hardware import HardwareConfig
 from phantom.drivers.base import Arm, ArmState
+from phantom.data.derived import rotvec_nearest
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,9 @@ class URArm(Arm):
     # the previous solution and reject any solution that jumps a branch.
     IK_BRANCH_TOL_RAD = 0.35          # >> one 8 ms tick of motion, << any flip
     IK_REJECT_LIMIT = 25              # consecutive rejects (~0.2 s) -> give up
+    # Reach / joint-speed limiter (rig 2026-09-04, see SafetyConfig.elbow_min_rad)
+    LIMITER_BISECT = 3                # step fractions down to 1/8
+    LIMITER_LOG_PERIOD_S = 1.0
 
     def __init__(self, hw: HardwareConfig):
         super().__init__(hw)
@@ -60,6 +64,11 @@ class URArm(Arm):
         self._ik_rejects = 0
         self._ik_dev_max = 0.0            # max per-tick |q_ik - q_seed| seen
         self._ik_rejects_total = 0
+        self._last_cmd_pose: np.ndarray | None = None   # last pose actually streamed
+        self._limiter_hits = 0
+        self._limiter_holds = 0
+        self._limiter_log_t = 0.0
+        self.limiter_last: dict = {}
         # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
         # disconnect(). The teleop streamer calls servo_j from its own thread
         # while the record loop (zero_ft) and teardown (disconnect /
@@ -335,6 +344,70 @@ class URArm(Arm):
                                "running (clear the pendant popup / protective stop "
                                "and restart the session)")
 
+    def _solve_ik(self, ctrl, pose, qref):
+        pose = list(np.asarray(pose, dtype=float))
+        if qref is not None:
+            return ctrl.getInverseKinematics(pose, list(qref))
+        return ctrl.getInverseKinematics(pose)
+
+    def _limit_violation(self, q, qref, dt: float) -> str | None:
+        """Why the IK solution `q` must not be streamed as-is: the elbow would
+        fold under elbow_min_rad (reach boundary) or a joint would have to
+        move faster than servo_joint_speed_max_rad_s in this tick."""
+        if not q:
+            return "no_solution"
+        sf = getattr(getattr(self, "hw", None), "safety", None)
+        if sf is None:                    # bare test doubles built via __new__
+            return None
+        emin = getattr(sf, "elbow_min_rad", None)
+        if emin is not None and abs(float(q[2])) < float(emin):
+            return "elbow"
+        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None)
+        if vmax is not None and qref is not None and dt > 0:
+            if max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax):
+                return "joint_speed"
+        return None
+
+    def _feasible(self, q, qref, dt: float) -> bool:
+        if not q:
+            return False
+        if qref is not None and max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
+            return False
+        return self._limit_violation(q, qref, dt) is None
+
+    def _limited_step(self, ctrl, prev: np.ndarray, target: np.ndarray, qref, dt: float):
+        """Largest feasible fraction of the step prev -> target (bisection),
+        then, if that is < 1/2, the same for the step with its radial
+        (shoulder -> TCP) component removed — a slide along the reach sphere
+        instead of a stop. Returns (pose, q, fraction, mode) or None (hold)."""
+        best = None
+        cands = [("step", target)]
+        sf = getattr(getattr(self, "hw", None), "safety", None)
+        sh = np.array([0.0, 0.0, float(getattr(sf, "ur_dh_d1_m", 0.1519))])
+        r = prev[:3] - sh
+        rn = float(np.linalg.norm(r))
+        if rn > 1e-6:
+            d = target[:3] - prev[:3]
+            tang = target.copy()
+            tang[:3] = prev[:3] + d - r * (float(np.dot(d, r)) / (rn * rn))
+            cands.append(("slide", tang))
+        for mode, tgt in cands:
+            lo, hi, found = 0.0, 1.0, None
+            for _ in range(self.LIMITER_BISECT):
+                mid = 0.5 * (lo + hi)
+                pm = prev + mid * (tgt - prev)
+                qm = self._solve_ik(ctrl, pm, qref)
+                if self._feasible(qm, qref, dt):
+                    found = (pm, list(qm), mid, mode)
+                    lo = mid
+                else:
+                    hi = mid
+            if found is not None and (best is None or found[2] > best[2]):
+                best = found
+            if best is not None and best[2] >= 0.5:
+                break
+        return best
+
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
         with self._ctrl_lock:
             self._servo_active = True
@@ -342,12 +415,7 @@ class URArm(Arm):
             qref = self._last_qsol
             if qref is None and self._recv is not None:
                 qref = list(self._recv.getActualQ())
-            if qref is not None:
-                q = ctrl.getInverseKinematics(
-                    list(np.asarray(tcp_pose, dtype=float)), list(qref))
-            else:
-                q = ctrl.getInverseKinematics(
-                    list(np.asarray(tcp_pose, dtype=float)))
+            q = self._solve_ik(ctrl, tcp_pose, qref)
             dev = (max(abs(a - b) for a, b in zip(q, qref))
                    if (qref is not None and q) else 0.0)
             if dev > self._ik_dev_max:
@@ -370,9 +438,38 @@ class URArm(Arm):
                         "the target is at/beyond a kinematic boundary")
                 return
             self._ik_rejects = 0
+            # ---- reach / joint-speed limiter (09-04): shorten the step
+            # instead of letting the safety monitor stop the episode at the
+            # elbow-straight boundary. Only when a previous streamed pose (or
+            # the measured TCP) gives a feasible anchor to shorten towards.
+            viol = self._limit_violation(q, qref, dt) if qref is not None else None
+            if viol is not None:
+                prev = self._last_cmd_pose
+                if prev is None and self._recv is not None:
+                    prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
+                if prev is not None:
+                    tgt = np.asarray(tcp_pose, dtype=float).copy()
+                    tgt[3:6] = rotvec_nearest(prev[3:6], tgt[3:6])
+                    best = self._limited_step(ctrl, prev, tgt, qref, dt)
+                    self._limiter_hits += 1
+                    now = time.perf_counter()
+                    if now - self._limiter_log_t >= self.LIMITER_LOG_PERIOD_S:
+                        self._limiter_log_t = now
+                        log.warning("servo limiter (%s): elbow %.1f deg -> %s "
+                                    "(hits %d, holds %d this session)",
+                                    viol, np.degrees(float(q[2])),
+                                    ("%s %.0f%%" % (best[3], 100 * best[2]))
+                                    if best else "HOLD",
+                                    self._limiter_hits, self._limiter_holds)
+                    if best is None:
+                        self._limiter_holds += 1
+                        return
+                    tcp_pose, q = best[0], best[1]
             if q:
                 self._last_qsol = list(q)
             ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
+            if ok is not False:
+                self._last_cmd_pose = np.asarray(tcp_pose, dtype=float).copy()
         if ok is False:
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
@@ -451,7 +548,17 @@ class URArm(Arm):
             log.info("IK guard: max per-tick deviation %.4f rad, %d rejects "
                      "this servo session", self._ik_dev_max,
                      self._ik_rejects_total)
+        if self._limiter_hits:
+            log.info("servo limiter: %d ticks shortened, %d held this servo "
+                     "session", self._limiter_hits, self._limiter_holds)
+        # keep the finished session's counters readable (stop.json) after reset
+        self.limiter_last = {"hits": self._limiter_hits, "holds": self._limiter_holds,
+                             "ik_rejects": self._ik_rejects_total,
+                             "ik_dev_max_rad": round(self._ik_dev_max, 4)}
         self._last_qsol = None
+        self._last_cmd_pose = None
+        self._limiter_hits = 0
+        self._limiter_holds = 0
         self._ik_rejects = 0
         self._ik_dev_max = 0.0
         self._ik_rejects_total = 0

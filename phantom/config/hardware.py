@@ -389,6 +389,21 @@ class SafetyConfig(_Frozen):
     # at 0.465+. None disables (non-UR3 arms until DH is set).
     wrist_extension_stop_m: float | None = Field(default=0.462)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
+    ur_dh_d1_m: float = 0.1519            # shoulder height above the base frame
+    # Servo-level LIMITER (rig 2026-09-04) — the answer to "the arm stops at
+    # the apex of every carry": with lift_complete off, 4/5 carries ended on
+    # wrist_extension / joint_speed at elbow 10-20 deg. That was not a whip:
+    # the elbow speed ramped smoothly 0.5 -> 1.3 rad/s while the TCP held
+    # 100 mm/s, i.e. the policy asked for a TCP beyond the arm's reach. A stop
+    # cannot fix that; a clamp can. Per servo tick the driver solves IK for the
+    # requested pose and, if the elbow would fold below `elbow_min_rad` or any
+    # joint would exceed `servo_joint_speed_max_rad_s`, shortens the step
+    # (bisection, then a tangential slide along the reach sphere) so the arm
+    # hugs the boundary instead of stopping. 0.40 rad = 22.9 deg = wrist
+    # centre 0.4616 m, just inside every demo (max 0.461) and 7 mm inside the
+    # 0.468 wrist_extension stop, which stays as the last net. None disables.
+    elbow_min_rad: float | None = Field(default=0.40)
+    servo_joint_speed_max_rad_s: float | None = Field(default=1.0, gt=0)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one
     # episode it did engage it dragged commanded z down 32 mm mid-lift. The

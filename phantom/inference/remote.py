@@ -191,13 +191,24 @@ class PolicyServer:
         log.info("warmup replan done in %.1f s", time.perf_counter() - t0)
 
     def serve_forever(self, port: int = DEFAULT_PORT) -> None:
+        import multiprocessing
         from multiprocessing.connection import Listener
         with Listener(("127.0.0.1", port), authkey=PHANTOM_AUTHKEY) as srv:
             log.info("policy server READY on 127.0.0.1:%d (ckpt %s)",
                      port, self.ckpt)
             print(f"READY ckpt={self.ckpt} port={port}", flush=True)
             while True:
-                with srv.accept() as conn:
+                try:
+                    conn = srv.accept()
+                except (EOFError, OSError, ConnectionError,
+                        multiprocessing.AuthenticationError) as e:
+                    # a client that dies mid-handshake (Ctrl-Z'd / killed
+                    # deploy, a probe that timed out) used to take the whole
+                    # warm server down with it (rig 2026-09-04 19:47)
+                    log.warning("client dropped during accept (%s) — "
+                                "serving on", type(e).__name__)
+                    continue
+                with conn:
                     log.info("client connected")
                     try:
                         while True:
