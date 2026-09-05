@@ -1,0 +1,210 @@
+**PHANTOM historical coverage ledger — September 5, 2026**
+
+Companion to [the project review](project_review_20260905.md). Reviewed checkout: `f64aea8`, non-shallow. This file preserves historical commit subjects; claims within those subjects may have been corrected later. Use the main review for current conclusions.
+
+All 311 reachable commit records were examined: 179 ordinary commits (175 reachable from main) and 132 parentless t3 snapshots representing 18 unique trees. Ten snapshot trees match ordinary commits; eight intermediate trees were inspected as complete diffs. Ordinary commit change inventories were reviewed throughout, with detailed historical code inspection focused on the mechanisms underlying the evolution and current findings. This is not a claim of line-by-line audit of every historical source revision.
+
+Four ordinary commits are outside main: three data-collection commits (`5d78216`, `963f954`, `c2438f8`) whose functionality was subsequently imported in `322391e`, and `58fb5be`, which has the same tree as merged `ded5731` but preserves a richer September 4 experiment account. No separate current research direction was found in these refs or the intermediate snapshot trees.
+
+**Complete ordinary commit ledger**
+
+- `c4ad725` 2026-07-06: Initial commit: PHANTOM pipeline (ICRA 2027)
+- `25e4116` 2026-07-06: Update README.md
+- `a543a2d` 2026-07-06: dmtac driver rewritten against verified sdk v1.2.10; split force/torque units
+- `b172a73` 2026-07-06: phantom.data: the missing data layer (schema, derived, episode_store, windows, synthetic, contact_play)
+- `611fc33` 2026-07-06: hht: zero-init film + tolerant ssl checkpoint load; pyproject cosmos extra
+- `8ebe429` 2026-07-06: audit fixes: per-group sigma nll, true two-pass acc, chunk blending, bootstrap cis
+- `41beaf5` 2026-07-06: docs: sdk truth pass (sensor_sdk.md reference, bench/readme/pipeline updates)
+- `743c9f3` 2026-07-06: raw-frame archive path + offline recompute + STATUS doc
+- `6738238` 2026-07-10: vendor echo right-arm teleop (minimal main11 closure from compute2)
+- `267f75b` 2026-07-10: backbone: pos-table bounds from the checkpoint, not the operating resolution
+- `cbc8c09` 2026-07-10: loader: tolerate the net's accum_* bookkeeping buffers missing from the ema checkpoint
+- `66ba8c0` 2026-07-10: bf16 dtype fixes from first real-weights gpu run (5090)
+- `1ad8127` 2026-07-10: status: compute3 provisioned (vram 20.3 GiB measured), machines table, echo teleop vendored, ur3 facts
+- `9d5ea78` 2026-07-11: update
+- `0412875` 2026-07-11: Training compute targets: 8xH100 / 8xA100 via configs/compute.yaml (5090 path untouched)
+- `df907bb` 2026-07-11: Delete data_collection directory
+- `7289a97` 2026-07-18: Echo teleop + web-first collection panel + first real-hardware bring-up (NUC)
+- `5d78216` 2026-07-22: collect: unified Echo teleop + data collection (device-rate control, DM-Tac safeguard, web panel, offload)
+- `963f954` 2026-07-22: Reorganize data_collect into the PHANTOM package structure
+- `c2438f8` 2026-07-22: data_collect: episode playback + recording verifier in the web GUI
+- `322391e` 2026-08-01: sync nuc rig tree: data_collect app, driver fixes, ops tooling
+- `34f912b` 2026-08-01: harden hf uploader per system review: union upload, flock, atomic manifest
+- `0255c15` 2026-08-01: cap native rerun viewer at 4GB and reap killed viewer children
+- `87a0896` 2026-08-01: rig fixes from system review: keep aborted episodes, safeguard-aware reengage, atomic offload, drain-thread guard, target enforcement
+- `57b063f` 2026-08-01: operator discard mid-recording deletes the take (delete flag wired); aborts still keep data
+- `909f9a6` 2026-08-01: stub recorder tracks the delete flag; fix tuple unpacks
+- `701ffbc` 2026-08-01: uploader skips aborted takes (rig-local only, never hub storage)
+- `e6b2684` 2026-08-03: norm stats: truncate arm streams to common length before channel concat
+- `d83fa2a` 2026-08-03: pre-training audit fixes: RoPE fps modulation, failure-demo action masking, causal action targets, window resampling, val split + eval loop, ur_state norm coverage
+- `c7c250c` 2026-08-03: hard-fail on hardware config drift + launch checklist
+- `2228ecf` 2026-08-06: per-episode text conditioning: Reason1 embedding cache (offline, opt-in)
+- `bd4a84b` 2026-08-07: register cosmos_text_embedding_cache in base paths.yaml (local-override whitelist)
+- `154c7ba` 2026-08-07: pre-v3 sweep fixes: deploy text plumbing, eval striding, text fallback, ckpt provenance
+- `1ac7f00` 2026-08-11: deploy: ring warm-up gate at episode start; mock variant of rig config; inference doc (v3 verified e2e on 5090)
+- `5095437` 2026-08-11: rig: pull NUC-only work into the repo — analysis/HF tools + diagnostics probes; pipeline.md gOBJ feedback fix
+- `baadac8` 2026-08-11: deploy: workers own the DM-Tac sensors (single-open) — parent no longer double-opens them
+- `453686b` 2026-08-11: deploy: wrench guard = deviation from rolling baseline + time debounce (kills false stops)
+- `69880ec` 2026-08-11: test: margin over the exact debounce boundary (float flake on the 5090)
+- `10f769e` 2026-08-11: deploy: 5s AE-settle after episode-start Enter (dark first frames made the policy flail)
+- `5e85435` 2026-08-11: deploy: kinematic rate limit on commanded pose in the executor
+- `674daa5` 2026-08-13: inference: cut replan 1040->700 ms same-math (433 ms at nfe=3) on the 5090
+- `c89bee9` 2026-08-13: inference: 1040->454 ms same-math replan via LoRA-merge + FlexAttention + compile (286 ms at nfe=3)
+- `d127e27` 2026-08-13: deploy: survive the RealSense/DM-Tac USB open race (first live waffles episode)
+- `9cfe707` 2026-08-13: deploy: surface executor-thread crashes as stopped_reason=executor_crash
+- `a64d191` 2026-08-14: deploy: fix the three root-cause defects behind the timid-dithering rig sessions
+- `9d055f2` 2026-08-14: train: teacher v4 objective/geometry fixes + standing sampled-action eval
+- `92a7432` 2026-08-14: fix readiness-audit blockers: time_true rope was INERT; eval hygiene; provisioning
+- `7ad8a46` 2026-08-14: cond-dropout: preserve future-video targets; single build; HID behavior match on live channels
+- `446ca31` 2026-08-15: cond-dropout: latent-space video null (causal VAE), full null for the ACC inner pass, eval RNG hygiene
+- `132671f` 2026-08-15: launch clearance fixes: pandas dependency, provision self-verification
+- `54b7943` 2026-08-16: labels: frame-level contact requires an AREA of pixels, not one (fixes issue #1)
+- `fcdcb0a` 2026-08-16: deploy: persistent episode noise, trace survives crashes, live p_evt, compile warmup (issue #2)
+- `8e83181` 2026-08-16: pre-launch must-fixes: fp32-first gate clamp, budgeted launch line, config-explicit thresholds
+- `f560710` 2026-08-16: train: loud label-degeneracy gate at startup (issue #1 follow-up)
+- `1c5ef9d` 2026-08-17: train: --resume (optimizer/scheduler/ema/step) + --num-workers
+- `12d2c92` 2026-08-18: realsense: rebuild wedged pipeline after consecutive frame timeouts
+- `c5f5f8d` 2026-08-20: deploy: per-task start homing + ood gate + stall watchdog + two-stage launch
+- `dc03e95` 2026-08-20: deploy: review hardening — executor plays full chunk (anchor at action_times[0]), rotvec-wrap-safe gate, fail-closed launch flow, servo guard on move_l
+- `72349b4` 2026-08-20: deploy: expose observation-guidance at inference (--guidance)
+- `27c4c8f` 2026-08-20: rf: skip the overwritten ACC inner sample when prev_cpk is supplied (-1 forward pass per replan)
+- `6e50360` 2026-08-20: deploy: record condition provenance (tags, trace diag), --seed per episode, post-episode outcome prompt
+- `a24fd9d` 2026-08-20: train: --grasp-frac terminal-phase window weighting + --init-weights for fine-tuning
+- `b2cf46a` 2026-08-20: eval: terminal-phase offline metric (endpoint/z-at-end/commit ratio/close timing on pre-close windows)
+- `0a7afc7` 2026-08-20: executor: gripper I/O on its own thread with command deadband; rate limit on measured tick
+- `acfc00c` 2026-08-20: review fixes: halt both executor threads on safety stop + mailbox invalidation, 2x jump bound with servo dt, conclusive joins; contaminated != failure demo; per-episode seed tag; --init-weights mc drift check; terminal_eval anchors chunk end at close
+- `cace361` 2026-08-20: review fixes (opus): lock play_time RMW, gripper deadband 0.008 + stable-target flush, grasp-weighting coverage gate, terminal_eval steady-state prev_cpk + --no-ema + skip-not-clip, init-weights guards
+- `2bcf6e8` 2026-08-20: docs: recovery-demo collection protocol for the v5 fine-tune
+- `f47e433` 2026-08-24: train: --photo-aug photometric jitter on the scene camera (train windows only)
+- `e480f93` 2026-08-24: tools: per-episode QC for collection sessions (labels, start sigma, grasp, lighting)
+- `6d80a4d` 2026-08-24: nuc uploader: stale-collection guard (writes in last 30 min), HF_XET_HIGH_PERFORMANCE
+- `86fda8a` 2026-08-24: tools: recovery-session intake (task canonicalization, failure-demo encoding for *_fail_undergrasp, recovery tags, manifest rows)
+- `c393847` 2026-08-24: tools: provision_v5.sh — v4 dataset + recovery sessions intake + 20k ckpt, fine-tune launch line
+- `b54f527` 2026-08-24: v5 intake: close-detector max-relative fallback (Carton 76->99% grasp coverage), symlink-aware episode listing, batch_<date> provenance tag instead of 'recovery', success=false on *_fail, provision_v5 smoke exercises fine-tune guards + count/stream/manifest asserts
+- `ab85940` 2026-08-26: audit fixes: EMA keyed by canonical names (--ema/--init-ema reached 0/560 LoRA tensors), per-worker+epoch dataloader rng, rf generator seeded from cfg, fine-tune knobs (--lr/--lr-new-modules/--warmup-steps/--ckpt-every/--eval-every/--init-ema), terminal_eval close rule = close_index, list_episodes skips non-finalized, duplicate-episode zarr guard + unique deploy ep names, provision launch line lr 2e-5/6e-5 warmup 150 ckpt 500
+- `1c8ce68` 2026-08-26: start_poses.yaml regenerated over v4 + batch_20260822 (250 eps/task; v4-only regen reproduces the 08-20 file); provision_v5: GPU preflight, early CUDA check, per-task .complete sentinel, batch_20260822.tar.zst fast path (snapshot fallback), smoke runs the launch batch geometry
+- `698195a` 2026-08-26: rig recovery: reconnect RTDE control after protective stop/stall between episodes (verify script running), _servo_active cleared whenever the servo session is provably over, RealSense bounded+backed-off rebuild with dead-camera flag, stale scene frame stops the episode (planner + SafetyMonitor), safety events recorded per condition not per tick
+- `c8a12a2` 2026-08-26: collect: end-session refuses once while an episode awaits a verdict, second press files it status=aborted + tag unlabeled (never a full-weight demo); panel buttons dropped when no session runs; tests pin the shipped pad guard as disabled
+- `a75ddd6` 2026-08-26: codex review fixes: CoP NaN sentinel reaches the packer (no fake centre-CoP target on no-contact frames), event band supervised (contact_event_mse; it fed ACC via cpk.event untrained), ACC probabilities in fp32, norm_stats guard mean+std all keys, manifest_split bijection/status asserts, intake skips non-finalized, provision: commit-pinned tarball (tools/pack_repo.sh), opened-stream validation, manifest bijection, text-cache keys, pytest failure fatal
+- `a8ff9cf` 2026-08-27: intake: hold out the last whole session(s) per success task of a new batch as val (--val-min-eps; intake_holdout.json), provision asserts derived counts; train_teacher refuses manifest episodes that yield no windows (--allow-skipped-episodes to override)
+- `c6f2888` 2026-08-27: deploy parity: arm-ring staleness stops the episode (SafetyMonitor + snapshot), dead sensor worker is session-fatal, executor join timeout is session-fatal (rc 5), EMA is the deploy default (--no-ema/--raw escape), prev_plan advances only on accepted plans, wrist F/T window uses the training linspace+interp grid
+- `1c208da` 2026-08-27: train_loop: route step_fn through the DDP wrapper (gradients were never all-reduced under torchrun — N ranks trained N independent copies), no_sync on accumulation micro-steps, 2-process gloo test
+- `40bb02d` 2026-08-27: train: --event-band-weight override for the packed event-band MSE (probe on the 20k ckpt: 0.9 vs action 0.1 at weight 0.5); fine-tune launch line runs it at 0
+- `b7715f6` 2026-08-27: terminal_eval: judge the predicted close against the GT's absolute close aperture (close_index's max-relative fallback credited any >0.10 rise on a 16-step chunk); emit gt_close_aperture / pr_max_aperture
+- `b0e87b5` 2026-08-27: rig: stale-stream snapshot errors end the episode through the normal stop path (trace + label prompt), warm-up budget covers a RealSense rebuild, dead camera driver is session-fatal via the poller, failed servo_stop + safety_stop/worker_died arm the control rebuild, homing failure after a rebuild refuses the episode
+- `159063d` 2026-08-28: docs: rig session v5 — how to run the v4/v5 inference A/B on compute3
+- `3539988` 2026-08-28: rig safety batch (08-28): joint-space start gate + --home-joints, per-task z no-go floor, STOP hitbox from the demo envelope, --max-tcp-speed, gripper_ctl open/close/reset, --max-replans 40, rig_trace_decompose tool, start_poses q/z_min/envelope, docs
+- `f8e18bb` 2026-08-28: safety: hitbox evaluated on the clamped target and built before the z floor — a deep descent is clamped at the floor, never stopped
+- `51a3748` 2026-08-28: docs: 2026-08-28 full review synthesis, lens reports, codex passes, literature scan
+- `51dd53c` 2026-08-28: docs: rig session #3 evidence (tables, joint OOD, frames) + review workflow script
+- `9fb0dfa` 2026-08-29: eval: tactile grasp-success label (P8) + label_grasps CLI + tests
+- `16fa6b0` 2026-08-29: tools: replay_rig — offline evaluator on the rig's own recorded states (E0/E2/E3)
+- `209d34b` 2026-08-29: eval: grasp label handles truncated streams; record compute3 validation
+- `0bc6f3b` 2026-08-29: merge tool/replay-rig: offline replay evaluator on recorded rig states (E0/E2/E3)
+- `9183561` 2026-08-29: merge eval/grasp-label: tactile grasp-success labeler (P8) + tool
+- `f9958a1` 2026-08-29: replay_rig: keep per-seed head_dz/chunk_dz/close_step/grip_max in every row
+- `6c93b4f` 2026-08-29: p9/p10: refuse unlabeled rollouts, build models from the checkpoint's config, add --student + mask_wrist
+- `d366a9f` 2026-08-29: deploy levers: parity prev_chunk, terminal veto, k-seed sampling
+- `42a5868` 2026-08-29: merge deploy/levers: --parity-fixes (measured prev_chunk, prev_cpk step, field dt, reactive), --terminal-veto (close-mask + phantom-grasp recovery), --k-seeds batched selection; provenance tags
+- `79b6dab` 2026-08-29: p9: write the eval-campaign verdict back onto the episode
+- `81f99d4` 2026-08-29: merge fix/p9-p10: unlabeled/contaminated rollouts never train (P9), --student + mask_wrist (P10A), model config from checkpoint in distill_hid/relabel/finetune_hids + drift assertion (P10B)
+- `04ac59e` 2026-08-29: bench_inference: --k-seeds so the K x NFE replan latency can be profiled on the deploy gpu
+- `5b3aeff` 2026-08-29: guidance: share the conditional prev_cpk summary with the cfg null branch
+- `0811333` 2026-08-29: recording: unique shm session ids (pid + random suffix)
+- `5469352` 2026-08-29: tools: re-derive rollout actions.zarr from the measured tcp
+- `d4d0490` 2026-08-29: deploy: stamp the base hardware hash, and record damage in the verdict
+- `f60a3e9` 2026-08-29: merge fix/small-0829: guidance null branch adopts the conditional prev_cpk summary, unique shm session ids, base hardware hash + deploy_overrides on rollouts, rederive_rollout_actions tool, damage field in the verdict prompt
+- `5db6445` 2026-08-29: replay_rig: --merge-lora to replay with deploy's folded bf16 weights
+- `bfcc339` 2026-08-29: tools: replay_deploy_path — replay rig episodes through run_deploy's own policy + replan() (E0 discriminator)
+- `88d09a9` 2026-08-29: replay_rig: --jpeg-quality image-fragility probe
+- `ba61354` 2026-08-29: deploy: seed the sampling noise per episode (random unless --seed) and record it — rf's constructor seed made every rig session replay one fixed noise draw; replay_deploy_path --deploy-rng reproduces that sequence
+- `46a7bc8` 2026-08-29: gitignore agent worktrees; drop accidentally indexed worktree gitlinks
+- `6ae2bb3` 2026-08-29: docs: session-4 recipe — seeded sampler finding, arms and GO lines
+- `756987e` 2026-08-29: terminal_eval: null modes, medians, close height, manifest hard-fail
+- `397d1d5` 2026-08-29: ft-a objective knobs: beta-nll / self-forcing / per-strip action noise, all flagged off by default
+- `6a4f67e` 2026-08-29: merge train/ft-a-fixes: --contact-nll-beta / --contact-nll-detach-weight / --no-wrist-region-mse (P5), --contact-self-forcing (P7), --action-noise-per-strip (P6), --ema-decay; FT-A bundle in the playbook; init-weights drift tolerates new fields
+- `1e690cf` 2026-08-29: session id: 8 random hex (4 collided ~3% of full test runs)
+- `7a08f08` 2026-08-29: merge eval/terminal-null: terminal_eval --null modes, per-task medians, pred_close_height, all episodes by default, manifest hard-fail
+- `d9c40f2` 2026-08-30: docs: E9 premise test — tactile-null costs 16% commit, zeroed GT contact package costs 31%
+- `7b8486d` 2026-08-30: docs: 2026-08-30 end-to-end validation report (NOT READY verdicts, 50 problems, action plan) + lens/codex narratives
+- `b94b54b` 2026-08-30: executor: release the gripper on let-go stops, expose the entered gripper steps
+- `d98d259` 2026-08-30: planner: running-min close rule, executed-close veto latch, episode budget, trace provenance
+- `0f7d22c` 2026-08-30: run_deploy: demo close band, envelope assert, acc-head check, seeded homing, episode budget
+- `d8b0f73` 2026-08-30: tests: fix-now batch f2-f9 regressions
+- `b364747` 2026-08-30: docs: session-4 arms per validation 0830 (one process per arm, no per-episode seed, abort rules)
+- `0c62b3d` 2026-08-30: fix: --init-weights tolerates the FT-A mutable model fields at load (F1)
+- `8a112d5` 2026-08-30: fix: persist event_band_weight in configs.train and restore it on --resume (F11)
+- `3c787a6` 2026-08-30: feat: per-episode EpisodeMeta.weight and a commit-band window multiplier (D8 / F19)
+- `2d14c13` 2026-08-30: fix: distill_hid and finetune_hids train on the manifest train split (F10)
+- `7bd78fb` 2026-08-30: fix: refuse a rollout whose actions were never re-derived (F13)
+- `714771d` 2026-08-30: fix: re-derived gripper channel is the commanded aperture, not the measurement (F20)
+- `651b779` 2026-08-30: fix: cluster profile without torchrun is fatal; val loaders unsharded
+- `fad0a92` 2026-08-30: chore(provision): FT-A inits from v5_6, run name teacher_v5_ftA, working pytest gate, checkpoint egress
+- `9c8822f` 2026-08-30: test+docs: fixnow 0830 regressions through the real entry points
+- `d4f5421` 2026-08-30: merge fixnow/deploy-0830: veto running-min close rule + executed-close latch with expiry + demo-band floor, --max-episode-s, gripper release on let-go stops, envelope assert, seeded homing + start tag, trace provenance, session-4 arms (F2-F9, F14)
+- `e3a6f25` 2026-08-30: terminal_eval: student=mc.student, reactive in --null tactile, explicit contact_zero/contact_gt semantics
+- `6624091` 2026-08-30: replay_rig: --parity-fixes via SnapshotBuilder, per-episode seeding, --seed-from-meta, actions_pre_veto, --ckpt under --tiny; de-flake the snapshot parity test
+- `4d2bcfb` 2026-08-30: merge fixnow/train-0830: init-weights tolerates finetune-mutable fields (CLI-tested), --split for student scripts, event-band weight persisted, rederive gate, EpisodeMeta.weight + commit-band knob, gripper channel from commands, fatal world-size check + unsharded val, provision v5_6 init + safe run name + full-bundle smoke, ckpt egress helper (F1,F10,F11,F13,F19,F20)
+- `8f8dc77` 2026-08-30: grasp_label: hold_truncated abstains instead of failing, score the LAST close attempt (veto retry)
+- `ad81615` 2026-08-30: grasp_label: abstain only when truncation is the only thing blocking the grasp
+- `76faebd` 2026-08-30: docs: E9 re-run and relabelled — the published row 5 was the GT-PINNED condition; pinning, not GT content, drives the commit drop; no support for --contact-self-forcing
+- `e27a330` 2026-08-30: merge fixnow/eval-0830: replay parity via SnapshotBuilder, order-independent per-episode reseed, --seed-from-meta, actions_pre_veto rows, snapshot-race de-flake, --null contact_zero + semantics in JSON, grasp_label hold_truncated/last-close, corrected E9 (no exposure-bias gap)
+- `e06c33b` 2026-08-30: playbook: drop --contact-self-forcing from the recommended ft-a bundle (corrected e9 shows no exposure-bias gap)
+- `cc0cca0` 2026-08-30: start poses: one episode set behind every stat, loader refuses q_n != n
+- `bafa519` 2026-08-30: start_poses.yaml: regenerate q/envelope/floor over the full 250 eps per task
+- `bcdea66` 2026-08-30: merge fixnow-startposes work: start_poses regenerated over the full 250/task (one episode set behind every stat), loader refuses q_n != n (F17)
+- `c422467` 2026-08-30: docs: F17 envelope comparison + E13 re-score (v4 vs v5_6 is 20.8->18.2 mm, not 20.7->17.4)
+- `820b4eb` 2026-08-30: merge fixnow-startposes finish: E13 rescore doc (honest v4 vs v5_6 val124 20.8 to 18.2 mm), thin-stats guard extras
+- `a3e8e84` 2026-08-31: veto: masked/floor-only closes never arm the recovery (self-cancel guard), gate calibration log per episode; executor: shared gripper io lock + stop-first halt ordering, protective stop carries letgo events; snapshot: ur_state from the wrist-anchor fetch (kills the race)
+- `97b3c52` 2026-08-31: mustfix tools/docs: drop retracted self-forcing from ft-a, fix replay veto+kseeds, rescore rig doc, sha-check hub egress
+- `fb9e667` 2026-08-31: merge mustfix/tools-0831: provision drops self-forcing (ablation comment), replay veto-label fix, rig doc E13 numbers + new floors + max-replans, seed-from-meta honors kseeds/k_pick, E13 one-statistic rewrite, sha256 ckpt upload skip, artifact-parity guard tests
+- `7730c3a` 2026-08-31: mustfix 0831 #1/#8: wall-clock episode budget, resume restores the recipe
+- `8fdb033` 2026-08-31: merge mustfix/train-0831: --max-episode-s lifts the replan cap unless explicitly bound; --resume restores the full training recipe (refuses explicit mismatches) incl. ema_decay re-application
+- `676b868` 2026-08-31: docs: 2026-08-31 re-validation report + lens/codex narratives (safe-to-spend verdicts, all must-fixes landed)
+- `f80686e` 2026-08-31: rig: interactive PICK.sh launcher (model menu + inference presets), vendor compute3 GO/ops scripts into tools/rig
+- `83ab82f` 2026-08-31: rig: ftA_1500 staged as experimental arm C (full E13 sweep: no ftA ckpt beats v5_6 overall, 1500 best on waffles)
+- `77c9e24` 2026-09-01: deploy: operator stop (Enter ends episode cleanly, gripper untouched), episode budget 35->150s in LEVERS
+- `e5910c1` 2026-09-01: safety: pure top-face hitbox exit stops without let-go (a lifted grasp must not be dropped)
+- `03db9ac` 2026-09-01: safety: singularity-whip guards — measured joint-speed stop (non-letgo) + commanded reach clamp at 0.62m
+- `1756294` 2026-09-01: deploy: resident policy server (SERVE.sh, run_deploy --policy-server), auto-homing start gate, lift_complete success auto-stop, whip threshold 2.0
+- `e2b1c7f` 2026-09-01: test: real tiny policy over the policy-server wire (cpk token store, prev_plan swap)
+- `8c6e551` 2026-09-01: drivers: seed servo_l IK with the previous solution and refuse branch flips (root cause of the 09-01 whips)
+- `d403cc2` 2026-09-01: safety: wrist-extension guard (wd>0.45m, the leading whip predictor), baseline-corrected lift_complete (2.5N/0.4s/0.32m, validated on all 22 eps), session-5 A/B protocol
+- `5641634` 2026-09-01: drivers: stopJ on safety halt, IK-guard telemetry; deploy: success relabel hint when a guard beats lift_complete
+- `203de28` 2026-09-01: deploy: chunk-tail cap (--max-play-steps 10), retire reach clamp default, joint-speed stop 1.2
+- `c7fed40` 2026-09-01: safety: wrist guard 0.462m (demo max 461, whip zone 465+; 0.45 fought 7% of waffles demos) — over-lift claim retired, waffles demos apex at 398mm median
+- `bb44cb1` 2026-09-01: docs: session-5 morning quickstart
+- `e29d91a` 2026-09-01: rig: model menu trimmed to v5_6 + ftA_1500 (session-5 pairing)
+- `caabd5a` 2026-09-01: verification fixes: tail-cap reporting leak, remote cpk-token invalidation, connect timeout, recovered() clears new stop kinds, verdict-prompt stdin drain
+- `02d97d7` 2026-09-01: rig: track WRIST.sh + gate_check.py helpers, audit-trail section, /tmp-free helper paths
+- `fd4a032` 2026-09-02: rig: one server port per model (7777/7778), PICK attaches to whichever holds the picked model
+- `f3fff68` 2026-09-04: safety: tick-rate lift_complete in SafetyMonitor (wins the race vs wrist guard), executor reports 'lift_complete', z default 0.30
+- `4abf6a8` 2026-09-04: deploy: aperture latch (running max on bilateral contact), tactile phantom/lost-object recovery in the veto, lift_complete trailing 0.6s/4.0N/0.32m, stop reason persisted in episode tags — all thresholds from the 09-04 29-episode analysis
+- `ce2c4aa` 2026-09-04: verification fixes: record the latched gripper command, recovery_tactile in the veto-rewrite set (shared constant), fz=0 disables lift_complete, p_none recovery yields to loaded pads
+- `f8beb82` 2026-09-05: tools: provision_distill.sh (both teachers, pytest gate w/ allow-list, real distill smoke, sequential runner + hub upload); pack_repo pins it
+- `f6e650a` 2026-09-05: distill: EMA teacher weights, --resume, teacher window recipe flags, val loader + label sanity; provision_distill: honest pytest gate, costed defaults (1200 steps/teacher), token-free runner + incremental hub egress watcher; rig: student-capable menu
+- `ded5731` 2026-09-05: rig 09-04 box-local work: servo-level elbow/joint-speed limiter, stop.json persistence, policy server accept robustness, lift_complete off by default
+- `14479db` 2026-09-05: merge ilya's 09-04 box work: servo limiter (opt-in), stop.json persistence, policy server accept robustness, lift_complete off by default, wrist stop 0.468 (nuc yaml)
+- `f64aea8` 2026-09-05: tests: locate executor.py via the module, not a hardcoded mac path
+- `58fb5be` 2026-09-05: rig 09-04: servo reach/joint-speed limiter, stop.json, lift_complete off, wrist guard 0.468, policy server survives client drop
+
+**Checkpoint snapshot tree ledger**
+
+- `c33dde6` representative, 19 snapshot commits, ordinary tree matches: 5e85435
+- `ee3e4bc` representative, 2 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `16f5a8f` representative, 3 snapshot commits, ordinary tree matches: 674daa5
+- `ab32b15` representative, 3 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `fb00c26` representative, 1 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `ae69cb2` representative, 11 snapshot commits, ordinary tree matches: c89bee9
+- `f2c1763` representative, 29 snapshot commits, ordinary tree matches: d127e27
+- `eedf4aa` representative, 12 snapshot commits, ordinary tree matches: 9cfe707
+- `8566d82` representative, 2 snapshot commits, ordinary tree matches: 132671f
+- `756aaa3` representative, 31 snapshot commits, ordinary tree matches: 54b7943
+- `b4571c2` representative, 6 snapshot commits, ordinary tree matches: fd4a032
+- `f5d7910` representative, 1 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `d204c2f` representative, 3 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `0db2701` representative, 1 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `2b4f765` representative, 1 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `7e9b568` representative, 3 snapshot commits, ordinary tree matches: none; intermediate diff examined
+- `fa01405` representative, 2 snapshot commits, ordinary tree matches: ded5731, 58fb5be
+- `224bd55` representative, 2 snapshot commits, ordinary tree matches: f64aea8

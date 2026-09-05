@@ -1,0 +1,42 @@
+{
+  "audit_date": "2026-09-05",
+  "remote_host_alias": "compute3",
+  "remote_project_root": "/home/physicalai/phantom-icra-2027",
+  "reviewed_git_head": "f64aea89e2ec48c6975a8806476c29170beac189",
+  "checkpoint_hash_scope": "Current files read on audit date; these hashes were not recorded per historical episode.",
+  "checkpoints": {
+    "phantom/runs/teacher_v5_batch0822/v5_6.pt": {
+      "sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "bytes": 393115861,
+      "step": 3000,
+      "batch": 4,
+      "accumulation": 2,
+      "ema_decay": 0.999
+    },
+    "phantom/runs/teacher_v5_ftA/teacher_001500.pt": {
+      "sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "bytes": 393116181,
+      "step": 1500,
+      "batch": 4,
+      "accumulation": 2,
+      "ema_decay": 0.995
+    }
+  },
+  "training_log_archive": {
+    "repository": "armteam/phantom-checkpoints",
+    "revision": "241af105223b319a34486672f8ccad3b61368d49",
+    "files": [
+      "teacher_v4_790eps/train_v4.log",
+      "teacher_v5_batch0822/train_v5.log",
+      "teacher_v5_ftA/train_ftA.log"
+    ]
+  },
+  "manifests": {
+    "data/val_eval/manifests/all.jsonl": {
+      "sha256": "e2319f318adda4b541bce800709eb79bc29e6844ceca6e7edb589d0b62337cde"
+    },
+    "data/val124/manifests/all.jsonl": {
+      "sha256": "7a553b49e101267fb1b9a3c57c853c101b86a2704fc05df59eae72bea049d625"
+    }
+  }
+}
