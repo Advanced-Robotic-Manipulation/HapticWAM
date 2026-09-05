@@ -10,9 +10,11 @@ cd ~/phantom-icra-2027              cd ~/phantom-icra-2027
 1. `SERVE.sh` picks + holds the model on the GPU. `PICK.sh` attaches to it automatically.
 2. A failed start gate now FIXES ITSELF: 3 s countdown, slow joint-space auto-home,
    re-check. You never jog or restart for a start-pose problem.
-3. Episodes END THEMSELVES: `lift_complete` (grasp confirmed + lifted -> SUCCESS,
-   object held), a guard stop, the 150 s budget — or press Enter anytime for a clean
-   manual end (gripper stays as-is). Label honestly at the prompt.
+3. Episodes end on a guard stop, the 150 s budget — or press Enter anytime for a clean
+   manual end (gripper stays as-is). The `lift_complete` auto-success is OFF since
+   09-04 (it fired at z 0.32 m, below the demo apex, and cut every grasp before the
+   carry; `--lift-complete-z 0.32` restores it). Label honestly at the prompt.
+   Every episode now writes `stop.json` (reason, safety events, arm state at stop).
 4. If a safety stop prints the "label this episode a SUCCESS" NOTE, believe it: the
    guard beat the success detector on a good grasp.
 5. TAKE THE OBJECT OUT OF THE GRIPPER before confirming the next episode's homing —
