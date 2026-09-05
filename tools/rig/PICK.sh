@@ -10,15 +10,15 @@ TSV=$BASE/MODELS.tsv
 echo "== PHANTOM rig launcher =="
 echo "-- models --"
 i=0
-labels=(); ckpts=()
-while IFS=$'	' read -r label ckpt note; do
+labels=(); ckpts=(); systems=()
+while IFS=$'	' read -r label ckpt note system; do
   [ -z "$label" ] && continue
   case "$label" in \#*) continue;; esac
-  i=$((i+1)); labels[$i]=$label; ckpts[$i]=$ckpt
-  printf "  %d) %-6s %s\n" "$i" "$label" "$note"
+  i=$((i+1)); labels[$i]=$label; ckpts[$i]=$ckpt; systems[$i]=${system:-teacher}
+  printf "  %d) %-6s %s%s\n" "$i" "$label" "$note" "$([ "${system:-teacher}" = student ] && echo '  [STUDENT: sensor-free]')"
 done < "$TSV"
 read -p "model [1]: " m; m=${m:-1}
-CKPT=${ckpts[$m]}; MODEL=${labels[$m]}
+CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -n "$CKPT" ] || { echo "bad choice"; exit 1; }
 [ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
@@ -67,9 +67,9 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
 fi
 
 echo
-echo ">> $MODEL ($CKPT) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
+echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
 echo ">> reminders: no --seed on 1-episode processes; interleave arms within each grid cell;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
 echo ">>            during an episode: press ENTER to end it cleanly (motion stops, gripper stays)."
 read -p "Enter to launch (Ctrl-C to abort) "
-CKPT="$CKPT" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0
+CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0

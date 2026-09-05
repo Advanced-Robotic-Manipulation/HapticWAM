@@ -268,11 +268,14 @@ RC=$?
 set -e
 tail -1 "$W/pytest_gate.log"
 if [ $RC -ne 0 ]; then
-  OTHER=$(grep "^FAILED" "$W/pytest_gate.log" | grep -v "test_replay_rig" || true)
-  if [ -n "$OTHER" ]; then
-    echo "$OTHER"; echo "PYTEST FAILED outside the allow-list — full log: $W/pytest_gate.log — fix before launch"; exit 1
+  # only a REAL summary with nothing but allow-listed FAILED lines may pass:
+  # collection errors (^ERROR, rc 2) and an empty collection (rc 5) must not
+  FAILS=$(grep -E "^(FAILED|ERROR)" "$W/pytest_gate.log" || true)
+  OTHER=$(echo "$FAILS" | grep -v "^FAILED tests/test_replay_rig" | grep -v "^$" || true)
+  if [ $RC -eq 5 ] || [ -z "$FAILS" ] || [ -n "$OTHER" ]; then
+    echo "$FAILS"; echo "PYTEST GATE FAILED (rc=$RC) outside the allow-list — full log: $W/pytest_gate.log — fix before launch"; exit 1
   fi
-  echo "WARNING: only allow-listed failures (test_replay_rig tiny-ckpt atol) — continuing"
+  echo "WARNING: only allow-listed failures (test_replay_rig tiny-ckpt bf16 atol) — continuing"
 fi
 
 NW=$(( $(nproc) / 2 )); [ "$NW" -gt 16 ] && NW=16; [ "$NW" -lt 2 ] && NW=2
@@ -281,39 +284,71 @@ echo "== verify: 3-step REAL distillation smoke (teacher v5_6, the launch line b
 python -m phantom.train.distill_hid \
     --teacher-ckpt "$TEACHER_V56" --data "$W/data/phantom-episodes/tasks" \
     --hardware configs/hardware.nuc.yaml --run-name provision_smoke --max-steps 3 \
+    --grasp-frac 0.3 --photo-aug 1.0 \
     --batch-size $BS --grad-accum 1 --num-workers $NW --device cuda 2>&1 | tail -3
 rm -rf "$W/runs/hid/provision_smoke_r0"
 rm -rf "$W/dl"
 EPS=$(find -L "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
 echo "episodes on disk: $EPS (expect 1115); nproc $(nproc) -> --num-workers $NW"
 
-STEPS=${STEPS:-6000}
+# COST (review 2026-09-05): a HID step is ~10-12 full 2B-DiT forwards (teacher
+# sample + two-pass anticipation samples + student fwd/bwd) ~= 20 s/step at
+# effective batch 8 on an H100 — NOT a teacher step. 6000 steps x 2 teachers
+# would be ~67 h / ~$150. Defaults below fit the $39 credit; override with
+# STEPS=... TEACHERS="v5_6 ftA" (or a single teacher).
+STEPS=${STEPS:-1200}
+TEACHERS=${TEACHERS:-"v5_6 ftA"}
+SEC_PER_STEP=${SEC_PER_STEP:-20}
+NT=$(echo $TEACHERS | wc -w | tr -d ' ')
+EST_H=$(python -c "print(round($STEPS*$SEC_PER_STEP*$NT/3600.0, 1))")
 cat > "$W/distill_both.sh" <<EOF
 #!/bin/bash
-# Sequential HID round-0 distillation from BOTH teachers + hub upload after each.
-# Launch ONLY on explicit GO:  nohup bash $W/distill_both.sh > $W/distill_both.log 2>&1 &
+# Sequential HID round-0 distillation (teachers: $TEACHERS), $STEPS steps each.
+# Token-FREE by design: uploads are done by ckpt_watch.sh (launch it with the
+# token inline). Launch ONLY on explicit GO:
+#   nohup bash $W/distill_both.sh > $W/distill_both.log 2>&1 &
+# Resume a preempted run:  add  --resume $W/runs/hid/hid_r0_<T>_r0/student_XXXXXX.pt
 set -uo pipefail
 cd $W/phantom
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-for pair in "v5_6:$TEACHER_V56" "ftA:$TEACHER_FTA"; do
-  T=\${pair%%:*}; CK=\${pair#*:}
+for T in $TEACHERS; do
+  case \$T in v5_6) CK="$TEACHER_V56";; ftA) CK="$TEACHER_FTA";; *) echo "unknown teacher \$T"; continue;; esac
+  RV="RESUME_\$T"; RES="\${!RV:-}"        # RESUME_v5_6=/path/student_001000.pt to resume
   echo "=== distill hid_r0_\$T from \$CK  \$(date)"
   $W/.venv/bin/python -m phantom.train.distill_hid \\
       --teacher-ckpt "\$CK" --data $W/data/phantom-episodes/tasks \\
       --hardware configs/hardware.nuc.yaml --run-name hid_r0_\$T \\
-      --max-steps $STEPS \\
-      --batch-size $BS --grad-accum $GA --num-workers $NW --device cuda   # ckpt+eval every 1000 (HIDConfig defaults)
-  echo "=== upload hid_r0_\$T  \$(date)"
-  HF_TOKEN=\${HF_TOKEN:?} $W/.venv/bin/python $W/phantom/tools/upload_run_ckpts.py \\
-      $W/runs/hid/hid_r0_\${T}_r0 --repo $HUB --run-name hid_r0_\$T --log $W/distill_both.log
+      --max-steps $STEPS --grasp-frac 0.3 --photo-aug 1.0 \\
+      --batch-size $BS --grad-accum $GA --num-workers $NW --device cuda \\
+      \${RES:+--resume \$RES} || echo "!!! hid_r0_\$T FAILED rc=\$? (continuing with the next teacher)"
+  echo "=== hid_r0_\$T finished  \$(date)"
 done
 echo "ALL DISTILLS DONE  \$(date)"
 EOF
 chmod +x "$W/distill_both.sh"
+cat > "$W/ckpt_watch.sh" <<EOF
+#!/bin/bash
+# Incremental egress: every 10 min push every student checkpoint + logs to the
+# hub (sha256-idempotent). A preempted rental then loses at most 1000 steps.
+#   HF_TOKEN=hf_xxx nohup bash $W/ckpt_watch.sh > $W/ckpt_watch.log 2>&1 &
+: "\${HF_TOKEN:?set HF_TOKEN inline for the watcher}"
+while true; do
+  for T in $TEACHERS; do
+    D=$W/runs/hid/hid_r0_\${T}_r0
+    [ -d "\$D" ] || continue
+    LOGARG=""; [ -f $W/distill_both.log ] && LOGARG="--log $W/distill_both.log"
+    $W/.venv/bin/python $W/phantom/tools/upload_run_ckpts.py "\$D" --repo $HUB --run-name hid_r0_\$T \$LOGARG 2>&1 | tail -2
+  done
+  grep -q "ALL DISTILLS DONE" $W/distill_both.log 2>/dev/null && { sleep 60; echo "ALL UPLOADS DONE"; exit 0; }
+  sleep 600
+done
+EOF
+chmod +x "$W/ckpt_watch.sh"
 
 echo
-echo "READY. Runner written: $W/distill_both.sh (v5_6 then ftA, $STEPS steps each, ckpt+eval every 1000,"
-echo "       batch ${BS}x${GA}, uploads each run to $HUB/hid_r0_<teacher>/)."
-echo "Launch (only on explicit GO; HF_TOKEN must be in the environment for the uploads):"
+echo "READY. Runner: $W/distill_both.sh (teachers: $TEACHERS, $STEPS steps each, batch ${BS}x${GA}, ckpt+eval every 1000)"
+echo "       ESTIMATE: ~${EST_H} h at ~${SEC_PER_STEP} s/step — check the smoke's it/s above and rescale before GO."
+echo "Launch (only on explicit GO) — two commands, token ONLY on the watcher:"
 echo "  nohup bash $W/distill_both.sh > $W/distill_both.log 2>&1 &"
-echo "Watch:  tail -f $W/distill_both.log"
+echo "  HF_TOKEN=hf_xxx nohup bash $W/ckpt_watch.sh > $W/ckpt_watch.log 2>&1 &"
+echo "Watch:  tail -f $W/distill_both.log $W/ckpt_watch.log"

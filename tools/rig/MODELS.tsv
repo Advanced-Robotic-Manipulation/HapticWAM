@@ -1,2 +1,3 @@
+# label<TAB>ckpt<TAB>note<TAB>system(teacher|student, optional)
 v5_6	runs/teacher_v5_batch0822/v5_6.pt	LEAD - best overall (val124 18.2mm); arm A in the Session-5 pairing
 ftA	runs/teacher_v5_ftA/BEST.pt	EXPERIMENTAL ftA_1500 - best on waffles (24.4mm) + all of 09-01 grasps; arm B in the pairing
