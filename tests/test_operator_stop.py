@@ -714,7 +714,8 @@ def test_latched_grip_is_what_gets_recorded():
     from phantom.deploy.planner import VETO_REWRITE_ACTIONS
     assert "recovery_tactile" in VETO_REWRITE_ACTIONS
     import re
-    src = open("/Users/sannikov/GitHub/phantom/phantom/deploy/executor.py").read()
+    import phantom.deploy.executor as _ex
+    src = open(_ex.__file__).read()
     body = src[src.index("while self._last_action_k < k:"):src.index("verdict = self.safety.check")]
     assert "g_sent" in body and "self._grip_latch" in body
     assert "_grip_hist.append((t0, g_sent))" in body
