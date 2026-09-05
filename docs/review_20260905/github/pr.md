@@ -8,4 +8,11 @@ The review includes:
 
 Validation during the review: 200 focused tests passed with no failures or skips. The full-suite attempt remains inconclusive after dependency/setup problems and temporary-disk exhaustion caused cascading errors; its remaining review-path and DDP transport failures are documented. Remote inspection was read-only, with no robot control or model training/sampling. This PR changes documentation and review evidence only.
 
-Related: #3, #4. The proposed follow-up work remains separate from this review.
+Implementation follow-ups:
+
+- **P0 — [#7](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/7):** Keep executor state aligned with the command actually sent to the arm.
+- **P0 — [#8](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/8):** Distinguish busy policy servers and enforce exclusive rig ownership.
+- **P0 — [#9](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/9):** Persist complete trial identity, stage outcomes and trigger telemetry.
+- **P1 — [#10](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/10):** Correct evaluation clocks, paired close statistics and binary intervals.
+
+Related: #3, #4. This evidence and planning PR complements the deployment-code review in #5.

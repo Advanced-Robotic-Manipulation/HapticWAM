@@ -12,16 +12,16 @@ This is the action plan from the [project review](../project_review_20260905.md)
 | Change strategy | Narrow the active question now. | One waffles grasp-and-carry task; reliable teacher first; privileged-transfer comparison afterward. |
 | Build a simulator | Build a small offline execution harness alongside the fixes; defer a general tactile/contact simulator. | Reproducible driver/executor/session regressions without occupying the robot. |
 
-**GitHub handoff, prepared locally.**
+**Published GitHub handoff.**
 
-The [PR body](github/pr.md) and the four issue bodies below are drafts. This document does not indicate that anything has been published. Publish the review through a branch/PR; do not push directly to main, mass-assign teammates or send separate notifications. Link the resulting PR and focused issues to existing #4 when publishing is requested. #3 contains superseded diagnoses and already completed work; cite its context without reopening every old checklist item.
+The review is published as [PR #6](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/6) from `review/project-evidence-20260905` into `main`. The four implementation issues below link back to the review and existing #3/#4. The [PR description](github/pr.md) and issue bodies are retained here as the handoff source. #3 contains superseded diagnoses and already completed work; its context does not reopen every old checklist item.
 
-| Priority | Suggested issue title | Draft |
+| Priority | Implementation issue | Saved body |
 |---|---|---|
-| P0 | Keep executor state aligned with the command actually sent to the arm | [Command acceptance](github/01-command-acceptance.md) |
-| P0 | Distinguish busy policy servers and enforce exclusive rig ownership | [Session ownership](github/02-session-ownership.md) |
-| P0 | Persist complete trial identity, stage outcomes and trigger telemetry | [Trial records](github/03-trial-records.md) |
-| P1 | Correct evaluation clocks, paired close statistics and binary intervals | [Evaluation validity](github/04-evaluation-validity.md) |
+| P0 | [#7: Keep executor state aligned with the command actually sent to the arm](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/7) | [Command acceptance](github/01-command-acceptance.md) |
+| P0 | [#8: Distinguish busy policy servers and enforce exclusive rig ownership](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/8) | [Session ownership](github/02-session-ownership.md) |
+| P0 | [#9: Persist complete trial identity, stage outcomes and trigger telemetry](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/9) | [Trial records](github/03-trial-records.md) |
+| P1 | [#10: Correct evaluation clocks, paired close statistics and binary intervals](https://github.com/Advanced-Robotic-Manipulation/phantom/issues/10) | [Evaluation validity](github/04-evaluation-validity.md) |
 
 The first three gate a counted lab experiment. The fourth gates use of the affected automated research metrics; a simple explicit human outcome table may support the engineering pilot before every optional anticipation metric is repaired. Keep the limiter disabled until its separate blocking cases in #4 pass. The team reports it ran in the last six September 4 episodes; that is evidence of a test, not a controlled demonstration of benefit.
 
