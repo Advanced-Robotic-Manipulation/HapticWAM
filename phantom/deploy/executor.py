@@ -107,7 +107,9 @@ class ChunkExecutor:
         # appear. Bounded; ~1 entry per 0.1 s at action_rate_hz.
         self._grip_hist: deque[tuple[float, float]] = deque(maxlen=256)
         self._last_tick = 0.0
-        self._last_cmd: np.ndarray | None = None   # last pose actually commanded
+        self._last_cmd: np.ndarray | None = None   # last pose the ARM RECEIVED (driver result)
+        self._held_ticks = 0                       # consecutive driver holds (telemetry)
+        self.halt_state: dict = {}                 # arm state captured AT the halt (review item 7)
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -196,6 +198,24 @@ class ChunkExecutor:
         if is_letgo_reason(reason) or any(is_letgo_reason(k) for k in kinds):
             self._release_gripper(reason if is_letgo_reason(reason)
                                   else next(k for k in kinds if is_letgo_reason(k)))
+        # AFTER the let-go: a driver read must never delay a release
+        if not self.halt_state:
+            self.halt_state = self._snapshot_arm(reason)
+
+    def _snapshot_arm(self, reason: str) -> dict:
+        """Arm state AT the halt (before stopJ settles it): stop.json used to
+        sample after teardown, so qd read ~0 and the pose was post-stop
+        (review 09-05 item 7). Best effort, never raises."""
+        try:
+            st = self.arm.get_state()
+            q = np.asarray(st.q, dtype=float).reshape(-1)
+            return {"reason": reason, "t": time.time(),
+                    "tcp_pose": np.asarray(st.tcp_pose, dtype=float).reshape(-1).tolist(),
+                    "q_deg": np.degrees(q).tolist(),
+                    "qd_max": float(np.max(np.abs(np.asarray(st.qd, dtype=float)))),
+                    "held_ticks": int(self._held_ticks)}
+        except Exception:
+            return {"reason": reason, "t": time.time()}
 
     def _release_gripper(self, why: str) -> None:
         """One blocking `move` to the open aperture. Best-effort: a stop must
@@ -395,15 +415,30 @@ class ChunkExecutor:
                     target[3:6] = self._last_cmd[3:6] + dr * (v_rot * dt_eff / rn)
                 else:
                     target[3:6] = rv
-            with self._lock:
-                self._last_cmd = target.copy()
-
             # servoJ's time parameter = the interval the controller is asked
             # to reach the setpoint in; give it the interval the setpoint was
             # actually sized for, so a delayed tick never doubles the
             # commanded speed (review 2026-08-20)
-            self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
-                             hw.arm.servoj.gain)
+            res = self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
+                                   hw.arm.servoj.gain)
+            # The anchor is what the arm RECEIVED, not what we proposed
+            # (issue #7): a driver hold (IK branch reject, invalid IK, limiter
+            # hold) keeps the previous anchor, a limiter-shortened step
+            # becomes the anchor. Simple drivers return None = sent as given.
+            if res is None or (res.sent and res.pose is None):
+                streamed = target
+            elif res.sent:
+                streamed = np.asarray(res.pose, dtype=np.float64)
+            else:
+                streamed = None
+                self._held_ticks += 1
+                if self._held_ticks == 1:
+                    log.info("servo tick held by the driver (%s) — anchor not advanced",
+                             res.reason)
+            if streamed is not None:
+                self._held_ticks = 0
+                with self._lock:
+                    self._last_cmd = streamed.copy()
             if grip is not None:
                 grip = self._latched_grip(float(np.clip(grip, 0, 1)))
                 # hand the gripper target to the gripper thread (non-blocking):
@@ -509,6 +544,8 @@ class ChunkExecutor:
         self._stop.clear()
         self.stopped_reason = None
         self._last_cmd = None                  # re-seed the rate limit per episode
+        self._held_ticks = 0
+        self.halt_state = {}
         self._grip_target = None
         self._grip_hist.clear()                # executed-gripper history is per-episode
         self._grip_thread = threading.Thread(target=self._grip_worker, daemon=True,

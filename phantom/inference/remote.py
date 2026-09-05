@@ -8,11 +8,22 @@ on the GPU; `RemotePolicy` is a drop-in for `PhantomPolicy` on the robot side
 — `PlannerLoop` only ever calls `.replan(obs, prev_plan, tcp_pose)`.
 
 Protocol (multiprocessing.connection, localhost, authkey PHANTOM_AUTHKEY):
-    ("info",)                        -> ("ok", {"ckpt": ..., "warmed": bool})
+    ("info",)                        -> ("ok", {"ckpt", "ckpt_sha", "warmed",
+                                                "busy", "owner", "owner_since"})
+                                        # answered for EVERY connection, even
+                                        # while another client owns the server
     ("configure", {attr: value})     -> ("ok", info)      # nfe, guidance, ...
     ("reset_episode", seed:int|None) -> ("ok", None)
     ("replan", obs, plan_dict|None, tcp_pose) -> ("ok", (plan_dict, token))
     on error                         -> ("err", traceback_string)
+    ("err", "busy: ...")             -> a non-info request from a second client
+                                        while the first is still attached
+
+Ownership (review 09-05, issue #8): the first connection that sends a
+non-`info` request owns the policy until it disconnects; every other
+connection can still ask `info` (so a launcher can tell BUSY from ABSENT
+in milliseconds instead of timing out and loading a competing model) but
+gets ("err", "busy: ...") for anything else.
 
 The ContactPackage never crosses the wire: plans travel as dicts with
 `cpk` replaced by an integer token into the server's package store, and a
@@ -24,6 +35,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import threading
 import time
 
 import numpy as np
@@ -59,13 +71,22 @@ class RemotePolicy:
 
     CONNECT_TIMEOUT_S = 6.0
 
-    def __init__(self, address: tuple[str, int], config: dict | None = None):
-        # multiprocessing Client has NO timeout: against a server that is
-        # busy with another client the TCP connect succeeds (listen backlog)
-        # and the authkey handshake then blocks FOREVER — '--policy-server
-        # auto' would hang instead of falling back, and PICK.sh's probe with
-        # it (verification 09-01). Connect in a worker thread and give up.
-        import threading
+    class Busy(ConnectionError):
+        """The server exists and answers, but another client owns it."""
+
+    class Absent(ConnectionError):
+        """Nothing listens on the address (connection refused)."""
+
+    class Unreachable(ConnectionError):
+        """Something listens but did not complete the handshake in time —
+        AMBIGUOUS: never fall back to a competing local load on this."""
+
+    @classmethod
+    def _open(cls, address, timeout_s):
+        # multiprocessing Client has NO timeout: connect in a worker thread
+        # and give up (verification 09-01). Since 09-05 a server accepts
+        # every connection immediately, so a timeout here means a hung or
+        # foreign process, not a busy server.
         from multiprocessing.connection import Client
         box: dict = {}
 
@@ -77,17 +98,45 @@ class RemotePolicy:
 
         t = threading.Thread(target=_connect, daemon=True)
         t.start()
-        t.join(self.CONNECT_TIMEOUT_S)
-        if "conn" not in box:
-            if "err" in box:
-                raise ConnectionError(f"policy server at {address}: {box['err']}")
-            raise ConnectionError(
-                f"policy server at {address} did not answer within "
-                f"{self.CONNECT_TIMEOUT_S:.0f}s — most likely another "
-                "run_deploy is still attached (it serves one client at a "
-                "time). Ctrl-C the other one or restart SERVE.sh.")
-        self._conn = box["conn"]
+        t.join(timeout_s)
+        if "conn" in box:
+            return box["conn"]
+        if "err" in box:
+            raise cls.Absent(f"policy server at {address}: {box['err']}")
+        raise cls.Unreachable(
+            f"policy server at {address} did not complete the handshake "
+            f"within {timeout_s:.0f}s — a hung server or a foreign process "
+            "on that port. Not falling back to a local model: check "
+            "SERVE.sh / the port before launching.")
+
+    @classmethod
+    def probe(cls, address: tuple[str, int], timeout_s: float | None = None) -> dict:
+        """`info` only — answered even while another client owns the server.
+        Raises Absent / Unreachable; never Busy (busy is a FIELD here)."""
+        conn = cls._open(address, timeout_s or cls.CONNECT_TIMEOUT_S)
+        try:
+            conn.send(("info",))
+            status, payload = conn.recv()
+            if status != "ok":
+                raise RuntimeError(f"policy server error on 'info':\n{payload}")
+            return payload
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    def __init__(self, address: tuple[str, int], config: dict | None = None):
+        self._conn = self._open(address, self.CONNECT_TIMEOUT_S)
         self.info = self._call("info")
+        if self.info.get("busy"):
+            self.close()
+            raise self.Busy(
+                f"policy server at {address} (ckpt {self.info.get('ckpt')}) is "
+                f"BUSY: client #{self.info.get('owner')} has been attached since "
+                f"{time.strftime('%H:%M:%S', time.localtime(self.info.get('owner_since') or 0))}"
+                " — another run_deploy (possibly Ctrl-Z'd) owns it. Bring it "
+                "to the foreground and end it; nothing was sent to the robot.")
         cfg = {k: v for k, v in (config or {}).items()
                if k in CONFIGURABLE and v is not None}
         self.info = self._call("configure", cfg)
@@ -101,6 +150,11 @@ class RemotePolicy:
         self._conn.send(msg)
         status, payload = self._conn.recv()
         if status != "ok":
+            if "busy: client #" in str(payload):
+                # lost the ownership race (two clients saw busy=False and
+                # both sent configure): a clear refusal, never a fallback
+                self.close()
+                raise self.Busy(f"policy server is BUSY — {str(payload).strip()}")
             raise RuntimeError(f"policy server error on {msg[0]!r}:\n{payload}")
         return payload
 
@@ -131,29 +185,73 @@ class RemotePolicy:
 
 
 class PolicyServer:
-    """Server half: owns one loaded PhantomPolicy, serves one client at a
-    time, keeps the last few contact packages addressable by token."""
+    """Server half: owns one loaded PhantomPolicy, lets ONE client at a time
+    drive it (the owner), answers `info` to everyone, keeps the last few
+    contact packages addressable by token."""
 
     ACCEPT_FAILURE_LIMIT = 20
 
-    def __init__(self, policy, ckpt: str, keep_packages: int = 4):
+    def __init__(self, policy, ckpt: str, keep_packages: int = 4,
+                 ckpt_sha: str | None = None):
         self.policy = policy
         self.ckpt = ckpt
+        self.ckpt_sha = ckpt_sha          # digest of the LOADED artifact (#9)
         self.warmed = False
         self._store: dict[int, object] = {}
         self._next_token = 1
         self._keep = keep_packages
+        self._policy_lock = threading.Lock()   # the model is not thread-safe
+        self._owner_lock = threading.Lock()
+        self._owner: dict | None = None        # {"id", "since"}
+        self._conn_seq = 0
+
+    # -- ownership -----------------------------------------------------
+    def status(self) -> dict:
+        with self._owner_lock:
+            o = dict(self._owner) if self._owner else None
+        return {"ckpt": self.ckpt, "ckpt_sha": self.ckpt_sha,
+                "warmed": self.warmed, "busy": o is not None,
+                "owner": o["id"] if o else None,
+                "owner_since": o["since"] if o else None}
+
+    def _claim(self, conn_id) -> None:
+        with self._owner_lock:
+            if self._owner is None:
+                self._owner = {"id": conn_id, "since": time.time()}
+                log.info("client #%s owns the policy", conn_id)
+            elif self._owner["id"] != conn_id:
+                o = self._owner
+                raise RuntimeError(
+                    f"busy: client #{o['id']} owns the policy since "
+                    f"{time.strftime('%H:%M:%S', time.localtime(o['since']))}")
+
+    def _release(self, conn_id) -> None:
+        with self._owner_lock:
+            if self._owner is not None and self._owner["id"] == conn_id:
+                self._owner = None
+                self._store.clear()
+                log.info("client #%s released the policy", conn_id)
 
     # -- request handlers ----------------------------------------------
-    def handle(self, msg: tuple):
+    def handle(self, msg: tuple, conn_id=None):
         kind = msg[0]
         if kind == "info":
-            return {"ckpt": self.ckpt, "warmed": self.warmed}
+            return self.status()
+        # every other request needs ownership. conn_id None = a caller that
+        # drives handle() directly (tests, single-process use) — no claim,
+        # so it can never leave a permanent phantom owner behind.
+        if conn_id is not None:
+            self._claim(conn_id)
+        with self._policy_lock:
+            return self._handle_owned(msg)
+
+    def _handle_owned(self, msg: tuple):
+        kind = msg[0]
         if kind == "configure":
             for k, v in msg[1].items():
                 if k in CONFIGURABLE:
                     setattr(self.policy, k, v)
-            return {"ckpt": self.ckpt, "warmed": self.warmed,
+            return {**self.status(),
                     "applied": sorted(msg[1].keys()),
                     "effective": {k: getattr(self.policy, k, None)
                                   for k in CONFIGURABLE}}
@@ -192,10 +290,30 @@ class PolicyServer:
         self.warmed = True
         log.info("warmup replan done in %.1f s", time.perf_counter() - t0)
 
-    def serve_forever(self, port: int = DEFAULT_PORT) -> None:
+    def _serve_conn(self, conn, conn_id) -> None:
+        """One client, its own thread: `info` answers immediately even while
+        another client owns the policy; owned requests serialize on
+        `_policy_lock`. Disconnect releases ownership."""
+        try:
+            with conn:
+                while True:
+                    msg = conn.recv()
+                    try:
+                        conn.send(("ok", self.handle(msg, conn_id)))
+                    except Exception:
+                        import traceback
+                        conn.send(("err", traceback.format_exc()))
+        except (EOFError, OSError, ConnectionError):
+            pass
+        finally:
+            self._release(conn_id)
+            log.info("client #%s disconnected", conn_id)
+
+    def serve_forever(self, port: int = DEFAULT_PORT, listener=None) -> None:
         import multiprocessing
         from multiprocessing.connection import Listener
-        with Listener(("127.0.0.1", port), authkey=PHANTOM_AUTHKEY) as srv:
+        srv = listener or Listener(("127.0.0.1", port), authkey=PHANTOM_AUTHKEY)
+        with srv:
             log.info("policy server READY on 127.0.0.1:%d (ckpt %s)",
                      port, self.ckpt)
             print(f"READY ckpt={self.ckpt} port={port}", flush=True)
@@ -222,15 +340,8 @@ class PolicyServer:
                     time.sleep(min(0.05 * accept_failures, 1.0))
                     continue
                 accept_failures = 0
-                with conn:
-                    log.info("client connected")
-                    try:
-                        while True:
-                            msg = conn.recv()
-                            try:
-                                conn.send(("ok", self.handle(msg)))
-                            except Exception:
-                                import traceback
-                                conn.send(("err", traceback.format_exc()))
-                    except EOFError:
-                        log.info("client disconnected")
+                self._conn_seq += 1
+                cid = self._conn_seq
+                log.info("client #%d connected", cid)
+                threading.Thread(target=self._serve_conn, args=(conn, cid),
+                                 name=f"policy-client-{cid}", daemon=True).start()

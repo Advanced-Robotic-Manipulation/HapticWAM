@@ -15,6 +15,7 @@ the hardware config validators before this driver is ever constructed.
 from __future__ import annotations
 
 import logging
+import math
 import threading
 import sys
 import time
@@ -22,7 +23,8 @@ import time
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
-from phantom.drivers.base import Arm, ArmState
+from phantom.drivers.base import Arm, ArmState, ServoResult
+from phantom.drivers.real import rig_lease
 from phantom.data.derived import rotvec_nearest
 
 log = logging.getLogger(__name__)
@@ -65,6 +67,7 @@ class URArm(Arm):
         self._ik_dev_max = 0.0            # max per-tick |q_ik - q_seed| seen
         self._ik_rejects_total = 0
         self._last_cmd_pose: np.ndarray | None = None   # last pose actually streamed
+        self._lease = None                # rig_lease file object (control sessions)
         self._limiter_hits = 0
         self._limiter_holds = 0
         self._limiter_log_t = 0.0
@@ -172,6 +175,13 @@ class URArm(Arm):
         to self._ctrl only once fully configured; any failure releases the slot
         and any half-built C++ interface."""
         import rtde_control
+        # exclusive per-host lease FIRST — before the dashboard "stop old
+        # script" preflight, which is itself a robot call that would kill
+        # the OWNER's control script (issue #8). A Ctrl-Z'd owner keeps the
+        # lease and the error names that process; nothing is sent to the
+        # robot if this raises.
+        if self._lease is None:
+            self._lease = rig_lease.acquire(str(self.hw.arm.ip))
         with URArm._live_ctrl_lock:
             if URArm._live_ctrl_count > 0:
                 raise RuntimeError(
@@ -298,6 +308,12 @@ class URArm(Arm):
         if self._recv is not None:
             self._recv.disconnect()
             self._recv = None
+        if self._lease is not None:
+            try:
+                self._lease.close()       # releases the flock (issue #8)
+            except Exception:
+                pass
+            self._lease = None
 
     def _require_ctrl(self):
         if self._ctrl is None:
@@ -368,24 +384,48 @@ class URArm(Arm):
             return "no_solution"
         if emin is not None and abs(float(q[2])) < float(emin):
             return "elbow"
-        if vmax is not None and qref is not None and dt > 0:
-            if max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax):
-                return "joint_speed"
+        if self._speed_violation(q, qref, dt):
+            return "joint_speed"
         return None
 
+    def _speed_violation(self, q, qref, dt: float) -> bool:
+        sf = getattr(getattr(self, "hw", None), "safety", None)
+        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None) if sf is not None else None
+        if vmax is None or qref is None or dt <= 0 or not q:
+            return False
+        return max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax)
+
     def _feasible(self, q, qref, dt: float) -> bool:
-        if not q:
+        if not self._ik_valid(q):
             return False
         if qref is not None and max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
             return False
-        return self._limit_violation(q, qref, dt) is None
+        viol = self._limit_violation(q, qref, dt)
+        if viol == "elbow" and qref is not None:
+            # review 09-05 item 2: when the ANCHOR itself already sits below
+            # elbow_min_rad (the 0.468 m stop allows parking there), no
+            # micro-step inside the region is "feasible" and the arm can
+            # never leave — accept any step that moves the elbow OUT.
+            sf = getattr(getattr(self, "hw", None), "safety", None)
+            emin = float(getattr(sf, "elbow_min_rad", 0.0) or 0.0)
+            if (abs(float(qref[2])) < emin
+                    and abs(float(q[2])) > abs(float(qref[2])) + 1e-6
+                    # the escape may never buy elbow progress with a joint
+                    # whip: the speed rule still applies (verify 09-05 #2)
+                    and not self._speed_violation(q, qref, dt)):
+                return True
+        return viol is None
 
     def _limited_step(self, ctrl, prev: np.ndarray, target: np.ndarray, qref, dt: float):
         """Largest feasible fraction of the step prev -> target (bisection),
         then, if that is < 1/2, the same for the step with its radial
         (shoulder -> TCP) component removed — a slide along the reach sphere
-        instead of a stop. Returns (pose, q, fraction, mode) or None (hold)."""
+        instead of a stop. Candidates are compared by ACHIEVED displacement
+        (review 09-05 item 4: a large fraction of a near-zero tangential step
+        used to beat a small fraction of the real step and stall the arm).
+        Returns (pose, q, fraction, mode) or None (hold)."""
         best = None
+        best_disp = -1.0
         cands = [("step", target)]
         sf = getattr(getattr(self, "hw", None), "safety", None)
         sh = np.array([0.0, 0.0, float(getattr(sf, "ur_dh_d1_m", 0.1519))])
@@ -407,13 +447,40 @@ class URArm(Arm):
                     lo = mid
                 else:
                     hi = mid
-            if found is not None and (best is None or found[2] > best[2]):
-                best = found
-            if best is not None and best[2] >= 0.5:
+            if found is not None:
+                disp = float(np.linalg.norm(found[0][:3] - prev[:3]))
+                if disp > best_disp:
+                    best, best_disp = found, disp
+            if best is not None and best[3] == "step" and best[2] >= 0.5:
                 break
         return best
 
-    def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
+    @staticmethod
+    def _ik_valid(q) -> bool:
+        """6 finite joints — an empty / short / NaN solve must never reach
+        servoJ (issue #7)."""
+        try:
+            return len(q) == 6 and all(math.isfinite(float(v)) for v in q)
+        except Exception:
+            return False
+
+    def _reject(self, why: str, detail: str) -> ServoResult:
+        """Hold the previous setpoint for this tick; a sustained run of
+        rejects ends the episode (executor crash net) instead of streaming
+        anything doubtful."""
+        self._ik_rejects += 1
+        self._ik_rejects_total += 1
+        if self._ik_rejects == 1:
+            log.warning("servo hold (%s): %s", why, detail)
+        if self._ik_rejects >= self.IK_REJECT_LIMIT:
+            raise RuntimeError(
+                f"servo cannot stream ({self._ik_rejects} consecutive "
+                f"ticks rejected, last: {why}) — the target is at/beyond a "
+                "kinematic boundary")
+        return ServoResult(False, getattr(self, "_last_cmd_pose", None), why)
+
+    def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float,
+                gain: int) -> ServoResult:
         with self._ctrl_lock:
             self._servo_active = True
             ctrl = self._require_ctrl()
@@ -421,6 +488,14 @@ class URArm(Arm):
             if qref is None and self._recv is not None:
                 qref = list(self._recv.getActualQ())
             q = self._solve_ik(ctrl, tcp_pose, qref)
+            if not self._ik_valid(q):
+                # no solution (unreachable target) or garbage: with the
+                # limiter on, try to shorten towards the anchor below;
+                # otherwise hold.
+                if not (qref is not None and self._limiter_enabled()):
+                    return self._reject("ik_invalid",
+                                        f"IK returned {q!r} for {np.round(tcp_pose, 4).tolist()}")
+                q = []
             dev = (max(abs(a - b) for a, b in zip(q, qref))
                    if (qref is not None and q) else 0.0)
             if dev > self._ik_dev_max:
@@ -430,19 +505,9 @@ class URArm(Arm):
                 # the previous setpoint for a tick is safe; a sustained
                 # inability to solve on-branch ends the episode instead of
                 # whipping the arm.
-                self._ik_rejects += 1
-                self._ik_rejects_total += 1
-                if self._ik_rejects == 1:
-                    log.warning("IK solution jumped %.2f rad off the current "
-                                "branch — holding pose (kinematic boundary?)",
-                                dev)
-                if self._ik_rejects >= self.IK_REJECT_LIMIT:
-                    raise RuntimeError(
-                        "IK cannot stay on the current joint branch "
-                        f"({self._ik_rejects} consecutive solves rejected) — "
-                        "the target is at/beyond a kinematic boundary")
-                return
-            self._ik_rejects = 0
+                return self._reject("ik_branch",
+                                    f"IK solution jumped {dev:.2f} rad off the "
+                                    "current branch (kinematic boundary?)")
             # ---- reach / joint-speed limiter (09-04): shorten the step
             # instead of letting the safety monitor stop the episode at the
             # elbow-straight boundary. Only when a previous streamed pose (or
@@ -470,17 +535,31 @@ class URArm(Arm):
                                     self._limiter_hits, self._limiter_holds)
                     if best is None:
                         self._limiter_holds += 1
-                        return
+                        # counted in the same streak as IK rejects: a
+                        # sustained hold must end the episode, not freeze
+                        # the arm for the 150 s budget (verify 09-05 #3)
+                        return self._reject("limiter_hold",
+                                            f"no feasible fraction of the step ({viol})")
                     tcp_pose, q = best[0], best[1]
-            if q:
-                self._last_qsol = list(q)
-            ok = ctrl.servoJ(q, 0.0, 0.0, dt, lookahead, gain)
+                else:
+                    return self._reject("limiter_no_anchor", "no anchor pose to shorten towards")
+            if not self._ik_valid(q):
+                return self._reject("ik_invalid", f"no streamable solution ({q!r})")
+            self._last_qsol = list(q)
+            ok = ctrl.servoJ(list(q), 0.0, 0.0, dt, lookahead, gain)
             if ok is not False:
                 self._last_cmd_pose = np.asarray(tcp_pose, dtype=float).copy()
+                self._ik_rejects = 0          # the streak ends only on a SENT tick
         if ok is False:
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
                                "and restart the session)")
+        return ServoResult(True, tcp_pose, "sent")
+
+    def _limiter_enabled(self) -> bool:
+        sf = getattr(getattr(self, "hw", None), "safety", None)
+        return sf is not None and (getattr(sf, "elbow_min_rad", None) is not None
+                                   or getattr(sf, "servo_joint_speed_max_rad_s", None) is not None)
 
     def speed_l(self, xd: np.ndarray, accel: float, dt: float) -> None:
         with self._ctrl_lock:

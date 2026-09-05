@@ -49,6 +49,20 @@ class TactileFrame:
             axis=-1, dtype=np.float32)
 
 
+class ServoResult:
+    """Outcome of one servo tick — the executor anchors its rate limit,
+    its recorded action and every replan on `pose`, never on the proposal."""
+    __slots__ = ("sent", "pose", "reason")
+
+    def __init__(self, sent: bool, pose, reason: str = "sent"):
+        self.sent = bool(sent)
+        self.pose = None if pose is None else np.asarray(pose, dtype=np.float64).copy()
+        self.reason = reason
+
+    def __repr__(self) -> str:
+        return f"ServoResult(sent={self.sent}, reason={self.reason!r})"
+
+
 @dataclass(frozen=True)
 class ArmState:
     t_host: float
@@ -159,8 +173,15 @@ class Arm(ABC):
     def servo_j(self, q: np.ndarray, dt: float, lookahead: float, gain: int) -> None: ...
 
     @abstractmethod
-    def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float, gain: int) -> None:
-        """Cartesian servo (pose target); implementations may IK + servo_j."""
+    def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float,
+                gain: int) -> "ServoResult | None":
+        """Cartesian servo (pose target); implementations may IK + servo_j.
+
+        Returns what was ACTUALLY streamed (issue #7, review 09-05): a
+        `ServoResult` with `sent=True` and the streamed pose (possibly
+        shortened by a driver-side limiter), or `sent=False` + reason when
+        the driver held the previous setpoint (IK branch reject, invalid IK,
+        limiter hold). `None` = "sent as given" (simple drivers/mocks)."""
 
     @abstractmethod
     def speed_l(self, xd: np.ndarray, accel: float, dt: float) -> None: ...

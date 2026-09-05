@@ -25,13 +25,35 @@ log = logging.getLogger("phantom.policy_server")
 
 
 def probe(port: int) -> int:
+    """Print `<ckpt> <idle|busy> <sha8|->` and exit 0 when a server answers
+    (busy servers answer too — issue #8); exit 1 when nothing listens;
+    exit 2 when something listens but does not complete the handshake
+    (AMBIGUOUS — launchers must not fall back to a local load on this)."""
     try:
-        pol = RemotePolicy(("127.0.0.1", port))
-        print(pol.info["ckpt"])
-        pol.close()
-        return 0
+        info = RemotePolicy.probe(("127.0.0.1", port))
+    except RemotePolicy.Unreachable as e:
+        print(str(e), file=sys.stderr)
+        return 2
     except Exception:
         return 1
+    print(f"{info.get('ckpt')} {'busy' if info.get('busy') else 'idle'} "
+          f"{info.get('ckpt_sha') or '-'}")
+    return 0
+
+
+def digest(path: str) -> str | None:
+    """sha256 (first 12 hex) of the checkpoint FILE the server loaded — the
+    identity a launch records instead of a mutable basename like BEST.pt
+    (issue #9)."""
+    import hashlib
+    try:
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 24), b""):
+                h.update(chunk)
+        return h.hexdigest()[:12]
+    except Exception:
+        return None
 
 
 def main() -> int:
@@ -77,7 +99,9 @@ def main() -> int:
     args.veto_p_close = 0.5
     log.info("loading %s ...", args.ckpt)
     policy = build_policy(args, hw, paths)
-    srv = PolicyServer(policy, ckpt=args.ckpt)
+    sha = digest(args.ckpt)
+    log.info("checkpoint digest sha256[:12]=%s (%s)", sha, args.ckpt)
+    srv = PolicyServer(policy, ckpt=args.ckpt, ckpt_sha=sha)
     if not args.no_warmup:
         srv.warmup(hw, teacher=(args.system == "teacher"))
     try:

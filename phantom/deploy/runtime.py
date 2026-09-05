@@ -327,5 +327,7 @@ class DeploymentRuntime:
                      "count": int(getattr(e, "count", 1))}
                     for e in safety.log_events],
             stop_state={**self._arm_state_now(),
+                        **({"at_halt": executor.halt_state}
+                           if getattr(executor, "halt_state", None) else {}),
                         **({"crash": executor.crash_text}
                            if getattr(executor, "crash_text", None) else {})})
