@@ -194,10 +194,15 @@ class RigEpisode:
     """
 
     jpeg_quality: int | None = None      # set by main() from --jpeg-quality
+    # set by main() from the CHECKPOINT (configs.train.wrench_baseline_rows):
+    # the per-episode wrench zero offset the model was trained without
+    wrench_baseline_rows: int = 0
 
     def __init__(self, path: Path, hw):
         self.path = Path(path)
         self.hw = hw
+        self._wbase: dict[str, np.ndarray] = {}
+
         self.reader = EpisodeReader(self.path)
         self.meta = self.reader.meta
         self.trace = json.loads((self.path / "planner_trace.json").read_text())
@@ -205,6 +210,18 @@ class RigEpisode:
         self._ts: dict[str, np.ndarray] = {}
         self._sb = None
         self._poses: np.ndarray | None = None
+
+    def wrench_baseline(self, stream: str) -> np.ndarray:
+        """Same statistic as WindowSampler._EpisodeCache.wrench_baseline:
+        median of the episode's first N wrench rows (0 rows -> zeros)."""
+        n = int(self.wrench_baseline_rows or 0)
+        if n <= 0:
+            return np.zeros(6, np.float32)
+        if stream not in self._wbase:
+            w = np.asarray(self.reader.data(stream)[:n], dtype=np.float32)
+            self._wbase[stream] = (np.median(w, axis=0).astype(np.float32)
+                                   if len(w) else np.zeros(6, np.float32))
+        return self._wbase[stream]
 
     def ts(self, stream: str) -> np.ndarray:
         t = self._ts.get(stream)
@@ -301,8 +318,9 @@ class RigEpisode:
                 ts_f = self.ts(fs)
                 dt_use = float(max(float(ts_f[i]) - float(ts_f[i - 1]), 1e-6))
             d = dv.derive_timestep(cur, prev, dt_use, hw)
+            wst = tactile_stream(s.name, "wrench")
             contact.append(np.concatenate([
-                self.row(tactile_stream(s.name, "wrench"), t),
+                self.row(wst, t) - self.wrench_baseline(wst),
                 [self.row(tactile_stream(s.name, "area"), t)],
                 np.nan_to_num(d["cop"], nan=0.0), [d["slip"]], [d["mask_frac"]],
             ]).astype(np.float32))
@@ -483,9 +501,12 @@ def build_policy(args, hw) -> PhantomPolicy:
             from phantom.backbone import loader as bl
             bl.merge_lora(pm.rf.net)
         norm = _norm_from(payload)
-    return PhantomPolicy(pm, norm, nfe=args.nfe, guidance=args.guidance,
+    policy = PhantomPolicy(pm, norm, nfe=args.nfe, guidance=args.guidance,
                          persistent_noise=args.persistent_noise,
                          parity_fixes=bool(getattr(args, "parity_fixes", False)))
+    from phantom.train.common import wrench_baseline_rows_of
+    policy.wrench_baseline_rows = wrench_baseline_rows_of(payload)
+    return policy
 
 
 def _norm_from(payload: dict) -> NormStats:
@@ -777,6 +798,7 @@ def main() -> int:
 
     hw = load_hardware(args.hardware, quiet=True)
     policy = build_policy(args, hw)
+    RigEpisode.wrench_baseline_rows = int(getattr(policy, "wrench_baseline_rows", 0) or 0)
     # NB: no run-level seeding here — replay_episode seeds PER EPISODE, so the
     # numbers do not depend on the --episodes list or its order
 

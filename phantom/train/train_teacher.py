@@ -80,7 +80,8 @@ def apply_overrides(cfg, args, compute=None):
     # helper with configs that have no data-recipe fields.
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
                  "eval_every", "ema_decay", "event_band_weight",
-                 "split", "grasp_frac", "photo_aug", "commit_band_weight"):
+                 "split", "grasp_frac", "photo_aug", "commit_band_weight",
+                 "wrench_baseline_rows"):
         v = getattr(args, name, None)
         if v is not None and hasattr(cfg, name):
             updates[name] = v
@@ -214,6 +215,11 @@ def main(argv=None) -> int:
                          "inside the pre-close commit band (plan D8; default "
                          "1.0 = off). Composes with the per-episode "
                          "EpisodeMeta.weight; failure demos stay at 0")
+    ap.add_argument("--wrench-baseline-rows", type=int, default=None,
+                    help="subtract each pad's per-episode wrench zero offset "
+                         "(median of the first N rows) from contact_state and the "
+                         "cpk_wrench target; 0 = raw as v4/v5 (v6 data fix, default 8 "
+                         "for v6). Persisted in the checkpoint for deploy/replay.")
     ap.add_argument("--photo-aug", type=float, default=None,
                     help="photometric jitter strength on the scene camera "
                          "(default 0 disables; 1.0 = brightness +-30%%, contrast "
@@ -466,7 +472,8 @@ def main(argv=None) -> int:
         pm.rf.event_band_weight = cfg.event_band_weight
         log.info("packed event-band MSE weight overridden: %.3g (config %.3g)",
                  cfg.event_band_weight, pm.mc.loss.event)
-    sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed)
+    sampler = WindowSampler(hw, pm.bb, norm, student=args.student, seed=cfg.seed,
+                            wrench_baseline_rows=int(getattr(cfg, "wrench_baseline_rows", 0) or 0))
     train_eps = C.manifest_split(data_root, cfg.split)
     ds = C.WindowDataset(data_root, sampler, episodes=train_eps, seed=cfg.seed,
                          grasp_frac=cfg.grasp_frac, photo_aug=cfg.photo_aug,

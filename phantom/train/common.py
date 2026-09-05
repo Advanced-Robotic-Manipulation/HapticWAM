@@ -936,3 +936,16 @@ def to_device(batch: dict, device, dtype=None) -> dict:
                 v = v.to(dtype)
         out[k] = v
     return out
+
+
+def wrench_baseline_rows_of(payload) -> int:
+    """`configs.train.wrench_baseline_rows` of a checkpoint payload (0 for
+    every checkpoint trained before v6, or no payload): the number of leading
+    wrench rows whose median WindowSampler subtracted from contact_state and
+    cpk_wrench at training time. Deploy (SnapshotBuilder) and replay must
+    subtract the same, so they read it from here, never from a flag."""
+    try:
+        return int(((payload or {}).get("configs") or {}).get("train", {}).get(
+            "wrench_baseline_rows", 0) or 0)
+    except Exception:
+        return 0
