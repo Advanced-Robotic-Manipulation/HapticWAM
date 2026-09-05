@@ -170,6 +170,18 @@ def main(argv=None) -> int:
     ap.add_argument("--dagger-round", type=int, default=0)
     ap.add_argument("--extra-data", nargs="*", default=[],
                     help="additional episode roots (DAgger rollouts)")
+    ap.add_argument("--resume", default="",
+                    help="student checkpoint to resume from (restores weights, "
+                         "optimizer, schedule, EMA and step — the runner's "
+                         "incremental hub egress makes a preempted rental "
+                         "resumable; review 2026-09-05)")
+    # the teachers were trained with --grasp-frac 0.3 --photo-aug 1.0; the
+    # student must see the same window recipe (review 2026-09-05: uniform t0
+    # gave the pre-close commit band ~5-10% of windows instead of 30%+ and
+    # collection lighting only)
+    ap.add_argument("--grasp-frac", type=float, default=0.0)
+    ap.add_argument("--photo-aug", type=float, default=0.0)
+    ap.add_argument("--commit-band-weight", type=float, default=1.0)
     ap.add_argument("--split", default="train", choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default "
                          "train; 'all' reproduces the pre-2026-08-30 behaviour "
@@ -213,14 +225,27 @@ def main(argv=None) -> int:
     student = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc_student,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
     if cfg.teacher_ckpt:
+        # EMA is the DEPLOY/EVAL artifact (run_deploy --ema default, replay_rig,
+        # terminal_eval): the teachers were SELECTED on their EMA weights, so
+        # the imagination target and the student's starting point must be
+        # those weights, not the raw last step (review 2026-09-05 must-fix).
+        has_ema = bool((payload or {}).get("ema"))
+        log.info("teacher weights: %s", "EMA" if has_ema else
+                 "RAW (checkpoint carries no EMA)")
         C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), teacher.rf, hw=hw,
-                                  payload=payload)
+                                  payload=payload, load_ema=has_ema)
         C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), student.rf, hw=hw,
                                   allow_missing=True,   # teacher-only keys dropped
-                                  payload=payload)
+                                  payload=payload, load_ema=has_ema)
     teacher.rf.eval()
     for p in teacher.rf.parameters():
         p.requires_grad = False
+
+    resume_payload = None
+    if args.resume:
+        resume_payload = C.load_phantom_checkpoint(Path(args.resume), student.rf, hw=hw)
+        log.info("resuming student from %s at step %d", args.resume,
+                 int(resume_payload.get("step", 0)))
 
     data_root, norm = resolve_data(args, hw, paths)
     sampler_s = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed)
@@ -231,12 +256,29 @@ def main(argv=None) -> int:
     # `episodes=` WindowDataset falls through to list_episodes(root) and the
     # student trains on its own validation set (validation 2026-08-30 F10)
     train_eps = C.manifest_split(data_root, args.split)
-    ds = C.WindowDataset(data_root, sampler_s, episodes=train_eps)
+    ds = C.WindowDataset(data_root, sampler_s, episodes=train_eps,
+                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug,
+                         commit_band_weight=args.commit_band_weight)
     for extra in args.extra_data:
         ds.index += sampler_s.build_index(Path(extra))
-    log.info("HID dataset: %d windows (round %d, split=%s)", len(ds),
-             cfg.dagger_round, args.split)
+    log.info("HID dataset: %d windows (round %d, split=%s, grasp_frac=%.2f, "
+             "photo_aug=%.2f)", len(ds), cfg.dagger_round, args.split,
+             args.grasp_frac, args.photo_aug)
     loader = C.make_loader(ds, cfg)   # AFTER the --extra-data index merge
+
+    # held-out evaluation, exactly as train_teacher builds it: without a
+    # val_loader train_loop's eval_every is dead and no checkpoint can be
+    # selected on anything but the teacher-matching training loss
+    val_loader = None
+    if args.split == "train":
+        val_eps = C.manifest_split(data_root, "val")
+        if val_eps:
+            val_ds = C.WindowDataset(data_root, sampler_s, episodes=val_eps,
+                                     resample=False, seed=cfg.seed)
+            val_loader = C.make_loader(val_ds, cfg, shuffle=False, shard=False)
+            log.info("val: %d windows from %d episodes", len(val_ds), len(val_eps))
+    if not cfg.synthetic and not cfg.tiny:
+        C.assert_label_sanity(ds, log)
 
     def step_fn(batch: dict) -> dict:
         return distill_step(student.rf, teacher.rf, batch, cfg, args.device)
@@ -248,7 +290,8 @@ def main(argv=None) -> int:
             base_ckpt_path=str(paths.cosmos_checkpoint), norm_stats=norm,
             optimizer=opt, scheduler=sched, ema=ema)
 
-    C.train_loop(cfg, student.rf, loader, step_fn, on_checkpoint=on_ckpt)
+    C.train_loop(cfg, student.rf, loader, step_fn, on_checkpoint=on_ckpt,
+                 val_loader=val_loader, resume_payload=resume_payload)
     return 0
 
 

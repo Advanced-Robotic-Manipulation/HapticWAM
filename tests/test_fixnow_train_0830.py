@@ -256,7 +256,14 @@ class _CapturedDataset:
     seen: dict = {}
 
     def __init__(self, root, sampler, *a, episodes=None, **kw):
-        _CapturedDataset.seen = {"root": Path(root), "episodes": episodes}
+        # the FIRST construction is the training set; distill_hid now also
+        # builds a val set right after it (review 2026-09-05), which must not
+        # overwrite what the train-split assertions look at
+        if not _CapturedDataset.seen or _CapturedDataset.seen.get("_n", 0) == 0:
+            _CapturedDataset.seen = {"root": Path(root), "episodes": episodes, "_n": 1}
+        else:
+            _CapturedDataset.seen["_n"] += 1
+            _CapturedDataset.seen["val_episodes"] = episodes
         self.index = []
 
     def __len__(self):
@@ -265,6 +272,7 @@ class _CapturedDataset:
 
 def _stub_program(monkeypatch, mod):
     """Everything a train program does around the dataset, stubbed out."""
+    _CapturedDataset.seen = {}
     monkeypatch.setattr(mod.C, "WindowDataset", _CapturedDataset)
     monkeypatch.setattr(mod.C, "make_loader", lambda *a, **k: [])
     monkeypatch.setattr(mod.C, "train_loop", lambda *a, **k: None)
