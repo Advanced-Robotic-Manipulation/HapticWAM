@@ -9,9 +9,14 @@ written. Reviewer: adversarial Opus pass that executed the limiter against its o
 test harness. Reproduced items are marked.
 
 ## Why it is off
-The limiter's `ur.py` edits are timestamped 20:05, after the day's last episode
-(19:56): none of the 16 `stop.json` files record a limiter hit, so it has never run on
-the arm. Three defects reproduce in the harness.
+Correction (Ilya, issue #4): the limiter DID run on the arm for the last block of 09-04
+(19:50–19:56, six episodes, `elbow_min_rad=0.40 / 1.0 rad/s`); `ur.py` received the
+limiter at ~19:35 and the 20:05 edit only added the counter persistence, which is why
+those `stop.json` files carry no `servo_limiter` field. In that block the apex dropped to
+0.34–0.36 m, max joint speed 0.4 rad/s (vs 1.0–1.3 before) and no guard fired — but six
+episodes cannot separate "limiter engaged" from seed variance. It stays off because
+three defects reproduce in its own harness, one of which (item 2) is a live crash path
+at the parking distance the 0.468 m stop now allows.
 
 ## Blocking (fix before enabling)
 1. **IndexError on an unreachable target** (`servo_l` log line) — *fixed on main 09-05*:
