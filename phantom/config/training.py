@@ -95,6 +95,9 @@ class HIDConfig(CommonTrainConfig):
     w_ground: float = 0.5                        # GT RF grounding (actions/video/wrist)
     saliency_kappa: float = 4.0                  # s_tau = 1 + kappa * (1 - p_evt[none])
     confidence_temp: float = 1.0                 # c_tau = exp(-sigma_T / temp)
+    # round-2 knobs (review 09-05, PR #6): both default to the round-1 behaviour
+    teacher_nfe: int = 0            # teacher imagination NFE: 0 = legacy nfe//2, -1 = the teacher's own nfe, N = N
+    w_sigma: float = 0.0            # student sigma head supervised vs GT (contact_hetero_nll + sigma_reg); 0 = untrained (round 1)
     feature_align: bool = False                  # ablation row
     w_feature_align: float = 0.1
     dagger_round: int = 0                        # 0 = offline; 1,2 = DAgger rounds
