@@ -240,7 +240,9 @@ class DeploymentRuntime:
                                  max_play_steps=self.max_play_steps)
         snapshots = SnapshotBuilder(hw, self.session, self.mode,
                                     parity_fixes=self.parity_fixes,
-                                    executor=executor)
+                                    executor=executor,
+                                    wrench_baseline_rows=int(
+                                        getattr(self.policy, "wrench_baseline_rows", 0) or 0))
         trace: list = []
         planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace,
                               session=self.session, veto=self.veto)

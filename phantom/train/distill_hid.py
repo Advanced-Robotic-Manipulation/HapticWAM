@@ -248,7 +248,11 @@ def main(argv=None) -> int:
                  int(resume_payload.get("step", 0)))
 
     data_root, norm = resolve_data(args, hw, paths)
-    sampler_s = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed)
+    # inherit the teacher/student checkpoint's wrench zero-offset rows and
+    # PERSIST them in this program's checkpoint (verify 09-05 #1)
+    cfg = dataclasses.replace(cfg, wrench_baseline_rows=C.wrench_baseline_rows_of(payload))
+    sampler_s = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed,
+                              wrench_baseline_rows=cfg.wrench_baseline_rows)
     # note: student windows still carry tactile targets (labels come from the
     # rig's sensors during training); the student MODEL just never sees the
     # tactile inputs — its layout has no OBS_GEL/OBS_MECH frames.

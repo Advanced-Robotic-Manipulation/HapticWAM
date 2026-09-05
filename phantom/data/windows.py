@@ -80,9 +80,28 @@ class WindowItem:
 class _EpisodeCache:
     """Reader + per-stream timestamp cache for one episode."""
 
+    WRENCH_BASELINE_ROWS = 8      # ~1 s at the 8 Hz SDK rate, pads untouched at the start pose
+
     def __init__(self, path: Path):
         self.reader = EpisodeReader(path)
+        self._wrench_base: dict[str, np.ndarray] = {}
         self._ts: dict[str, np.ndarray] = {}
+
+    def wrench_baseline(self, stream: str, rows: int = WRENCH_BASELINE_ROWS) -> np.ndarray:
+        """Per-episode zero offset of a pad's wrench stream: the median of its
+        first WRENCH_BASELINE_ROWS rows (the pads idle untouched at the start
+        pose). The left pad idles 0.7-2.2 N above zero and the offset drifts
+        per session — fed raw, it is a session ID the model can fit and
+        misread at deploy time (v6 data fix, docs/v6 plan B.1). The deploy
+        SnapshotBuilder subtracts the same statistic from its ring."""
+        if rows <= 0:
+            return np.zeros(6, np.float32)
+        if stream not in self._wrench_base:
+            w = np.asarray(self.reader._g(stream)["data"][: int(rows)],
+                           dtype=np.float32)
+            self._wrench_base[stream] = (np.median(w, axis=0).astype(np.float32)
+                                         if len(w) else np.zeros(6, np.float32))
+        return self._wrench_base[stream]
 
     def ts(self, stream: str) -> np.ndarray:
         t = self._ts.get(stream)
@@ -122,11 +141,14 @@ class _EpisodeCache:
 
 class WindowSampler:
     def __init__(self, hw, bb, norm: NormStats, *, student: bool = False,
-                 seed: int = 0):
+                 seed: int = 0, wrench_baseline_rows: int = 0):
         self.hw = hw
         self.bb = bb
         self.norm = norm
         self.student = student
+        # 0 = raw wrench (every checkpoint before v6); N = per-episode zero
+        # offset subtracted (TeacherTrainConfig.wrench_baseline_rows)
+        self.wrench_baseline_rows = int(wrench_baseline_rows or 0)
         self.rng = np.random.default_rng(seed)
         self._cache: dict[Path, _EpisodeCache] = {}
         self._warned_hash: set[str] = set()
@@ -344,8 +366,11 @@ class WindowSampler:
         w["cpk_cop"] = torch.from_numpy(cop[1:])
         w["cpk_slip"] = torch.from_numpy(slip[1:])
 
+        # the TARGET loses the same per-episode offset as the input: a model
+        # that cannot observe a session constant must not be asked to predict it
         wrench = np.stack([
             np.stack([c.at(tactile_stream(s, "wrench"), float(uk))
+                      - c.wrench_baseline(tactile_stream(s, "wrench"), self.wrench_baseline_rows)
                       for s in sensors]) for uk in u[1:]]).astype(np.float32)
         w["cpk_wrench"] = torch.from_numpy(
             np.asarray(norm.normalize("wrench", wrench)))
@@ -399,8 +424,10 @@ class WindowSampler:
             for f, sname in enumerate(sensors):
                 frame, prev_frame, dt = self._field_frame(c, sname, t0)
                 d = dv.derive_timestep(frame, prev_frame, dt, hw)
+                wst = tactile_stream(sname, "wrench")
                 cs.append(np.concatenate([
-                    c.at(tactile_stream(sname, "wrench"), t0).astype(np.float32),
+                    (c.at(wst, t0).astype(np.float32)
+                     - c.wrench_baseline(wst, self.wrench_baseline_rows)),
                     np.atleast_1d(np.float32(c.at(tactile_stream(sname, "area"), t0))),
                     np.nan_to_num(d["cop"], nan=0.0).astype(np.float32),
                     np.float32([d["slip"], d["mask_frac"]]),

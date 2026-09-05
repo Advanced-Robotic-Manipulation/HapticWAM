@@ -38,6 +38,12 @@ class CommonTrainConfig:
     def to_dict(self) -> dict:
         return asdict(self)
 
+    # v6 data fix: subtract each pad's per-episode wrench zero offset (median
+    # of the first N rows) from contact_state and the cpk_wrench target.
+    # 0 = raw (v4/v5 checkpoints). Persisted in EVERY program's checkpoint
+    # (students inherit their teacher's value) so deploy / replay / the next
+    # program read it from the payload, never from a flag.
+    wrench_baseline_rows: int = 0
 
 @dataclass(frozen=True)
 class TactilePretrainConfig(CommonTrainConfig):

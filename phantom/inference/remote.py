@@ -144,6 +144,7 @@ class RemotePolicy:
         # checkpoint default server-side; tags must show the real value)
         for k, v in self.info.get("effective", {}).items():
             setattr(self, k, v)
+        self.wrench_baseline_rows = int(self.info.get("wrench_baseline_rows", 0) or 0)
         log.info("remote policy: %s", self.info)
 
     def _call(self, *msg):
@@ -211,6 +212,8 @@ class PolicyServer:
             o = dict(self._owner) if self._owner else None
         return {"ckpt": self.ckpt, "ckpt_sha": self.ckpt_sha,
                 "warmed": self.warmed, "busy": o is not None,
+                # checkpoint properties the robot process must mirror
+                "wrench_baseline_rows": int(getattr(self.policy, "wrench_baseline_rows", 0) or 0),
                 "owner": o["id"] if o else None,
                 "owner_since": o["since"] if o else None}
 

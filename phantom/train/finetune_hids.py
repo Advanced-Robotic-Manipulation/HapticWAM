@@ -174,7 +174,11 @@ def main(argv=None) -> int:
 
     data_root, norm = resolve_data(args, hw, paths)
     taus = calibrate_tau_per_task(data_root, hw, cfg.tau_quantile)
-    sampler = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed)
+    # inherit the teacher/student checkpoint's wrench zero-offset rows and
+    # PERSIST them in this program's checkpoint (verify 09-05 #1)
+    cfg = dataclasses.replace(cfg, wrench_baseline_rows=C.wrench_baseline_rows_of(payload))
+    sampler = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed,
+                            wrench_baseline_rows=cfg.wrench_baseline_rows)
     # manifest split (validation 2026-08-30 F10): without `episodes=` this
     # fine-tune ran on every episode, val included
     train_eps = C.manifest_split(data_root, args.split)

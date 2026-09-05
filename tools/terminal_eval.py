@@ -392,7 +392,9 @@ def main(argv: list[str] | None = None) -> int:
     data_root = Path(args.data)
     # the sampler must build the layout's OWN streams: a student checkpoint has
     # no gel/fields/contact_state frames (F12)
-    sampler = WindowSampler(hw, pm.bb, norm, student=mc.student, seed=0)
+    from phantom.train.common import wrench_baseline_rows_of
+    sampler = WindowSampler(hw, pm.bb, norm, student=mc.student, seed=0,
+                            wrench_baseline_rows=wrench_baseline_rows_of(payload))
     val_eps = resolve_episodes(data_root, args.split)
     ds = C.WindowDataset(data_root, sampler, episodes=val_eps, windows_per_episode=1,
                          resample=False, seed=0)

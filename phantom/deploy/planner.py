@@ -95,16 +95,25 @@ class SnapshotBuilder:
     """
 
     def __init__(self, hw: HardwareConfig, session: SensorSession, mode: str,
-                 *, parity_fixes: bool = False, executor=None):
+                 *, parity_fixes: bool = False, executor=None,
+                 wrench_baseline_rows: int = 0):
         assert mode in SYSTEM_MODES, f"unknown system mode {mode}"
         self.hw = hw
         self.session = session
         self.mode = mode
         self.parity_fixes = bool(parity_fixes)
+        # from the CHECKPOINT's train config (run_deploy / server info):
+        # 0 = raw contact_state as v4/v5 were trained; N = subtract the
+        # per-episode zero offset exactly as WindowSampler did for that model
+        self.wrench_baseline_rows = int(wrench_baseline_rows or 0)
         # only used by the parity prev_chunk: the gripper command per EXECUTED
         # action-grid step (ChunkExecutor.gripper_cmd_at)
         self.executor = executor
         self._prev_fields: np.ndarray | None = None
+        # per-episode wrench zero offset per pad, captured at the first build
+        # (pads untouched at the start pose) — the SAME statistic training
+        # subtracts (WindowSampler _EpisodeCache.wrench_baseline)
+        self.wrench_base: dict[str, np.ndarray] = {}
         self._cam_stale_s = camera_stale_s(hw)
         self._arm_stale_s = arm_stale_s(hw)
         # Enough arm rows to SPAN the wrist window in TIME (the ring runs at
@@ -121,6 +130,31 @@ class SnapshotBuilder:
             span_s = (hw.control.chunk_horizon + 1) / hw.control.action_rate_hz
             self._n_arm = max(self._n_arm,
                               int(np.ceil(1.2 * span_s * hw.arm.rtde_receive_hz)) + 8)
+
+    def reset_baseline(self) -> None:
+        """New episode: capture the zero offset again at the next build."""
+        self.wrench_base = {}
+
+    def _baseline_for(self, name: str, ring) -> np.ndarray:
+        rows = self.wrench_baseline_rows
+        if rows <= 0:
+            return np.zeros(6, np.float32)
+        if name not in self.wrench_base:
+            try:
+                _, tac = ring.latest(rows)
+                w = np.asarray(tac["wrench"], dtype=np.float32).reshape(-1, 6)
+                if len(w) < rows:
+                    log.warning("tactile %s: wrench baseline from %d rows (< %d): "
+                                "ring not warm yet", name, len(w), rows)
+                self.wrench_base[name] = np.median(w, axis=0).astype(np.float32)
+            except Exception:
+                log.exception("tactile %s: could not read the wrench baseline — "
+                              "using ZERO (the model input keeps this pad's offset)",
+                              name)
+                self.wrench_base[name] = np.zeros(6, np.float32)
+            log.info("tactile %s wrench baseline (%d rows) %s", name, rows,
+                     np.round(self.wrench_base[name], 2).tolist())
+        return self.wrench_base[name]
 
     def prev_chunk_from_history(self, t_now: float, ts_a: np.ndarray,
                                 arm: dict, grip_now: float) -> np.ndarray | None:
@@ -278,8 +312,9 @@ class SnapshotBuilder:
                     # divides the tangential flow by it
                     dt_use = float(max(float(ts_t[-1]) - float(ts_t[0]), 1e-6))
                 d = dv.derive_timestep(cur, prev, dt_use, hw)
+                base = self._baseline_for(s.name, rings[f"tactile_{s.name}"])
                 contact_states.append(np.concatenate([
-                    tac["wrench"][-1], [tac["area"][-1]],
+                    np.asarray(tac["wrench"][-1], dtype=np.float32) - base, [tac["area"][-1]],
                     np.nan_to_num(d["cop"], nan=0.0), [d["slip"]], [d["mask_frac"]],
                 ]).astype(np.float32))
             snap.fields = np.stack(fields)
@@ -620,7 +655,9 @@ class PlannerLoop:
                 continue
             fz = np.asarray(w, dtype=np.float64).reshape(len(ts_t), -1)[:, 2]
             if s_.name not in base:
-                base[s_.name] = float(fz[-1])
+                sb = getattr(self.snapshots, "wrench_base", {}) or {}
+                base[s_.name] = (float(sb[s_.name][2]) if s_.name in sb
+                                 else float(fz[-1]))
             out[s_.name] = float(np.max(np.abs(fz - base[s_.name])))
         return out
 
@@ -651,6 +688,8 @@ class PlannerLoop:
         episode wall-time is `max_replans x latency`, so the same cap of 40 is
         a 35 s episode at the NFE-5 cadence (865 ms) and a 7 s one at `--nfe 1`
         (172 ms) — against demos that run 16-31 s (VALIDATION_0830 P0 #4)."""
+        if hasattr(self.snapshots, "reset_baseline"):
+            self.snapshots.reset_baseline()      # new episode: new wrench zero offset
         n = 0
         t_start = time.perf_counter()
         self.stop_reason = None

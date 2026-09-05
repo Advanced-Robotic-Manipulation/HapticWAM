@@ -116,13 +116,23 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
     if getattr(args, "compile", False):
         bl.compile_blocks(pm.rf.net, mode=getattr(args, "compile_mode", "default")
                           or "default")
-    return PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
+    policy = _finish_policy(pm, norm, args, payload)
+    return policy
+
+
+def _finish_policy(pm, norm, args, payload):
+    from phantom.train.common import wrench_baseline_rows_of
+    policy = PhantomPolicy(pm, norm, nfe=args.nfe, drop_video=args.drop_video,
                          task_text=(args.text or args.task),
                          persistent_noise=getattr(args, "persistent_noise", False),
                          guidance=getattr(args, "guidance", 1.0),
                          parity_fixes=getattr(args, "parity_fixes", False),
                          k_seeds=getattr(args, "k_seeds", 1),
                          close_p=getattr(args, "veto_p_close", 0.5))
+    # checkpoint property, not a flag: which wrench zero offset the model was
+    # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
+    policy.wrench_baseline_rows = wrench_baseline_rows_of(payload)
+    return policy
 
 
 # Episode outcomes that mean the robot's RTDE CONTROL SCRIPT is (probably)

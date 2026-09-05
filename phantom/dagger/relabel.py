@@ -85,7 +85,9 @@ def relabel_root(root: Path, teacher_ckpt: Path, hw: HardwareConfig,
         norm = NormStats(
             mean={k: np.asarray(v, dtype=np.float32) for k, v in ns["mean"].items()},
             std={k: np.asarray(v, dtype=np.float32) for k, v in ns["std"].items()})
-    sampler = WindowSampler(hw, teacher.bb, norm, student=False)
+    from phantom.train.common import wrench_baseline_rows_of
+    sampler = WindowSampler(hw, teacher.bb, norm, student=False,
+                            wrench_baseline_rows=wrench_baseline_rows_of(payload))
     replan_period = hw.control.chunk_horizon / hw.control.action_rate_hz
 
     n = 0
