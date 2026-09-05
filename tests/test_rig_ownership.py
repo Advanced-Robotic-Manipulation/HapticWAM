@@ -164,3 +164,14 @@ def test_in_process_handle_never_becomes_a_phantom_owner(live_server):
     srv, port = live_server
     srv.handle(("reset_episode", 1))                 # direct, single-process use
     assert RemotePolicy.probe(("127.0.0.1", port))["busy"] is False
+
+
+def test_disk_preflight_aborts_when_nearly_full(tmp_path, monkeypatch):
+    import shutil
+    from collections import namedtuple
+    from phantom.scripts import run_deploy as rd
+    DU = namedtuple("usage", "total used free")
+    monkeypatch.setattr(shutil, "disk_usage", lambda p: DU(1e12, 1e12 - 3e9, 3e9))
+    assert rd.preflight_disk(tmp_path / "episodes" / "deploy") == 4
+    monkeypatch.setattr(shutil, "disk_usage", lambda p: DU(1e12, 0, 1e12))
+    assert rd.preflight_disk(tmp_path / "episodes" / "deploy") == 0

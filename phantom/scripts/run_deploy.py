@@ -574,6 +574,34 @@ def persist_stop(recorder, res) -> None:
         log.exception("could not persist the stop reason for %s", res.episode_path)
 
 
+DISK_ABORT_GB = 5.0
+DISK_WARN_GB = 20.0
+
+
+def preflight_disk(out_root: Path) -> int:
+    """Rig 09-04: the root disk hit 100 % (3 MB free) mid-session, auditd
+    suspended and recording would have died silently (issue #4). Abort under
+    DISK_ABORT_GB free on the episodes filesystem, warn under DISK_WARN_GB."""
+    import shutil
+    probe = out_root
+    while not probe.exists() and probe != probe.parent:
+        probe = probe.parent
+    try:
+        free_gb = shutil.disk_usage(probe).free / 1e9
+    except Exception:
+        return 0
+    if free_gb < DISK_ABORT_GB:
+        log.error("only %.1f GB free on %s — refusing to record (need >= %.0f GB); "
+                  "free space first (du -sh ~/.cache ~/Downloads /tmp)",
+                  free_gb, probe, DISK_ABORT_GB)
+        return 4
+    if free_gb < DISK_WARN_GB:
+        log.warning("%.1f GB free on %s — under %.0f GB; a session of episodes "
+                    "can fill this. Consider freeing space before recording.",
+                    free_gb, probe, DISK_WARN_GB)
+    return 0
+
+
 def make_operator_stop():
     """Episode-scoped stop button: pressing Enter DURING the episode ends it
     cleanly (`planner.run` breaks with stop_reason "operator_stop"; the
@@ -759,6 +787,9 @@ def main(argv=None) -> int:
     paths.validate(require_cosmos=not args.tiny)
     out_root = Path(args.out) if args.out else \
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
+    rc = preflight_disk(out_root)
+    if rc:
+        return rc
 
     policy = None
     if args.policy_server:
@@ -1075,7 +1106,7 @@ def main(argv=None) -> int:
                 log.info("  safety event: %s value=%.3f x%d at t=%.2f",
                          ev["kind"], ev["value"], ev["count"], ev["t"])
             persist_stop(rt.recorder, res)
-            if (res.stopped_reason in ("safety_stop", "wrist_extension")
+            if (res.stopped_reason == "safety_stop"      # (wrist_extension is an event KIND, never a reason)
                     and lift_done is not None and lift_done()):
                 # the 500 Hz wrist-extension stop can beat the per-replan
                 # lift detector on a good grasp (they sit ~20 mm of wd

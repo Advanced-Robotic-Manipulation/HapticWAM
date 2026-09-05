@@ -12,6 +12,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 import logging
 import traceback
 import threading
@@ -189,7 +191,8 @@ class ChunkExecutor:
         `gripper.move` in the whole deploy path is the NEXT episode's homing
         (start_pose.py:208)."""
         self._set_reason(reason)
-        self._grip_latch = None
+        with self._latch_lock():
+            self._grip_latch = None
         # order matters: kill the mailbox and the worker's while-condition
         # BEFORE releasing, or a latched close can land after the release
         self._grip_target = None
@@ -357,8 +360,10 @@ class ChunkExecutor:
                     # recording the raw proposal wrote "open mid-carry" into
                     # STREAM_ACTIONS and confused the veto's close detector)
                     g_sent = float(np.clip(a[6], 0.0, 1.0))
-                    if self._grip_latch is not None:
-                        g_sent = max(g_sent, self._grip_latch)
+                    with self._lock:
+                        latch = self._grip_latch
+                    if latch is not None:
+                        g_sent = max(g_sent, latch)
                     if g_sent != a[6]:
                         a = np.array(a, copy=True); a[6] = g_sent
                     if self.record_action is not None:
@@ -476,22 +481,36 @@ class ChunkExecutor:
         if thr <= 0:
             return grip
         loads = getattr(self.safety, "contact_load", None) or {}
-        if self._grip_latch is None:
-            if len(loads) >= 2 and all(v > thr for v in loads.values()):
-                self._grip_latch = grip
-                log.info("aperture latched at %.2f (both pads loaded: %s)",
-                         grip, {k: round(v, 1) for k, v in loads.items()})
-            return grip
-        # RUNNING MAX since contact (09-04 analysis): contact registers at
-        # ~0.58 and the fingers then close a further ~0.05 into the object;
-        # latching at the contact value would under-grip on the way back.
-        if grip > self._grip_latch:
-            self._grip_latch = grip
-        return self._grip_latch
+        # one locked read-modify-write: the planner thread clears the latch
+        # (veto recovery / halt) at replan cadence while this runs at 125 Hz
+        # — a check-then-use on the bare attribute raced into `grip > None`
+        # (ultrareview 09-05)
+        latched_now = False
+        with self._latch_lock():
+            latch = self._grip_latch
+            if latch is None:
+                if len(loads) >= 2 and all(v > thr for v in loads.values()):
+                    self._grip_latch = grip
+                    latched_now = True
+            # RUNNING MAX since contact (09-04 analysis): contact registers
+            # at ~0.58 and the fingers then close a further ~0.05 into the
+            # object; latching at the contact value would under-grip on the
+            # way back.
+            elif grip > latch:
+                self._grip_latch = latch = grip
+        if latched_now:                    # log OUTSIDE the lock (a slow handler must not stall last_cmd)
+            log.info("aperture latched at %.2f (both pads loaded: %s)",
+                     grip, {k: round(v, 1) for k, v in loads.items()})
+        return grip if latch is None else latch
+
+    def _latch_lock(self):
+        """The executor lock, or a no-op for bare test doubles built via __new__."""
+        return getattr(self, "_lock", None) or contextlib.nullcontext()
 
     def clear_grip_latch(self) -> None:
         """An INTENDED release (veto recovery / end of episode) drops the latch."""
-        self._grip_latch = None
+        with self._latch_lock():
+            self._grip_latch = None
 
     GRIP_DEADBAND = 0.008  # ~2/255 counts, same as collection (GripperTuning):
                            # re-sending an unchanged target makes the Robotiq
