@@ -21,5 +21,7 @@ echo "$SHA" > "$TMP/COMMIT"
 git archive --format=tar.gz --add-file="$TMP/COMMIT" -o "$OUT/phantom_repo_latest.tar.gz" HEAD
 sed "s/__REPO_COMMIT__/$SHA/" tools/provision_v5.sh > "$OUT/provision_v5.$SHA.sh"
 chmod +x "$OUT/provision_v5.$SHA.sh"
+sed "s/__REPO_COMMIT__/$SHA/" tools/provision_distill.sh > "$OUT/provision_distill.$SHA.sh"
+chmod +x "$OUT/provision_distill.$SHA.sh"
 rm -rf "$TMP"
 echo "packed $SHA -> $OUT/phantom_repo_latest.tar.gz ($(du -h "$OUT/phantom_repo_latest.tar.gz" | cut -f1)), pinned script $OUT/provision_v5.$SHA.sh"
