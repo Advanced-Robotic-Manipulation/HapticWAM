@@ -424,8 +424,9 @@ class SafetyConfig(_Frozen):
     # centre 0.4616 m, just inside every demo (max 0.461) and 7 mm inside the
     # 0.468 wrist_extension stop, which stays as the last net. None disables.
     # DEFAULT OFF (09-05 review, docs/review_servo_limiter_0905.md): the
-    # limiter was written after the last 09-04 episode and never ran on the
-    # arm; three reproduced defects (IndexError on an unreachable target,
+    # limiter ran for six 09-04 episodes (19:50-19:56, no guard fired, apex
+    # 0.34-0.36 m) but three defects reproduce in its own harness (IndexError
+    # on an unreachable target — fixed,
     # deadlock + 25-reject crash when the anchor already violates emin, the
     # executor never learning a step was shortened) block it. Ilya's values
     # were 0.40 rad / 1.0 rad/s — set them in the NUC yaml to enable once fixed.
