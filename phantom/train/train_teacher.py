@@ -402,8 +402,12 @@ def main(argv=None) -> int:
         # fine-tune-tolerant drift check below, so it has to know about the
         # same exception set or the whole FT-A bundle dies at load
         # (validation 2026-08-30 F1). `--resume` (below) stays strict.
+        # --student + a TEACHER checkpoint = the no-distill control (same
+        # inputs and init as the HID student, no HID loss): the teacher-only
+        # keys (tactile encoder) are dropped exactly as distill_hid drops them
         init_payload = C.load_phantom_checkpoint(Path(args.init_weights), pm.rf, hw=hw,
                                                  load_ema=args.init_ema,
+                                                 allow_missing=bool(args.student),
                                                  tolerate_model_fields=FINETUNE_MUTABLE_MODEL_FIELDS)
         log.info("--init-weights %s from %s weights", args.init_weights,
                  "EMA" if args.init_ema else "RAW")
@@ -412,8 +416,10 @@ def main(argv=None) -> int:
         # gt_noised, rope mode): a fine-tune must inherit the checkpoint's
         # model config unless the operator says otherwise. The FT-A objective
         # knobs are the deliberate exception — changing them IS the fine-tune.
-        hard, soft = model_config_drift(saved_mc, mc,
-                                        tolerate=FINETUNE_MUTABLE_MODEL_FIELDS)
+        # `student` is the one legitimate layout difference: teacher -> student
+        # init IS the no-distill control (assert_model_config_matches agrees)
+        tol = set(FINETUNE_MUTABLE_MODEL_FIELDS) | ({"student"} if args.student else set())
+        hard, soft = model_config_drift(saved_mc, mc, tolerate=frozenset(tol))
         if soft:
             log.warning("--init-weights: training-only model flags differ from "
                         "the checkpoint (checkpoint -> this run): %s", soft)

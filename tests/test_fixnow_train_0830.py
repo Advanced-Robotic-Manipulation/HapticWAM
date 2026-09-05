@@ -728,3 +728,21 @@ def test_upload_run_ckpts_refuses_without_a_token(tmp_path, monkeypatch):
     monkeypatch.delenv("HUGGINGFACE_HUB_TOKEN", raising=False)
     with pytest.raises(SystemExit, match="HF_TOKEN"):
         URC.main([str(run)])
+
+
+@needs_cosmos
+def test_student_init_from_a_teacher_is_the_no_distill_control(base_ckpt, runs_root):
+    """The paper's control: `--student --init-weights <teacher>` = the HID
+    student's inputs and init with NO distillation loss. Before 09-06 the
+    teacher-only keys failed the strict load and `student` tripped the
+    model-config drift gate."""
+    msgs = _run_cli(runs_root,
+                    ["--tiny", "--synthetic", "--device", "cpu", "--acc-two-pass",
+                     "--student", "--init-weights", str(base_ckpt),
+                     "--max-steps", "1", "--ckpt-every", "1", "--run-name", "fixnow_ctrl"])
+    assert any("partial init (teacher->student)" in m for m in msgs)
+    ck = Path(runs_root) / "teacher" / "fixnow_ctrl" / "teacher_000001.pt"
+    assert ck.exists()
+    import torch
+    p = torch.load(ck, map_location="cpu", weights_only=False)
+    assert p["configs"]["model"]["student"] is True
