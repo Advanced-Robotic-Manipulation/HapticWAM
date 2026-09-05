@@ -10,8 +10,10 @@ cd ~/phantom-icra-2027              cd ~/phantom-icra-2027
 1. `SERVE.sh` picks + holds the model on the GPU. `PICK.sh` attaches to it automatically.
 2. A failed start gate now FIXES ITSELF: 3 s countdown, slow joint-space auto-home,
    re-check. You never jog or restart for a start-pose problem.
-3. Episodes end on a guard stop, the 150 s budget — or press Enter anytime for a clean
-   manual end (gripper stays as-is). The `lift_complete` auto-success is OFF since
+3. Episodes end on a guard stop, the 150 s budget — or type `x` + Enter anytime for a
+   clean manual end (gripper stays as-is). A bare Enter is IGNORED since 09-05: on
+   09-04 stray newlines (wireless receiver + primary-paste) ended 5 of the first 10
+   episodes within seconds. The `lift_complete` auto-success is OFF since
    09-04 (it fired at z 0.32 m, below the demo apex, and cut every grasp before the
    carry; `--lift-complete-z 0.32` restores it). Label honestly at the prompt.
    Every episode now writes `stop.json` (reason, safety events, arm state at stop).
@@ -63,6 +65,24 @@ Then every `./PICK.sh` launch in terminal B attaches to it in seconds instead of
 ~3 min in-process load (PICK auto-detects; if the server holds a different model it
 says so and loads locally — restart SERVE.sh to switch). The robot process can crash,
 be Ctrl-C'd and relaunched freely; the model never reloads.
+
+## Session-5.1 changes (2026-09-05, issues #4 #7 #8 #9)
+- **One robot owner per host**: `URArm.connect(control=True)` takes an `flock` lease
+  (`/tmp/phantom-rig-<arm-ip>.lock`) before its first control call. A second process —
+  including a Ctrl-Z'd `run_deploy` that still holds the RTDE registers — is refused
+  with the owner's pid, state (`T (stopped)`) and command line, and sends NOTHING to
+  the robot. `fg` / kill the owner, then relaunch.
+- **Busy ≠ absent**: the policy server answers `info` to every connection, even while a
+  client owns it. PICK/`--policy-server auto` now abort on a BUSY or non-answering
+  server instead of loading a second model in-process and fighting for the arm.
+  Probe by hand: `.venv/bin/python -m phantom.scripts.policy_server --probe --port 7778`
+  → `<ckpt> idle|busy <sha>`.
+- **The executor anchors on what the arm received**: `servo_l` returns the streamed
+  pose (or a held/rejected reason); a held tick no longer advances `_last_cmd`, the
+  recorded action, or the next replan's anchor. Empty/NaN IK never reaches servoJ.
+- **Provenance**: `ckpt_sha:<12>` (digest of the loaded file — `BEST.pt` is a moving
+  name), `meta.deploy_overrides.safety_effective` (every guard/latch/lift value in
+  force), `stop.json.stop_state.at_halt` (arm state AT the halt, before stopJ).
 
 ## Session-4.1 behavior changes (2026-09-01, post-session fixes)
 - **Start gate self-corrects**: a failed joint gate now AUTO-HOMES (slow joint-space

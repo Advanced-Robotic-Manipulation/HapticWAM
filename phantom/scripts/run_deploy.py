@@ -591,12 +591,25 @@ def make_operator_stop():
         if fired["v"]:
             return True
         if select.select([sys.stdin], [], [], 0)[0]:
-            sys.stdin.readline()
-            fired["v"] = True
-            log.info("operator stop requested — ending the episode cleanly")
-            return True
+            line = sys.stdin.readline()
+            if operator_stop_requested(line):
+                fired["v"] = True
+                log.info("operator stop requested — ending the episode cleanly")
+                return True
+            log.warning("ignored input %r during the episode — type %s + Enter "
+                        "to stop", line.strip(), "/".join(STOP_WORDS))
         return False
     return check
+
+
+# A bare Enter no longer stops an episode: on 09-04, 5 of the first 10
+# episodes ended 1-7 s in from stray newlines (a wireless receiver next to
+# the USB hub + primary-selection paste). A letter is required (issue #4).
+STOP_WORDS = ("x", "stop")
+
+
+def operator_stop_requested(line: str) -> bool:
+    return line.strip().lower() in STOP_WORDS
 
 VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
                   "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
@@ -762,14 +775,21 @@ def main(argv=None) -> int:
                    close_p=getattr(args, "veto_p_close", 0.5))
         try:
             policy = RemotePolicy((host, port), cfg)
-            log.info("using policy server at %s:%d (ckpt %s, warm=%s) — "
+            log.info("using policy server at %s:%d (ckpt %s sha %s, warm=%s) — "
                      "no local model load", host, port,
-                     policy.info.get("ckpt"), policy.info.get("warmed"))
+                     policy.info.get("ckpt"), policy.info.get("ckpt_sha"),
+                     policy.info.get("warmed"))
             if args.ckpt and str(args.ckpt) not in str(policy.info.get("ckpt")) \
                     and str(policy.info.get("ckpt")) not in str(args.ckpt):
                 log.warning("policy server holds %s but --ckpt asked for %s — "
                             "the SERVER's model runs. Restart the server to "
                             "switch models.", policy.info.get("ckpt"), args.ckpt)
+        except (RemotePolicy.Busy, RemotePolicy.Unreachable) as e:
+            # issue #8: BUSY (another run_deploy attached, maybe Ctrl-Z'd) and
+            # AMBIGUOUS (handshake timeout) must never turn into a competing
+            # local load that then fights for the robot.
+            log.error("%s", e)
+            return 3
         except Exception:
             if addr != "auto":
                 log.exception("policy server %s required but unreachable", addr)
@@ -810,9 +830,27 @@ def main(argv=None) -> int:
     if remote:
         # provenance must name the model that actually ran — the server's
         ckpt_real = str(policy.info.get("ckpt", ckpt_real))
+    # the LOADED artifact's digest, not a mutable basename (BEST.pt is a
+    # symlink that moved between sessions — issue #9)
+    ckpt_sha = policy.info.get("ckpt_sha") if remote else None
+    if not ckpt_sha and ckpt_real and Path(ckpt_real).is_file():
+        from phantom.scripts.policy_server import digest
+        ckpt_sha = digest(ckpt_real)
+    deploy_overrides["ckpt_sha"] = ckpt_sha
+    deploy_overrides["safety_effective"] = {
+        k: getattr(hw.safety, k) for k in (
+            "wrist_extension_stop_m", "joint_speed_stop_rad_s", "reach_clamp_m",
+            "lift_complete_z_m", "lift_complete_fz_n", "lift_complete_hold_s",
+            "lift_complete_window_s", "grip_latch_fz_n", "elbow_min_rad",
+            "servo_joint_speed_max_rad_s", "wrench_limit_N", "wrench_limit_Nm",
+            "tactile_fz_limit_N", "stale_plan_timeout_s")
+        if hasattr(hw.safety, k)}
+    deploy_overrides["max_play_steps"] = int(getattr(args, "max_play_steps", 0) or 0)
+    deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
+                 f"ckpt_sha:{ckpt_sha or 'none'}",
                  f"seed:{args.seed}" if args.seed is not None else "seed:none",
                  # safety envelope provenance (rig 2026-08-28)
                  # honest under --no-z-floor: the raw workspace bound is NOT

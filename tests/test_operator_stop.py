@@ -401,7 +401,7 @@ def test_remote_connect_times_out_on_busy_server():
     RemotePolicy.CONNECT_TIMEOUT_S = 0.5
     try:
         t0 = _time.perf_counter()
-        with _pytest.raises(ConnectionError, match="did not answer|another"):
+        with _pytest.raises(ConnectionError, match="handshake|did not answer|another"):
             RemotePolicy(("127.0.0.1", port))
         assert _time.perf_counter() - t0 < 3.0
     finally:

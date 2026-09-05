@@ -46,12 +46,26 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
   ATTACHED=""; FOUND=""
   WANT=$(basename "$(readlink -f "$BASE/phantom/$CKPT" 2>/dev/null || echo "$CKPT")")
   for PORT in 7777 7778 7779; do
-    SRV_CKPT=$(cd $BASE/phantom && timeout 10 .venv/bin/python -m phantom.scripts.policy_server --probe --port $PORT 2>/dev/null || true)
-    [ -n "$SRV_CKPT" ] || continue
-    FOUND="$FOUND $PORT:$(basename "$SRV_CKPT")"
+    # probe prints "<ckpt> <idle|busy> <sha>"; exit 1 = nothing listens,
+    # exit 2 = something listens but does not answer (AMBIGUOUS). A busy or
+    # ambiguous server must never turn into a competing local load that
+    # fights the running process for the arm (issue #8, rig 09-04).
+    RC=0; LINE=$(cd $BASE/phantom && timeout 15 .venv/bin/python -m phantom.scripts.policy_server --probe --port $PORT 2>/dev/null) || RC=$?
+    if [ "$RC" = "2" ] || [ "$RC" = "124" ]; then
+      echo "!! a process listens on :$PORT but did not answer the probe — hung server or foreign process."
+      echo "!! Not launching: check SERVE.sh terminals / 'ss -ltnp | grep $PORT' first."; exit 3
+    fi
+    [ "$RC" = "0" ] && [ -n "$LINE" ] || continue
+    read -r SRV_CKPT SRV_STATE SRV_SHA <<< "$LINE"
+    FOUND="$FOUND $PORT:$(basename "$SRV_CKPT")[$SRV_STATE]"
     HAVE=$(basename "$(readlink -f "$BASE/phantom/$SRV_CKPT" 2>/dev/null || echo "$SRV_CKPT")")
     if [ "$HAVE" = "$WANT" ] || [ "$(basename "$SRV_CKPT")" = "$(basename "$CKPT")" ]; then
-      echo ">> warm policy server on :$PORT holds $SRV_CKPT — attaching (fast start)"
+      if [ "$SRV_STATE" = "busy" ]; then
+        echo "!! the policy server on :$PORT holds $SRV_CKPT but is BUSY: another run_deploy is attached"
+        echo "!! (possibly Ctrl-Z'd: 'jobs' / 'ps -ef | grep run_deploy'). Bring it to the foreground and end it."
+        echo "!! Not launching a competing process."; exit 3
+      fi
+      echo ">> warm policy server on :$PORT holds $SRV_CKPT (sha $SRV_SHA) — attaching (fast start)"
       EXTRA="$EXTRA --policy-server 127.0.0.1:$PORT"; ATTACHED=1; break
     fi
   done
@@ -70,6 +84,7 @@ echo
 echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
 echo ">> reminders: no --seed on 1-episode processes; interleave arms within each grid cell;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
-echo ">>            during an episode: press ENTER to end it cleanly (motion stops, gripper stays)."
+echo ">>            during an episode: type  x  + Enter to end it cleanly (motion stops, gripper stays);"
+echo ">>            a bare Enter is IGNORED (stray newlines ended 5 episodes on 09-04)."
 read -p "Enter to launch (Ctrl-C to abort) "
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0
