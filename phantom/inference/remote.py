@@ -264,8 +264,7 @@ class PolicyServer:
             self._store.clear()
             return None
         if kind == "replan":
-            _, prev, tcp_pose = msg[1], msg[2], msg[3]
-            obs = msg[1]
+            obs, prev, tcp_pose = msg[1], msg[2], msg[3]
             prev_plan = None
             if prev is not None:
                 prev_d, token = prev

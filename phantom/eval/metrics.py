@@ -72,17 +72,52 @@ def slip_events_and_recovery(ep: EpisodeReader, hw: HardwareConfig,
     return n_events, (n_recovered / n_events if n_events else float("nan"))
 
 
+ONSET_MERGE_S = 0.25   # two pads reporting the same physical contact within this window = ONE onset
+
+
+def _host_to_master_offset(ep_path: Path) -> float:
+    """The recorder's clock calibration (meta.clock_calibration.offset):
+    stream `ts` are MASTER time (RTDE) = host time + offset, while the
+    planner trace stamps host time (issue #10: comparing the two raw
+    clocks made lead times depend on the clock origin)."""
+    try:
+        meta = json.loads((ep_path / "meta.json").read_text(encoding="utf-8"))
+        return float((meta.get("clock_calibration") or {}).get("offset", 0.0) or 0.0)
+    except Exception:
+        return 0.0
+
+
+def merge_onsets(times, merge_s: float = ONSET_MERGE_S) -> np.ndarray:
+    """Canonical onset timeline: sorted onsets from ALL pads, collapsed so a
+    bilateral onset (both pads within `merge_s`) counts once — the first
+    pad to report it is the physical onset."""
+    t = np.sort(np.asarray(list(times), dtype=float))
+    if not len(t):
+        return t
+    keep = [t[0]]
+    for x in t[1:]:
+        if x - keep[-1] > merge_s:
+            keep.append(x)
+    return np.asarray(keep)
+
+
 def acc_lead_times(ep_path: Path, ep: EpisodeReader, hw: HardwareConfig,
-                   gate_threshold: float = 0.5) -> list[float]:
-    """ACC lead time (s) per contact onset: (derived onset t) - (last gate
-    crossing before it). Positive = the gate fired BEFORE the physical onset —
-    the §8 money-plot data."""
+                   gate_threshold: float = 0.5,
+                   onset_merge_s: float = ONSET_MERGE_S) -> list[float]:
+    """ACC lead time (s) per PHYSICAL contact onset: (derived onset t) -
+    (last gate crossing before it), both on the master clock. Positive =
+    the gate fired BEFORE the physical onset — the §8 money-plot data.
+    Empty when there is no trace, no crossing, or no onset (explicit: an
+    episode without contact has no lead time, not a perfect one)."""
     trace_file = ep_path / "planner_trace.json"
     if not trace_file.exists():
         return []
     trace = json.loads(trace_file.read_text(encoding="utf-8"))
-    gate_t = np.array([r["t"] for r in trace])
-    gate_v = np.array([r["gate"] for r in trace])
+    if not trace:
+        return []
+    offset = _host_to_master_offset(ep_path)
+    gate_t = np.array([r["t"] for r in trace], dtype=float) + offset
+    gate_v = np.array([r["gate"] for r in trace], dtype=float)
     if len(gate_v) > 1:
         rising = (gate_v[1:] >= gate_threshold) & (gate_v[:-1] < gate_threshold)
         crossings = gate_t[1:][rising]
@@ -91,18 +126,19 @@ def acc_lead_times(ep_path: Path, ep: EpisodeReader, hw: HardwareConfig,
     if not len(crossings):
         return []
 
-    leads: list[float] = []
+    onsets_all: list[float] = []
     for s in hw.tactile.sensors:
         stream = tactile_stream(s.name, "events")
         if not ep.has(stream):
             continue
         ev = np.asarray(ep._g(stream)["data"][:])
         ts = ep.ts(stream)
-        onsets = ts[ev == EVENT_IDX["onset"]]
-        for t_on in onsets:
-            before = crossings[crossings <= t_on]
-            if len(before):
-                leads.append(float(t_on - before[-1]))
+        onsets_all.extend(float(x) for x in ts[ev == EVENT_IDX["onset"]])
+    leads: list[float] = []
+    for t_on in merge_onsets(onsets_all, onset_merge_s):
+        before = crossings[crossings <= t_on]
+        if len(before):
+            leads.append(float(t_on - before[-1]))
     return leads
 
 
@@ -122,8 +158,10 @@ def event_f1(ep: EpisodeReader, hw: HardwareConfig, ep_path: Path) -> float:
     ev = np.asarray(ep._g(stream)["data"][:])
     ts = ep.ts(stream)
     y_true, y_pred = [], []
+    offset = _host_to_master_offset(ep_path)
     for r in trace:
-        i = int(np.clip(np.searchsorted(ts, r["t"]), 0, len(ev) - 1))
+        # planner trace = host time; stream ts = master time (issue #10)
+        i = int(np.clip(np.searchsorted(ts, r["t"] + offset), 0, len(ev) - 1))
         y_true.append(int(ev[i]))
         y_pred.append(int(np.argmax(r["p_evt"])))
     y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)

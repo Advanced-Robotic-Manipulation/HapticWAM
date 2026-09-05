@@ -257,3 +257,40 @@ def test_elbow_escape_never_streams_a_joint_whip():
         q_prev = planar_ik(start)
         dq = max(abs(x - y) for x, y in zip(a._ctrl.streamed[-1], q_prev))
         assert dq / 0.008 <= vmax + 1e-9, f"streamed {dq/0.008:.2f} rad/s > {vmax}"
+
+
+def test_grip_latch_reads_and_clears_are_serialized_by_the_executor_lock():
+    """Ultrareview 09-05: the planner's clear and the executor's read-modify-
+    write of `_grip_latch` must be mutually exclusive under `_lock` (a
+    timing stress test cannot show the single-bytecode race; the lock
+    discipline can be shown deterministically)."""
+    from phantom.deploy.executor import ChunkExecutor
+    hw = load_hardware("configs/hardware.nuc.mock.yaml")
+
+    class _Safety:
+        contact_load = {"left": 9.0, "right": 9.0}
+
+    ex = ChunkExecutor(hw, arm=_StubArm(set()), gripper=None, safety=_Safety())
+    assert ex._latched_grip(0.6) == 0.6 and ex._grip_latch == 0.6
+    done = threading.Event()
+
+    def clear():
+        ex.clear_grip_latch(); done.set()
+
+    ex._lock.acquire()                    # the executor holds the lock mid-update
+    try:
+        threading.Thread(target=clear, daemon=True).start()
+        assert not done.wait(0.2), "clear_grip_latch bypassed the executor lock"
+        assert ex._grip_latch == 0.6
+    finally:
+        ex._lock.release()
+    assert done.wait(1.0) and ex._grip_latch is None
+    # and the reader takes the same lock
+    ex._latched_grip(0.7)
+    assert ex._grip_latch == 0.7
+    ex._lock.acquire()
+    got = []
+    threading.Thread(target=lambda: got.append(ex._latched_grip(0.9)), daemon=True).start()
+    time.sleep(0.2); assert got == [], "_latched_grip bypassed the executor lock"
+    ex._lock.release(); time.sleep(0.2)
+    assert got == [0.9] and ex._grip_latch == 0.9
