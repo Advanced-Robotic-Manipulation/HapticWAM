@@ -10,9 +10,11 @@ cd ~/phantom-icra-2027              cd ~/phantom-icra-2027
 1. `SERVE.sh` picks + holds the model on the GPU. `PICK.sh` attaches to it automatically.
 2. A failed start gate now FIXES ITSELF: 3 s countdown, slow joint-space auto-home,
    re-check. You never jog or restart for a start-pose problem.
-3. Episodes END THEMSELVES: `lift_complete` (grasp confirmed + lifted -> SUCCESS,
-   object held), a guard stop, the 150 s budget — or press Enter anytime for a clean
-   manual end (gripper stays as-is). Label honestly at the prompt.
+3. Episodes end on a guard stop, the 150 s budget — or press Enter anytime for a clean
+   manual end (gripper stays as-is). The `lift_complete` auto-success is OFF since
+   09-04 (it fired at z 0.32 m, below the demo apex, and cut every grasp before the
+   carry; `--lift-complete-z 0.32` restores it). Label honestly at the prompt.
+   Every episode now writes `stop.json` (reason, safety events, arm state at stop).
 4. If a safety stop prints the "label this episode a SUCCESS" NOTE, believe it: the
    guard beat the success detector on a good grasp.
 5. TAKE THE OBJECT OUT OF THE GRIPPER before confirming the next episode's homing —
@@ -67,11 +69,13 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   move, 3 s countdown — e-stop if the path is not clear) and re-checks, twice, before
   ever asking the operator. Same on the re-gate after "place the object". A wrapped
   wrist unwinds itself.
-- **`lift_complete` success auto-stop**: both tactile pads loaded (>2.5 N over the
-  per-episode baseline — the left pad carries a drifting 0.7-2.2 N zero offset) with
-  the TCP above 0.32 m, held 0.4 s -> the episode ends cleanly HOLDING the object,
-  reason `lift_complete`. Validated on all 22 09-01 episodes: fires in all 4 real
-  lifted grasps 1.8-2.7 s before any whip, 0 spurious. Knobs `--lift-complete-z/-fz/-hold`.
+- **`lift_complete` success auto-stop — OFF by default since 09-04** (Ilya's call from
+  the second half of session 5: at z 0.32 m it fired below the demo apex and cut every
+  good grasp before the carry; the operator ends carries with Enter). Opt in with
+  `--lift-complete-z 0.32`: both pads loaded (trailing 0.6 s max of |fz| > 4.0 N over
+  the per-episode baseline — the left pad carries a drifting 0.7-2.2 N zero offset)
+  with the TCP above z, held 0.4 s -> the episode ends cleanly HOLDING the object,
+  reason `lift_complete`. Knobs `--lift-complete-z/-fz/-hold`.
 - **Singularity guards, layered** (root cause = IK branch flip at the elbow-straight
   boundary, wrist-centre 470.5 mm): (1) `servo_l` seeds IK with the previous solution
   and REFUSES branch-flipped solutions (driver-level, the actual fix); (2)
@@ -81,6 +85,23 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   replan and all four whips began there); (4) measured joint speed > 1.2 rad/s stop
   (last-ditch — max whip-free qd all session was 0.73). The 0.62 m TCP-radius clamp is
   RETIRED (0/4 whips; it fought one lift) — the mechanism remains, default off.
+  (5) **servo-level limiter** (Ilya, 09-04 evening — written AFTER the last episode of
+  the day, never ran on the arm; **OFF by default** pending the fixes listed in
+  `docs/review_servo_limiter_0905.md`, enable via `elbow_min_rad` /
+  `servo_joint_speed_max_rad_s` in the NUC yaml): per 8 ms tick, if the IK solution would fold the
+  elbow below `elbow_min_rad` (0.40 rad = wrist centre 0.4616 m) or move a joint faster
+  than `servo_joint_speed_max_rad_s` (1.0), the driver shortens the step (bisection,
+  then a tangential slide along the reach sphere) instead of streaming it, so the arm
+  hugs the reach boundary rather than tripping the stop. Each extra IK probe is one
+  RTDE round trip (~8 ms), so expect a visible slow-down near the boundary. The NUC
+  yaml raises `wrist_extension_stop_m` to 0.468 as the net behind it. Counters land in
+  `stop.json` (`servo_limiter`); `null` for both fields = off.
+- **`stop.json` per episode** (Ilya, 09-04): reason, every safety event, arm state at the
+  stop (q, wrist-centre distance, qd), limiter/IK-guard counters — diagnose from disk.
+- **Aperture latch + tactile recovery** (09-04 analysis): once both pads carry >2.5 N
+  the commanded closure can only increase (4/5 objects "lost" were policy-commanded
+  releases; `--no-grip-latch` disables); a close on air that lifts >30 mm with both pads
+  quiet for 1 s triggers `recovery_tactile` (open + re-descend) instead of a phantom carry.
 
   Known labeling quirks to watch for in logs: a sustained IK-reject hold surfaces as
   `executor_crash` (the crash net wins over motion_stall); a wrist_extension stop
@@ -91,10 +112,12 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
 2. **Paired seeds AND paired start poses**, alternating v5_6 / ftA_1500 per cell,
    >= 8 pairs. (09-01 spanned 4 configs x 3 git revisions x all-different seeds and
    starts — no within-day comparison was valid.)
-3. Let episodes reach a TERMINAL condition (lift_complete / a guard / the 150 s
-   budget). An operator-Enter end measures patience, not the policy.
-4. Primary metric: tactile-confirmed grasp rate (the lift_complete rule); secondary:
-   apex z and time-to-fire. Do not chase offline endpoint-mm on the rig.
+3. Let episodes reach a TERMINAL condition (a guard / the 150 s budget), or end a
+   completed carry with Enter and LABEL it `s` — with `lift_complete` off, the label
+   is the only success record (the 09-04 set is unlabeled for exactly this reason).
+4. Primary metric: tactile-confirmed grasp rate (label + `tools/label_grasps` from the
+   pad forces); secondary: apex z and carry duration. Do not chase offline
+   endpoint-mm on the rig.
 5. The one v5_6 episode of 09-01 (3.7 s, 4 replans) says NOTHING about v5_6 — and its
    "sideways press" start-pose region made ftA drift even harder. Not a finding.
 

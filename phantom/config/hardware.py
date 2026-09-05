@@ -410,6 +410,27 @@ class SafetyConfig(_Frozen):
     # (episode end or a veto recovery). 0 disables.
     grip_latch_fz_n: float = Field(default=2.5, ge=0)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
+    ur_dh_d1_m: float = 0.1519            # shoulder height above the base frame
+    # Servo-level LIMITER (rig 2026-09-04) — the answer to "the arm stops at
+    # the apex of every carry": with lift_complete off, 4/5 carries ended on
+    # wrist_extension / joint_speed at elbow 10-20 deg. That was not a whip:
+    # the elbow speed ramped smoothly 0.5 -> 1.3 rad/s while the TCP held
+    # 100 mm/s, i.e. the policy asked for a TCP beyond the arm's reach. A stop
+    # cannot fix that; a clamp can. Per servo tick the driver solves IK for the
+    # requested pose and, if the elbow would fold below `elbow_min_rad` or any
+    # joint would exceed `servo_joint_speed_max_rad_s`, shortens the step
+    # (bisection, then a tangential slide along the reach sphere) so the arm
+    # hugs the boundary instead of stopping. 0.40 rad = 22.9 deg = wrist
+    # centre 0.4616 m, just inside every demo (max 0.461) and 7 mm inside the
+    # 0.468 wrist_extension stop, which stays as the last net. None disables.
+    # DEFAULT OFF (09-05 review, docs/review_servo_limiter_0905.md): the
+    # limiter was written after the last 09-04 episode and never ran on the
+    # arm; three reproduced defects (IndexError on an unreachable target,
+    # deadlock + 25-reject crash when the anchor already violates emin, the
+    # executor never learning a step was shortened) block it. Ilya's values
+    # were 0.40 rad / 1.0 rad/s — set them in the NUC yaml to enable once fixed.
+    elbow_min_rad: float | None = Field(default=None)
+    servo_joint_speed_max_rad_s: float | None = Field(default=None, gt=0)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one
     # episode it did engage it dragged commanded z down 32 mm mid-lift. The

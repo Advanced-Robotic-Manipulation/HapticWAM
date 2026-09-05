@@ -300,10 +300,14 @@ def build_parser() -> argparse.ArgumentParser:
                          "hold until the next plan (steps beyond HEAD_STEPS=9 "
                          "are never validated by a replan; all four 09-01 "
                          "whips began in that tail). 0 = uncapped.")
-    ap.add_argument("--lift-complete-z", type=float, default=0.32,
+    ap.add_argument("--lift-complete-z", type=float, default=0.0,
                     help="success auto-stop: tactile-confirmed grasp held "
                          "above this TCP z (m) ends the episode cleanly, "
-                         "gripper held. 0 disables.")
+                         "gripper held. 0 (default since 09-04) disables: "
+                         "waffles demos carry the object ~8 s past the lift "
+                         "apex, so the 0.32 m rule cut every good grasp "
+                         "before transport; the operator ends episodes with "
+                         "Enter. Pass 0.32 to restore the 09-01 behaviour.")
     ap.add_argument("--lift-complete-fz", type=float, default=4.0,
                     help="per-pad |fz| (N) that counts as a confirmed grasp "
                          "for the success auto-stop")
@@ -545,6 +549,29 @@ def make_lift_complete(rt, z_m: float, fz_n: float, hold_s: float):
         return False
 
     return check
+
+
+def persist_stop(recorder, res) -> None:
+    """Write WHY the episode ended next to its data (09-04): stop.json with
+    the reason, every safety event (kind/value/ticks/time) and the arm state at
+    the stop, plus `stop:<reason>` / `evt:<kind>` tags in meta.json. Until now
+    the reason only went to the terminal, so a stop could not be diagnosed
+    from disk. Best effort — never fails the session."""
+    if not res.episode_path:
+        return
+    try:
+        import json as _json
+        ep = Path(res.episode_path)
+        doc = {"stopped_reason": res.stopped_reason, "n_replans": res.n_replans,
+               "safety_events": res.events, "stop_state": res.stop_state,
+               "fatal_reason": res.fatal_reason}
+        (ep / "stop.json").write_text(_json.dumps(doc, indent=1), encoding="utf-8")
+        # the runtime already tags `stop:<reason>` (a second, differently
+        # spelled copy for a None reason survived relabel's exact-match dedup)
+        tags = ["evt:" + str(e["kind"]) for e in res.events]
+        recorder.relabel(ep, tags=tags)
+    except Exception:
+        log.exception("could not persist the stop reason for %s", res.episode_path)
 
 
 def make_operator_stop():
@@ -1006,6 +1033,10 @@ def main(argv=None) -> int:
             log.info("episode %d: %s (replans=%d stop=%s safety_events=%d)",
                      i, res.episode_path, res.n_replans, res.stopped_reason,
                      res.safety_events)
+            for ev in res.events:
+                log.info("  safety event: %s value=%.3f x%d at t=%.2f",
+                         ev["kind"], ev["value"], ev["count"], ev["t"])
+            persist_stop(rt.recorder, res)
             if (res.stopped_reason in ("safety_stop", "wrist_extension")
                     and lift_done is not None and lift_done()):
                 # the 500 Hz wrist-extension stop can beat the per-replan
