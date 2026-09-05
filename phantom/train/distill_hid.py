@@ -68,8 +68,15 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
     layout_s = student_rf.layout
 
     # teacher imagination (no grad): the future the student must learn to feel
+    # teacher NFE: round 1 sampled at nfe//2 (cost); -1 = the teacher's own
+    # configured nfe (review 09-05: half-NFE targets are a distillation defect)
+    tn = int(getattr(cfg, "teacher_nfe", 0) or 0)
+    if tn < -1 or tn > 50:
+        raise ValueError(f"teacher_nfe={tn}: use 0 (nfe//2), -1 (the teacher's nfe) or 1..50")
+    nfe_t = (max(1, teacher_rf.mc.nfe // 2) if tn == 0
+             else (int(teacher_rf.mc.nfe) if tn == -1 else tn))
     with torch.no_grad():
-        t_pred = teacher_rf.sample(batch, nfe=max(1, teacher_rf.mc.nfe // 2))
+        t_pred = teacher_rf.sample(batch, nfe=nfe_t)
     w_tau = hid_weights(t_pred, cfg)                          # (B, Tc)
 
     # student forward at sampled t, teacher velocity at the SAME (t, shared eps)
@@ -132,6 +139,25 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
         parts.update(L.acc_losses(out_s.acc, batch["gate_label"],
                                   batch["events"][:, 0]))
 
+    # (v) student sigma head (review 09-05: round 1 left it at the teacher's
+    # init with no gradient, so the deploy governor ran on an untrained head)
+    # — the teacher's own heteroscedastic NLL vs the GT contact package
+    if float(getattr(cfg, "w_sigma", 0.0) or 0.0) > 0:
+        from phantom.model.rf import sigma_group_channels
+        # a READOUT: the head calibrates on the student's own (detached)
+        # hidden state and contact prediction; the trunk never sees this
+        # loss — its contact frames belong to traj_distill (teacher
+        # imagination), and an undetached NLL at beta 0.5 is ~10x an MSE
+        # toward GT that would turn distillation back into supervised
+        # training (verify 09-05 #1)
+        log_sigma_s = student_rf.phantom_sigma_head(out_s.contact_hidden_B_Tc_S_D.detach())
+        parts["contact_nll"] = L.contact_hetero_nll(
+            x0_pred_s.detach(), x0_s, log_sigma_s, layout_s,
+            group_channels=sigma_group_channels(student_rf.hw.n_fingers),
+            beta=student_rf.mc.contact_nll_beta,
+            detach_weight=student_rf.mc.contact_nll_detach_weight)
+        parts["sigma_reg"] = (log_sigma_s ** 2).mean()
+
     # optional feature alignment (Efficient-WAM-style; single ablation row)
     if cfg.feature_align:
         with torch.no_grad():
@@ -151,6 +177,10 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
         total = total + 0.2 * parts["acc_gate_bce"] + 0.5 * parts["acc_event_ce"]
     if cfg.feature_align:
         total = total + cfg.w_feature_align * parts["feature_align"]
+    if "contact_nll" in parts:
+        # the teacher's own weighting (w.contact, w.sigma_reg), scaled by w_sigma
+        total = (total + cfg.w_sigma * float(student_rf.mc.loss.contact) * parts["contact_nll"]
+                 + cfg.w_sigma * float(student_rf.mc.loss.sigma_reg) * parts["sigma_reg"])
     parts["total"] = total
     return parts
 
@@ -182,6 +212,12 @@ def main(argv=None) -> int:
     ap.add_argument("--grasp-frac", type=float, default=0.0)
     ap.add_argument("--photo-aug", type=float, default=0.0)
     ap.add_argument("--commit-band-weight", type=float, default=1.0)
+    ap.add_argument("--teacher-nfe", type=int, default=None,
+                    help="teacher imagination NFE: 0 = nfe//2 (round 1), -1 = the "
+                         "teacher's own nfe, N = N")
+    ap.add_argument("--w-sigma", type=float, default=None,
+                    help="weight of the student sigma-head NLL vs GT (0 = head "
+                         "untrained, round 1)")
     ap.add_argument("--split", default="train", choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default "
                          "train; 'all' reproduces the pre-2026-08-30 behaviour "
@@ -244,6 +280,13 @@ def main(argv=None) -> int:
     resume_payload = None
     if args.resume:
         resume_payload = C.load_phantom_checkpoint(Path(args.resume), student.rf, hw=hw)
+        # a resume continues ONE run: every recipe key (w_sigma, teacher_nfe,
+        # grasp_frac, ...) comes back from the checkpoint unless the CLI names
+        # it, and a DIFFERENT CLI value refuses the resume — the teacher's
+        # rule (revalidation 2026-08-31 #8), which this program skipped
+        # (verify 09-05 #2)
+        from phantom.train.train_teacher import restore_train_config_on_resume
+        cfg = restore_train_config_on_resume(cfg, resume_payload["configs"].get("train") or {}, args)
         log.info("resuming student from %s at step %d", args.resume,
                  int(resume_payload.get("step", 0)))
 
