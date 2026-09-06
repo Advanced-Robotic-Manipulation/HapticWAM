@@ -1,0 +1,2690 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "guard": {
+    "ready": true,
+    "reasons": [],
+    "checked_unix_s": 1788729767.1528523,
+    "campaign_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+    "progress_status": "all_trials_completed",
+    "recorded_trials": 40,
+    "processes": {
+      "controller": {
+        "pid": 1014991,
+        "active": false,
+        "state": "absent"
+      },
+      "servers": [
+        {
+          "pid": 1015023,
+          "active": false,
+          "state": "absent",
+          "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/servers/00_nominal_teacher__teacher_1788727027809111369/server.json",
+          "recorded_status": "stopped"
+        },
+        {
+          "pid": 1019949,
+          "active": false,
+          "state": "absent",
+          "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/servers/01_stress_teacher__teacher_1788727180434339836/server.json",
+          "recorded_status": "stopped"
+        }
+      ]
+    }
+  },
+  "expected_cases": [
+    "teacher__nominal__seed4242",
+    "teacher__nominal__seed4243",
+    "teacher__placement_xm10_ym10mm__seed4242",
+    "teacher__placement_xm10_ym10mm__seed4243",
+    "teacher__placement_xm10_yp0mm__seed4242",
+    "teacher__placement_xm10_yp0mm__seed4243",
+    "teacher__placement_xm10_yp10mm__seed4242",
+    "teacher__placement_xm10_yp10mm__seed4243",
+    "teacher__placement_xp0_ym10mm__seed4242",
+    "teacher__placement_xp0_ym10mm__seed4243",
+    "teacher__placement_xp0_yp10mm__seed4242",
+    "teacher__placement_xp0_yp10mm__seed4243",
+    "teacher__placement_xp10_ym10mm__seed4242",
+    "teacher__placement_xp10_ym10mm__seed4243",
+    "teacher__placement_xp10_yp0mm__seed4242",
+    "teacher__placement_xp10_yp0mm__seed4243",
+    "teacher__placement_xp10_yp10mm__seed4242",
+    "teacher__placement_xp10_yp10mm__seed4243",
+    "teacher__packet_friction_070__seed4242",
+    "teacher__packet_friction_070__seed4243",
+    "teacher__packet_friction_085__seed4242",
+    "teacher__packet_friction_085__seed4243",
+    "teacher__packet_friction_115__seed4242",
+    "teacher__packet_friction_115__seed4243",
+    "teacher__camera_x_m2deg__seed4242",
+    "teacher__camera_x_m2deg__seed4243",
+    "teacher__camera_x_p2deg__seed4242",
+    "teacher__camera_x_p2deg__seed4243",
+    "teacher__camera_y_m2deg__seed4242",
+    "teacher__camera_y_m2deg__seed4243",
+    "teacher__camera_y_p2deg__seed4242",
+    "teacher__camera_y_p2deg__seed4243",
+    "teacher__observation_delay_80ms__seed4242",
+    "teacher__observation_delay_80ms__seed4243",
+    "teacher__observation_delay_160ms__seed4242",
+    "teacher__observation_delay_160ms__seed4243",
+    "teacher__inference_delay_add_150ms__seed4242",
+    "teacher__inference_delay_add_150ms__seed4243",
+    "teacher__inference_delay_add_300ms__seed4242",
+    "teacher__inference_delay_add_300ms__seed4243"
+  ],
+  "workers": 2,
+  "planned_horizon_s": 60.0,
+  "single_trial_duration": "Actual measured trace duration including post-stop physics; no padding to the planned horizon",
+  "started_unix_s": 1788729767.1532764,
+  "source_video_helper_sha256": "9bc7fd4d8f6c68e410f5da5f8ffd1cfea1ded1db2d623ab40e2f7b6315c86883",
+  "batch_script_sha256": "dce372202575af7abc7dd0ee5ac5656de19889a46760fc2e7cde1c6b8826b0dc",
+  "videos": {
+    "teacher__nominal__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__nominal__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4243/policy_review.json",
+      "video_size_bytes": 1011668,
+      "mapping_size_bytes": 94335,
+      "video_sha256": "6dcbae8c114cb703c0151ee3d7dba2918ec30097747905df14408d8980a2920d",
+      "mapping_sha256": "10b5e6f7a62d21e5888bcdbfcc352f2bb6adc0dcdd45fb9b168ce04a4aa0ec10",
+      "input_sha256": {
+        "case.json": "1ee6ba1020a174edcd683a58ccbdba8584b9a557c5ca128a96aa151273336b89",
+        "run.json": "ceee8c87ad092af06504fe222d940ae6990049281b732f8334a1daa39726dd52",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "03c1a068c8b8929ec0f200a67a2c7a1ee836b34fa6cc3317f63c5393e721a9ca",
+        "execution_trace.jsonl": "ce0c429341d9b27da4b41e23b66c6fdbd2cf217e78d515bb709c97f5d23c470f",
+        "planner_trace.json": "363318a39ab6a1391a02d36b3835c4afc74908c0d7cd5f37df28899c9e1f728d",
+        "policy_info.json": "cf5150c133d196e994ee9c4e8e7bdc446566cf28ec698304dcf2b15f8bd88923",
+        "policy_tactile.npz": "623a5dff3bbf6e38d4702f7dacb02ad06963bca033e5ee85e9e7bb0c2f8108e5",
+        "sim.mp4": "41214f2ad8f73be99f6f52000ff904cb212e1e1bf58e20cfb50b862aaf704466"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 270,
+        "fps": 15.0,
+        "horizon_s": 17.976,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.057333334333334
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "270"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.976,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__nominal__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__nominal__seed4243"
+      ]
+    },
+    "teacher__nominal__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__nominal__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4242/policy_review.json",
+      "video_size_bytes": 1156209,
+      "mapping_size_bytes": 104028,
+      "video_sha256": "8819aef9c7c1ef00e962d153297e9d6531d75782d3a527c78769485785660ff6",
+      "mapping_sha256": "79474cefeb75eedb30967c9e7674aba725e4f1c9330eff986abd55618bcc80b0",
+      "input_sha256": {
+        "case.json": "20ad5823b326b799e8bb89701d0b82ecbc83eb7c4aa71ae8367c843243cc8b7c",
+        "run.json": "cbbdca056696d0ee3573c72c26b63ed35c117e3df5c20af5b749bb4fd37e9545",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "931d3acb0bd3027aeaae03877d905b96902a37566ddb4f78ef4a5d689eca621c",
+        "execution_trace.jsonl": "996ad33936bf782c15ad9f3c26b0fa0db5f031258746122a9fba9f7bf79b26d5",
+        "planner_trace.json": "f5c6f56346db3f980d3b261200ed7a8bf574228244a41a4399f90f81a2ab8564",
+        "policy_info.json": "575b313153b703faa8c734bf90a9f70ce2786f7079109d0cf05dd704b19704c6",
+        "policy_tactile.npz": "e33fce85249661b1a52c426128c0e695e9f7852bedf0b2de6954dd3811819dee",
+        "sim.mp4": "e66278c47991e39b47401ece91107c659a558b3a523dcdefb571d75119e2e698"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 300,
+        "fps": 15.0,
+        "horizon_s": 19.952,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0573333343333324
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "300"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.952,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__nominal__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__nominal__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__nominal__seed4242"
+      ]
+    },
+    "teacher__placement_xm10_ym10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_ym10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4243/policy_review.json",
+      "video_size_bytes": 1028530,
+      "mapping_size_bytes": 97624,
+      "video_sha256": "cfc11d8f07421f2517cb8b64a540b4115ae00be0738734a4fb4f370589f69bb3",
+      "mapping_sha256": "2afb950d0a7a553e95ab9e2005af32a45e1539b9532204e7a2c100e7930e943b",
+      "input_sha256": {
+        "case.json": "475e3a66b6a53b0cca8cc329a69d27f0ac7ed003dbdf782eb407b5b3ddd91f03",
+        "run.json": "815f89f4e93f91fb39d932fb581ea95db95a2f954e4f84bfaf3c1be3c56a7b8b",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "sim_trace.npz": "b3a4b88e14bc49db3a65cf6cadf97341b8c81de957829ce5bc1f003fcb7d1cab",
+        "execution_trace.jsonl": "cd6000b6cd76d36c626f4c3c3f4bafb19eb066b3fd1ce12d69c3e8a4f96a387c",
+        "planner_trace.json": "2b6ff338ce0b1a6796c24a1faf96f62cf29c11b555341342ad1fdd2de665208a",
+        "policy_info.json": "ca68359a835d43fc778f7737debdfb9f1616211d2d375982c7563ed351f26fe4",
+        "policy_tactile.npz": "f187c14d30e859f167b344c8767894a60998a2c1df5110a1c35b33a7e1866212",
+        "sim.mp4": "b417bbf6edbaddbda4ed55cd21646537971e64b7a2fe395fc3784901f9f7671f"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 280,
+        "fps": 15.0,
+        "horizon_s": 18.632,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9720000010000014
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "280"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.632,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_ym10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xm10_ym10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_ym10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1917632,
+      "mapping_size_bytes": 168953,
+      "video_sha256": "f26b6861ac82da82bc394f7bad135a037ceb4a6f519dcbeea96100e2e7cb9d5a",
+      "mapping_sha256": "51ee6cd71e5481f19fd3f9e2eb786d5360af7c1f3189ccb8f269a59ed9f7cb78",
+      "input_sha256": {
+        "case.json": "87cd7a217743d9a1da87154472c31dce2490daa070e009a0d3b56a4a1a2bd806",
+        "run.json": "67335f226d2ab360a62d7da0c94bde31f0adb01b4a538188be4d2b5914738274",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "sim_trace.npz": "c5bc475f200bce5c22590d844bca15163b74d82eed6aa7efb93ce33259d2b182",
+        "execution_trace.jsonl": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+        "planner_trace.json": "0370254ce95558b881f765b00067fb5c20e86feee815dfc9302ab85b1cfca700",
+        "policy_info.json": "eaff9c9733524b8e1bc9fffb8d8c91f89eef32e353f4efc96f5d18b3bb9195b6",
+        "policy_tactile.npz": "2e9c53ec8af02de2e922db44cbdc260e187f9b077343b2e04ffd4550917b7376",
+        "sim.mp4": "0824e6d6983b6f2b51b57f2b2b63b3daa9a7bbfadf02a1b33070de64dd1afc77"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 501,
+        "fps": 15.0,
+        "horizon_s": 33.376,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9533333343333332
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": true,
+          "full_task": true,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "501"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 33.376,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_ym10mm__seed4242"
+      ]
+    },
+    "teacher__placement_xm10_yp0mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_yp0mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4242/policy_review.json",
+      "video_size_bytes": 1143687,
+      "mapping_size_bytes": 100867,
+      "video_sha256": "e5582841cddcc8b0d068d5ad589bc103fad02f960c004b663a6e8bbe0745dc7d",
+      "mapping_sha256": "1acff5919ebc86ba83a87231db9f93f6057cf28bba6ebf932ee6d1ae6df3137e",
+      "input_sha256": {
+        "case.json": "eda3c1657965ccffa9987d6abe591b6ce41487c5ef557c65be24d44fba274a1f",
+        "run.json": "3c5b95e8813ec2a5bb067b1f5e5d051b2925c7b24c69f22b526fb4f7c4cb50d4",
+        "effective_config.json": "6d08ef61fd24106bf47d350269c059fee247d6526ff6e900e2d19625e6624761",
+        "sim_trace.npz": "8335368df0217561469ba32dcd6d3b46a7192056d0da165a1535483bc61852ac",
+        "execution_trace.jsonl": "7fefe33366483f3cb12c70db8da3f093421f079599dd406c70866b0c0b7de646",
+        "planner_trace.json": "b9fefc0925d4dca8d12361bbad28ba79a70cb166ddb751304bd36c9c11b11d81",
+        "policy_info.json": "4620b2904b242f127e1862970a076a494d0c00b79c21952402d4c7cc8c241694",
+        "policy_tactile.npz": "2385b3a39761e643c8acdd885f3d140d036807aecd2c6931ae5802d29ab5d67f",
+        "sim.mp4": "9ced599521ac90a3a9a9ddc3cac6819ce859d1e683bd28eacc605b17492f8c71"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 290,
+        "fps": 15.0,
+        "horizon_s": 19.28,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.014666667666667
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "290"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.28,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_yp0mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_yp0mm__seed4242"
+      ]
+    },
+    "teacher__placement_xm10_yp0mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_yp0mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4243/policy_review.json",
+      "video_size_bytes": 1337536,
+      "mapping_size_bytes": 116715,
+      "video_sha256": "6e04df46feb86ba57a678f510b7408b95907effc8c6dca7d5f45e30476da9acb",
+      "mapping_sha256": "ce7b06d6886c0b3c306f58936c157377c75b4da5f8c05c370060b2dea79a1ae8",
+      "input_sha256": {
+        "case.json": "f9c504c6181f9ab77c67018821088154a750d8405c23d57a2942b5ef45496bb3",
+        "run.json": "ac644152010c4b78eb770d3b8a8e9979e26cbcac1957ff4b38e80100694da0aa",
+        "effective_config.json": "6d08ef61fd24106bf47d350269c059fee247d6526ff6e900e2d19625e6624761",
+        "sim_trace.npz": "c21dbbb27c6c07a4bf7e63564218d089886b2cb8f90bd6c15aa38df145ce8fe2",
+        "execution_trace.jsonl": "483a25d5d5794380569fce1baef6fe2a23b7342a3f1e7c5a86b95f3ba91a0212",
+        "planner_trace.json": "7ea8f6e96380e92a8ca244a229fff730b32f713902a7911ec8561a71308fe9f4",
+        "policy_info.json": "5416605f25ec2676de6163f7a2cc1d380a8b62b2680526a4b8792a907b9d72be",
+        "policy_tactile.npz": "700d821e2d98ccf3da4251e2a13a852154f13601d3323a00467538acea148888",
+        "sim.mp4": "e4221f3dbfec29808f1f80521933039039bd16ae19f1fdff9f62c9c63e6be0eb"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 339,
+        "fps": 15.0,
+        "horizon_s": 22.56,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.033333334333335
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "339"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 22.56,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_yp0mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp0mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_yp0mm__seed4243"
+      ]
+    },
+    "teacher__placement_xm10_yp10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_yp10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1068045,
+      "mapping_size_bytes": 105343,
+      "video_sha256": "7a76a8c2892cdfbded4f3880f8e20358c81e1c50ae7ea7edac8c8d5ca2bcd619",
+      "mapping_sha256": "c93a6dde17a372b759bbad61c72849c471da4ba16ccb1c0844cfa6b278da222c",
+      "input_sha256": {
+        "case.json": "2953acc5f40fb29c190463b4f6214eeee8576acbe608b2daf506db0bbaf14c28",
+        "run.json": "33d13c7ae3f4eb0189ab4b679024543db77c31842d48ca42d84cc1e55f31225a",
+        "effective_config.json": "b0bbefa39ed254ccafedf1c5e254eef9332c980e434f2afe6a0c60eed406fb36",
+        "sim_trace.npz": "e07d351482dceea62fbff883e91db9f5ac6bdc1ace4bbf9b1e40f5768cf5afd0",
+        "execution_trace.jsonl": "f02dd3373473e0b99cb7406f7cf68e22c3609d1f3a841a867e86da08ce6b28cf",
+        "planner_trace.json": "5f4558b847c4cd00bade0e46a5f4fad6864fde86a2cb1d79dd7f54925afec2bb",
+        "policy_info.json": "904181ccfb41e0646532dd0619f90a02f6d10cea64cfe023708deae461a8eb05",
+        "policy_tactile.npz": "0f3f690ccecd8a39e1cb7f304661f13b42f4e7ef235d3dd3cfd21e55543633a0",
+        "sim.mp4": "6998dc01ffce775c5202dfdd032b301a290483d97a2ed9eb67428186f648f3e1"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 304,
+        "fps": 15.0,
+        "horizon_s": 20.232,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.068000000999998
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "304"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 20.232,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_yp10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_yp10mm__seed4242"
+      ]
+    },
+    "teacher__placement_xm10_yp10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xm10_yp10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4243/policy_review.json",
+      "video_size_bytes": 977032,
+      "mapping_size_bytes": 93466,
+      "video_sha256": "dea8160fc44dcca294a3f6995c643941106cc40dc6419b6b9b358906b5416af9",
+      "mapping_sha256": "cb30bb60072fd24ce35c46532077f4eb0f66737592c2510d1748151843b77ed0",
+      "input_sha256": {
+        "case.json": "dc7f813b601864094c75aa5a04768385d963f0262f88fb2a0c6c549881a180ba",
+        "run.json": "883600e7cf4f2253562a87cdf259b20b0edf3befb614b76979648e849a528b5e",
+        "effective_config.json": "b0bbefa39ed254ccafedf1c5e254eef9332c980e434f2afe6a0c60eed406fb36",
+        "sim_trace.npz": "41c2721a1f17a14fa1546185f7c4e261dc17d83a7cf7ec6fdd4a65213e5aa8ae",
+        "execution_trace.jsonl": "0fda60dca01925144b309c2734ce1e5665cd01073f5750c181fc7a137f7285e7",
+        "planner_trace.json": "768f8d9b43ee9a3f109bf2eb256f66e75d1e45f2ecc967ce1fead6b2d072da61",
+        "policy_info.json": "ce68dd85604293d3a84475a5a8e532b3585ed427fd31995a77234400795dd2d0",
+        "policy_tactile.npz": "9ca2315f09cbf8fdadc048763f8d2b467a2db69d5ae0e7da778f94c05a3f81fe",
+        "sim.mp4": "cc2a11452ce604b46c63f970b10b17419d038193c67deaa952eccb20ae651df9"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 267,
+        "fps": 15.0,
+        "horizon_s": 17.792,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9773333343333341
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "267"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.792,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_yp10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_yp10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xm10_yp10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp0_ym10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp0_ym10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1050656,
+      "mapping_size_bytes": 97593,
+      "video_sha256": "67e1f69a78a9b3f88709bb7b81e206b89819ed985779b2f0005a39bbd34f3817",
+      "mapping_sha256": "c285826214b6ee193293f842b967915e4206ebb63e1a4aab63f8bbdc371b4866",
+      "input_sha256": {
+        "case.json": "9e6c346d9cb76d547c473048d01fa3b8056dd66545a885e7489cde32b9cfa7db",
+        "run.json": "7645cb187f70eb9bbbc16982b8a7f4fffb1b120e6879d95f0e5e209a405aeccc",
+        "effective_config.json": "4ffa7944f82313aa61709094001c4979d92b92de9ad5de8718beb66591ada725",
+        "sim_trace.npz": "4a6ff2bf8a0f1bf7f9e62cafc8aba529dc0a6e99d2d35f8a7ec1fb0762ccefbb",
+        "execution_trace.jsonl": "487fe34abcc4536abe863a4919b13470c8c5e92c3bb140395f72dab194e21343",
+        "planner_trace.json": "6eb1f587ef461e791f23b53364c0313541d91b6561490893c58e5a3cd2c679e8",
+        "policy_info.json": "e32cb8a03d24dea6a9987f8ac8d404f2fb9cc3b5b539a4e210ae53ecc31a475a",
+        "policy_tactile.npz": "3fdd59252a6fd20211825d1fc3f392da3bb82e707ee7734725adcd175d706373",
+        "sim.mp4": "196a0f01135c3e0e70f6b9410a8c1bdf2b10b271a260d91967ffba05c391a720"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 280,
+        "fps": 15.0,
+        "horizon_s": 18.632,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9720000010000014
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "280"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.632,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp0_ym10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp0_ym10mm__seed4242"
+      ]
+    },
+    "teacher__placement_xp0_ym10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp0_ym10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4243/policy_review.json",
+      "video_size_bytes": 978947,
+      "mapping_size_bytes": 92779,
+      "video_sha256": "6f96cd98d34cff33b40e05360bf7622fc424118c01cfe8273b52daf425d5007b",
+      "mapping_sha256": "b1ffefa57e59a6a2937eb9bdc21ee6034a204940e351d8187b8ca8cbcd72aa2e",
+      "input_sha256": {
+        "case.json": "30239c7813ffc393bb30931bcf37319f9460ffdb14b7fdfd6736ca871635f305",
+        "run.json": "00fe900493dc7afd1c8dc5873f62a46ca58b46730ff853525b5577052954b2ed",
+        "effective_config.json": "4ffa7944f82313aa61709094001c4979d92b92de9ad5de8718beb66591ada725",
+        "sim_trace.npz": "849c98f7bcd8454eab068166303ac1658d8ad73bef9c867325f2e430fd803f62",
+        "execution_trace.jsonl": "2a5d2e568b9c1f06d511738e1b59f3e9e1702adf8f05439203765ffb13736301",
+        "planner_trace.json": "4e6b523f0e8b6657f88b2612ebba890e5246e2c2769e5fe564a86a91ce5548da",
+        "policy_info.json": "3c4c3b4f04b31adbc4af3bd43839f65d2c82f0116d8ba52b548e826d31bd569a",
+        "policy_tactile.npz": "8a1aa6bdced8a2353d53f4255a95095aefe55ce9832bf4190ab0e356a60751ae",
+        "sim.mp4": "3f7981528027a1cfe8a6f2beff7cbe6f9b81fa5e06153b4d909a26c1fb107496"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 265,
+        "fps": 15.0,
+        "horizon_s": 17.616,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.1000000010000015
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "265"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.616,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp0_ym10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_ym10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp0_ym10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp0_yp10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp0_yp10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4243/policy_review.json",
+      "video_size_bytes": 1039599,
+      "mapping_size_bytes": 96083,
+      "video_sha256": "1c82ed55576b1b2e328813c8fe0092349b77c8047d8733c2cf41691ea823e918",
+      "mapping_sha256": "9d1745df04adec7a11082a6baabe76746d6877caa2d7aec595a106e32f345fbe",
+      "input_sha256": {
+        "case.json": "71c6f78fdcc548b8f1006b5d869a7bfb87c6d8bdf0a00d4a30c22885e45667a5",
+        "run.json": "3235bb930761f43bd68e8c4f51c323ae901241038673828101c5ae7afe8bd6d1",
+        "effective_config.json": "9ffa5d1799ddb1ba422496bd2c6e2987cfd7218065ead7aeee3f18981cfdd78b",
+        "sim_trace.npz": "e73f25f2cd051891f0ac71863535cf218094cdb2d73dc0a8dc793e38b9c2507a",
+        "execution_trace.jsonl": "611ee48b2913af707700d6f72c99d09ebfe019d0493328c6a234ca638cbf016f",
+        "planner_trace.json": "849b1b0519bd6de20e78024f7f84451bf9f25f30fafbc6490c76df990664d674",
+        "policy_info.json": "251c7d65a9fef5bab2aa1ffaab7772afb392dfd7d315d49ecd24c8947e0a9dd0",
+        "policy_tactile.npz": "38193a415aeae4636de548e2f75495afc176e0acf65e0e8137237a13d4ddc126",
+        "sim.mp4": "d7d5b85738e8352893f4137f90ae191b14a337c702202b1b5ef08bda00a7c4fb"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 275,
+        "fps": 15.0,
+        "horizon_s": 18.272000000000002,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.014666667666667
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "275"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.272000000000002,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp0_yp10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp0_yp10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp0_yp10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp0_yp10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1953880,
+      "mapping_size_bytes": 173827,
+      "video_sha256": "8551c4d877dd0e2f076dfadfa72cc8e779d02b7df019620be015bf2af3157809",
+      "mapping_sha256": "d243ad879844d1bbdd3164eeee0f2b6b62aceb08134dd1145048d695e893c011",
+      "input_sha256": {
+        "case.json": "2d9feedf6893d5b07aa3944d366452dd7ddcd1946c142ef967368e40f20d8670",
+        "run.json": "d7fca9ba52d2439a1786cec3692bf2d9908c7ead2f18fbdd842d077b62b3966e",
+        "effective_config.json": "9ffa5d1799ddb1ba422496bd2c6e2987cfd7218065ead7aeee3f18981cfdd78b",
+        "sim_trace.npz": "c9c2cd85771776e568da6bc90afffc5543d6452620b59e943836e81c6721718d",
+        "execution_trace.jsonl": "09f79ff767f3efe4d41f5fe399632820d31bc2742476bf5ee871c2dc76bbeb7e",
+        "planner_trace.json": "710a3ac320eacb91563c97afad3bdacc2941d5208fd42d854254a87ccdbb4637",
+        "policy_info.json": "1996f63756af30c047b25132362453c7ed1838b4c8a63ca69f7d06194d55a810",
+        "policy_tactile.npz": "6e6d378f073c8bb2f81cc0608b1d185378b27fb962e52219f7e877bcd94ac225",
+        "sim.mp4": "dec54bdd860f89ee8a15e0fe4c70c62ddbff8b6ee36ee5e9bea008a3a283e2a2"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 516,
+        "fps": 15.0,
+        "horizon_s": 34.352000000000004,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.08133333433333
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": true,
+          "full_task": true,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "516"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 34.352000000000004,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp0_yp10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp0_yp10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp0_yp10mm__seed4242"
+      ]
+    },
+    "teacher__placement_xp10_ym10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_ym10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1075922,
+      "mapping_size_bytes": 96348,
+      "video_sha256": "60c56774db45e1ff3441da176c62b1828d063575c4e2160b02a9abd44badd76d",
+      "mapping_sha256": "17e031edfd7bc2efdd78da3efaf9c151173c9c1b1f8e6de73d6b787950420387",
+      "input_sha256": {
+        "case.json": "96dd44f9c7255973d44a5c7ac849f93e628038e533fe29e6f431c7a7458f9399",
+        "run.json": "a247ef42912ebf23693cdb45a79b10862fa7096f688d223f2255434ff07203aa",
+        "effective_config.json": "dfd2ec2e7a820a7dae30e329295e452343b819be528ae188522d43b90e12cc85",
+        "sim_trace.npz": "f7b4121b0f7ebea93640eb1e54a14012476742f4b00e164fab614dbe91bade41",
+        "execution_trace.jsonl": "b51f316b4f729601f73787bee38421183246412be8861b78fd0a6983bd091140",
+        "planner_trace.json": "9d92cdf2044c144b944f1d225ef554228d043c3570eb23f8bf8b3fdb4175dcc3",
+        "policy_info.json": "4b45be41e14a812bd74a7a921e773e01cd4a6246cb6297a21fad82ea1e6c49ef",
+        "policy_tactile.npz": "f5f8f867f9cae118619f04c9d68b660cc9035f1ae88e1c5564648c0ded48cd6c",
+        "sim.mp4": "f60236297076afb5b25b0a8086d745b61917be220233b2d8a42b243c85dd4e46"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 276,
+        "fps": 15.0,
+        "horizon_s": 18.384,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9533333343333332
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "276"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.384,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_ym10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_ym10mm__seed4242"
+      ]
+    },
+    "teacher__placement_xp10_ym10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_ym10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4243/policy_review.json",
+      "video_size_bytes": 1008003,
+      "mapping_size_bytes": 97609,
+      "video_sha256": "3f20f16944e0ecc27c52b958a29172d69e99bd6bc357f78b99160ce034a8139c",
+      "mapping_sha256": "c1b2ce01019a54b6adad2ed1efceece5d509b64b6979fe428cd5033ee5852a89",
+      "input_sha256": {
+        "case.json": "c5e4f34b60c67d21898e714fcc83669a74a1700bd4c79f25f91e15d7f5bf9f83",
+        "run.json": "830226914e3c22bccee7c65bbb77aba108765a75887c21cc92ca409494c655dd",
+        "effective_config.json": "dfd2ec2e7a820a7dae30e329295e452343b819be528ae188522d43b90e12cc85",
+        "sim_trace.npz": "daaff7b704e91649344a02a2210a931d591cb40463fd56a5ea2309bc2f527577",
+        "execution_trace.jsonl": "d300b84cda2fd5bda0bc26aeed9a8b2b796aa637e5b7367b996eef97efaef3d2",
+        "planner_trace.json": "7f0848412b928c1c1d5e7479047a47eee557412509c21cb05a2419c72a6142ea",
+        "policy_info.json": "7cc90a27fa45e4a87a79ba2877d98118b188fe1ce9bc778601eb0444aa5db05c",
+        "policy_tactile.npz": "3549adf4e4d215545341df3fe8e689f4ad1afa1520201131e0b4969a5cdb648d",
+        "sim.mp4": "9eb3caf9c9b66022f027e7093c190f6c3076e2711698688711747d76a24798de"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 280,
+        "fps": 15.0,
+        "horizon_s": 18.656,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9720000010000014
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "280"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.656,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_ym10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_ym10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_ym10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp10_yp0mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_yp0mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4243/policy_review.json",
+      "video_size_bytes": 1011371,
+      "mapping_size_bytes": 94101,
+      "video_sha256": "f222e906d31ec41ddefa33c3edf8e34d1b5c443e40db05fdcf456e99556841fe",
+      "mapping_sha256": "7d58a93930bbdf5f7979dd3c1b57d77d2e607baadd4ecf72efd848b3fc498151",
+      "input_sha256": {
+        "case.json": "7059f28554ccd345213b5007d9a8fb7311079f3982883093b7433013cdb3370d",
+        "run.json": "310bc06f16cf0db7cc5d7b6229a0bf1f0ddb4695bb4a03194d115e8e8cead2bc",
+        "effective_config.json": "6a54bbd0db2300438ec05ce7c0aa7adc166c7783db3f1fb1f06aeaf6949a4492",
+        "sim_trace.npz": "22a771ec8924a5c348ed2d002c0c8345ec7a6e5e4061d5a4c91aea21b7034372",
+        "execution_trace.jsonl": "0873e2f4ca20d108d9a99354a3686c117c591b92fbd77fa16f2431799e2ac1bc",
+        "planner_trace.json": "ac9e70b5adacb86cceabb0dfb1b09df2f047a0213997474ac4962a0c440a424e",
+        "policy_info.json": "48061624e9b470458a890650a2cd8d2ef070309bd38cf727ac26907e353cf7cd",
+        "policy_tactile.npz": "b2b5c86f56270aa0ea38aff3335e889a106055931e08c5d798580da4de3760e6",
+        "sim.mp4": "2b4e926b3a7f3051984658be4221dc40e3d3066626c96cf7e036e964eedac649"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 269,
+        "fps": 15.0,
+        "horizon_s": 17.928,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9906666676666678
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "269"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.928,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_yp0mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_yp0mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp10_yp0mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_yp0mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4242/policy_review.json",
+      "video_size_bytes": 1737060,
+      "mapping_size_bytes": 160532,
+      "video_sha256": "45de897048e8511297c15394e649e47d3a64f28722dea7c2eeaf8d51df886b7b",
+      "mapping_sha256": "91ad5ca2fe53e9d7e2d32e9a7961f81973d825b9bcfcb837a4505e9e3875eeac",
+      "input_sha256": {
+        "case.json": "dfc3a3e3dcb67a37ab32c30ae6b6ffcbabd3e095635bc8e8e1ef266d88be5a37",
+        "run.json": "af61e9b766a93d052c5b1b8d2cb6a61c52e3705eaf5440db516f6509e134d32d",
+        "effective_config.json": "6a54bbd0db2300438ec05ce7c0aa7adc166c7783db3f1fb1f06aeaf6949a4492",
+        "sim_trace.npz": "dfbdfa951a7d1a177e650a3a51828ffd84b563f55eeb7d7600edc84ad07775a1",
+        "execution_trace.jsonl": "096930818d9ea751fd91389945d3d04aba7a2a90d5f1dec7086539b492dd1458",
+        "planner_trace.json": "769d72ffcd0d11c4f81234f584f33d259f4c7ccd7e3ed973003c42a86e4f9038",
+        "policy_info.json": "d711a5bb6cce50e73c2ae4d7d07bd0460d41da9d93b03a9af7869e21c85d4a5b",
+        "policy_tactile.npz": "39ce953aaed4adc3ab5714b7bef9bc03ae20dddfcacf42270ec84cb415f5ab54",
+        "sim.mp4": "5c5f6ad7a87d33c0e0df3a49e215fe3dbea7212def1d9f34c5bee2f72a73bd89"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 475,
+        "fps": 15.0,
+        "horizon_s": 31.616,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.1000000010000015
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": true,
+          "full_task": true,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "475"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 31.616,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_yp0mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp0mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_yp0mm__seed4242"
+      ]
+    },
+    "teacher__placement_xp10_yp10mm__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_yp10mm__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4243/policy_review.json",
+      "video_size_bytes": 1065709,
+      "mapping_size_bytes": 97650,
+      "video_sha256": "0e95942c266411a7dd6112b4d1eba36d6abebf2a462cd936a8f537a22cdf7fc2",
+      "mapping_sha256": "50b1c735b9bc4dc4aaab5490890085b250f0b0ff798b61925c07ee014d9cd814",
+      "input_sha256": {
+        "case.json": "e481431382e803348ccbc701ae6886632c81a1962529e88115119841fbca2252",
+        "run.json": "0c84a3aeb632c8eba850e962b4f92de29dce7d99c6cdb53845b240a17c34a663",
+        "effective_config.json": "e042ba875e77df0fb29dc5f2c226008ba3c0f2547fd8070f54c010dd2bf6356e",
+        "sim_trace.npz": "6619e4dfc7890a0c526d591ce727cbbdc298730aa616d476f97c35c25ddbd65a",
+        "execution_trace.jsonl": "cccfeb5049a76b58a9169b3bb7ca912368fecf00e46fa3831a311df7075d1b06",
+        "planner_trace.json": "e84c9ed93810cfec90c3d694d7ee6076a358b1d6ba38e39b3567994a592dca40",
+        "policy_info.json": "f9174dd9bdf50858c9fba14a16f976fb22530910d67c033b0eba8552ac270495",
+        "policy_tactile.npz": "274ff8990ddbcb2d2e50020e7db462565627774fd758ee5023497d8cd1b07dde",
+        "sim.mp4": "445ef8912612bdf6709322e49dbc54eda27a4e22693007e3634a6605b694d4a6"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 280,
+        "fps": 15.0,
+        "horizon_s": 18.608,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.1000000010000015
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "280"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.608,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_yp10mm__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_yp10mm__seed4243"
+      ]
+    },
+    "teacher__placement_xp10_yp10mm__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__placement_xp10_yp10mm__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4242/policy_review.json",
+      "video_size_bytes": 1780861,
+      "mapping_size_bytes": 164771,
+      "video_sha256": "d879751916cf36de2a1215ffaa5a33034f78ff941961470d7866db38c2574a56",
+      "mapping_sha256": "31b7187735d699a83c8facd7f1df22ea9b86f1522ecc5ba550df79f0f3d5502e",
+      "input_sha256": {
+        "case.json": "94ef4f188e4630f60b478f7acb0025063d73eea1babcab164f90554ad1b51fa0",
+        "run.json": "354060e2e1146066147a9c4bb846417c78899fb7eac07fe87881895c8154ad42",
+        "effective_config.json": "e042ba875e77df0fb29dc5f2c226008ba3c0f2547fd8070f54c010dd2bf6356e",
+        "sim_trace.npz": "156a2b4401118da7ea6658f0f4a7ebd33f8bbe63e10595d0f65a5a9c1da6b6e5",
+        "execution_trace.jsonl": "6e1f81f3bb3aefaca2d9a497907f28c85967b7eb113819557e0f0f1419cf6c67",
+        "planner_trace.json": "2acd2eb0e9ca84591dcafcdf549b1b8b2e20d07affd34ae3de688626cb45c096",
+        "policy_info.json": "425a61f1b613f11f2004c8b333770650b8f773f8dc928d1c068f42f5e2589246",
+        "policy_tactile.npz": "42997f608829698d2166b485eb006d3654c2ffbe92c8624c5ab4dbc45af77f66",
+        "sim.mp4": "f71d1e176c70e355703973a77bcee149b720e670e0e04a148a297e5409dfd8ec"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 488,
+        "fps": 15.0,
+        "horizon_s": 32.516,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.966666667666665
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": true,
+          "full_task": true,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "488"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 32.516,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xp10_yp10mm__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xp10_yp10mm__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__placement_xp10_yp10mm__seed4242"
+      ]
+    },
+    "teacher__packet_friction_070__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_070__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4242/policy_review.json",
+      "video_size_bytes": 1084377,
+      "mapping_size_bytes": 102746,
+      "video_sha256": "a8dbcae7d3a80c7301943508af79dfb7999c816ac169ee7f2df48615908a7d47",
+      "mapping_sha256": "5dc341a53b1a8560ea0192c5ec074cbb1058e76612904454df7d6f9bc1a1fc59",
+      "input_sha256": {
+        "case.json": "cecbc8c4e139f82e4cdc6f7c8db1d834dd2a587ef3275567faaf1192fc221d38",
+        "run.json": "9e28d5efcb85c4ebbe1cdc5c631f44e3c17bedb4beaebfc8bc729d62b4484c04",
+        "effective_config.json": "b6c3aa2dd2fe64ccd2a626b78f1bed6ee2308c436df29be2654fd68a1ce69055",
+        "sim_trace.npz": "571929243115d967c918456ad1ce99b42fe5a006090210aa5257f491e0d8c0f3",
+        "execution_trace.jsonl": "ac58ebb0820d5454d93c1573b0bde90d0d8a49a6d6f652b01c7dc2145f7e232d",
+        "planner_trace.json": "85aa66cd182589d75cd0087842b87da38677eb02fc3cdf529a0314f89cf380c7",
+        "policy_info.json": "fcc500ff204493ba1ef4c3182b97420184e7cbcede5926c33731a96b04d64fea",
+        "policy_tactile.npz": "bff956eda7c7d95f074714736a0d6b181b0f5ea14ebc6e1b831d8ffdf8d6ae5f",
+        "sim.mp4": "0c0c26ed9877d7c5c575bf70676ddfdb5374fcdafa95cde1b9b5a0bc1bf12b99"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 296,
+        "fps": 15.0,
+        "horizon_s": 19.728,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.038666667666668
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "296"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.728,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_070__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_070__seed4242"
+      ]
+    },
+    "teacher__packet_friction_070__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_070__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4243/policy_review.json",
+      "video_size_bytes": 1107479,
+      "mapping_size_bytes": 100238,
+      "video_sha256": "e6daf483a65bf0431ca8b9a3587d20544f44d94d1f06eacdfb6636e66db6a78b",
+      "mapping_sha256": "b4cdaf3e8bd07634c16c61b5298990bb5029de8f69b24ed59cdef5f5b28c5126",
+      "input_sha256": {
+        "case.json": "764d3c3891234bc8e30b1724b5c86154a4c57a03479dd38c0c602612db42d734",
+        "run.json": "ef92a7ffea10c39922084f37dc4d50ffdcc2893398bb181245231b70ecf5a31b",
+        "effective_config.json": "b6c3aa2dd2fe64ccd2a626b78f1bed6ee2308c436df29be2654fd68a1ce69055",
+        "sim_trace.npz": "234fad00b7c83ffb8a2902302c603773921358639ff4b9c0ffe4134418491caf",
+        "execution_trace.jsonl": "209eb9077e0d39d7b3e7cad3813611581e0f0267d8535a7638aaca1f57d748c4",
+        "planner_trace.json": "5766a0c9868f71b6e180d0ad683ca1c7ec4c5e1407ee1f277ddb8188f296d2b3",
+        "policy_info.json": "1b3be439c8fa237a7dbce01ce1b292048b52f3daa7efe3ad3fc6165580fa2756",
+        "policy_tactile.npz": "1eb2781cc30fc56538efe601a95a4b8602dffeb2eb1dc4e439c881dadbb76310",
+        "sim.mp4": "62c95840d2ebdc2335c26d31feaf23e771677514b961ea2b9e8f6a369a9c288e"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 288,
+        "fps": 15.0,
+        "horizon_s": 19.176000000000002,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0013333343333315
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "288"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.176000000000002,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_070__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_070__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_070__seed4243"
+      ]
+    },
+    "teacher__packet_friction_085__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_085__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4243/policy_review.json",
+      "video_size_bytes": 1028528,
+      "mapping_size_bytes": 95662,
+      "video_sha256": "07b121b253ba7c16f6bbcd91cc8b85d34642503d2148e9e86b8cce032f689c32",
+      "mapping_sha256": "e35ca35518a875cd35b676e01828be8a5f7f0c8bc61bef4f6d700d88ad454e52",
+      "input_sha256": {
+        "case.json": "8a56e224c1801b588d46ffa050506c1feaa7e24d6324adf62ef732081d25f44b",
+        "run.json": "9bca720268525c8d0425be051e458e7827e505eb56f4ef2ed0dc4e5cba0112be",
+        "effective_config.json": "8db394dbba807c8904ed1e65904087158f1675f24f060f76f5143c42ab20d406",
+        "sim_trace.npz": "dca6c96230a9e063d758f2d3e9d78c6b145f0a41d9f266018f711a732b1c64ab",
+        "execution_trace.jsonl": "e835ed4705da4c4363101980966ff711011a9535c48f90a6c42b25745eef7cd0",
+        "planner_trace.json": "a9feaf28427cfbbcc7f43c35665b52510a38f88f231a22188fef702c936dcc35",
+        "policy_info.json": "4bc976bdcd48f5192535ca53e7bc6f9fb8dbe995837b7bf4c3cbc54a9aebf9b2",
+        "policy_tactile.npz": "a45e10e34add429bc0759365741488837fe8b0039741993af8a833845479dcee",
+        "sim.mp4": "8520342a51f496aed11329e5c375c59a41b495e259d87c350e05be91f3704392"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 274,
+        "fps": 15.0,
+        "horizon_s": 18.232,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.068000000999998
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "274"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.232,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_085__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_085__seed4243"
+      ]
+    },
+    "teacher__packet_friction_085__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_085__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4242/policy_review.json",
+      "video_size_bytes": 1761056,
+      "mapping_size_bytes": 163765,
+      "video_sha256": "f92b770e7151350c1f54f104d953e4a9b09a466ae79109eb4c5d1b05ba243397",
+      "mapping_sha256": "800ff6e70aa042c37b30098021f30badf314e3cfa7b66213e933d7a6d2a674d5",
+      "input_sha256": {
+        "case.json": "50462f23840c99f4e619550b9dc908f847eb26773ca320001057dfed8a195016",
+        "run.json": "1c5625d5ed779602d0f6cc43498f2b0cb7925bc4b241c1285f2042a2106889bb",
+        "effective_config.json": "8db394dbba807c8904ed1e65904087158f1675f24f060f76f5143c42ab20d406",
+        "sim_trace.npz": "23c8d285fbd1d84e75edccc457d1179de8f9f26a57dd75ae0bd106f2d5eaaa14",
+        "execution_trace.jsonl": "99f06defd144e09ab059069678f2faa6c5a922f7317cdd1b74810cc313f0df00",
+        "planner_trace.json": "67d7caa3070368516cc4c4afc5d35aadd0454fa48c64694da66ff238d30be888",
+        "policy_info.json": "3b7f2491c4a2d50415a5248d82946a6edd8f4b6b112f0b54d4087d587c1a1b4d",
+        "policy_tactile.npz": "407d51eb0e417814bd8b7bfd1bb411ba983c07d1b1e068c0deda8d039291c9c0",
+        "sim.mp4": "430f1403e1836124efd958b885a889086c68bbf5922971453dab18500c8449de"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 485,
+        "fps": 15.0,
+        "horizon_s": 32.296,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0146666676666634
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": true,
+          "full_task": true,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "485"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 32.296,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_085__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_085__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_085__seed4242"
+      ]
+    },
+    "teacher__packet_friction_115__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_115__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4242/policy_review.json",
+      "video_size_bytes": 1041528,
+      "mapping_size_bytes": 98287,
+      "video_sha256": "6aee40fd3fd59773cf3f117c1ccc6ea93662d84a7794efc1e0788d3261a145e1",
+      "mapping_sha256": "3576555c925158f44067b18664600f4d89143149ced499c47a25585498b5ece4",
+      "input_sha256": {
+        "case.json": "a555397af406f760e93adaa252afebc151fc529b3128b27b1ce817089e5bf181",
+        "run.json": "a5c7bfa6fa92749f2627002dc85ffa5ab79b45aa68f24556014c37319b6c39be",
+        "effective_config.json": "d723d7c5f2491c9955ba05752b8574c1b32020f4fb7ca59eb19500ef4d8d4f02",
+        "sim_trace.npz": "83f0a76e005c2dbd260bcdf02c133e010f6e129d582ebc520ecb70e08855b407",
+        "execution_trace.jsonl": "42ce25a506143054cc584215637d95bb78d97effa625fed40475bfc8c83f2acf",
+        "planner_trace.json": "73ad3c1b5b012b342e64d7252961babd1786de8f8028172b1f285e0678272c6d",
+        "policy_info.json": "1923ad826e9646ebfb63b404961eff8808725bca1a2ce3e28b7a35e5e1452777",
+        "policy_tactile.npz": "03896a058364f069e847aa500df13d8feb228da5759b5c3363b62eaf6bd43f15",
+        "sim.mp4": "b9945c109259acb5ef58966b42362c9bdbd371d9104c663c517061ba86c24fbc"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 282,
+        "fps": 15.0,
+        "horizon_s": 18.768,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9773333343333341
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "282"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.768,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_115__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_115__seed4242"
+      ]
+    },
+    "teacher__packet_friction_115__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__packet_friction_115__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4243/policy_review.json",
+      "video_size_bytes": 1016271,
+      "mapping_size_bytes": 94707,
+      "video_sha256": "18c1874b4c8fc0bcebb5019e997ad5d0b4e8ed4af57e9b3001fd15581b31c783",
+      "mapping_sha256": "3bf1bd00c57dd61e514acba95b7d70a98ade531811999ca53e933bd9ea4a3cc2",
+      "input_sha256": {
+        "case.json": "944b354d6da4efaa237caadd6cad4dfc62967b050b85907dfa6e85a82c06d687",
+        "run.json": "4347a518d2d3f3ee806fd5e3e53571bff338ee09453eea7a56813d678dff2bd9",
+        "effective_config.json": "d723d7c5f2491c9955ba05752b8574c1b32020f4fb7ca59eb19500ef4d8d4f02",
+        "sim_trace.npz": "394611ef9959afefaf25f2f49e00765194a67cb907085b749034fb92969ac5f6",
+        "execution_trace.jsonl": "49e7da1b5886ce295e3083e84b276d2ce826c9a14bdac9a9bbed5fe8260e3536",
+        "planner_trace.json": "1c30820932ade54174b1affff0c79e32c9f3d5e0806edcaea3554a4ff6fae76b",
+        "policy_info.json": "6e510ffae08f71dc9d59e924a126f934ce65ac00d60b0bbf97d130c45d39d915",
+        "policy_tactile.npz": "a5ef22a00c7b1f4619364aa1942630a22a42c6ca8a4a180c629dfc0d03a2cedc",
+        "sim.mp4": "88b3e7538f631f3bddb89909e9d81992e14f038aebe1e689e6e717ed1d55af6c"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 271,
+        "fps": 15.0,
+        "horizon_s": 18.024,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9960000009999987
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "271"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.024,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__packet_friction_115__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__packet_friction_115__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__packet_friction_115__seed4243"
+      ]
+    },
+    "teacher__camera_x_m2deg__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_x_m2deg__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4242/policy_review.json",
+      "video_size_bytes": 1155873,
+      "mapping_size_bytes": 99834,
+      "video_sha256": "18ae2d207755d37706a8eef5dc0fc53774be180df859940c454fecb1383c7188",
+      "mapping_sha256": "85c3f352ee59be1cc5825da28a7b365d8209a4a27251dded4a244957f7db7d74",
+      "input_sha256": {
+        "case.json": "599f8a259a2b296fef3195488694496fa91d58b73c4f16d0344a0f1859be38ca",
+        "run.json": "54bd18b266d104fad19f708a2c93eee239058305350d56f4bc5260fdacc5e420",
+        "effective_config.json": "32f2c1d1953f3477453f3128ecc14c10e733bedf0ad85a77f1aa3eba0c568b6e",
+        "sim_trace.npz": "7680a6881fc6b13039ea5aae8d0132d03cdf8cd9e151c975521772c9d2359f29",
+        "execution_trace.jsonl": "d1c8e1bb6a1660403d9fe590abebdcd089881de9b70459bc3300833e7da1c9d6",
+        "planner_trace.json": "e4993d1fd874d5847e13ff293f541674d3645d3906e2621c637b86e89b867eb3",
+        "policy_info.json": "485debf79830a0ebfaf8c53b7115bde60f4f2c768ca6979426c6da6c85958a5c",
+        "policy_tactile.npz": "d1deb77e5e304e5a1314959746923570800a851f0063f8863089dcd15c3ba286",
+        "sim.mp4": "9616deda3a179c4c4e59b0d493ac030a56c96c5b3649a8ae11631fb476ff0387"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 287,
+        "fps": 15.0,
+        "horizon_s": 19.088,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.062666667666665
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "287"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.088,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_x_m2deg__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_x_m2deg__seed4242"
+      ]
+    },
+    "teacher__camera_x_m2deg__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_x_m2deg__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4243/policy_review.json",
+      "video_size_bytes": 1006708,
+      "mapping_size_bytes": 92133,
+      "video_sha256": "be833ac8c36511e9ed04a86b127c6fe1ea915733db7c986b37895efbd07fbb02",
+      "mapping_sha256": "c861cf30175fdba22b06af9e585c338e2eb116247b2f35cf09fc7e4b13d6ca17",
+      "input_sha256": {
+        "case.json": "83ca2f616e0bb3bd2028a5b4da7acf05fb46b5d2bfb2dfb7bfae2fda599ba148",
+        "run.json": "2624c796a157b1cfdcc240c2ea99fa86ed0f4ddf304fac02f36176dc0bd24839",
+        "effective_config.json": "32f2c1d1953f3477453f3128ecc14c10e733bedf0ad85a77f1aa3eba0c568b6e",
+        "sim_trace.npz": "246cecf62bf3c6f51d2ca81f1c4b84da23045c2cfd10423442403ff9016351cc",
+        "execution_trace.jsonl": "9c305bf991d69160d332d32d74224bfe91d2e185f0970f07a5e806c01da60206",
+        "planner_trace.json": "472936d05f14ba541285e8096f511f32045871c3d2e12438cff9d33515511394",
+        "policy_info.json": "6d0566512ea1cc600362760f7c3c07a58f380b41aeba8a8f012d02f606daee94",
+        "policy_tactile.npz": "9f53bd191f7611fad166520a4d167ec120d93c701f2f72d80581b7946cec2b58",
+        "sim.mp4": "f11961ce22ad37228c6e1c477d9902c227f41f2aa21c7c21d209c52c11b2adba"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 263,
+        "fps": 15.0,
+        "horizon_s": 17.528,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.966666667666665
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "263"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.528,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_x_m2deg__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_m2deg__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_x_m2deg__seed4243"
+      ]
+    },
+    "teacher__camera_x_p2deg__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_x_p2deg__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4242/policy_review.json",
+      "video_size_bytes": 1126971,
+      "mapping_size_bytes": 106015,
+      "video_sha256": "8e8606d6b79a064dff07a058c51ae3dfb8945d0072236f283f4fb4a7802d6cb5",
+      "mapping_sha256": "76ea859b65b80e97d0315afabfdeb0f277e0a2f73a15217463ae24beb56a25aa",
+      "input_sha256": {
+        "case.json": "1ff84501eabbf22e91f96276db02ff18daaf6e9029db62297ca5b05895a05b6f",
+        "run.json": "a624359db32687ac0a752a28ac48618821d86521876449cb70088131548fa51d",
+        "effective_config.json": "936ddaee3c67f02f726bfd586111fc2521298976b2b88f60b2c2877c60fb0921",
+        "sim_trace.npz": "38d9d084e6125aeaf63c56aa96b558342b82b734632e7a14fd11f4c4cf788c29",
+        "execution_trace.jsonl": "b8e11124a96a049afbedc0eb13ac7d0b5723d7c29d9dfbc8ec575fa5b9318cc3",
+        "planner_trace.json": "ed7f63a6f549934bbcfe4d40e8024f783cab442ad2ecbe9a4ed9bfd5775a529a",
+        "policy_info.json": "87c573a20ea2a8bf83cfd6be595beb30575a0ec7526a932315dbf1363a8ad574",
+        "policy_tactile.npz": "ec40d5ddc5e910851bd175a5fdb4942d9c222ec05bd379a1806eed4994a4317d",
+        "sim.mp4": "754028b79fef4425cfdd56bd7d2a85080436e7cdd06fbfa54bf05e33906691db"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 306,
+        "fps": 15.0,
+        "horizon_s": 20.384,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9533333343333332
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "306"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 20.384,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_x_p2deg__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_x_p2deg__seed4242"
+      ]
+    },
+    "teacher__camera_x_p2deg__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_x_p2deg__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4243/policy_review.json",
+      "video_size_bytes": 1094813,
+      "mapping_size_bytes": 98269,
+      "video_sha256": "31aa9695cb8ee1441c497510d61d11b0bcfe1bfd21fd771a0abaa1799ffb44bb",
+      "mapping_sha256": "b72015d0a0255b1fe3e3814d12ad4599e886bc2b769e632d4f167812fe129c9f",
+      "input_sha256": {
+        "case.json": "a1ce51617114290bea02e83cb269289b6f94e8818793e7190213a3f5eb7d453e",
+        "run.json": "e3d16097f32bdb24b48d63fe8c73c9d2e726c9ba7927a50ce79e37ba6c746b51",
+        "effective_config.json": "936ddaee3c67f02f726bfd586111fc2521298976b2b88f60b2c2877c60fb0921",
+        "sim_trace.npz": "078342dedae7de00f1d6ba7386bac0e50b256971a12c68b174dce2a9a7cce47b",
+        "execution_trace.jsonl": "c2924f933f8f97271b3b063b4b84fb4c81fce136eb502c7ebd0d1632004bddde",
+        "planner_trace.json": "196d413b981e3123cc5af442d037ebcb148afd19afe2c154bb8224de6f31fda1",
+        "policy_info.json": "3b8e0b2a65725c3cfa7c773d1a8546e39eaf60c0e815b1c329144d28e479b344",
+        "policy_tactile.npz": "a462d22d95fbde1bdf723532518f3a53f65d0000138c9ca163d16d430df4c486",
+        "sim.mp4": "a43658b1e4704cc682530aaca6c079c495719ba99a60e412f0c8053b9daeebd7"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 282,
+        "fps": 15.0,
+        "horizon_s": 18.792,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9773333343333341
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "282"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.792,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_x_p2deg__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_x_p2deg__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_x_p2deg__seed4243"
+      ]
+    },
+    "teacher__camera_y_m2deg__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_y_m2deg__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4242/policy_review.json",
+      "video_size_bytes": 983784,
+      "mapping_size_bytes": 96658,
+      "video_sha256": "e345dcec248477e23558102f47bc3c51acd256a43211fb4fd5672c865bfc4056",
+      "mapping_sha256": "9ddb596154667368abeb2eb4f0b949b6f2d3d8a111669be45fe36cc4e50a2f8a",
+      "input_sha256": {
+        "case.json": "708549494a1a5ea6c03d5cb645c76d22b725daa266340ebe4109983c350adaee",
+        "run.json": "aadc486b93368c55229efc5c555f6721af374638e3586f3da5a2d052fc97267c",
+        "effective_config.json": "f82432ad8b627c3f45a1ba1d0e9e4fba76774ba59879ad1660d1d56e63204164",
+        "sim_trace.npz": "ffedbb8cfb0cfb364ac1fd4e1afa1eb4366ab0b3f15f4bbeaa27874c4004b967",
+        "execution_trace.jsonl": "778b780c15a33e0a6c0f0b1c3e7ae9f3a9dff3bc1756b0f361e5be3412486c87",
+        "planner_trace.json": "94d0903fc933710665b31ec1c94763b63f0a4588d93ed2c21ec950e52fdd63e7",
+        "policy_info.json": "6511bd86b8fb55b4906b503db7758caa4076a3b63d42613d43dc540236366ef1",
+        "policy_tactile.npz": "dbb8e195ff06b888355f9338badfdda7afdb9c8f5c664f897822ba7c31e24d6d",
+        "sim.mp4": "1a2b1785cf99c2b8b79163990e2320f60a18ceaa6f179121ea38cf88c21a830c"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 277,
+        "fps": 15.0,
+        "horizon_s": 18.448,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0200000009999997
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": true
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "277"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.448,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_y_m2deg__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_y_m2deg__seed4242"
+      ]
+    },
+    "teacher__camera_y_m2deg__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_y_m2deg__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4243/policy_review.json",
+      "video_size_bytes": 1022853,
+      "mapping_size_bytes": 102753,
+      "video_sha256": "1e2c47894d92edcc56e535cb80a082af9c53b1bdf275ccb3423238ee55a75f0e",
+      "mapping_sha256": "d059ba9059d7186521a1c9b4ba0b42e45fcd5fbae52dde04b50cd5d778bfa016",
+      "input_sha256": {
+        "case.json": "804ae1c5dc2ce068dc6df4363d5e6eea63af8013aaafa7e84499352f6794429c",
+        "run.json": "fab71dfcd4c9897b89e98c6b29da184033cffca2ee5d1111eef630427c0fa9b1",
+        "effective_config.json": "f82432ad8b627c3f45a1ba1d0e9e4fba76774ba59879ad1660d1d56e63204164",
+        "sim_trace.npz": "c30c9da51be4d838ecaac91ce34c55b2aa6d769767936751291033c1da8ee14f",
+        "execution_trace.jsonl": "841fc46e2af422484a4df5b11334ca7ecd3d96dda2c2fd8dcbbe678aa0e458a1",
+        "planner_trace.json": "f0bca80d22fb2f60ce671fd33eebe50e7341616a0fccdb90d09b7c6bb8b0f396",
+        "policy_info.json": "83c8e45ae95d12c568cc9f4407c8be3b0a198194638c705bd141561fb638db67",
+        "policy_tactile.npz": "33d6eda8088df12f91313692ac1d8d39c27393cf4d6942f4fc4cb1e6a7938289",
+        "sim.mp4": "41b0efb282e7182367a5a5ed7b969d084c21565080fca04f2b46d69d952c4592"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 296,
+        "fps": 15.0,
+        "horizon_s": 19.704,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.038666667666668
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "296"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.704,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_y_m2deg__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_m2deg__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_y_m2deg__seed4243"
+      ]
+    },
+    "teacher__camera_y_p2deg__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_y_p2deg__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4242/policy_review.json",
+      "video_size_bytes": 1225351,
+      "mapping_size_bytes": 110193,
+      "video_sha256": "97ff3a4c75531d95f54b87d3d6a45f6babb906e4ae0996f586a335b8f5515fe4",
+      "mapping_sha256": "2c88a06a7ee14ccadbacaabc38b90b3ac9d24a10de64e540fa40372e2e4c327c",
+      "input_sha256": {
+        "case.json": "4acf75d00571c651e4e7c27d60adc9372aa1cc3cadb3bcdc856aba874700e3b2",
+        "run.json": "11e25207de2362ecf0c12491e39bab5e4613c6273f34261629e656536fd28aa0",
+        "effective_config.json": "94197fe2db308fb3dc4e47697baebe15a1670ea1d7f04fbfa47e7af8b08747bd",
+        "sim_trace.npz": "7276deceb8a8baf0dc759a10b08a0a932cbc7a3f5611929f1cbbdb8656b78795",
+        "execution_trace.jsonl": "2752db32e4d605dfdd5855165368962f988401cb04c1ebf63b52f2ecf9b8af78",
+        "planner_trace.json": "f3cd3d713e42d878e296286429321bcac40d32a4da830373fa7fdba78f368c2d",
+        "policy_info.json": "f03f13d69da5c4d60f1f53dc9cfd45904bbfddbfcdb2fce891da3ec10ace5bf4",
+        "policy_tactile.npz": "eda12880c75d8d56933aee024541139cea7a7eff8e7cb28dfcb0891197486592",
+        "sim.mp4": "83255bc9fa8f1ad35a379241ea2a49c1559e2c83701f691d78bdf5144a40f9e3"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 319,
+        "fps": 15.0,
+        "horizon_s": 21.224,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.068000000999998
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "319"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 21.224,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_y_p2deg__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_y_p2deg__seed4242"
+      ]
+    },
+    "teacher__camera_y_p2deg__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__camera_y_p2deg__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4243/policy_review.json",
+      "video_size_bytes": 987464,
+      "mapping_size_bytes": 93733,
+      "video_sha256": "a476ec644930d708a1e900451a0b450eb119e521db0c42c777fb37eeb0d0043b",
+      "mapping_sha256": "52d9d50086326ffbf5f0d01c1d4083edb60b8f883d964de30613ed65b9349c89",
+      "input_sha256": {
+        "case.json": "c7e599accbae1034c459e206638002cd2dbc72218a7bbd05daa310344e0ba93c",
+        "run.json": "259976bccf621f80bfccb8327fb4bdf69812e65b3f820faff346f68c135e1968",
+        "effective_config.json": "94197fe2db308fb3dc4e47697baebe15a1670ea1d7f04fbfa47e7af8b08747bd",
+        "sim_trace.npz": "32d9d91334190adc5b3ec3c10d74efdd7fb50019ea1033f0deed618332d82c9c",
+        "execution_trace.jsonl": "dd1463b05bc367b0c5ac0e3f68bf0b3138d69249e536931de35cd55d9f33b709",
+        "planner_trace.json": "b5bafec58bf7cd0122fd162817184c3b1595d8ccc962e5f62db751ad2bd23f56",
+        "policy_info.json": "f517ff3f2db662fc84b920e989493b024b21388547a1546e1c14215d778237d8",
+        "policy_tactile.npz": "8421300fade4cc48cadf33bf7ffb7b6b3fbfa0d5614627888173a6bf1b9d6375",
+        "sim.mp4": "85eebd97b905ef676b66d742d79cfe91b0d993bef4f75733e03e902dafc47e3d"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 268,
+        "fps": 15.0,
+        "horizon_s": 17.864,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0440000010000006
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "268"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 17.864,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__camera_y_p2deg__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__camera_y_p2deg__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__camera_y_p2deg__seed4243"
+      ]
+    },
+    "teacher__observation_delay_80ms__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__observation_delay_80ms__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4242/policy_review.json",
+      "video_size_bytes": 529541,
+      "mapping_size_bytes": 56355,
+      "video_sha256": "4a0bcf924cb1678de117ce8317a45694ef2e0fc9473610198b8e62c7e2965226",
+      "mapping_sha256": "3435a68d0716e48833f50c0978d6926a3a3eec5520afd2317d9b51bfcf2f7c38",
+      "input_sha256": {
+        "case.json": "232eda5c7881488020add2e52d31127068946449089d52e8b08fa74580658220",
+        "run.json": "1dae98943e0f37d881017b26b3cc17c2bfdfed9a5e6263a6f311b8982a387179",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "42520f5e91ef362a684635656adc0a67731924856e67b09372fea1a2c6c23965",
+        "execution_trace.jsonl": "03f47e4f1f9b3932d4e47a415938b9339a62ce1ca12b48c30a13a484c46121f5",
+        "planner_trace.json": "f458388db2ed93e66e2cc49d081a5f2f80edfb9a4241c19a4e3b6b512534b04b",
+        "policy_info.json": "3a48b342d4ba8a0c72899c38b41ac6c1a5d93078885188965d47306b15d38278",
+        "policy_tactile.npz": "0659290120b3a79cf3bab3442ca53399360a2f16f7ffa35a244368c5991166ef",
+        "sim.mp4": "dc29d44de0e98456cdc8d81c803d58b27282bdd07107deed8e42e631743ba140"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 152,
+        "fps": 15.0,
+        "horizon_s": 10.104000000000001,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.062666667666667
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "152"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 10.104000000000001,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__observation_delay_80ms__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__observation_delay_80ms__seed4242"
+      ]
+    },
+    "teacher__observation_delay_160ms__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__observation_delay_160ms__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4242/policy_review.json",
+      "video_size_bytes": 512452,
+      "mapping_size_bytes": 54762,
+      "video_sha256": "882c38b4edecd8f17bf9b19c83d276cf985fb6bc8c2ed4510f4082c59819d993",
+      "mapping_sha256": "be2cd75e3db4162b29a8febca6b1aacdd4985726acdcf81c0eaa65bebb2ae1f3",
+      "input_sha256": {
+        "case.json": "c1417087c8df6a4a1338a45e9435b2f32f804ddacc1134687f788c471b034252",
+        "run.json": "18dd1b2146c80e3ca3fc47e6251b1272f0954aec336725f905bc90c4d5862d79",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "a6147c8014637fd05096e9d4adff90923e6f07815bdf14857ccb57a1be288df6",
+        "execution_trace.jsonl": "01e83aacc4c96510f9c78108d44685c39168dc88d67c131ef782c2e4fa6a327a",
+        "planner_trace.json": "a5a7dd9b53c4c01a0f3f46f2224027cff4e1b3a23c601638ec0e8a08e49b2c28",
+        "policy_info.json": "3a3d905ed3bc52065b777c71d8313991bf3ea04c9789e99b29977a693bef6c6f",
+        "policy_tactile.npz": "393158a02e0b6afa6d34cb21a55638f44bee513e18e30e4818e4f57f405e7f98",
+        "sim.mp4": "48bc878909cee52587e80123e492e70bc84632443fae4c55c1faa39531618bcd"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 147,
+        "fps": 15.0,
+        "horizon_s": 9.792,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9773333343333324
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "147"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 9.792,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__observation_delay_160ms__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__observation_delay_160ms__seed4242"
+      ]
+    },
+    "teacher__observation_delay_80ms__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__observation_delay_80ms__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4243/policy_review.json",
+      "video_size_bytes": 1083171,
+      "mapping_size_bytes": 100516,
+      "video_sha256": "c3e39b59c7e8e6072c9836159d42f26e43f982ec52a9f67135ccdee1d28be83b",
+      "mapping_sha256": "359acdf5e367264bb72244724d0ae433ff018e14c4e6691056a9d3e3b75fb3d6",
+      "input_sha256": {
+        "case.json": "1dd3e27fc7c4865e60aeb44507e15330788249fd62120185317d5bf55945a685",
+        "run.json": "1e9c5cb95f087a7036b111a729842373b05a872a8fc6c37deefbc122af712b4d",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "4dba56127db394110b425dd515d428d4da582312347021dff645fb6152ab536f",
+        "execution_trace.jsonl": "93e4d6c8b0b7d0b6a9843d09d139654e974705420d6bdae631ddc3f8043da8a3",
+        "planner_trace.json": "cc159e83e006b873017bb0e738e3ab5b62d0e8da30376332e8bc31a76ba33852",
+        "policy_info.json": "c1e4dea829edb62b2e4a69202deee198aa8a70b6fbbd84f9505fbb546d7cedd1",
+        "policy_tactile.npz": "160afb0099617b83f2b9e011c9efe4d591b8bdde81a401a66af5e2943feb2415",
+        "sim.mp4": "f69c2366b19ac6b230b52316de483d6cbb1b66aedc263fca4b1e577ccd7b3b40"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 289,
+        "fps": 15.0,
+        "horizon_s": 19.248,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9480000010000005
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "289"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 19.248,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__observation_delay_80ms__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_80ms__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__observation_delay_80ms__seed4243"
+      ]
+    },
+    "teacher__observation_delay_160ms__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__observation_delay_160ms__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4243/policy_review.json",
+      "video_size_bytes": 1052597,
+      "mapping_size_bytes": 97597,
+      "video_sha256": "0ca1393f8449573905b282f09b3cb6f76844661aadff34921d63eaa0562cbb68",
+      "mapping_sha256": "b5c21df5690695cae2d9a407820adebebdb8bf366bfdddced481b477f5166744",
+      "input_sha256": {
+        "case.json": "b815fffd4b946fee0af4fbf8e415089325e83dc22d25f00647734e36aa088dc6",
+        "run.json": "d7013cb6e309ed08342b8b147aae180c2f9fa7855853fd957a1b8c4b4ec488e4",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "43647e20d98f58710df599c442b68aaa6cff1c438039a251215663808d622ff3",
+        "execution_trace.jsonl": "275cfb4631f62454ad2591e4de3a95dd14881ce847737a4edceac19ee1137ccb",
+        "planner_trace.json": "1ca27df5d1128aaa88ea9fc8f58152ee4168df94b892c73f247f196bbd77ab3b",
+        "policy_info.json": "8b5d886b40fd8a14184aa234d251bfa0ce5be73a161befe640f6cf76391a0d1d",
+        "policy_tactile.npz": "6c178a6cad1a0b2c1190a3feaab95518d730f3ca1e967ca3d36eaeff46438c9e",
+        "sim.mp4": "d2c2fe8b883c35d1994b9b8d5cb82ea5b7cf479f67581c1da53734924251d13b"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 280,
+        "fps": 15.0,
+        "horizon_s": 18.6,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.1000000010000015
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "280"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 18.6,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__observation_delay_160ms__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__observation_delay_160ms__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__observation_delay_160ms__seed4243"
+      ]
+    },
+    "teacher__inference_delay_add_150ms__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__inference_delay_add_150ms__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4242/policy_review.json",
+      "video_size_bytes": 1600371,
+      "mapping_size_bytes": 164388,
+      "video_sha256": "192e60928c3c4f1bcc58a9f15e3d45f15a8acc302ca854ac1095c7d4593fb022",
+      "mapping_sha256": "304caea5e737221470591482a1065cf30e30597d90ca928b9bd84376d92a3322",
+      "input_sha256": {
+        "case.json": "e2df59192569bae0e3e7edbd96aba37015ee6fe1b411dc92052b4d4bd4d9637d",
+        "run.json": "78fdba90b7efc171fc536878a73e9be72bdefaa1fa00678d9f4abe816dd83ec2",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "004b0ddc7017639f88747b269247058e31df2e8ea02cf4539625f4e810003f03",
+        "execution_trace.jsonl": "ef3fc994d5cea2e054895f3878f57c9f4388231cf83a1ef4f30bd633df35c774",
+        "planner_trace.json": "e8a2e7752f1f43e04b7a414f165659cfb6f21086489fd5764aa9786bb00c0799",
+        "policy_info.json": "6f565a576a5e36d31418cb7336355d347643e49e3d5664ed0303ca5bf8c7fc99",
+        "policy_tactile.npz": "628916e394c165f08ce2c80de708fc2650a19dcca4ba0127953ef845575fb21e",
+        "sim.mp4": "14f2cc5ab10dd30e9ff2c5c0a58b137b7ce25ea6add8f03478352cbe3a62322a"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 487,
+        "fps": 15.0,
+        "horizon_s": 32.448,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.020000000999996
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "487"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 32.448,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__inference_delay_add_150ms__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__inference_delay_add_150ms__seed4242"
+      ]
+    },
+    "teacher__inference_delay_add_150ms__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__inference_delay_add_150ms__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4243/policy_review.json",
+      "video_size_bytes": 2838012,
+      "mapping_size_bytes": 297565,
+      "video_sha256": "3000b32bb97d432e895ad2df40debe0c79db153f0340f00df3e140eb499e18bd",
+      "mapping_sha256": "d05139cfd9aad1b7f09dba0eedd7f6e93e34d59909af51dc75d9f47ae34fccdf",
+      "input_sha256": {
+        "case.json": "cee5fdb855c74c0aab43d01f62e7a5b473a7f449b517e1eab2ca0c11e565c986",
+        "run.json": "5a8dd6c378ca99f86ad216e8364757ff6f8c71c3965449144eb575900d22daa7",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "050b25be9388cc1e154725fb71f7cb901553d1fa1d2595055f8617970d5d7e1b",
+        "execution_trace.jsonl": "f1401722d4030a985971c8baf0e26ef56a30b8e50c688dc93e3d1adf12ed0cbc",
+        "planner_trace.json": "b4864512de4f358b0b7ed5a780fe647a6ea39e7001039ea5728101f98d26c840",
+        "policy_info.json": "7133e73fbf02db564ef5486b756ef6be1be3f1e57ac3fa3aa2b42a19d383b8c1",
+        "policy_tactile.npz": "11c876fdb2bfb891507149fa6688a1575f13fcca9c740c9b789e1cb945d11c2e",
+        "sim.mp4": "ec6c30c862fd33fb583056125a054c3046e2839aaeb5a19fff2de7c180aed51f"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 900,
+        "fps": 15.0,
+        "horizon_s": 59.996,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 0.12400000100000064
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "900"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 59.996,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__inference_delay_add_150ms__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_150ms__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__inference_delay_add_150ms__seed4243"
+      ]
+    },
+    "teacher__inference_delay_add_300ms__seed4242": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__inference_delay_add_300ms__seed4242",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4242/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4242/policy_review.json",
+      "video_size_bytes": 2741042,
+      "mapping_size_bytes": 296614,
+      "video_sha256": "07c155bdf6ffb6d00a0ca3c61b6b6dd9d47a45ca14c549e0f318979e598b787a",
+      "mapping_sha256": "fcbd1f7790b28e90a21e4cd128bed2271d40beed6b5b6d3c30e8a8e5761559c8",
+      "input_sha256": {
+        "case.json": "2f8897840d2d772ab5248d06024ca9311c2fcb5fc1e011c91e9e0a245921085e",
+        "run.json": "54e8975a6bcd15f65d8d80b54895395983baebfdb3e08c1cc4b6916d566d6bc1",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "0e86a4fae7c061c0e3ad04c9412ed48ebac721fc301954fae272edb6982f1222",
+        "execution_trace.jsonl": "946b31a033db80563eb3ddd535fc6e47fc752f54050bba540b1cc5942ccf1f3f",
+        "planner_trace.json": "812f68be219fc0a2d5520a7a7310729ee2645b99006a93b81cfc61caf3941ead",
+        "policy_info.json": "4f9b691c1f297f6a7a1b4d7e192852fb5d89589d19967d8d8a362aa8c39e20b4",
+        "policy_tactile.npz": "38b3aa48fc1d744d86cec9e97659c229141b2efd2ad5f450ba389e6d40341c4b",
+        "sim.mp4": "131a697cc45399dbf79f21fc233cf70b60d2b4e0bc45e0d4bf98941a40c8375c"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 897,
+        "fps": 15.0,
+        "horizon_s": 59.752,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 1.9773333343333306
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "897"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 59.752,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__inference_delay_add_300ms__seed4242",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4242/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__inference_delay_add_300ms__seed4242"
+      ]
+    },
+    "teacher__inference_delay_add_300ms__seed4243": {
+      "status": "verified",
+      "reused": false,
+      "case": "teacher__inference_delay_add_300ms__seed4243",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4243/policy_review.mp4",
+      "mapping": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4243/policy_review.json",
+      "video_size_bytes": 2733919,
+      "mapping_size_bytes": 297634,
+      "video_sha256": "bf43dad784ed82d5ea6ad36ba7ff0a87e6c4a0f87d9b9136c56d2e98fc974d86",
+      "mapping_sha256": "6db2ae963414e2572d3b4c250f314688ed3718c58eaee3417e5a67242100cb79",
+      "input_sha256": {
+        "case.json": "3879b7f404ae1926e323a42b5be0c42b051ae6686638e1dae5e40dd21c2e1a02",
+        "run.json": "6dbd32385a6f342361d6118b22dfd8548a01d5ee5b533049f5c4c56dba17802f",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "sim_trace.npz": "6166812dc6467905feb272cd8b5b0cefda10efb6ea1074780e26955d54d54b1e",
+        "execution_trace.jsonl": "a3209101d6062c6d33e8bec3aaa9a394f4732157d48cc2d1827e7ad0f14322ab",
+        "planner_trace.json": "151d2517f8c707d74b61b9099411a8cbd3bbf6c98db22300f2f74eb24a50ac93",
+        "policy_info.json": "b2b42bd5679f8c0d42dd76804f013731e227e7769bc90a12d4f2cfe7c5c97997",
+        "policy_tactile.npz": "649d1467ec852f6542af115007ce8c0d8472fc6c96bcbcac115a0b89dcd550ed",
+        "sim.mp4": "a9634a70b8c2d40281f165a03dcaf075cfbc39105d23124fd0c1cd8c042a6652"
+      },
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 900,
+        "fps": 15.0,
+        "horizon_s": 59.996,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 0.6813333343333241
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "900"
+        }
+      },
+      "planned_horizon_s": 60.0,
+      "actual_duration_s": 59.996,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__inference_delay_add_300ms__seed4243",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__inference_delay_add_300ms__seed4243/policy_review.mp4",
+        "--fps",
+        "15",
+        "--label",
+        "teacher__inference_delay_add_300ms__seed4243"
+      ]
+    }
+  },
+  "verified_count": 40,
+  "failed_count": 0,
+  "total_video_bytes": 51076508,
+  "total_mapping_bytes": 4873048,
+  "finished_unix_s": 1788729823.8537252
+}

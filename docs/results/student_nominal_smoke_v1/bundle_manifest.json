@@ -1,0 +1,809 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-09-06T22:31:26.544578+00:00",
+  "campaign_id": "student_nominal_smoke_v1",
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "source_artifact_root": "/home/agent/skoltech/research/artifacts/isaac_waffles/student_nominal_smoke_v1",
+  "remote_artifact_root": "compute3:/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1",
+  "scope": "Compact numeric inputs, logs, scores and all four scene/controller-tactile reviews; excludes large observation/tactile arrays and duplicate raw scene videos.",
+  "file_count": 157,
+  "file_bytes": 17795160,
+  "files": [
+    {
+      "path": "campaign/analysis/summary.json",
+      "size_bytes": 22194,
+      "sha256": "f7699f04a826cd6bf03a21caff7517d8016f8781e6f3de70f94747778a5389f8"
+    },
+    {
+      "path": "campaign/analysis/trials/student_ftA_r1__nominal__seed4242.json",
+      "size_bytes": 8079,
+      "sha256": "83b718e587ce4524ff5dc9c2e82e771410e2b202e5f2fd9592894bd9665bb215"
+    },
+    {
+      "path": "campaign/analysis/trials/student_ftA_r1__nominal__seed4243.json",
+      "size_bytes": 8083,
+      "sha256": "5d7a39b9c7079f05f0fb376f44ad1e8eabbaba11378bdc090d55815d10bac2f0"
+    },
+    {
+      "path": "campaign/analysis/trials/student_v5_6__nominal__seed4242.json",
+      "size_bytes": 8084,
+      "sha256": "a9a9350fb9720eb5cfb64607cb870e90b3199855017d0fe7533c1a1a1eb8c0a9"
+    },
+    {
+      "path": "campaign/analysis/trials/student_v5_6__nominal__seed4243.json",
+      "size_bytes": 8019,
+      "sha256": "51b5eb36888a80d807811d4354788091c11a932eb42c0ba8b6b7491fb8bcdc0b"
+    },
+    {
+      "path": "campaign/campaign_snapshot.json",
+      "size_bytes": 20907,
+      "sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a"
+    },
+    {
+      "path": "campaign/conditions/nominal.json",
+      "size_bytes": 4148,
+      "sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08"
+    },
+    {
+      "path": "campaign/frozen_inputs.json",
+      "size_bytes": 12548,
+      "sha256": "8cc682fb280f3e3794e5cf5aa034b3893fd73c235f4e4f87c4782df60b71155a"
+    },
+    {
+      "path": "campaign/plan.json",
+      "size_bytes": 764,
+      "sha256": "4b114131493929619fab3049ea08eabdb7f147e01e539957d8383fc6db94b078"
+    },
+    {
+      "path": "campaign/progress.json",
+      "size_bytes": 10045,
+      "sha256": "19975028e85dfed764889bfa2255462040d902bf13ac3b26c2491613753b7541"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/case.json",
+      "size_bytes": 2113,
+      "sha256": "fca28401440e21329e1e3f144a3aaf915e5717f197023af7054bb247ad662e8a"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/delivered_plans.jsonl",
+      "size_bytes": 41640,
+      "sha256": "ce07793d83feba08c54157fe96dcfebc2cf64e1a45a65ac551e0a4d2c06f50cb"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/effective_config.json",
+      "size_bytes": 4148,
+      "sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/execution_trace.jsonl",
+      "size_bytes": 1807611,
+      "sha256": "d9bfc619f9fe023bb637de9ddcc33978aa5815e4b8703b80112fdbaab793e37c"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/gel_contact_trace.json",
+      "size_bytes": 427943,
+      "sha256": "d4c473ed50137d44db3aea4dac2c11195753b520722d9bb9306fe703d959ac99"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/initialization.json",
+      "size_bytes": 4191,
+      "sha256": "eecbc6734b67bf7b7b4aafef9eed5f4bc68f89250ff61b02a8e559652013ef70"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/isaac.log",
+      "size_bytes": 31014,
+      "sha256": "95ff4340e6e40fd9406990336c99bfe25e85b9b0d7373a117d5f2bb8f80351e4"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0000.json",
+      "size_bytes": 360,
+      "sha256": "7ddcb987e10a45c29366cc1ed9e87d779b28fb9a0e2b45eeb4f0ae504623856e"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0001.json",
+      "size_bytes": 403,
+      "sha256": "ea495efd9db8e4ce5b95a0ab95992463f9df41d57b84bf10fd3a3ef12c6265e8"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0002.json",
+      "size_bytes": 362,
+      "sha256": "b8d428ae28b53ab17ebf38d65c4b1d50dcf9c6ba131d2524394283d04b92347b"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0003.json",
+      "size_bytes": 360,
+      "sha256": "dd6802c1346c9abf0a4cd0c9e5f8817013dc31387d2c3c21df2ba01a7566bff3"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0004.json",
+      "size_bytes": 360,
+      "sha256": "cd851f8b65c159c0781b8d4194b915b0e6085e7ff1834eb2ed2c7a8998fd956c"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0005.json",
+      "size_bytes": 364,
+      "sha256": "5a19e8056326d8db457601d527b84916e03fac7326753fb9acdceff1c78bdc2d"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0006.json",
+      "size_bytes": 364,
+      "sha256": "b40cd61a58650e0d619a88581e686e55fa9e97eda0c2df68fb52ef009f53975f"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0007.json",
+      "size_bytes": 414,
+      "sha256": "d25952b33cf4a849a4d03b42f34b9e9d7b062a3ab997a3d7b961e24166e8822e"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0008.json",
+      "size_bytes": 377,
+      "sha256": "d37ad5276b609f89be610d07f6388ee59824b74ad5a1664648160ca4e5c189fa"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0009.json",
+      "size_bytes": 360,
+      "sha256": "7934d1966bf6b2a324dff05d3175090c31cfab14cb714b697868565a772f74e2"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/observations/0010.json",
+      "size_bytes": 413,
+      "sha256": "c373baf72d76bf7e1d8e8e403b0a8ba3490bc94168c090e5719d49bb7a5a138a"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/planner_trace.json",
+      "size_bytes": 67910,
+      "sha256": "b9c687f6ace133d147067ea9c74ca734747b3f24414603daa16db1453bc73468"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/policy_info.json",
+      "size_bytes": 9375,
+      "sha256": "ac4a1e7f4ded143783a15e058affd2a90c17a99a1740156618d2fd5f0373ff22"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/run.json",
+      "size_bytes": 7367,
+      "sha256": "1dc153197d8dbb9795cfbdbf4b8ccf25f681417a0b7c6f7cbcc48fd12bb12488"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/run_status.json",
+      "size_bytes": 2201,
+      "sha256": "16f0b92fa27dcdd0e583511f3faa4d77d27b100e5f00e304e4b18c17cccbfce8"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/server_ready.json",
+      "size_bytes": 3629,
+      "sha256": "0459b4afd2062cbf1e3be64cc0a64ccebe9cd9934ba9418c4c0cdb75cf0ef517"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4242/sim_trace.npz",
+      "size_bytes": 38373,
+      "sha256": "2e992654c4fd7dbc913a8277b039d73f7f5b4ccda4a6a54dd5dc74dbbf094ff4"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/case.json",
+      "size_bytes": 2114,
+      "sha256": "4ee34bf2c8c971375aa06dcda6e1190108b310490294917b4cea2a846d024f4e"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/delivered_plans.jsonl",
+      "size_bytes": 50538,
+      "sha256": "6e461aaab2dbc153d862cc550df83cd43449fc2a4c77dd34f3d96a6cddea39a8"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/effective_config.json",
+      "size_bytes": 4148,
+      "sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/execution_trace.jsonl",
+      "size_bytes": 2080025,
+      "sha256": "4c886eff96e393f184b0bcf1978922d545252a9bbb3fa893482afaa43cff61b8"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/gel_contact_trace.json",
+      "size_bytes": 502061,
+      "sha256": "d5a4b6a46095d6313c8f5b02f8253163c429d7acd92028e73b34592c978e5ea1"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/initialization.json",
+      "size_bytes": 4191,
+      "sha256": "eecbc6734b67bf7b7b4aafef9eed5f4bc68f89250ff61b02a8e559652013ef70"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/isaac.log",
+      "size_bytes": 31338,
+      "sha256": "5eb8ae8ff1a36035ee708083ef7633f81f2db4996c5a456df75c3ed1282ef4dc"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0000.json",
+      "size_bytes": 360,
+      "sha256": "7ddcb987e10a45c29366cc1ed9e87d779b28fb9a0e2b45eeb4f0ae504623856e"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0001.json",
+      "size_bytes": 403,
+      "sha256": "ea495efd9db8e4ce5b95a0ab95992463f9df41d57b84bf10fd3a3ef12c6265e8"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0002.json",
+      "size_bytes": 362,
+      "sha256": "b8d428ae28b53ab17ebf38d65c4b1d50dcf9c6ba131d2524394283d04b92347b"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0003.json",
+      "size_bytes": 360,
+      "sha256": "dd6802c1346c9abf0a4cd0c9e5f8817013dc31387d2c3c21df2ba01a7566bff3"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0004.json",
+      "size_bytes": 360,
+      "sha256": "cd851f8b65c159c0781b8d4194b915b0e6085e7ff1834eb2ed2c7a8998fd956c"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0005.json",
+      "size_bytes": 360,
+      "sha256": "36f21fa15431cef426db3edd73e48c8a1b2686581f77c6c53a3ff4d643878928"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0006.json",
+      "size_bytes": 364,
+      "sha256": "b0603b22454912462221f39cf08e7855579798dc159ad79aafee253fef2961d1"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0007.json",
+      "size_bytes": 364,
+      "sha256": "2eb4e7bbd4734a675e96c1399a5438294bece17f8744119348e342ee5c4586eb"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0008.json",
+      "size_bytes": 364,
+      "sha256": "8d1d33e1517378f9e133227fe7a72a910558944e37927f16f5b41ff986b437ac"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0009.json",
+      "size_bytes": 362,
+      "sha256": "fe8cc82332901af7ddf6b4e63a4ecc820544d84cc68faed2d6736df86209159a"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0010.json",
+      "size_bytes": 363,
+      "sha256": "6d64f3db323a526e129fb75cd74a6095915749299110fa4e4ce5f6ae3352b0d2"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/observations/0011.json",
+      "size_bytes": 365,
+      "sha256": "d942fa0e84907d1ff3f17701c6579ad2b41eb7a6d5dacffcf46c6fee9edb6595"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/planner_trace.json",
+      "size_bytes": 73625,
+      "sha256": "b8df281c74fc140a0d6ea99547b0cd0af36b8d28b2e4231c3c30c4c516865b57"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/policy_info.json",
+      "size_bytes": 9375,
+      "sha256": "e80a1e2b7ed4917e5ff19933442226a191a9d0c153d3a87dbd9c8f13db0309dc"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/run.json",
+      "size_bytes": 7667,
+      "sha256": "4c802145869e5462d9daa3e6eb5296a003be6e8585aae2266c5fe933954f5703"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/run_status.json",
+      "size_bytes": 2202,
+      "sha256": "0ef4bee28e25eeb18a1e340712b23ffe0886d6a1174b369969d103115619ff1c"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/server_ready.json",
+      "size_bytes": 3629,
+      "sha256": "0459b4afd2062cbf1e3be64cc0a64ccebe9cd9934ba9418c4c0cdb75cf0ef517"
+    },
+    {
+      "path": "campaign/rollouts/student_ftA_r1__nominal__seed4243/sim_trace.npz",
+      "size_bytes": 45063,
+      "sha256": "6b48517523929adb13c25ffbb210282ba0a00532f4a1f13fb7005f84176e02bc"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/case.json",
+      "size_bytes": 2108,
+      "sha256": "027953a488e70f091cd30677757dac803c83819c2a08651b9a5a9aac7b800f99"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/delivered_plans.jsonl",
+      "size_bytes": 76177,
+      "sha256": "a247ac38b440a7fd12ef7ef0a1890e1b0c78041bb8eebd0d2eb56d851209123d"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/effective_config.json",
+      "size_bytes": 4148,
+      "sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/execution_trace.jsonl",
+      "size_bytes": 3136305,
+      "sha256": "46872d73a4004fe31bd00e4806d339d86e1a6435fa3cb05c4ab6b8d443b4cb63"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/gel_contact_trace.json",
+      "size_bytes": 726517,
+      "sha256": "6b39b90c1931a5dd60ed18a7fabfa51814ebe80843026c20bb58cf61e371a37f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/initialization.json",
+      "size_bytes": 4191,
+      "sha256": "eecbc6734b67bf7b7b4aafef9eed5f4bc68f89250ff61b02a8e559652013ef70"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/isaac.log",
+      "size_bytes": 31048,
+      "sha256": "d6f13eb8067d13ac49611742dc7d001d187cd1bbf3a29d34d8847b7db5d41bd1"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0000.json",
+      "size_bytes": 360,
+      "sha256": "7ddcb987e10a45c29366cc1ed9e87d779b28fb9a0e2b45eeb4f0ae504623856e"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0001.json",
+      "size_bytes": 403,
+      "sha256": "ea495efd9db8e4ce5b95a0ab95992463f9df41d57b84bf10fd3a3ef12c6265e8"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0002.json",
+      "size_bytes": 360,
+      "sha256": "a5f6328b06ef174333121fb4ac129a556eb5d23148d340e4abbceeaacdce144f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0003.json",
+      "size_bytes": 360,
+      "sha256": "c4cc83c53b6dcbee808ad57313c110fc1afe9318b952dcd6304662cd404083e3"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0004.json",
+      "size_bytes": 364,
+      "sha256": "d9c4d7c5789be2968c1e18b021d2b27377d55cfeee5e5960e7aa11deea33414a"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0005.json",
+      "size_bytes": 360,
+      "sha256": "36f21fa15431cef426db3edd73e48c8a1b2686581f77c6c53a3ff4d643878928"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0006.json",
+      "size_bytes": 364,
+      "sha256": "b0603b22454912462221f39cf08e7855579798dc159ad79aafee253fef2961d1"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0007.json",
+      "size_bytes": 364,
+      "sha256": "2eb4e7bbd4734a675e96c1399a5438294bece17f8744119348e342ee5c4586eb"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0008.json",
+      "size_bytes": 377,
+      "sha256": "239cef49144443449d3175efbc46718188274d20003b5e66fbfa5d0d6c83503a"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0009.json",
+      "size_bytes": 364,
+      "sha256": "d2964caf2b9931ef28b75e194518faa71bff3a92dc7652850618556a13ce14e5"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0010.json",
+      "size_bytes": 387,
+      "sha256": "5134e633831df6705728833afe0a9619a88cc8149e93643199196d5518e04a8a"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0011.json",
+      "size_bytes": 363,
+      "sha256": "10655d8c77191d4b14a1b6ab44c1c39dfa1f580bd59609b82e714634dad861ce"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0012.json",
+      "size_bytes": 361,
+      "sha256": "00aee11285ee8c3d7169698e33802fa0babb5e3650d66a6058253ea7ddbcb5c4"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0013.json",
+      "size_bytes": 361,
+      "sha256": "38ec309656b7f945ace5f1a3ba852b63cc7da90660155ac308bb19136b9d1a76"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0014.json",
+      "size_bytes": 377,
+      "sha256": "8bdcc240b41c23302504b81e3bd34176dc412809aa105bf24df963bdde8b8b3f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0015.json",
+      "size_bytes": 370,
+      "sha256": "c7dc9ae2c225dd5a55e71173007d1cc1fab83e6982bd6e5f7f921939336fa35d"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0016.json",
+      "size_bytes": 370,
+      "sha256": "5877f1b3525123bacb1ea64bd66854b429d089f3effd33f1764be20f378f3521"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0017.json",
+      "size_bytes": 366,
+      "sha256": "9e955992fd03cc4f8a721217aacafd6ec61f5634b82a13e8844718ab580721a2"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0018.json",
+      "size_bytes": 382,
+      "sha256": "f4c885e08a8ab728ff9439a9ccf98f43fb8ae4243ceb180d419769388b8e4e87"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/observations/0019.json",
+      "size_bytes": 370,
+      "sha256": "3f1ce1d8c4b368b9603d64424d6abfa9c452eda18f6a12db3c18894a813bff94"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/planner_trace.json",
+      "size_bytes": 122428,
+      "sha256": "f268fc0e497297644c25ad4689d873db9b4d5b9223ee6c6a15e0c9f1d9baf2f9"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/policy_info.json",
+      "size_bytes": 9373,
+      "sha256": "e762030ced7a9ec5803feb6bd6ac38ec8c211f4c216c088d165b79bad32193a8"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/run.json",
+      "size_bytes": 10259,
+      "sha256": "04d5ba008a67d8f2735c15e9ff016166c7e6705ac3e518ed596471e82d5424ac"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/run_status.json",
+      "size_bytes": 2199,
+      "sha256": "01f22d39a671093555931bc58a53a8379ef844cd385c583d5ce56853e8c679e5"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/server_ready.json",
+      "size_bytes": 3628,
+      "sha256": "f851baccd9bc040f032e6951fe1fd001d5a9652bd53036774a903fc503eedd22"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4242/sim_trace.npz",
+      "size_bytes": 56976,
+      "sha256": "f22195ab6ace11214ca4df3425db57bb13e505921fce5b6b409f7e773a77ed04"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/case.json",
+      "size_bytes": 2108,
+      "sha256": "e7a3b12d8f5ae82175227a9e37a765b4c3a30545a6f7d09bc56e3c370317d26f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/delivered_plans.jsonl",
+      "size_bytes": 90368,
+      "sha256": "c069a8ca9c6df2515e8ce7ad249e5e81b4171cd4361e686b7e19f50ee1eeaf1d"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/effective_config.json",
+      "size_bytes": 4148,
+      "sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/execution_trace.jsonl",
+      "size_bytes": 3616340,
+      "sha256": "a58af598c0d408c8c01e7adc230e3dfbacfb1d99742dd2b944ae1def81e140b0"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/gel_contact_trace.json",
+      "size_bytes": 774393,
+      "sha256": "d8de454ee59af409bfdaa66bce1ae6917eb774388cc9915e360116642db86e85"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/initialization.json",
+      "size_bytes": 4191,
+      "sha256": "eecbc6734b67bf7b7b4aafef9eed5f4bc68f89250ff61b02a8e559652013ef70"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/isaac.log",
+      "size_bytes": 31246,
+      "sha256": "c7187b87dd9b75cb946fd81b0c8751e61c06ad693a444ad82917e6fe8109cab0"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0000.json",
+      "size_bytes": 360,
+      "sha256": "7ddcb987e10a45c29366cc1ed9e87d779b28fb9a0e2b45eeb4f0ae504623856e"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0001.json",
+      "size_bytes": 403,
+      "sha256": "81e61f6daf383c07821fe8edcb0ad6536c84c83050762d786eee2ed20fb10483"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0002.json",
+      "size_bytes": 360,
+      "sha256": "a5f6328b06ef174333121fb4ac129a556eb5d23148d340e4abbceeaacdce144f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0003.json",
+      "size_bytes": 360,
+      "sha256": "fe552081e694a24e1b48108a07acc0cc9387ec1d492d236410d1dd4dc5959fd8"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0004.json",
+      "size_bytes": 362,
+      "sha256": "49ee901c87a9b158c3ef3f426559395026f0f4fa8a8536068aee8eaaa37ef129"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0005.json",
+      "size_bytes": 364,
+      "sha256": "6dc46250d76945d73e9c433ab303295b7b1edf7a7f214925943bab963e841363"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0006.json",
+      "size_bytes": 364,
+      "sha256": "690efe014db1e60147b4e2cea75c2a5f7d74d12e3f28d23b2fb4c0beebb0a68f"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0007.json",
+      "size_bytes": 364,
+      "sha256": "7ef6e9567aadff05db9f9cd2bbdc31ce146a0073abb1522c4f6afb788123d9da"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0008.json",
+      "size_bytes": 373,
+      "sha256": "22fbe92092d92345cc679637af20ded86a5509e1ea331d0d629b727a0cd86c83"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0009.json",
+      "size_bytes": 386,
+      "sha256": "f5929db80dcf5f870b6154b2a17e92660ef0a04e820e128b08b0f7865d94badd"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0010.json",
+      "size_bytes": 365,
+      "sha256": "1fe4c7482af30b40a9b3eeacdfa3fb64ef7cfe0aa63ebf1c5a5ccb8ca0ed5eee"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0011.json",
+      "size_bytes": 363,
+      "sha256": "10655d8c77191d4b14a1b6ab44c1c39dfa1f580bd59609b82e714634dad861ce"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0012.json",
+      "size_bytes": 377,
+      "sha256": "5f9738d137b366813e74c15f60a39fcf8aba9d62baaa7f71e5c4835554d76809"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0013.json",
+      "size_bytes": 363,
+      "sha256": "5beffdfe68cc68c20df237f5d1ead516d1e7b02e11f8fd3d8a933aa49066d7a2"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0014.json",
+      "size_bytes": 365,
+      "sha256": "b5cd6d6ea7b76466d14b78fb5b5554861761c86e982d281453d6cecf020e05ab"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0015.json",
+      "size_bytes": 390,
+      "sha256": "dda150fe16b6126a4288fb0a13a106720cc5a7a1a3e4497c3db750a5c09ff0cf"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0016.json",
+      "size_bytes": 382,
+      "sha256": "9069615a0ce12b2edc74dba0c64ceec712c07a51f738a3af8c0b594f3f12d19b"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0017.json",
+      "size_bytes": 368,
+      "sha256": "49d116bf05f9eb322af9079d0acfc05d2e11209e19ac17ff7f78c4548a95545e"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0018.json",
+      "size_bytes": 368,
+      "sha256": "5c2831f696e3c8738db25ba65f7d2a4c7ef2b890fb766c41e17d5143e7750888"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0019.json",
+      "size_bytes": 370,
+      "sha256": "cc62ddd88e72611ff3e3d399b0c0d4d1dbd7bca959fb6441e49f2650ae0afc61"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0020.json",
+      "size_bytes": 394,
+      "sha256": "01319b4ce87453a2f379a0548eaf8b357bf319eafaf0948bfd0d55f0810ca003"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0021.json",
+      "size_bytes": 364,
+      "sha256": "bbda93a39478c0d84360d52381cc72369ab8acce8b6031a85374cc3dacfa2c31"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/observations/0022.json",
+      "size_bytes": 368,
+      "sha256": "e0b08642e4a0492711853cc9cbee030ba3455b24513c6a8aea0f873ff1efcc32"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/planner_trace.json",
+      "size_bytes": 140845,
+      "sha256": "79d434b1b4f2425215051f7c37c062a5b031521536c31cd63e542554981027c2"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/policy_info.json",
+      "size_bytes": 9373,
+      "sha256": "db8139ddc02db426c83bb3ecdedecc1639d358f6b610bfa3252ce3f6053e587e"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/run.json",
+      "size_bytes": 11268,
+      "sha256": "fd7f23d47724b2e3aa7382609cf2b3f35adbff68efddf5a59b41b317735cebc2"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/run_status.json",
+      "size_bytes": 2199,
+      "sha256": "e74f7da6e9ecd9eb481e2ff17fe887114a44b983126e8919096974f75b648d7b"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/server_ready.json",
+      "size_bytes": 3628,
+      "sha256": "f851baccd9bc040f032e6951fe1fd001d5a9652bd53036774a903fc503eedd22"
+    },
+    {
+      "path": "campaign/rollouts/student_v5_6__nominal__seed4243/sim_trace.npz",
+      "size_bytes": 59158,
+      "sha256": "a8f7efa2164f48f2896e0df96f9830d9892395847ccea014faeaa5b35f3daed6"
+    },
+    {
+      "path": "campaign/runtime/inference.json",
+      "size_bytes": 169,
+      "sha256": "5b242a74f087fdf7d880af030576c75c8fa42ddaf540f0f91f09a5f24793427e"
+    },
+    {
+      "path": "campaign/runtime/placement_release.json",
+      "size_bytes": 328,
+      "sha256": "b285c49b2ff458959808bfa8c22137c8bcb1eb9cc6effc19929382d3391bba45"
+    },
+    {
+      "path": "campaign/runtime/terminal_veto.json",
+      "size_bytes": 398,
+      "sha256": "92d8ee15805b72d97fef31001c42ee762f9f58df4281763a4c8f424871d11fb5"
+    },
+    {
+      "path": "campaign/servers/00_nominal_students__student_ftA_r1_1788732675167289058/command.json",
+      "size_bytes": 864,
+      "sha256": "cc4bb54a304412a95e39d213bd5c98ce881a59eac77f038456b9c296e2ccb047"
+    },
+    {
+      "path": "campaign/servers/00_nominal_students__student_ftA_r1_1788732675167289058/server.json",
+      "size_bytes": 3631,
+      "sha256": "a472e2cf35758241a799fe4bcd357c77915be2596940c743946e05b43c8ebde5"
+    },
+    {
+      "path": "campaign/servers/00_nominal_students__student_ftA_r1_1788732675167289058/server.log",
+      "size_bytes": 4317,
+      "sha256": "37d407499274c8794e659a30989279aec5363efe9f71a424209f2c1206e8b132"
+    },
+    {
+      "path": "campaign/servers/01_nominal_students__student_v5_6_1788732782632856050/command.json",
+      "size_bytes": 860,
+      "sha256": "e225d0c0572ed11d0932e363df14ec4a53c1868a61833a0443377f8596731e17"
+    },
+    {
+      "path": "campaign/servers/01_nominal_students__student_v5_6_1788732782632856050/server.json",
+      "size_bytes": 3630,
+      "sha256": "78dbb087d1a60f5edff23567ba8159fabd32927dad9ec6f612f6339606213c99"
+    },
+    {
+      "path": "campaign/servers/01_nominal_students__student_v5_6_1788732782632856050/server.log",
+      "size_bytes": 4313,
+      "sha256": "d29854ed148d5f05fa5f7cbb17e71678ded42c2606c2de3f499edbd758c36eab"
+    },
+    {
+      "path": "controller.log",
+      "size_bytes": 1393,
+      "sha256": "0b737e7d35d1ef300e1a2432d34c040e87b22a28e44ca053fd5cdd79f4aafbf9"
+    },
+    {
+      "path": "design.json",
+      "size_bytes": 20907,
+      "sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a"
+    },
+    {
+      "path": "launch.json",
+      "size_bytes": 1152,
+      "sha256": "a177d938fda2718db39876dd9ab395217796bc1bd05be7ea961ba523b7f04fb0"
+    },
+    {
+      "path": "report/README.md",
+      "size_bytes": 1077,
+      "sha256": "513bec97bd2d2d3c5422447561ed5682ac2a32319c6e2cbd221dcba7fc2588e0"
+    },
+    {
+      "path": "report/per_trial.csv",
+      "size_bytes": 9244,
+      "sha256": "ee49747c841223e6612cda68db9a02330d3771479b790d76c99aeae6bee7c9aa"
+    },
+    {
+      "path": "report/regenerate.py",
+      "size_bytes": 3450,
+      "sha256": "79d8e808864c8df2ef3d0a65d4bfae12c8665bcd57e571b25219ddfa5fdf2615"
+    },
+    {
+      "path": "report/report_helpers.py",
+      "size_bytes": 41430,
+      "sha256": "8cc4f2678ad6c3824482b4ff6237262385b242996b5cc0caf206f86e9d800834"
+    },
+    {
+      "path": "report/summary.json",
+      "size_bytes": 24177,
+      "sha256": "19c0cc82386dec537e576fab9a0d2d787583b62214ad2d290d5cbdefc7dcf061"
+    },
+    {
+      "path": "review_contact_sheet.jpg",
+      "size_bytes": 261822,
+      "sha256": "fb262e9746554d8c1fcbd4fb3527b64f9ee66f7c132fa8597806de8776f93415"
+    },
+    {
+      "path": "review_contact_sheet.json",
+      "size_bytes": 1988,
+      "sha256": "f4ca986b133bb12ddc346fd6fe7207f555167371f2bffb0dba40c495908380ff"
+    },
+    {
+      "path": "runtime_audit.json",
+      "size_bytes": 5841,
+      "sha256": "b30cf2666ca3385a9d4f0cdef552c474e900cb79da6a253b6f084ec68e52ce9f"
+    },
+    {
+      "path": "video_reviews/manifest.json",
+      "size_bytes": 5581,
+      "sha256": "33b96ae6c838c60beab43bf11d2b693299a09d2444c6fb4a4de18cfb67b072e0"
+    },
+    {
+      "path": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.json",
+      "size_bytes": 53784,
+      "sha256": "7b89512c56382a25f9c16a1351b90b6bc2f1300cc792d893d5b879c50a72c57f"
+    },
+    {
+      "path": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.mp4",
+      "size_bytes": 496153,
+      "sha256": "b2220e272a35288850e58102373f3fcd2e6c8a2f084e9c1ceda4e10099e0b7e0"
+    },
+    {
+      "path": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.json",
+      "size_bytes": 59571,
+      "sha256": "935e9d6a19e1ee12d3cac43322752cf67d64dbdf525816ba9ae81354c10ead18"
+    },
+    {
+      "path": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.mp4",
+      "size_bytes": 553352,
+      "sha256": "156f1b9436ef014577f667ace727b0c786e8f10093c0d16044e29c0ef0889b9a"
+    },
+    {
+      "path": "video_reviews/student_v5_6__nominal__seed4242/policy_review.json",
+      "size_bytes": 80851,
+      "sha256": "4812580b728b432c9f5f0c187f2a85df815c448079b04fe0d4d6ce761db075f4"
+    },
+    {
+      "path": "video_reviews/student_v5_6__nominal__seed4242/policy_review.mp4",
+      "size_bytes": 812382,
+      "sha256": "e12fb0633e7b6f1726815496879c42f9b70d00d92badc54d8ca64eeacbd43a26"
+    },
+    {
+      "path": "video_reviews/student_v5_6__nominal__seed4243/policy_review.json",
+      "size_bytes": 90458,
+      "sha256": "d6b31837296d1b85ecce042671290d0729af7427241c2afd92466e86ca4cf3bd"
+    },
+    {
+      "path": "video_reviews/student_v5_6__nominal__seed4243/policy_review.mp4",
+      "size_bytes": 926613,
+      "sha256": "720f6ae9b4bbce477aa2ce5f7d82d5dab9eef0fb462db940c0852a241f1fb5ce"
+    }
+  ],
+  "validation": {
+    "valid_trials": 4,
+    "review_decoded_frames": [
+      144,
+      162,
+      228,
+      258
+    ],
+    "root_visual_contact_sheet": "passed",
+    "report_regeneration": "All four trials and non-path results match exactly; see report/README.md"
+  }
+}

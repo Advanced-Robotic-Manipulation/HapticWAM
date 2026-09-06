@@ -1,0 +1,1820 @@
+{
+  "schema_version": 1,
+  "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/video_reviews/student_ftA_r1__nominal__seed4243/policy_review.mp4",
+  "fps": 15.0,
+  "horizon_s": 10.736,
+  "frames": 162,
+  "time_alignment": "same physical simulation time; previous sampled frame/state, never future; ended trials explicitly freeze",
+  "contact_panels": "Prefer saved native runtime gel pixels. Older policy_tactile.npz files reconstruct the original grayscale formula; absent sidecars use packet-contact diagnostics, not policy inputs. See per-trial tactile_mapping.",
+  "force_axis_max_n": 117.99800109863281,
+  "trials": [
+    {
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign/rollouts/student_ftA_r1__nominal__seed4243",
+      "label": "ftA r1 student / controller tactile only",
+      "metrics": {
+        "schema_version": 1,
+        "valid_for_scoring": true,
+        "invalid_reasons": [],
+        "thresholds": {
+          "contact_force_n": 0.1,
+          "acquisition_hold_s": 0.15,
+          "lift_height_m": 0.03,
+          "lift_hold_s": 0.5,
+          "carry_distance_m": 0.05,
+          "carry_hold_s": 0.25,
+          "contact_gap_s": 0.15,
+          "settle_hold_s": 0.5,
+          "settle_speed_m_s": 0.03,
+          "settle_angular_speed_rad_s": 0.5,
+          "bin_tolerance_m": 0.002,
+          "reach_distance_m": 0.02,
+          "reach_max_closure": 0.25,
+          "drop_height_m": 0.02,
+          "drop_hold_s": 0.1,
+          "clock_tolerance_s": 0.001,
+          "max_sample_gap_s": 0.2,
+          "require_support_verified_release": true,
+          "support_robot_force_max_n": 0.1,
+          "support_bin_force_min_n": 0.1
+        },
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "event_times_s": {
+          "reach": null,
+          "closure": null,
+          "acquisition": null,
+          "lift": null,
+          "carry": null,
+          "release_in_bin": null,
+          "full_task": null,
+          "first_drop": null
+        },
+        "object": {
+          "initial_center_m": [
+            -0.3837067484855652,
+            -0.2830691635608673,
+            0.06999999284744263
+          ],
+          "final_center_m": [
+            -0.389896422624588,
+            -0.29295799136161804,
+            0.06995460391044617
+          ],
+          "max_lift_m": 0.0,
+          "carry_distance_m": 0.0,
+          "final_inside_bin": false,
+          "final_contacts_unloaded": false,
+          "final_speed_m_s": 0.000653201841834738,
+          "final_angular_speed_rad_s": 0.010379827953075335,
+          "minimum_pad_midpoint_to_object_m": 0.02355742022498385,
+          "reach_error_before_first_closing_motion_m": 0.23452339494331856,
+          "bilateral_contact_duration_s": 0.0,
+          "pad_packet_normal_force_peak_n": 117.99800109863281
+        },
+        "placement_support": {
+          "required": true,
+          "telemetry_status": "available",
+          "verified_placement": false,
+          "confirmation_time_s": null,
+          "robot_contact_peak_n": 117.9980006814003,
+          "bin_contact_peak_n": 0.0,
+          "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+        },
+        "control": {
+          "stop_reason": "safety_stop",
+          "execution_rows": 1093,
+          "execution_clock_valid": true,
+          "ik_rejects": 0,
+          "ik_reject_reasons": {},
+          "hold_duration_s": 0.0,
+          "stale_plan_hold_rows": 0,
+          "replans": 12,
+          "inference_errors": 0,
+          "plans_activated": 11,
+          "effective_latency_s": {
+            "count": 12,
+            "mean": 0.7147370069287717,
+            "p95": 0.9149051661079284,
+            "max": 0.9175941650755703
+          },
+          "inference_wall_time_s": {
+            "count": 12,
+            "mean": 0.7578056774121554,
+            "p95": 0.9569095430255402,
+            "max": 0.9607047300087288
+          },
+          "activation_delay_s": {
+            "count": 11,
+            "mean": 0.7287272727272726,
+            "p95": 0.9199999999999999,
+            "max": 0.9199999999999999
+          },
+          "lift_complete_is_task_success": false
+        },
+        "collisions": {
+          "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+          "reported_count": 0,
+          "pad_environment_force_peak_n": 0.0,
+          "reported_events": []
+        },
+        "trace_sampling": {
+          "rows": 162,
+          "duration_s": 10.736,
+          "maximum_interval_s": 0.06800000000000139,
+          "physics_clock_max_error_s": 5.099326365609613e-07,
+          "event_time_uncertainty_s": 0.06800000000000139
+        },
+        "reach_diagnostic": {
+          "absolute_threshold_already_exceeded_at_start": false,
+          "initial_measured_closure": 0.07840987294912338,
+          "first_closing_motion_s": 1.588,
+          "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+          "reach_error_before_first_closing_motion_m": 0.23452339494331856,
+          "sample_time_s": 1.536,
+          "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+        },
+        "limitations": [
+          "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+          "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+          "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+          "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+          "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+        ]
+      },
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "frame_mapping": [
+        {
+          "t": 0.0,
+          "scene_frame": 0,
+          "scene_age_s": 1e-09,
+          "state_row": 0,
+          "state_age_s": 1e-09,
+          "frozen": false,
+          "runtime_tactile_row": -1,
+          "runtime_tactile_age_s": null
+        },
+        {
+          "t": 0.06666666666666667,
+          "scene_frame": 0,
+          "scene_age_s": 0.06666666766666667,
+          "state_row": 0,
+          "state_age_s": 0.06666666766666667,
+          "frozen": false,
+          "runtime_tactile_row": 0,
+          "runtime_tactile_age_s": 0.06266666766666666
+        },
+        {
+          "t": 0.13333333333333333,
+          "scene_frame": 1,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 1,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 1,
+          "runtime_tactile_age_s": 0.0013333343333333247
+        },
+        {
+          "t": 0.2,
+          "scene_frame": 3,
+          "scene_age_s": 9.999999994736442e-10,
+          "state_row": 3,
+          "state_age_s": 9.999999994736442e-10,
+          "frozen": false,
+          "runtime_tactile_row": 1,
+          "runtime_tactile_age_s": 0.068000001
+        },
+        {
+          "t": 0.26666666666666666,
+          "scene_frame": 3,
+          "scene_age_s": 0.06666666766666668,
+          "state_row": 3,
+          "state_age_s": 0.06666666766666668,
+          "frozen": false,
+          "runtime_tactile_row": 2,
+          "runtime_tactile_age_s": 0.014666667666666688
+        },
+        {
+          "t": 0.3333333333333333,
+          "scene_frame": 4,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 4,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 2,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 0.4,
+          "scene_frame": 6,
+          "scene_age_s": 1.0000000272292198e-09,
+          "state_row": 6,
+          "state_age_s": 1.0000000272292198e-09,
+          "frozen": false,
+          "runtime_tactile_row": 3,
+          "runtime_tactile_age_s": 0.020000001000000045
+        },
+        {
+          "t": 0.4666666666666667,
+          "scene_frame": 6,
+          "scene_age_s": 0.06666666766666668,
+          "state_row": 6,
+          "state_age_s": 0.06666666766666668,
+          "frozen": false,
+          "runtime_tactile_row": 3,
+          "runtime_tactile_age_s": 0.0866666676666667
+        },
+        {
+          "t": 0.5333333333333333,
+          "scene_frame": 7,
+          "scene_age_s": 0.06533333433333327,
+          "state_row": 7,
+          "state_age_s": 0.06533333433333327,
+          "frozen": false,
+          "runtime_tactile_row": 4,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 0.6,
+          "scene_frame": 9,
+          "scene_age_s": 9.999999717180685e-10,
+          "state_row": 9,
+          "state_age_s": 9.999999717180685e-10,
+          "frozen": false,
+          "runtime_tactile_row": 4,
+          "runtime_tactile_age_s": 0.10000000099999995
+        },
+        {
+          "t": 0.6666666666666666,
+          "scene_frame": 9,
+          "scene_age_s": 0.06666666766666662,
+          "state_row": 9,
+          "state_age_s": 0.06666666766666662,
+          "frozen": false,
+          "runtime_tactile_row": 5,
+          "runtime_tactile_age_s": 0.0386666676666666
+        },
+        {
+          "t": 0.7333333333333333,
+          "scene_frame": 10,
+          "scene_age_s": 0.06533333433333322,
+          "state_row": 10,
+          "state_age_s": 0.06533333433333322,
+          "frozen": false,
+          "runtime_tactile_row": 5,
+          "runtime_tactile_age_s": 0.10533333433333325
+        },
+        {
+          "t": 0.8,
+          "scene_frame": 12,
+          "scene_age_s": 9.999999717180685e-10,
+          "state_row": 12,
+          "state_age_s": 9.999999717180685e-10,
+          "frozen": false,
+          "runtime_tactile_row": 6,
+          "runtime_tactile_age_s": 0.04400000100000001
+        },
+        {
+          "t": 0.8666666666666667,
+          "scene_frame": 12,
+          "scene_age_s": 0.06666666766666662,
+          "state_row": 12,
+          "state_age_s": 0.06666666766666662,
+          "frozen": false,
+          "runtime_tactile_row": 6,
+          "runtime_tactile_age_s": 0.11066666766666666
+        },
+        {
+          "t": 0.9333333333333333,
+          "scene_frame": 13,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 13,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 7,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 1.0,
+          "scene_frame": 15,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 15,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 7,
+          "runtime_tactile_age_s": 0.12400000100000008
+        },
+        {
+          "t": 1.0666666666666667,
+          "scene_frame": 15,
+          "scene_age_s": 0.06666666766666673,
+          "state_row": 15,
+          "state_age_s": 0.06666666766666673,
+          "frozen": false,
+          "runtime_tactile_row": 8,
+          "runtime_tactile_age_s": 0.06266666766666673
+        },
+        {
+          "t": 1.1333333333333333,
+          "scene_frame": 16,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 16,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 9,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 1.2,
+          "scene_frame": 18,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 18,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 9,
+          "runtime_tactile_age_s": 0.06800000099999992
+        },
+        {
+          "t": 1.2666666666666666,
+          "scene_frame": 18,
+          "scene_age_s": 0.06666666766666673,
+          "state_row": 18,
+          "state_age_s": 0.06666666766666673,
+          "frozen": false,
+          "runtime_tactile_row": 10,
+          "runtime_tactile_age_s": 0.014666667666666688
+        },
+        {
+          "t": 1.3333333333333333,
+          "scene_frame": 19,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 19,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 10,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 1.4,
+          "scene_frame": 21,
+          "scene_age_s": 9.99999860695766e-10,
+          "state_row": 21,
+          "state_age_s": 9.99999860695766e-10,
+          "frozen": false,
+          "runtime_tactile_row": 11,
+          "runtime_tactile_age_s": 0.02000000099999988
+        },
+        {
+          "t": 1.4666666666666666,
+          "scene_frame": 21,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 21,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 11,
+          "runtime_tactile_age_s": 0.08666666766666653
+        },
+        {
+          "t": 1.5333333333333334,
+          "scene_frame": 22,
+          "scene_age_s": 0.06533333433333355,
+          "state_row": 22,
+          "state_age_s": 0.06533333433333355,
+          "frozen": false,
+          "runtime_tactile_row": 12,
+          "runtime_tactile_age_s": 0.03333333433333352
+        },
+        {
+          "t": 1.6,
+          "scene_frame": 24,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 24,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 12,
+          "runtime_tactile_age_s": 0.10000000100000017
+        },
+        {
+          "t": 1.6666666666666667,
+          "scene_frame": 24,
+          "scene_age_s": 0.06666666766666673,
+          "state_row": 24,
+          "state_age_s": 0.06666666766666673,
+          "frozen": false,
+          "runtime_tactile_row": 13,
+          "runtime_tactile_age_s": 0.03866666766666671
+        },
+        {
+          "t": 1.7333333333333334,
+          "scene_frame": 25,
+          "scene_age_s": 0.06533333433333355,
+          "state_row": 25,
+          "state_age_s": 0.06533333433333355,
+          "frozen": false,
+          "runtime_tactile_row": 13,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 1.8,
+          "scene_frame": 27,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 27,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 14,
+          "runtime_tactile_age_s": 0.04400000100000012
+        },
+        {
+          "t": 1.8666666666666667,
+          "scene_frame": 27,
+          "scene_age_s": 0.06666666766666673,
+          "state_row": 27,
+          "state_age_s": 0.06666666766666673,
+          "frozen": false,
+          "runtime_tactile_row": 14,
+          "runtime_tactile_age_s": 0.11066666766666677
+        },
+        {
+          "t": 1.9333333333333333,
+          "scene_frame": 28,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 28,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 15,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 2.0,
+          "scene_frame": 30,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 30,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 15,
+          "runtime_tactile_age_s": 0.12400000099999997
+        },
+        {
+          "t": 2.066666666666667,
+          "scene_frame": 30,
+          "scene_age_s": 0.06666666766666696,
+          "state_row": 30,
+          "state_age_s": 0.06666666766666696,
+          "frozen": false,
+          "runtime_tactile_row": 16,
+          "runtime_tactile_age_s": 0.06266666766666695
+        },
+        {
+          "t": 2.1333333333333333,
+          "scene_frame": 31,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 31,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 17,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 2.2,
+          "scene_frame": 33,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 33,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 17,
+          "runtime_tactile_age_s": 0.06800000100000014
+        },
+        {
+          "t": 2.2666666666666666,
+          "scene_frame": 33,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 33,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 18,
+          "runtime_tactile_age_s": 0.014666667666666466
+        },
+        {
+          "t": 2.3333333333333335,
+          "scene_frame": 34,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 34,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 18,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 2.4,
+          "scene_frame": 36,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 36,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 19,
+          "runtime_tactile_age_s": 0.0200000010000001
+        },
+        {
+          "t": 2.466666666666667,
+          "scene_frame": 36,
+          "scene_age_s": 0.06666666766666696,
+          "state_row": 36,
+          "state_age_s": 0.06666666766666696,
+          "frozen": false,
+          "runtime_tactile_row": 19,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 2.533333333333333,
+          "scene_frame": 37,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 37,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 20,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 2.6,
+          "scene_frame": 39,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 39,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 20,
+          "runtime_tactile_age_s": 0.10000000100000017
+        },
+        {
+          "t": 2.6666666666666665,
+          "scene_frame": 39,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 39,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 21,
+          "runtime_tactile_age_s": 0.03866666766666649
+        },
+        {
+          "t": 2.7333333333333334,
+          "scene_frame": 40,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 40,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 21,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 2.8,
+          "scene_frame": 42,
+          "scene_age_s": 9.999996386511611e-10,
+          "state_row": 42,
+          "state_age_s": 9.999996386511611e-10,
+          "frozen": false,
+          "runtime_tactile_row": 22,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 2.8666666666666667,
+          "scene_frame": 42,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 42,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 22,
+          "runtime_tactile_age_s": 0.11066666766666655
+        },
+        {
+          "t": 2.933333333333333,
+          "scene_frame": 43,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 43,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 23,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 3.0,
+          "scene_frame": 45,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 45,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 23,
+          "runtime_tactile_age_s": 0.12400000100000019
+        },
+        {
+          "t": 3.066666666666667,
+          "scene_frame": 45,
+          "scene_age_s": 0.06666666766666696,
+          "state_row": 45,
+          "state_age_s": 0.06666666766666696,
+          "frozen": false,
+          "runtime_tactile_row": 24,
+          "runtime_tactile_age_s": 0.06266666766666695
+        },
+        {
+          "t": 3.1333333333333333,
+          "scene_frame": 46,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 46,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 25,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 3.2,
+          "scene_frame": 48,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 48,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 25,
+          "runtime_tactile_age_s": 0.06800000100000014
+        },
+        {
+          "t": 3.2666666666666666,
+          "scene_frame": 48,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 48,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 26,
+          "runtime_tactile_age_s": 0.014666667666666466
+        },
+        {
+          "t": 3.3333333333333335,
+          "scene_frame": 49,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 49,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 26,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 3.4,
+          "scene_frame": 51,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 51,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 27,
+          "runtime_tactile_age_s": 0.0200000010000001
+        },
+        {
+          "t": 3.466666666666667,
+          "scene_frame": 51,
+          "scene_age_s": 0.06666666766666696,
+          "state_row": 51,
+          "state_age_s": 0.06666666766666696,
+          "frozen": false,
+          "runtime_tactile_row": 27,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 3.533333333333333,
+          "scene_frame": 52,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 52,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 28,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 3.6,
+          "scene_frame": 54,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 54,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 28,
+          "runtime_tactile_age_s": 0.10000000100000017
+        },
+        {
+          "t": 3.6666666666666665,
+          "scene_frame": 54,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 54,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 29,
+          "runtime_tactile_age_s": 0.03866666766666649
+        },
+        {
+          "t": 3.7333333333333334,
+          "scene_frame": 55,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 55,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 29,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 3.8,
+          "scene_frame": 57,
+          "scene_age_s": 9.999996386511611e-10,
+          "state_row": 57,
+          "state_age_s": 9.999996386511611e-10,
+          "frozen": false,
+          "runtime_tactile_row": 30,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 3.8666666666666667,
+          "scene_frame": 57,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 57,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 30,
+          "runtime_tactile_age_s": 0.11066666766666655
+        },
+        {
+          "t": 3.933333333333333,
+          "scene_frame": 58,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 58,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 31,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 4.0,
+          "scene_frame": 60,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 60,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 31,
+          "runtime_tactile_age_s": 0.12400000100000019
+        },
+        {
+          "t": 4.066666666666666,
+          "scene_frame": 60,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 60,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 32,
+          "runtime_tactile_age_s": 0.06266666766666606
+        },
+        {
+          "t": 4.133333333333334,
+          "scene_frame": 61,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 61,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 33,
+          "runtime_tactile_age_s": 0.0013333343333341574
+        },
+        {
+          "t": 4.2,
+          "scene_frame": 63,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 63,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 33,
+          "runtime_tactile_age_s": 0.06800000100000059
+        },
+        {
+          "t": 4.266666666666667,
+          "scene_frame": 63,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 63,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 34,
+          "runtime_tactile_age_s": 0.01466666766666691
+        },
+        {
+          "t": 4.333333333333333,
+          "scene_frame": 64,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 64,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 34,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 4.4,
+          "scene_frame": 66,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 66,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 35,
+          "runtime_tactile_age_s": 0.020000001000000545
+        },
+        {
+          "t": 4.466666666666667,
+          "scene_frame": 66,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 66,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 35,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 4.533333333333333,
+          "scene_frame": 67,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 67,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 36,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 4.6,
+          "scene_frame": 69,
+          "scene_age_s": 9.999991945619513e-10,
+          "state_row": 69,
+          "state_age_s": 9.999991945619513e-10,
+          "frozen": false,
+          "runtime_tactile_row": 36,
+          "runtime_tactile_age_s": 0.10000000099999973
+        },
+        {
+          "t": 4.666666666666667,
+          "scene_frame": 69,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 69,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 37,
+          "runtime_tactile_age_s": 0.03866666766666693
+        },
+        {
+          "t": 4.733333333333333,
+          "scene_frame": 70,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 70,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 37,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 4.8,
+          "scene_frame": 72,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 72,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 38,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 4.866666666666666,
+          "scene_frame": 72,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 72,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 38,
+          "runtime_tactile_age_s": 0.11066666766666611
+        },
+        {
+          "t": 4.933333333333334,
+          "scene_frame": 73,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 73,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 39,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 5.0,
+          "scene_frame": 75,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 75,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 39,
+          "runtime_tactile_age_s": 0.12400000099999975
+        },
+        {
+          "t": 5.066666666666666,
+          "scene_frame": 75,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 75,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 40,
+          "runtime_tactile_age_s": 0.06266666766666606
+        },
+        {
+          "t": 5.133333333333334,
+          "scene_frame": 76,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 76,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 41,
+          "runtime_tactile_age_s": 0.0013333343333341574
+        },
+        {
+          "t": 5.2,
+          "scene_frame": 78,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 78,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 41,
+          "runtime_tactile_age_s": 0.06800000100000059
+        },
+        {
+          "t": 5.266666666666667,
+          "scene_frame": 78,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 78,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 42,
+          "runtime_tactile_age_s": 0.01466666766666691
+        },
+        {
+          "t": 5.333333333333333,
+          "scene_frame": 79,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 79,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 42,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 5.4,
+          "scene_frame": 81,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 81,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 43,
+          "runtime_tactile_age_s": 0.020000001000000545
+        },
+        {
+          "t": 5.466666666666667,
+          "scene_frame": 81,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 81,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 43,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 5.533333333333333,
+          "scene_frame": 82,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 82,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 44,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 5.6,
+          "scene_frame": 84,
+          "scene_age_s": 9.999991945619513e-10,
+          "state_row": 84,
+          "state_age_s": 9.999991945619513e-10,
+          "frozen": false,
+          "runtime_tactile_row": 44,
+          "runtime_tactile_age_s": 0.10000000099999973
+        },
+        {
+          "t": 5.666666666666667,
+          "scene_frame": 84,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 84,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 45,
+          "runtime_tactile_age_s": 0.03866666766666693
+        },
+        {
+          "t": 5.733333333333333,
+          "scene_frame": 85,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 85,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 45,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 5.8,
+          "scene_frame": 87,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 87,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 46,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 5.866666666666666,
+          "scene_frame": 87,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 87,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 46,
+          "runtime_tactile_age_s": 0.11066666766666611
+        },
+        {
+          "t": 5.933333333333334,
+          "scene_frame": 88,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 88,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 47,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 6.0,
+          "scene_frame": 90,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 90,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 47,
+          "runtime_tactile_age_s": 0.12400000099999975
+        },
+        {
+          "t": 6.066666666666666,
+          "scene_frame": 90,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 90,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 48,
+          "runtime_tactile_age_s": 0.06266666766666606
+        },
+        {
+          "t": 6.133333333333334,
+          "scene_frame": 91,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 91,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 49,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 6.2,
+          "scene_frame": 93,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 93,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 49,
+          "runtime_tactile_age_s": 0.0680000009999997
+        },
+        {
+          "t": 6.266666666666667,
+          "scene_frame": 93,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 93,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 50,
+          "runtime_tactile_age_s": 0.01466666766666691
+        },
+        {
+          "t": 6.333333333333333,
+          "scene_frame": 94,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 94,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 50,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 6.4,
+          "scene_frame": 96,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 96,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 51,
+          "runtime_tactile_age_s": 0.020000001000000545
+        },
+        {
+          "t": 6.466666666666667,
+          "scene_frame": 96,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 96,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 51,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 6.533333333333333,
+          "scene_frame": 97,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 97,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 52,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 6.6,
+          "scene_frame": 99,
+          "scene_age_s": 9.999991945619513e-10,
+          "state_row": 99,
+          "state_age_s": 9.999991945619513e-10,
+          "frozen": false,
+          "runtime_tactile_row": 52,
+          "runtime_tactile_age_s": 0.10000000099999973
+        },
+        {
+          "t": 6.666666666666667,
+          "scene_frame": 99,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 99,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 53,
+          "runtime_tactile_age_s": 0.03866666766666693
+        },
+        {
+          "t": 6.733333333333333,
+          "scene_frame": 100,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 100,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 53,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 6.8,
+          "scene_frame": 102,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 102,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 54,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 6.866666666666666,
+          "scene_frame": 102,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 102,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 54,
+          "runtime_tactile_age_s": 0.11066666766666611
+        },
+        {
+          "t": 6.933333333333334,
+          "scene_frame": 103,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 103,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 55,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 7.0,
+          "scene_frame": 105,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 105,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 55,
+          "runtime_tactile_age_s": 0.12400000099999975
+        },
+        {
+          "t": 7.066666666666666,
+          "scene_frame": 105,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 105,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 56,
+          "runtime_tactile_age_s": 0.06266666766666606
+        },
+        {
+          "t": 7.133333333333334,
+          "scene_frame": 106,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 106,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 57,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 7.2,
+          "scene_frame": 108,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 108,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 57,
+          "runtime_tactile_age_s": 0.0680000009999997
+        },
+        {
+          "t": 7.266666666666667,
+          "scene_frame": 108,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 108,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 58,
+          "runtime_tactile_age_s": 0.01466666766666691
+        },
+        {
+          "t": 7.333333333333333,
+          "scene_frame": 109,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 109,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 58,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 7.4,
+          "scene_frame": 111,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 111,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 59,
+          "runtime_tactile_age_s": 0.020000001000000545
+        },
+        {
+          "t": 7.466666666666667,
+          "scene_frame": 111,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 111,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 59,
+          "runtime_tactile_age_s": 0.08666666766666697
+        },
+        {
+          "t": 7.533333333333333,
+          "scene_frame": 112,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 112,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 60,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 7.6,
+          "scene_frame": 114,
+          "scene_age_s": 9.999991945619513e-10,
+          "state_row": 114,
+          "state_age_s": 9.999991945619513e-10,
+          "frozen": false,
+          "runtime_tactile_row": 60,
+          "runtime_tactile_age_s": 0.10000000099999973
+        },
+        {
+          "t": 7.666666666666667,
+          "scene_frame": 114,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 114,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 61,
+          "runtime_tactile_age_s": 0.03866666766666693
+        },
+        {
+          "t": 7.733333333333333,
+          "scene_frame": 115,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 115,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 61,
+          "runtime_tactile_age_s": 0.10533333433333336
+        },
+        {
+          "t": 7.8,
+          "scene_frame": 117,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 117,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 62,
+          "runtime_tactile_age_s": 0.04400000099999968
+        },
+        {
+          "t": 7.866666666666666,
+          "scene_frame": 117,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 117,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 62,
+          "runtime_tactile_age_s": 0.11066666766666611
+        },
+        {
+          "t": 7.933333333333334,
+          "scene_frame": 118,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 118,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 63,
+          "runtime_tactile_age_s": 0.05733333433333332
+        },
+        {
+          "t": 8.0,
+          "scene_frame": 120,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 120,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 63,
+          "runtime_tactile_age_s": 0.12400000099999975
+        },
+        {
+          "t": 8.066666666666666,
+          "scene_frame": 120,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 120,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 64,
+          "runtime_tactile_age_s": 0.06266666766666695
+        },
+        {
+          "t": 8.133333333333333,
+          "scene_frame": 121,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 121,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 65,
+          "runtime_tactile_age_s": 0.0013333343333332692
+        },
+        {
+          "t": 8.2,
+          "scene_frame": 123,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 123,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 65,
+          "runtime_tactile_age_s": 0.0680000009999997
+        },
+        {
+          "t": 8.266666666666667,
+          "scene_frame": 123,
+          "scene_age_s": 0.06666666766666829,
+          "state_row": 123,
+          "state_age_s": 0.06666666766666829,
+          "frozen": false,
+          "runtime_tactile_row": 66,
+          "runtime_tactile_age_s": 0.01466666766666691
+        },
+        {
+          "t": 8.333333333333334,
+          "scene_frame": 124,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 124,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 66,
+          "runtime_tactile_age_s": 0.08133333433333334
+        },
+        {
+          "t": 8.4,
+          "scene_frame": 126,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 126,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 67,
+          "runtime_tactile_age_s": 0.020000000999999656
+        },
+        {
+          "t": 8.466666666666667,
+          "scene_frame": 126,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 126,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 67,
+          "runtime_tactile_age_s": 0.08666666766666609
+        },
+        {
+          "t": 8.533333333333333,
+          "scene_frame": 127,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 127,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 68,
+          "runtime_tactile_age_s": 0.0333333343333333
+        },
+        {
+          "t": 8.6,
+          "scene_frame": 129,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 129,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 68,
+          "runtime_tactile_age_s": 0.10000000099999973
+        },
+        {
+          "t": 8.666666666666666,
+          "scene_frame": 129,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 129,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.038666667666666044
+        },
+        {
+          "t": 8.733333333333333,
+          "scene_frame": 130,
+          "scene_age_s": 0.06533333433333155,
+          "state_row": 130,
+          "state_age_s": 0.06533333433333155,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.10533333433333247
+        },
+        {
+          "t": 8.8,
+          "scene_frame": 132,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 132,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.17200000100000068
+        },
+        {
+          "t": 8.866666666666667,
+          "scene_frame": 132,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 132,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.2386666676666671
+        },
+        {
+          "t": 8.933333333333334,
+          "scene_frame": 133,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 133,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.30533333433333354
+        },
+        {
+          "t": 9.0,
+          "scene_frame": 135,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 135,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.37200000099999997
+        },
+        {
+          "t": 9.066666666666666,
+          "scene_frame": 135,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 135,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.4386666676666664
+        },
+        {
+          "t": 9.133333333333333,
+          "scene_frame": 136,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 136,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.5053333343333328
+        },
+        {
+          "t": 9.2,
+          "scene_frame": 138,
+          "scene_age_s": 9.999983063835316e-10,
+          "state_row": 138,
+          "state_age_s": 9.999983063835316e-10,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.5720000009999993
+        },
+        {
+          "t": 9.266666666666667,
+          "scene_frame": 138,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 138,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.6386666676666675
+        },
+        {
+          "t": 9.333333333333334,
+          "scene_frame": 139,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 139,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.7053333343333339
+        },
+        {
+          "t": 9.4,
+          "scene_frame": 141,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 141,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.7720000010000003
+        },
+        {
+          "t": 9.466666666666667,
+          "scene_frame": 141,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 141,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.8386666676666668
+        },
+        {
+          "t": 9.533333333333333,
+          "scene_frame": 142,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 142,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.9053333343333332
+        },
+        {
+          "t": 9.6,
+          "scene_frame": 144,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 144,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 0.9720000009999996
+        },
+        {
+          "t": 9.666666666666666,
+          "scene_frame": 144,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 144,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.038666667666666
+        },
+        {
+          "t": 9.733333333333333,
+          "scene_frame": 145,
+          "scene_age_s": 0.06533333433333155,
+          "state_row": 145,
+          "state_age_s": 0.06533333433333155,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.1053333343333325
+        },
+        {
+          "t": 9.8,
+          "scene_frame": 147,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 147,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.1720000010000007
+        },
+        {
+          "t": 9.866666666666667,
+          "scene_frame": 147,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 147,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.238666667666667
+        },
+        {
+          "t": 9.933333333333334,
+          "scene_frame": 148,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 148,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.3053333343333335
+        },
+        {
+          "t": 10.0,
+          "scene_frame": 150,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 150,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.372000001
+        },
+        {
+          "t": 10.066666666666666,
+          "scene_frame": 150,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 150,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.4386666676666664
+        },
+        {
+          "t": 10.133333333333333,
+          "scene_frame": 151,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 151,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.5053333343333328
+        },
+        {
+          "t": 10.2,
+          "scene_frame": 153,
+          "scene_age_s": 9.999983063835316e-10,
+          "state_row": 153,
+          "state_age_s": 9.999983063835316e-10,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.5720000009999993
+        },
+        {
+          "t": 10.266666666666667,
+          "scene_frame": 153,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 153,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.6386666676666675
+        },
+        {
+          "t": 10.333333333333334,
+          "scene_frame": 154,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 154,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.705333334333334
+        },
+        {
+          "t": 10.4,
+          "scene_frame": 156,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 156,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.7720000010000003
+        },
+        {
+          "t": 10.466666666666667,
+          "scene_frame": 156,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 156,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.8386666676666668
+        },
+        {
+          "t": 10.533333333333333,
+          "scene_frame": 157,
+          "scene_age_s": 0.06533333433333333,
+          "state_row": 157,
+          "state_age_s": 0.06533333433333333,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.9053333343333332
+        },
+        {
+          "t": 10.6,
+          "scene_frame": 159,
+          "scene_age_s": 1.000000082740371e-09,
+          "state_row": 159,
+          "state_age_s": 1.000000082740371e-09,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 1.9720000009999996
+        },
+        {
+          "t": 10.666666666666666,
+          "scene_frame": 159,
+          "scene_age_s": 0.06666666766666651,
+          "state_row": 159,
+          "state_age_s": 0.06666666766666651,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 2.038666667666666
+        },
+        {
+          "t": 10.733333333333333,
+          "scene_frame": 160,
+          "scene_age_s": 0.06533333433333155,
+          "state_row": 160,
+          "state_age_s": 0.06533333433333155,
+          "frozen": false,
+          "runtime_tactile_row": 69,
+          "runtime_tactile_age_s": 2.1053333343333325
+        }
+      ]
+    }
+  ]
+}

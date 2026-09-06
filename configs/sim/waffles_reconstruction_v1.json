@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.004,
+    "render_hz": 15,
+    "solver_position_iterations": 16,
+    "solver_velocity_iterations": 4,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.0,
+      -0.047
+    ],
+    "size": [
+      1.7,
+      0.9,
+      0.05
+    ],
+    "hole_pitch": 0.04,
+    "hole_radius": 0.0055,
+    "top_z": -0.022,
+    "friction": 0.55
+  },
+  "mat": {
+    "center": [
+      -0.345,
+      -0.245,
+      -0.0205
+    ],
+    "size": [
+      0.33,
+      0.38,
+      0.003
+    ],
+    "grid_pitch": 0.05,
+    "friction": 0.7
+  },
+  "bin": {
+    "center": [
+      -0.3915669783296538,
+      0.0366996283858784,
+      -0.021
+    ],
+    "size": [
+      0.3267210754691179,
+      0.2344750815856634,
+      0.14
+    ],
+    "wall": 0.004,
+    "friction": 0.4
+  },
+  "waffle": {
+    "center": [
+      -0.3870921900146713,
+      -0.254396671903937,
+      -0.004999999999999999
+    ],
+    "size": [
+      0.15449525360329625,
+      0.027214019144296827,
+      0.028
+    ],
+    "yaw": 0.32742130651465934,
+    "mass": 0.035,
+    "static_friction": 0.65,
+    "dynamic_friction": 0.5,
+    "restitution": 0.015
+  },
+  "gripper": {
+    "stroke": 0.085,
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.012,
+      0.026,
+      0.055
+    ],
+    "pad_center_z": 0.16556,
+    "pad_friction": 1.0,
+    "housing_size": [
+      0.065,
+      0.048,
+      0.07
+    ],
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": -0.377,
+    "geometry_source": "fit-episode white shell centroids; approximate yaw and z, 12.7px residual, shell is not contact center"
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 817.2345869351059,
+    "fy": 817.2345869351059,
+    "cx": 320,
+    "cy": 240,
+    "position": [
+      -0.39,
+      -0.52,
+      0.95
+    ],
+    "target": [
+      -0.27,
+      -0.03,
+      0.08
+    ],
+    "world_from_cv": [
+      [
+        0.9975803304577789,
+        0.03646753417433539,
+        -0.05919124289109921,
+        -0.30976805230998883
+      ],
+      [
+        0.05587741354860181,
+        -0.9271414774096448,
+        0.37052178818765885,
+        -0.4544517581174531
+      ],
+      [
+        -0.04136664041069753,
+        -0.37293270145953344,
+        -0.9269358129035836,
+        1.0881904260255213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "artifacts/isaac_waffles/evidence/camera_fit.json; in-sample manual landmark fit"
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Table, bin, mat, packet and custom pad sizes are visual estimates; no ruler or calibrated extrinsics recovered.",
+    "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+    "camera": "Camera fit is episode-specific; do not pool sessions with changed camera mounting."
+  }
+}

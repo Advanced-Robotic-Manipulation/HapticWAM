@@ -19,6 +19,8 @@ untouched. An 8×H100 cloud run is a possible later upgrade, not an
 assumption. Sensor SDK facts (verified from the vendor package):
 [docs/sensor_sdk.md](docs/sensor_sdk.md).
 
+The [Isaac Sim waffles environment and experiment handoff](docs/isaac_sim.md) provides measured-motion replay, policy rollouts, published pick-to-box results and the 7 September lab protocol.
+
 ## Two files you configure, nothing else
 
 | File | What lives there |

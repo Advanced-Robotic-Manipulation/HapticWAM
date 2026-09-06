@@ -1,0 +1,48 @@
+Waiting for owned policy server pid=1188134
+Waiting for owned policy server pid=1188134
+Starting student_ftA_r1__nominal__seed4242
+Completed student_ftA_r1__nominal__seed4242; duration=9.592s stop=safety_stop
+Starting student_ftA_r1__nominal__seed4243
+Completed student_ftA_r1__nominal__seed4243; duration=10.736s stop=safety_stop
+{
+  "status": "incomplete",
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "policies": {
+    "student_ftA_r1": {
+      "scheduled": 2,
+      "valid_scored": 2,
+      "invalid": 0,
+      "missing": 0
+    },
+    "student_v5_6": {
+      "scheduled": 2,
+      "valid_scored": 0,
+      "invalid": 0,
+      "missing": 2
+    }
+  }
+}
+Waiting for owned policy server pid=1191756
+Waiting for owned policy server pid=1191756
+Starting student_v5_6__nominal__seed4242
+Completed student_v5_6__nominal__seed4242; duration=15.176s stop=safety_stop
+Starting student_v5_6__nominal__seed4243
+Completed student_v5_6__nominal__seed4243; duration=17.192s stop=safety_stop
+{
+  "status": "complete",
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "policies": {
+    "student_ftA_r1": {
+      "scheduled": 2,
+      "valid_scored": 2,
+      "invalid": 0,
+      "missing": 0
+    },
+    "student_v5_6": {
+      "scheduled": 2,
+      "valid_scored": 2,
+      "invalid": 0,
+      "missing": 0
+    }
+  }
+}

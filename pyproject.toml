@@ -18,6 +18,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+sim = [
+    "scipy>=1.10",
+    "opencv-python-headless>=4.8",
+    "matplotlib>=3.7",
+]
 # Model/training stack (needs a CUDA box for real runs; CPU ok for tiny smoke tests)
 train = [
     "torch>=2.7",

@@ -1,0 +1,26 @@
+{
+  "captured_utc": "2026-09-06T20:41:43.637723+00:00",
+  "inference_source_sha256": {
+    "phantom/inference/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+    "phantom/inference/remote.py": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+    "phantom/model/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phantom/model/acc.py": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254",
+    "phantom/model/ace/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phantom/model/ace/heads.py": "ca68b625a71cfdbd2fc16538e7988bc1609090423226be19e0b8f8afd4b02ab1",
+    "phantom/model/ace/losses.py": "8841bb196d5ad24195f9f81bc50515b8f07cd3e137c20809b63f6a2b8e88a6f5",
+    "phantom/model/ace/packing.py": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c",
+    "phantom/model/attention_bias.py": "7e2fcce654ba077e521662081ad9045bbb82d8a5a374a0f4d8120bb7aa6ac740",
+    "phantom/model/hht/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phantom/model/hht/encoders.py": "cc0e36b7cd257c51c4504bdd1d93ce292bbafbe55c71527722dd7e9ba1c6db8e",
+    "phantom/model/hht/hht.py": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f",
+    "phantom/model/hht/tactile_encoder.py": "8f7dc892e14c49876d08cb2094ec4f912d18cb5c425d82ee8a4f956dfb2f826b",
+    "phantom/model/phantom_dit.py": "5640d756ee48818f38a9f32f7bee71c0191e2e7d4587981a0fd03370efded877",
+    "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+    "phantom/model/sequence.py": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0"
+  },
+  "git": {
+    "head": "60965b85369d2527903c40d97e7b5e919fbc4ff9\n",
+    "status": "?? configs/hardware.nuc.nosafety.yaml\n?? logs/\n?? logs_deploy_smoke.log\n?? logs_deploy_smoke_fixed.log\n?? logs_smoke_pn.log\n?? phantom/scripts/direct_tactile_feed.py\n?? phantom/scripts/raw_monitor.py\n?? rig_replay_ablation.py\n?? tests/test_ur_servo_limiter.py.ilya-0904.orig\n"
+  }
+}

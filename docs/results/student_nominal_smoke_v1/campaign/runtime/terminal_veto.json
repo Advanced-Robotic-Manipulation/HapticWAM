@@ -1,0 +1,13 @@
+{
+  "implementation": "fd4a032",
+  "config": {
+    "z_ref": 0.0415,
+    "z_floor": 0.0315,
+    "z_margin": 0.0615,
+    "open_aperture": 0.232,
+    "p_close": 0.5,
+    "p_none": 0.9,
+    "max_retries": 3
+  },
+  "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+}

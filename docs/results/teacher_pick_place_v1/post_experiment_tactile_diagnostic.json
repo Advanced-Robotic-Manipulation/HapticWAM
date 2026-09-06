@@ -1,0 +1,1361 @@
+{
+  "classification": "post-experiment read-only diagnostic; no rescoring or source changes",
+  "root": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1",
+  "geometry": {
+    "pad_thickness_m": 0.012,
+    "active_size_yz_m": [
+      0.027,
+      0.036
+    ],
+    "active_center_yz_m": [
+      0.0,
+      0.0
+    ],
+    "inner_face_tolerance_m": 0.002,
+    "minimum_normal_alignment": 0.75,
+    "sdk_uv_axes": [
+      2,
+      1
+    ],
+    "sdk_uv_signs": [
+      1,
+      1
+    ]
+  },
+  "units_and_axes": {
+    "normal_force": "newtons from PhysX contact impulse divided by physics dt; not calibrated real SDK force",
+    "physical_packet_force": "sum of magnitudes of each populated pad/packet normal-contact constraint, including backing/linkage contacts",
+    "gel_force": "sum(abs(normal_constraint_N) * abs(unit_normal_pad_X) * active_area_fraction)",
+    "coordinates": "contact positions in pad local metres; pad X closing axis; left inner face X=-0.006m, right X=+0.006m, tolerance0.002m",
+    "active_ellipse": "(padY/0.0135)^2 + (padZ/0.018)^2 <= 1",
+    "sdk": "gel columns=+padZ; rows=+padY; positive compression is added as negative SDK wrench Z; orientation is an explicit uncalibrated estimate",
+    "shear": "not observed by this normal-contact API; not reconstructed from pad world net forces"
+  },
+  "source_sha256": {
+    "tools/sim/gel_contact.py": "99791534245d6509a58c651d049a8fa80c981e19a53e7e462af581c23a66f300",
+    "phantom/sim/tactile_proxy.py": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+    "tools/sim/run_waffles.py": "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6"
+  },
+  "cases": {
+    "teacher__nominal__seed4242": {
+      "video_t_s": 17.0,
+      "scene_capture_t_s": 17.0,
+      "scene_packet_normal_force_n": [
+        5.211846828460693,
+        5.2148823738098145
+      ],
+      "tactile_capture_t_s": 16.876,
+      "tactile_age_s": 0.12399999999999878,
+      "tactile_sample_index": 135,
+      "saved_gel_normal_force_n": [
+        0.0,
+        0.2453784338702774
+      ],
+      "saved_pad_world_net_force_n": [
+        [
+          -0.40888509154319763,
+          4.368355751037598,
+          2.8331966400146484
+        ],
+        [
+          0.49701666831970215,
+          -4.534619331359863,
+          -2.479902982711792
+        ]
+      ],
+      "saved_gel_shape": [
+        144,
+        2,
+        288,
+        384
+      ],
+      "saved_gel_dtype": "uint8",
+      "saved_gel_frame_sha256": [
+        "498c98942c816e667e35bdda625546fa355628ad231517279541cb5f7de8d511",
+        "5f77040f15426b983bd3f4c872ad1671c6e608ad62268d157fdebf48a2cf7f6e"
+      ],
+      "input_sha256": {
+        "policy_tactile.npz": "e33fce85249661b1a52c426128c0e695e9f7852bedf0b2de6954dd3811819dee",
+        "gel_contact_trace.json": "2163d3dc6f646cc3eda27e116a4601b438e0a727a3471eae45e1edeff3558592",
+        "sim_trace.npz": "931d3acb0bd3027aeaae03877d905b96902a37566ddb4f78ef4a5d689eca621c",
+        "effective_config.json": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+        "policy_info.json": "575b313153b703faa8c734bf90a9f70ce2786f7079109d0cf05dd704b19704c6",
+        "run.json": "cbbdca056696d0ee3573c72c26b63ed35c117e3df5c20af5b749bb4fd37e9545"
+      },
+      "all_samples_crosscheck": {
+        "sample_count": 144,
+        "max_npz_vs_contact_json_timestamp_difference_s": 0.0,
+        "max_npz_vs_contact_json_force_difference_n": 0.0,
+        "max_reconstructed_mapper_force_difference_n": 0.0
+      },
+      "selected_sample_pads": [
+        {
+          "side": "left",
+          "recorded": {
+            "normal_force_n": 0.0,
+            "contact_uv": [
+              0.0,
+              0.0
+            ],
+            "has_gel_contact": false,
+            "accepted_contact_count": 0,
+            "populated_unique_contact_count": 4,
+            "duplicate_filter_contact_indices": 0,
+            "observed_filtered_normal_force_n": 5.22271203994751,
+            "accepted_contact_normal_magnitude_n": 0.0,
+            "ignored_contact_normal_force_n": 5.22271203994751,
+            "unprojected_accepted_normal_force_n": 0.0,
+            "ignored_by_reason_n": {
+              "not_inner_face": 0.0,
+              "outside_active_ellipse": 5.22271203994751,
+              "normal_not_aligned": 0.0
+            },
+            "contact_centroid_pad_m": null,
+            "force_semantics": "positive compression projected onto gel normal; no friction-force estimate",
+            "sdk_uv_orientation_calibrated": false,
+            "contact_filter_column_count": 20,
+            "filter_labels_match_columns": true,
+            "per_filter_contacts": [
+              {
+                "filter_column": 0,
+                "filter_path": "/World/Waffle",
+                "contact_count": 4,
+                "accepted_contact_count": 0,
+                "ignored_contact_count": 4,
+                "normal_force_magnitude_n": 5.22271203994751,
+                "gel_compression_n": 0.0,
+                "ignored_normal_force_n": 5.22271203994751,
+                "contact_points_pad_m": [
+                  [
+                    -0.006560058763690779,
+                    -0.00840195936558911,
+                    0.02078466692501135
+                  ],
+                  [
+                    -0.006498563726241598,
+                    0.010230352621914476,
+                    -0.015558499170950367
+                  ],
+                  [
+                    -0.006551015272303902,
+                    0.008940253615681737,
+                    0.019321403044161727
+                  ],
+                  [
+                    -0.0065615508163348,
+                    0.0047187499057688605,
+                    0.025279789570777405
+                  ]
+                ],
+                "contact_normals_pad": [
+                  [
+                    0.999998881237132,
+                    -0.0003957922582080185,
+                    0.0014888266725740851
+                  ],
+                  [
+                    0.999998881237132,
+                    -0.0003957922582080185,
+                    0.0014888266725740851
+                  ],
+                  [
+                    0.999998881237132,
+                    -0.0003957922582080185,
+                    0.0014888266725740851
+                  ],
+                  [
+                    0.999998881237132,
+                    -0.0003957922582080185,
+                    0.0014888266725740851
+                  ]
+                ],
+                "normal_force_by_contact_n": [
+                  3.669394016265869,
+                  1.5533180236816406,
+                  0.0,
+                  0.0
+                ],
+                "accepted_by_contact": [
+                  false,
+                  false,
+                  false,
+                  false
+                ],
+                "point_inside_active_gel_by_contact": [
+                  false,
+                  false,
+                  false,
+                  false
+                ],
+                "gel_force_fraction_by_contact": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "coverage": {
+                  "method": "point_fallback",
+                  "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                  "eligible_contact_count": 2,
+                  "shared_filter_contact_count": 0,
+                  "support_polygon_yz_m": [
+                    [
+                      -0.00840195936558911,
+                      0.02078466692501135
+                    ],
+                    [
+                      0.010230352621914476,
+                      -0.015558499170950367
+                    ]
+                  ],
+                  "support_area_m2": 0.0,
+                  "overlap_area_m2": null,
+                  "overlap_fraction": null,
+                  "overlap_centroid_yz_m": null
+                }
+              }
+            ],
+            "coverage_mode": "manifold_patch",
+            "coverage_assumption": "uniform pressure on each body's convex inner-face support polygon; sparse manifolds use points; Gaussian proxy remains a spatial approximation",
+            "ellipse_polygon_segments": 512
+          },
+          "bodies": [
+            {
+              "path": "/World/Waffle",
+              "positive_force_contact_count": 2,
+              "zero_force_contact_count": 2,
+              "ellipse_radius_squared": [
+                1.7206818078014803,
+                1.3213867984813332,
+                1.590774929958109,
+                2.0946074956982765
+              ],
+              "normal_alignment_abs_pad_X": [
+                0.9999988133712707,
+                0.9999988133712707,
+                0.9999988133712707,
+                0.9999988133712707
+              ],
+              "independent_formula_gel_force_n": 0.0,
+              "projection_loss_before_any_area_filter_n": 6.197420151343735e-06
+            }
+          ]
+        },
+        {
+          "side": "right",
+          "recorded": {
+            "normal_force_n": 0.2453784338702774,
+            "contact_uv": [
+              -0.00903134761808675,
+              0.9460643536292785
+            ],
+            "has_gel_contact": true,
+            "accepted_contact_count": 1,
+            "populated_unique_contact_count": 4,
+            "duplicate_filter_contact_indices": 0,
+            "observed_filtered_normal_force_n": 5.192274838685989,
+            "accepted_contact_normal_magnitude_n": 0.24610689282417297,
+            "ignored_contact_normal_force_n": 4.946167945861816,
+            "unprojected_accepted_normal_force_n": 0.0007284589538955494,
+            "ignored_by_reason_n": {
+              "not_inner_face": 0.0,
+              "outside_active_ellipse": 4.946167945861816,
+              "normal_not_aligned": 0.0
+            },
+            "contact_centroid_pad_m": [
+              0.005480170932811412,
+              0.01277186877399526,
+              -0.0001625642571255615
+            ],
+            "force_semantics": "positive compression projected onto gel normal; no friction-force estimate",
+            "sdk_uv_orientation_calibrated": false,
+            "contact_filter_column_count": 20,
+            "filter_labels_match_columns": true,
+            "per_filter_contacts": [
+              {
+                "filter_column": 0,
+                "filter_path": "/World/Waffle",
+                "contact_count": 4,
+                "accepted_contact_count": 1,
+                "ignored_contact_count": 3,
+                "normal_force_magnitude_n": 5.192274838685989,
+                "gel_compression_n": 0.2453784338702774,
+                "ignored_normal_force_n": 4.946167945861816,
+                "contact_points_pad_m": [
+                  [
+                    0.0054497259868742185,
+                    0.00895116401066466,
+                    0.019280273217596178
+                  ],
+                  [
+                    0.0055061203496011655,
+                    0.009327982414170826,
+                    -0.018497796806340183
+                  ],
+                  [
+                    0.005443466690736505,
+                    -0.009665202074408238,
+                    0.018532954123245918
+                  ],
+                  [
+                    0.005480170932811412,
+                    0.01277186877399526,
+                    -0.0001625642571255615
+                  ]
+                ],
+                "contact_normals_pad": [
+                  [
+                    -0.9970401018757413,
+                    -0.06878580333451903,
+                    -0.03434546036336202
+                  ],
+                  [
+                    -0.9970401018757413,
+                    -0.06878580333451903,
+                    -0.03434546036336202
+                  ],
+                  [
+                    -0.9970401018757413,
+                    -0.06878580333451903,
+                    -0.03434546036336202
+                  ],
+                  [
+                    -0.9970401018757413,
+                    -0.06878580333451903,
+                    -0.03434546036336202
+                  ]
+                ],
+                "normal_force_by_contact_n": [
+                  4.946167945861816,
+                  0.0,
+                  0.0,
+                  0.24610689282417297
+                ],
+                "accepted_by_contact": [
+                  false,
+                  false,
+                  false,
+                  true
+                ],
+                "point_inside_active_gel_by_contact": [
+                  false,
+                  false,
+                  false,
+                  true
+                ],
+                "gel_force_fraction_by_contact": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "coverage": {
+                  "method": "point_fallback",
+                  "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                  "eligible_contact_count": 2,
+                  "shared_filter_contact_count": 0,
+                  "support_polygon_yz_m": [
+                    [
+                      0.00895116401066466,
+                      0.019280273217596178
+                    ],
+                    [
+                      0.01277186877399526,
+                      -0.0001625642571255615
+                    ]
+                  ],
+                  "support_area_m2": 0.0,
+                  "overlap_area_m2": null,
+                  "overlap_fraction": null,
+                  "overlap_centroid_yz_m": null
+                }
+              }
+            ],
+            "coverage_mode": "manifold_patch",
+            "coverage_assumption": "uniform pressure on each body's convex inner-face support polygon; sparse manifolds use points; Gaussian proxy remains a spatial approximation",
+            "ellipse_polygon_segments": 512
+          },
+          "bodies": [
+            {
+              "path": "/World/Waffle",
+              "positive_force_contact_count": 2,
+              "zero_force_contact_count": 2,
+              "ellipse_radius_squared": [
+                1.586945751865398,
+                1.533503592216435,
+                1.5726651560477936,
+                0.8951193264477834
+              ],
+              "normal_alignment_abs_pad_X": [
+                0.997040070899534,
+                0.997040070899534,
+                0.997040070899534,
+                0.997040070899534
+              ],
+              "independent_formula_gel_force_n": 0.2453784338702774,
+              "projection_loss_before_any_area_filter_n": 0.015368765392644337
+            }
+          ]
+        }
+      ],
+      "neighboring_tactile_samples": [
+        {
+          "t": 16.628,
+          "gel_normal_force_n": [
+            0.0,
+            0.24400039526650363
+          ],
+          "all_contact_normal_force_n": [
+            5.248597145080566,
+            5.173610061407089
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.008388488365765131,
+                    0.020845573326141252
+                  ],
+                  [
+                    0.01025236327581463,
+                    -0.01549387117700362
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    0.008958311834899861,
+                    0.019356150871424657
+                  ],
+                  [
+                    0.012783541834216023,
+                    -8.584092987994109e-05
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ]
+          ]
+        },
+        {
+          "t": 16.756,
+          "gel_normal_force_n": [
+            0.0,
+            0.2428882875067481
+          ],
+          "all_contact_normal_force_n": [
+            5.248775959014893,
+            5.172758996486664
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.008395852497770227,
+                    0.020850889780162633
+                  ],
+                  [
+                    0.01024376628005528,
+                    -0.015488828563196834
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    0.008952302403247112,
+                    0.019353672877260374
+                  ],
+                  [
+                    0.01277685964262545,
+                    -8.842862030323575e-05
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ]
+          ]
+        },
+        {
+          "t": 16.876,
+          "gel_normal_force_n": [
+            0.0,
+            0.2453784338702774
+          ],
+          "all_contact_normal_force_n": [
+            5.22271203994751,
+            5.192274838685989
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.00840195936558911,
+                    0.02078466692501135
+                  ],
+                  [
+                    0.010230352621914476,
+                    -0.015558499170950367
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    0.00895116401066466,
+                    0.019280273217596178
+                  ],
+                  [
+                    0.01277186877399526,
+                    -0.0001625642571255615
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ]
+          ]
+        },
+        {
+          "t": 17.004,
+          "gel_normal_force_n": [
+            0.0,
+            0.24645240674080832
+          ],
+          "all_contact_normal_force_n": [
+            5.222219109535217,
+            5.192161709070206
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.008456291266594185,
+                    0.02071459469416066
+                  ],
+                  [
+                    0.010179763898847975,
+                    -0.01562656477752906
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "point_fallback",
+                "fallback_reason": "fewer_than_three_noncollinear_unique_inner_face_points",
+                "eligible_contact_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    0.008898197736465954,
+                    0.01921585292589432
+                  ],
+                  [
+                    0.012720708176688182,
+                    -0.00022663379484334317
+                  ]
+                ],
+                "support_area_m2": 0.0,
+                "overlap_area_m2": null,
+                "overlap_fraction": null,
+                "overlap_centroid_yz_m": null
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    "teacher__placement_xm10_ym10mm__seed4242": {
+      "video_t_s": 18.0,
+      "scene_capture_t_s": 18.0,
+      "scene_packet_normal_force_n": [
+        6.194927215576172,
+        6.336051940917969
+      ],
+      "tactile_capture_t_s": 17.876,
+      "tactile_age_s": 0.12399999999999878,
+      "tactile_sample_index": 143,
+      "saved_gel_normal_force_n": [
+        4.685055696523896,
+        5.037975686212254
+      ],
+      "saved_pad_world_net_force_n": [
+        [
+          1.8789238929748535,
+          5.203404426574707,
+          2.6520133018493652
+        ],
+        [
+          -1.923709511756897,
+          -5.327431678771973,
+          -2.715226173400879
+        ]
+      ],
+      "saved_gel_shape": [
+        252,
+        2,
+        288,
+        384
+      ],
+      "saved_gel_dtype": "uint8",
+      "saved_gel_frame_sha256": [
+        "061da632882a17a32e311a100696c88177ff49838fe865c99e558277d34a287b",
+        "f3cac1ee6c92fc6ba3aefbec76cb8a2249e9eacbf99c7f62df689696ea4029f1"
+      ],
+      "input_sha256": {
+        "policy_tactile.npz": "2e9c53ec8af02de2e922db44cbdc260e187f9b077343b2e04ffd4550917b7376",
+        "gel_contact_trace.json": "872de2e7b44ee6376393b147f05290b5a33910261d08221ef6f45b2b0af27d66",
+        "sim_trace.npz": "c5bc475f200bce5c22590d844bca15163b74d82eed6aa7efb93ce33259d2b182",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "policy_info.json": "eaff9c9733524b8e1bc9fffb8d8c91f89eef32e353f4efc96f5d18b3bb9195b6",
+        "run.json": "67335f226d2ab360a62d7da0c94bde31f0adb01b4a538188be4d2b5914738274"
+      },
+      "all_samples_crosscheck": {
+        "sample_count": 252,
+        "max_npz_vs_contact_json_timestamp_difference_s": 0.0,
+        "max_npz_vs_contact_json_force_difference_n": 0.0,
+        "max_reconstructed_mapper_force_difference_n": 0.0
+      },
+      "selected_sample_pads": [
+        {
+          "side": "left",
+          "recorded": {
+            "normal_force_n": 4.685055696523896,
+            "contact_uv": [
+              0.15850778273497612,
+              0.3896147613934205
+            ],
+            "has_gel_contact": true,
+            "accepted_contact_count": 4,
+            "populated_unique_contact_count": 4,
+            "duplicate_filter_contact_indices": 0,
+            "observed_filtered_normal_force_n": 6.13505893945694,
+            "accepted_contact_normal_magnitude_n": 4.685057816432966,
+            "ignored_contact_normal_force_n": 1.450001123023974,
+            "unprojected_accepted_normal_force_n": 2.119909070369158e-06,
+            "ignored_by_reason_n": {
+              "not_inner_face": 0.0,
+              "outside_active_ellipse": 1.450001123023974,
+              "normal_not_aligned": 0.0
+            },
+            "contact_centroid_pad_m": [
+              -0.006221279106334711,
+              0.005259799278811176,
+              0.00285314008922957
+            ],
+            "force_semantics": "positive compression projected onto gel normal; no friction-force estimate",
+            "sdk_uv_orientation_calibrated": false,
+            "contact_filter_column_count": 20,
+            "filter_labels_match_columns": true,
+            "per_filter_contacts": [
+              {
+                "filter_column": 0,
+                "filter_path": "/World/Waffle",
+                "contact_count": 4,
+                "accepted_contact_count": 4,
+                "ignored_contact_count": 0,
+                "normal_force_magnitude_n": 6.13505893945694,
+                "gel_compression_n": 4.685055696523896,
+                "ignored_normal_force_n": 1.450001123023974,
+                "contact_points_pad_m": [
+                  [
+                    -0.0062164296774552185,
+                    0.012644136719637733,
+                    -0.00015853912816998604
+                  ],
+                  [
+                    -0.006234854787592584,
+                    -0.005357204379993788,
+                    0.025229390719475248
+                  ],
+                  [
+                    -0.00621231469526433,
+                    0.006834096783022512,
+                    -0.0224733169368936
+                  ],
+                  [
+                    -0.006229286977289155,
+                    0.004592532974980554,
+                    0.02523977045518828
+                  ]
+                ],
+                "contact_normals_pad": [
+                  [
+                    0.999999559541791,
+                    -0.0008964277661013928,
+                    0.0003184071301998763
+                  ],
+                  [
+                    0.999999559541791,
+                    -0.0008964277661013928,
+                    0.0003184071301998763
+                  ],
+                  [
+                    0.999999559541791,
+                    -0.0008964277661013928,
+                    0.0003184071301998763
+                  ],
+                  [
+                    0.999999559541791,
+                    -0.0008964277661013928,
+                    0.0003184071301998763
+                  ]
+                ],
+                "normal_force_by_contact_n": [
+                  2.4301953315734863,
+                  1.7279165983200073,
+                  1.6205081939697266,
+                  0.3564388155937195
+                ],
+                "accepted_by_contact": [
+                  true,
+                  true,
+                  true,
+                  true
+                ],
+                "point_inside_active_gel_by_contact": [
+                  true,
+                  false,
+                  false,
+                  false
+                ],
+                "gel_force_fraction_by_contact": [
+                  0.7636532692948628,
+                  0.7636532692948628,
+                  0.7636532692948628,
+                  0.7636532692948628
+                ],
+                "coverage": {
+                  "method": "manifold_patch",
+                  "fallback_reason": null,
+                  "eligible_contact_count": 4,
+                  "shared_filter_contact_count": 0,
+                  "support_polygon_yz_m": [
+                    [
+                      -0.005357204379993788,
+                      0.025229390719475248
+                    ],
+                    [
+                      0.006834096783022512,
+                      -0.0224733169368936
+                    ],
+                    [
+                      0.012644136719637733,
+                      -0.00015853912816998604
+                    ],
+                    [
+                      0.004592532974980554,
+                      0.02523977045518828
+                    ]
+                  ],
+                  "support_area_m2": 0.0004009954481769022,
+                  "overlap_area_m2": 0.00030622148497265006,
+                  "overlap_fraction": 0.7636532692948628,
+                  "overlap_centroid_yz_m": [
+                    0.005259799278811177,
+                    0.0028531400892295705
+                  ]
+                }
+              }
+            ],
+            "coverage_mode": "manifold_patch",
+            "coverage_assumption": "uniform pressure on each body's convex inner-face support polygon; sparse manifolds use points; Gaussian proxy remains a spatial approximation",
+            "ellipse_polygon_segments": 512
+          },
+          "bodies": [
+            {
+              "path": "/World/Waffle",
+              "positive_force_contact_count": 4,
+              "zero_force_contact_count": 0,
+              "ellipse_radius_squared": [
+                0.8773022311573074,
+                2.1220485682400168,
+                1.8150644131516183,
+                2.081919019100102
+              ],
+              "normal_alignment_abs_pad_X": [
+                0.9999995475169884,
+                0.9999995475169884,
+                0.9999995475169884,
+                0.9999995475169884
+              ],
+              "independent_formula_gel_force_n": 4.685055696523896,
+              "projection_loss_before_any_area_filter_n": 2.7760099453599227e-06
+            }
+          ]
+        },
+        {
+          "side": "right",
+          "recorded": {
+            "normal_force_n": 5.037975686212254,
+            "contact_uv": [
+              -0.04740709405310466,
+              -0.15634809012420142
+            ],
+            "has_gel_contact": true,
+            "accepted_contact_count": 4,
+            "populated_unique_contact_count": 4,
+            "duplicate_filter_contact_indices": 0,
+            "observed_filtered_normal_force_n": 6.281292974948883,
+            "accepted_contact_normal_magnitude_n": 5.037977965811696,
+            "ignored_contact_normal_force_n": 1.243315009137187,
+            "unprojected_accepted_normal_force_n": 2.2795994424196e-06,
+            "ignored_by_reason_n": {
+              "not_inner_face": 0.0,
+              "outside_active_ellipse": 1.243315009137187,
+              "normal_not_aligned": 0.0
+            },
+            "contact_centroid_pad_m": [
+              0.005772450097028772,
+              -0.0021106992166767193,
+              -0.0008533276929558838
+            ],
+            "force_semantics": "positive compression projected onto gel normal; no friction-force estimate",
+            "sdk_uv_orientation_calibrated": false,
+            "contact_filter_column_count": 20,
+            "filter_labels_match_columns": true,
+            "per_filter_contacts": [
+              {
+                "filter_column": 0,
+                "filter_path": "/World/Waffle",
+                "contact_count": 4,
+                "accepted_contact_count": 4,
+                "ignored_contact_count": 0,
+                "normal_force_magnitude_n": 6.281292974948883,
+                "gel_compression_n": 5.037975686212254,
+                "ignored_normal_force_n": 1.243315009137187,
+                "contact_points_pad_m": [
+                  [
+                    0.005765816821884285,
+                    -0.011484243490025478,
+                    0.013120538822819534
+                  ],
+                  [
+                    0.005787810404175524,
+                    0.006854301354681167,
+                    -0.02247455259529736
+                  ],
+                  [
+                    0.0057879834598328255,
+                    0.00887171090243121,
+                    -0.019616734907451163
+                  ],
+                  [
+                    0.005764884757366235,
+                    -0.009553612159566032,
+                    0.01925497175194794
+                  ]
+                ],
+                "contact_normals_pad": [
+                  [
+                    -0.999999559541791,
+                    0.0008964277661013928,
+                    -0.0003184071301998763
+                  ],
+                  [
+                    -0.999999559541791,
+                    0.0008964277661013928,
+                    -0.0003184071301998763
+                  ],
+                  [
+                    -0.999999559541791,
+                    0.0008964277661013928,
+                    -0.0003184071301998763
+                  ],
+                  [
+                    -0.999999559541791,
+                    0.0008964277661013928,
+                    -0.0003184071301998763
+                  ]
+                ],
+                "normal_force_by_contact_n": [
+                  2.9666659832000732,
+                  1.1698763370513916,
+                  0.7764427065849304,
+                  1.3683079481124878
+                ],
+                "accepted_by_contact": [
+                  true,
+                  true,
+                  true,
+                  true
+                ],
+                "point_inside_active_gel_by_contact": [
+                  false,
+                  false,
+                  false,
+                  false
+                ],
+                "gel_force_fraction_by_contact": [
+                  0.8020606562859289,
+                  0.8020606562859289,
+                  0.8020606562859289,
+                  0.8020606562859289
+                ],
+                "coverage": {
+                  "method": "manifold_patch",
+                  "fallback_reason": null,
+                  "eligible_contact_count": 4,
+                  "shared_filter_contact_count": 0,
+                  "support_polygon_yz_m": [
+                    [
+                      -0.011484243490025478,
+                      0.013120538822819534
+                    ],
+                    [
+                      0.006854301354681167,
+                      -0.02247455259529736
+                    ],
+                    [
+                      0.00887171090243121,
+                      -0.019616734907451163
+                    ],
+                    [
+                      -0.009553612159566032,
+                      0.01925497175194794
+                    ]
+                  ],
+                  "support_area_m2": 0.00015614696918645892,
+                  "overlap_area_m2": 0.00012523934058274996,
+                  "overlap_fraction": 0.8020606562859289,
+                  "overlap_centroid_yz_m": [
+                    -0.002110699216676719,
+                    -0.0008533276929558838
+                  ]
+                }
+              }
+            ],
+            "coverage_mode": "manifold_patch",
+            "coverage_assumption": "uniform pressure on each body's convex inner-face support polygon; sparse manifolds use points; Gaussian proxy remains a spatial approximation",
+            "ellipse_polygon_segments": 512
+          },
+          "bodies": [
+            {
+              "path": "/World/Waffle",
+              "positive_force_contact_count": 4,
+              "zero_force_contact_count": 0,
+              "ellipse_radius_squared": [
+                1.2549871150964036,
+                1.8167533546644823,
+                1.6195688152414218,
+                1.6451061451444946
+              ],
+              "normal_alignment_abs_pad_X": [
+                0.9999995475169884,
+                0.9999995475169884,
+                0.9999995475169884,
+                0.9999995475169884
+              ],
+              "independent_formula_gel_force_n": 5.037975686212254,
+              "projection_loss_before_any_area_filter_n": 2.8421783621399067e-06
+            }
+          ]
+        }
+      ],
+      "neighboring_tactile_samples": [
+        {
+          "t": 17.628,
+          "gel_normal_force_n": [
+            4.689531247452554,
+            5.055853500601918
+          ],
+          "all_contact_normal_force_n": [
+            6.142834842205048,
+            6.301133036613464
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.005333199879574023,
+                    0.02522304306838174
+                  ],
+                  [
+                    0.006855256405553797,
+                    -0.022480319548203315
+                  ],
+                  [
+                    0.012666605272949239,
+                    -0.0001659930362280124
+                  ],
+                  [
+                    0.004616567617774253,
+                    0.0252328082860163
+                  ]
+                ],
+                "support_area_m2": 0.00040099442688673365,
+                "overlap_area_m2": 0.0003061252393554755,
+                "overlap_fraction": 0.7634151968948555,
+                "overlap_centroid_yz_m": [
+                  0.005280613660527411,
+                  0.002852813346831381
+                ]
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.011461581714017994,
+                    0.013110505976695762
+                  ],
+                  [
+                    0.006874748712839608,
+                    -0.0224853648826878
+                  ],
+                  [
+                    0.008892555685805062,
+                    -0.019627253941739614
+                  ],
+                  [
+                    -0.009530348269333746,
+                    0.01924556579930114
+                  ]
+                ],
+                "support_area_m2": 0.00015616548524132726,
+                "overlap_area_m2": 0.00012530289154884992,
+                "overlap_fraction": 0.8023725047517098,
+                "overlap_centroid_yz_m": [
+                  -0.002099125057675988,
+                  -0.0008427981251830237
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "t": 17.756,
+          "gel_normal_force_n": [
+            4.8443673441715065,
+            5.03696006588455
+          ],
+          "all_contact_normal_force_n": [
+            6.135280340909958,
+            6.277741253376007
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.0053344235209955675,
+                    0.02523101247517833
+                  ],
+                  [
+                    0.006853594863087803,
+                    -0.022472516061802943
+                  ],
+                  [
+                    0.01266518284473793,
+                    -0.00015817668622502716
+                  ],
+                  [
+                    0.008838630720131127,
+                    0.019283544940527007
+                  ]
+                ],
+                "support_area_m2": 0.0004009955561460679,
+                "overlap_area_m2": 0.0003166229756143864,
+                "overlap_fraction": 0.7895922305409596,
+                "overlap_centroid_yz_m": [
+                  0.005448301866065302,
+                  0.0030502030034764327
+                ]
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.011461911948482294,
+                    0.01312071539382243
+                  ],
+                  [
+                    0.006874173409556845,
+                    -0.022475474000099
+                  ],
+                  [
+                    0.008891905952851685,
+                    -0.019617581573713457
+                  ],
+                  [
+                    -0.009530726135630604,
+                    0.01925537517856247
+                  ]
+                ],
+                "support_area_m2": 0.00015615681600878356,
+                "overlap_area_m2": 0.00012529283945998543,
+                "overlap_fraction": 0.802352677663061,
+                "overlap_centroid_yz_m": [
+                  -0.0020961286071649278,
+                  -0.0008399718300410049
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "t": 17.876,
+          "gel_normal_force_n": [
+            4.685055696523896,
+            5.037975686212254
+          ],
+          "all_contact_normal_force_n": [
+            6.13505893945694,
+            6.281292974948883
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.005357204379993788,
+                    0.025229390719475248
+                  ],
+                  [
+                    0.006834096783022512,
+                    -0.0224733169368936
+                  ],
+                  [
+                    0.012644136719637733,
+                    -0.00015853912816998604
+                  ],
+                  [
+                    0.004592532974980554,
+                    0.02523977045518828
+                  ]
+                ],
+                "support_area_m2": 0.0004009954481769022,
+                "overlap_area_m2": 0.00030622148497265006,
+                "overlap_fraction": 0.7636532692948628,
+                "overlap_centroid_yz_m": [
+                  0.005259799278811177,
+                  0.0028531400892295705
+                ]
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.011484243490025478,
+                    0.013120538822819534
+                  ],
+                  [
+                    0.006854301354681167,
+                    -0.02247455259529736
+                  ],
+                  [
+                    0.00887171090243121,
+                    -0.019616734907451163
+                  ],
+                  [
+                    -0.009553612159566032,
+                    0.01925497175194794
+                  ]
+                ],
+                "support_area_m2": 0.00015614696918645892,
+                "overlap_area_m2": 0.00012523934058274996,
+                "overlap_fraction": 0.8020606562859289,
+                "overlap_centroid_yz_m": [
+                  -0.002110699216676719,
+                  -0.0008533276929558838
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "t": 18.004,
+          "gel_normal_force_n": [
+            5.047376796929193,
+            5.449606009316803
+          ],
+          "all_contact_normal_force_n": [
+            6.202124238014221,
+            6.341294884681702
+          ],
+          "body_coverage": [
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.011489043187562773,
+                    0.013121095965186225
+                  ],
+                  [
+                    0.006844957114084585,
+                    -0.022479410426699088
+                  ],
+                  [
+                    0.011653711462951116,
+                    0.010355775277590155
+                  ],
+                  [
+                    -0.0003739548535330253,
+                    0.027319743392705025
+                  ]
+                ],
+                "support_area_m2": 0.0005662634960198415,
+                "overlap_area_m2": 0.00046083336604195647,
+                "overlap_fraction": 0.8138143625380527,
+                "overlap_centroid_yz_m": [
+                  0.0019943155983250084,
+                  0.0035170828781916656
+                ]
+              }
+            ],
+            [
+              {
+                "body": "/World/Waffle",
+                "method": "manifold_patch",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.011475548269591206,
+                    0.013109392656406494
+                  ],
+                  [
+                    0.006857525768364967,
+                    -0.02248931322412593
+                  ],
+                  [
+                    0.01266928254484148,
+                    -0.00017307527674558407
+                  ],
+                  [
+                    0.004618342005587418,
+                    0.025225446680176056
+                  ]
+                ],
+                "support_area_m2": 0.0005611614593575601,
+                "overlap_area_m2": 0.00048225315400901613,
+                "overlap_fraction": 0.8593839544168244,
+                "overlap_centroid_yz_m": [
+                  0.0023814163094371455,
+                  0.0028823951335663813
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  "interpretation": {
+    "nominal": "The deterministic sparse-manifold fallback rejects both loaded left points and the dominant right point as outside the active ellipse. Two additional zero-force manifold vertices on each pad are excluded before hull construction. This is not shear, net-force cancellation, normal-axis sign error, or a stale-sample explanation.",
+    "success": "Four strictly positive loaded points per pad permit a convex support patch; gel force follows the active ellipse overlap fraction. The small normal-projection loss is insufficient to explain the nominal deficit.",
+    "physical_limit": "Sparse solver constraints do not establish a calibrated pressure field. Numerical agreement with the frozen mapper does not validate zero physical pressure in the gel region. Existing frozen scores and all40 outcomes remain unchanged.",
+    "next_fix_hypothesis": "In an isolated future mapper version, assess whether valid zero-force geometric manifold vertices should bound support when the same body has positive total load, and compare against measured pressure/contact evidence. This may remove the two-point discontinuity, but zero-force vertices alone do not prove loaded area and may overestimate it. A calibrated compliant-contact footprint or an explicitly uncertain sparse-line model is needed; do not replace the active-area test with whole-pad net force."
+  }
+}

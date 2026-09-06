@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/ros-industrial-attic/robotiq",
+  "commit": "45196f6558fe8ba9d89bc8a105396c68c3e7e892",
+  "model": "Robotiq 2F-85, historical ROS-Industrial visualization meshes",
+  "retrieved_utc": "2026-09-06",
+  "generation": "robotiq_arg2f_85_model.xacro processed with xacro; package mesh URLs rewritten relative to URDF. Meshes use millimetres and URDF scale=.001.",
+  "limitations": "Historic nominal CAD (manufacturer now labels original ROS1 CAD outdated); custom DM tactile pads and mounts are absent; generic fingers do not model rig contact surfaces. Intended visual reference; dynamic articulation mimic coupling not validated.",
+  "files_sha256": {
+    "LICENSE": "bfe9a4de3ec95dac1d2bf02df4d774ecfd6d492df1fa33476c3af5576bd08435",
+    "meshes/collision/robotiq_arg2f_85_base_link.stl": "d8844d7d09e05423b6edb56b354eef561ad6cf4787d8b7f980232cd4346f46bf",
+    "meshes/collision/robotiq_arg2f_85_inner_finger.dae": "807aff52c5a12ca5429cfb2eb19cc88dfaf0083bac6b69e24d49f6beb29aa2c8",
+    "meshes/collision/robotiq_arg2f_85_inner_knuckle.dae": "a8e6bb0b3b5ef6ea1323aa698a16dc1ec1a878ed2c2bcd43547750a18e72d9b4",
+    "meshes/collision/robotiq_arg2f_85_outer_finger.dae": "5e45e7773260cc4b04bbae626af94bfdd49c38b3c69fc248cf0708e5fa65a39f",
+    "meshes/collision/robotiq_arg2f_85_outer_knuckle.dae": "8c7ce8ee42044149f9a956d55f33f06e6b75e5e35080ee4bf1e8cb381535aeb7",
+    "meshes/collision/robotiq_arg2f_base_link.stl": "111e37f13a664989dd54226f80f521b32ea0b71c975282a16696b14be7cc9249",
+    "meshes/visual/robotiq_arg2f_85_base_link.dae": "d03d6e7395b0aa11ae7954b2f04a0a650448547d5d4f367238098ccd848b3eb5",
+    "meshes/visual/robotiq_arg2f_85_inner_finger.dae": "3172e8fe000fda75b9b29b48cd8cad4011d184a6df23eb2c3adb6c1f5a4eae93",
+    "meshes/visual/robotiq_arg2f_85_inner_knuckle.dae": "19b12510eec739a1a4655ff633ce3f02ad3c2eda2cb8f451df900ddfa76c8f14",
+    "meshes/visual/robotiq_arg2f_85_outer_finger.dae": "32d842e51e0ddd25b3354af212131befa191c183cf4cdb61f82ecbe5c5276323",
+    "meshes/visual/robotiq_arg2f_85_outer_knuckle.dae": "f1cc5198c9f3b06979af07d2944034b32acbb6130df5396dc2c7253cb656f587",
+    "meshes/visual/robotiq_arg2f_85_pad.dae": "0f1d5b8403fed489fb40b389e3d9ec27882db324d77d20cc84cf8bb8901fee80",
+    "meshes/visual/robotiq_gripper_coupling.stl": "4281e83002a25c20dc07c68b8d77da30a13e9a8401f157f6848ed8287d7cce44",
+    "robotiq_2f85.urdf": "7993b6e349d9eddab0bcb293288c28200567b63c6d02f26e43cf200cc138224a"
+  }
+}

@@ -1,0 +1,36 @@
+/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/policy_server.py:105: UserWarning: hardware.yaml has real drivers enabled but meta.bench_verified=false — run docs/hardware_bench_day1.md and fill the BENCH fields first.
+  hw, paths = load_hardware(hw_path), load_paths()
+2026-09-07 01:11:16,241 phantom.config.hardware: tactile distributed-force units UNCALIBRATED (dist_force_unit_to_N=0, bench item a): running on depth-based contact + deformation fallback (pipeline.md §5). Resultant wrench calibrated: True.
+2026-09-07 01:11:16,241 phantom.config.hardware: recording throughput estimate: 2.2 MB/s/sensor fields (x2 sensors) pre-compression
+2026-09-07 01:11:21,609 phantom.train.builder: layout:
+SequenceLayout(student=True, drop_video=False, T=12, tokens=3840)
+  video_cond   frames [0:1)
+  video_gen    frames [1:4)
+  obs_proprio  frames [4:5)
+  contact      frames [5:8)
+  action       frames [8:12)
+2026-09-07 01:11:21,610 phantom.backbone.loader: cosmos_predict2 importable from /home/physicalai/phantom-icra-2027/phantom/cosmos-predict2.5 (shims: {'transformer_engine': True, 'megatron': True, 'multistorageclient': True})
+[09-07 01:11:54|INFO|cosmos-predict2.5/cosmos_predict2/_src/predict2/action/networks/action_conditioned_minimal_v1_lvg_dit.py:217:__init__] hidden_dim_in_action_embedder: 8192
+2026-09-07 01:11:55,694 phantom.backbone.loader: base checkpoint loaded: 580 tensors, 117 dropped, 34 phantom params fresh
+W0907 01:11:56.472000 1188134 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0907 01:11:56.489000 1188134 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+2026-09-07 01:11:57,099 phantom.backbone.loader: LoRA injected: r=16 alpha=16 targets=q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2 (22.9 M params)
+2026-09-07 01:11:57,101 phantom.backbone.loader: trainable: lora 22.9M, phantom 1.5M, frozen 2126.8M
+[09-07 01:11:57|INFO|cosmos-predict2.5/cosmos_predict2/_src/predict2/tokenizers/wan2pt1.py:669:_video_vae] loading /home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/tokenizer.pth
+2026-09-07 01:11:57,758 phantom.backbone.vae: Wan2.1 VAE loaded from /home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/tokenizer.pth
+2026-09-07 01:11:57,826 phantom.backbone.text_embedding: cached empty-string text embedding: (1, 512, 100352)
+2026-09-07 01:11:58,210 phantom.backbone.text_embedding: text embedding cache: 8 entries from /home/physicalai/phantom-icra-2027/phantom/runs/teacher_v3_790eps/text_embeddings.pt (recipe=reason1_full_concat_v1)
+2026-09-07 01:11:58,263 phantom.train.builder: PhantomRectifiedFlow built: 26.4 M trainable params
+2026-09-07 01:11:58,266 phantom.train.common: hardware config VALUES differ from checkpoint provenance (shape-compatible — proceeding)
+2026-09-07 01:11:58,266 phantom.train.common: EMA weights applied: 630 tensors (560 LoRA)
+2026-09-07 01:11:58,348 phantom.backbone.loader: LoRA merged into base weights (fp32 accumulate): 280 layers
+2026-09-07 01:11:59,442 phantom.inference.remote: policy server READY on 127.0.0.1:7797 (ckpt /home/physicalai/phantom-icra-2027/phantom/runs/student_ftA_r1/student_001200.pt)
+READY ckpt=/home/physicalai/phantom-icra-2027/phantom/runs/student_ftA_r1/student_001200.pt port=7797
+2026-09-07 01:12:10,712 phantom.inference.remote: client #1 connected
+2026-09-07 01:12:10,754 phantom.inference.remote: client #1 owns the policy
+2026-09-07 01:12:28,978 phantom.inference.remote: client #1 released the policy
+2026-09-07 01:12:28,978 phantom.inference.remote: client #1 disconnected
+2026-09-07 01:12:40,347 phantom.inference.remote: client #2 connected
+2026-09-07 01:12:40,387 phantom.inference.remote: client #2 owns the policy
+2026-09-07 01:13:01,164 phantom.inference.remote: client #2 released the policy
+2026-09-07 01:13:01,164 phantom.inference.remote: client #2 disconnected

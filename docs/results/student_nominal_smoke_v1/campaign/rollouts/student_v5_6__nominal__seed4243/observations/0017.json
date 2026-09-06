@@ -1,0 +1,19 @@
+{
+  "replan_id": 17,
+  "sensor_times": {
+    "arm": 11.836,
+    "gripper": 11.836,
+    "camera_scene": 11.8,
+    "tactile_left": 11.756,
+    "tactile_right": 11.756
+  },
+  "present_fields": [
+    "prev_chunk",
+    "reactive",
+    "rgb",
+    "t",
+    "ur_state",
+    "wrist_window"
+  ],
+  "scope": "Exact raw observation passed to native PhantomPolicy preprocessing"
+}

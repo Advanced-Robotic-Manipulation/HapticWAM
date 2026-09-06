@@ -1,0 +1,155 @@
+{
+  "status": "verified",
+  "verified_count": 4,
+  "failed_count": 0,
+  "student_tactile_panels": "Stored simulator/controller proxy observations; fingertip pixels are not consumed by these student architectures. Wrist F/T remains a model input.",
+  "verification_helper_sha256": "dce372202575af7abc7dd0ee5ac5656de19889a46760fc2e7cde1c6b8826b0dc",
+  "videos": {
+    "student_ftA_r1__nominal__seed4242": {
+      "video": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.mp4",
+      "mapping": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.json",
+      "video_sha256": "b2220e272a35288850e58102373f3fcd2e6c8a2f084e9c1ceda4e10099e0b7e0",
+      "mapping_sha256": "7b89512c56382a25f9c16a1351b90b6bc2f1300cc792d893d5b879c50a72c57f",
+      "video_bytes": 496153,
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 144,
+        "fps": 15.0,
+        "horizon_s": 9.592,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0333333343333333
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "144"
+        }
+      }
+    },
+    "student_ftA_r1__nominal__seed4243": {
+      "video": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.mp4",
+      "mapping": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.json",
+      "video_sha256": "156f1b9436ef014577f667ace727b0c786e8f10093c0d16044e29c0ef0889b9a",
+      "mapping_sha256": "935e9d6a19e1ee12d3cac43322752cf67d64dbdf525816ba9ae81354c10ead18",
+      "video_bytes": 553352,
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 162,
+        "fps": 15.0,
+        "horizon_s": 10.736,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.1053333343333325
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "162"
+        }
+      }
+    },
+    "student_v5_6__nominal__seed4242": {
+      "video": "video_reviews/student_v5_6__nominal__seed4242/policy_review.mp4",
+      "mapping": "video_reviews/student_v5_6__nominal__seed4242/policy_review.json",
+      "video_sha256": "e12fb0633e7b6f1726815496879c42f9b70d00d92badc54d8ca64eeacbd43a26",
+      "mapping_sha256": "4812580b728b432c9f5f0c187f2a85df815c448079b04fe0d4d6ce761db075f4",
+      "video_bytes": 812382,
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 228,
+        "fps": 15.0,
+        "horizon_s": 15.176,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0013333343333333
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "228"
+        }
+      }
+    },
+    "student_v5_6__nominal__seed4243": {
+      "video": "video_reviews/student_v5_6__nominal__seed4243/policy_review.mp4",
+      "mapping": "video_reviews/student_v5_6__nominal__seed4243/policy_review.json",
+      "video_sha256": "720f6ae9b4bbce477aa2ce5f7d82d5dab9eef0fb462db940c0852a241f1fb5ce",
+      "mapping_sha256": "d6b31837296d1b85ecce042671290d0729af7427241c2afd92466e86ca4cf3bd",
+      "video_bytes": 926613,
+      "verification": {
+        "stored_gel": true,
+        "strict_scoring_matches": true,
+        "causal_mapping": true,
+        "frames": 258,
+        "fps": 15.0,
+        "horizon_s": 17.192,
+        "maximum_sample_age_s": {
+          "scene": 0.06666666766666829,
+          "state": 0.06666666766666829,
+          "runtime_tactile": 2.0013333343333333
+        },
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "ffprobe": {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 690,
+          "nb_read_frames": "258"
+        }
+      }
+    }
+  },
+  "total_video_bytes": 2788500,
+  "verified_at_utc": "2026-09-06T22:21:24.729171+00:00"
+}
