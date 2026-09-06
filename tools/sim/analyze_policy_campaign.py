@@ -30,6 +30,44 @@ def fingerprint(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def policy_settings(design, policy=None):
+    """Resolve declared recipe variants without changing checkpoint-owned config."""
+    settings = copy.deepcopy(design["inference_settings"])
+    overrides = (policy or {}).get("inference_settings", {})
+    allowed = {
+        "use_ema",
+        "nfe",
+        "guidance",
+        "persistent_noise",
+        "parity",
+        "k_seeds",
+        "max_play",
+        "task_text",
+    }
+    if set(overrides) - allowed:
+        raise ValueError(
+            f"Unsupported policy inference overrides: {sorted(set(overrides) - allowed)}"
+        )
+    settings.update(overrides)
+    for field in ("nfe", "k_seeds", "max_play"):
+        value = settings[field]
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise ValueError(f"{field} must be a positive integer")
+    for field in ("use_ema", "persistent_noise", "parity"):
+        if not isinstance(settings[field], bool):
+            raise TypeError(f"{field} must be boolean")
+    if not np.isfinite(settings["guidance"]) or settings["guidance"] < 0:
+        raise ValueError("guidance must be finite and nonnegative")
+    return settings
+
+
+def adapter_input(design, condition, field):
+    """Only measured startup state can vary by start-condition in this version."""
+    if field == "initial_state" and condition.get(field) is not None:
+        return condition[field]
+    return design.get("adapter_profile", {}).get(field)
+
+
 def load_design(path):
     design = json.loads(Path(path).read_text())
     if design.get("status") != "frozen":
@@ -48,6 +86,11 @@ def load_design(path):
     expected = len(conditions) * len(seeds)
     if design["planned_counts"]["per_policy"] != expected:
         raise ValueError("Frozen planned count disagrees with condition/seed grid")
+    for policy in policies:
+        policy_settings(design, policy)
+    latency = design.get("delivery_latency_s")
+    if latency is not None and (not np.isfinite(latency) or latency < 0):
+        raise ValueError("delivery_latency_s must be finite and nonnegative")
     return design, fingerprint(path)
 
 
@@ -121,7 +164,7 @@ def read_rows(path):
 def runtime_audit(design, policy, condition, info, server, run, times, stop):
     """Reject recipe drift and incomplete time coverage before outcome scoring."""
     reasons = []
-    settings = design["inference_settings"]
+    settings = policy_settings(design, policy)
     expected = {
         "nfe": settings["nfe"],
         "guidance": settings["guidance"],
@@ -160,6 +203,8 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
             reasons.append(f"effective_{field}_differs_from_condition")
     if info.get("max_play_steps") != settings["max_play"]:
         reasons.append("effective_max_play_differs_from_campaign")
+    if info.get("policy_latency_override_s") != design.get("delivery_latency_s"):
+        reasons.append("effective_delivery_latency_override_differs_from_campaign")
     profile = design.get("adapter_profile", {})
     veto = profile.get("terminal_veto", False)
     for field, expected_value in (
@@ -171,7 +216,7 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     ):
         if info.get(field) != expected_value:
             reasons.append(f"effective_{field}_differs_from_campaign")
-    if profile:
+    if profile or condition.get("initial_state"):
         for field in (
             "placement_release",
             "gel_contact_coverage",
@@ -184,7 +229,7 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
             ("initial_state", "policy_initial_state_provenance"),
             ("tactile_baseline", "tactile_baseline_provenance"),
         ):
-            expected_input = profile.get(field)
+            expected_input = adapter_input(design, condition, field)
             if (
                 expected_input
                 and info.get(reported_field, {}).get("sha256")

@@ -27,6 +27,8 @@ _analysis = importlib.import_module("tools.sim.analyze_policy_campaign")
 condition_scene = _analysis.condition_scene
 fingerprint = _analysis.fingerprint
 load_design = _analysis.load_design
+policy_settings = _analysis.policy_settings
+adapter_input = _analysis.adapter_input
 
 
 def write_json(path, value):
@@ -66,8 +68,8 @@ def trial_id(policy, condition, seed):
     return f"{policy}__{condition}__seed{seed}"
 
 
-def inference_config(design):
-    settings = design["inference_settings"]
+def inference_config(design, policy=None):
+    settings = policy_settings(design, policy)
     return {
         "nfe": settings["nfe"],
         "guidance": settings["guidance"],
@@ -81,7 +83,7 @@ def inference_config(design):
 
 
 def server_command(args, design, policy, directory):
-    settings = design["inference_settings"]
+    settings = policy_settings(design, policy)
     command = [
         str(args.server_python),
         str(args.source / "tools/sim/policy_server.py"),
@@ -119,6 +121,7 @@ def server_command(args, design, policy, directory):
 
 def simulation_command(args, design, policy, condition, seed, directory, robot_usd):
     profile = design.get("adapter_profile", {})
+    settings = policy_settings(design, policy)
     relative_episode = Path(design["prepared_episode"]).relative_to("evidence")
     command = [
         str(args.source / "tools/sim/launch_waffles.sh"),
@@ -139,12 +142,12 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         "--policy-mode",
         policy["policy_mode"],
         "--policy-config",
-        str(args.output / "runtime/inference.json"),
+        str(args.output / "runtime" / f"inference_{policy['id']}.json"),
         "--hardware-config",
         str(args.hardware_config),
         "--ignore-episode-overrides",
         "--max-play-steps",
-        str(design["inference_settings"]["max_play"]),
+        str(settings["max_play"]),
         "--observation-delay-s",
         str(condition["observation_delay_s"]),
         "--inference-delay-add-s",
@@ -161,8 +164,11 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         ("initial_state", "--policy-initial-state"),
         ("tactile_baseline", "--tactile-baseline"),
     ):
-        if field in profile:
-            command += [flag, profile[field]["path"]]
+        spec = adapter_input(design, condition, field)
+        if spec:
+            command += [flag, spec["path"]]
+    if design.get("delivery_latency_s") is not None:
+        command += ["--policy-latency", str(design["delivery_latency_s"])]
     for field, flag in (
         ("terminal_veto", "--terminal-veto-config"),
         ("placement_release", "--placement-release-config"),
@@ -227,6 +233,8 @@ def source_manifest(args, design_sha, design):
     paths = set()
     for pattern in (
         "phantom/sim/*.py",
+        "phantom/deploy/*.py",
+        "phantom/scripts/run_deploy.py",
         "tools/sim/*.py",
         "tools/sim/*.sh",
         "configs/sim/*.json",
@@ -256,6 +264,16 @@ def source_manifest(args, design_sha, design):
             if actual != spec["sha256"]:
                 raise ValueError(f"Frozen adapter {field} input hash differs")
             profile_inputs[field] = {"path": spec["path"], "sha256": actual}
+    condition_inputs = {}
+    for condition in design.get("conditions", []):
+        spec = condition.get("initial_state")
+        if spec:
+            actual = fingerprint(spec["path"])
+            if actual != spec["sha256"]:
+                raise ValueError(
+                    f"Frozen condition {condition['id']} initial-state hash differs"
+                )
+            condition_inputs[condition["id"]] = {"path": spec["path"], "sha256": actual}
     return {
         "campaign_sha256": design_sha,
         "hardware_config": str(args.hardware_config),
@@ -277,6 +295,7 @@ def source_manifest(args, design_sha, design):
         "robot_usd": str(args.robot_usd) if args.robot_usd else None,
         "robot_usd_sha256": fingerprint(args.robot_usd) if args.robot_usd else None,
         "adapter_profile_inputs": profile_inputs,
+        "condition_initial_state_inputs": condition_inputs,
     }
 
 
@@ -390,6 +409,15 @@ def main():
             "planned_trials": design["planned_counts"]["total"],
             "policy_server_transport": f"127.0.0.1:{args.port}",
             "server_python": str(args.server_python),
+            "effective_inference_by_policy": {
+                policy["id"]: policy_settings(design, policy)
+                for policy in design["policies"]
+            },
+            "initial_state_by_condition": {
+                condition["id"]: adapter_input(design, condition, "initial_state")
+                for condition in design["conditions"]
+            },
+            "delivery_latency_override_s": design.get("delivery_latency_s"),
         }
         write_json(args.output / "plan.json", plan)
         if not args.execute:
@@ -421,6 +449,11 @@ def main():
             raise RuntimeError("Campaign snapshot differs from current frozen design")
         snapshot.write_bytes(args.campaign.read_bytes())
         write_json(args.output / "runtime/inference.json", inference_config(design))
+        for policy in design["policies"]:
+            write_json(
+                args.output / "runtime" / f"inference_{policy['id']}.json",
+                inference_config(design, policy),
+            )
         for field in ("terminal_veto", "placement_release"):
             value = design.get("adapter_profile", {}).get(field)
             if value:
@@ -582,8 +615,15 @@ def main():
                             "observation_delay_s": info.get("observation_delay_s"),
                             "inference_delay_add_s": info.get("inference_delay_add_s"),
                             "max_play_steps": info.get("max_play_steps"),
+                            "policy_latency_override_s": info.get(
+                                "policy_latency_override_s"
+                            ),
+                            "policy_initial_state_provenance": info.get(
+                                "policy_initial_state_provenance"
+                            ),
                             "duration_s": run["duration_s"],
                             "stop_reason": run.get("policy_stop_reason"),
+                            "completed_reason": run.get("policy_completed_reason"),
                         }
                         write_json(directory / "case.json", case)
                         if robot_usd is None:

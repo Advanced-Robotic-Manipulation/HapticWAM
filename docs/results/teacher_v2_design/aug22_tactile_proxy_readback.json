@@ -1,0 +1,22 @@
+{
+  "baseline_sha256": "9f8c2f302c1cb52bdb186bbdcc0dc5c9ed2a4533c9e03670eb1ea1585a225885",
+  "proxy_source_sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+  "no_contact_proxy_exact_per_array": {
+    "left": {
+      "infer_img": true,
+      "fields_ds": true,
+      "keyframes": true,
+      "wrench": true,
+      "area": true
+    },
+    "right": {
+      "infer_img": true,
+      "fields_ds": true,
+      "keyframes": true,
+      "wrench": true,
+      "area": true
+    }
+  },
+  "all_pass": true,
+  "method": "Actual MeasuredBaselineTactileProxy.synthesize([0,0]); compare all ten arrays against unchanged NPZ values, including documented float16-to-float32 conversion."
+}

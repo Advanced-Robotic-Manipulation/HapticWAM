@@ -1,0 +1,405 @@
+{
+  "method": "First RGB frame nearest measured anchor; translation-only ECC on static table ROI x0:170,y0:280. Fixed HSV components for blue bin and visible green wrapper. Neither is calibrated 3D object pose.",
+  "rows": [
+    {
+      "episode": "ep_waffles_1787395928_000",
+      "static_table_ecc_correlation": 1.000000006607873,
+      "static_table_translation_xy_px": [
+        0.0,
+        0.0
+      ],
+      "bin": {
+        "centroid_px": [
+          306.3692175020019,
+          181.95283658090878
+        ],
+        "bbox_xywh": [
+          170,
+          84,
+          290,
+          206
+        ],
+        "mask_area_px": 48703
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          295.1030188679245,
+          409.202641509434
+        ],
+        "area_px": 2650,
+        "min_area_rect": [
+          [
+            297.1794738769531,
+            411.3095397949219
+          ],
+          [
+            91.93183135986328,
+            42.88856506347656
+          ],
+          -24.904767990112305
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787395963_001",
+      "static_table_ecc_correlation": 0.9986845353773124,
+      "static_table_translation_xy_px": [
+        -0.004379675257951021,
+        0.002980706514790654
+      ],
+      "bin": {
+        "centroid_px": [
+          302.9833407990444,
+          179.16725325824962
+        ],
+        "bbox_xywh": [
+          170,
+          84,
+          290,
+          206
+        ],
+        "mask_area_px": 46881
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          289.6739596739597,
+          410.94851994851996
+        ],
+        "area_px": 2331,
+        "min_area_rect": [
+          [
+            294.54742431640625,
+            411.458251953125
+          ],
+          [
+            88.33170318603516,
+            40.45984649658203
+          ],
+          -27.349876403808594
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396028_003",
+      "static_table_ecc_correlation": 0.9986305055758843,
+      "static_table_translation_xy_px": [
+        -0.004088901448994875,
+        0.014307909645140171
+      ],
+      "bin": {
+        "centroid_px": [
+          307.6363636363636,
+          184.4700201844303
+        ],
+        "bbox_xywh": [
+          168,
+          85,
+          292,
+          205
+        ],
+        "mask_area_px": 50534
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          289.4658932714617,
+          413.4491879350348
+        ],
+        "area_px": 2155,
+        "min_area_rect": [
+          [
+            292.4075622558594,
+            412.8073425292969
+          ],
+          [
+            86.12705993652344,
+            41.52976989746094
+          ],
+          -19.2900447845459
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396060_004",
+      "static_table_ecc_correlation": 0.9985566855438998,
+      "static_table_translation_xy_px": [
+        -0.006566095165908337,
+        0.01251806877553463
+      ],
+      "bin": {
+        "centroid_px": [
+          305.4749605279138,
+          182.65525687219142
+        ],
+        "bbox_xywh": [
+          168,
+          85,
+          292,
+          205
+        ],
+        "mask_area_px": 49402
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          298.36721680420106,
+          408.86796699174795
+        ],
+        "area_px": 2666,
+        "min_area_rect": [
+          [
+            299.5708923339844,
+            411.4274597167969
+          ],
+          [
+            91.7544174194336,
+            43.762733459472656
+          ],
+          -25.676815032958984
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396094_005",
+      "static_table_ecc_correlation": 0.9985972466780804,
+      "static_table_translation_xy_px": [
+        -0.004205932375043631,
+        0.017813121899962425
+      ],
+      "bin": {
+        "centroid_px": [
+          308.4711025721455,
+          185.40493648055207
+        ],
+        "bbox_xywh": [
+          168,
+          84,
+          292,
+          206
+        ],
+        "mask_area_px": 51008
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          290.41327014218007,
+          415.7336492890995
+        ],
+        "area_px": 2110,
+        "min_area_rect": [
+          [
+            294.0550231933594,
+            414.9033203125
+          ],
+          [
+            86.51750946044922,
+            42.95708465576172
+          ],
+          -19.746837615966797
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396128_006",
+      "static_table_ecc_correlation": 0.9985788074044495,
+      "static_table_translation_xy_px": [
+        -0.008359959349036217,
+        0.01566481962800026
+      ],
+      "bin": {
+        "centroid_px": [
+          307.11578821845933,
+          184.136994196677
+        ],
+        "bbox_xywh": [
+          168,
+          85,
+          292,
+          205
+        ],
+        "mask_area_px": 50316
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          295.65373021853804,
+          411.5968349660889
+        ],
+        "area_px": 2654,
+        "min_area_rect": [
+          [
+            297.7777404785156,
+            413.3800354003906
+          ],
+          [
+            91.4306640625,
+            45.71533203125
+          ],
+          -23.35556411743164
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396273_010",
+      "static_table_ecc_correlation": 0.9985594469324929,
+      "static_table_translation_xy_px": [
+        -0.0011834437027573586,
+        0.029970161616802216
+      ],
+      "bin": {
+        "centroid_px": [
+          309.8087221894074,
+          185.31321126205947
+        ],
+        "bbox_xywh": [
+          171,
+          85,
+          289,
+          205
+        ],
+        "mask_area_px": 50790
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          333.9032499066119,
+          394.02689577885695
+        ],
+        "area_px": 2677,
+        "min_area_rect": [
+          [
+            336.5499267578125,
+            393.8948059082031
+          ],
+          [
+            93.75476837158203,
+            44.571937561035156
+          ],
+          -27.758541107177734
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396314_011",
+      "static_table_ecc_correlation": 0.9984329901320503,
+      "static_table_translation_xy_px": [
+        -0.018059181049466133,
+        0.01822679489850998
+      ],
+      "bin": {
+        "centroid_px": [
+          301.970097589457,
+          182.16890482942696
+        ],
+        "bbox_xywh": [
+          168,
+          86,
+          292,
+          204
+        ],
+        "mask_area_px": 47956
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          293.66484801247077,
+          413.07482462977396
+        ],
+        "area_px": 2566,
+        "min_area_rect": [
+          [
+            295.06243896484375,
+            415.6195983886719
+          ],
+          [
+            94.1321792602539,
+            41.9393196105957
+          ],
+          -27.55280876159668
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396346_012",
+      "static_table_ecc_correlation": 0.9979766074437469,
+      "static_table_translation_xy_px": [
+        -0.015114808455109596,
+        0.027506133541464806
+      ],
+      "bin": {
+        "centroid_px": [
+          302.1379437415551,
+          182.93702657331204
+        ],
+        "bbox_xywh": [
+          166,
+          86,
+          294,
+          204
+        ],
+        "mask_area_px": 48846
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          292.09500378501133,
+          410.7112036336109
+        ],
+        "area_px": 2642,
+        "min_area_rect": [
+          [
+            291.70904541015625,
+            413.4018859863281
+          ],
+          [
+            92.27874755859375,
+            43.783912658691406
+          ],
+          -25.14478302001953
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    },
+    {
+      "episode": "ep_waffles_1787396461_000",
+      "static_table_ecc_correlation": 0.99841598317973,
+      "static_table_translation_xy_px": [
+        0.04844363406300545,
+        0.008754975162446499
+      ],
+      "bin": {
+        "centroid_px": [
+          306.83123691817,
+          185.36876308182997
+        ],
+        "bbox_xywh": [
+          170,
+          87,
+          290,
+          203
+        ],
+        "mask_area_px": 50165
+      },
+      "visible_green_wrapper": {
+        "centroid_px": [
+          293.1167119038387,
+          411.39201240791004
+        ],
+        "area_px": 2579,
+        "min_area_rect": [
+          [
+            293.5523376464844,
+            414.2837829589844
+          ],
+          [
+            92.91600036621094,
+            41.84353256225586
+          ],
+          -26.200117111206055
+        ]
+      },
+      "caveat": "Green-patch centroid is affected by occlusion and reversed wrapper; it is not the packet center."
+    }
+  ]
+}

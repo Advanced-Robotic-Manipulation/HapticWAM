@@ -33,10 +33,15 @@ def arguments():
     p.add_argument("--output", type=Path, required=True)
     p.add_argument(
         "--mode",
-        choices=["replay", "dynamics", "policy", "contact_probe"],
+        choices=["replay", "dynamics", "policy", "contact_probe", "command_replay"],
         default="replay",
     )
     p.add_argument("--duration", type=float, default=None)
+    p.add_argument(
+        "--command-trace",
+        type=Path,
+        help="Recorded drive-submission JSONL for command_replay mechanics diagnostics",
+    )
     p.add_argument(
         "--render-hz",
         type=float,
@@ -104,9 +109,14 @@ def arguments():
     )
     p.add_argument(
         "--gel-contact-coverage",
-        choices=["point", "manifold_patch"],
+        choices=["point", "manifold_patch", "manifold_patch_v2"],
         default="point",
         help="Explicit contact-area estimate for the tactile proxy; physics colliders and force limits are unchanged",
+    )
+    p.add_argument(
+        "--record-gel-contacts",
+        action="store_true",
+        help="Record read-only contact geometry/separations during measured replay as well as policy runs",
     )
     p.add_argument(
         "--wrist",
@@ -370,7 +380,7 @@ def main():
         if args.duration is None
         else (
             args.duration
-            if args.mode == "policy"
+            if args.mode in ("policy", "command_replay")
             else min(args.duration, float(data["t"][-1]))
         )
     )
@@ -511,7 +521,9 @@ def run(app, args, cfg, data, duration):
             rigid_prim_cls=RigidPrim,
         )
     gel_views = None
-    if args.mode == "policy" and args.tactile == "measured_baseline_proxy":
+    if args.record_gel_contacts or (
+        args.mode == "policy" and args.tactile == "measured_baseline_proxy"
+    ):
         from tools.sim.gel_contact import GelContactViews
 
         environment_paths = [
@@ -607,8 +619,10 @@ def run(app, args, cfg, data, duration):
     g0 = float(data["gripper"][initial_row, 0])
     initial_state = None
     if args.policy_initial_state:
-        if args.mode != "policy":
-            raise ValueError("--policy-initial-state is only valid in policy mode")
+        if args.mode not in ("policy", "command_replay"):
+            raise ValueError(
+                "--policy-initial-state requires policy or command_replay mode"
+            )
         initial_state = json.loads(args.policy_initial_state.read_text())
         q0 = np.asarray(initial_state["q"], dtype=float)
         g0 = float(initial_state["gripper"])
@@ -623,6 +637,20 @@ def run(app, args, cfg, data, duration):
                 "Initial state requires finite q[6], wrist_ft[6], gripper in [0,1]"
             )
     gripper_visual.update(g0)
+    recorded_commands = None
+    if args.mode == "command_replay":
+        from phantom.sim.command_replay import RecordedDriveCommands
+
+        if not args.command_trace or not args.policy_initial_state:
+            raise ValueError(
+                "command_replay requires an explicit command trace and measured initial state"
+            )
+        recorded_commands = RecordedDriveCommands(
+            args.command_trace, finger_limit_m=cfg["gripper"]["stroke"] / 2
+        )
+        (args.output / "command_replay.json").write_text(
+            json.dumps(recorded_commands.metadata, indent=2) + "\n"
+        )
 
     def gap(closure):
         return (
@@ -688,7 +716,7 @@ def run(app, args, cfg, data, duration):
         world.step(render=False)
         world.render()
     robot_settling = []
-    if args.mode == "policy":
+    if args.mode in ("policy", "command_replay"):
         # Pose assignment during renderer initialization is not a controller
         # equilibrium. Let the position drives settle before enabling safety
         # and starting the trial clock; never waive a velocity safety check.
@@ -718,10 +746,15 @@ def run(app, args, cfg, data, duration):
         "settled_packet_center_m": settled_position.tolist(),
         "settling_displacement_m": settling_error,
         "packet_velocity_m_s": np.asarray(packet.get_linear_velocity()).tolist(),
+        "packet_support_contacts": support_views.get_all(dt)
+        if support_views is not None
+        else None,
         "configured_robot_q": q0.tolist(),
         "settled_robot_q": robot.get_joint_positions()[ids].tolist(),
         "settled_robot_qd": robot.get_joint_velocities()[ids].tolist(),
-        "policy_robot_settling_s": 2.0 if args.mode == "policy" else 0.0,
+        "policy_robot_settling_s": 2.0
+        if args.mode in ("policy", "command_replay")
+        else 0.0,
         "robot_initial_max_joint_error_rad": float(
             np.max(np.abs(robot.get_joint_positions()[ids] - q0))
         ),
@@ -737,7 +770,7 @@ def run(app, args, cfg, data, duration):
         raise RuntimeError(
             f"Packet moved {settling_error:.4f}m before replay; initial geometry/settling is invalid"
         )
-    if args.mode == "policy" and (
+    if args.mode in ("policy", "command_replay") and (
         initialization["robot_initial_max_joint_error_rad"] > 0.02
         or initialization["robot_initial_max_joint_speed_rad_s"] > 0.05
     ):
@@ -1038,7 +1071,10 @@ def run(app, args, cfg, data, duration):
                         }
                         if args.policy_initial_state
                         else None,
-                        "inference_delivery_clock": "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
+                        "policy_latency_override_s": args.policy_latency,
+                        "inference_delivery_clock": "explicit fixed latency plus response delay; native compute and RPC times logged separately"
+                        if args.policy_latency is not None
+                        else "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
                         "phantom_recovery": bool(
                             terminal_veto and terminal_veto.implementation == "live"
                         ),
@@ -1056,7 +1092,11 @@ def run(app, args, cfg, data, duration):
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
-            if args.mode in ("replay", "dynamics"):
+            if recorded_commands is not None:
+                targets = recorded_commands.at(t)
+                if targets is not None:
+                    desired[ids], desired[fingers] = targets
+            elif args.mode in ("replay", "dynamics"):
                 desired[ids] = interp("q", t)
                 desired[fingers] = gap(interp("gripper", t)[0])
                 if args.mode == "replay":
@@ -1126,7 +1166,11 @@ def run(app, args, cfg, data, duration):
                     wrist_ft=wrist_proxy(tcp, forces),
                     tactile=tactile_sample,
                 )
-                if t + 1e-9 >= policy_ready_t and adapter.ready_for_replan(t):
+                if (
+                    t + 1e-9 >= policy_ready_t
+                    and not getattr(adapter, "completed_reason", None)
+                    and adapter.ready_for_replan(t)
+                ):
                     stall_check = stall_watchdog.check(t, tcp, adapter._last_cmd)
                     events.append({"event": "planner_stall_watchdog", **stall_check})
                     if stall_check["stop_reason"]:
@@ -1249,6 +1293,10 @@ def run(app, args, cfg, data, duration):
             render = t + 1e-9 >= next_frame or last_tick
             previous_tcp = tcp
             if render:
+                if args.record_gel_contacts and args.mode != "policy":
+                    policy_gel_contact_diagnostics.append(
+                        {"t": t, **gel_views.get_all(dt)}
+                    )
                 visual_closure = float(
                     np.clip(
                         (
@@ -1427,13 +1475,13 @@ def run(app, args, cfg, data, duration):
                     else {}
                 ),
             )
-            if measured_sensor_proxy is not None:
-                (args.output / "gel_contact_trace.json").write_text(
-                    json.dumps(
-                        policy_gel_contact_diagnostics, default=_json_value, indent=2
-                    )
-                    + "\n"
+        if measured_sensor_proxy is not None or args.record_gel_contacts:
+            (args.output / "gel_contact_trace.json").write_text(
+                json.dumps(
+                    policy_gel_contact_diagnostics, default=_json_value, indent=2
                 )
+                + "\n"
+            )
         try:
             if audit is not None:
                 audit.close()
@@ -1442,6 +1490,9 @@ def run(app, args, cfg, data, duration):
                 policy.close()
     report = {
         "mode": args.mode,
+        "command_replay": recorded_commands.metadata
+        if recorded_commands is not None
+        else None,
         "episode": str(args.episode),
         "frames": len(trace["t"]),
         "duration_s": float(trace["t"][-1]) if trace["t"] else 0,
@@ -1463,8 +1514,14 @@ def run(app, args, cfg, data, duration):
         "control_rate_hz": hw.control.executor_rate_hz if hw else None,
         "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
         "policy_stop_reason": adapter.stopped_reason if adapter else None,
+        "policy_completed_reason": getattr(adapter, "completed_reason", None),
+        "policy_completion_is_task_success": False,
         "post_stop_observation_s": 2.0 if adapter else None,
         "record_packet_support": args.record_packet_support,
+        "record_gel_contacts": args.record_gel_contacts,
+        "gel_contact_coverage": args.gel_contact_coverage
+        if gel_views is not None
+        else None,
         "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller"
         if support_views is not None
         else None,

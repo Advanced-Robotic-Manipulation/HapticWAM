@@ -1,0 +1,374 @@
+{
+  "created_utc": "2026-09-06T23:19:36.346029+00:00",
+  "status": "measured_initial_no_contact_baseline_available_with_residuals",
+  "source_episode": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000",
+  "source_meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+  "extraction_script_sha256": "a5aeae74903e01db3f4f014e127031359e4e6d4222252e77c1af6629edafe484",
+  "baseline_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/aug22_5928_no_contact_sensor_baseline.npz",
+  "baseline_sha256": "9f8c2f302c1cb52bdb186bbdcc0dc5c9ed2a4533c9e03670eb1ea1585a225885",
+  "baseline_bytes": 992568,
+  "first_arm_t_master_s": 5581.732623199234,
+  "frozen_capture_cutoff_t_master_s": 5582.14535453124,
+  "cutoff_relative_to_first_arm_s": 0.4127313320059329,
+  "selection_rule": "first post-start keyframe per pad with an exact same-timestamp infer_img/fields_ds/wrench/area capture, within first0.5s; all are at or before frozen cutoff",
+  "causality_limit": "Static sensor calibration from the initial no-contact interval. These frames were not all available at the earlier q0 timestamp. No future contact, release, or policy outcome is used to select frames; the baseline never advances during simulation.",
+  "invented_or_zeroed_values": false,
+  "source_arrays_unchanged": true,
+  "inventories": {
+    "left": {
+      "infer_img": {
+        "shape": [
+          114,
+          288,
+          384
+        ],
+        "dtype": "uint8",
+        "first_t_master_s": 5581.762473327108,
+        "last_t_master_s": 5601.00762906624,
+        "timestamps_sha256": "d1d34e476ed7c7641b29194ffcd789828d5638886174e9ad82b0478dbf90745f"
+      },
+      "fields_ds": {
+        "shape": [
+          114,
+          72,
+          96,
+          8
+        ],
+        "dtype": "float16",
+        "first_t_master_s": 5581.762473327108,
+        "last_t_master_s": 5600.829362894176,
+        "timestamps_sha256": "000726c4bedccd69e6d0e9883bb3253b58cd28fa820057db0ea77d3490c708b1"
+      },
+      "keyframes": {
+        "shape": [
+          47,
+          144,
+          192,
+          8
+        ],
+        "dtype": "float16",
+        "first_t_master_s": 5582.0377888912335,
+        "last_t_master_s": 5600.829362894176,
+        "timestamps_sha256": "f36e54d9c4c19efe0cfa010207ac60c957b9dfcc432f01400e86b1df37d165c6"
+      },
+      "wrench": {
+        "shape": [
+          115,
+          6
+        ],
+        "dtype": "float32",
+        "first_t_master_s": 5581.762473327108,
+        "last_t_master_s": 5601.00762906624,
+        "timestamps_sha256": "b9aa6af204f95773da7f61412aabc3de77efa555f9922560910308e5aa43bfa7"
+      },
+      "area": {
+        "shape": [
+          115
+        ],
+        "dtype": "float32",
+        "first_t_master_s": 5581.762473327108,
+        "last_t_master_s": 5601.00762906624,
+        "timestamps_sha256": "b9aa6af204f95773da7f61412aabc3de77efa555f9922560910308e5aa43bfa7"
+      }
+    },
+    "right": {
+      "infer_img": {
+        "shape": [
+          115,
+          288,
+          384
+        ],
+        "dtype": "uint8",
+        "first_t_master_s": 5581.690798363183,
+        "last_t_master_s": 5601.318447175203,
+        "timestamps_sha256": "ae65c32030b35071c9a38e047ab856e3f3d19fec15508899b3f2aa426c64a95a"
+      },
+      "fields_ds": {
+        "shape": [
+          113,
+          72,
+          96,
+          8
+        ],
+        "dtype": "float16",
+        "first_t_master_s": 5581.8269845373,
+        "last_t_master_s": 5601.056210954208,
+        "timestamps_sha256": "c9c92cdb4b1367ceba38e9aa905b4d2ad6f2bb1ba848cd7fc650019e00dd8235"
+      },
+      "keyframes": {
+        "shape": [
+          49,
+          144,
+          192,
+          8
+        ],
+        "dtype": "float16",
+        "first_t_master_s": 5581.690798363183,
+        "last_t_master_s": 5601.056210954208,
+        "timestamps_sha256": "af639b28d089d92e28fc600ff6586ad9b342b384d8f27855cb35ff9a9ce41c7d"
+      },
+      "wrench": {
+        "shape": [
+          113,
+          6
+        ],
+        "dtype": "float32",
+        "first_t_master_s": 5581.8269845373,
+        "last_t_master_s": 5601.056210954208,
+        "timestamps_sha256": "c9c92cdb4b1367ceba38e9aa905b4d2ad6f2bb1ba848cd7fc650019e00dd8235"
+      },
+      "area": {
+        "shape": [
+          113
+        ],
+        "dtype": "float32",
+        "first_t_master_s": 5581.8269845373,
+        "last_t_master_s": 5601.056210954208,
+        "timestamps_sha256": "c9c92cdb4b1367ceba38e9aa905b4d2ad6f2bb1ba848cd7fc650019e00dd8235"
+      }
+    }
+  },
+  "selections": {
+    "left": {
+      "infer_img": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_infer_img.zarr",
+        "index": 2,
+        "t_master_s": 5582.0377888912335,
+        "relative_to_first_arm_s": 0.30516569199971855,
+        "shape": [
+          288,
+          384
+        ],
+        "dtype": "uint8",
+        "selected_payload_sha256": "447bb679b77d19495a1ab181235860c7ab12611859654de20b030a6a1d9c49d1",
+        "zarr_data_metadata_sha256": "372f7f75446f64dcc939a25382220570a941a4c5a23fcb7eec23555981bcbb50"
+      },
+      "fields_ds": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_fields_ds.zarr",
+        "index": 2,
+        "t_master_s": 5582.0377888912335,
+        "relative_to_first_arm_s": 0.30516569199971855,
+        "shape": [
+          72,
+          96,
+          8
+        ],
+        "dtype": "float16",
+        "selected_payload_sha256": "e4de8ee31464e4a9507826a7dcd50e25c7b1aa9dfbaca44b45f8cdb121b44d41",
+        "zarr_data_metadata_sha256": "0a831309849f2fe688d7c0f6888dd8c6be51e7b3769958cf609a98f4ee71795f"
+      },
+      "keyframes": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_keyframes.zarr",
+        "index": 0,
+        "t_master_s": 5582.0377888912335,
+        "relative_to_first_arm_s": 0.30516569199971855,
+        "shape": [
+          144,
+          192,
+          8
+        ],
+        "dtype": "float16",
+        "selected_payload_sha256": "6755ebc41a1efd89a6a522a139f4fc1c0a40e286704a7b1c268a7234c7834cfe",
+        "zarr_data_metadata_sha256": "12837453f2ed251f1c74d8c95db8a503f23832915e82fc22aa8f4cdfb00514cc"
+      },
+      "wrench": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_wrench.zarr",
+        "index": 2,
+        "t_master_s": 5582.0377888912335,
+        "relative_to_first_arm_s": 0.30516569199971855,
+        "shape": [
+          6
+        ],
+        "dtype": "float32",
+        "selected_payload_sha256": "c58e2302ba1c2bcaada96ef04ce208fa5d20ccbc9ebe8f8c56f869175c4c0c66",
+        "zarr_data_metadata_sha256": "07efa743254c25d8b2b73cddfd0ea2291ba8c3b76fadfa553872b39bf2901bd1"
+      },
+      "area": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_area.zarr",
+        "index": 2,
+        "t_master_s": 5582.0377888912335,
+        "relative_to_first_arm_s": 0.30516569199971855,
+        "shape": [],
+        "dtype": "float32",
+        "selected_payload_sha256": "db76310ad4c997bc7e06c4252f2d85cb014771727ff09d6e19f2df75fd56dc4d",
+        "zarr_data_metadata_sha256": "701b679eee347a72e0bf36eac082cc4961f1fbab9ea2d17f35b3edbf78f7d180"
+      },
+      "summary": {
+        "area_sdk": 0.0,
+        "wrench_sdk": [
+          0.22550296783447266,
+          -0.23125681281089783,
+          -0.9098559617996216,
+          -0.002260006032884121,
+          0.0100549990311265,
+          -0.006857632659375668
+        ],
+        "depth_min_max_mm_recorded_convention": [
+          0.0,
+          0.128662109375
+        ],
+        "mean_distributed_force_times_110592": [
+          0.225520133972168,
+          -0.23126125335693357,
+          -0.9098529815673827
+        ],
+        "max_field_force_reconstruction_error_sdk": 1.7166137695340256e-05
+      },
+      "first_recorded_nonzero_area_relative_s": 7.702903212048113,
+      "first_two_seconds_area_max_sdk": 0.0
+    },
+    "right": {
+      "infer_img": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_infer_img.zarr",
+        "index": 3,
+        "t_master_s": 5582.14535453124,
+        "relative_to_first_arm_s": 0.4127313320059329,
+        "shape": [
+          288,
+          384
+        ],
+        "dtype": "uint8",
+        "selected_payload_sha256": "3a2d616cab1feb1b0de0b76f3139316b22795647c59d5c2efcfc71fa4bbc393b",
+        "zarr_data_metadata_sha256": "1f2d2a5356bae9103b0a1d84e58ad7968810b2f02b2ba4bbb19244ff9040c5b7"
+      },
+      "fields_ds": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_fields_ds.zarr",
+        "index": 2,
+        "t_master_s": 5582.14535453124,
+        "relative_to_first_arm_s": 0.4127313320059329,
+        "shape": [
+          72,
+          96,
+          8
+        ],
+        "dtype": "float16",
+        "selected_payload_sha256": "40fb2be2092ec05656fc56d9dd12db302008904518fc5da46f5ddc8ce50f234a",
+        "zarr_data_metadata_sha256": "67058b39965894430a2abee227d233b9fa6ddc6520c94403d9b13fdda52dc0f8"
+      },
+      "keyframes": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_keyframes.zarr",
+        "index": 1,
+        "t_master_s": 5582.14535453124,
+        "relative_to_first_arm_s": 0.4127313320059329,
+        "shape": [
+          144,
+          192,
+          8
+        ],
+        "dtype": "float16",
+        "selected_payload_sha256": "378c208c4742799fbc5c034877965f7a347c557622033bde13ade668bfa32a94",
+        "zarr_data_metadata_sha256": "65a29d25e768996b4cd3b3d60289f6574d73adde7b0284cb0eafd69afa3e4b39"
+      },
+      "wrench": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_wrench.zarr",
+        "index": 2,
+        "t_master_s": 5582.14535453124,
+        "relative_to_first_arm_s": 0.4127313320059329,
+        "shape": [
+          6
+        ],
+        "dtype": "float32",
+        "selected_payload_sha256": "2206cb7ca64576892c43fc8eef62df84f2f887c027842011ec5580d95206ca53",
+        "zarr_data_metadata_sha256": "226b90783916f88815f5601c0dc32ade019876442f73817c8c77b8204364bfd5"
+      },
+      "area": {
+        "source_stream": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_area.zarr",
+        "index": 2,
+        "t_master_s": 5582.14535453124,
+        "relative_to_first_arm_s": 0.4127313320059329,
+        "shape": [],
+        "dtype": "float32",
+        "selected_payload_sha256": "db76310ad4c997bc7e06c4252f2d85cb014771727ff09d6e19f2df75fd56dc4d",
+        "zarr_data_metadata_sha256": "68be42c54159740b8783cb8d8a1557e342fbdc8073d879a30591539ee8518339"
+      },
+      "summary": {
+        "area_sdk": 0.0,
+        "wrench_sdk": [
+          -0.005644248798489571,
+          0.004366324748843908,
+          -0.03959378972649574,
+          -2.5708229145493533e-07,
+          0.00011609789362410083,
+          7.858902245061472e-05
+        ],
+        "depth_min_max_mm_recorded_convention": [
+          0.0,
+          0.0158538818359375
+        ],
+        "mean_distributed_force_times_110592": [
+          -0.0056705474853515625,
+          0.004360198974609375,
+          -0.039566993713378906
+        ],
+        "max_field_force_reconstruction_error_sdk": 2.6796013116836548e-05
+      },
+      "first_recorded_nonzero_area_relative_s": 7.6392929090652615,
+      "first_two_seconds_area_max_sdk": 0.0
+    }
+  },
+  "arm_at_causal_cutoff": {
+    "index": 51,
+    "t_master_s": 5582.140643483261,
+    "tcp_pose": [
+      -0.33485934804296025,
+      -0.3009456798011041,
+      0.3565076672770236,
+      -1.0289180241639468,
+      -1.92674961999524,
+      1.4777020680045845
+    ]
+  },
+  "camera_at_causal_cutoff": {
+    "index": 5,
+    "t_master_s": 5582.095501433127,
+    "shape": [],
+    "decoded_rgb_sha256": "9d27141345f8458fabec5e681930f953ce25fae9fe62e583619c4891598ea4e0"
+  },
+  "no_contact_evidence": "Both selected SDK areas and each pad's first2s recorded areas are0. Initial RGB frames0/.5/1s show the packet on the mat and no human hand. Native initial TCPz is about0.356m. This supports an unloaded initial interval but does not calibrate residual sensor offsets or actual forces.",
+  "units_limit": "Wrench/area are unchanged SDK outputs. Distributed-force mean\u00d7110592 numerically reconstructs recorded wrench force channels. SI accuracy, torque units, optical deformation, and the pressure law remain unvalidated; left unloaded fz/depth residuals are preserved.",
+  "previous_baseline": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+    "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce",
+    "comparison": {
+      "left": {
+        "gel_absolute_pixel_difference_mean": 2.410716869212963,
+        "old_wrench_sdk": [
+          0.08733446151018143,
+          0.3604174554347992,
+          -1.1610268354415894,
+          -0.026336289942264557,
+          0.004416194278746843,
+          0.004005382768809795
+        ],
+        "new_wrench_sdk": [
+          0.22550296783447266,
+          -0.23125681281089783,
+          -0.9098559617996216,
+          -0.002260006032884121,
+          0.0100549990311265,
+          -0.006857632659375668
+        ]
+      },
+      "right": {
+        "gel_absolute_pixel_difference_mean": 2.8399793836805554,
+        "old_wrench_sdk": [
+          0.00022463873028755188,
+          -0.03305370360612869,
+          -0.056726761162281036,
+          -0.0004985864507034421,
+          0.0001396985026076436,
+          -0.000312927586492151
+        ],
+        "new_wrench_sdk": [
+          -0.005644248798489571,
+          0.004366324748843908,
+          -0.03959378972649574,
+          -2.5708229145493533e-07,
+          0.00011609789362410083,
+          7.858902245061472e-05
+        ]
+      }
+    }
+  },
+  "archive_readback_exact": true
+}

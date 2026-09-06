@@ -21,7 +21,7 @@ import numpy as np
 from phantom.config.hardware import HardwareConfig
 from phantom.data import derived as dv
 from phantom.deploy.safety import arm_stale_s, camera_stale_s
-from phantom.inference.policy import ObsSnapshot, Plan, PhantomPolicy
+from phantom.inference.policy import ObsSnapshot, PhantomPolicy, Plan
 from phantom.recording.workers import SensorSession
 
 log = logging.getLogger(__name__)
@@ -724,6 +724,23 @@ class PlannerLoop:
                           "episode through the normal stop path", reason, e)
                 self.executor.request_stop(reason)
                 break
+            if getattr(self.executor, "completed_reason", None):
+                # No further inference or task motion after measured release.
+                # The executor, workers and recorder stay active through this
+                # declared observation period; their safety stop still wins.
+                now = time.perf_counter()
+                if stop_check is not None and stop_check():
+                    self.stop_reason = "operator_stop"
+                    break
+                if max_episode_s is not None and now - t_start >= max_episode_s:
+                    self.stop_reason = "episode_time_cap"
+                    break
+                hold_s = self.executor.release_controller.config.finish_observation_s
+                if now - self.executor.completed_at_s >= hold_s:
+                    self.stop_reason = self.executor.completed_reason
+                    break
+                time.sleep(min(0.02, 1 / self.hw.control.executor_rate_hz))
+                continue
             tcp_pose = snap.ur_state[2 * self.hw.arm.dof:2 * self.hw.arm.dof + 6]
             cmd = self.executor.last_cmd()
             if prev_cmd is not None and cmd is not None and prev_tcp is not None:
@@ -751,7 +768,24 @@ class PlannerLoop:
             pre_veto = (np.array(plan.actions, copy=True)
                         if self.veto is not None else None)
             tcp_row = [float(x) for x in np.asarray(tcp_pose).ravel()]
-            veto_rec = self._apply_veto(plan, tcp_pose, grip_now, veto_state, n)
+            if getattr(self.executor, "completed_reason", None):
+                veto_rec = {"action": "completion_hold", "completed_reason": self.executor.completed_reason}
+            else:
+                veto_tcp = tcp_pose
+                if getattr(self.executor, "release_controller", None) is not None:
+                    # The opt-in bridge uses live delivery feedback, just as
+                    # its simulator counterpart; model inputs remain captured.
+                    veto_tcp, grip_now, _ = self.executor._release_feedback()
+                veto_rec = self._apply_veto(plan, veto_tcp, grip_now, veto_state, n)
+                if getattr(self.executor, "release_controller", None) is not None:
+                    from phantom.deploy.release_controller import (
+                        restore_policy_openings,
+                    )
+                    if pre_veto is not None:
+                        restore_policy_openings(plan, pre_veto, veto_rec, self.executor)
+                    if veto_rec is not None:
+                        plan.diag = dict(getattr(plan, "diag", None) or {})
+                        plan.diag["terminal_veto"] = dict(veto_rec)
             if veto_rec is not None and veto_rec.get("action") == "retry_cap":
                 self.trace.append({"t": snap.t, "latency_s": plan.latency_s,
                                    "gate": plan.gate, "p_evt": plan.p_evt.tolist(),
@@ -788,6 +822,8 @@ class PlannerLoop:
             if pre_veto is not None and veto_rec is not None \
                     and veto_rec.get("action") in VETO_REWRITE_ACTIONS:
                 row["actions_pre_veto"] = pre_veto.tolist()
+            if getattr(self.executor, "release_controller", None) is not None:
+                row["placement_release"] = self.executor.release_diagnostics()
             self.trace.append(row)
             from phantom.config.model import EVENTS
             k_evt = int(np.argmax(plan.p_evt))
