@@ -1,0 +1,15 @@
+{
+  "status": "estimated_collision_proxy_not_measured_geometry",
+  "units": "metres",
+  "shape": "ellipse in YZ extruded along X",
+  "size_xyz_m": [
+    0.012,
+    0.026,
+    0.055
+  ],
+  "segments": 48,
+  "triangles": 192,
+  "source": "procedural tools/sim/make_pad_collision.py",
+  "rationale": "Rounded real tactile shell observed in RGB. Full box corners caused mat contact that blocked simulated closure in raised75/raised90 diagnostics.",
+  "validation": "No claim of calibrated contact patch, compliance or real-world transfer."
+}

@@ -1,0 +1,35 @@
+{
+  "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+  "stream": "camera_scene_color",
+  "source_frame_index": 0,
+  "source_file": "artifacts/isaac_waffles/evidence/scene_0000.png",
+  "source_sha256": "3303203bcd73a1e1ec2f9a91dd93fc826ed9afd7f3236b2451f09e387f6d8e22",
+  "source_quad_xy": [
+    [
+      244.0,
+      409.0
+    ],
+    [
+      356.0,
+      377.0
+    ],
+    [
+      366.0,
+      396.0
+    ],
+    [
+      249.0,
+      429.0
+    ]
+  ],
+  "output_size_wh": [
+    512,
+    128
+  ],
+  "method": "projective rectification of measured RGB; bicubic resampling, no generative modification",
+  "physical_dimensions": "not measured by this operation",
+  "limitations": [
+    "Oblique single-view printed wrapper texture is low resolution and includes recorded illumination.",
+    "Rectification is a visual estimate; no calibrated physical correspondence is implied."
+  ]
+}

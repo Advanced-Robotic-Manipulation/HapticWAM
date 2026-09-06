@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "recorded_utc_date": "2026-09-06",
+  "status": "recorded_pick_carry_release_reproduced_with_fitted_geometry; timing_and_image_limits_remain",
+  "scope": "PHANTOM packaged wafer-bar experiment; measured pick/carry/place and pick/lift dynamics replay, synchronized native tactile comparison, and existing-policy interface",
+  "configuration": "configs/sim/waffles.json",
+  "configuration_values_policy": "This manifest classifies parameter provenance by config path; each run's effective_config.json is authoritative for numerical values.",
+  "paths": {
+    "host": "compute3",
+    "source_recordings": "/home/physicalai/phantom-icra-2027/data",
+    "python_repository": "/home/physicalai/phantom-icra-2027/phantom",
+    "simulator_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source",
+    "prepared_evidence": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+    "runs": "/home/physicalai/phantom-icra-2027/sim/waffles/runs",
+    "isaac_sim": "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0",
+    "launcher": "/home/physicalai/phantom-icra-2027/sim/waffles/source/tools/sim/launch_waffles.sh",
+    "tactile_evidence": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence_tactile_v1"
+  },
+  "recorded_measurements": [
+    {
+      "parameters": [
+        "arm_q",
+        "arm_qd",
+        "arm_tcp_pose",
+        "gripper",
+        "camera_scene_color",
+        "arm_ft",
+        "tactile_left_wrench",
+        "tactile_right_wrench",
+        "tactile_left_area",
+        "tactile_right_area",
+        "tactile_left_infer_img",
+        "tactile_right_infer_img",
+        "tactile_left_fields_ds",
+        "tactile_right_fields_ds"
+      ],
+      "source": "Selected episode Zarr streams opened mode=r by tools/sim/prepare_waffles.py",
+      "units": "q radians; qd radians/second; TCP base-frame xyz metres and rotation-vector radians; gripper POS/255 and categorical OBJ",
+      "limits": "Recorded feedback is the motion reference. Wrist F/T is the CB3 current-based estimate; tactile stream units/calibration must be interpreted using their hardware configuration."
+    },
+    {
+      "parameter": "stream_timestamps",
+      "source": [
+        "phantom/data/schema.py",
+        "phantom/recording/recorder.py",
+        "phantom/timesync/clock.py"
+      ],
+      "rule": "Zarr ts already contains MasterClock seconds; subtract one shared t0_master only. Preserve metadata clock offset for audit and never apply it a second time.",
+      "export": "Native per-stream times remain under native_<stream>_t; media grid and camera snap errors are separate."
+    }
+  ],
+  "hardware_configuration_evidence": [
+    {
+      "parameter": "robot_variant",
+      "value": "UR3 CB3",
+      "source": "configs/hardware.nuc.yaml arm block",
+      "basis": "Dashboard-read note dated 2026-07-17 reports Polyscope 3.14.3 and serial 2018333547.",
+      "caveat": "generation:e-series in the YAML is a documented schema workaround, not evidence for UR3e."
+    },
+    {
+      "parameter": "tcp_offset_m_rad",
+      "value": [
+        0,
+        0,
+        0.18,
+        0,
+        0,
+        0
+      ],
+      "source": "configs/hardware.nuc.yaml arm.tcp_offset_m",
+      "classification": "configured_not_newly_measured"
+    },
+    {
+      "parameter": "gripper_nominal_stroke_and_touch_fraction",
+      "config_paths": [
+        "calibration.hardware_bare_gripper_stroke_m",
+        "gripper.pad_touch_command"
+      ],
+      "source": "configs/hardware.nuc.yaml gripper.stroke_mm/max_close_cmd and pad-contact calibration note",
+      "caveat": "Hardware bare stroke85mm remains configured evidence. Simulation gripper.stroke70mm is a fitted effective custom-pad gap, not a hardware measurement."
+    },
+    {
+      "parameter": "camera_mode",
+      "value": "D435 RGB 640x480, configured 15 Hz, depth disabled, wrist disabled",
+      "source": "configs/hardware.nuc.yaml cameras; selected episode stream inventory"
+    },
+    {
+      "parameter": "control_and_sensor_timing",
+      "source": "configs/hardware.nuc.yaml and prepared episode manifests",
+      "value": "Configured 125 Hz executor/RTDE, 15 Hz scene RGB, 8 Hz tactile. Actual acquisition intervals remain in native timestamps.",
+      "caveat": "Physics dt is a numerical setting, not the hardware command period."
+    }
+  ],
+  "nominal_cad": [
+    {
+      "asset": "assets/sim/ur3/ur3_cb3.urdf",
+      "provenance": "assets/sim/ur3/PROVENANCE.json",
+      "repository": "https://github.com/UniversalRobots/Universal_Robots_ROS2_Description",
+      "commit": "89bbe795f38a7ab00fb66fe8831dfff79dc99edf",
+      "classification": "official_nominal_manufacturer_geometry_kinematics_inertia",
+      "caveat": "Not serial-specific factory kinematic calibration; custom gripper and mount are not part of this model."
+    },
+    {
+      "asset": "assets/sim/robotiq/robotiq_2f85.urdf",
+      "provenance": "assets/sim/robotiq/PROVENANCE.json",
+      "repository": "https://github.com/ros-industrial-attic/robotiq",
+      "commit": "45196f6558fe8ba9d89bc8a105396c68c3e7e892",
+      "classification": "historical_nominal_visual_reference",
+      "caveat": "Visual-only linkage with estimated closure mapping; historic model omits DM-Tac pads/mounts and does not validate physical mimic coupling."
+    }
+  ],
+  "visual_estimates": [
+    {
+      "config_paths": [
+        "camera.fx",
+        "camera.fy",
+        "camera.cx",
+        "camera.cy",
+        "camera.world_from_cv"
+      ],
+      "source": [
+        "tools/sim/refine_camera_static.py",
+        "artifacts/isaac_waffles/evidence/camera_refinement_frozen_physics.json"
+      ],
+      "basis": "BalancedC camera-only registration against uncertain CAD wrist/forearm landmarks, pad shells, bin rim and initial packet quad in September4 fit episode; frozen physical scene.",
+      "assumptions": [
+        "fx=fy",
+        "Principal point fixed to image center",
+        "Distortion assumed zero",
+        "All image annotations carry stated uncertainties; approximate TCP pixel anchors fromv1 excluded"
+      ],
+      "caveat": "In-sample image registration is not hardware calibration or held-out alignment."
+    },
+    {
+      "config_paths": [
+        "table.center",
+        "table.size",
+        "table.top_z",
+        "table.hole_pitch",
+        "table.hole_radius",
+        "mat.center",
+        "mat.size",
+        "mat.grid_pitch",
+        "bin.center",
+        "bin.size",
+        "bin.wall",
+        "waffle.center",
+        "waffle.size",
+        "waffle.yaw"
+      ],
+      "source": [
+        "Selected fit RGB frames",
+        "artifacts/isaac_waffles/evidence/layout_estimates.json",
+        "artifacts/isaac_waffles/evidence/contact_geometry_diagnosis.json",
+        "artifacts/isaac_waffles/evidence/pick_place_analysis/teleop_initial_packet_pose.json"
+      ],
+      "basis": "Image/contact-constrained effective support plane is75mm abovev1, tabletop+53mm in UR base. Scene dimensions and initial packet pose remain estimates; fitting successful grasps does not measure actual mounting height.",
+      "caveat": "No ruler measurement, depth or independent object-pose truth recovered. Perforations are visual details over a continuous table collider."
+    },
+    {
+      "config_paths": [
+        "gripper.pad_size",
+        "gripper.pad_center_z",
+        "gripper.housing_size",
+        "gripper.yaw",
+        "lighting"
+      ],
+      "source": [
+        "Fit RGB visual inspection",
+        "artifacts/isaac_waffles/evidence/gripper_centroid_estimate.json"
+      ],
+      "basis": "Pad center/yaw retain v1 visual estimates. Contact hulls and effective aperture were subsequently fitted against both measured successful recordings; these are task-fit estimates.",
+      "caveat": "Custom pad/mount geometry, gripper alignment and lighting are unmeasured estimates. Visible white-shell centers differ from contact faces; centroid fit retains substantial model bias."
+    },
+    {
+      "asset": "assets/sim/waffles/packet_top.png",
+      "source": "ep_teacher_waffles_1788535016_005 camera_scene_color frame 0",
+      "provenance": "assets/sim/waffles/packet_top.provenance.json",
+      "method": "Projective rectification and bicubic resampling of measured RGB; no generated replacement",
+      "caveat": "Carries source lighting and resolution limits; not a measured material reflectance map. No real-scene camera backdrop is used."
+    },
+    {
+      "asset": "assets/sim/waffles/packet_green_top.png",
+      "provenance": "assets/sim/waffles/packet_green_top.provenance.json",
+      "method": "Perspective rectification of visible green wrapper in real August22 final frame; no generated/inpainted pixels.",
+      "caveat": "Low source resolution and illumination remain in texture."
+    }
+  ],
+  "uncalibrated_physical_parameters": [
+    {
+      "config_paths": [
+        "waffle.mass",
+        "waffle.static_friction",
+        "waffle.dynamic_friction",
+        "waffle.restitution"
+      ],
+      "basis": "Engineering priors for a rigid packaged wafer bar",
+      "required_measurement": "Mass, dimensions, slide/pull tests, drop/release response, wrapper flex and fracture behavior"
+    },
+    {
+      "config_paths": [
+        "table.friction",
+        "mat.friction",
+        "bin.friction",
+        "gripper.pad_friction",
+        "gripper.compliant_stiffness",
+        "gripper.compliant_damping"
+      ],
+      "basis": "Engineering contact priors; PhysX material friction combines the contacting surfaces",
+      "required_measurement": "Surface friction under relevant normal loads, gel contact force/deformation curves, slip and retention trials"
+    },
+    {
+      "config_paths": [
+        "physics.joint_stiffness",
+        "physics.joint_damping",
+        "physics.finger_stiffness",
+        "physics.finger_damping",
+        "physics.finger_force_N"
+      ],
+      "basis": "Stable simulation drive settings, not identified UR servoJ or Robotiq motor parameters",
+      "required_measurement": "Timestamped response to accepted targets across loads, speed/force settings and aperture range"
+    },
+    {
+      "config_paths": [
+        "physics.dt",
+        "physics.render_hz",
+        "physics.solver_position_iterations",
+        "physics.solver_velocity_iterations"
+      ],
+      "basis": "Numerical simulation settings",
+      "required_validation": "Physics-clock consistency, solver/time-step sensitivity and collision penetration checks"
+    }
+  ],
+  "observation_models": {
+    "tactile_contact_proxy": "Policy uses uncalibrated centered Gaussian pressure/depth/gel approximation from physical net pad contact forces at accumulated nominal8Hz deadlines; shear/slip/optical response uncalibrated.",
+    "wrist_contact_proxy": "Pad force/torque sum with recorded initial wrist bias; does not reproduce pose/current-dependent CB3 F/T estimation.",
+    "zero_ablation": "Explicit absent-signal experiment, not a calibrated sensor simulation.",
+    "gripper_obj": "Proxy derived from physical closure, requested target and contact, not actual Robotiq firmware.",
+    "tactile_video_proxy": "Native real infer images with causal timestamps versus synthetic grayscale pressure based on packet-filtered PhysX normal force and force-weighted contact centroid. Body-level contacts include backing/linkage; not calibrated gel-image projection.",
+    "native_tactile_video": "Lossless timestamped image sidecars, previous sample only, age/no-sample/stale labels; SDK wrench/depth values not equated with Newtons/metres."
+  },
+  "fixed_episode_split": {
+    "fit": [
+      "episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+      "full/tasks/waffles/ep_waffles_1787395928_000"
+    ],
+    "heldout": [
+      "episodes/deploy/20260904/ep_teacher_waffles_1788535066_006",
+      "episodes/deploy/20260904/ep_teacher_waffles_1788538100_000",
+      "episodes/deploy/20260901/ep_teacher_waffles_1788262056_000"
+    ],
+    "meaning": "Held out from scene fitting, not audited for exclusion from policy training.",
+    "session_caveat": "Camera/scene appearance changes across dates; August 22 wrapper is green and September wrapper is cream/red."
+  },
+  "validation": {
+    "status": "final_15Hz_recorded_dynamics_complete; inspect_individual_timing_and_image_gates",
+    "artifacts": "artifacts/isaac_waffles/validation_v2",
+    "summary": "artifacts/isaac_waffles/validation_v2/summary.json",
+    "tuning_inventory": "artifacts/isaac_waffles/tuning/summary.json",
+    "cases": {
+      "pick_place": {
+        "evaluation": "artifacts/isaac_waffles/validation_v2/pick_place/pick_place_evaluation.json",
+        "physical_verdict": "fail",
+        "image_proxy_verdict": "fail",
+        "failed_gates": [
+          "timed_bilateral_packet_contact",
+          "projected_wrapper_trajectory"
+        ],
+        "task_outcome_verdict": "achieved_in_simulation"
+      },
+      "lift": {
+        "evaluation": "artifacts/isaac_waffles/validation_v2/lift/pick_place_evaluation.json",
+        "physical_verdict": "pass_within_declared_tolerances",
+        "image_proxy_verdict": "pass",
+        "failed_gates": [],
+        "task_outcome_verdict": "achieved_in_simulation"
+      },
+      "heldout5066": {
+        "evaluation": "artifacts/isaac_waffles/validation_v2/heldout5066/pick_place_evaluation.json",
+        "physical_verdict": "fail",
+        "image_proxy_verdict": "unverified",
+        "failed_gates": [
+          "timed_bilateral_packet_contact",
+          "physical_lift"
+        ],
+        "task_outcome_verdict": "achieved_in_simulation"
+      }
+    },
+    "tests_passed": 85,
+    "clock_tolerance_s": 0.0005,
+    "metrics_tools": [
+      "tools/sim/compare_replay.py",
+      "tools/sim/evaluate_pick_place.py"
+    ],
+    "interpretation_limits": [
+      "Fit August22 sequence picks, carries and releases a free packet into the bin; its declared contact onset gate is early and image p95 gate remains outside tolerance.",
+      "Fit September4 lift passes the declared physical and conditional image-proxy gates.",
+      "Heldout5066 matches lift/retention outcome but its contact/lift timing differs; other heldouts retain documented qualitative outcome and external-human-perturbation caveats.",
+      "No calibrated real object3D pose or force/tactile transfer is available. Thresholds are engineering checks, not lab-validated transfer bounds.",
+      "Updated geometry has not been subjected to a new closed-loop checkpoint success evaluation."
+    ]
+  },
+  "calibration_acceptance_work": [
+    "Measure serial-specific robot/TCP/pad frames, mounting geometry, aperture mapping and packet size/mass.",
+    "Recover camera intrinsics/distortion/extrinsics and evaluate withheld fiducials across the workspace.",
+    "Identify motor/contact response through motion, closure, slide, squeeze, lift and release trials; verify collision surfaces.",
+    "Match sensor timing, noise and preprocessing; calibrate tactile observation transfer or report explicit ablations.",
+    "Freeze settings and acceptance thresholds before held-out replay and matched real/sim policy trials, including failures."
+  ],
+  "runtime": {
+    "launcher": "tools/sim/launch_waffles.sh",
+    "nccl_workaround": "Source Isaac setup_python_env.sh; preload kit/libcarb.so and the matching bundled extsDeprecated/omni.isaac.ml_archive/pip_prebundle/nvidia/nccl/lib/libnccl.so.2 before Kit Python imports Torch.",
+    "shared_isaac_install_modified": false,
+    "source_recordings_modified": false,
+    "hardware_drivers_started": false
+  },
+  "current_revision": "recorded_pick_place_v2",
+  "configurations": [
+    "configs/sim/waffles.json",
+    "configs/sim/waffles_pick_place.json"
+  ],
+  "previous_configuration": "configs/sim/waffles_reconstruction_v1.json",
+  "task_fit_parameters": {
+    "gripper.contact_shape": "48-segment extruded ellipse for pad/backing/linkage with retained physical colliders; replaces box corners that jammed on support surfaces.",
+    "gripper.stroke": "70mm effective custom-pad open gap, supported by a coupled shell/aperture estimate and fit-recording retention; bare hardware stroke remains85mm.",
+    "table.top_z": "Effective+53mm support plane (v1\u221222mm plus75mm adjustment); actual table/mount geometry remains unresolved.",
+    "waffle.center_and_yaw": "One configured initial pose per recording appearance; no pose writes during measured dynamics.",
+    "physical_fields_unchanged_from_v1": [
+      "packet mass",
+      "surface friction",
+      "gel compliance",
+      "joint/finger drive stiffness, damping and force limits"
+    ]
+  },
+  "revision1_validation": {
+    "status": "prototype_campaign_complete; recorded pickup and physical sensor transfer remain unvalidated",
+    "artifacts": "artifacts/isaac_waffles/validation",
+    "summary": "artifacts/isaac_waffles/validation/summary.json",
+    "driven_trace": "artifacts/isaac_waffles/validation/dynamics_fit/sim_trace.npz",
+    "completed_campaign_runs": 7,
+    "additional_contact_probes": 2,
+    "heldout_replay_tcp_rmse_mm": 1.34025,
+    "driven_fit_tcp_rmse_mm": 4.58022,
+    "synthetic_contact_result": "Lower-pose probe retained a free packet through a 96.51 mm lift and released it, with zero IK rejections. The first high-start probe failed reach/control. Neither establishes recorded-pickup parity.",
+    "expected_campaign_run_names": [
+      "replay_fit",
+      "replay_heldout_<suffix>",
+      "dynamics_fit",
+      "dynamics_push",
+      "policy_v5_6"
+    ],
+    "clock_tolerance_s": 0.0005,
+    "metrics_tool": "tools/sim/compare_replay.py",
+    "tests": [
+      "tests/test_sim_kinematics.py",
+      "tests/test_sim_policy_adapter.py",
+      "tests/test_sim_remote_policy.py",
+      "tests/test_sim_replay_metrics.py",
+      "tests/test_sim_gripper_visual.py"
+    ],
+    "interpretation_limits": [
+      "Direct-pose replay is geometric; its contact outcome is not physics validation.",
+      "Full RGB MAE is appearance error; blue-bin silhouette IoU is an uncalibrated static geometry proxy.",
+      "Native-feedback tracking and asset/FK consistency do not establish realistic retention.",
+      "Rule-derived recorded success labels are not independent lab verdicts.",
+      "Current pickup mismatch prevents exact one-to-one scene or validated policy-task claims."
+    ]
+  }
+}

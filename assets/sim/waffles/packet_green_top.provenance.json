@@ -1,0 +1,44 @@
+{
+  "asset": "assets/sim/waffles/packet_green_top.png",
+  "source_episode": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/fit/ep_waffles_1787395928_000",
+  "source_video_sha256": "483fe6bdecb5e4f08b640c30efe82c144334bbd8466b027599914e2119557af2",
+  "source_frame": 285,
+  "grid_t_s": 19.0,
+  "source_top_face_quad_xy_px": [
+    [
+      266.0,
+      147.0
+    ],
+    [
+      353.0,
+      191.0
+    ],
+    [
+      345.0,
+      203.0
+    ],
+    [
+      263.0,
+      159.0
+    ]
+  ],
+  "homography": [
+    [
+      29.017646698822247,
+      7.25441167470564,
+      -8785.092538068448
+    ],
+    [
+      -14.882976387075052,
+      29.427703310807473,
+      -367.0006677267342
+    ],
+    [
+      0.008404986001220707,
+      -0.006215528515812942,
+      1.0
+    ]
+  ],
+  "method": "perspective rectification of visible recorded pixels; linear resampling; no inpainting or generative synthesis",
+  "limitations": "Upsampled approximately 95x17-pixel source face; blur and baked lighting remain. Metric aspect derives from estimated packet geometry."
+}
