@@ -1,0 +1,27 @@
+{
+  "pid": 1188102,
+  "started_at_utc": "2026-09-06T22:11:15.020916+00:00",
+  "argv": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/run_policy_campaign.py",
+    "--campaign",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/design.json",
+    "--source",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+    "--live-repo",
+    "/home/physicalai/phantom-icra-2027/phantom",
+    "--evidence",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+    "--hardware-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+    "--output",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign",
+    "--robot-usd",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+    "--port",
+    "7797",
+    "--execute"
+  ],
+  "owned_endpoint": "127.0.0.1:7797",
+  "scope": "Simulation only; no hardware launch"
+}

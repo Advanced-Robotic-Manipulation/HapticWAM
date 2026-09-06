@@ -1,0 +1,183 @@
+{
+  "mode": "policy",
+  "episode": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+  "frames": 162,
+  "duration_s": 10.736,
+  "wall_time_s": 20.92011674796231,
+  "events": [
+    {
+      "event": "planner_stall_watchdog",
+      "t": 0.26,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": null,
+      "measured_displacement_m": null,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 1.188,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.00048782322618417487,
+      "measured_displacement_m": 5.2363916372172025e-05,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 1.812,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.039925344808753295,
+      "measured_displacement_m": 0.037252119613489565,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 2.436,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.0408388177560708,
+      "measured_displacement_m": 0.040810742860949975,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 3.06,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.03818609224340545,
+      "measured_displacement_m": 0.03852825116325861,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 3.7,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.03501107825101157,
+      "measured_displacement_m": 0.03537380789735981,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 4.348,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.02936902545933796,
+      "measured_displacement_m": 0.029687230489149043,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 4.996,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.028705696993588114,
+      "measured_displacement_m": 0.028622783217280297,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 5.924,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.017310279707902894,
+      "measured_displacement_m": 0.018713830843140412,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 6.828,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.010407500688720183,
+      "measured_displacement_m": 0.0091150495630032,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 7.74,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.005402287064925442,
+      "measured_displacement_m": 0.0031927147851370094,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 8.364,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.005439893335645434,
+      "measured_displacement_m": 0.003345917809004844,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "t": 8.74,
+      "event": "policy_stop",
+      "reason": "safety_stop"
+    }
+  ],
+  "robot_usd": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+  "joint_state_source": "actual PhysX articulation joints and tool0 rigid body pose; independent nominal FK also logged",
+  "object_dynamics": {
+    "rigid_body_dynamic": true,
+    "kinematic": false,
+    "attachments": [],
+    "pose_writes_after_initialization": 0,
+    "initialization": "configured table pose before settling; contact_probe alone subsequently uses its documented one-time synthetic starting pose before t=0"
+  },
+  "tactile_model": "measured_baseline_proxy",
+  "wrist_model": "contact_proxy",
+  "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
+  "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
+  "control_rate_hz": 125.0,
+  "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
+  "policy_stop_reason": "safety_stop",
+  "post_stop_observation_s": 2.0,
+  "record_packet_support": true,
+  "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller",
+  "packet_support_filter_paths": {
+    "packet": "/World/Waffle",
+    "bin": [
+      "/World/Bin/Bottom",
+      "/World/Bin/Left",
+      "/World/Bin/Right",
+      "/World/Bin/Front",
+      "/World/Bin/Back"
+    ],
+    "robot": [
+      "/World/Robot/Geometry/world/base_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+    ]
+  },
+  "camera_intrinsics_px": [
+    [
+      742.8932495117188,
+      0.0,
+      320.0
+    ],
+    [
+      0.0,
+      742.8931884765625,
+      240.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}

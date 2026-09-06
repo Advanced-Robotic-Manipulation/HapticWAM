@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "policy_id": "student_ftA_r1",
+  "condition_id": "nominal",
+  "sampling_seed": 4242,
+  "checkpoint_sha256": "b13362472843c4b09d9c7a091c0e97ff34a58ea45411961886f5d72ebf1703b3",
+  "attempt": 1,
+  "phase": "nominal_students__student_ftA_r1",
+  "server_metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign/servers/00_nominal_students__student_ftA_r1_1788732675167289058/server.json",
+  "server_ready_sha256": "0459b4afd2062cbf1e3be64cc0a64ccebe9cd9934ba9418c4c0cdb75cf0ef517",
+  "intended_parameters": {
+    "id": "nominal",
+    "family": "nominal",
+    "object_offset_m": [
+      0.0,
+      0.0
+    ],
+    "friction_scale": 1.0,
+    "camera_override": null,
+    "observation_delay_s": 0.0,
+    "inference_delay_add_s": 0.0,
+    "intended_parameters": {}
+  },
+  "intended_scene_sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+  "effective_parameters": {
+    "scene_sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+    "policy_info_sha256": "ac4a1e7f4ded143783a15e058affd2a90c17a99a1740156618d2fd5f0373ff22",
+    "checkpoint_sha256": "b13362472843c4b09d9c7a091c0e97ff34a58ea45411961886f5d72ebf1703b3",
+    "observation_delay_s": 0.0,
+    "inference_delay_add_s": 0.0,
+    "max_play_steps": 10,
+    "duration_s": 9.592,
+    "stop_reason": "safety_stop"
+  },
+  "scoring_thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  }
+}

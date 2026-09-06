@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.004,
+    "render_hz": 15,
+    "solver_position_iterations": 16,
+    "solver_velocity_iterations": 4,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.0,
+      0.027999999999999997
+    ],
+    "size": [
+      1.7,
+      0.9,
+      0.05
+    ],
+    "hole_pitch": 0.04,
+    "hole_radius": 0.0055,
+    "top_z": 0.053,
+    "friction": 0.55
+  },
+  "mat": {
+    "center": [
+      -0.345,
+      -0.245,
+      0.05449999999999999
+    ],
+    "size": [
+      0.33,
+      0.38,
+      0.003
+    ],
+    "grid_pitch": 0.05,
+    "friction": 0.7
+  },
+  "bin": {
+    "center": [
+      -0.3915669783296538,
+      0.0366996283858784,
+      0.05399999999999999
+    ],
+    "size": [
+      0.3267210754691179,
+      0.2344750815856634,
+      0.14
+    ],
+    "wall": 0.004,
+    "friction": 0.4
+  },
+  "waffle": {
+    "center": [
+      -0.38370671848642657,
+      -0.2830692769792478,
+      0.07000000000000008
+    ],
+    "size": [
+      0.15449525360329625,
+      0.027214019144296827,
+      0.028
+    ],
+    "yaw": 0.31656601407527596,
+    "mass": 0.035,
+    "static_friction": 0.65,
+    "dynamic_friction": 0.5,
+    "restitution": 0.015
+  },
+  "gripper": {
+    "stroke": 0.07,
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.012,
+      0.026,
+      0.055
+    ],
+    "pad_center_z": 0.16556,
+    "pad_friction": 1.0,
+    "housing_size": [
+      0.065,
+      0.048,
+      0.07
+    ],
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": -0.377,
+    "geometry_source": "Rounded pad/backing contact hulls and70mm effective custom-pad aperture fitted against measured grasp; nominal bare Robotiqstroke remains85mm. Contact/material parameters are uncalibrated estimates.",
+    "contact_shape": "ellipse"
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 742.893223660066,
+    "fy": 742.893223660066,
+    "cx": 320.0,
+    "cy": 240.0,
+    "position": [
+      -0.32484269191527715,
+      -0.4753704304569985,
+      1.0424263097960098
+    ],
+    "target": [
+      -0.37168218390632835,
+      -0.058827533207274685,
+      0.13451768182685875
+    ],
+    "world_from_cv": [
+      [
+        0.9980094660544067,
+        0.04222756985451613,
+        -0.04683949199105121,
+        -0.32484269191527715
+      ],
+      [
+        0.05793770782169203,
+        -0.9072680071308444,
+        0.4165428972497238,
+        -0.4753704304569985
+      ],
+      [
+        -0.024906378262726937,
+        -0.4184275272744465,
+        -0.9079086279691511,
+        1.0424263097960098
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "artifacts/isaac_waffles/evidence/camera_refinement_frozen_physics.json; balancedC, September4 fitting only, no hardware optical calibration."
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Table, bin, mat, packet and custom pad sizes are visual estimates; no ruler or calibrated extrinsics recovered.",
+    "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+    "camera": "Camera fit is episode-specific; do not pool sessions with changed camera mounting."
+  },
+  "calibration": {
+    "revision": "recorded_pick_place_v2",
+    "episode_role": "August22 complete pick-place fit",
+    "physical_fit": "Two fixed fit episodes; table plane, rounded contact hulls, effective aperture and per-episode initial packet pose estimated from images/contact events. No object attachment or pose replay.",
+    "hardware_bare_gripper_stroke_m": 0.085,
+    "table_plane_shift_from_v1_m": 0.075,
+    "validation": "Recorded-motion reproduction; does not establish calibrated force/tactile transfer or policy success."
+  }
+}

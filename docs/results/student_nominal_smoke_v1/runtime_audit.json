@@ -1,0 +1,162 @@
+{
+  "checked_at_utc": "2026-09-06T22:20:46.032219+00:00",
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "controller": {
+    "pid": 1188102,
+    "state": "absent",
+    "active": false
+  },
+  "servers": [
+    {
+      "policy": "student_ftA_r1",
+      "process": {
+        "pid": 1188134,
+        "state": "absent",
+        "active": false
+      },
+      "checkpoint_sha256": "b13362472843c4b09d9c7a091c0e97ff34a58ea45411961886f5d72ebf1703b3",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign/servers/00_nominal_students__student_ftA_r1_1788732675167289058/server.json",
+      "effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "saved_model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "EMA": true,
+      "no_hardware_connections": "none; only configuration/model modules imported",
+      "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    {
+      "policy": "student_v5_6",
+      "process": {
+        "pid": 1191756,
+        "state": "absent",
+        "active": false
+      },
+      "checkpoint_sha256": "aee98c1cc01f06ba5b507422f433a7676c174603d92decf2e2c25e52dd857eca",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign/servers/01_nominal_students__student_v5_6_1788732782632856050/server.json",
+      "effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "saved_model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.1,
+        "action_t_max_of_two": true,
+        "contact_nll_beta": null,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": false,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "EMA": true,
+      "no_hardware_connections": "none; only configuration/model modules imported",
+      "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    }
+  ],
+  "native_source_current_sha256": {
+    "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+    "phantom/inference/remote.py": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+    "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+    "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+    "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+    "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+    "phantom/model/hht/hht.py": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f",
+    "phantom/model/sequence.py": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0",
+    "phantom/model/acc.py": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254"
+  },
+  "owned_endpoint7797_listeners": [],
+  "passed": true,
+  "saved_server_model_config_matches_current_payload": true,
+  "saved_server_normalizers_match_current_payload": true
+}

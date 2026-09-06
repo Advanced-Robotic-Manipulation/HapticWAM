@@ -1,0 +1,1141 @@
+{
+  "inspected_at_utc": "2026-09-06T22:03:56.238334+00:00",
+  "repo": "/home/physicalai/phantom-icra-2027/phantom",
+  "method": "Read existing checkpoints by CPU mmap; hash complete local teacher files; model-archive metadata only. No model construction, CUDA use, checkpoint downloads, or remote mutations.",
+  "local_checkpoints": [
+    {
+      "path": "runs/control_ftA/teacher_001200.pt",
+      "bytes": 372335337,
+      "mtime_utc": "2026-09-06T03:46:43.422490+00:00",
+      "sha256": null,
+      "architecture": "student",
+      "step": 1200,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [],
+      "model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "ctrl_r0_ftA",
+        "seed": 0,
+        "lr": 0.0001,
+        "lr_new_modules": 0.0003,
+        "weight_decay": 0.01,
+        "warmup_steps": 500,
+        "max_steps": 1200,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 1200,
+        "eval_every": 1200,
+        "num_workers": 16,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "wrench_baseline_rows": 0,
+        "tactile_pretrain_ckpt": "",
+        "freeze_tactile_steps": 0,
+        "event_band_weight": 0.0,
+        "split": "train",
+        "grasp_frac": 0.3,
+        "photo_aug": 1.0,
+        "commit_band_weight": 1.0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/control_v5_6/teacher_001200.pt",
+      "bytes": 372335337,
+      "mtime_utc": "2026-09-06T03:47:38.414288+00:00",
+      "sha256": null,
+      "architecture": "student",
+      "step": 1200,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [],
+      "model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "ctrl_r0_v5_6",
+        "seed": 0,
+        "lr": 0.0001,
+        "lr_new_modules": 0.0003,
+        "weight_decay": 0.01,
+        "warmup_steps": 500,
+        "max_steps": 1200,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 1200,
+        "eval_every": 1200,
+        "num_workers": 16,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "wrench_baseline_rows": 0,
+        "tactile_pretrain_ckpt": "",
+        "freeze_tactile_steps": 0,
+        "event_band_weight": 0.0,
+        "split": "train",
+        "grasp_frac": 0.3,
+        "photo_aug": 1.0,
+        "commit_band_weight": 1.0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/student_ftA/student_001200.pt",
+      "bytes": 368086461,
+      "mtime_utc": "2026-09-06T03:45:51.567680+00:00",
+      "sha256": null,
+      "architecture": "student",
+      "step": 1200,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [],
+      "model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "hid_r0_ftA",
+        "seed": 0,
+        "lr": 0.0001,
+        "lr_new_modules": 0.0003,
+        "weight_decay": 0.01,
+        "warmup_steps": 120,
+        "max_steps": 1200,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 1000,
+        "eval_every": 1000,
+        "num_workers": 16,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "teacher_ckpt": "/workspace/phantom-hid/runs/teacher/teacher_v5_ftA/teacher_001500.pt",
+        "teacher_mode": "cached",
+        "relabel_dir": "",
+        "w_traj": 1.0,
+        "w_event": 1.0,
+        "w_behavior": 1.0,
+        "w_ground": 0.5,
+        "saliency_kappa": 4.0,
+        "confidence_temp": 1.0,
+        "feature_align": false,
+        "w_feature_align": 0.1,
+        "dagger_round": 0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/student_ftA_r1/student_001200.pt",
+      "bytes": 372335273,
+      "mtime_utc": "2026-09-06T09:04:51.729789+00:00",
+      "sha256": null,
+      "architecture": "student",
+      "step": 1200,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [],
+      "model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "hid_r1_ftA",
+        "seed": 0,
+        "lr": 0.0001,
+        "lr_new_modules": 0.0003,
+        "weight_decay": 0.01,
+        "warmup_steps": 120,
+        "max_steps": 1200,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 1000,
+        "eval_every": 1000,
+        "num_workers": 16,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "wrench_baseline_rows": 0,
+        "teacher_ckpt": "/workspace/phantom-hid/runs/teacher/teacher_v5_ftA/teacher_001500.pt",
+        "teacher_mode": "cached",
+        "relabel_dir": "",
+        "w_traj": 1.0,
+        "w_event": 1.0,
+        "w_behavior": 1.0,
+        "w_ground": 0.5,
+        "saliency_kappa": 4.0,
+        "confidence_temp": 1.0,
+        "teacher_nfe": -1,
+        "w_sigma": 1.0,
+        "feature_align": false,
+        "w_feature_align": 0.1,
+        "dagger_round": 0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/student_v5_6/student_001200.pt",
+      "bytes": 368086461,
+      "mtime_utc": "2026-09-06T03:46:16.666588+00:00",
+      "sha256": null,
+      "architecture": "student",
+      "step": 1200,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [],
+      "model_config": {
+        "student": true,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.1,
+        "action_t_max_of_two": true,
+        "contact_nll_beta": null,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": false,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "hid_r0_v5_6",
+        "seed": 0,
+        "lr": 0.0001,
+        "lr_new_modules": 0.0003,
+        "weight_decay": 0.01,
+        "warmup_steps": 120,
+        "max_steps": 1200,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 1000,
+        "eval_every": 1000,
+        "num_workers": 16,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "teacher_ckpt": "/workspace/phantom-hid/runs/teacher/teacher_v5_batch0822/teacher_003000.pt",
+        "teacher_mode": "cached",
+        "relabel_dir": "",
+        "w_traj": 1.0,
+        "w_event": 1.0,
+        "w_behavior": 1.0,
+        "w_ground": 0.5,
+        "saliency_kappa": 4.0,
+        "confidence_temp": 1.0,
+        "feature_align": false,
+        "w_feature_align": 0.1,
+        "dagger_round": 0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/teacher_v5_batch0822/v5_6.pt",
+      "bytes": 393115861,
+      "mtime_utc": "2026-08-27T20:20:19.697024+00:00",
+      "sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "architecture": "teacher",
+      "step": 3000,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [
+        "runs/teacher_v5_batch0822/DEMO.pt"
+      ],
+      "model_config": {
+        "student": false,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.1,
+        "action_t_max_of_two": true,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "teacher_v5_batch0822",
+        "seed": 0,
+        "lr": 2e-05,
+        "lr_new_modules": 6e-05,
+        "weight_decay": 0.01,
+        "warmup_steps": 150,
+        "max_steps": 3000,
+        "batch_size": 4,
+        "grad_accum": 2,
+        "grad_clip": 1.0,
+        "ema_decay": 0.999,
+        "log_every": 1,
+        "ckpt_every": 500,
+        "eval_every": 500,
+        "num_workers": 24,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "tactile_pretrain_ckpt": "",
+        "freeze_tactile_steps": 0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    },
+    {
+      "path": "runs/teacher_v5_ftA/teacher_001500.pt",
+      "bytes": 393116181,
+      "mtime_utc": "2026-08-31T21:00:19.121504+00:00",
+      "sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "architecture": "teacher",
+      "step": 1500,
+      "keys": [
+        "format_version",
+        "base_ckpt_path",
+        "lora",
+        "phantom_modules",
+        "ema",
+        "configs",
+        "norm_stats",
+        "optimizer",
+        "scheduler",
+        "step"
+      ],
+      "ema_present": true,
+      "ema_keys": [
+        "net.phantom_bias_lambdas",
+        "net.blocks.0.self_attn.q_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.q_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.k_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_A.default.weight",
+        "net.blocks.0.self_attn.v_proj.lora_B.default.weight",
+        "net.blocks.0.self_attn.output_proj.lora_A.default.weight"
+      ],
+      "aliases": [
+        "runs/teacher_v5_ftA/BEST.pt"
+      ],
+      "model_config": {
+        "student": false,
+        "drop_video_at_inference": false,
+        "rope_time_mode": "time_true",
+        "cond_dropout_p": 0.0,
+        "action_t_max_of_two": false,
+        "contact_nll_beta": 0.5,
+        "contact_nll_detach_weight": false,
+        "wrist_region_mse": true,
+        "contact_self_forcing": false,
+        "action_noise_per_strip": true,
+        "mask_wrist": false,
+        "use_action_adaln_intent": true,
+        "hht_dim": 256,
+        "contact_obs_frames": 1,
+        "nfe": 5,
+        "loss": {
+          "action": 1.0,
+          "video": 0.1,
+          "contact": 1.0,
+          "wrist": 0.5,
+          "event": 0.5,
+          "gate_bce": 0.2,
+          "sigma_reg": 0.01
+        },
+        "lora": {
+          "rank": 16,
+          "alpha": 16,
+          "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+          "dropout": 0.0
+        },
+        "acc": {
+          "d_acc": 256,
+          "d_e": 256,
+          "hidden": 512,
+          "react_hidden": 32,
+          "lambda_bias_init": 0.0,
+          "beta_init": 1.0,
+          "self_anticipation": "two_pass",
+          "gt_noise_scale": 0.1,
+          "alpha_entropy_weight": 0.0
+        },
+        "feature_align": false
+      },
+      "training_config": {
+        "run_name": "teacher_v5_ftA",
+        "seed": 0,
+        "lr": 2e-05,
+        "lr_new_modules": 6e-05,
+        "weight_decay": 0.01,
+        "warmup_steps": 150,
+        "max_steps": 3000,
+        "batch_size": 4,
+        "grad_accum": 2,
+        "grad_clip": 1.0,
+        "ema_decay": 0.995,
+        "log_every": 1,
+        "ckpt_every": 500,
+        "eval_every": 500,
+        "num_workers": 12,
+        "activation_checkpointing": true,
+        "fp32_master": true,
+        "synthetic": false,
+        "tiny": false,
+        "device": "cuda",
+        "out_dir": "",
+        "tactile_pretrain_ckpt": "",
+        "freeze_tactile_steps": 0,
+        "event_band_weight": 0.0,
+        "split": "train",
+        "grasp_frac": 0.3,
+        "photo_aug": 1.0,
+        "commit_band_weight": 1.0
+      },
+      "hardware_shapes": {
+        "field": [
+          288,
+          384
+        ],
+        "field_ch": 8,
+        "keyframe_ds": [
+          144,
+          192
+        ],
+        "n_fingers": 2,
+        "wrench_dim": 6,
+        "wrist_ft_dim": 6,
+        "wrist_window_len": 31,
+        "ur_state_dim": 26,
+        "contact_state_dim": 11,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "cpk_shape": [
+          36,
+          48
+        ]
+      },
+      "normalizer_keys": [
+        "mean",
+        "std"
+      ]
+    }
+  ],
+  "teacher_directories": [
+    "runs/teacher_v3_790eps",
+    "runs/teacher_v5_batch0822",
+    "runs/teacher_v5_ftA"
+  ],
+  "model_registry": "# label<TAB>ckpt<TAB>note<TAB>system(teacher|student, optional)\nv5_6\truns/teacher_v5_batch0822/v5_6.pt\tLEAD - best overall (val124 18.2mm); arm A in the Session-5 pairing\nftA\truns/teacher_v5_ftA/BEST.pt\tEXPERIMENTAL ftA_1500 - best on waffles (24.4mm) + all of 09-01 grasps; arm B in the pairing\nstu_ftA\truns/student_ftA/student_001200.pt\tSENSOR-FREE student distilled from ftA (val 23.6mm; egg 6.6, waffles 35.6) - first student to test\tstudent\nstu_v5_6\truns/student_v5_6/student_001200.pt\tSENSOR-FREE student distilled from v5_6 (val 27.3mm)\tstudent\nctl_ftA\truns/control_ftA/teacher_001200.pt\tCONTROL: same inputs as stu_ftA, NO distillation (ablation only)\tstudent\nctl_v5_6\truns/control_v5_6/teacher_001200.pt\tCONTROL: same inputs as stu_v5_6, NO distillation (val 37.7mm; ablation only)\tstudent\nstu_ftA_r1\truns/student_ftA_r1/student_001200.pt\tSENSOR-FREE student round 2 from ftA (val 22.7mm - best student; teacher full NFE + trained sigma head)\tstudent\n",
+  "active_training_processes": [],
+  "archive_metadata": {
+    "repository": "armteam/phantom-checkpoints",
+    "revision": "17e2821b7bfbcab54e08cd2f0bbb9859b9b88729",
+    "teacher_directories": [
+      "teacher_v2_600eps",
+      "teacher_v3_790eps",
+      "teacher_v4_790eps",
+      "teacher_v5_batch0822",
+      "teacher_v5_ftA"
+    ],
+    "files": [
+      {
+        "path": "teacher_v2_600eps/teacher_020000.pt",
+        "bytes": 286074453,
+        "sha256": "fe0f2715ac48ec678bb4902b2ec341170a0626120dc8c772ed18689d20703376"
+      },
+      {
+        "path": "teacher_v3_790eps/teacher_020000.pt",
+        "bytes": 286074773,
+        "sha256": "fea0375407007f5fd7087187bd588bae46d0b582fe995bac57c7f27ac58d906f"
+      },
+      {
+        "path": "teacher_v3_790eps/text_embeddings.pt",
+        "bytes": 822087421,
+        "sha256": "bef6ad98d2925799c2768084cb5886c8770627f861924088a8a721316883453b"
+      },
+      {
+        "path": "teacher_v4_790eps/teacher_020000.pt",
+        "bytes": 393130965,
+        "sha256": "842d30947469595196650bbf2cd9337102f4ab3453b7789b7542bfdcae89b5f4"
+      },
+      {
+        "path": "teacher_v4_790eps/train_v4.log",
+        "bytes": 4256574,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/ckpt_watch.log",
+        "bytes": 105768,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_0500_ema.json",
+        "bytes": 75429,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_0500_raw.json",
+        "bytes": 75462,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_1000_ema.json",
+        "bytes": 75435,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_1000_raw.json",
+        "bytes": 75436,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_1500_ema.json",
+        "bytes": 75434,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_1500_raw.json",
+        "bytes": 75396,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_2000_ema.json",
+        "bytes": 75464,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_2000_raw.json",
+        "bytes": 75488,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_2500_ema.json",
+        "bytes": 75463,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_2500_raw.json",
+        "bytes": 75448,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_3000_ema.json",
+        "bytes": 75485,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_3000_raw.json",
+        "bytes": 75454,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_v4_ema.json",
+        "bytes": 75426,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/te_v4_raw.json",
+        "bytes": 75417,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_000500.pt",
+        "bytes": 393115861,
+        "sha256": "5bca120e71eea2c8fe4cb846c98946aa09622f9094e3f02591000c233dd4bf7b"
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_001000.pt",
+        "bytes": 393115861,
+        "sha256": "33af04341ccc2fd39a5d6220a6bcde17f6e56073df165caffd909a3575da1fdc"
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_001500.pt",
+        "bytes": 393115861,
+        "sha256": "e4caf3bfa37039bddb491484c7f72c44700d9f0581e27137e179f516611d7128"
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_002000.pt",
+        "bytes": 393115861,
+        "sha256": "719e36b9d3121adce0c5164db3d38d3c1d31584c1d295fd4e9c0be62e76e8f73"
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_002500.pt",
+        "bytes": 393115861,
+        "sha256": "e34878054b90b1327206623aaba96de6c46e8758ea28b30de9cbc1c71d7cdec2"
+      },
+      {
+        "path": "teacher_v5_batch0822/teacher_003000.pt",
+        "bytes": 393115861,
+        "sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c"
+      },
+      {
+        "path": "teacher_v5_batch0822/train_v5.log",
+        "bytes": 944993,
+        "sha256": null
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_000500.pt",
+        "bytes": 393116181,
+        "sha256": "88426fd02536596b9d316013a7a7f01b077eef316a9a351f4f6a264158fdf1f6"
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_001000.pt",
+        "bytes": 393116181,
+        "sha256": "35c779c56eb7c1ed4b03ed75bb9c3b50971f03ea4e666b47a62a7901d40c5292"
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_001500.pt",
+        "bytes": 393116181,
+        "sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e"
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_002000.pt",
+        "bytes": 393116181,
+        "sha256": "c8cb0045c21823999f3e2eed09a0dd026187254cd8d8eff3a58866033b75aac9"
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_002500.pt",
+        "bytes": 393116181,
+        "sha256": "3e423bbc6477d9733bc1637079a7a0000b3d66a032549b7087a7512547f23feb"
+      },
+      {
+        "path": "teacher_v5_ftA/teacher_003000.pt",
+        "bytes": 393116181,
+        "sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc"
+      },
+      {
+        "path": "teacher_v5_ftA/train_ftA.log",
+        "bytes": 942160,
+        "sha256": null
+      }
+    ]
+  }
+}

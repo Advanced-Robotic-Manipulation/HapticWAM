@@ -1,0 +1,37 @@
+{
+  "campaign_sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a",
+  "executing": true,
+  "checkpoint_blocks": [
+    {
+      "id": "nominal_students__student_ftA_r1",
+      "policy_id": "student_ftA_r1",
+      "trials": [
+        [
+          "nominal",
+          4242
+        ],
+        [
+          "nominal",
+          4243
+        ]
+      ]
+    },
+    {
+      "id": "nominal_students__student_v5_6",
+      "policy_id": "student_v5_6",
+      "trials": [
+        [
+          "nominal",
+          4242
+        ],
+        [
+          "nominal",
+          4243
+        ]
+      ]
+    }
+  ],
+  "planned_trials": 4,
+  "policy_server_transport": "127.0.0.1:7797",
+  "server_python": "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python"
+}

@@ -1,0 +1,61 @@
+{
+  "method": "Read existing verified review-video midpoint/final frames; display resize only. No generated scene or tactile content.",
+  "frames": [
+    {
+      "case_id": "student_ftA_r1__nominal__seed4242",
+      "video": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.mp4",
+      "frame_index": 72,
+      "video_time_s": 4.8,
+      "role": "mid"
+    },
+    {
+      "case_id": "student_ftA_r1__nominal__seed4242",
+      "video": "video_reviews/student_ftA_r1__nominal__seed4242/policy_review.mp4",
+      "frame_index": 143,
+      "video_time_s": 9.533333333333333,
+      "role": "end"
+    },
+    {
+      "case_id": "student_ftA_r1__nominal__seed4243",
+      "video": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.mp4",
+      "frame_index": 81,
+      "video_time_s": 5.4,
+      "role": "mid"
+    },
+    {
+      "case_id": "student_ftA_r1__nominal__seed4243",
+      "video": "video_reviews/student_ftA_r1__nominal__seed4243/policy_review.mp4",
+      "frame_index": 161,
+      "video_time_s": 10.733333333333333,
+      "role": "end"
+    },
+    {
+      "case_id": "student_v5_6__nominal__seed4242",
+      "video": "video_reviews/student_v5_6__nominal__seed4242/policy_review.mp4",
+      "frame_index": 114,
+      "video_time_s": 7.6,
+      "role": "mid"
+    },
+    {
+      "case_id": "student_v5_6__nominal__seed4242",
+      "video": "video_reviews/student_v5_6__nominal__seed4242/policy_review.mp4",
+      "frame_index": 227,
+      "video_time_s": 15.133333333333333,
+      "role": "end"
+    },
+    {
+      "case_id": "student_v5_6__nominal__seed4243",
+      "video": "video_reviews/student_v5_6__nominal__seed4243/policy_review.mp4",
+      "frame_index": 129,
+      "video_time_s": 8.6,
+      "role": "mid"
+    },
+    {
+      "case_id": "student_v5_6__nominal__seed4243",
+      "video": "video_reviews/student_v5_6__nominal__seed4243/policy_review.mp4",
+      "frame_index": 257,
+      "video_time_s": 17.133333333333333,
+      "role": "end"
+    }
+  ]
+}

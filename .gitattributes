@@ -1,0 +1,9 @@
+# Preserve byte hashes of the frozen CSV exports, whose writer uses CRLF.
+docs/results/**/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Runtime logs are retained verbatim, including the simulator's whitespace.
+docs/results/**/*.log -text -whitespace
+# Keep generated evidence identifiable in GitHub review; reports remain visible.
+docs/results/**/*.json linguist-generated=true
+docs/results/**/*.jsonl linguist-generated=true
+docs/results/**/*.csv linguist-generated=true
+docs/results/**/*.log linguist-generated=true

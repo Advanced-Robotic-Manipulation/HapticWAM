@@ -1,0 +1,48 @@
+{
+  "at_utc": "2026-09-06T20:19:12Z",
+  "command": "PYTHONPATH=. /tmp/phantom-sim-venv/bin/python -m pytest -q tests/test_sim_*.py",
+  "tests_passed": 243,
+  "duration_s": 6.43,
+  "ruff": "All checks passed",
+  "scope": "CPU test suite before physics preflight. Native controller60s run lifts/carries but cannotrelease because latch remains armed.",
+  "measured_dynamics_preflight": {
+    "exit_code": 0,
+    "source_hashes_verified": 33,
+    "strict_physical_chain": true,
+    "box_support_verified": true,
+    "confirmed_at_s": 14.268,
+    "excluded_from_policy_scores": true,
+    "policy_scorer_invalid_reason": "run_mode_is_not_policy (expected for measured replay)"
+  },
+  "final_tests_passed": 244,
+  "final_test_duration_s": 5.53,
+  "final_test_utc": "2026-09-06T20:36:35Z",
+  "final_ruff": "All checks passed",
+  "final_change": "Per-video scoring uses frozen case thresholds; teacher-only analysis and profile flags verified.",
+  "teacher_release_preflight": {
+    "valid_for_scoring": true,
+    "full_task": true,
+    "confirmed_at_s": 30.268,
+    "release_commit_s": 29.596,
+    "later_safety_stop_s": 55.884,
+    "excluded_from_campaign": true,
+    "visually_checked_s": 32
+  },
+  "completed_campaign": {
+    "trials": 40,
+    "valid": 40,
+    "full_placements": 5,
+    "source_and_input_hash_checks": 112,
+    "source_and_input_mismatches": 0,
+    "local_score_input_hashes_verified": 280,
+    "local_review_videos_verified": 40,
+    "local_video_mappings_verified": 40,
+    "local_source_config_hashes_verified": 34,
+    "video_decoded_frames_verified_remotely": 14201,
+    "owned_process_cleanup_verified": true,
+    "post_experiment_tactile_audit_samples": 396,
+    "post_experiment_score_changes": false,
+    "report_helper_tests_passed": 8,
+    "video_batch_guard_tests_passed": 6
+  }
+}

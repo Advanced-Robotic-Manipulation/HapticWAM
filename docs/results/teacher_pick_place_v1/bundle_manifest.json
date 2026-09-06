@@ -1,0 +1,542 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-06T22:14:10.859012+00:00",
+  "campaign_id": "teacher_pick_place_v1",
+  "campaign_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+  "source_artifact_root": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_pick_place_v1",
+  "remote_full_artifact_root": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1",
+  "source_video_manifest_sha256": "665f078ad65b25624a87a00088188a25c396b016825a886c85100eca9d3f12be",
+  "published_score_count": 40,
+  "published_video_count": 2,
+  "video_selection": {
+    "teacher__nominal__seed4242": "First nominal trial in frozen order; full task false, not selected by outcome quality.",
+    "teacher__placement_xm10_ym10mm__seed4242": "First strict full placement in frozen condition/seed order; not the best-looking or best-performing configuration."
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "808f61796a38d08b8490d77bf3d8f6d81a99205b58ae1de3cacb98743a7b6cb6",
+      "size_bytes": 6482,
+      "source_artifact": null,
+      "content_unchanged": false,
+      "description": "Publication-specific documentation or index; frozen scientific data are preserved separately."
+    },
+    {
+      "path": "analysis_summary.json",
+      "sha256": "0d0da47df50070b3c407aca6560ae1358ad3e0997d73d1fc1fc3833f62c8f291",
+      "size_bytes": 73157,
+      "source_artifact": "campaign/analysis/summary.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "audit_gel_force_projection.py",
+      "sha256": "4604e73d9d11aef5149c12b174de1cc866d029cd50fbf664a5a97fe3c5ad31e0",
+      "size_bytes": 10264,
+      "source_artifact": "audit_gel_force_projection.py",
+      "content_unchanged": true
+    },
+    {
+      "path": "campaign_provenance_audit.json",
+      "sha256": "2033da43ab71d57ede21f9c6e70ece1cb3a67d7c0eaac25ec03db1855a6135c0",
+      "size_bytes": 190991,
+      "source_artifact": "campaign_provenance_audit.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "campaign_provenance_audit.md",
+      "sha256": "9b4b888262168184499292ba2c123fa9f2e3194a86386b24e87940058b6501bd",
+      "size_bytes": 3483,
+      "source_artifact": "campaign_provenance_audit.md",
+      "content_unchanged": true
+    },
+    {
+      "path": "campaign_snapshot.json",
+      "sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+      "size_bytes": 34265,
+      "source_artifact": "campaign/campaign_snapshot.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "cases.md",
+      "sha256": "958ec89bf5da6dd53c1af061e9a9523f9dd549f19d2d6fc2285bc9b3a34e7c99",
+      "size_bytes": 6665,
+      "source_artifact": null,
+      "content_unchanged": false,
+      "description": "Publication-specific documentation or index; frozen scientific data are preserved separately."
+    },
+    {
+      "path": "experiment_source_sha256.json",
+      "sha256": "ebd8617efa081708765745bab27157133e9c43de18a2b6ce5ed4d361cc850870",
+      "size_bytes": 3534,
+      "source_artifact": "experiment_source_sha256.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "frozen_inputs.json",
+      "sha256": "96ee5c869d6964a204477ba4e8578257bec2f45a3fdd8c5c59af0d1b1ee11355",
+      "size_bytes": 12548,
+      "source_artifact": "campaign/frozen_inputs.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "inference_source_manifest.json",
+      "sha256": "204d5be441319e3a5793dbb84691aeff7aecf5fa51c20ee3bd5b923d52d280b0",
+      "size_bytes": 2217,
+      "source_artifact": "inference_source_manifest.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "local_mirror_audit.json",
+      "sha256": "f8dfc55cc26c463e0503a1cb5e4b081d62cdf20f37d8a0a78b2c068f397b3fe1",
+      "size_bytes": 378166,
+      "source_artifact": "local_mirror_audit.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "local_mirror_audit.md",
+      "sha256": "adea9d686d83b47e9b3bd74e96ff959f9e44f287fb8477bca8620c6de0d697aa",
+      "size_bytes": 846,
+      "source_artifact": "local_mirror_audit.md",
+      "content_unchanged": true
+    },
+    {
+      "path": "outcome_heatmap.pdf",
+      "sha256": "e1b00dd2b6e3c7f4dec932055fe90acdc169e2de31d9c0b956e2cca4d74c62a6",
+      "size_bytes": 26453,
+      "source_artifact": "campaign/report/outcome_heatmap.pdf",
+      "content_unchanged": true
+    },
+    {
+      "path": "outcome_heatmap.png",
+      "sha256": "9b1bd5c4deb29ccbef9ecb0d568e4050a4fc63d573f546096d4d8ccb8c28d164",
+      "size_bytes": 314501,
+      "source_artifact": "campaign/report/outcome_heatmap.png",
+      "content_unchanged": true
+    },
+    {
+      "path": "per_trial.csv",
+      "sha256": "cd7fc7d374ecc0f033fa4cac8527cb6d9bf3cd4e31fe7061a2114048b424b856",
+      "size_bytes": 76812,
+      "source_artifact": "campaign/report/per_trial.csv",
+      "content_unchanged": true
+    },
+    {
+      "path": "plan.json",
+      "sha256": "bfbf20b5fc9d5e1f5a1b739040f0f21146d39cfb1af2007672049599a54344ba",
+      "size_bytes": 3268,
+      "source_artifact": "campaign/plan.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "post_experiment_tactile_diagnostic.json",
+      "sha256": "fc3d894c51a65c54ff4402c42f5be6b71e80ac7083f7de4025aba677e5f63772",
+      "size_bytes": 48704,
+      "source_artifact": "post_experiment_tactile_diagnostic.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "post_experiment_tactile_diagnostic.md",
+      "sha256": "5acd0103c261bd192383ceeb8ec19db66d7ccee231156a5e143c4ecb0756798f",
+      "size_bytes": 4870,
+      "source_artifact": "post_experiment_tactile_diagnostic.md",
+      "content_unchanged": true
+    },
+    {
+      "path": "process_cleanup_audit.json",
+      "sha256": "9d284e536d61b0c8555c94f7979a6d6380bed074f31f64e9433d722fecde0720",
+      "size_bytes": 1799,
+      "source_artifact": "process_cleanup_audit.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "progress.json",
+      "sha256": "2c25cc7e69f69706ce1a143c421d5f563bd7733197141c3fe599a041accff4dd",
+      "size_bytes": 98865,
+      "source_artifact": "campaign/progress.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "report_manifest.json",
+      "sha256": "5738348bb0866243c9dabe3db6fe5000be0036e46d7d5fabd946d2568e7a75be",
+      "size_bytes": 11513,
+      "source_artifact": "campaign/report/report_manifest.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "report_summary.json",
+      "sha256": "aadab1d74a335bd5140c500f5b26a7ac7128573a48b12a8e6f61ebd83c9a8a11",
+      "size_bytes": 13123,
+      "source_artifact": "campaign/report/report_summary.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "runtime_versions.json",
+      "sha256": "0ed7903b67fc1c0403ad3b5a23c1a3bd793a3c33367068c7f005d9e78148dc2d",
+      "size_bytes": 405,
+      "source_artifact": "runtime_versions.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "sept4_policy_initial_state.json",
+      "source_artifact": "sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "size_bytes": 2637,
+      "content_unchanged": true
+    },
+    {
+      "path": "source_snapshot_manifest.json",
+      "sha256": "89be403d4f7cb44ccc189c29d3550695f26544651c30db074815d8c86792208c",
+      "size_bytes": 11793,
+      "source_artifact": "source_snapshot_manifest.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "stage_counts.pdf",
+      "sha256": "468288083d42d85c7146f91d76339a1a3ba38a8b3aa7e948e190b2769e40829c",
+      "size_bytes": 18603,
+      "source_artifact": "campaign/report/stage_counts.pdf",
+      "content_unchanged": true
+    },
+    {
+      "path": "stage_counts.png",
+      "sha256": "f2764285a82c2e1420f4111140446802ba1b354d595d32e36f486d40b6182c23",
+      "size_bytes": 133086,
+      "source_artifact": "campaign/report/stage_counts.png",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_x_m2deg__seed4242.json",
+      "sha256": "7f092f6105275d3ed0ab007dd61ba9ce011ebd97cfb53c05a1b66734dd9cfdd4",
+      "size_bytes": 9372,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_x_m2deg__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_x_m2deg__seed4243.json",
+      "sha256": "be04d78ec3cb0fc30918e098ffdc7cd2932377ed73a477ba5b59d7f3f6e1b4e0",
+      "size_bytes": 9414,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_x_m2deg__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_x_p2deg__seed4242.json",
+      "sha256": "d876b0142178a5b495042ac5043c8c7b0e8e4c4b0d18f961a06ca5a1a61ca7c7",
+      "size_bytes": 9400,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_x_p2deg__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_x_p2deg__seed4243.json",
+      "sha256": "f2eab187ac496521d5c2790dc2559bea435a97e9013bf476eb640f067a0fc8dc",
+      "size_bytes": 9410,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_x_p2deg__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_y_m2deg__seed4242.json",
+      "sha256": "e95d46178605cd84956e08866770f1aec7fa45e8224494f3c7b8cc3d1ca26a0d",
+      "size_bytes": 9419,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_y_m2deg__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_y_m2deg__seed4243.json",
+      "sha256": "53c7d5769739ec2ecd7a44a96c24655e9628a979fdad46dce99902af7005a98c",
+      "size_bytes": 9379,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_y_m2deg__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_y_p2deg__seed4242.json",
+      "sha256": "73381616e71b0c9a152d20720588359e153979d11239f5d9bc585596d7206bca",
+      "size_bytes": 9415,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_y_p2deg__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__camera_y_p2deg__seed4243.json",
+      "sha256": "34a3fd624ba3add8e154d609a29351afdbe56ee51cda3beea73055ffc8066daf",
+      "size_bytes": 9399,
+      "source_artifact": "campaign/analysis/trials/teacher__camera_y_p2deg__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__inference_delay_add_150ms__seed4242.json",
+      "sha256": "dee1d3fe495525e189955dc333250a2589245a0ce1da2869c4ec1d09f20d185f",
+      "size_bytes": 8254,
+      "source_artifact": "campaign/analysis/trials/teacher__inference_delay_add_150ms__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__inference_delay_add_150ms__seed4243.json",
+      "sha256": "0ac86e9fe1f812bfe5be1d2004287e03a972fe27bf4b3f5b82f13f0e0c00aebd",
+      "size_bytes": 8218,
+      "source_artifact": "campaign/analysis/trials/teacher__inference_delay_add_150ms__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__inference_delay_add_300ms__seed4242.json",
+      "sha256": "d3b83caba59022c99d24068a1ce18fdd90587be2f92bde5962bc66b5beb3ba51",
+      "size_bytes": 8274,
+      "source_artifact": "campaign/analysis/trials/teacher__inference_delay_add_300ms__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__inference_delay_add_300ms__seed4243.json",
+      "sha256": "3cd2a9f4872654ebf2cfaa85ed4c7c4a3848c40b7f545ffe39651e4e2b168d50",
+      "size_bytes": 8299,
+      "source_artifact": "campaign/analysis/trials/teacher__inference_delay_add_300ms__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__nominal__seed4242.json",
+      "sha256": "50a4670517ee53cfb02b327815a27943fb67fd8d43a1387aa07c450273644fe2",
+      "size_bytes": 8043,
+      "source_artifact": "campaign/analysis/trials/teacher__nominal__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__nominal__seed4243.json",
+      "sha256": "9dac20e39215848a946cb595abf0e1ca9364bd6017ee98e189c6965772d9cbeb",
+      "size_bytes": 8032,
+      "source_artifact": "campaign/analysis/trials/teacher__nominal__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__observation_delay_160ms__seed4242.json",
+      "sha256": "adcf711a19d8a003a54aa8f941f9837078538fd3ee87a097484ee94abe99e0c1",
+      "size_bytes": 8275,
+      "source_artifact": "campaign/analysis/trials/teacher__observation_delay_160ms__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__observation_delay_160ms__seed4243.json",
+      "sha256": "d9a6f50fb4f5f046c26c5874348444231f484a80569ab9a2c0f32c0187c4e4e8",
+      "size_bytes": 8256,
+      "source_artifact": "campaign/analysis/trials/teacher__observation_delay_160ms__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__observation_delay_80ms__seed4242.json",
+      "sha256": "a816ae604d0269a339b1181381960e3bfcaf5593f2e867257175151870a96598",
+      "size_bytes": 8272,
+      "source_artifact": "campaign/analysis/trials/teacher__observation_delay_80ms__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__observation_delay_80ms__seed4243.json",
+      "sha256": "228521f16941cab129d75aa67fab54c839cee34528d6df4b2e6e0e625841206c",
+      "size_bytes": 8261,
+      "source_artifact": "campaign/analysis/trials/teacher__observation_delay_80ms__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_070__seed4242.json",
+      "sha256": "12d52f9893e78f0dcbc6231aabd27a10dd55ed84dabf74f1dd557e6334b970dd",
+      "size_bytes": 8185,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_070__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_070__seed4243.json",
+      "sha256": "37a11307bee2a4ba518b3f7b9eba0295e2d4df158f7bccd1a43181b92ede45cc",
+      "size_bytes": 8250,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_070__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_085__seed4242.json",
+      "sha256": "59d267713002b1d6d304d817e59db3b94f59f98ec6f56ba710d6eab00edc2cd4",
+      "size_bytes": 8240,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_085__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_085__seed4243.json",
+      "sha256": "3128244e2f5c989b1660fec610847744a3a601b8286235fa98fc4c2a4bc3fc0f",
+      "size_bytes": 8200,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_085__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_115__seed4242.json",
+      "sha256": "12c8e1c530cdde58ef0e28ead5ef3fe3e792e0e982c394e4f3dc772ab0deed90",
+      "size_bytes": 8232,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_115__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__packet_friction_115__seed4243.json",
+      "sha256": "a24d5124840435bb290abd9b40ba200f5d3fb16093a393b46f4b0bd22a30219d",
+      "size_bytes": 8208,
+      "source_artifact": "campaign/analysis/trials/teacher__packet_friction_115__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_ym10mm__seed4242.json",
+      "sha256": "4df83c33edd523350851bebcfd3ee12b06a6a6c1aacf3e479b2cdf3659df09c0",
+      "size_bytes": 8254,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_ym10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_ym10mm__seed4243.json",
+      "sha256": "138449c8d991caf9a5c5418417398c51ef273be2f7aea35341525730cc2f0ab8",
+      "size_bytes": 8217,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_ym10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_yp0mm__seed4242.json",
+      "sha256": "f791680c2713c3b8a4c840097367b46fb0af3a6dee4568eec2040714a481d1df",
+      "size_bytes": 8217,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_yp0mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_yp0mm__seed4243.json",
+      "sha256": "962e849e3ba5d026044e938345a5428a27ea63894920dfd6ad2cbd811f9aefb4",
+      "size_bytes": 8251,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_yp0mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_yp10mm__seed4242.json",
+      "sha256": "a1a66013e2ef3d60a545c26649ab57abc1bea97d1970be7f3a9f6fb13c5a403d",
+      "size_bytes": 8180,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_yp10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xm10_yp10mm__seed4243.json",
+      "sha256": "543a0ef8b380bd0fea838fc60dcc0e65fceca4dad511d051b6244e338ba043ed",
+      "size_bytes": 8224,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xm10_yp10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp0_ym10mm__seed4242.json",
+      "sha256": "e80ab5d9f698fe22bf2b8a34700f6fe9d6f3c3753414e55b98b38e58d43767dd",
+      "size_bytes": 8177,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp0_ym10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp0_ym10mm__seed4243.json",
+      "sha256": "f4e19e824c139ab5855de06c52523684f1009b0066e627f1804453938479d172",
+      "size_bytes": 8205,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp0_ym10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp0_yp10mm__seed4242.json",
+      "sha256": "2a53894eddb5d8e2110856659008dfb928647c93ede9626d7c8bb57128842e21",
+      "size_bytes": 8276,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp0_yp10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp0_yp10mm__seed4243.json",
+      "sha256": "bf24edd92e1160a0b24c1ed27acd25394b075567d925d508a276ae0ee5b0b03c",
+      "size_bytes": 8255,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp0_yp10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_ym10mm__seed4242.json",
+      "sha256": "ae983d752e7c81514c3a249abf63cfb14fd39924026c131c6340da986c6f5bd8",
+      "size_bytes": 8214,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_ym10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_ym10mm__seed4243.json",
+      "sha256": "da7485206560868ee071ed6a23db5643282523ce98ec30e9cb6edc6f4b40d0d7",
+      "size_bytes": 8200,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_ym10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_yp0mm__seed4242.json",
+      "sha256": "483895f4eca40d3cfe33de6650d0b83839f76803cbbed9c79d48dc38c9a1c2fd",
+      "size_bytes": 8222,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_yp0mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_yp0mm__seed4243.json",
+      "sha256": "a2de95465627c8bf2de272e5d6900bc4013c26fd68a4e118c6a1894358eb923d",
+      "size_bytes": 8229,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_yp0mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_yp10mm__seed4242.json",
+      "sha256": "3da61906c46455ca7aedcc9cb98b05c05c6088fcce1875cb1c540543cefcb922",
+      "size_bytes": 8249,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_yp10mm__seed4242.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "trials/teacher__placement_xp10_yp10mm__seed4243.json",
+      "sha256": "a64f7d89a2e376276d7c8bc3400ef4e4229606525883197d844e6067b88cf875",
+      "size_bytes": 8228,
+      "source_artifact": "campaign/analysis/trials/teacher__placement_xp10_yp10mm__seed4243.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "validation_checks.json",
+      "sha256": "68b9afe568226f38e3ec7800a7216a23b023995f93fe1e2bdd95acec05c6cfe8",
+      "size_bytes": 1805,
+      "source_artifact": "validation_checks.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "video_index.json",
+      "sha256": "b058a7e7db06f1a199e9f847bdecbc12b27ae1ff8ad0fb3da1957a2fd25c2b68",
+      "size_bytes": 52174,
+      "source_artifact": null,
+      "content_unchanged": false,
+      "description": "Publication-specific documentation or index; frozen scientific data are preserved separately."
+    },
+    {
+      "path": "video_manifest.json",
+      "sha256": "665f078ad65b25624a87a00088188a25c396b016825a886c85100eca9d3f12be",
+      "size_bytes": 131418,
+      "source_artifact": "video_reviews/manifest.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "videos/teacher__nominal__seed4242/policy_review.json",
+      "sha256": "79474cefeb75eedb30967c9e7674aba725e4f1c9330eff986abd55618bcc80b0",
+      "size_bytes": 104028,
+      "source_artifact": "video_reviews/teacher__nominal__seed4242/policy_review.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "videos/teacher__nominal__seed4242/policy_review.mp4",
+      "sha256": "8819aef9c7c1ef00e962d153297e9d6531d75782d3a527c78769485785660ff6",
+      "size_bytes": 1156209,
+      "source_artifact": "video_reviews/teacher__nominal__seed4242/policy_review.mp4",
+      "content_unchanged": true
+    },
+    {
+      "path": "videos/teacher__placement_xm10_ym10mm__seed4242/policy_review.json",
+      "sha256": "51ee6cd71e5481f19fd3f9e2eb786d5360af7c1f3189ccb8f269a59ed9f7cb78",
+      "size_bytes": 168953,
+      "source_artifact": "video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.json",
+      "content_unchanged": true
+    },
+    {
+      "path": "videos/teacher__placement_xm10_ym10mm__seed4242/policy_review.mp4",
+      "sha256": "f26b6861ac82da82bc394f7bad135a037ceb4a6f519dcbeea96100e2e7cb9d5a",
+      "size_bytes": 1917632,
+      "source_artifact": "video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.mp4",
+      "content_unchanged": true
+    }
+  ],
+  "file_count_excluding_this_manifest": 74,
+  "file_bytes_excluding_this_manifest": 5359574,
+  "nonvideo_bytes_excluding_this_manifest": 2285733,
+  "limitations": "Compact publication subset. Absolute paths in archived metadata refer to original full archives. All40 reviews remain on compute3. No git commit/push or original artifact changes."
+}

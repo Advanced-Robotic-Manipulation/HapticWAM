@@ -1,0 +1,54 @@
+{
+  "checked_at_utc": "2026-09-06T21:22:50.636936+00:00",
+  "campaign_status": "all_trials_completed",
+  "trial_count": 40,
+  "controller": {
+    "pid": 1014991,
+    "state": "absent",
+    "active": false,
+    "command": ""
+  },
+  "servers": [
+    {
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/servers/00_nominal_teacher__teacher_1788727027809111369/server.json",
+      "recorded_status": "stopped",
+      "port": 7796,
+      "pid": 1015023,
+      "state": "absent",
+      "active": false,
+      "command": ""
+    },
+    {
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/servers/01_stress_teacher__teacher_1788727180434339836/server.json",
+      "recorded_status": "stopped",
+      "port": 7796,
+      "pid": 1019949,
+      "state": "absent",
+      "active": false,
+      "command": ""
+    }
+  ],
+  "ports": {
+    "7796": {
+      "accepts_tcp_connection": false
+    }
+  },
+  "owned_simulators": [],
+  "resident_observations": [
+    {
+      "pid": 3980659,
+      "state": "S",
+      "active": true,
+      "command": ".venv/bin/python -m phantom.scripts.policy_server --ckpt runs/teacher_v5_ftA/BEST.pt --hardware configs/hardware.nuc.yaml --port 7778"
+    },
+    {
+      "pid": 4042349,
+      "state": "absent",
+      "active": false,
+      "command": ""
+    }
+  ],
+  "resident_note": "Read-only observations. No resident process was signaled or restarted. The disappearance time of older PID4042349 is unknown.",
+  "gpu_processes": "3229, /usr/bin/python3, 2418 MiB\n3563921, /snap/mpv/239/usr/bin/mpv, 158 MiB\n3075736, /home/physicalai/Unity/Hub/Editor/6000.2.15f1/Editor/unityhub-unity-editor-6000.2.15f1, 746 MiB\n3980659, .venv/bin/python, 6594 MiB\n",
+  "cleanup_verified": true
+}

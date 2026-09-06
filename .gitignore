@@ -16,3 +16,6 @@ cosmos-predict2.5-2b/
 .gstack/
 configs/data_collect.local.yaml
 .claude/worktrees/
+
+# Reproducible Isaac replay exports, renders and validation artifacts.
+/artifacts/isaac_waffles/

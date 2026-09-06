@@ -1,0 +1,373 @@
+{
+  "ckpt": "/home/physicalai/phantom-icra-2027/phantom/runs/student_ftA_r1/student_001200.pt",
+  "ckpt_sha": "b13362472843c4b09d9c7a091c0e97ff34a58ea45411961886f5d72ebf1703b3",
+  "warmed": true,
+  "busy": true,
+  "wrench_baseline_rows": 0,
+  "owner": 1,
+  "owner_since": 1788732730.7547095,
+  "applied": [
+    "close_p",
+    "drop_video",
+    "guidance",
+    "k_seeds",
+    "nfe",
+    "parity_fixes",
+    "persistent_noise",
+    "task_text"
+  ],
+  "effective": {
+    "nfe": 1,
+    "guidance": 1.0,
+    "k_seeds": 4,
+    "parity_fixes": true,
+    "persistent_noise": true,
+    "task_text": "waffles",
+    "drop_video": false,
+    "close_p": 0.5
+  },
+  "task_text_source": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/student_nominal_smoke_v1/campaign/runtime/inference.json",
+  "wrist_model": "contact_proxy",
+  "initial_recorded_wrist_bias": [
+    -6.679699239150466,
+    -3.7754789060686464,
+    3.5474054977869613,
+    1.3528524004078362,
+    -1.7378262552134158,
+    0.45864556310759486
+  ],
+  "observation_warmup_s": 0.25,
+  "control_rate_hz": 125.0,
+  "deploy_overrides": {},
+  "tactile_model": "measured_baseline_proxy",
+  "tactile_baseline_provenance": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+    "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+  },
+  "tactile_proxy_parameters": {
+    "active_size_mm": [
+      36.0,
+      27.0
+    ],
+    "patch_sigma_mm": [
+      3.0,
+      3.0
+    ],
+    "depth_mm_per_n": [
+      0.04032048,
+      0.04958851
+    ],
+    "normal_radial_displacement_gain": 0.25,
+    "area_mm2_per_n_two_thirds": 1.0,
+    "torque_nm_to_sdk": 100.0
+  },
+  "gel_contact_coverage": "manifold_patch",
+  "tactile_contact_mapping": "Gel-only normal contact, explicit inner face/active patch filtering. Tangential force and displacement unmodeled. Static measured baseline, physics-responsive deformation; transfer unvalidated.",
+  "mode": "student",
+  "hardware_config": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+  "hardware_effective": {
+    "meta": {
+      "schema_version": 1,
+      "rig_name": "skoltech-ur-rig",
+      "bench_verified": false
+    },
+    "mode": {
+      "drivers": "real",
+      "overrides": {}
+    },
+    "arm": {
+      "model": "UR3",
+      "generation": "e-series",
+      "ip": "192.168.88.56",
+      "rtde_receive_hz": 125.0,
+      "rtde_control_hz": 125.0,
+      "dof": 6,
+      "tcp_offset_m": [
+        0.0,
+        0.0,
+        0.18,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "payload_kg": 1.2,
+      "limits": {
+        "joint_speed_rad_s": 1.0,
+        "tcp_speed_m_s": 0.25,
+        "tcp_accel_m_s2": 0.5
+      },
+      "servoj": {
+        "lookahead_time_s": 0.1,
+        "gain": 300
+      }
+    },
+    "wrist_ft": {
+      "source": "ur_internal",
+      "rate_hz": 125.0,
+      "dim": 6,
+      "window_s": 0.25,
+      "bias_on_episode_start": true,
+      "bias_window_s": 0.5
+    },
+    "gripper": {
+      "type": "robotiq_2f85",
+      "interface": "urcap_socket",
+      "port": 63352,
+      "stroke_mm": 85.0,
+      "feedback_rate_hz": 100.0,
+      "default_speed": 0.5,
+      "default_force": 0.04,
+      "force_range_N": [
+        20.0,
+        235.0
+      ],
+      "cmd_force_limit_N": 30.0,
+      "max_close_cmd": 0.9
+    },
+    "tactile": {
+      "sdk": "dmrobotics",
+      "sdk_backend": "cpu",
+      "sdk_mode": "high",
+      "rate_hz": 8.0,
+      "raw_img": {
+        "h": 480,
+        "w": 640,
+        "c": 1
+      },
+      "infer_img": {
+        "h": 288,
+        "w": 384,
+        "c": 1
+      },
+      "field": {
+        "h": 288,
+        "w": 384
+      },
+      "hw_order": "hw",
+      "field_channels": {
+        "deformation2d": 2,
+        "depth": 1,
+        "shear": 2,
+        "dist_force": 3
+      },
+      "wrench_dim": 6,
+      "force_unit_to_N": 1.0,
+      "torque_unit_to_Nm": 0.01,
+      "dist_force_unit_to_N": 0.0,
+      "offline_recompute_ok": false,
+      "pc_host": null,
+      "sensors": [
+        {
+          "name": "left",
+          "dev_id": "L26050098",
+          "remote_addr": null,
+          "pc_port": null
+        },
+        {
+          "name": "right",
+          "dev_id": "L26190169",
+          "remote_addr": null,
+          "pc_port": null
+        }
+      ]
+    },
+    "cameras": {
+      "scene": {
+        "enabled": true,
+        "serial": "944622074411",
+        "color": {
+          "h": 480,
+          "w": 640,
+          "c": 3
+        },
+        "fps": 15.0,
+        "depth_enabled": false
+      },
+      "wrist": {
+        "enabled": false,
+        "serial": "",
+        "color": {
+          "h": 480,
+          "w": 640,
+          "c": 3
+        },
+        "fps": 30.0,
+        "depth_enabled": false
+      }
+    },
+    "derived": {
+      "tau_contact_depth": 0.05,
+      "tau_contact_area": 0.025,
+      "tau_contact_fz": 0.1,
+      "contact_source": "depth",
+      "tau_slip": 0.5,
+      "slip_flow_weight": 0.5,
+      "friction_cone_mu": 0.8,
+      "cop_min_contact_cells": 10,
+      "area_crosscheck_tol": 0.3,
+      "cpk_downsample": 8,
+      "event_lookahead_s": 0.5,
+      "event_min_hold_ticks": 2
+    },
+    "recording": {
+      "field_ds": {
+        "h": 72,
+        "w": 96
+      },
+      "field_ds_rate_hz": 8.0,
+      "keyframe_ds": {
+        "h": 144,
+        "w": 192
+      },
+      "keyframe_rate_hz": 3.0,
+      "field_dtype": "float16",
+      "save_infer_img": true,
+      "infer_img_rate_hz": 8.0,
+      "archive_raw_img": false,
+      "ring_seconds": 20.0,
+      "zarr_chunk_frames": 120,
+      "zarr_chunk_mb": 8.0,
+      "drain_interval_s": 0.25,
+      "scene_jpeg_quality": 92
+    },
+    "control": {
+      "model_tick_hz": 4.0,
+      "action_rate_hz": 10.0,
+      "action_dim": 7,
+      "chunk_horizon": 16,
+      "executor_rate_hz": 125.0,
+      "replan_min_lead_s": 0.3,
+      "chunk_blend_s": 0.1
+    },
+    "safety": {
+      "wrench_limit_N": 60.0,
+      "wrench_limit_Nm": 15.0,
+      "wrench_baseline_tau_s": 2.0,
+      "wrench_debounce_ticks": 3,
+      "joint_speed_stop_rad_s": 1.2,
+      "wrist_extension_stop_m": 0.468,
+      "lift_complete_z_m": 0.0,
+      "lift_complete_fz_n": 4.0,
+      "lift_complete_hold_s": 0.4,
+      "lift_complete_window_s": 0.6,
+      "grip_latch_fz_n": 2.5,
+      "ur_dh_a2_a3_d4_m": [
+        0.24365,
+        0.21325,
+        0.11235
+      ],
+      "ur_dh_d1_m": 0.1519,
+      "elbow_min_rad": null,
+      "servo_joint_speed_max_rad_s": null,
+      "reach_clamp_m": null,
+      "tactile_fz_limit_N": 5.0,
+      "tactile_depth_limit": 0.6,
+      "workspace_m": {
+        "x": [
+          -0.7,
+          0.15
+        ],
+        "y": [
+          -0.5,
+          0.3
+        ],
+        "z": [
+          0.0315,
+          0.8
+        ]
+      },
+      "hitbox_m": {
+        "x": [
+          -0.49850000000000005,
+          -0.2206
+        ],
+        "y": [
+          -0.4065,
+          0.1758
+        ],
+        "z": [
+          0.03,
+          0.5021
+        ]
+      },
+      "governor": {
+        "sigma_lo": 0.1,
+        "sigma_hi": 1.0,
+        "min_scale": 0.15
+      },
+      "stale_plan_timeout_s": 1.0
+    },
+    "teleop": {
+      "echo": {
+        "vid": 1603,
+        "pid": 1868,
+        "baud": 115200,
+        "base_pose": [
+          0.001427,
+          -1.5621,
+          1.588,
+          0.00954,
+          1.5737,
+          -3.0957
+        ],
+        "sensitivity_divisors": [
+          1.0,
+          1.25,
+          1.75
+        ],
+        "gripper_open_tick": 18,
+        "gripper_closed_tick": 223,
+        "control_rate_hz": 125.0,
+        "filter_min_cutoff": 1.0,
+        "filter_beta": 0.3,
+        "filter_d_cutoff": 1.0,
+        "joint_accel_rad_s2": 4.0,
+        "gripper_ema_alpha": 0.2,
+        "gripper_deadband": 0.02
+      }
+    }
+  },
+  "max_play_steps": 10,
+  "planner_stall_watchdog": true,
+  "terminal_veto": {
+    "implementation": "fd4a032",
+    "config": {
+      "z_ref": 0.0415,
+      "z_floor": 0.0315,
+      "z_margin": 0.0615,
+      "open_aperture": 0.232,
+      "p_close": 0.5,
+      "p_none": 0.9,
+      "max_retries": 3
+    },
+    "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+  },
+  "placement_release": {
+    "tcp_min_m": [
+      -0.5429275160642127,
+      -0.06853791240695331,
+      0.057999999999999996
+    ],
+    "tcp_max_m": [
+      -0.24020644059509488,
+      0.14193716917871008,
+      0.274
+    ],
+    "open_command_max": 0.45,
+    "opening_hold_s": 0.2,
+    "unloaded_force_max_n": 0.5,
+    "unloaded_hold_s": 0.2,
+    "rearm_close_command_min": 0.5
+  },
+  "record_packet_support": true,
+  "save_policy_observations": true,
+  "policy_initial_state_provenance": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+    "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+  },
+  "inference_delivery_clock": "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
+  "phantom_recovery": false,
+  "observation_delay_s": 0.0,
+  "inference_delay_add_s": 0.0,
+  "observation_delay_scope": "all model inputs, causal history; safety and executor retain current feedback"
+}
