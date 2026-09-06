@@ -1,4 +1,61 @@
-# Rig session — v5 fine-tune vs v4 (how to run inference on compute3)
+# Rig session — how to run inference on compute3 (Session 6: teachers vs sensor-free students)
+
+## 🎯 SESSION 6 (2026-09-07): teachers vs SENSOR-FREE students — read this first
+
+Seven models are on the box and on the `./PICK.sh` / `./SERVE.sh` menu. Ports follow
+the menu order (slot 1 → 7777, slot 2 → 7778, ... slot 7 → 7783); one SERVE.sh
+terminal per model you want warm. Everything is also on the hub
+(`armteam/phantom-checkpoints`), so nothing on the box is precious.
+
+| menu | what it is | inputs | offline val124 (mean / median mm) | expect on the rig |
+|---|---|---|---|---|
+| `v5_6` | teacher (lead until 09-04) | camera + tactile pads | 18.2 / 15.7 | the reference arm of the v5_6 pair |
+| `ftA` | teacher, fine-tuned (all 09-01/09-04 grasps) | camera + tactile pads | 19.6 / 13.7 (waffles 24.4) | the reference arm of the ftA pair |
+| `stu_ftA_r1` | **student, round 2** — distilled from ftA, teacher at full NFE, trained sigma head | camera + proprio ONLY (no pads) | **22.7 / 16.4** (best student) | the paper's student: should grasp, plausibly less often than ftA; watch for closes on air |
+| `stu_ftA` | student, round 1 — distilled from ftA | no pads | 23.6 / 17.9 | slightly worse than r1; run only if r1 disappoints or time allows |
+| `stu_v5_6` | student, round 1 — distilled from v5_6 | no pads | 27.3 / 18.6 | weaker on waffles (39.9 offline); the v5_6 pair's student |
+| `ctl_ftA` | CONTROL: same inputs/init/steps as stu_ftA, NO distillation | no pads | 24.6 / 17.0 | ablation for the table; expect ≈ stu_ftA or worse |
+| `ctl_v5_6` | CONTROL for stu_v5_6, NO distillation | no pads | 37.7 / 24.4 | ablation only; expect the worst grasp rate of the day |
+
+The students and controls print `[STUDENT: sensor-free]` in the menu. They still run
+with the pads plugged in (the safety guards, the aperture latch and the labels use the
+pads) — the MODEL just never sees them.
+
+### Order of the day (each pair = 16 paired episodes, alternating arms per cell)
+1. **Warm up three servers** (terminal A ×3): `./SERVE.sh` → `v5_6`, `./SERVE.sh` → `ftA`,
+   `./SERVE.sh` → `stu_ftA_r1`. ~3 min each, then every launch attaches in seconds.
+2. **Pair 1 — `ftA` vs `stu_ftA_r1`** (the headline number). Same object placement for
+   both arms of a pair, same seed, same start; alternate which arm goes first.
+3. **Pair 2 — `v5_6` vs `stu_v5_6`** (warm `stu_v5_6` while pair 1 runs).
+4. **Pair 3 (if time) — `stu_ftA_r1` vs `ctl_ftA`**: this is the "does distillation
+   matter" row; the control should be visibly worse. Skip `ctl_v5_6` unless the day is
+   long — its offline number says it will mostly fail.
+5. Optional Block A at the start if the rig behaves oddly: 5 demo replays through the
+   real deploy path (`tools/replay_rig.py`) to confirm the arm follows a known-good plan.
+
+### Operator rules that changed since Session 5
+- **A bare Enter no longer stops an episode.** Type `x` + Enter to end a carry cleanly
+  (gripper stays closed); stray newlines (wireless receiver) ended 5 episodes on 09-04.
+- **Label every episode** at the prompt: `s` (grasped and carried), `f`, `c`. Unlabeled
+  episodes are excluded from the A/B — the 09-04 set had to be rule-labelled after the
+  fact. Take the object OUT of the gripper before confirming the next homing.
+- **Auto-success is OFF** (`lift_complete` cut carries short on 09-04); the wrist stop
+  is 0.468 m, the servo limiter is OFF, the aperture latch is ON (a held object cannot
+  be commanded open mid-carry).
+- **One robot owner per host.** A second `run_deploy` — including one Ctrl-Z'd in
+  another terminal — is refused by name before it touches the robot. If a launch says
+  "rig owned by pid …", `fg`/kill that process; do not fight it. If it says the server
+  is BUSY, another run_deploy is still attached to that model's server.
+- Free disk is checked at launch (abort < 5 GB, warn < 20 GB); the box had 105 GB on 09-06.
+
+### What "expected" looks like, honestly
+Offline mm has not predicted rig behaviour well in either direction. What the numbers do
+say: the round-2 student is 3 mm from its teacher offline and its egg/whiteboard numbers
+are as good as the teacher's; waffles (our rig task) is its weakest task. A student that
+grasps waffles at a usable rate is the paper's result; a student that closes on air is
+the known failure mode (the tactile phantom recovery only sees pad load, which the model
+does not). Record per episode: label, whether the close was on the object, and whether
+a guard or `x` ended it. That plus the pair structure is the whole statistics block.
 
 ## ⚡ Morning quickstart (Session 5) — the whole flow
 
