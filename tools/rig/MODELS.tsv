@@ -5,3 +5,4 @@ stu_ftA	runs/student_ftA/student_001200.pt	SENSOR-FREE student distilled from ft
 stu_v5_6	runs/student_v5_6/student_001200.pt	SENSOR-FREE student distilled from v5_6 (val 27.3mm)	student
 ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: same inputs as stu_ftA, NO distillation (ablation only)	student
 ctl_v5_6	runs/control_v5_6/teacher_001200.pt	CONTROL: same inputs as stu_v5_6, NO distillation (val 37.7mm; ablation only)	student
+stu_ftA_r1	runs/student_ftA_r1/student_001200.pt	SENSOR-FREE student round 2 from ftA (val 22.7mm - best student; teacher full NFE + trained sigma head)	student
