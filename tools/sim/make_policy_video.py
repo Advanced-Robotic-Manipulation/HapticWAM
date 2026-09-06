@@ -13,13 +13,17 @@ samples using the original runtime formula. Otherwise panels are
 explicitly labelled packet-contact visualizations, not policy input pixels.
 Neither is real tactile footage or a calibrated sensor reconstruction. Ended
 trials explicitly freeze while other trials continue on the physical clock.
+For a separately copied presentation tool, set PHANTOM_REVIEW_SOURCE to the
+frozen runtime source tree used for metric code and hardware image shapes.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
+import os
 import shutil
 import subprocess
 import sys
@@ -28,7 +32,9 @@ from pathlib import Path
 
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(
+    os.environ.get("PHANTOM_REVIEW_SOURCE", Path(__file__).resolve().parents[2])
+).resolve()
 sys.path.insert(0, str(REPO))
 
 from phantom.sim.policy_metrics import evaluate_policy_trace
@@ -52,6 +58,38 @@ def _label(image, text, xy, *, color=(235, 239, 242), scale=0.48):
     cv2.putText(
         image, str(text), xy, cv2.FONT_HERSHEY_SIMPLEX, scale, color, 1, cv2.LINE_AA
     )
+
+
+def _controller_completion(execution):
+    """First causally observable FINISH event; never infer it from task scores."""
+    completed = []
+    for index, row in enumerate(execution):
+        diag = row.get("diagnostics") or {}
+        reason = diag.get("completed_reason")
+        if not reason:
+            continue
+        observed_t = float(row["t"])
+        reported_t = diag.get("completed_at_s")
+        if reported_t is not None:
+            reported_t = float(reported_t)
+        if not np.isfinite(observed_t) or (
+            reported_t is not None and not np.isfinite(reported_t)
+        ):
+            raise ValueError("Controller completion has a nonfinite timestamp")
+        completed.append(
+            {
+                "completed_reason": str(reason),
+                "completed_at_s": reported_t,
+                "first_execution_row": index,
+                "first_execution_t_s": observed_t,
+                "display_from_s": max(
+                    observed_t, observed_t if reported_t is None else reported_t
+                ),
+                "source": "execution_trace.jsonl diagnostics; visible no earlier than both event and first reporting row",
+                "is_object_task_success": False,
+            }
+        )
+    return min(completed, key=lambda event: event["display_from_s"], default=None)
 
 
 class PolicyPanel:
@@ -191,6 +229,7 @@ class PolicyPanel:
             if event.get("event") == "policy_stop"
         ]
         self.stop_time = min(stop_rows) if stop_rows else None
+        self.completion = _controller_completion(self.execution)
         self.mapping = []
 
     def close(self):
@@ -256,10 +295,21 @@ class PolicyPanel:
         _label(canvas, f"simulation t={t:05.2f}s", (710, 23))
         status = "RUNNING"
         color = (175, 220, 175)
+        completed = bool(
+            self.completion is not None
+            and t + 1e-9 >= self.completion["display_from_s"]
+        )
+        if completed:
+            status = (
+                "RELEASE COMPLETE / HOLD"
+                if self.completion["completed_reason"] == "placement_release_finished"
+                else "CONTROLLER COMPLETE / HOLD"
+            )
+            color = (220, 210, 125)
         if self.stop_time is not None and t >= self.stop_time:
             status, color = f"STOP: {self.stop_reason}", (90, 160, 255)
         if frozen:
-            status = f"{status if self.stop_reason else 'HORIZON / TRACE END'} | FRAME FROZEN at {self.frame_t[-1]:.2f}s"
+            status = f"{status if self.stop_reason or completed else 'HORIZON / TRACE END'} | FRAME FROZEN at {self.frame_t[-1]:.2f}s"
         if not self.metrics["valid_for_scoring"]:
             status = "INELIGIBLE TRACE | " + status
         _label(canvas, status, (12, 45), color=color, scale=0.43)
@@ -386,6 +436,11 @@ class PolicyPanel:
                 "frozen": frozen,
                 "runtime_tactile_row": input_index,
                 "runtime_tactile_age_s": input_age,
+                "controller_completed": completed,
+                "controller_completed_reason": self.completion["completed_reason"]
+                if completed
+                else None,
+                "display_status": status,
             }
         )
         return canvas
@@ -476,6 +531,12 @@ def make_video(runs, output, *, labels=None, fps=15.0, horizon=None):
             "fps": fps,
             "horizon_s": horizon,
             "frames": count,
+            "presentation_source": {
+                "path": str(Path(__file__).resolve()),
+                "sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                "runtime_source_root": str(REPO),
+                "source_root_override": os.environ.get("PHANTOM_REVIEW_SOURCE"),
+            },
             "time_alignment": "same physical simulation time; previous sampled frame/state, never future; ended trials explicitly freeze",
             "contact_panels": "Prefer saved native runtime gel pixels. Older policy_tactile.npz files reconstruct the original grayscale formula; absent sidecars use packet-contact diagnostics, not policy inputs. See per-trial tactile_mapping.",
             "force_axis_max_n": force_max,
@@ -485,6 +546,10 @@ def make_video(runs, output, *, labels=None, fps=15.0, horizon=None):
                     "label": panel.label,
                     "metrics": panel.metrics,
                     "tactile_mapping": panel.tactile_mapping,
+                    "controller_completion": panel.completion,
+                    "run_reported_completed_reason": panel.run.get(
+                        "policy_completed_reason"
+                    ),
                     "frame_mapping": panel.mapping,
                 }
                 for panel in panels
