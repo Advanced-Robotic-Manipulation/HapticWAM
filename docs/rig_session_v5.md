@@ -26,6 +26,11 @@ pads) — the MODEL just never sees them.
    `./SERVE.sh` → `stu_ftA_r1`. ~3 min each, then every launch attaches in seconds.
 2. **Pair 1 — `ftA` vs `stu_ftA_r1`** (the headline number). Same object placement for
    both arms of a pair, same seed, same start; alternate which arm goes first.
+   **Seed = cell number, on both arms**: at PICK's `append flags` prompt type `--seed 101`
+   for cell 1 (both launches), `--seed 102` for cell 2, and so on. The seed fixes the
+   sampler noise AND the homing jitter, so the two arms start from the same pose with the
+   same noise draw — that is the pairing. 09-01 and 09-04 recorded 51 episodes with 51
+   distinct seeds: nothing was paired, every episode carried 6-7 mm+ of seed noise.
 3. **Pair 2 — `v5_6` vs `stu_v5_6`** (warm `stu_v5_6` while pair 1 runs).
 4. **Pair 3 (if time) — `stu_ftA_r1` vs `ctl_ftA`**: this is the "does distillation
    matter" row; the control should be visibly worse. Skip `ctl_v5_6` unless the day is

@@ -82,7 +82,8 @@ fi
 
 echo
 echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
-echo ">> reminders: no --seed on 1-episode processes; interleave arms within each grid cell;"
+echo ">> reminders: PAIR the arms: same --seed <cell#> on BOTH arms of a cell (the append-flags prompt), new number per cell;"
+echo ">>            never reuse one seed across cells; interleave arms within each grid cell;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
 echo ">>            during an episode: type  x  + Enter to end it cleanly (motion stops, gripper stays);"
 echo ">>            a bare Enter is IGNORED (stray newlines ended 5 episodes on 09-04)."
