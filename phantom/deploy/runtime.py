@@ -21,8 +21,12 @@ import numpy as np
 from phantom.config.hardware import HardwareConfig
 from phantom.data.schema import EpisodeMeta
 from phantom.deploy.executor import ChunkExecutor
-from phantom.deploy.planner import (PlannerLoop, SnapshotBuilder, TerminalVeto,
-                                    snapshot_stop_reason)
+from phantom.deploy.planner import (
+    PlannerLoop,
+    SnapshotBuilder,
+    TerminalVeto,
+    snapshot_stop_reason,
+)
 from phantom.deploy.safety import SafetyMonitor
 from phantom.drivers.factory import make_rig
 from phantom.inference.policy import PhantomPolicy
@@ -126,6 +130,9 @@ class EpisodeResult:
     # can be diagnosed from disk instead of from terminal scrollback (09-04)
     events: list = field(default_factory=list)
     stop_state: dict = field(default_factory=dict)
+    # Controller state is separate from a subsequent stop and object success.
+    completed_reason: str | None = None
+    completed_at_s: float | None = None
 
 
 class DeploymentRuntime:
@@ -158,7 +165,7 @@ class DeploymentRuntime:
                  base_hw: HardwareConfig | None = None,
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
-                 max_play_steps: int | None = None):
+                 max_play_steps: int | None = None, release_config=None):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
         with model_copy). Episodes are stamped with ITS config_hash so a
@@ -181,6 +188,9 @@ class DeploymentRuntime:
         # the aperture a "let go" stop reopens to (task demo start aperture)
         self.open_aperture = float(open_aperture)
         self.max_play_steps = max_play_steps
+        from phantom.deploy.release_controller import make_release_controller
+        controller = make_release_controller(release_config, hw)
+        self.release_config = None if controller is None else controller.config
         self.rig = make_rig(hw, control=True)
         self.rig.worker_owned_tactile = True    # real DM-Tac is single-open
         self.session: SensorSession | None = None
@@ -237,7 +247,8 @@ class DeploymentRuntime:
                                  record_action=self.recorder.record_action,
                                  gripper_ring=self.session.rings["gripper"],
                                  open_aperture=self.open_aperture,
-                                 max_play_steps=self.max_play_steps)
+                                 max_play_steps=self.max_play_steps,
+                                 release_config=self.release_config)
         snapshots = SnapshotBuilder(hw, self.session, self.mode,
                                     parity_fixes=self.parity_fixes,
                                     executor=executor,
@@ -324,11 +335,15 @@ class DeploymentRuntime:
             stopped_reason=executor.stopped_reason or planner.stop_reason,
             n_replans=len(trace), safety_events=len(safety.log_events),
             trace_path=trace_path, fatal_reason=fatal_reason(executor),
+            completed_reason=getattr(executor, "completed_reason", None),
+            completed_at_s=getattr(executor, "completed_at_s", None),
             events=[{"t": float(e.t), "kind": str(e.kind),
                      "value": float(e.value), "action": getattr(e.action, "value", str(e.action)),
                      "count": int(getattr(e, "count", 1))}
                     for e in safety.log_events],
             stop_state={**self._arm_state_now(),
+                        **({"placement_release": executor.release_diagnostics()}
+                           if getattr(executor, "release_controller", None) is not None else {}),
                         **({"at_halt": executor.halt_state}
                            if getattr(executor, "halt_state", None) else {}),
                         **({"crash": executor.crash_text}

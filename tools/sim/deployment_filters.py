@@ -302,17 +302,9 @@ class TerminalVetoFilter:
         # an opening prefix "closing" because of a later close sample. Only
         # restore the teacher's opening samples inside the declared release
         # window. Recovery, arm-channel rewrites and retry stops stay native.
-        opening_mask = getattr(adapter, "placement_release_opening_mask", None)
-        if rec["action"] == "close_masked" and callable(opening_mask):
-            permitted = np.asarray(opening_mask(original[:, 6]), dtype=bool)
-            if permitted.shape != (len(original),):
-                raise ValueError("placement release opening mask has wrong shape")
-            if permitted.any():
-                filtered.actions[permitted, 6] = original[permitted, 6]
-                rec["placement_release_passthrough_indices"] = np.flatnonzero(
-                    permitted
-                ).tolist()
-                rec["placement_release_variant"] = "placement_policy_release_v1"
+        from phantom.deploy.release_controller import restore_policy_openings
+
+        restore_policy_openings(filtered, original, rec, adapter)
         rewritten = rec["action"] in (
             "close_masked",
             "recovery_open",
