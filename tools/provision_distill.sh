@@ -252,7 +252,7 @@ print("text cache covers", sorted(need), flush=True)
 EOF3
 
 
-echo "== second teacher: ftA_1500 (teacher_v5_ftA/teacher_001500.pt — best on waffles, all 09-01/09-04 rig grasps)"
+echo "== second teacher: ftA_1500 (teacher_v5_ftA/teacher_001500.pt — best on waffles, includes the 09-01 rig grasps; predates 09-04)"
 hfget $HUB teacher_v5_ftA/teacher_001500.pt "$W/dl" >/dev/null
 mkdir -p "$W/runs/teacher/teacher_v5_ftA"
 cp "$W/dl/teacher_v5_ftA/teacher_001500.pt" "$W/runs/teacher/teacher_v5_ftA/"
