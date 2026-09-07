@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_rpc_v7",
+  "baseline_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_limiter_v6",
+  "default_native_actual_adapter_trace_identical": true,
+  "late_delivery_s": 0.6,
+  "native_grid_origin_s": 0.2,
+  "play_time_after_first_late_activation_s": 0.408,
+  "first_late_command_translation_m": [
+    0.00032,
+    0,
+    0
+  ],
+  "cpk_token_and_native_latency_grid_preserved_for_next_request": true,
+  "proposal_not_mutated": true,
+  "observation_callback_excluded_from_rpc_timer": true,
+  "expired_chunk_rejected": true,
+  "invalid_clock_cases_rejected": 4,
+  "override_rejected_before_request": true,
+  "pending_delivery_canceled_on_stop": true,
+  "infrastructure_error_category_recorded": true,
+  "rpc_and_limiter_explicit_flags_parse": true,
+  "GPU_model_hardware_calls": false,
+  "limitation": "Deterministic CPU policy stub; no network/model/Isaac result or physical-success claim."
+}

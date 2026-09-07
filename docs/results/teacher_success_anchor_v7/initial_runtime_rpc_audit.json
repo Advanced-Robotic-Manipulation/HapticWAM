@@ -1,0 +1,33 @@
+{
+  "scope": "Read-only partial active-run check of first successful plan only; no model outcome, no completed four-case claim. Planner file may continue changing.",
+  "captured_at_utc": "2026-09-07T11:12:56.612122+00:00",
+  "case_id": "fta1500_nfe1_k4__successful_anchor__seed904301",
+  "run_status_at_capture": "completed",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_rpc_v7",
+  "source_hashes": {
+    "phantom/sim/policy_adapter.py": "cc5d424fa561ebeef06b8d0704acddabf7bc46819954f1913b9254fab238fd1e",
+    "tools/sim/run_waffles.py": "def8a003ec7c00e32254612c1ae18c0b94b6e2553f277e5e6b12b24a0ce4bd8f"
+  },
+  "driver": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v7",
+  "driver_hashes": {
+    "tools/sim/run_policy_campaign.py": "235db3d485412da413c9abf866d22c0ff63522fdba70de65b6f7d5234b79aefa",
+    "tools/sim/analyze_policy_campaign.py": "11b88baedfa6bed8696abb87fb30a51677be56538267c9fef3ddc60743d307a4"
+  },
+  "campaign_sha256": "e68ca523862e805538b9f150c8394363091aa9d9dac6bd950b6215fc148d739f",
+  "policy_info_sha256": "e68fc84c2926a33d65d50206eebe828ae82c33e5d0e240a7c742a485d5b413ff",
+  "explicit_rpc_cli": true,
+  "servo_reach_limiter_enabled": false,
+  "policy_delivery_clock": "rpc_wall",
+  "first_request_t_s": 0.26,
+  "native_latency_s": 1.2634365829871967,
+  "client_replan_wall_s": 1.2693224200047553,
+  "outer_runner_replan_wall_s": 1.455924869980663,
+  "client_minus_native_s": 0.005885837017558515,
+  "outer_minus_client_s": 0.1866024499759078,
+  "native_grid_origin_s": 1.5234365829871968,
+  "scheduled_delivery_s": 1.5293224200047553,
+  "activation_t_s": 1.532,
+  "all_first_plan_clock_checks_passed": true,
+  "first_plan_row_sha256": "22249c53f504a25e344d6bab2f282fa240d7addc3fe82a38b5f14fac5308739f",
+  "interpretation": "Measured complete-client overhead is distinct from the larger outer-runner overhead; do not label their difference as network/RPC time."
+}

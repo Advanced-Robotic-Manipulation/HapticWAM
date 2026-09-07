@@ -1,0 +1,70 @@
+--- limiter_v6/tools/sim/run_waffles.py
++++ rpc_v7/tools/sim/run_waffles.py
+@@ -125,6 +125,12 @@
+         default=None,
+         help="Override measured inference latency on sim clock",
+     )
++    p.add_argument(
++        "--policy-delivery-clock",
++        choices=["native", "rpc_wall"],
++        default="native",
++        help="Native inference duration (default), or measured full client policy call for delivery only; native action/CPK clocks stay unchanged",
++    )
+     p.add_argument("--seed", type=int, default=4242)
+     p.add_argument(
+         "--probe-start-time",
+@@ -142,7 +148,13 @@
+     p.add_argument("--friction-scale", type=float, default=1)
+     p.add_argument("--object-offset", type=float, nargs=2, default=[0, 0])
+     p.add_argument("--save-stage-only", action="store_true")
+-    return p.parse_args()
++    args = p.parse_args()
++    if args.policy_delivery_clock == "rpc_wall":
++        if args.policy_latency is not None:
++            p.error("rpc_wall cannot be combined with --policy-latency")
++        if args.mode != "policy":
++            p.error("rpc_wall requires --mode policy")
++    return args
+ 
+ 
+ def measured_gripper_status(closure, target, contact_force_n):
+@@ -335,6 +347,8 @@
+                 "error_type": type(error).__name__,
+             }
+         )
++        if getattr(error, "infrastructure_invalid", False):
++            self.plans[index]["error_category"] = "instrumentation_or_input_invalid"
+         self._save_plans()
+ 
+     def executed(self, row):
+@@ -1030,6 +1044,7 @@
+                 else None,
+                 delivered_plan_callback=audit.delivered,
+                 release_config=release_config,
++                policy_delivery_clock=args.policy_delivery_clock,
+             )
+             adapter.reset(seed=args.seed)
+             if "native_arm_ft" in data:
+@@ -1099,7 +1114,13 @@
+                         }
+                         if args.policy_initial_state
+                         else None,
+-                        "inference_delivery_clock": "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
++                        "policy_delivery_clock": args.policy_delivery_clock,
++                        "policy_call_wall_measurement": "Complete synchronous policy.replan client call; excludes observation callbacks and runner audit bookkeeping"
++                        if args.policy_delivery_clock == "rpc_wall"
++                        else None,
++                        "inference_delivery_clock": "measured complete client policy call plus configured response delay; native Plan.latency_s and action grid preserved"
++                        if args.policy_delivery_clock == "rpc_wall"
++                        else "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
+                         "phantom_recovery": bool(
+                             terminal_veto and terminal_veto.implementation == "live"
+                         ),
+@@ -1570,6 +1591,7 @@
+         "control_rate_hz": hw.control.executor_rate_hz if hw else None,
+         "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
+         "policy_stop_reason": adapter.stopped_reason if adapter else None,
++        "policy_delivery_clock": args.policy_delivery_clock if adapter else None,
+         **(
+             {
+                 "servo_reach_limiter": {

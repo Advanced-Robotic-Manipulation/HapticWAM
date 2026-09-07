@@ -102,6 +102,10 @@ For every attempt retain full checkpoint/source/config/release hashes, seed, ach
 
 ## Follow-ups remain separate
 
-The v6 shared-servo-limiter diagnostic and v7 full-RPC-delivery source work are separate development follow-ups; their review/results are not yet promoted into this lab recommendation. V6 does not establish that a reach limiter prevents low-height contact or rolling-baseline absorption. V7 changes simulated delivery timing while preserving native action/CPK clocks. The optional fixed wrist-reference work in [PR13](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/13) likewise needs unloaded-motion/known-load qualification. No new limiter, wrist reference, force threshold, live-veto profile or delivery-clock switch is silently enabled here.
+The completed V6 limiter diagnostic is not promoted: both cases lifted/carried but stopped after25 constraint holds before release. [Exact hold/timing audit](results/teacher_success_anchor_v6/diagnostic_results/recommendation.md). It does not establish that a reach limiter prevents low-height contact or rolling-baseline absorption.
+
+The completed [V7 full-client timing diagnostic](results/teacher_success_anchor_v7/README.md) supports retaining K4. On two reused development seeds, K4 lifted/carried2/2 and placed1/2; K1 acquired2/2 but lifted0/2 despite mean full-client duration0.279s versus0.848s. Both had one wrist-extension stop and no drop. These counts are not pooled into V5 confirmation and do not validate hardware transfer. V7 preserves native action/CPK clocks and changes only the declared simulated delivery timing; actual native deployment uses its own real request timing.
+
+The optional fixed wrist-reference work in [PR13](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/13) likewise needs unloaded-motion/known-load qualification. No new limiter, wrist reference, force threshold, live-veto profile or delivery-clock switch is silently enabled here.
 
 [One-page card](isaac_teacher_lab_card_20260907.md) · [Final v5 results](results/teacher_success_anchor_v5/confirmation/independent_audit.md) · [Native port evidence](results/teacher_success_anchor_v5/native_controller_port.md) · [Measurements](isaac_teacher_measurements_20260907.md).

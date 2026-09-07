@@ -1,0 +1,15 @@
+{
+  "checked_at_unix_s": 1788780212.932081,
+  "status": "passed",
+  "scope": "Read-only final video/hash audit; no second decode or rescoring",
+  "manifest_sha256": "dfaf1f57f4cd14f872ed3679d314eaaa9b7ef8d809e14b3fa970ca1ca305e34d",
+  "cases": 4,
+  "all_output_and_score_hashes_match": true,
+  "all_stored_gel_causal_mappings_verified": true,
+  "full_decode_recorded_frames": 2307,
+  "total_video_bytes": 7074458,
+  "owned_batch_pid": 2564015,
+  "owned_batch_running": false,
+  "render_helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_rpc_v7"
+}
