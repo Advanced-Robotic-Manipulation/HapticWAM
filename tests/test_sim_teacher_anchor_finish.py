@@ -10,19 +10,31 @@ import pytest
 from phantom_test_utils import make_small_hw
 from test_sim_placement_release import CONFIG, INSIDE, observe, plan
 
-from tools.sim.prepare_teacher_anchor_finish import BASE_HASHES, prepare, sha
+from tools.sim.prepare_teacher_anchor_finish import (
+    BASE_HASHES,
+    DONOR_HASHES,
+    prepare,
+    sha,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures/teacher_anchor_v1"
+DONOR_FIXTURES = Path(__file__).parent / "fixtures/teacher_anchor_finish_donor"
 
 
 @pytest.fixture
 def trees(tmp_path):
-    base, overlay = tmp_path / "base", tmp_path / "overlay"
-    for relative in BASE_HASHES:
-        path = base / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text((FIXTURES / (path.name + ".txt")).read_text())
-    manifest = prepare(base, overlay)
+    base, overlay, donor = (tmp_path / name for name in ("base", "overlay", "donor"))
+    # Both source sides are historical evidence. Current implementation changes
+    # must not replace the reviewed donor or weaken the assembler's hash guard.
+    for tree, hashes, fixtures in (
+        (base, BASE_HASHES, FIXTURES),
+        (donor, DONOR_HASHES, DONOR_FIXTURES),
+    ):
+        for relative in hashes:
+            path = tree / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text((fixtures / (path.name + ".txt")).read_text())
+    manifest = prepare(base, overlay, donor)
     return base, overlay, manifest
 
 
@@ -166,15 +178,16 @@ def test_no_finish_without_loaded_latch_and_policy_release(trees, monkeypatch):
 
 
 def test_hash_guard_dry_run_and_output_refusal(trees, tmp_path):
-    base, overlay, _ = trees
+    base, overlay, manifest = trees
+    donor = Path(manifest["donor_source"])
     preview = tmp_path / "preview"
-    assert prepare(base, preview, dry_run=True)["dry_run"] and not preview.exists()
+    assert prepare(base, preview, donor, dry_run=True)["dry_run"] and not preview.exists()
     with pytest.raises(FileExistsError):
-        prepare(base, overlay)
+        prepare(base, overlay, donor)
     with pytest.raises(ValueError, match="protected source"):
-        prepare(base, base / "bad")
+        prepare(base, base / "bad", donor)
     source = base / "phantom/sim/policy_adapter.py"
     source.write_text(source.read_text() + "\n")
     with pytest.raises(ValueError, match="Unreviewed source hash"):
-        prepare(base, preview)
+        prepare(base, preview, donor)
     assert not preview.exists()

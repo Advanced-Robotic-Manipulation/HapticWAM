@@ -334,6 +334,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "request-snapshot veto plus policy release/FINISH; requires teacher, "
                          "--terminal-veto and a measured release JSON with FINISH enabled; "
                          "default preserves current native behavior")
+    ap.add_argument("--wrench-baseline-mode", default=None,
+                    choices=("rolling_calm", "episode_fixed"),
+                    help="deployment wrist guard reference (default: hardware YAML, "
+                         "legacy rolling_calm); experimental episode_fixed requires "
+                         "a reviewed unloaded start and physical bias qualification")
     ap.add_argument("--no-grip-latch", action="store_true",
                     help="disable the aperture latch (commanded closure may "
                          "not decrease once both pads carry load)")
@@ -760,6 +765,10 @@ def main(argv=None) -> int:
     # meta.deploy_overrides, so the envelope stays auditable.
     base_hw = hw
     deploy_overrides: dict = {}
+    from phantom.deploy.safety import apply_wrench_baseline_mode
+    hw = apply_wrench_baseline_mode(hw, args.wrench_baseline_mode)
+    if args.wrench_baseline_mode is not None:
+        deploy_overrides["wrench_baseline_mode"] = hw.safety.wrench_baseline_mode
     from phantom.deploy import start_pose as sp
     stats = sp.load_start_stats().get(args.task)
     hb_lo, hb_hi = getattr(stats, "tcp_min", None), getattr(stats, "tcp_max", None)
@@ -917,6 +926,7 @@ def main(argv=None) -> int:
             "lift_complete_z_m", "lift_complete_fz_n", "lift_complete_hold_s",
             "lift_complete_window_s", "grip_latch_fz_n", "elbow_min_rad",
             "servo_joint_speed_max_rad_s", "wrench_limit_N", "wrench_limit_Nm",
+            "wrench_baseline_mode", "wrench_baseline_tau_s", "wrench_debounce_ticks",
             "tactile_fz_limit_N", "stale_plan_timeout_s")
         if hasattr(hw.safety, k)}
     deploy_overrides["max_play_steps"] = int(getattr(args, "max_play_steps", 0) or 0)
