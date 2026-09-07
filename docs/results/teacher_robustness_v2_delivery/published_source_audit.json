@@ -1,0 +1,15 @@
+{
+  "status": "all_executable_source_matches_archived_study",
+  "checked_source_files": 105,
+  "byte_identical_source_files": 104,
+  "non_executable_difference": {
+    "path": "phantom/config/hardware.py",
+    "ast_equal": true,
+    "description": "GitHub branch has the corrected historical comment about six09-04 limiter episodes; frozen compute3 source retains the older comment. Executable AST is identical. Keep the corrected published history and retain the frozen source archive unchanged.",
+    "frozen_sha256": "4349a9f49be83421b8901bc46fb3897161829684af818c517726f6ccf50abc77",
+    "published_sha256": "aba922446ebbef60209273475a5ed8867edebb21148d1130653bf6261a51ee63"
+  },
+  "source_archive_sha256": "5f4a0cf7027d00a1463c53e61e17e73919bc9453a5be1b733554672692be4f07",
+  "implementation_commit": "800f0fd",
+  "additional_tools": "Post-study RGB proposal diagnostic and reporting helpers are excluded from the primary frozen source."
+}

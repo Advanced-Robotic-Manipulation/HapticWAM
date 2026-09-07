@@ -1,0 +1,35 @@
+quantity,simulation_estimate,unit,measured_value,uncertainty,coordinate_datum,method_or_instrument,notes
+table_top_z,53,mm,,,UR controller base origin,,Verify origin relative to mounting plate
+mounting_plate_thickness,,mm,,,physical mounting surface,,
+TCP_offset_tool_z,180,mm,,,tool flange,,Read active TCP configuration and independently check geometry
+pad_active_face_left_position_x,,mm,,,tool flange,,
+pad_active_face_left_position_y,,mm,,,tool flange,,
+pad_active_face_left_position_z,,mm,,,tool flange,,
+pad_active_face_right_position_x,,mm,,,tool flange,,
+pad_active_face_right_position_y,,mm,,,tool flange,,
+pad_active_face_right_position_z,,mm,,,tool flange,,
+active_gel_face_height,,mm,,,pad local axes,,Separate gel from backing
+active_gel_face_width,,mm,,,pad local axes,,Separate gel from backing
+housing_size_x,65,mm,,,tool assembly local axes,,Record orientation and offset as well as size
+housing_size_y,48,mm,,,tool assembly local axes,,
+housing_size_z,70,mm,,,tool assembly local axes,,
+effective_inner_pad_open_gap,70,mm,,,inner active pad faces,,Bare gripper specification is not custom-pad aperture
+pad_gap_at_feedback_value_1,,mm,,,inner active pad faces,,Record normalized feedback and raw position beside gap
+pad_gap_at_feedback_value_2,,mm,,,inner active pad faces,,Record normalized feedback and raw position beside gap
+pad_gap_at_feedback_value_3,,mm,,,inner active pad faces,,Record normalized feedback and raw position beside gap
+packet_length,154.5,mm,,,packet local long axis,,Record product and wrapper orientation
+packet_width,27.2,mm,,,packet local transverse axis,,
+packet_thickness,28,mm,,,packet local vertical axis,,Uncompressed
+packet_mass,35,g,,,,,
+packet_reset_center_x,-366.715,mm,,,UR controller base origin,,Repeat resets and retain individual values
+packet_reset_center_y,-259.618,mm,,,UR controller base origin,,Repeat resets and retain individual values
+packet_reset_center_z,70,mm,,,UR controller base origin,,Center not underside
+packet_reset_yaw,25.34,deg,,,UR controller base positive Z,,Record visible marker direction
+box_inner_length,,mm,,,box inner walls,,Measure inner geometry directly
+box_inner_width,,mm,,,box inner walls,,
+box_floor_z,,mm,,,UR controller base origin,,
+box_rim_top_z,,mm,,,UR controller base origin,,
+box_pose_and_orientation,,reference_file,,,UR controller base origin,,Reference measured corners or fiducials
+camera_intrinsics_and_distortion,,reference_file,,,camera optical frame,,Record resolution and camera identity
+camera_to_base_calibration,,reference_file,,,UR controller base origin,,Preserve raw calibration and separate checking images
+unloaded_wrist_and_tactile_per_start,,reference_file,,,native sensor frames,,Record start q/TCP and both pad identities

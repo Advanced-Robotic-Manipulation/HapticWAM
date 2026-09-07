@@ -1,6 +1,6 @@
 # Teacher experiment sequence
 
-The active design is [teacher robustness v2](isaac_teacher_v2_experiment.md), with the machine-readable [parent protocol](../configs/sim/teacher_v2_protocol.json). It supersedes the earlier mixed-model and object-placement-first proposal, preserved in [the archive](archive/isaac_next_experiments_before_teacher_v2.md).
+The active design is [teacher robustness v2](isaac_teacher_v2_experiment.md), with the machine-readable [parent protocol](../configs/sim/teacher_v2_delivery_protocol.json). It supersedes the earlier mixed-model and object-placement-first proposal, preserved in [the archive](archive/isaac_next_experiments_before_teacher_v2.md).
 
 Collection kept the waffle approximately fixed while arm starts and trajectories varied. The primary comparison therefore fixes the canonical August22 green packet, camera, lighting and materials, and transfers ten synchronized measured arm/gripper/wrist starts. It compares teachers only. Four configurations receive four discovery starts and two seeds each; two configurations then receive six reserved starts and fresh seeds. The selection rule and physical success thresholds are fixed before scoring. Reserved starts are held out from simulator selection, not claimed unseen during training.
 

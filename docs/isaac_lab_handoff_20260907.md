@@ -4,6 +4,8 @@ Begin with dimensions, sensor checks and an attended **teacher pick-and-hold** g
 
 **Candidate selection is pending the registered v2 discovery and confirmation results. No teacher or inference recipe is selected as a winner here.** Keep ftA1500 as the pinned physical reference. Fill the candidate, recipe, confirming evidence and limitations here after the final reviewed results. Controller completion, `lift_complete`, a pickup label or a simulated grasp does not establish a packet settled in the box or a physical success probability.
 
+The active immutable study is `teacher_robustness_v2_delivery`: 32 discovery trials followed by 24 paired confirmation trials on six reserved starts, **56 planned trials in total**. Its source is `/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery`; outputs are under the sibling `runs/teacher_robustness_v2_delivery/`. Confirmation and candidate acceptance remain pending. The ten completed trials in the earlier halted `teacher_robustness_v2` screen remain separate diagnostic evidence; they are not replacement-study scores. See the [current protocol and amendment](../configs/sim/teacher_v2_delivery_protocol.json).
+
 This handoff combines the read-only audit of live compute3 commit `0259ed3355f2ad3078778e7cc347b100775e06d3` with the isolated v2 worktree. No hardware connection, robot/gripper command or GPU inference was performed for this audit. **The new shared release/FINISH hooks are in v2 source; they are not an automatically installed change to the live rig repository.** Native commands below are for trained operators after source/configuration review, not unattended execution. Source references: [run_deploy](../phantom/scripts/run_deploy.py), [start gate](../phantom/deploy/start_pose.py), [executor](../phantom/deploy/executor.py), [safety](../phantom/deploy/safety.py), [UR driver](../phantom/drivers/real/ur.py) and [rig launchers](../tools/rig/README.md).
 
 ## Teacher identities and registered recipes
@@ -25,9 +27,11 @@ Each audited payload declares teacher architecture and contains 676 finite EMA t
 | v5_6 teacher, same recipe | 1 | 4 |
 | ftA1500, native VETO sampling recipe | 5 | 1 |
 
-Common settings are `--system teacher`, task/text `waffles`, EMA, guidance 1, persistent episode noise, parity fixes, **live** terminal veto and maximum 10 played action steps. K is independent of episode sampling seed. NFE 1/K 4 versus NFE 5/K 1 changes two inference factors; it is not an isolated NFE ablation. The [registered protocol](../configs/sim/teacher_v2_protocol.json) is authoritative for freeze status, eligible starts, source/input hashes, discovery/confirmation order and timing. A draft or preflight is not a scored finding.
+Common settings are `--system teacher`, task/text `waffles`, EMA, guidance 1, persistent episode noise, parity fixes, **live** terminal veto and maximum 10 played action steps. K is independent of episode sampling seed. NFE 1/K 4 versus NFE 5/K 1 changes two inference factors; it is not an isolated NFE ablation. The [registered protocol](../configs/sim/teacher_v2_delivery_protocol.json) is authoritative for freeze status, eligible starts, source/input hashes, discovery/confirmation order and timing. A draft or preflight is not a scored finding.
 
-V2 fixes the canonical August green packet and transfers authentic measured arm/gripper/wrist starts. It does not impose a recorded trajectory as policy control or silently transfer each recording's object jitter. The [Aug22 static tactile baseline](results/teacher_v2_design/aug22_tactile_baseline.md) freezes complete measured pad captures from the initial 0.305–0.413 s with residuals intact. Those keyframes were not all available at the earlier robot-start anchor; this is declared sensor calibration. The deformation law, rigid packet, pressure mapping, wrist transfer and fitted geometry remain uncalibrated. **Do not supply this NPZ to a physical teacher in place of live tactile sensors.**
+V2 fixes the canonical August green packet and transfers authentic measured arm/gripper/wrist starts. It does not impose a recorded trajectory as policy control or silently transfer each recording's object jitter. The [Aug22 static tactile baseline](results/teacher_v2_design/aug22_tactile_baseline.md) freezes complete measured pad captures from the initial 0.305–0.413 s with residuals intact. Those keyframes were not all available at the earlier robot-start anchor; this is declared sensor calibration. The deformation law, rigid packet, pressure mapping, wrist transfer and fitted geometry remain uncalibrated. The corrected simulator wrist profile includes external normal contacts on the housing and both pads, with contact-point moments about measured TCP. It preserves recorded initial bias and still omits tangential loads and changing gravity/inertia; it is not a substitute for the physical UR3 current-based reading. A housing/bin collision exposed the previous pad-only omission. **Do not supply this NPZ to a physical teacher in place of live tactile sensors.**
+
+`--wrist gripper_contact_proxy` is a **simulator-only** option. It sums signed PhysX normal forces on exactly three gripper bodies and their contact-point moments in world/base axes, excluding self contacts and proximal arm loads. Native `phantom.scripts.run_deploy` has no such option: it reads the configured real `arm_ft` stream. The [command-replay preflight](results/teacher_robustness_v2/nominal5928_diagnostic/gripper_wrist_preflight_audit.md) verifies arithmetic, causal sampling and unchanged simulated motion; it does not verify the physical wrist's axes, torque origin, gravity compensation or response to a known applied load. Those checks belong on the measurement sheet before comparing physical and simulated wrench thresholds.
 
 ## Checks that do not control hardware
 
@@ -94,6 +98,8 @@ measured closure = 0.42745098; gripper OBJ = 3
 
 Begin with that canonical start. After safe reproduction, the first varied-start pilot can use the measured starts `5928`, `5963`, `6028`, `6273`, then repeat `5928`, in that order. Review each full path and its [initial-state JSON](../configs/sim/initial_states/) before staging. Keep the packet at the same marked canonical position: the recorded wrapper reversal or object jitter is not an arm-start factor. Do not use random joint configurations or later near-grasp states as substitutes for demonstration starts.
 
+A file-only check with the native `start_sigma_report` accepts these four recorded states at maximum deviations 1.432, 1.107, 1.261 and 1.388 sigma respectively, including measured aperture and unwrapped joints. This only checks the recorded numbers against the pinned start distribution. The live achieved state must independently pass both native 2.5-sigma gates and settled `OBJ=3`; this calculation authorizes no motion and validates no swept path. Preserve each start's own measured closure rather than resetting every start to the mean 0.232 or converting the simulated 70 mm travel into a physical command.
+
 The configured waffles distribution has TCP mean `[-0.3652,-0.2859,0.3346,-1.1053,-1.8268,1.5079]`, joint mean `[0.1966,-1.5291,1.1159,0.6794,1.1853,-3.1303]` and mean closure 0.232. A small TCP error does not excuse a full-turn joint mismatch. Record the achieved state rather than assuming the requested waypoint was attained.
 
 The launch below uses `--no-home` so the native runtime keeps both start gates but does not perform its randomized homing or automatic re-homing. Default homing samples up to one standard deviation of TCP/closure jitter; even `--home-joints` first moves to joint mean and then performs a jittered moveL. There is no zero-jitter homing CLI flag. Never run a shell loop that homes from arbitrary arm configurations. Entering `run_deploy` still opens real device/control sessions; `--no-home` does not turn it into a read-only command.
@@ -124,6 +130,8 @@ cd /home/physicalai/phantom-icra-2027/phantom
 
 Require `idle`, the selected concrete checkpoint and digest prefix `67c93287123e` (ftA1500), `ee0a448c00da` (ftA3000), or `7edcb8335681` (v5_6 teacher). Preserve the full SHA separately. The probe omits system mode: confirm `teacher` from the exact server command/build log. Do not assume client flags can change the loaded architecture.
 
+The server's warm-up defaults are K 1 and parity off; the physical client configures K, parity, persistent noise, guidance and task text when it connects. Check the client's effective-setting log for the chosen recipe instead of treating the warm-up log or probe as proof of those settings. Use a new episode reset and the explicit paired seed for each launch. Native terminal veto and parity fixes are opt-in flags; naming a recipe in a notebook does not enable them.
+
 After manual staging and attended clear-scene checks, the following command **controls physical hardware**:
 
 ```bash
@@ -143,6 +151,8 @@ For the registered ftA1500 NFE 5/K 1 recipe, replace **both** `--nfe 1` and `--k
 
 This pickup gate declares a 35 s wall-clock budget and lift stop at TCP Z 0.32 m. It is not the 60 s simulator placement protocol. Retain the native 0.25 m/s TCP cap unless a lower common cap is reviewed and recorded before the block. The pickup criterion is visible support clearance and retained hold through the pickup stop, with actual lift/hold duration recorded. If the reference cannot reproduce pickup, pause for sensor/geometry/controller diagnosis before comparing candidates.
 
+`--lift-complete-z` defaults to **0**, disabled, in the audited native CLI; the example deliberately enables 0.32 only for the attended pickup gate. The canonical start is already above that TCP height. Confirm unloaded pads before launch and judge the actual object lift visually: a height/load flag alone cannot prove the object left the table.
+
 After the gate passes, a bounded pilot can use **five matched reference/candidate pairs: ten episodes**, seeds 101–105 and the five reviewed starts listed above. Reference first for 101/103/105; candidate first for 102/104. Fill the candidate and recipe from reviewed confirmation evidence before starting; do not choose one from a convenient single simulator success. Matched members share seed, achieved start, fixed scene and controller. Reusing a seed aligns sampling initialization, not hardware execution or sensor noise.
 
 Preserve first attempts, refusals, safety stops, contamination and missing cases in the planned denominator. A changed controller or physical setup starts a separate block. During control, `x` or `stop` plus Enter requests an operator stop; bare Enter is ignored. This planner-polled request is not an emergency stop. Operator stop and `lift_complete` retain grip. Tactile/wrench limits, lateral hitbox exit and veto retry cap can open it. Keep that possibility clear of people; record guard-triggered release and support/remove held packets through the approved bench procedure before reset.
@@ -152,6 +162,8 @@ Preserve first attempts, refusals, safety stops, contamination and missing cases
 Default native aperture latching remains unchanged: once both baseline-corrected trailing pad loads exceed the configured 2.5 threshold, closure preserves a running maximum until recovery/episode handling clears it. Reaching the box or a policy opening alone does not unlock it. Do not disable retention globally with `--no-grip-latch` to force placement. Live terminal veto retains close masking, floor recovery and tactile phantom-grasp recovery; historical `fd4a032` is not the new study's native profile.
 
 The v2 [shared controller](../phantom/deploy/release_controller.py), [native executor](../phantom/deploy/executor.py), [native planner](../phantom/deploy/planner.py), [runtime](../phantom/deploy/runtime.py) and [simulation adapter](../phantom/sim/policy_adapter.py) now implement an explicit opt-in bridge. The simulator re-exports the shared API. It uses measured TCP/gripper/tactile load, previous loaded latch and **original policy opening intent**; never packet pose, object success or bin containment. Only original opening rows inside the reviewed release volume pass a whole-chunk close mask; arm guards/recovery remain active and rewritten contact-package feedback is invalidated.
+
+With this release profile enabled, the corrected simulator and new native bridge evaluate veto rules using **current measured delivery TCP/aperture**, while retaining the original request observation for model conditioning. Default native operation without the profile retains its historical request-snapshot feedback. Check simulator `policy_info.json:terminal_veto_feedback_source=current_delivery` and native `meta.json:deploy_overrides.placement_veto_feedback="current measured delivery feedback"`. This documents the controller feedback choice; it does not equate simulated sensors or asynchronous hardware timing. The retained waffles close hatch is TCP Z ≤ 0.103 m (`z_ref=0.0415`, margin 0.0615), not a pad-clearance or full-robot collision test.
 
 Release requires sustained policy opening after a loaded latch. Immediate re-latching is suppressed until measured unload/open and a subsequent policy close, or reset. With `finish_after_release: true`, bilateral measured unload/open dwell plus an actually sent open command triggers FINISH: hold the achieved measured TCP and accepted open aperture, reject new plans and stop inference. It generates no arm trajectory, forced opening or object-success decision. Workspace/reach clamps, IK/branch checks, measured speed/wrench/tactile/freshness guards and operator stops remain authoritative.
 
@@ -165,6 +177,32 @@ sha256sum phantom/deploy/release_controller.py phantom/deploy/executor.py \
 ```
 
 The JSON requires explicit `tcp_min_m`/`tcp_max_m` in the actual robot base frame. Measure box/pad/TCP geometry, drop height and clearance; do not paste the simulator's fitted bounds. Other fields are `open_command_max`, `opening_hold_s`, `unloaded_force_max_n`, `unloaded_hold_s`, `rearm_close_command_min`, `finish_after_release` and `finish_observation_s`. The `_n` suffix follows the existing load convention; verify sensor units for physical use. Tested v2 intent uses opening threshold 0.45, reclose threshold 0.5, 0.2 s opening/unload dwells, unload threshold 0.5, and 2 s native post-FINISH observation. These are controller settings, not sensor calibration.
+
+The release profile defaults to **absent**. Supplying a JSON enables release, but `finish_after_release` defaults to **false**: set it explicitly to `true` for the FINISH profile. Bounds have no defaults and must form a positive volume. The native load latch must remain enabled, and `rearm_close_command_min` must not exceed the hardware maximum closure. Those parser checks do not verify that the volume lies in the reachable/safe workspace, that it clears the rim, or that the packet lands inside the box. Review the usable intersection with the native hitbox and complete gripper/arm geometry; never widen safety bounds just to make the proposed release volume reachable.
+
+After an operator has written and reviewed the measured JSON, this **file-only** check validates its schema and hardware latch compatibility without constructing a driver or moving anything:
+
+```bash
+cd /home/physicalai/phantom-icra-2027/phantom
+.venv/bin/python - /absolute/path/to/reviewed_lab_release_finish.json <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+from phantom.config.hardware import load_hardware
+from phantom.deploy.release_controller import make_release_controller
+
+path = Path(sys.argv[1])
+config = json.loads(path.read_text())
+assert config.get("finish_after_release") is True, "FINISH must be explicit"
+controller = make_release_controller(config, load_hardware("configs/hardware.nuc.yaml", quiet=True))
+print(controller.variant)
+print(json.dumps(controller.config.to_dict(), indent=2))
+print("release_config_sha256", hashlib.sha256(path.read_bytes()).hexdigest())
+PY
+```
+
+Expected variant is `placement_policy_release_finish_v2`. Preserve that printed configuration and hash with the physical session record. A successful schema check does not satisfy the measurement and attended transition tests below.
 
 CPU tests exercise retention/release/rearm, stale feedback, queued gripper closes, actual accepted opening, measured FINISH hold and sensor/operator/safety preemption. They do not qualify real RTDE/gripper timing. Bench-test those transitions with reviewed clear motion and supervised low-height releases before physical policy placement. Only after measured release-config and controller review may an attended placement command replace the pickup-only stop with:
 
@@ -188,9 +226,9 @@ Each generated episode under `/home/physicalai/phantom-icra-2027/data/episodes/d
 
 - `meta.json`: task/text/tags, seed, git revision, base config hash, model identity, `deploy_overrides` including hitbox/floor, effective safety, grip latch and max-play settings, release-config hash/variant when enabled, plus operator verdict/notes/damage.
 - `planner_trace.json`: proposal/actions, timing, uncertainty/event/gate diagnostics, terminal-veto action, release state, and `actions_pre_veto` where rewritten.
-- `stop.json`: reason, separate `completed_reason`/`completed_at_s` when present, safety events, `stop_state.at_halt`, measured joints/speeds and available IK/limiter counters. The outer stop state may be captured after stopping; use the at-halt record when present.
+- `stop.json`: reason, separate `completed_reason`/`completed_at_s` when present, safety events, `stop_state.at_halt`, measured joints/speeds and available IK/limiter counters. The outer stop state may be captured after stopping; use the at-halt record when present. Native completion timestamps use the monotonic runtime clock; do not compare them directly with simulator elapsed seconds without the recorded clock alignment.
 - Timestamped native Zarr streams: `arm_q`, `arm_qd`, `arm_tcp_pose`, `arm_tcp_speed`, `arm_ft`, `gripper`, `camera_scene_color`, tactile infer images/fields/keyframes/wrenches and action streams actually present. Preserve timestamps and recorded clock offsets.
 
 Use the label prompt; for the pickup block include explicit notes such as `stage=pick held_after_lift=yes placement=not_attempted`. Native `s` means the operator's selected task criterion, not a verified full pick/place. Record slips, empty closure, post-stop release, damage and hand contamination separately. Unlabelled takes remain excluded by native training conventions but still belong in the attempted-trial denominator. Keep proposal actions distinct from measured motion: older/rederived episodes differ in action provenance. Do not run rederivation in place on source evidence.
 
-`tools/replay_rig.py` and `tools/replay_deploy_path.py` are **offline policy replay**, not physical demonstration playback and not a physics simulator. The latter currently builds teacher mode with K 1; do not use it as an exact teacher/LEVERS compatibility claim. A future measured-trajectory hardware acceptance test needs its own reviewed controller and motion path. Review this handoff alongside [the current native runtime](deployment_runtime.md), [the paired-seed session notes](rig_session_v5.md), [the simulator protocol](isaac_teacher_pick_place.md) and its [frozen 40-trial report](results/teacher_pick_place_v1/README.md).
+`tools/replay_rig.py` and `tools/replay_deploy_path.py` are **offline policy replay**, not physical demonstration playback and not a physics simulator. The latter currently builds teacher mode with K 1; do not use it as an exact teacher/LEVERS compatibility claim. A future measured-trajectory hardware acceptance test needs its own reviewed controller and motion path. Review this handoff alongside [the current native runtime](deployment_runtime.md), [the paired-seed session notes](rig_session_v5.md), [the active teacher experiment](isaac_teacher_v2_experiment.md) and the separate [frozen v1 40-trial report](results/teacher_pick_place_v1/README.md).

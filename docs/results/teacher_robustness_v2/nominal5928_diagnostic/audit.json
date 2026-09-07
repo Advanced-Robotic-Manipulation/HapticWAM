@@ -1,0 +1,3564 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-06T23:46:03.433959+00:00",
+  "status": "Descriptive audit of the first two completed cases in the subsequently halted original screen; not a teacher comparison or a new frozen study result.",
+  "source_files_sha256": {
+    "phantom/deploy/safety.py": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+    "tools/sim/run_waffles.py": "862ab07f9c1b4a130e472fefbf5abcaec82ea4b77345e05794c9c8c491b309a7",
+    "tools/sim/gel_contact.py": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e",
+    "phantom/sim/policy_metrics.py": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+  },
+  "campaign_snapshot_sha256": "8445fae218b18a455162b19664e89973707ddfbd83aca88e46acc8d9345f0c98",
+  "trials": [
+    {
+      "case_id": "fta1500_nfe1_k4__start_1787395928__seed903101",
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101",
+      "input_sha256": {
+        "execution_trace.jsonl": "b907fc474694b56221af3dcaeca8f9057f262d0908a59d441678ecef0859d3d7",
+        "planner_trace.json": "87d4ee4f6ae9a488af55135c6f4b650c259592e3e5cafe842693c9d5c3591092",
+        "delivered_plans.jsonl": "51b1dcfc32a742997166020709ed505695e9bafff84039537f7dc03b1618e600",
+        "sim.mp4": "47334c420173ad1a13678add7047321f462784f2125b15d469c6a99894f2e112",
+        "sim_trace.npz": "497df8d57276e0803b0350cba99832dbccc63b707634726adc80e6727230b60e",
+        "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+        "run.json": "42d0752f0a2c7055dfaa9ed6b0ba4a71b01acfebf50db8e72d6a30a44dc681a3",
+        "policy_info.json": "b3d28491dbfd452ba2b79b1ca2047ad87b7592803c872b6973a859172e25328a",
+        "gel_contact_trace.json": "b867010f224e74c0e71d593cb0cd9cdd5ee4a1a0eb63cefd477a8c114f08a013"
+      },
+      "metrics": {
+        "schema_version": 1,
+        "valid_for_scoring": true,
+        "invalid_reasons": [],
+        "thresholds": {
+          "contact_force_n": 0.1,
+          "acquisition_hold_s": 0.15,
+          "lift_height_m": 0.03,
+          "lift_hold_s": 0.5,
+          "carry_distance_m": 0.05,
+          "carry_hold_s": 0.25,
+          "contact_gap_s": 0.15,
+          "settle_hold_s": 0.5,
+          "settle_speed_m_s": 0.03,
+          "settle_angular_speed_rad_s": 0.5,
+          "bin_tolerance_m": 0.002,
+          "reach_distance_m": 0.02,
+          "reach_max_closure": 0.25,
+          "drop_height_m": 0.02,
+          "drop_hold_s": 0.1,
+          "clock_tolerance_s": 0.001,
+          "max_sample_gap_s": 0.2,
+          "require_support_verified_release": true,
+          "support_robot_force_max_n": 0.1,
+          "support_bin_force_min_n": 0.1
+        },
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "event_times_s": {
+          "reach": null,
+          "closure": 0.0,
+          "acquisition": null,
+          "lift": null,
+          "carry": null,
+          "release_in_bin": null,
+          "full_task": null,
+          "first_drop": null
+        },
+        "object": {
+          "initial_center_m": [
+            -0.3667149543762207,
+            -0.2596178650856018,
+            0.07000001519918442
+          ],
+          "final_center_m": [
+            -0.363595187664032,
+            -0.2829853594303131,
+            0.06999998539686203
+          ],
+          "max_lift_m": 5.438923835754395e-07,
+          "carry_distance_m": 0.0,
+          "final_inside_bin": false,
+          "final_contacts_unloaded": true,
+          "final_speed_m_s": 1.1380949852257138e-06,
+          "final_angular_speed_rad_s": 1.734206105281475e-05,
+          "minimum_pad_midpoint_to_object_m": 0.03168227621216962,
+          "reach_error_before_first_closing_motion_m": 0.05761301979820711,
+          "bilateral_contact_duration_s": 0.0,
+          "pad_packet_normal_force_peak_n": 0.7595655918121338
+        },
+        "placement_support": {
+          "required": true,
+          "telemetry_status": "available",
+          "verified_placement": false,
+          "confirmation_time_s": null,
+          "robot_contact_peak_n": 0.7595655918121338,
+          "bin_contact_peak_n": 0.0,
+          "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+        },
+        "control": {
+          "stop_reason": null,
+          "execution_rows": 7500,
+          "execution_clock_valid": true,
+          "ik_rejects": 0,
+          "ik_reject_reasons": {},
+          "hold_duration_s": 0.0,
+          "stale_plan_hold_rows": 0,
+          "replans": 75,
+          "inference_errors": 0,
+          "plans_activated": 74,
+          "effective_latency_s": {
+            "count": 75,
+            "mean": 0.7868736380121361,
+            "p95": 0.804831504332833,
+            "max": 1.1723281040322036
+          },
+          "inference_wall_time_s": {
+            "count": 75,
+            "mean": 0.9690287176410978,
+            "p95": 0.9902035782928579,
+            "max": 1.3541125860065222
+          },
+          "activation_delay_s": {
+            "count": 74,
+            "mean": 0.7911351351351348,
+            "p95": 0.8080000000000002,
+            "max": 1.176
+          },
+          "lift_complete_is_task_success": false
+        },
+        "collisions": {
+          "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+          "reported_count": 0,
+          "pad_environment_force_peak_n": 27.399499893188477,
+          "reported_events": []
+        },
+        "trace_sampling": {
+          "rows": 901,
+          "duration_s": 59.996,
+          "maximum_interval_s": 0.06800000000000495,
+          "physics_clock_max_error_s": 2.8496570863012494e-06,
+          "event_time_uncertainty_s": 0.06800000000000495
+        },
+        "reach_diagnostic": {
+          "absolute_threshold_already_exceeded_at_start": true,
+          "initial_measured_closure": 0.42740270495414734,
+          "first_closing_motion_s": 10.916,
+          "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+          "reach_error_before_first_closing_motion_m": 0.05761301979820711,
+          "sample_time_s": 10.868,
+          "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+        },
+        "limitations": [
+          "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+          "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+          "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+          "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+          "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+        ]
+      },
+      "per_body_peak_contacts": {
+        "right:/World/Mat/Base": {
+          "t_s": 33.38,
+          "side": "right",
+          "normal_force_n": 26.894062042236328,
+          "gel_force_n": 0.0,
+          "body_contact": {
+            "filter_column": 2,
+            "filter_path": "/World/Mat/Base",
+            "contact_count": 5,
+            "accepted_contact_count": 0,
+            "ignored_contact_count": 5,
+            "normal_force_magnitude_n": 26.894062042236328,
+            "gel_compression_n": 0.0,
+            "ignored_normal_force_n": 26.894062042236328,
+            "contact_points_pad_m": [
+              [
+                -0.010998522694008535,
+                0.005739269257303395,
+                0.027706606571805358
+              ],
+              [
+                -0.004998524441790911,
+                0.00573936917036215,
+                0.027706473293577037
+              ],
+              [
+                -0.004998775826589761,
+                0.010606132576080674,
+                0.021203590137539325
+              ],
+              [
+                -0.010998767637224153,
+                0.010606015842796619,
+                0.021203747159491994
+              ],
+              [
+                -0.00599855025630004,
+                0.004974124002656022,
+                0.025396772475419962
+              ]
+            ],
+            "contact_normals_pad": [
+              [
+                0.23982874669454196,
+                -0.760621636050833,
+                -0.6032718448050782
+              ],
+              [
+                0.23982874669454196,
+                -0.760621636050833,
+                -0.6032718448050782
+              ],
+              [
+                0.23982874669454196,
+                -0.760621636050833,
+                -0.6032718448050782
+              ],
+              [
+                0.23982874669454196,
+                -0.760621636050833,
+                -0.6032718448050782
+              ],
+              [
+                0.239834676766217,
+                -0.7604501069836502,
+                -0.6034857226164937
+              ]
+            ],
+            "normal_force_by_contact_n": [
+              14.798453330993652,
+              0.0,
+              0.0,
+              12.095608711242676,
+              0.0
+            ],
+            "accepted_by_contact": [
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "point_inside_active_gel_by_contact": [
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "gel_force_fraction_by_contact": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "single_convex_contact_body_not_declared",
+              "eligible_contact_count": 0,
+              "loaded_contact_count": 0,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [],
+              "support_area_m2": 0.0,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": false,
+              "minimum_pairwise_normal_agreement": null,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            },
+            "separation_by_contact_m": [
+              -0.001340790418908,
+              9.816646343097091e-05,
+              0.0003234729520045221,
+              -0.001115484512411058,
+              0.0018344486597925425
+            ],
+            "separation_eligible_by_contact": [
+              true,
+              true,
+              true,
+              true,
+              true
+            ],
+            "populated_buffer_indices": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          "rejection_budgets": {
+            "not_inner_face": 26.894062042236328,
+            "normal_not_aligned": 0.0,
+            "outside_support_separation": 0.0,
+            "outside_active_ellipse_or_point_fallback": 0.0
+          }
+        },
+        "right:/World/Bench/Slab": {
+          "t_s": 26.38,
+          "side": "right",
+          "normal_force_n": 0.0,
+          "gel_force_n": 0.0,
+          "body_contact": {
+            "filter_column": 1,
+            "filter_path": "/World/Bench/Slab",
+            "contact_count": 1,
+            "accepted_contact_count": 0,
+            "ignored_contact_count": 1,
+            "normal_force_magnitude_n": 0.0,
+            "gel_compression_n": 0.0,
+            "ignored_normal_force_n": 0.0,
+            "contact_points_pad_m": [
+              [
+                -0.011000436171136852,
+                0.010615004440936243,
+                0.021216915768056368
+              ]
+            ],
+            "contact_normals_pad": [
+              [
+                0.2062640501031272,
+                -0.7862457944774363,
+                -0.5824711966300254
+              ]
+            ],
+            "normal_force_by_contact_n": [
+              0.0
+            ],
+            "accepted_by_contact": [
+              false
+            ],
+            "point_inside_active_gel_by_contact": [
+              false
+            ],
+            "gel_force_fraction_by_contact": [
+              0.0
+            ],
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "single_convex_contact_body_not_declared",
+              "eligible_contact_count": 0,
+              "loaded_contact_count": 0,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [],
+              "support_area_m2": 0.0,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": false,
+              "minimum_pairwise_normal_agreement": null,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            },
+            "separation_by_contact_m": [
+              0.0019901692867279053
+            ],
+            "separation_eligible_by_contact": [
+              true
+            ],
+            "populated_buffer_indices": [
+              0
+            ]
+          },
+          "rejection_budgets": {
+            "not_inner_face": 21.183351516723633,
+            "normal_not_aligned": 0.0,
+            "outside_support_separation": 0.0,
+            "outside_active_ellipse_or_point_fallback": 0.0
+          }
+        },
+        "right:/World/Waffle": {
+          "t_s": 54.004,
+          "side": "right",
+          "normal_force_n": 0.7334639430046082,
+          "gel_force_n": 0.0,
+          "body_contact": {
+            "filter_column": 0,
+            "filter_path": "/World/Waffle",
+            "contact_count": 4,
+            "accepted_contact_count": 0,
+            "ignored_contact_count": 4,
+            "normal_force_magnitude_n": 0.7334639430046082,
+            "gel_compression_n": 0.0,
+            "ignored_normal_force_n": 0.7334639430046082,
+            "contact_points_pad_m": [
+              [
+                -0.01094562502206895,
+                -0.013858944030655544,
+                0.01146855051587508
+              ],
+              [
+                -0.010946357444537452,
+                0.010607205277414187,
+                -0.02122415423968854
+              ],
+              [
+                -0.010945705001413963,
+                -0.014346580568623939,
+                0.0065635111551499365
+              ],
+              [
+                -0.010946378765119657,
+                0.01022322925335163,
+                -0.021737327463612195
+              ]
+            ],
+            "contact_normals_pad": [
+              [
+                1.0000000320823057,
+                5.432214661695279e-06,
+                -1.88500044118568e-05
+              ],
+              [
+                1.0000000320823057,
+                5.432214661695279e-06,
+                -1.88500044118568e-05
+              ],
+              [
+                1.0000000320823057,
+                5.432214661695279e-06,
+                -1.88500044118568e-05
+              ],
+              [
+                1.0000000320823057,
+                5.432214661695279e-06,
+                -1.88500044118568e-05
+              ]
+            ],
+            "normal_force_by_contact_n": [
+              0.0,
+              0.0,
+              0.7334639430046082,
+              0.0
+            ],
+            "accepted_by_contact": [
+              false,
+              false,
+              false,
+              false
+            ],
+            "point_inside_active_gel_by_contact": [
+              false,
+              false,
+              false,
+              false
+            ],
+            "gel_force_fraction_by_contact": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "no_positive_eligible_load",
+              "eligible_contact_count": 0,
+              "loaded_contact_count": 0,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [],
+              "support_area_m2": 0.0,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": true,
+              "minimum_pairwise_normal_agreement": null,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            },
+            "separation_by_contact_m": [
+              0.0009088064543902874,
+              0.001526304055005312,
+              -9.354902431368828e-05,
+              0.0013337540440261364
+            ],
+            "separation_eligible_by_contact": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "populated_buffer_indices": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          "rejection_budgets": {
+            "not_inner_face": 0.7334639430046082,
+            "normal_not_aligned": 0.0,
+            "outside_support_separation": 0.0,
+            "outside_active_ellipse_or_point_fallback": 0.0
+          }
+        }
+      },
+      "execution_snapshots": [
+        {
+          "t": 0.004,
+          "measured_q": [
+            0.24458560347557068,
+            -1.5064772367477417,
+            0.9279372692108154,
+            0.9001988172531128,
+            1.1858762502670288,
+            -3.203784942626953
+          ],
+          "target_q": [
+            0.2445858551844926,
+            -1.5065068000920516,
+            0.9279597574572107,
+            0.9002101370275475,
+            1.1858774551982287,
+            -3.2037862324786563
+          ],
+          "measured_qd": [
+            -0.007494616787880659,
+            -0.01625424437224865,
+            -0.02914770133793354,
+            -0.005295474082231522,
+            -0.0012942489702254534,
+            0.0002064358559437096
+          ],
+          "measured_tcp": [
+            -0.3346609413037429,
+            -0.3006778683865294,
+            0.3539403354113042,
+            -1.036126341397533,
+            -1.9311148982115534,
+            1.4728755129920859
+          ],
+          "requested_tcp": [
+            -0.3346609413037429,
+            -0.3006778683865294,
+            0.3539403354113042,
+            -1.036126341397533,
+            -1.9311148982115534,
+            1.4728755129920859
+          ],
+          "accepted_tcp": [
+            -0.33465249201532365,
+            -0.30067566190244815,
+            0.3539411056485292,
+            -1.0361287329279438,
+            -1.9311181630770184,
+            1.4728716732578973
+          ],
+          "measured_gripper": [
+            0.42740270495414734,
+            3
+          ],
+          "gripper_command": 0.42740270495414734,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.0,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": null
+        },
+        {
+          "t": 1.5,
+          "measured_q": [
+            0.2440916895866394,
+            -1.5043253898620605,
+            0.9356196522712708,
+            0.8969290256500244,
+            1.1901456117630005,
+            -3.2039167881011963
+          ],
+          "target_q": [
+            0.24329192770738356,
+            -1.5099253374261563,
+            0.9397970936925041,
+            0.8914704565721313,
+            1.1962631594009454,
+            -3.2040392118992154
+          ],
+          "measured_qd": [
+            -0.020488565787672997,
+            -0.046031706035137177,
+            0.08119011670351028,
+            -0.08534044027328491,
+            0.0946946069598198,
+            -0.0021749709267169237
+          ],
+          "measured_tcp": [
+            -0.3360468398703246,
+            -0.2997518144125292,
+            0.3506788679479265,
+            -1.0440146799577932,
+            -1.9333271849340259,
+            1.4655933438177535
+          ],
+          "requested_tcp": [
+            -0.336766631608514,
+            -0.29806795094594996,
+            0.3522309840981753,
+            -1.0425748916366087,
+            -1.923302048810448,
+            1.4635011765230925
+          ],
+          "accepted_tcp": [
+            -0.3367671863634626,
+            -0.2980678804702677,
+            0.35223275530525433,
+            -1.0425791541879763,
+            -1.9233198338871729,
+            1.4634925368850198
+          ],
+          "measured_gripper": [
+            0.3529297113418579,
+            3
+          ],
+          "gripper_command": 0.3532758057117462,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.07512846929319203,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 0
+        },
+        {
+          "t": 2.996,
+          "measured_q": [
+            0.27314281463623047,
+            -1.5882123708724976,
+            1.2386606931686401,
+            0.6587350368499756,
+            1.4896427392959595,
+            -3.1455113887786865
+          ],
+          "target_q": [
+            0.2747500646578437,
+            -1.5933398720358587,
+            1.245862822196571,
+            0.6500806463494924,
+            1.5017767095300136,
+            -3.1415359076503684
+          ],
+          "measured_qd": [
+            0.021832896396517754,
+            -0.04340505972504616,
+            0.1419232040643692,
+            -0.141330286860466,
+            0.19944411516189575,
+            0.06578850001096725
+          ],
+          "measured_tcp": [
+            -0.36724028287757393,
+            -0.24160388829141255,
+            0.30781450761937434,
+            -1.2214261063790248,
+            -1.7209803389235707,
+            1.2776211776366706
+          ],
+          "requested_tcp": [
+            -0.36788620564220476,
+            -0.23919398830203714,
+            0.3087696973214674,
+            -1.2253946157461317,
+            -1.706793720352272,
+            1.2753551666452057
+          ],
+          "accepted_tcp": [
+            -0.36788663646632036,
+            -0.23919329693823457,
+            0.30877131024253623,
+            -1.225396974758638,
+            -1.706812607124656,
+            1.2753519910874191
+          ],
+          "measured_gripper": [
+            0.3172394037246704,
+            3
+          ],
+          "gripper_command": 0.31750908493995667,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.754956144978602,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 1
+        },
+        {
+          "t": 4.5,
+          "measured_q": [
+            0.29463034868240356,
+            -1.5992982387542725,
+            1.5513361692428589,
+            0.42281994223594666,
+            1.756270408630371,
+            -3.041653633117676
+          ],
+          "target_q": [
+            0.2946348192999049,
+            -1.601731131136411,
+            1.558781549057691,
+            0.41433658724449013,
+            1.7619337328518248,
+            -3.037661302175607
+          ],
+          "measured_qd": [
+            -0.0017427150160074234,
+            0.00034741172567009926,
+            0.14766834676265717,
+            -0.13710686564445496,
+            0.09538188576698303,
+            0.06700622290372849
+          ],
+          "measured_tcp": [
+            -0.37789057059182896,
+            -0.18161244623051206,
+            0.2320042735978337,
+            -1.4409168567555888,
+            -1.5426359339458209,
+            1.0851983950855304
+          ],
+          "requested_tcp": [
+            -0.3781201506483894,
+            -0.18016116383376213,
+            0.23174225172601703,
+            -1.4442651003065585,
+            -1.5333351491673408,
+            1.0857943709704612
+          ],
+          "accepted_tcp": [
+            -0.37812037918999375,
+            -0.18016136756738424,
+            0.23174358803212236,
+            -1.44427217263984,
+            -1.533344471470367,
+            1.0857853090769234
+          ],
+          "measured_gripper": [
+            0.3647253215312958,
+            3
+          ],
+          "gripper_command": 0.3683971166610718,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.6307911287502692,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 3
+        },
+        {
+          "t": 5.1000000000000005,
+          "measured_q": [
+            0.30908632278442383,
+            -1.5703617334365845,
+            1.643311619758606,
+            0.3453185558319092,
+            1.8084144592285156,
+            -2.9870200157165527
+          ],
+          "target_q": [
+            0.3107861744628599,
+            -1.5699527166073755,
+            1.6473875092214274,
+            0.33851268137825086,
+            1.8121553708348141,
+            -2.981654769630557
+          ],
+          "measured_qd": [
+            0.0244076456874609,
+            0.0412803515791893,
+            0.09479114413261414,
+            -0.10905355215072632,
+            0.05909024924039841,
+            0.08886992931365967
+          ],
+          "measured_tcp": [
+            -0.37583319060926323,
+            -0.17323522256506269,
+            0.1986257979578388,
+            -1.5159908142288117,
+            -1.51550473888533,
+            1.0472857411072798
+          ],
+          "requested_tcp": [
+            -0.3760536298642929,
+            -0.17304017181637385,
+            0.19822490994924852,
+            -1.519409412564349,
+            -1.5090512511732725,
+            1.0503572205014255
+          ],
+          "accepted_tcp": [
+            -0.3760536033733153,
+            -0.17303965695207982,
+            0.19822579470953572,
+            -1.5194112753741975,
+            -1.509060165669919,
+            1.050354642748181
+          ],
+          "measured_gripper": [
+            0.3234272003173828,
+            3
+          ],
+          "gripper_command": 0.32347366213798523,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.4574565207603714,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 4
+        },
+        {
+          "t": 5.996,
+          "measured_q": [
+            0.3235812187194824,
+            -1.5188701152801514,
+            1.749861717224121,
+            0.24859745800495148,
+            1.8392627239227295,
+            -2.914607048034668
+          ],
+          "target_q": [
+            0.32387143239145316,
+            -1.519684779155412,
+            1.7540385732359556,
+            0.2418701401088984,
+            1.8402255323403054,
+            -2.9111044753001467
+          ],
+          "measured_qd": [
+            0.001529486384242773,
+            0.018394188955426216,
+            0.09565464407205582,
+            -0.1073564812541008,
+            0.013208109885454178,
+            0.058407846838235855
+          ],
+          "measured_tcp": [
+            -0.37023442588390976,
+            -0.16939235994341578,
+            0.15416254857788403,
+            -1.6073520781567179,
+            -1.503108043879076,
+            1.017354156230576
+          ],
+          "requested_tcp": [
+            -0.3704736820714757,
+            -0.169340253634172,
+            0.15412745728542404,
+            -1.6088538600282574,
+            -1.4978534492979585,
+            1.0217714243785359
+          ],
+          "accepted_tcp": [
+            -0.3704737268472651,
+            -0.16934026508540032,
+            0.15412833633497908,
+            -1.6088580379624118,
+            -1.4978587454885988,
+            1.021765278536163
+          ],
+          "measured_gripper": [
+            0.33565929532051086,
+            3
+          ],
+          "gripper_command": 0.3358006179332733,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.5612693029207699,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 5
+        },
+        {
+          "t": 6.996,
+          "measured_q": [
+            0.3153773546218872,
+            -1.470832109451294,
+            1.8622632026672363,
+            0.13607370853424072,
+            1.8230589628219604,
+            -2.8627328872680664
+          ],
+          "target_q": [
+            0.31485472102838397,
+            -1.471363108164913,
+            1.8643542318635167,
+            0.13035978079514254,
+            1.8219177584867485,
+            -2.86045557756655
+          ],
+          "measured_qd": [
+            -0.011180545203387737,
+            0.020451636984944344,
+            0.059019606560468674,
+            -0.08984904736280441,
+            -0.020983310416340828,
+            0.03823462501168251
+          ],
+          "measured_tcp": [
+            -0.36342680248403897,
+            -0.16799250059039877,
+            0.11156575552619817,
+            -1.6809065753051922,
+            -1.5070145768313188,
+            1.0089324009480187
+          ],
+          "requested_tcp": [
+            -0.36403700471480216,
+            -0.16827677633419968,
+            0.11196698604079938,
+            -1.6811731816505784,
+            -1.5029658766387057,
+            1.014682149823884
+          ],
+          "accepted_tcp": [
+            -0.3640369897536233,
+            -0.16827700675712343,
+            0.11196768336976347,
+            -1.681176934463352,
+            -1.5029681574111466,
+            1.0146755964426142
+          ],
+          "measured_gripper": [
+            0.34402012825012207,
+            3
+          ],
+          "gripper_command": 0.3440566062927246,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.7703262033157896,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 6
+        },
+        {
+          "t": 7.996,
+          "measured_q": [
+            0.2958897352218628,
+            -1.4484992027282715,
+            1.906596064567566,
+            0.09238208085298538,
+            1.7945739030838013,
+            -2.8449299335479736
+          ],
+          "target_q": [
+            0.296078790814734,
+            -1.448895116760492,
+            1.9042581861803363,
+            0.09109091767309752,
+            1.794209061129084,
+            -2.8438376552029188
+          ],
+          "measured_qd": [
+            0.0020381517242640257,
+            0.02450024150311947,
+            -0.021212106570601463,
+            -0.012590136379003525,
+            -0.007835269905626774,
+            0.018746279180049896
+          ],
+          "measured_tcp": [
+            -0.3610508202094135,
+            -0.16675656359207977,
+            0.09309766416121483,
+            -1.7186966322183042,
+            -1.5141857879954066,
+            1.0085219929410003
+          ],
+          "requested_tcp": [
+            -0.36195671038195804,
+            -0.1672080051881806,
+            0.09431934996727627,
+            -1.7174970856985758,
+            -1.5111642193052197,
+            1.0132992046221663
+          ],
+          "accepted_tcp": [
+            -0.36195673402387873,
+            -0.16720810651657914,
+            0.09431963631620036,
+            -1.7174986191088495,
+            -1.5111652011639554,
+            1.013296459232222
+          ],
+          "measured_gripper": [
+            0.30328845977783203,
+            0
+          ],
+          "gripper_command": 0.3265509605407715,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.20878640667591233,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 8
+        },
+        {
+          "t": 8.996,
+          "measured_q": [
+            0.2966475188732147,
+            -1.419543743133545,
+            1.912294864654541,
+            0.07670976966619492,
+            1.7876501083374023,
+            -2.834406852722168
+          ],
+          "target_q": [
+            0.29640940507004065,
+            -1.4230989601127328,
+            1.9101963999510814,
+            0.07649170443324012,
+            1.7874352162431406,
+            -2.8346179231483886
+          ],
+          "measured_qd": [
+            -0.0069102151319384575,
+            -0.035326991230249405,
+            -0.011761932633817196,
+            0.0018561973702162504,
+            -0.006097848992794752,
+            -0.004153861198574305
+          ],
+          "measured_tcp": [
+            -0.36040038165882465,
+            -0.1687202253650096,
+            0.08210551120580221,
+            -1.7374468214448193,
+            -1.5258207298927837,
+            1.0014326009302392
+          ],
+          "requested_tcp": [
+            -0.3612911331743911,
+            -0.16894436003861724,
+            0.08422025575618312,
+            -1.734243189357238,
+            -1.5224042769510215,
+            1.0070300848259608
+          ],
+          "accepted_tcp": [
+            -0.36133285615561794,
+            -0.16896435746459287,
+            0.08429005217357444,
+            -1.7343549539237009,
+            -1.5219742408271475,
+            1.007032182835703
+          ],
+          "measured_gripper": [
+            0.38210001587867737,
+            3
+          ],
+          "gripper_command": 0.3821125030517578,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.3729026795016208,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 9
+        },
+        {
+          "t": 9.996,
+          "measured_q": [
+            0.3015140891075134,
+            -1.4043891429901123,
+            1.90278160572052,
+            0.08282679319381714,
+            1.7877089977264404,
+            -2.831057071685791
+          ],
+          "target_q": [
+            0.30252508440232273,
+            -1.4061599086407464,
+            1.8990201619793647,
+            0.08319614885517396,
+            1.788504836989769,
+            -2.8304256736650877
+          ],
+          "measured_qd": [
+            0.017573166638612747,
+            0.00029307231307029724,
+            -0.044453613460063934,
+            0.013083579950034618,
+            0.013541778549551964,
+            0.012224520556628704
+          ],
+          "measured_tcp": [
+            -0.3601454019130309,
+            -0.17063374923594388,
+            0.07848793926683693,
+            -1.7436593690238826,
+            -1.5361275289887977,
+            0.9940772814462118
+          ],
+          "requested_tcp": [
+            -0.3611839832385655,
+            -0.17122054336873482,
+            0.08044097098830501,
+            -1.7411255824341523,
+            -1.5326983466744066,
+            0.9991595332235881
+          ],
+          "accepted_tcp": [
+            -0.3611682061937568,
+            -0.17115763959498106,
+            0.0804857605560146,
+            -1.7410173930167672,
+            -1.5325932382845806,
+            0.9992825850600348
+          ],
+          "measured_gripper": [
+            0.36065104603767395,
+            3
+          ],
+          "gripper_command": 0.3607381284236908,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.5381893223991407,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 10
+        },
+        {
+          "t": 10.916,
+          "measured_q": [
+            0.31031447649002075,
+            -1.3908274173736572,
+            1.8890690803527832,
+            0.09261830151081085,
+            1.7940354347229004,
+            -2.827948808670044
+          ],
+          "target_q": [
+            0.3117735945013805,
+            -1.39253889088079,
+            1.8846462558981072,
+            0.09346434659802738,
+            1.7953500492858443,
+            -2.8272645450369045
+          ],
+          "measured_qd": [
+            0.026440786197781563,
+            0.0019381081219762564,
+            -0.057490963488817215,
+            0.022230394184589386,
+            0.02348780445754528,
+            0.013252319768071175
+          ],
+          "measured_tcp": [
+            -0.36000018906712705,
+            -0.1725379961049788,
+            0.07654903777674145,
+            -1.746213672019032,
+            -1.544025085096542,
+            0.985587985887713
+          ],
+          "requested_tcp": [
+            -0.36107037585669116,
+            -0.17317723860105205,
+            0.07867660201181029,
+            -1.7433568699845592,
+            -1.540462075130048,
+            0.9907187734344041
+          ],
+          "accepted_tcp": [
+            -0.36106216561941257,
+            -0.17313379878353508,
+            0.07868975191801783,
+            -1.7433373309268612,
+            -1.540399221449328,
+            0.9908003050773665
+          ],
+          "measured_gripper": [
+            0.4101787209510803,
+            3
+          ],
+          "gripper_command": 0.44697847962379456,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.6014961569246513,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 11
+        },
+        {
+          "t": 11.996,
+          "measured_q": [
+            0.32051193714141846,
+            -1.3749269247055054,
+            1.874151587486267,
+            0.10204853117465973,
+            1.8004893064498901,
+            -2.8230836391448975
+          ],
+          "target_q": [
+            0.32128126994894507,
+            -1.3761650110349357,
+            1.869966668857539,
+            0.10307187378265135,
+            1.8012013455464286,
+            -2.8235842094360466
+          ],
+          "measured_qd": [
+            0.019624462351202965,
+            -0.004107090178877115,
+            -0.0464361235499382,
+            0.033052049577236176,
+            0.016900841146707535,
+            0.0015129707753658295
+          ],
+          "measured_tcp": [
+            -0.35984584102736594,
+            -0.175003519805243,
+            0.0741539121882923,
+            -1.7497536420059665,
+            -1.552449715421372,
+            0.9776737369541231
+          ],
+          "requested_tcp": [
+            -0.3608802905942872,
+            -0.17551619294877843,
+            0.07593354216524922,
+            -1.7467290379077507,
+            -1.5502015102041988,
+            0.9814541304766949
+          ],
+          "accepted_tcp": [
+            -0.36087151755920466,
+            -0.17547511255769443,
+            0.07596803797929545,
+            -1.7466599118337363,
+            -1.5500829449807882,
+            0.9816074435932568
+          ],
+          "measured_gripper": [
+            0.41208159923553467,
+            1
+          ],
+          "gripper_command": 0.3996235728263855,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145562708943787,
+            -11.717268529576252,
+            -4.484830315697481,
+            4.440622638289351,
+            1.136909763916795
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.17250226809500407,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 13
+        },
+        {
+          "t": 19.996,
+          "measured_q": [
+            0.26780614256858826,
+            -1.4508497714996338,
+            1.9218281507492065,
+            0.1218171939253807,
+            1.7427984476089478,
+            -2.8814876079559326
+          ],
+          "target_q": [
+            0.26832176283602327,
+            -1.4538528088896476,
+            1.9192011903628252,
+            0.12175185947925314,
+            1.7435926807943747,
+            -2.881049205086765
+          ],
+          "measured_qd": [
+            0.008101178333163261,
+            -0.026056287810206413,
+            -0.023067554458975792,
+            0.0046726129949092865,
+            0.013357706367969513,
+            0.008471841923892498
+          ],
+          "measured_tcp": [
+            -0.35390360500916385,
+            -0.1671307754467461,
+            0.08208799611867447,
+            -1.7215109049021498,
+            -1.582680424631109,
+            0.9774919257018508
+          ],
+          "requested_tcp": [
+            -0.3548119895251828,
+            -0.16735469806212058,
+            0.08423000271296276,
+            -1.7186183049516421,
+            -1.5782072616171519,
+            0.9826287630574244
+          ],
+          "accepted_tcp": [
+            -0.35484263716911657,
+            -0.16738254711486855,
+            0.08421636153178784,
+            -1.7185693328187457,
+            -1.578421716870806,
+            0.9826700849686903
+          ],
+          "measured_gripper": [
+            0.39507752656936646,
+            3
+          ],
+          "gripper_command": 0.39511868357658386,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.29369773619081574,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 23
+        },
+        {
+          "t": 26.34,
+          "measured_q": [
+            0.32609713077545166,
+            -1.3766975402832031,
+            1.8453091382980347,
+            0.17118270695209503,
+            1.792439341545105,
+            -2.858975648880005
+          ],
+          "target_q": [
+            0.32631970417202727,
+            -1.3770921425033835,
+            1.8422134188204942,
+            0.1718254035096229,
+            1.7931678080181213,
+            -2.862231755346645
+          ],
+          "measured_qd": [
+            0.010914276354014874,
+            -0.020735127851366997,
+            -0.03039950132369995,
+            0.06889644265174866,
+            -0.01066247746348381,
+            -0.15921176970005035
+          ],
+          "measured_tcp": [
+            -0.3530946714836648,
+            -0.17722918231616303,
+            0.07365408312866398,
+            -1.7306915669472138,
+            -1.6165128406191838,
+            0.9312041119211573
+          ],
+          "requested_tcp": [
+            -0.3539064172238662,
+            -0.17740012609059977,
+            0.0748021275085658,
+            -1.726080477064872,
+            -1.6165868022631975,
+            0.9320107252295265
+          ],
+          "accepted_tcp": [
+            -0.353906371544365,
+            -0.17739924174466284,
+            0.07480176265628663,
+            -1.7260765288468556,
+            -1.616590165633353,
+            0.932020652791915
+          ],
+          "measured_gripper": [
+            0.5061613917350769,
+            1
+          ],
+          "gripper_command": 0.4767134189605713,
+          "measured_wrist_ft": [
+            8.259031901373543,
+            13.149274251950333,
+            3.9266352027235527,
+            -4.745841333388513,
+            4.196068477475225,
+            1.1366370977707976
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.2291118428342444,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 31
+        },
+        {
+          "t": 33.38,
+          "measured_q": [
+            0.38448566198349,
+            -1.3201394081115723,
+            1.750240445137024,
+            0.24800090491771698,
+            1.8462330102920532,
+            -2.8544774055480957
+          ],
+          "target_q": [
+            0.38466131756702177,
+            -1.3193034818867044,
+            1.7461989077154896,
+            0.24858769779468617,
+            1.8458003919043917,
+            -2.8571024716030515
+          ],
+          "measured_qd": [
+            0.014165318571031094,
+            -0.0014069797471165657,
+            -0.055380091071128845,
+            0.11625929921865463,
+            -0.012059617787599564,
+            -0.23164217174053192
+          ],
+          "measured_tcp": [
+            -0.3525843453540749,
+            -0.18702435237051337,
+            0.07444981133150201,
+            -1.7122435841473835,
+            -1.6531945888133182,
+            0.8805212344723873
+          ],
+          "requested_tcp": [
+            -0.35353562453886717,
+            -0.18763705328796051,
+            0.07534782504534579,
+            -1.7085874965569043,
+            -1.6539662414533398,
+            0.8822701604364429
+          ],
+          "accepted_tcp": [
+            -0.353523635722661,
+            -0.18759746572289882,
+            0.07537624248303589,
+            -1.7085340717766035,
+            -1.653855855154673,
+            0.8823966418608598
+          ],
+          "measured_gripper": [
+            0.4858565628528595,
+            1
+          ],
+          "gripper_command": 0.424538791179657,
+          "measured_wrist_ft": [
+            8.263293156637825,
+            13.142611198653826,
+            7.892293390589764,
+            -4.810696957277029,
+            4.13164423325688,
+            1.136616979107454
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.1909768644825107,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 40
+        },
+        {
+          "t": 53.996,
+          "measured_q": [
+            0.5097039341926575,
+            -1.2006367444992065,
+            1.5401910543441772,
+            0.40337035059928894,
+            1.9274280071258545,
+            -2.8536057472229004
+          ],
+          "target_q": [
+            0.5099313413292739,
+            -1.2037434744172208,
+            1.5365194927495032,
+            0.4042744007685251,
+            1.9273667963280439,
+            -2.8533739483984295
+          ],
+          "measured_qd": [
+            -0.0028953247237950563,
+            -0.02459363453090191,
+            -0.027540214359760284,
+            0.012051784433424473,
+            -0.0005519260885193944,
+            -0.006576664745807648
+          ],
+          "measured_tcp": [
+            -0.34962961982929264,
+            -0.2193938209833041,
+            0.07914776146683604,
+            -1.6419369747039092,
+            -1.749989866987914,
+            0.8108472224156671
+          ],
+          "requested_tcp": [
+            -0.3505478338397228,
+            -0.22003250907421826,
+            0.08150818323889045,
+            -1.6404053260439166,
+            -1.7461917754877412,
+            0.8174792820551825
+          ],
+          "accepted_tcp": [
+            -0.35054738975846894,
+            -0.22003165177940673,
+            0.08150779888912944,
+            -1.6404003184016367,
+            -1.7461920604970098,
+            0.8174889483243594
+          ],
+          "measured_gripper": [
+            0.4360197186470032,
+            1
+          ],
+          "gripper_command": 0.4237985908985138,
+          "measured_wrist_ft": [
+            8.059264479442515,
+            13.841511445879364,
+            -18.77188371424098,
+            -4.320837467137327,
+            4.552417759928536,
+            1.1447763076869453
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.1070093973146343,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 66
+        },
+        {
+          "t": 59.996,
+          "measured_q": [
+            0.5363801121711731,
+            -1.181166648864746,
+            1.5074224472045898,
+            0.4234831631183624,
+            1.9373866319656372,
+            -2.8528714179992676
+          ],
+          "target_q": [
+            0.5368131419724648,
+            -1.186326869340506,
+            1.5051637401952283,
+            0.4235509688766913,
+            1.9380170935358043,
+            -2.8533840407372404
+          ],
+          "measured_qd": [
+            -0.0015801135450601578,
+            -0.05237535014748573,
+            -0.004871373064815998,
+            -0.0005688213277608156,
+            0.0014576304238289595,
+            -0.009394248947501183
+          ],
+          "measured_tcp": [
+            -0.34755996942304146,
+            -0.22812590910384156,
+            0.07986452051774978,
+            -1.6237419135143758,
+            -1.7708798515855724,
+            0.8090413505768479
+          ],
+          "requested_tcp": [
+            -0.34837727872102753,
+            -0.22864273410012873,
+            0.08277398079631408,
+            -1.6210174660850742,
+            -1.7662154455654753,
+            0.8166235569187126
+          ],
+          "accepted_tcp": [
+            -0.3483771485034355,
+            -0.22864213978285322,
+            0.08277374652121226,
+            -1.6210152132401656,
+            -1.7662169951436788,
+            0.8166302200492495
+          ],
+          "measured_gripper": [
+            0.4924561381340027,
+            3
+          ],
+          "gripper_command": 0.49279823899269104,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.43056413215713285,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 73
+        }
+      ],
+      "first_safety_stop": null,
+      "largest_accepted_to_requested_position_difference_m": 9.999722791230101e-05,
+      "largest_accepted_to_measured_position_difference_m": 0.0031176482341558134,
+      "first_accepted_to_measured_error_gt_20mm_s": null,
+      "mean_initial_wrist_bias_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "initial_wrist_force_norm_n": 24.543340668957487,
+      "maximum_raw_wrist_force_norm_n": 24.70347666643929,
+      "maximum_wrist_force_change_from_initial_n": 27.552426644304056,
+      "maximum_gel_force_per_pad_n": [
+        0.0,
+        0.0
+      ],
+      "latch_observed": false,
+      "veto_action_counts": {
+        "none": 17,
+        "close_allowed": 57
+      },
+      "frames": [
+        {
+          "requested_t_s": 0,
+          "actual_t_s": 0.0,
+          "frame_index": 0,
+          "jpeg_sha256": "c919140ca0663d9499f5bf723d83feaa95f510d866f22f2c48bb814bb883a38f",
+          "image": "frames/seed903101_frame0000.jpg"
+        },
+        {
+          "requested_t_s": 5.1,
+          "actual_t_s": 5.0680000000000005,
+          "frame_index": 76,
+          "jpeg_sha256": "f8c804b2ae59fd29e486ff78233e22f575c09d2c207a281eaf31251aa717da76",
+          "image": "frames/seed903101_frame0076.jpg"
+        },
+        {
+          "requested_t_s": 10.916,
+          "actual_t_s": 10.936,
+          "frame_index": 164,
+          "jpeg_sha256": "97c9f299efd8f715b497ccb1f6a6f2fcfb4ddbab0b0cab46ffd282ef716998cd",
+          "image": "frames/seed903101_frame0164.jpg"
+        },
+        {
+          "requested_t_s": 54,
+          "actual_t_s": 54.0,
+          "frame_index": 810,
+          "jpeg_sha256": "5b4766701e4d7a3cebc6dd7dda071a883f2f260fe32d817639b921b36364cb58",
+          "image": "frames/seed903101_frame0810.jpg"
+        }
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__start_1787395928__seed903102",
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102",
+      "input_sha256": {
+        "execution_trace.jsonl": "3459b482b3096b719798a09a4c263c187a9546fb970bc32cbd09f19dc163271b",
+        "planner_trace.json": "268c5e6097657843b77213346dd727896243460b66f156fb9350a2a5d9e414a9",
+        "delivered_plans.jsonl": "a03217f5f7ad7f4f747960e55d4314d198ea466742dc68561a6062377a53555c",
+        "sim.mp4": "5b3e32f11244baf99995c9766eb4294984d1e1e6d687c4fdda5a448bc1ab60a8",
+        "sim_trace.npz": "9b4ed555150d3646eb56ca76fbfc23bc8d16b729466ea5ca7152080af97b6d2e",
+        "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+        "run.json": "b186ba4ff68e10ebc7e3a9c0a1f6f3dc599c36e381101e44fd233bf1376f1edb",
+        "policy_info.json": "ad12a697323b15a316472907509baeda9bc6fa6239cd473d7b9bbeb42401a022",
+        "gel_contact_trace.json": "4ba3654d92dc19726ab62cb4de088c5d85cc54e8deaffb366c042815290826b8"
+      },
+      "metrics": {
+        "schema_version": 1,
+        "valid_for_scoring": true,
+        "invalid_reasons": [],
+        "thresholds": {
+          "contact_force_n": 0.1,
+          "acquisition_hold_s": 0.15,
+          "lift_height_m": 0.03,
+          "lift_hold_s": 0.5,
+          "carry_distance_m": 0.05,
+          "carry_hold_s": 0.25,
+          "contact_gap_s": 0.15,
+          "settle_hold_s": 0.5,
+          "settle_speed_m_s": 0.03,
+          "settle_angular_speed_rad_s": 0.5,
+          "bin_tolerance_m": 0.002,
+          "reach_distance_m": 0.02,
+          "reach_max_closure": 0.25,
+          "drop_height_m": 0.02,
+          "drop_hold_s": 0.1,
+          "clock_tolerance_s": 0.001,
+          "max_sample_gap_s": 0.2,
+          "require_support_verified_release": true,
+          "support_robot_force_max_n": 0.1,
+          "support_bin_force_min_n": 0.1
+        },
+        "outcomes": {
+          "reach_before_closure": false,
+          "acquired": false,
+          "lifted": false,
+          "carried": false,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "event_times_s": {
+          "reach": null,
+          "closure": 0.0,
+          "acquisition": null,
+          "lift": null,
+          "carry": null,
+          "release_in_bin": null,
+          "full_task": null,
+          "first_drop": null
+        },
+        "object": {
+          "initial_center_m": [
+            -0.3667149543762207,
+            -0.2596178650856018,
+            0.07000001519918442
+          ],
+          "final_center_m": [
+            -0.3667149543762207,
+            -0.2596178650856018,
+            0.07000001519918442
+          ],
+          "max_lift_m": 0.0,
+          "carry_distance_m": 0.0,
+          "final_inside_bin": false,
+          "final_contacts_unloaded": true,
+          "final_speed_m_s": 0.0,
+          "final_angular_speed_rad_s": 0.0,
+          "minimum_pad_midpoint_to_object_m": 0.18281461847811717,
+          "reach_error_before_first_closing_motion_m": null,
+          "bilateral_contact_duration_s": 0.0,
+          "pad_packet_normal_force_peak_n": 0.0
+        },
+        "placement_support": {
+          "required": true,
+          "telemetry_status": "available",
+          "verified_placement": false,
+          "confirmation_time_s": null,
+          "robot_contact_peak_n": 0.0,
+          "bin_contact_peak_n": 0.0,
+          "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+        },
+        "control": {
+          "stop_reason": "safety_stop",
+          "execution_rows": 1253,
+          "execution_clock_valid": true,
+          "ik_rejects": 0,
+          "ik_reject_reasons": {},
+          "hold_duration_s": 0.0,
+          "stale_plan_hold_rows": 0,
+          "replans": 12,
+          "inference_errors": 0,
+          "plans_activated": 11,
+          "effective_latency_s": {
+            "count": 12,
+            "mean": 0.8125104513213349,
+            "p95": 0.9734215570380909,
+            "max": 1.1806399140041322
+          },
+          "inference_wall_time_s": {
+            "count": 12,
+            "mean": 0.9946515179181006,
+            "p95": 1.1629618636914527,
+            "max": 1.3681678459979594
+          },
+          "activation_delay_s": {
+            "count": 11,
+            "mean": 0.8203636363636364,
+            "p95": 0.9959999999999999,
+            "max": 1.184
+          },
+          "lift_complete_is_task_success": false
+        },
+        "collisions": {
+          "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+          "reported_count": 0,
+          "pad_environment_force_peak_n": 4.4918036460876465,
+          "reported_events": []
+        },
+        "trace_sampling": {
+          "rows": 182,
+          "duration_s": 12.016,
+          "maximum_interval_s": 0.06800000000000139,
+          "physics_clock_max_error_s": 5.707293748713482e-07,
+          "event_time_uncertainty_s": 0.06800000000000139
+        },
+        "reach_diagnostic": {
+          "absolute_threshold_already_exceeded_at_start": true,
+          "initial_measured_closure": 0.42740270495414734,
+          "first_closing_motion_s": null,
+          "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+          "reach_error_before_first_closing_motion_m": null,
+          "sample_time_s": null,
+          "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+        },
+        "limitations": [
+          "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+          "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+          "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+          "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+          "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+        ]
+      },
+      "per_body_peak_contacts": {
+        "right:/World/Bin/Front": {
+          "t_s": 6.0040000000000004,
+          "side": "right",
+          "normal_force_n": 0.0,
+          "gel_force_n": 0.0,
+          "body_contact": {
+            "filter_column": 6,
+            "filter_path": "/World/Bin/Front",
+            "contact_count": 2,
+            "accepted_contact_count": 0,
+            "ignored_contact_count": 2,
+            "normal_force_magnitude_n": 0.0,
+            "gel_compression_n": 0.0,
+            "ignored_normal_force_n": 0.0,
+            "contact_points_pad_m": [
+              [
+                0.005994286599570277,
+                0.009294468003456069,
+                0.019305785321630197
+              ],
+              [
+                0.005992468596107807,
+                0.005079319540396314,
+                0.02526868985237296
+              ]
+            ],
+            "contact_normals_pad": [
+              [
+                -0.9693884165460611,
+                -0.1999634497953727,
+                -0.14248058328183733
+              ],
+              [
+                -0.9693884165460611,
+                -0.1999634497953727,
+                -0.14248058328183733
+              ]
+            ],
+            "normal_force_by_contact_n": [
+              0.0,
+              0.0
+            ],
+            "accepted_by_contact": [
+              false,
+              false
+            ],
+            "point_inside_active_gel_by_contact": [
+              false,
+              false
+            ],
+            "gel_force_fraction_by_contact": [
+              0.0,
+              0.0
+            ],
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "single_convex_contact_body_not_declared",
+              "eligible_contact_count": 2,
+              "loaded_contact_count": 0,
+              "zero_impulse_geometric_count": 2,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [
+                [
+                  0.005079319540396314,
+                  0.02526868985237296
+                ],
+                [
+                  0.009294468003456069,
+                  0.019305785321630197
+                ]
+              ],
+              "support_area_m2": 0.0,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": false,
+              "minimum_pairwise_normal_agreement": 1.0000000000000002,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            },
+            "separation_by_contact_m": [
+              0.001789397792890668,
+              0.0017844338435679674
+            ],
+            "separation_eligible_by_contact": [
+              true,
+              true
+            ],
+            "populated_buffer_indices": [
+              0,
+              1
+            ]
+          },
+          "rejection_budgets": {
+            "not_inner_face": 0.0,
+            "normal_not_aligned": 0.0,
+            "outside_support_separation": 0.0,
+            "outside_active_ellipse_or_point_fallback": 0.0
+          }
+        },
+        "left:/World/Bin/Front": {
+          "t_s": 9.876,
+          "side": "left",
+          "normal_force_n": 2.5247281193733215,
+          "gel_force_n": 0.0,
+          "body_contact": {
+            "filter_column": 6,
+            "filter_path": "/World/Bin/Front",
+            "contact_count": 4,
+            "accepted_contact_count": 0,
+            "ignored_contact_count": 4,
+            "normal_force_magnitude_n": 2.5247281193733215,
+            "gel_compression_n": 0.0,
+            "ignored_normal_force_n": 2.5247281193733215,
+            "contact_points_pad_m": [
+              [
+                -0.005993503491129118,
+                0.011953715967095947,
+                -0.0109151718118335
+              ],
+              [
+                -0.005993366181531417,
+                0.0058311220780247796,
+                0.024270486429986363
+              ],
+              [
+                -0.00599346943174409,
+                0.012063906500829513,
+                -0.010567121363037215
+              ],
+              [
+                -0.0059928656630530795,
+                0.009268436313344581,
+                0.01940420382399185
+              ]
+            ],
+            "contact_normals_pad": [
+              [
+                0.9999999717212749,
+                -0.00019864091557020164,
+                -3.859877903560747e-05
+              ],
+              [
+                0.9999999717212749,
+                -0.00019864091557020164,
+                -3.859877903560747e-05
+              ],
+              [
+                0.9999999717212749,
+                -0.00019864091557020164,
+                -3.859877903560747e-05
+              ],
+              [
+                0.9999999717212749,
+                -0.00019864091557020164,
+                -3.859877903560747e-05
+              ]
+            ],
+            "normal_force_by_contact_n": [
+              1.5372636318206787,
+              0.0,
+              0.9874644875526428,
+              0.0
+            ],
+            "accepted_by_contact": [
+              false,
+              false,
+              false,
+              false
+            ],
+            "point_inside_active_gel_by_contact": [
+              false,
+              false,
+              false,
+              false
+            ],
+            "gel_force_fraction_by_contact": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "single_convex_contact_body_not_declared",
+              "eligible_contact_count": 4,
+              "loaded_contact_count": 2,
+              "zero_impulse_geometric_count": 2,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [
+                [
+                  0.0058311220780247796,
+                  0.024270486429986363
+                ],
+                [
+                  0.011953715967095947,
+                  -0.0109151718118335
+                ],
+                [
+                  0.012063906500829513,
+                  -0.010567121363037215
+                ],
+                [
+                  0.009268436313344581,
+                  0.01940420382399185
+                ]
+              ],
+              "support_area_m2": 4.771270639008067e-05,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": false,
+              "minimum_pairwise_normal_agreement": 1.0,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            },
+            "separation_by_contact_m": [
+              -0.00011551938951015472,
+              0.001726219430565834,
+              -7.396936416625977e-05,
+              0.0018254294991493225
+            ],
+            "separation_eligible_by_contact": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "populated_buffer_indices": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          "rejection_budgets": {
+            "not_inner_face": 0.0,
+            "normal_not_aligned": 0.0,
+            "outside_support_separation": 0.0,
+            "outside_active_ellipse_or_point_fallback": 2.5247281193733215
+          }
+        }
+      },
+      "execution_snapshots": [
+        {
+          "t": 0.004,
+          "measured_q": [
+            0.24458560347557068,
+            -1.5064772367477417,
+            0.9279372692108154,
+            0.9001988172531128,
+            1.1858762502670288,
+            -3.203784942626953
+          ],
+          "target_q": [
+            0.2445858551844926,
+            -1.5065068000920516,
+            0.9279597574572107,
+            0.9002101370275475,
+            1.1858774551982287,
+            -3.2037862324786563
+          ],
+          "measured_qd": [
+            -0.007494616787880659,
+            -0.01625424437224865,
+            -0.02914770133793354,
+            -0.005295474082231522,
+            -0.0012942489702254534,
+            0.0002064358559437096
+          ],
+          "measured_tcp": [
+            -0.3346609413037429,
+            -0.3006778683865294,
+            0.3539403354113042,
+            -1.036126341397533,
+            -1.9311148982115534,
+            1.4728755129920859
+          ],
+          "requested_tcp": [
+            -0.3346609413037429,
+            -0.3006778683865294,
+            0.3539403354113042,
+            -1.036126341397533,
+            -1.9311148982115534,
+            1.4728755129920859
+          ],
+          "accepted_tcp": [
+            -0.33465249201532365,
+            -0.30067566190244815,
+            0.3539411056485292,
+            -1.0361287329279438,
+            -1.9311181630770184,
+            1.4728716732578973
+          ],
+          "measured_gripper": [
+            0.42740270495414734,
+            3
+          ],
+          "gripper_command": 0.42740270495414734,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.0,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": null
+        },
+        {
+          "t": 1.5,
+          "measured_q": [
+            0.2420622855424881,
+            -1.5058975219726562,
+            0.9365187287330627,
+            0.8982340693473816,
+            1.189149260520935,
+            -3.204618453979492
+          ],
+          "target_q": [
+            0.23773813403004376,
+            -1.5144496714621427,
+            0.9432755701048725,
+            0.8940548718286756,
+            1.1946782920387493,
+            -3.205889565567231
+          ],
+          "measured_qd": [
+            -0.0761823058128357,
+            -0.09281773120164871,
+            0.12007845938205719,
+            -0.06418801099061966,
+            0.08455337584018707,
+            -0.020000336691737175
+          ],
+          "measured_tcp": [
+            -0.3359634101872623,
+            -0.2991480566269129,
+            0.35072820774863467,
+            -1.0448360050366368,
+            -1.9330367951986789,
+            1.4646279665012936
+          ],
+          "requested_tcp": [
+            -0.33676263766812936,
+            -0.29618866984408665,
+            0.35221693685599553,
+            -1.0453709367332453,
+            -1.9216335153383468,
+            1.460007953064738
+          ],
+          "accepted_tcp": [
+            -0.3367631747957521,
+            -0.29618946572689947,
+            0.3522191381614887,
+            -1.0453804132331017,
+            -1.9216528680011307,
+            1.4599921962126896
+          ],
+          "measured_gripper": [
+            0.393822580575943,
+            3
+          ],
+          "gripper_command": 0.39414650201797485,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.06689514352997972,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 0
+        },
+        {
+          "t": 2.996,
+          "measured_q": [
+            0.099156454205513,
+            -1.6528518199920654,
+            1.2701716423034668,
+            0.743212878704071,
+            1.4543495178222656,
+            -3.1895556449890137
+          ],
+          "target_q": [
+            0.09357937052730114,
+            -1.6592745131188806,
+            1.2787522059158747,
+            0.7363227363419079,
+            1.4651763020970023,
+            -3.186977356571229
+          ],
+          "measured_qd": [
+            -0.10191173106431961,
+            -0.07100020349025726,
+            0.16241183876991272,
+            -0.11174151301383972,
+            0.17858394980430603,
+            0.04215756803750992
+          ],
+          "measured_tcp": [
+            -0.37509260573020586,
+            -0.1807985074905686,
+            0.3027312690040128,
+            -1.3201985804962593,
+            -1.6611147587256199,
+            1.148279301992829
+          ],
+          "requested_tcp": [
+            -0.37607622264504303,
+            -0.1758717086388672,
+            0.30307112603574726,
+            -1.3274559042115748,
+            -1.6442794303135126,
+            1.1398650833781985
+          ],
+          "accepted_tcp": [
+            -0.37607604922318305,
+            -0.17587160079300962,
+            0.30307273159996617,
+            -1.3274616797825547,
+            -1.6442938228630457,
+            1.1398590830419781
+          ],
+          "measured_gripper": [
+            0.38081642985343933,
+            3
+          ],
+          "gripper_command": 0.3809073269367218,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.7740435648535072,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 1
+        },
+        {
+          "t": 4.5,
+          "measured_q": [
+            -0.015421103686094284,
+            -1.6568219661712646,
+            1.6186548471450806,
+            0.47611162066459656,
+            1.6388583183288574,
+            -3.1044862270355225
+          ],
+          "target_q": [
+            -0.02107066025047533,
+            -1.6597644603287611,
+            1.6279115795457444,
+            0.46690860611439444,
+            1.639464636100872,
+            -3.1012851623347415
+          ],
+          "measured_qd": [
+            -0.09925464540719986,
+            -0.01450154185295105,
+            0.17724433541297913,
+            -0.14930889010429382,
+            0.009395163506269455,
+            0.05380141735076904
+          ],
+          "measured_tcp": [
+            -0.39401057463650735,
+            -0.08847305849002875,
+            0.21468193763044685,
+            -1.582681062866528,
+            -1.4378558905449725,
+            0.9207792549411422
+          ],
+          "requested_tcp": [
+            -0.3943662682095166,
+            -0.08608910180491404,
+            0.21385656128103336,
+            -1.5868475047355075,
+            -1.428123826202035,
+            0.9207260343695864
+          ],
+          "accepted_tcp": [
+            -0.3943663965653411,
+            -0.08609006469069708,
+            0.21385799492429242,
+            -1.5868576934641703,
+            -1.4281282376760749,
+            0.9207121239475132
+          ],
+          "measured_gripper": [
+            0.40877410769462585,
+            3
+          ],
+          "gripper_command": 0.4088338613510132,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.6986620934908583,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 3
+        },
+        {
+          "t": 5.1000000000000005,
+          "measured_q": [
+            -0.03486232832074165,
+            -1.6226531267166138,
+            1.762000560760498,
+            0.34377482533454895,
+            1.6638917922973633,
+            -3.04935359954834
+          ],
+          "target_q": [
+            -0.0364494728833614,
+            -1.6197984890690946,
+            1.7719601803172622,
+            0.33151657788251676,
+            1.6646834219257922,
+            -3.043205192359997
+          ],
+          "measured_qd": [
+            -0.005657150875777006,
+            -0.04952313378453255,
+            0.1098431795835495,
+            -0.2035151869058609,
+            0.02515864372253418,
+            0.04233025386929512
+          ],
+          "measured_tcp": [
+            -0.39265615204241766,
+            -0.07436252605353363,
+            0.16888323298059238,
+            -1.6759944370716702,
+            -1.3936855331834965,
+            0.888258263750136
+          ],
+          "requested_tcp": [
+            -0.39293748041370447,
+            -0.07352677865922329,
+            0.16611590456955688,
+            -1.6824991164636647,
+            -1.38749188313488,
+            0.8897315943197325
+          ],
+          "accepted_tcp": [
+            -0.39293722614174725,
+            -0.0735267318373154,
+            0.16611736150535433,
+            -1.6825063546177366,
+            -1.387500812723023,
+            0.8897238530464294
+          ],
+          "measured_gripper": [
+            0.4107743501663208,
+            3
+          ],
+          "gripper_command": 0.41366007924079895,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.5145084928966446,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 4
+        },
+        {
+          "t": 5.996,
+          "measured_q": [
+            -0.045597463846206665,
+            -1.5597378015518188,
+            1.7555962800979614,
+            0.1624116450548172,
+            1.6710225343704224,
+            -2.9846181869506836
+          ],
+          "target_q": [
+            -0.04687028432589259,
+            -1.5379985238768512,
+            1.9236874165692839,
+            0.15457954800899287,
+            1.6675974665138158,
+            -2.9741422320766095
+          ],
+          "measured_qd": [
+            0.014791644178330898,
+            0.2822255790233612,
+            -0.2460026890039444,
+            -0.11227291077375412,
+            -0.0250447615981102,
+            0.10697236657142639
+          ],
+          "measured_tcp": [
+            -0.42946250164544336,
+            -0.0666382774752961,
+            0.18272842268843448,
+            -1.647024114576435,
+            -1.2503872280153525,
+            0.9989721188181895
+          ],
+          "requested_tcp": [
+            -0.3888746368986913,
+            -0.06889327840374623,
+            0.10791826089619302,
+            -1.7849988206819247,
+            -1.3592562055665358,
+            0.8785048026690191
+          ],
+          "accepted_tcp": [
+            -0.388874341060583,
+            -0.06889303748401107,
+            0.1079193460778287,
+            -1.7850035658820353,
+            -1.3592630848295209,
+            0.8785005006579484
+          ],
+          "measured_gripper": [
+            0.41979047656059265,
+            3
+          ],
+          "gripper_command": 0.4198347330093384,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.5859544367548084,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 5
+        },
+        {
+          "t": 6.996,
+          "measured_q": [
+            -0.057043712586164474,
+            -1.482133150100708,
+            1.719523549079895,
+            0.03995366394519806,
+            1.6466302871704102,
+            -2.9327681064605713
+          ],
+          "target_q": [
+            -0.0604084532455205,
+            -1.4636122787876837,
+            1.9954886976682387,
+            0.03804196667998663,
+            1.6416551227998362,
+            -2.928866356406178
+          ],
+          "measured_qd": [
+            -0.011626582592725754,
+            0.21138107776641846,
+            -0.22075673937797546,
+            -0.012740634381771088,
+            -0.05067555978894234,
+            -0.0015133172273635864
+          ],
+          "measured_tcp": [
+            -0.461174119798969,
+            -0.06632317792036493,
+            0.19085245895659342,
+            -1.6266301922732016,
+            -1.1706944090382987,
+            1.0980641078879345
+          ],
+          "requested_tcp": [
+            -0.38872004146352496,
+            -0.070468189607049,
+            0.07318414875980307,
+            -1.8488731682358956,
+            -1.346484215828008,
+            0.8962323301317301
+          ],
+          "accepted_tcp": [
+            -0.3887200798236544,
+            -0.07046844447699575,
+            0.0731846862086907,
+            -1.8488761290629463,
+            -1.3464852335108188,
+            0.8962268872659569
+          ],
+          "measured_gripper": [
+            0.39890965819358826,
+            3
+          ],
+          "gripper_command": 0.39896002411842346,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.7660024110335031,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 6
+        },
+        {
+          "t": 7.996,
+          "measured_q": [
+            -0.04424576461315155,
+            -1.4123907089233398,
+            1.666369915008545,
+            -0.014182087033987045,
+            1.6484788656234741,
+            -2.913484811782837
+          ],
+          "target_q": [
+            -0.03942778793313892,
+            -1.3916840290251395,
+            2.0006554840152773,
+            -0.00880102004320702,
+            1.643187810529901,
+            -2.8970978355614068
+          ],
+          "measured_qd": [
+            0.07162179797887802,
+            0.2634267210960388,
+            -0.3378661274909973,
+            0.11150800436735153,
+            -0.03409465029835701,
+            0.2008170485496521
+          ],
+          "measured_tcp": [
+            -0.48181347124337726,
+            -0.07078349740014347,
+            0.19399597898701088,
+            -1.607226920398875,
+            -1.144327784677398,
+            1.141466323669402
+          ],
+          "requested_tcp": [
+            -0.38906538637475696,
+            -0.07813208998264763,
+            0.05170429563310815,
+            -1.8862903696074922,
+            -1.359041198313831,
+            0.8978849344060165
+          ],
+          "accepted_tcp": [
+            -0.3890652652186033,
+            -0.07813193908967225,
+            0.051704530761416914,
+            -1.886290930320211,
+            -1.359042722919657,
+            0.8978848122220106
+          ],
+          "measured_gripper": [
+            0.3433956503868103,
+            0
+          ],
+          "gripper_command": 0.3533405661582947,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.21068831549193695,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 8
+        },
+        {
+          "t": 8.996,
+          "measured_q": [
+            -0.017729876562952995,
+            -1.3653644323349,
+            1.6242120265960693,
+            -0.03130151703953743,
+            1.6567906141281128,
+            -2.9131343364715576
+          ],
+          "target_q": [
+            -0.010614108758047391,
+            -1.3504216468818238,
+            1.9945180083525407,
+            -0.016552884951533234,
+            1.6462986545501828,
+            -2.878359494674733
+          ],
+          "measured_qd": [
+            0.034292712807655334,
+            0.15064333379268646,
+            -0.28442320227622986,
+            0.2559046149253845,
+            -0.11845767498016357,
+            0.5475085973739624
+          ],
+          "measured_tcp": [
+            -0.49231611501264183,
+            -0.08114039439044346,
+            0.19382874970133018,
+            -1.5891952216363867,
+            -1.1541307887337084,
+            1.1601314793744972
+          ],
+          "requested_tcp": [
+            -0.3860287731729226,
+            -0.08850284841691636,
+            0.039178878546352575,
+            -1.906437955656366,
+            -1.3877157316783535,
+            0.8960243226204853
+          ],
+          "accepted_tcp": [
+            -0.38602852472666005,
+            -0.08850243579878038,
+            0.039178894793035685,
+            -1.9064364840112962,
+            -1.3877176195313596,
+            0.8960276974116358
+          ],
+          "measured_gripper": [
+            0.33972567319869995,
+            0
+          ],
+          "gripper_command": 0.3476846516132355,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.42270002370592513,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 9
+        },
+        {
+          "t": 9.996,
+          "measured_q": [
+            0.036553338170051575,
+            -1.332285761833191,
+            1.6677279472351074,
+            -0.2139727920293808,
+            1.673363447189331,
+            -2.8876304626464844
+          ],
+          "target_q": [
+            0.043864836276640264,
+            -1.317092042492949,
+            1.9701594737181543,
+            0.0028687984225047084,
+            1.6642147266602547,
+            -2.8273986043390114
+          ],
+          "measured_qd": [
+            0.1305132508277893,
+            0.16547149419784546,
+            0.14310850203037262,
+            -0.889539361000061,
+            -0.1282361000776291,
+            0.8727445602416992
+          ],
+          "measured_tcp": [
+            -0.5037255148804747,
+            -0.10401309555911355,
+            0.20216433993126112,
+            -1.5102520752430504,
+            -1.1041139113005864,
+            1.2697257987836055
+          ],
+          "requested_tcp": [
+            -0.380886313181166,
+            -0.10472252973131405,
+            0.0315,
+            -1.940380265664105,
+            -1.4065357958054405,
+            0.9053058435361033
+          ],
+          "accepted_tcp": [
+            -0.38088620333459305,
+            -0.10472217838835676,
+            0.031499827053059704,
+            -1.9403779494400992,
+            -1.4065371719267945,
+            0.9053090784717367
+          ],
+          "measured_gripper": [
+            0.3131956458091736,
+            0
+          ],
+          "gripper_command": 0.3450809717178345,
+          "measured_wrist_ft": [
+            8.276634214683451,
+            13.145563143133545,
+            -19.0017648369493,
+            -4.314573463569404,
+            4.556972657331247,
+            1.1369097708517957
+          ],
+          "diagnostics": {
+            "safety_events": [
+              "workspace_clamp"
+            ],
+            "completed_reason": null,
+            "completed_at_s": null,
+            "completion_hold": false,
+            "stale_plan_hold": false,
+            "plan_activated": false,
+            "play_time_s": 0.6346697741692063,
+            "ik_rejects": 0,
+            "ik_rejects_total": 0,
+            "placement_release": {
+              "variant": "placement_policy_release_finish_v2",
+              "phase": "unarmed",
+              "window_active": false,
+              "opening_since_s": null,
+              "committed_at_s": null,
+              "finished_at_s": null,
+              "controller_finished": false,
+              "task_success": "not inferred by this controller",
+              "unloaded_since_s": null,
+              "suppress_latch": false,
+              "event": null
+            },
+            "grip_latch": null
+          },
+          "active_replan_id": 10
+        }
+      ],
+      "first_safety_stop": {
+        "t": 10.02,
+        "camera_t": 10.0,
+        "measured_q": [
+          0.038767147809267044,
+          -1.3320294618606567,
+          1.6805028915405273,
+          -0.2439700961112976,
+          1.6724801063537598,
+          -2.886970043182373
+        ],
+        "measured_qd": [
+          0.11835263669490814,
+          0.14708584547042847,
+          0.3584158420562744,
+          -1.3381162881851196,
+          -0.1097826361656189,
+          0.8345964550971985
+        ],
+        "measured_tcp": [
+          -0.5045737396660291,
+          -0.10540012103479382,
+          0.20375773669182584,
+          -1.496739661456314,
+          -1.0951394664766554,
+          1.283390899409078
+        ],
+        "measured_gripper": [
+          0.34450024366378784,
+          3
+        ],
+        "measured_wrist_ft": [
+          8.276634214683451,
+          13.145563143133545,
+          -19.0017648369493,
+          -4.314573463569404,
+          4.556972657331247,
+          1.1369097708517957
+        ],
+        "tactile_capture_t": 10.004,
+        "requested_tcp": [
+          -0.38080376570949637,
+          -0.10491070981140184,
+          0.03149982722451079,
+          -1.940954280560348,
+          -1.4066372907822058,
+          0.9056046397025171
+        ],
+        "gripper_command": 0.3450809717178345,
+        "command_dt": 0.008,
+        "stopped": true,
+        "stop_reason": "safety_stop",
+        "diagnostics": {
+          "safety_events": [
+            "joint_speed",
+            "workspace_clamp"
+          ],
+          "completed_reason": null,
+          "completed_at_s": null,
+          "completion_hold": false,
+          "stale_plan_hold": false,
+          "plan_activated": false,
+          "play_time_s": 0.6583462920889049,
+          "ik_rejects": 0,
+          "ik_rejects_total": 0,
+          "placement_release": {
+            "variant": "placement_policy_release_finish_v2",
+            "phase": "unarmed",
+            "window_active": false,
+            "opening_since_s": null,
+            "committed_at_s": null,
+            "finished_at_s": null,
+            "controller_finished": false,
+            "task_success": "not inferred by this controller",
+            "unloaded_since_s": null,
+            "suppress_latch": false,
+            "event": "safety_preempted"
+          },
+          "grip_latch": null
+        },
+        "ik_success": null,
+        "ik_reason": "safety_hold",
+        "accepted_tcp": [
+          -0.5045737396660291,
+          -0.10540012103479382,
+          0.20375773669182584,
+          -1.496739661456314,
+          -1.0951394664766554,
+          1.283390899409078
+        ],
+        "target_q": [
+          0.038767147809267044,
+          -1.3320294618606567,
+          1.6805028915405273,
+          -0.2439700961112976,
+          1.6724801063537598,
+          -2.886970043182373
+        ],
+        "target_finger_q": [
+          0.021580184433195326,
+          0.021580184433195326
+        ],
+        "status": "drive_submitted",
+        "active_replan_id": 10
+      },
+      "largest_accepted_to_requested_position_difference_m": 9.251925988469486e-05,
+      "largest_accepted_to_measured_position_difference_m": 0.2114665683683849,
+      "first_accepted_to_measured_error_gt_20mm_s": 5.3,
+      "mean_initial_wrist_bias_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "initial_wrist_force_norm_n": 24.543340668957487,
+      "maximum_raw_wrist_force_norm_n": 29.146984936680802,
+      "maximum_wrist_force_change_from_initial_n": 8.261213312416825,
+      "maximum_gel_force_per_pad_n": [
+        0.0,
+        0.0
+      ],
+      "latch_observed": false,
+      "veto_action_counts": {
+        "none": 11
+      },
+      "frames": [
+        {
+          "requested_t_s": 0,
+          "actual_t_s": 0.0,
+          "frame_index": 0,
+          "jpeg_sha256": "d91b058e3be9f680089384f7150d62a693877c4b6919fff7f55c3ca1f11d941d",
+          "image": "frames/seed903102_frame0000.jpg"
+        },
+        {
+          "requested_t_s": 4.5,
+          "actual_t_s": 4.468,
+          "frame_index": 67,
+          "jpeg_sha256": "3ad4ebca7c1be6ee680987b18674a7fc7f2baa437c83a4826eb18424ea9cc8b7",
+          "image": "frames/seed903102_frame0067.jpg"
+        },
+        {
+          "requested_t_s": 6,
+          "actual_t_s": 6.0,
+          "frame_index": 90,
+          "jpeg_sha256": "c98a4c7fc9b5681a13a8465bb0a81e36cf0da243a00e245dc9a4c8f15e2658e6",
+          "image": "frames/seed903102_frame0090.jpg"
+        },
+        {
+          "requested_t_s": 10.02,
+          "actual_t_s": 10.0,
+          "frame_index": 150,
+          "jpeg_sha256": "53fb2477e463d8e53c566be35388574107bee98fef15d3c730f6d6e434c728a5",
+          "image": "frames/seed903102_frame0150.jpg"
+        }
+      ]
+    }
+  ],
+  "safety_baseline_semantics": "Native supervisor initializes a wrist baseline from the first sample, subtracts its calm-only EMA, and debounces limits; policy sees raw wrist input. Proxy adds whole-pad net forces and approximate moments to fixed measured bias. Other robot-body environment contacts are not included in this proxy.",
+  "limits": [
+    "No new simulations, policy samples, geometry or threshold changes.",
+    "Force proxies and collision geometry remain uncalibrated. No full robot/self-contact attribution is available in these traces.",
+    "First-additional-close diagnostic uses executed closure above initial measured closure+2/255; it is not the first rise after any later opening. Absolute .25 threshold already exceeded at t0.",
+    "A safety stop is a completed policy/safety failure in this conditional simulator, not proof of real-hardware failure or an infrastructure error."
+  ]
+}
