@@ -68,6 +68,107 @@ def adapter_input(design, condition, field):
     return design.get("adapter_profile", {}).get(field)
 
 
+def policy_delivery_clock(design):
+    """Explicit opt-in; missing declarations retain all historical timing."""
+    mode = design.get("adapter_profile", {}).get("policy_delivery_clock", "native")
+    if mode not in ("native", "rpc_wall"):
+        raise ValueError(
+            "adapter_profile.policy_delivery_clock must be native or rpc_wall"
+        )
+    if mode == "rpc_wall" and design.get("delivery_latency_s") is not None:
+        raise ValueError("rpc_wall cannot be combined with delivery_latency_s")
+    return mode
+
+
+def policy_delivery_timing_audit(design, condition, planner):
+    """Verify delivery instrumentation without changing physical outcome rules."""
+    expected = policy_delivery_clock(design)
+    reasons = set()
+    for row in planner:
+        if row.get("error_category") == "instrumentation_or_input_invalid":
+            reasons.add("policy_timing_instrumentation_invalid")
+        if "actions" not in row:
+            continue
+        diag = row.get("diagnostics", {})
+        if not isinstance(diag, dict):
+            reasons.add("plan_delivery_timing_diagnostics_invalid")
+            continue
+        if diag.get("sim_policy_delivery_clock", "native") != expected:
+            reasons.add("plan_delivery_clock_differs_from_campaign")
+        if expected == "native":
+            if diag.get("sim_policy_replan_wall_time_s") is not None:
+                reasons.add("undeclared_rpc_wall_plan_timing")
+            continue
+        names = (
+            "sim_native_inference_latency_s",
+            "sim_policy_replan_wall_time_s",
+            "sim_policy_delivery_base_s",
+            "sim_effective_delivery_delay_s",
+            "sim_effective_inference_latency_s",
+            "sim_inference_delay_add_s",
+            "sim_inference_request_t",
+            "sim_rpc_minus_native_latency_s",
+        )
+        try:
+            values = [diag[k] for k in names]
+            values += [
+                row[k] for k in ("t", "t_created", "latency_s", "inference_wall_time_s")
+            ]
+            if any(isinstance(x, bool) or not np.isfinite(float(x)) for x in values):
+                raise ValueError("nonfinite timing")
+            native, wall, base, delivery, legacy_delivery, added, request, overhead = (
+                map(float, values[:8])
+            )
+            row_t, created, plan_latency, runner_wall = map(float, values[8:])
+            times = np.asarray(row["action_times"], float)
+            rate = design["runtime_hardware"]["effective_model"]["control"][
+                "action_rate_hz"
+            ]
+            expected_grid = request + native + np.arange(len(row["actions"])) / rate
+            if (
+                min(native, wall, added) < 0
+                or wall + 1e-9 < native
+                or runner_wall + 1e-9 < wall
+                or not np.allclose(
+                    [
+                        base,
+                        delivery,
+                        legacy_delivery,
+                        added,
+                        request,
+                        created,
+                        plan_latency,
+                        overhead,
+                    ],
+                    [
+                        wall,
+                        wall + added,
+                        delivery,
+                        condition["inference_delay_add_s"],
+                        row_t,
+                        request,
+                        native,
+                        wall - native,
+                    ],
+                    rtol=0,
+                    atol=1e-8,
+                )
+                or times.shape != expected_grid.shape
+                or not np.allclose(times, expected_grid, rtol=0, atol=1e-8)
+            ):
+                raise ValueError("inconsistent timing/grid")
+            activated = row.get("activated_at")
+            if activated is not None and (
+                isinstance(activated, bool)
+                or not np.isfinite(float(activated))
+                or activated + 1e-8 < request + delivery
+            ):
+                raise ValueError("activation precedes delivery")
+        except (KeyError, ValueError, TypeError, OverflowError, ZeroDivisionError):
+            reasons.add("rpc_wall_plan_timing_missing_or_inconsistent")
+    return sorted(reasons)
+
+
 def servo_reach_limiter_metadata(design):
     """Frozen opt-in contract; absent/false preserves historical campaigns.
 
@@ -173,6 +274,7 @@ def load_design(path):
     if latency is not None and (not np.isfinite(latency) or latency < 0):
         raise ValueError("delivery_latency_s must be finite and nonnegative")
     servo_reach_limiter_metadata(design)
+    policy_delivery_clock(design)
     return design, fingerprint(path)
 
 
@@ -247,6 +349,14 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     """Reject recipe drift and incomplete time coverage before outcome scoring."""
     reasons = []
     reasons.extend(servo_reach_limiter_audit(design, info, run))
+    delivery_clock = policy_delivery_clock(design)
+    if info.get("policy_delivery_clock", "native") != delivery_clock:
+        reasons.append("effective_policy_delivery_clock_differs_from_campaign")
+    if (
+        "policy_delivery_clock" in run
+        and run["policy_delivery_clock"] != delivery_clock
+    ):
+        reasons.append("run_policy_delivery_clock_differs_from_campaign")
     settings = policy_settings(design, policy)
     expected = {
         "nfe": settings["nfe"],
@@ -308,7 +418,9 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     # Adding only the new default-off declaration must not activate older
     # optional-profile checks that historically did not apply to that design.
     legacy_profile = {
-        key: value for key, value in profile.items() if key != "servo_reach_limiter"
+        key: value
+        for key, value in profile.items()
+        if key not in ("servo_reach_limiter", "policy_delivery_clock")
     }
     if legacy_profile or condition.get("initial_state"):
         for field in (
@@ -439,6 +551,11 @@ def load_trials(runs, design, design_sha, out):
                 run,
                 times,
                 metrics.get("control", {}).get("stop_reason"),
+            )
+        )
+        metrics["invalid_reasons"].extend(
+            policy_delivery_timing_audit(
+                design, conditions[key[1]], read_rows(folder / "planner_trace.json")
             )
         )
         metrics["valid_for_scoring"] = not metrics["invalid_reasons"]

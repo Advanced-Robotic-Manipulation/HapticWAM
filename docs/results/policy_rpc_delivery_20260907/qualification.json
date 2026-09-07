@@ -1,0 +1,48 @@
+{
+  "created_at_utc": "2026-09-07T10:30:53.921285+00:00",
+  "qualification": "CPU implementation tests only; prospective opt-in simulator delivery clock, no pickup/carry/placement claim",
+  "repository_head_before_commit": "89253b0b3ad9cce88b12ef3a39059b59332cb670",
+  "owned_file_sha256": {
+    "phantom/sim/policy_adapter.py": "c68029e687c3d78d51d396e6ee95249f263cbb957bae86d5fb0603a486c0923b",
+    "tools/sim/run_waffles.py": "67895ec44ff25f7c9e5520fcb404f1a9ae9d0238baca634cd9990d892cc541ca",
+    "tools/sim/run_policy_campaign.py": "235db3d485412da413c9abf866d22c0ff63522fdba70de65b6f7d5234b79aefa",
+    "tools/sim/analyze_policy_campaign.py": "11b88baedfa6bed8696abb87fb30a51677be56538267c9fef3ddc60743d307a4",
+    "tests/test_sim_rpc_delivery.py": "9e795afb8995d8f0c45fe293290cfbed0766de76d0ba133fb40c2b78abe36e86",
+    "docs/isaac_policy_delivery_clock.md": "3b2259d15f8536fa06be955a19d85691d3e7f760411a893af10fe5489deb43f3"
+  },
+  "tested_file_sha256": {
+    "tests/test_sim_rpc_delivery.py": "9e795afb8995d8f0c45fe293290cfbed0766de76d0ba133fb40c2b78abe36e86",
+    "tests/test_sim_policy_adapter.py": "148af19451e25c3d45f2e3ec69abc60a2bfba03c1b529e6ca209ed73eb8eb623",
+    "tests/test_sim_policy_campaign.py": "aecf311377d95adec569389aed4095a446e672d912793853d3d97d9b1d231649",
+    "tests/test_sim_release_finish.py": "0b76d08902c28e891835e7aa8faef0e673ec0e32522c9ddf7572f765d3c2aa78"
+  },
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_sim_rpc_delivery.py tests/test_sim_policy_adapter.py tests/test_sim_policy_campaign.py tests/test_sim_release_finish.py",
+    "passed": 104,
+    "duration_s": 3.55,
+    "new_rpc_tests_passed": 24
+  },
+  "ruff": {
+    "check": "passed for four changed implementation files and new timing test",
+    "format": "passed"
+  },
+  "default_mode": "native; no new clock calls; historical latency override semantics retained",
+  "opt_in": "adapter_profile.policy_delivery_clock=rpc_wall or --policy-delivery-clock rpc_wall",
+  "clock_scope": "Only synchronous policy.replan client call; excludes snapshot and observation-saving callback and outer adapter/audit bookkeeping",
+  "temporal_contract": {
+    "native_plan_latency_unchanged": true,
+    "native_action_grid_unchanged": true,
+    "remote_cpk_token_retained": true,
+    "delivery": "request + measured policy call wall + separately declared transport delay",
+    "late_head": "existing skip/rebase or reject fully expired chunk",
+    "invalid_timing": "raises before submission; instrumentation_or_input_invalid planner error category and invalid campaign evidence"
+  },
+  "remote_frozen_source_mutations": false,
+  "gpu_or_hardware_runs": false,
+  "limitations": [
+    "Physics remains synchronous and advances after the measured client call; not simultaneous realtime inference/physics scheduling.",
+    "No native controller, model or hardware API modification.",
+    "Frozen v5 and v6 results retain native delivery timing.",
+    "Prospective study must freeze source/settings before any new outcomes."
+  ]
+}
