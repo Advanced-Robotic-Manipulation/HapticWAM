@@ -436,6 +436,10 @@ class SafetyConfig(_Frozen):
     # were 0.40 rad / 1.0 rad/s — set them in the NUC yaml to enable once fixed.
     elbow_min_rad: float | None = Field(default=None)
     servo_joint_speed_max_rad_s: float | None = Field(default=None, gt=0)
+    # Opt-in constrained-setpoint hold budget; separate from invalid-IK faults.
+    # A held joint target is streamed at servo cadence. No-op sends or plan
+    # arrivals do not refresh this deadline. Requires an enabled servo limiter.
+    servo_constraint_hold_s: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     # RETIRED as a default (run analysis 09-01): the TCP-radius clamp fired in
     # 0 of 4 whips (their commanded radius peaked just under it) and in the one
     # episode it did engage it dragged commanded z down 32 mm mid-lift. The

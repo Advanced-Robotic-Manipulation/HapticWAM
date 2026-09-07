@@ -152,6 +152,9 @@ class DeploymentRuntime:
             arm_drv = getattr(getattr(self, "rig", None), "arm", None)
             live = {"hits": getattr(arm_drv, "_limiter_hits", None),
                     "holds": getattr(arm_drv, "_limiter_holds", None)}
+            constraint_hold = getattr(arm_drv, "constraint_hold_last", None)
+            if constraint_hold:
+                live["constraint_hold"] = constraint_hold
             last = getattr(arm_drv, "limiter_last", None) or {}
             if last or live["hits"]:
                 out["servo_limiter"] = last if last else live

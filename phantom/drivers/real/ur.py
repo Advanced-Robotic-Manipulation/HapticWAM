@@ -73,6 +73,8 @@ class URArm(Arm):
         self._limiter_holds = 0
         self._limiter_log_t = 0.0
         self.limiter_last: dict = {}
+        self._constraint_hold_budget = None
+        self.constraint_hold_last: dict = {}
         # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
         # disconnect(). The teleop streamer calls servo_j from its own thread
         # while the record loop (zero_ft) and teardown (disconnect /
@@ -115,6 +117,8 @@ class URArm(Arm):
             except Exception:
                 pass
         del old
+        if self._constraint_hold_budget is not None:
+            self._constraint_hold_budget.reset()
         with URArm._live_ctrl_lock:
             URArm._live_ctrl_count = max(0, URArm._live_ctrl_count - 1)
 
@@ -421,6 +425,8 @@ class URArm(Arm):
         with self._ctrl_lock:
             self._servo_active = True
             ctrl = self._require_ctrl()
+            if getattr(self.hw.safety, "servo_constraint_hold_s", None) is not None:
+                return self._servo_l_bounded_hold(ctrl, tcp_pose, dt, lookahead, gain)
             qref = self._last_qsol
             if qref is None and self._recv is not None:
                 qref = list(self._recv.getActualQ())
@@ -492,6 +498,62 @@ class URArm(Arm):
                                "running (clear the pendant popup / protective stop "
                                "and restart the session)")
         return ServoResult(True, tcp_pose, "sent")
+
+    def _servo_l_bounded_hold(self, ctrl, tcp_pose, dt, lookahead, gain):
+        """Opt-in: stream a verified held anchor without fabricating progress.
+
+        Invalid solves retain the historical fault counter. Only explicit
+        finite/on-branch envelope holds get the separate elapsed-time budget.
+        The caller owns the control lock; native measured safety still runs.
+        """
+        from phantom.drivers.servo_hold import (
+            ConstraintHoldBudget, ServoHoldTimeout, verified_constraint_hold,
+        )
+
+        limits = self._servo_limits()
+        if not limits.enabled:
+            raise ValueError("servo_constraint_hold_s requires an enabled servo limiter")
+        if self._constraint_hold_budget is None:
+            self._constraint_hold_budget = ConstraintHoldBudget(
+                self.hw.safety.servo_constraint_hold_s
+            )
+        qref = self._last_qsol
+        prev = self._last_cmd_pose
+        if qref is None and self._recv is not None:
+            qref = list(self._recv.getActualQ())
+        if prev is None and self._recv is not None:
+            prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
+        selection = servo_limiter.select_servo_step(
+            tcp_pose, prev, qref, dt,
+            lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
+        )
+        held = verified_constraint_hold(selection, qref, dt, limits)
+        if not selection.accepted and not held:
+            return self._reject(selection.reason, "unverified constrained hold or IK fault")
+        sent_q = np.asarray(qref if held else selection.q, dtype=float)
+        sent_pose = np.asarray(prev if held else selection.pose, dtype=float)
+        state = self._constraint_hold_budget.check(time.perf_counter(), sent_q, held=held)
+        self.constraint_hold_last = {
+            **state, "held": held, "mode": selection.mode,
+            "violation": selection.violation, "ik_calls": selection.ik_calls,
+            "all_ik_valid": selection.all_ik_valid,
+            "all_ik_on_branch": selection.all_ik_on_branch,
+        }
+        if state["timed_out"]:
+            raise ServoHoldTimeout("verified constraint hold exceeded its fixed deadline")
+        ok = ctrl.servoJ(sent_q.tolist(), 0.0, 0.0, dt, lookahead, gain)
+        if ok is False:
+            raise RuntimeError("servoJ rejected while streaming constrained servo target")
+        self._last_qsol = sent_q.tolist()
+        self._last_cmd_pose = sent_pose.copy()
+        if selection.violation is not None:
+            self._limiter_hits += 1
+        if held:
+            self._limiter_holds += 1
+            # Streamed hold is not IK recovery; preserve preceding fault count.
+        else:
+            self._ik_rejects = 0
+        return ServoResult(True, sent_pose, "constraint_hold" if held else "sent")
 
     def _limiter_enabled(self) -> bool:
         sf = getattr(getattr(self, "hw", None), "safety", None)
@@ -578,8 +640,12 @@ class URArm(Arm):
         self.limiter_last = {"hits": self._limiter_hits, "holds": self._limiter_holds,
                              "ik_rejects": self._ik_rejects_total,
                              "ik_dev_max_rad": round(self._ik_dev_max, 4)}
+        if self.constraint_hold_last:
+            self.limiter_last["constraint_hold"] = self.constraint_hold_last.copy()
         self._last_qsol = None
         self._last_cmd_pose = None
+        if self._constraint_hold_budget is not None:
+            self._constraint_hold_budget.reset()
         self._limiter_hits = 0
         self._limiter_holds = 0
         self._ik_rejects = 0

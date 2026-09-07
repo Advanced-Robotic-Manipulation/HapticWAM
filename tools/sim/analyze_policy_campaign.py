@@ -176,13 +176,23 @@ def servo_reach_limiter_metadata(design):
     than being imported from the runtime helper it is checking.
     """
     enabled = design.get("adapter_profile", {}).get("servo_reach_limiter", False)
+    hold_s = design.get("adapter_profile", {}).get("servo_constraint_hold_s")
     if not isinstance(enabled, bool):
         raise TypeError("adapter_profile.servo_reach_limiter must be boolean")
-    if not enabled:
-        return None
+    if hold_s is not None and (
+        isinstance(hold_s, bool) or not isinstance(hold_s, (float, int))
+        or not np.isfinite(hold_s) or hold_s <= 0
+    ):
+        raise ValueError("Constraint hold deadline must be finite and positive")
     safety = (
         design.get("runtime_hardware", {}).get("effective_model", {}).get("safety", {})
     )
+    if safety.get("servo_constraint_hold_s") != hold_s:
+        raise ValueError("Constraint hold deadline must match declared hardware")
+    if not enabled:
+        if hold_s is not None:
+            raise ValueError("Constraint hold requires the servo reach limiter")
+        return None
     for field, value in (
         ("elbow_min_rad", 0.40),
         ("servo_joint_speed_max_rad_s", 1.0),
@@ -194,7 +204,7 @@ def servo_reach_limiter_metadata(design):
             raise ValueError(
                 f"Servo limiter requires declared hardware {field}={value}"
             )
-    return {
+    result = {
         "elbow_min_rad": 0.40,
         "joint_speed_max_rad_s": 1.0,
         "branch_tolerance_rad": 0.35,
@@ -205,6 +215,9 @@ def servo_reach_limiter_metadata(design):
         "consecutive_reject_limit": 25,
         "tracking_guarantee": False,
     }
+    if hold_s is not None:
+        result.update(constraint_hold_s=hold_s, constraint_hold_progress_rad=0.001)
+    return result
 
 
 def servo_reach_limiter_audit(design, info, run):
@@ -228,6 +241,8 @@ def servo_reach_limiter_audit(design, info, run):
         "branch_tolerance_rad",
         "shoulder_height_m",
         "measured_wrist_extension_stop_m",
+        "constraint_hold_s",
+        "constraint_hold_progress_rad",
     )
     if (
         reported != expected
@@ -420,7 +435,7 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     legacy_profile = {
         key: value
         for key, value in profile.items()
-        if key not in ("servo_reach_limiter", "policy_delivery_clock")
+        if key not in ("servo_reach_limiter", "servo_constraint_hold_s", "policy_delivery_clock")
     }
     if legacy_profile or condition.get("initial_state"):
         for field in (
