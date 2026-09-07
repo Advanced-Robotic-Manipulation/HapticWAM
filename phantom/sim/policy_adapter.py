@@ -889,6 +889,8 @@ class SimulationPolicyAdapter:
         tcp_pose=None,
         gripper_command: float | None = None,
         reason: str = "ik_rejected",
+        held: bool = False,
+        controller_stop: bool = False,
     ) -> None:
         """Confirm accepted setpoints after the simulator's IK/drive stage.
 
@@ -899,6 +901,10 @@ class SimulationPolicyAdapter:
         retained. Only explicitly supplied gripper commands enter history,
         whether or not arm IK succeeded. Omit if no gripper command was sent.
         """
+        if held and (not accepted or tcp_pose is None):
+            raise ValueError("a streamed hold requires an explicit accepted pose")
+        if controller_stop and (accepted or self.stopped_reason != reason):
+            raise ValueError("controller-stop feedback requires the matching requested stop")
         cmd = self._awaiting_feedback
         if cmd is None or not np.isclose(t, cmd.t, rtol=0, atol=1e-9):
             raise ValueError(
@@ -919,8 +925,9 @@ class SimulationPolicyAdapter:
                 )
         if accepted:
             self._last_cmd = accepted_pose
-            self.ik_rejects = 0
-        else:
+            if not held:
+                self.ik_rejects = 0
+        elif not controller_stop:
             self.ik_rejects += 1
             self.ik_rejects_total += 1
             if self.ik_rejects >= self.ik_reject_limit:

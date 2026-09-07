@@ -199,6 +199,8 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         command += ["--record-packet-support"]
     if servo_reach_limiter_metadata(design) is not None:
         command += ["--servo-reach-limiter"]
+        if profile.get("servo_constraint_hold_s") is not None:
+            command += ["--servo-constraint-hold-s", str(profile["servo_constraint_hold_s"])]
     return command
 
 
@@ -280,6 +282,11 @@ def source_manifest(args, design_sha, design):
                 "Enabled servo limiter source is missing: " + str(limiter_path)
             )
         paths.add(limiter_path)
+        hold_path = args.source / "phantom/drivers/servo_hold.py"
+        if design.get("adapter_profile", {}).get("servo_constraint_hold_s") is not None:
+            if not hold_path.is_file():
+                raise FileNotFoundError("Enabled constraint-hold source is missing: " + str(hold_path))
+            paths.add(hold_path)
     episode = args.evidence / Path(design["prepared_episode"]).relative_to("evidence")
     profile_inputs = {}
     for field in ("initial_state", "tactile_baseline"):

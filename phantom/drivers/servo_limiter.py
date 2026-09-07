@@ -135,6 +135,8 @@ class ServoStep:
     fraction: float | None
     violation: str | None
     ik_calls: int
+    all_ik_valid: bool = False
+    all_ik_on_branch: bool = False
 
     @property
     def accepted(self) -> bool:
@@ -171,11 +173,20 @@ def select_servo_step(
     target = np.asarray(target_pose, dtype=float).copy()
     prev = np.asarray(previous_pose, dtype=float)
     calls = 0
+    all_valid = True
+    all_on_branch = True
 
     def counted(pose, seed):
-        nonlocal calls
+        nonlocal calls, all_valid, all_on_branch
         calls += 1
-        return solve_ik(pose, seed)
+        result = solve_ik(pose, seed)
+        valid = ik_valid(result)
+        all_valid = all_valid and valid
+        on_branch = valid and max(
+            abs(float(a) - float(b)) for a, b in zip(result, seed)
+        ) <= limits.branch_tolerance_rad
+        all_on_branch = all_on_branch and on_branch
+        return result
 
     q = counted(target, qref)
     if not ik_valid(q):
@@ -184,13 +195,17 @@ def select_servo_step(
         len(q)
         and max(abs(a - b) for a, b in zip(q, qref)) > limits.branch_tolerance_rad
     ):
-        return ServoStep(None, None, "ik_branch", "hold", None, None, calls)
+        return ServoStep(None, None, "ik_branch", "hold", None, None, calls,
+                         all_valid, all_on_branch)
     violation = limit_violation(q, qref, dt, limits)
     if violation is None:
-        return ServoStep(np.asarray(q), target, "sent", "unchanged", 1.0, None, calls)
+        return ServoStep(np.asarray(q), target, "sent", "unchanged", 1.0, None, calls,
+                         all_valid, all_on_branch)
     target[3:6] = rotvec_nearest(prev[3:6], target[3:6])
     result = limited_step(counted, prev, target, qref, dt, limits)
     if result is None:
-        return ServoStep(None, None, "limiter_hold", "hold", None, violation, calls)
+        return ServoStep(None, None, "limiter_hold", "hold", None, violation, calls,
+                         all_valid, all_on_branch)
     pose, q, fraction, mode = result
-    return ServoStep(np.asarray(q), pose, "sent", mode, fraction, violation, calls)
+    return ServoStep(np.asarray(q), pose, "sent", mode, fraction, violation, calls,
+                     all_valid, all_on_branch)
