@@ -38,6 +38,28 @@ def compact_case(result, folder):
     dominant = max(
         contact_rows, key=lambda c: c["normal_force_magnitude_n"], default=None
     )
+    stop_wrench_state = None
+    if stop:
+        snapshot = result["wrist_snapshots"]["stop"]
+        current = np.asarray(snapshot["wrist_ft_n_nm"])
+        baseline = np.asarray(
+            result["wrench_subguard_reconstruction"]["last_guard_row"]["baseline_n_nm"]
+        )
+        initial = np.asarray(result["input_audit"]["initial_wrist_bias_n_nm"])
+        total = sum(c["normal_force_magnitude_n"] for c in contact_rows)
+        stop_wrench_state = {
+            "actual_n_nm": current.tolist(),
+            "rolling_baseline_n_nm": baseline.tolist(),
+            "deviation_from_rolling_baseline_n_nm": (current - baseline).tolist(),
+            "rolling_baseline_minus_initial_n_nm": (baseline - initial).tolist(),
+            "sum_positive_instrumented_contact_normal_n": total,
+            "wrench_stop_after_unloading_from_shifted_baseline": bool(
+                "wrench_limit" in stop["diagnostics"]["safety_events"]
+                and total < 0.1
+                and np.linalg.norm(baseline[:3] - initial[:3]) > 60
+            ),
+            "caveat": "The diagnostic flag distinguishes low current contact with a strongly shifted baseline; it is not proof that preceding contacts were harmless or a modified safety verdict.",
+        }
     # Precontact tracking is descriptive, not a new success/safety gate.
     precontact = []
     for row in audit.read_jsonl(folder / "execution_trace.jsonl"):
@@ -91,6 +113,7 @@ def compact_case(result, folder):
             "commanded_closure": stop["gripper_command"],
         },
         "contacts_at_first_stop": [compact_contact(c) for c in contact_rows],
+        "stop_wrench_state": stop_wrench_state,
         "dominant_contact_at_first_stop": None
         if dominant is None
         else compact_contact(dominant),

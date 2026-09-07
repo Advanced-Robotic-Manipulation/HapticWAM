@@ -1,0 +1,109 @@
+{
+  "trials": [
+    {
+      "case_id": "fta3000_nfe1_k4__start_1787395963__seed903101",
+      "initial_lowest_corner_z_m": 0.05599995933966251,
+      "peak_center_t_s": 14.136000000000001,
+      "peak_center_rise_m": 0.017517000436782837,
+      "lowest_corner_rise_at_peak_center_m": 0.015966831091516392,
+      "orientation_change_at_peak_center_deg": 3.6296031532000854,
+      "maximum_lowest_corner_rise_m": 0.01698431033454896,
+      "peak_center_position_m": [
+        -0.3612883985042572,
+        -0.2640974521636963,
+        0.08751701563596725
+      ],
+      "peak_center_orientation_wxyz": [
+        0.9689494371414185,
+        0.009398650377988815,
+        0.010654175654053688,
+        0.24685047566890717
+      ],
+      "packet_size_m": [
+        0.15449525360329625,
+        0.027214019144296827,
+        0.028
+      ],
+      "trace_sha256": "d5fefeefe18995516923cb3f33700c8adbd56ae2b449d806640b9720e1e0c328"
+    },
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787396028__seed903101",
+      "initial_lowest_corner_z_m": 0.05599995933966251,
+      "peak_center_t_s": 13.336,
+      "peak_center_rise_m": 0.0037097930908203125,
+      "lowest_corner_rise_at_peak_center_m": 0.0018694032296776575,
+      "orientation_change_at_peak_center_deg": 9.102664662945672,
+      "maximum_lowest_corner_rise_m": 0.0018694032296776575,
+      "peak_center_position_m": [
+        -0.36574628949165344,
+        -0.2604844868183136,
+        0.07370980829000473
+      ],
+      "peak_center_orientation_wxyz": [
+        0.9645081162452698,
+        0.06787984818220139,
+        0.0183812715113163,
+        0.25451651215553284
+      ],
+      "packet_size_m": [
+        0.15449525360329625,
+        0.027214019144296827,
+        0.028
+      ],
+      "trace_sha256": "642b327766ec9b56ed8864a2298d608e5c60ead0cff06cb964fec7ff05dfd59c"
+    },
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787396273__seed903101",
+      "initial_lowest_corner_z_m": 0.05599995933966251,
+      "peak_center_t_s": 17.736,
+      "peak_center_rise_m": 0.004550732672214508,
+      "lowest_corner_rise_at_peak_center_m": 0.0016082091018901692,
+      "orientation_change_at_peak_center_deg": 14.689698014539964,
+      "maximum_lowest_corner_rise_m": 0.0016082091018901692,
+      "peak_center_position_m": [
+        -0.3637065887451172,
+        -0.3158845901489258,
+        0.07455074787139893
+      ],
+      "peak_center_orientation_wxyz": [
+        0.9503112435340881,
+        0.09691692888736725,
+        0.02660387009382248,
+        0.2946317791938782
+      ],
+      "packet_size_m": [
+        0.15449525360329625,
+        0.027214019144296827,
+        0.028
+      ],
+      "trace_sha256": "690533608a5bdfe9e1ce70b429333dd7343273914f5b3cae63be075fb4c6382c"
+    },
+    {
+      "case_id": "fta1500_nfe5_k1__start_1787396273__seed903102",
+      "initial_lowest_corner_z_m": 0.05599995933966251,
+      "peak_center_t_s": 11.136000000000001,
+      "peak_center_rise_m": 0.0013922080397605896,
+      "lowest_corner_rise_at_peak_center_m": -2.2346866805994514e-05,
+      "orientation_change_at_peak_center_deg": 8.789074823718492,
+      "maximum_lowest_corner_rise_m": 8.084240984973512e-10,
+      "peak_center_position_m": [
+        -0.35905224084854126,
+        -0.2727771997451782,
+        0.07139222323894501
+      ],
+      "peak_center_orientation_wxyz": [
+        0.9845589995384216,
+        0.05387293919920921,
+        0.009186556562781334,
+        0.1663036197423935
+      ],
+      "packet_size_m": [
+        0.15449525360329625,
+        0.027214019144296827,
+        0.028
+      ],
+      "trace_sha256": "a9fe37620244bd4b053582b7c4a6bdbbef539b97b81a00a19cbb3413ff55e394"
+    }
+  ],
+  "semantics": "Rigid OBB lowest corner uses exact stored quaternion and configured packet size. Indicates tilt versus complete geometric clearance; does not measure support forces, deformable packet contact, or alter frozen center-height success thresholds."
+}

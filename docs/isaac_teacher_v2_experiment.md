@@ -48,7 +48,7 @@ The two selected IDs populate the numeric confirmation configuration by referenc
 
 - At least8 clean placements among its12 confirmation trials.
 - The lower bound of the paired95% start-cluster bootstrap difference in clean-placement rate is strictly positive against the other candidate.
-- No increase in drops, wrench-limit stops or tactile force-limit stops, checked separately.
+- No increase in drops, wrench-limit stops or tactile force/depth-limit stops, checked separately. The frozen machine field `tactile_force_limit_stop` includes both `tactile_fz` and `tactile_depth` events.
 
 The bootstrap uses10,000 draws and seed20260906, resampling the six recorded starts while retaining both matched episode seeds and both candidates within each draw. Otherwise the result is inconclusive, with at most a pickup candidate if sustained lifts occurred. These are simulator decision rules, not calibrated hardware probabilities. Six clusters provide limited precision, and zero or degenerate intervals do not establish equivalence.
 
