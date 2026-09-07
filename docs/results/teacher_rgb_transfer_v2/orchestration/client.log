@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/home/physicalai/phantom-icra-2027/sim/waffles/review_tools/rgb_transfer_v2/tools/sim/diagnose_rgb_transfer.py", line 568, in <module>
+    main()
+  File "/home/physicalai/phantom-icra-2027/sim/waffles/review_tools/rgb_transfer_v2/tools/sim/diagnose_rgb_transfer.py", line 547, in main
+    rows, comparisons = paired_calls(
+                        ^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/sim/waffles/review_tools/rgb_transfer_v2/tools/sim/diagnose_rgb_transfer.py", line 458, in paired_calls
+    plan = policy.replan(
+           ^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2/phantom/sim/remote_policy.py", line 167, in replan
+    values, token = self._call(
+                    ^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2/phantom/sim/remote_policy.py", line 154, in _call
+    raise RuntimeError(f"policy server failed {message[0]!r}: {payload}")
+RuntimeError: policy server failed 'replan': Traceback (most recent call last):
+  File "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/remote.py", line 304, in _serve_conn
+    conn.send(("ok", self.handle(msg, conn_id)))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/remote.py", line 249, in handle
+    return self._handle_owned(msg)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/remote.py", line 275, in _handle_owned
+    plan = self.policy.replan(obs, prev_plan, np.asarray(tcp_pose))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/phantom/.venv/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/policy.py", line 240, in replan
+    batch = self._batch_from_obs(obs, prev_plan)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/policy.py", line 125, in _batch_from_obs
+    "reactive": torch.tensor([obs.reactive], dtype=torch.float32),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: len() of unsized object
+

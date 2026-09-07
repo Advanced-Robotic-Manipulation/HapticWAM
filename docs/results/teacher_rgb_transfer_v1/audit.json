@@ -1,0 +1,49 @@
+{
+  "status": "preserved_failed_attempt_zero_diagnostic_calls",
+  "audited_unix_s": 1788745343.437308,
+  "owned_server_pid": 1547516,
+  "owned_server_pid_exists": false,
+  "seed_proposal_files": [],
+  "results_json_exists": false,
+  "failure": "Client rejected its own busy=True ownership after successful configure({}); failure before paired_calls()",
+  "native_protocol_evidence": "phantom/inference/remote.py status/claim/handle: info is read-only; any other request claims the connection, and configure returns busy=True for its owner",
+  "fixed_by": "explicit v2 client: idle info-only probe then native configure-ack; native race refusal retained",
+  "raw_files": {
+    "orchestration/status.json": {
+      "sha256": "28c08932d05ddc72ac63bb72119ad029118aa618d13eeb17487358f884ca75f9",
+      "bytes": 1093
+    },
+    "orchestration/client.log": {
+      "sha256": "d5eddd4678541ccbe9a5a305fe36220f0f4181e503a1ba46234054d4a4915b2b",
+      "bytes": 446
+    },
+    "orchestration.log": {
+      "sha256": "b202d9d3272b58686c604f30fa4c260186536011c7f3739e6b3df101c033c0ac",
+      "bytes": 1534
+    },
+    "orchestration_pid.json": {
+      "sha256": "7f60690f6bcc3529d209060e7a2b044b7a6966f55edf826f8e4b9f4761e4f930",
+      "bytes": 135
+    },
+    "server/command.json": {
+      "sha256": "190dfe0d9402df963c3cfa8eed1a63e72f39a7a29ca6da97942991943b3972f6",
+      "bytes": 827
+    },
+    "server/server.json": {
+      "sha256": "4ec21c22895866497ab78715593dc104dad43c010f61ceb16236d6cf25724162",
+      "bytes": 3630
+    },
+    "execution/dedicated_server_ready.json": {
+      "sha256": "3697a0a14a1e0459eae1faf78f67a547d3a99fb7dbc1bf5f8fccc0210a679c5a",
+      "bytes": 3628
+    },
+    "execution/manifest.json": {
+      "sha256": "4835238ecc6279d58e2753060c071902e3067f012a22dc3f4eb6285f7011cf80",
+      "bytes": 11738
+    },
+    "execution/completed_study_guard.json": {
+      "sha256": "af8597575a3e154b8ca7558be1059c4d644c2b828d458a094b05c206cfa9b779",
+      "bytes": 411
+    }
+  }
+}

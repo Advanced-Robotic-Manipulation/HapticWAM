@@ -35,3 +35,4 @@ box_pose_and_orientation,,reference_file,,,UR controller base origin,,Reference 
 camera_intrinsics_and_distortion,,reference_file,,,camera optical frame,,Record resolution and camera identity
 camera_to_base_calibration,,reference_file,,,UR controller base origin,,Preserve raw calibration and separate checking images
 unloaded_wrist_and_tactile_per_start,,reference_file,,,native sensor frames,,Record start q/TCP and both pad identities
+unloaded_motion_wrist_bias,,reference_file,,,native sensor frames,,Synchronized q qd TCP wrist tactile and visible no-contact evidence across reviewed reach/carry poses

@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "release_config": {
+    "tcp_min_m": [
+      -0.5429275160642127,
+      -0.06853791240695331,
+      0.057999999999999996
+    ],
+    "tcp_max_m": [
+      -0.24020644059509488,
+      0.14193716917871008,
+      0.274
+    ],
+    "open_command_max": 0.45,
+    "opening_hold_s": 0.2,
+    "unloaded_force_max_n": 0.5,
+    "unloaded_hold_s": 0.2,
+    "rearm_close_command_min": 0.5,
+    "finish_after_release": true,
+    "finish_observation_s": 2.0
+  },
+  "scope": "Read-only post-study diagnosis; does not alter safety, scores, source, scene or controller. Kinematic existence is insufficient for a safe release trajectory.",
+  "guard_parameters_a2_a3_d4_m": [
+    0.24365,
+    0.21325,
+    0.11235
+  ],
+  "cases": [
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787396060__seed903201",
+      "first_stop_s": 16.428,
+      "measured_tcp_pose_xyz_rotvec": [
+        -0.48975703131574566,
+        -0.09226067160152533,
+        0.3964767491215555,
+        -1.3124869461811308,
+        -1.1690647335544564,
+        0.8399074820195155
+      ],
+      "requested_tcp_pose_xyz_rotvec": [
+        -0.4895832390702092,
+        -0.08655981214256159,
+        0.39655733368463375,
+        -1.3271628499765855,
+        -1.1486270572076138,
+        0.8270804312984377
+      ],
+      "q_rad": [
+        0.20143760740756989,
+        -1.0106321573257446,
+        0.21277184784412384,
+        0.9264165163040161,
+        2.046515703201294,
+        -3.2446601390838623
+      ],
+      "elbow_q_rad": 0.21277184784412384,
+      "elbow_guard_radius_m": 0.4680136127077468,
+      "guard_limit_m": 0.468,
+      "guard_excess_m": 1.3612707746746278e-05,
+      "dh_wrist_center_frame4_xyz_m": [
+        -0.2502499282941162,
+        -0.16577142965766856,
+        0.5109703944601938
+      ],
+      "dh_shoulder_frame1_xyz_m": [
+        0.0,
+        0.0,
+        0.1519
+      ],
+      "radius_matches_dh_frame4_to_frame1_m": 0.4680136127077467,
+      "nominal_fk_to_logged_tcp_position_error_m": 1.4755356025229977e-07,
+      "tcp_outside_release_below_xyz_m": [
+        0.0,
+        0.02372275919457202,
+        0.0
+      ],
+      "tcp_outside_release_above_xyz_m": [
+        0.0,
+        0.0,
+        0.12247674912155548
+      ],
+      "first_latch_s": 12.252,
+      "post_latch_inside_release_executor_samples": 0,
+      "post_latch_release_window_active_samples": 0,
+      "minimum_post_latch_distance_to_release_volume_m": 0.12475304957871007,
+      "release_phase_counts_post_latch": {
+        "holding": 523
+      },
+      "release_at_stop": {
+        "variant": "placement_policy_release_finish_v2",
+        "phase": "holding",
+        "window_active": false,
+        "opening_since_s": null,
+        "committed_at_s": null,
+        "finished_at_s": null,
+        "controller_finished": false,
+        "task_success": "not inferred by this controller",
+        "unloaded_since_s": null,
+        "suppress_latch": false,
+        "event": "safety_preempted"
+      },
+      "measured_closure_at_stop": 0.5467211008071899,
+      "commanded_closure_at_stop": 0.6089577674865723,
+      "latch_at_stop": 0.6089577674865723,
+      "eligible_played_pre_latch_closure_min_after_latch": 0.5062094330787659,
+      "eligible_played_opening_samples_after_latch": 0,
+      "eligible_opening_inside_window_samples_after_latch": 0,
+      "opening_reconstruction": "Executor _pose_at zero-order gripper index at logged play_time, delivered actions matched by terminal_veto replan_index; original-policy eligibility follows release_controller. No claim about unused proposal tails.",
+      "object_pose_sample_s": 16.4,
+      "object_center_at_nearest_scene_sample_m": [
+        -0.5094213485717773,
+        -0.08950623124837875,
+        0.39348918199539185
+      ],
+      "object_corner_min_m": [
+        -0.5889015054607618,
+        -0.10961648920030972,
+        0.3534860739578291
+      ],
+      "object_corner_max_m": [
+        -0.4299411916827929,
+        -0.06939597329644778,
+        0.4334922900329546
+      ],
+      "physical_bin_inner_xy_min_m": [
+        -0.5509275160642128,
+        -0.0765379124069533
+      ],
+      "physical_bin_inner_xy_max_m": [
+        -0.23220644059509488,
+        0.14993716917871008
+      ],
+      "physical_bin_rim_z_m": 0.194,
+      "object_xy_contained_at_stop": false,
+      "nominal_fixed_orientation_ik_examples": [
+        {
+          "name": "closest_release_volume_point",
+          "target_tcp_pose_xyz_rotvec": [
+            -0.48975703131574566,
+            -0.06853791240695331,
+            0.274,
+            -1.3124869461811308,
+            -1.1690647335544564,
+            0.8399074820195155
+          ],
+          "inside_declared_release_volume": true,
+          "nominal_ik_converged": true,
+          "q_rad": [
+            0.1114552492432847,
+            -1.3605219278767429,
+            1.3681832409358357,
+            0.11569250653295529,
+            1.957244691260356,
+            -3.2570980490079267
+          ],
+          "position_residual_m": 2.7011065904383614e-10,
+          "rotation_residual_rad": 2.2186854191446905e-09,
+          "elbow_guard_radius_m": 0.3719872759433157,
+          "elbow_guard_margin_m": 0.09601272405668432,
+          "packet_xy_contained_if_relative_grasp_frozen": false,
+          "packet_lowest_corner_above_rim_if_relative_grasp_frozen_m": 0.03700932483627367,
+          "limits": "Nominal kinematics only; no collision, branch transition, joint-speed, grip-retention, trajectory or opening-clearance validation. Relative object geometry is sampled up to 1/15 s from the executor stop."
+        },
+        {
+          "name": "above_bin_center_at_release_ceiling",
+          "target_tcp_pose_xyz_rotvec": [
+            -0.3915669783296538,
+            0.0366996283858784,
+            0.274,
+            -1.3124869461811308,
+            -1.1690647335544564,
+            0.8399074820195155
+          ],
+          "inside_declared_release_volume": true,
+          "nominal_ik_converged": true,
+          "q_rad": [
+            -0.6418680325956142,
+            -2.036993355692986,
+            1.9477149092697796,
+            0.21143435615166872,
+            1.2090741694387759,
+            -3.347211377118333
+          ],
+          "position_residual_m": 1.1378367658973451e-07,
+          "rotation_residual_rad": 4.606547302267561e-07,
+          "elbow_guard_radius_m": 0.28145358066441306,
+          "elbow_guard_margin_m": 0.18654641933558697,
+          "packet_xy_contained_if_relative_grasp_frozen": true,
+          "packet_lowest_corner_above_rim_if_relative_grasp_frozen_m": 0.03700932483627367,
+          "limits": "Nominal kinematics only; no collision, branch transition, joint-speed, grip-retention, trajectory or opening-clearance validation. Relative object geometry is sampled up to 1/15 s from the executor stop."
+        }
+      ],
+      "input_sha256": {
+        "execution_trace.jsonl": "a08d137aebba7cb28ad6563583f3b8f728d5053c39f0568cd3e819703af8b524",
+        "delivered_plans.jsonl": "704cb2d72177134dd728e986931f5e63eb4fa7b900cf302eb522096544bdb52d",
+        "sim_trace.npz": "f12ebaf7aa12cad10dbf1a3af529c963a2fdef0a67cdaa48842ea3b1f3791784",
+        "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+      }
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__start_1787396314__seed903201",
+      "first_stop_s": 36.124,
+      "measured_tcp_pose_xyz_rotvec": [
+        -0.4230344687793228,
+        -0.01017085277978294,
+        0.366119637066364,
+        -1.6151084913265359,
+        -1.2312616492720416,
+        0.6850426901218059
+      ],
+      "requested_tcp_pose_xyz_rotvec": [
+        -0.42252212143531825,
+        -0.005075933928529716,
+        0.36653039243899366,
+        -1.6273291270522678,
+        -1.2169927670822378,
+        0.6799296857257279
+      ],
+      "q_rad": [
+        -0.053094130009412766,
+        -1.1439077854156494,
+        0.21213893592357635,
+        1.3470205068588257,
+        1.8801883459091187,
+        -3.1292428970336914
+      ],
+      "elbow_q_rad": 0.21213893592357635,
+      "elbow_guard_radius_m": 0.4680284286421247,
+      "guard_limit_m": 0.468,
+      "guard_excess_m": 2.8428642124656012e-05,
+      "dh_wrist_center_frame4_xyz_m": [
+        -0.23370744851118277,
+        -0.10008837617959229,
+        0.5448551570870926
+      ],
+      "dh_shoulder_frame1_xyz_m": [
+        0.0,
+        0.0,
+        0.1519
+      ],
+      "radius_matches_dh_frame4_to_frame1_m": 0.4680284286421246,
+      "nominal_fk_to_logged_tcp_position_error_m": 2.2905849522388545e-07,
+      "tcp_outside_release_below_xyz_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "tcp_outside_release_above_xyz_m": [
+        0.0,
+        0.0,
+        0.092119637066364
+      ],
+      "first_latch_s": 30.5,
+      "post_latch_inside_release_executor_samples": 0,
+      "post_latch_release_window_active_samples": 0,
+      "minimum_post_latch_distance_to_release_volume_m": 0.092119637066364,
+      "release_phase_counts_post_latch": {
+        "holding": 704
+      },
+      "release_at_stop": {
+        "variant": "placement_policy_release_finish_v2",
+        "phase": "holding",
+        "window_active": false,
+        "opening_since_s": null,
+        "committed_at_s": null,
+        "finished_at_s": null,
+        "controller_finished": false,
+        "task_success": "not inferred by this controller",
+        "unloaded_since_s": null,
+        "suppress_latch": false,
+        "event": "safety_preempted"
+      },
+      "measured_closure_at_stop": 0.5207668542861938,
+      "commanded_closure_at_stop": 0.6107850074768066,
+      "latch_at_stop": 0.6107850074768066,
+      "eligible_played_pre_latch_closure_min_after_latch": 0.5203518867492676,
+      "eligible_played_opening_samples_after_latch": 0,
+      "eligible_opening_inside_window_samples_after_latch": 0,
+      "opening_reconstruction": "Executor _pose_at zero-order gripper index at logged play_time, delivered actions matched by terminal_veto replan_index; original-policy eligibility follows release_controller. No claim about unused proposal tails.",
+      "object_pose_sample_s": 36.136,
+      "object_center_at_nearest_scene_sample_m": [
+        -0.4614282548427582,
+        -0.002357550198212266,
+        0.36161282658576965
+      ],
+      "object_corner_min_m": [
+        -0.5409074821584802,
+        -0.027484560486709393,
+        0.3338354197660802
+      ],
+      "object_corner_max_m": [
+        -0.3819490275270362,
+        0.02276946009028486,
+        0.3893902334054591
+      ],
+      "physical_bin_inner_xy_min_m": [
+        -0.5509275160642128,
+        -0.0765379124069533
+      ],
+      "physical_bin_inner_xy_max_m": [
+        -0.23220644059509488,
+        0.14993716917871008
+      ],
+      "physical_bin_rim_z_m": 0.194,
+      "object_xy_contained_at_stop": true,
+      "nominal_fixed_orientation_ik_examples": [
+        {
+          "name": "closest_release_volume_point",
+          "target_tcp_pose_xyz_rotvec": [
+            -0.4230344687793228,
+            -0.01017085277978294,
+            0.274,
+            -1.6151084913265359,
+            -1.2312616492720416,
+            0.6850426901218059
+          ],
+          "inside_declared_release_volume": true,
+          "nominal_ik_converged": true,
+          "q_rad": [
+            -0.05309513756862142,
+            -1.476541461909429,
+            1.1997880432432297,
+            0.6920052139304799,
+            1.8801873711449453,
+            -3.129243311835335
+          ],
+          "position_residual_m": 1.2663338590393236e-10,
+          "rotation_residual_rad": 1.0075297277155666e-09,
+          "elbow_guard_radius_m": 0.3938768420871531,
+          "elbow_guard_margin_m": 0.0741231579128469,
+          "packet_xy_contained_if_relative_grasp_frozen": true,
+          "packet_lowest_corner_above_rim_if_relative_grasp_frozen_m": 0.047715782699716214,
+          "limits": "Nominal kinematics only; no collision, branch transition, joint-speed, grip-retention, trajectory or opening-clearance validation. Relative object geometry is sampled up to 1/15 s from the executor stop."
+        },
+        {
+          "name": "above_bin_center_at_release_ceiling",
+          "target_tcp_pose_xyz_rotvec": [
+            -0.3915669783296538,
+            0.0366996283858784,
+            0.274,
+            -1.6151084913265359,
+            -1.2312616492720416,
+            0.6850426901218059
+          ],
+          "inside_declared_release_volume": true,
+          "nominal_ik_converged": true,
+          "q_rad": [
+            -0.3724220811147322,
+            -1.7165045365375364,
+            1.4290133937711464,
+            0.6819532076105862,
+            1.5862736630411478,
+            -3.2562443903354783
+          ],
+          "position_residual_m": 4.13877439069161e-09,
+          "rotation_residual_rad": 1.4624490135430146e-08,
+          "elbow_guard_radius_m": 0.36352126710695837,
+          "elbow_guard_margin_m": 0.10447873289304166,
+          "packet_xy_contained_if_relative_grasp_frozen": true,
+          "packet_lowest_corner_above_rim_if_relative_grasp_frozen_m": 0.047715782699716214,
+          "limits": "Nominal kinematics only; no collision, branch transition, joint-speed, grip-retention, trajectory or opening-clearance validation. Relative object geometry is sampled up to 1/15 s from the executor stop."
+        }
+      ],
+      "input_sha256": {
+        "execution_trace.jsonl": "f357cc0108cf8ef1fcf6515bb8a3e7c8e90c310a0ab608e49878f9eef3295bfd",
+        "delivered_plans.jsonl": "6569bcdf3ac8c8b765e8e3cf5806d1c49b062bfcd5354a6a3343de39819843fb",
+        "sim_trace.npz": "d6f7e0f51b894dca4ab9678b3bf0e1faa6f82831f3078f79dd303f6d89e7caf6",
+        "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+      }
+    }
+  ],
+  "source_sha256": {
+    "phantom/sim/kinematics.py": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+    "phantom/deploy/safety.py": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+    "phantom/deploy/executor.py": "3ff6b9345352729a39d5b5cc2e9cdcc08c5355c74391a07b63b0cc64ae4afcb9",
+    "phantom/deploy/release_controller.py": "3405da4cf01617d42ff0348e8ad6d2e20b69801572b853588fb5fb8c1f867e26",
+    "phantom/sim/policy_adapter.py": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+  },
+  "campaign_sha256": "8242935967b8d16616759fd3282834c346f16f51f779f2a2dab64ecdb20298fe",
+  "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+}

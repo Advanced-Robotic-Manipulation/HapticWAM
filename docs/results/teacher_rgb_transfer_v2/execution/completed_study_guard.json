@@ -1,0 +1,10 @@
+{
+  "screen": {
+    "selection_sha256": "3417ffb569caee0d0b7c0a07fac0e667f968dc19be6961cb0b970cd2f6a7a63f",
+    "progress_sha256": "8a20a267ecca8a981b36e950d6bb9dba345d38fbacbe9b2a0e009a6934651087"
+  },
+  "confirmation": {
+    "selection_sha256": "d08bfc15c9fc3e94b570d7ca14d3d9fdfa8c94e21bce87adab79c24ac024bc02",
+    "progress_sha256": "d8ba8cd9723d19b53057b454d9c765b00d71932973b3690883cd15ff0febcabc"
+  }
+}

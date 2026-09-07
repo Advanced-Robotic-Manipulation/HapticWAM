@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "time_unix_s": 1788745324.8557415,
+  "error": "CalledProcessError: Command '['/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python', '/home/physicalai/phantom-icra-2027/sim/waffles/review_tools/rgb_transfer_v2/tools/sim/diagnose_rgb_transfer.py', '--observation', '/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/observations/0000.npz', '--initial-state', '/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2/configs/sim/initial_states/waffles_aug22_1787395928_000.json', '--episode', '/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000', '--out', '/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_rgb_transfer_v2/execution', '--execute', '--completed-study', '/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery', '--server-ready', '/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_rgb_transfer_v2/server/ready.json', '--owned-server-pid', '1565506']' returned non-zero exit status 1."
+}

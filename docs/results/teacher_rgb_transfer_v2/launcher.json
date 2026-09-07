@@ -1,0 +1,9 @@
+{
+  "pid": 1565505,
+  "command": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_rgb_transfer_v2/run_rgb_after_study.py"
+  ],
+  "client_sha256": "1de4e74fdf75a99b550c11136abc8dfafadb7a5533594355f874e3ada4febc19",
+  "supersedes_failed_attempt": "teacher_rgb_transfer_v1; zero inference calls; self-ownership preflight bug fixed; original preserved"
+}

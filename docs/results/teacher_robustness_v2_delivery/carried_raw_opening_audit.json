@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "threshold_normalized_closure": 0.45,
+  "method": "Read original planner_trace actions before delivery veto. Primary subset: every 16-row proposal whose captured snapshot t is at/after first observed native latch, including all unplayed tail rows and not_activated_before_end plans. Separate overlapping-scheduled-time subset retains individual action_times at/after latch even from earlier-created proposals. None implies the future response after the stop. No source/scoring/simulator changes.",
+  "cases": [
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787396060__seed903201",
+      "first_latch_s": 12.252,
+      "stop_s": 16.428,
+      "post_latch_captured_proposals": 5,
+      "post_latch_captured_proposal_rows": 80,
+      "post_latch_captured_raw_open_rows": 0,
+      "post_latch_captured_min_closure": 0.49817949533462524,
+      "post_latch_captured_status_counts": {
+        "superseded": 3,
+        "active": 1,
+        "not_activated_before_end": 1
+      },
+      "overlapping_scheduled_rows_at_or_after_latch": 110,
+      "overlapping_scheduled_raw_open_rows": 0,
+      "overlapping_scheduled_min_closure": 0.49817949533462524,
+      "proposals": [
+        {
+          "replan_id": 15,
+          "capture_t_s": 12.596,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5458414554595947,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 13.372,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 16,
+          "capture_t_s": 13.38,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.519690990447998,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 14.156,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 17,
+          "capture_t_s": 14.164,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.49817949533462524,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 14.94,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 18,
+          "capture_t_s": 14.948,
+          "status": "active",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.532379686832428,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 15.756,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 19,
+          "capture_t_s": 15.764000000000001,
+          "status": "not_activated_before_end",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5052769780158997,
+          "raw_open_rows": 0,
+          "delivered": false,
+          "delivery_t_s": null,
+          "veto_action": null,
+          "raw_to_delivered_closure_changed_rows": null
+        }
+      ],
+      "input_sha256": {
+        "planner_trace.json": "7688519863951db8a25b5086032fb63b7dfaa872a5073d000b27c4948bab42fd",
+        "execution_trace.jsonl": "a08d137aebba7cb28ad6563583f3b8f728d5053c39f0568cd3e819703af8b524",
+        "delivered_plans.jsonl": "704cb2d72177134dd728e986931f5e63eb4fa7b900cf302eb522096544bdb52d"
+      }
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__start_1787396314__seed903201",
+      "first_latch_s": 30.5,
+      "stop_s": 36.124,
+      "post_latch_captured_proposals": 7,
+      "post_latch_captured_proposal_rows": 112,
+      "post_latch_captured_raw_open_rows": 0,
+      "post_latch_captured_min_closure": 0.5301623344421387,
+      "post_latch_captured_status_counts": {
+        "superseded": 5,
+        "active": 1,
+        "not_activated_before_end": 1
+      },
+      "overlapping_scheduled_rows_at_or_after_latch": 142,
+      "overlapping_scheduled_raw_open_rows": 0,
+      "overlapping_scheduled_min_closure": 0.5203518867492676,
+      "proposals": [
+        {
+          "replan_id": 37,
+          "capture_t_s": 30.836000000000002,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5555366277694702,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 31.612000000000002,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 38,
+          "capture_t_s": 31.62,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5558024048805237,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 32.396,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 39,
+          "capture_t_s": 32.404,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5493959188461304,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 33.18,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 40,
+          "capture_t_s": 33.188,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5381282567977905,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 33.964,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 41,
+          "capture_t_s": 33.972,
+          "status": "superseded",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5301623344421387,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 34.78,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 42,
+          "capture_t_s": 34.788000000000004,
+          "status": "active",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.531566321849823,
+          "raw_open_rows": 0,
+          "delivered": true,
+          "delivery_t_s": 35.596000000000004,
+          "veto_action": "close_allowed",
+          "raw_to_delivered_closure_changed_rows": 0
+        },
+        {
+          "replan_id": 43,
+          "capture_t_s": 35.604,
+          "status": "not_activated_before_end",
+          "proposal_rows": 16,
+          "raw_min_closure": 0.5334945321083069,
+          "raw_open_rows": 0,
+          "delivered": false,
+          "delivery_t_s": null,
+          "veto_action": null,
+          "raw_to_delivered_closure_changed_rows": null
+        }
+      ],
+      "input_sha256": {
+        "planner_trace.json": "e3eaf7160b06b5a32b2c00201c8c1f8bf3191a05fa6d9deac292b0b2559b967d",
+        "execution_trace.jsonl": "f357cc0108cf8ef1fcf6515bb8a3e7c8e90c310a0ab608e49878f9eef3295bfd",
+        "delivered_plans.jsonl": "6569bcdf3ac8c8b765e8e3cf5806d1c49b062bfcd5354a6a3343de39819843fb"
+      }
+    }
+  ]
+}

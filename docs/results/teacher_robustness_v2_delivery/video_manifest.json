@@ -1,0 +1,904 @@
+{
+  "presentation_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "frozen_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+  "study_complete": true,
+  "videos": [
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787395928__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2580639,
+      "sha256": "80d0f4c6de27a465ae1000adb1cf21973396f935abc41ccede88aa0fc8cff8d0",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787395928__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+      ],
+      "bytes": 438461,
+      "sha256": "3a59329f108fcde7a7afc657ce03195fb4694b8bee4dea4c6985c817f1ad2423",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787395963__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2768458,
+      "sha256": "1325ccc1ef2a9642764ff89d2997955c327c1e894cb673dcbc0cb93a86cc8cad",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787395963__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+      ],
+      "bytes": 697862,
+      "sha256": "9890ed4b81ac11eccc2f1e8ce13349bc4a085a4749f5d0e4b79cabe4069bd93a",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787396028__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2755678,
+      "sha256": "00374308153c1e9277e0f6f4775823851b349d6bd416f505cc35e12091e039b5",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787396028__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+      ],
+      "bytes": 458412,
+      "sha256": "62908fe20a77dbd340aa74bb53f0abe0e400de129a704aeb52e9078354ef6ebe",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787396273__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2625384,
+      "sha256": "84d7621822e52768979b9b06600d7e53362032ebf1f2138ecf16d87230ab5988",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe1_k4__start_1787396273__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+      ],
+      "bytes": 2066575,
+      "sha256": "26a4204432b9c3b407045833ad57b91dee1343776983f3a44fd69e388ccce065",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787395928__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101/policy_review.mp4"
+      ],
+      "bytes": 438125,
+      "sha256": "f8a6d91a1ece75d863e6ebbd2ebd2a43cf6784942d3b0c41c30ae64cdafd7214",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787395928__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102/policy_review.mp4"
+      ],
+      "bytes": 488499,
+      "sha256": "a48af29b95416c2e2bbde0b527fba613cf78695f3dcadf0403865841d95fd7d7",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787395963__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903101/policy_review.mp4"
+      ],
+      "bytes": 845629,
+      "sha256": "53922568423d9db1f5834ef3ab87ebb85f51d0f104da8551fce420e5a6541f2e",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787395963__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903102/policy_review.mp4"
+      ],
+      "bytes": 530342,
+      "sha256": "1c3b8abc8afcf01e806a309684c53ea6d72e98225c4c80617851fd12e89183c7",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395963__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787396028__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903101/policy_review.mp4"
+      ],
+      "bytes": 506378,
+      "sha256": "1646bcb8d9d741aefe929da5a83d73aa60dd40bfff5afa82721b0d630740c18e",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787396028__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903102/policy_review.mp4"
+      ],
+      "bytes": 549781,
+      "sha256": "d5c170b020151b13ad50f5dd1772b4778652b7c5a85bba6fa5649da679f271aa",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396028__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787396273__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903101/policy_review.mp4"
+      ],
+      "bytes": 1899853,
+      "sha256": "9bd8a73e58ab6eb6f6f9cb9eafd3f8b5b9e4e3f7c5283de10c8dce993cc32c55",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta1500_nfe5_k1__start_1787396273__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903102/policy_review.mp4"
+      ],
+      "bytes": 638550,
+      "sha256": "a1ad78cce60b298fe345a7f85d6b76025310b35e7ec8d8a9c1c58180cd50f4fc",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787396273__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787395928__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2596950,
+      "sha256": "fbffce122025b276bcd991dd822a0e1fe8b91cf390c633c38b588928c88f9d4d",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787395928__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+      ],
+      "bytes": 476796,
+      "sha256": "a38b93eb72f5840507a8c964e97293a4fb8bcbea6913920c9a1f915d23530a14",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787395963__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+      ],
+      "bytes": 2720030,
+      "sha256": "7e344131e66cd21c66536cc59c8798d23d40096dc8b02e2ed6d20b51ae7498f7",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787395963__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+      ],
+      "bytes": 1496591,
+      "sha256": "1fec27f414489b2fa94b08347413de3b9d82a3ac048d3208a27d4620879a2dbc",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787396028__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+      ],
+      "bytes": 534759,
+      "sha256": "937820e2070e72ea8807fdaeb3a3466b008787e56f1c75a4a9363622956da4e1",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787396028__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+      ],
+      "bytes": 438672,
+      "sha256": "28329ef9504c80c186be3e941b87e20c3411319307fb0aa50eff90cd9502f488",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787396273__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+      ],
+      "bytes": 1506097,
+      "sha256": "cbc6d871e7b29f4202ebd397b6197ec0631ba32c3e0d47c32e9deae9f191fd77",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "fta3000_nfe1_k4__start_1787396273__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+      ],
+      "bytes": 2336905,
+      "sha256": "81893c97740929fa08b356f659dab5ca7deb9a1d29b785c4218f726b8d15eef3",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787395928__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+      ],
+      "bytes": 502460,
+      "sha256": "1ab8d8284fcc2d5064d3eaaa070109d295d3cb6ac0bc05d112f0247c81e457ab",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787395928__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+      ],
+      "bytes": 443230,
+      "sha256": "9c9a9d1943525f69d4933ade50bbb0e38a29d9da0876cfd136e3cc9b162d932e",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787395963__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+      ],
+      "bytes": 510452,
+      "sha256": "4251c7320eaafd8c974a2fc26023daadc0f82024e79ef35120150041da8e57ed",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787395963__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+      ],
+      "bytes": 472019,
+      "sha256": "105cb8b418c496fe24301d667aecd08200043651c638f7cb91d93ba3e8f837da",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395963__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787396028__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+      ],
+      "bytes": 1267346,
+      "sha256": "0edd0c408f58854084b0581898bde864066bf35bdfc68b609d1c75426968e854",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787396028__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+      ],
+      "bytes": 591084,
+      "sha256": "8503dd64e0d9b4098b482e710ebb4c2317ba33dbad925b8254f003e9e2abb1f2",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396028__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787396273__seed903101",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903101",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+      ],
+      "bytes": 983120,
+      "sha256": "169a2b8de9427acd9f09d8e408fac0b1712c599cf36db06532580ebf9d563551",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903101/policy_review.mp4"
+    },
+    {
+      "stage": "screen",
+      "trial": "v5_6_nfe1_k4__start_1787396273__seed903102",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903102",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+      ],
+      "bytes": 2326932,
+      "sha256": "c47d33bda2838a47d82fa164089374a5b6bdab455f0a9332f97a423efb68f03d",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903102/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396060__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903201/policy_review.mp4"
+      ],
+      "bytes": 506949,
+      "sha256": "534d8b9fcf48784e7a73a99c52bc5bd21ffdaf38f06e53176819eede494a5433",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396060__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903202/policy_review.mp4"
+      ],
+      "bytes": 2702816,
+      "sha256": "c38eb81d852511347c3ebadc3bc8320573df1ccd210b569a751714ee347b86f9",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396060__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396094__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903201/policy_review.mp4"
+      ],
+      "bytes": 465799,
+      "sha256": "a679df1a43a413ae63d15acb9f6877c4906d1ccbb513e2ce046663b8b4ee4223",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396094__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903202/policy_review.mp4"
+      ],
+      "bytes": 494077,
+      "sha256": "f756f293ee1c371a938b85080142e373375fc17a29be332f2842d2cea4ed3bbf",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396094__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396128__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903201/policy_review.mp4"
+      ],
+      "bytes": 473440,
+      "sha256": "6a80358206b74cb57934be047af5a0b1aca9eec68fbbdc2d1762a4e46cf0da2b",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396128__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903202/policy_review.mp4"
+      ],
+      "bytes": 481477,
+      "sha256": "6c6b67c5fa1f92d14fed4b9759bedbf2120c688496f879abe402bb9210dcc148",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396128__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396314__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903201/policy_review.mp4"
+      ],
+      "bytes": 1926514,
+      "sha256": "bfcf8e45e4fc84c9f49f4b55c7fedb8a2811eb10cad47208223a260eb951fd73",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396314__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903202/policy_review.mp4"
+      ],
+      "bytes": 1731062,
+      "sha256": "579d0c2b84b9c3769df57a7593fb72291806ff5c0d563687701853afe1266ac3",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396314__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396346__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903201/policy_review.mp4"
+      ],
+      "bytes": 2423774,
+      "sha256": "8d022632ddbb7c7ad6b4bc912e8288aef922ab7e11f6edef1892b33c05d8cbb4",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396346__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903202/policy_review.mp4"
+      ],
+      "bytes": 2617522,
+      "sha256": "326357feacd8d17cf11224cc0ceef5906e2908820e7b380990cb37cf9443a867",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396346__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396461__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903201/policy_review.mp4"
+      ],
+      "bytes": 2681712,
+      "sha256": "5c8310895242a71df9eb17f93fc34a7700444f2afb4972af35517c40ae647b23",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "fta3000_nfe1_k4__start_1787396461__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903202/policy_review.mp4"
+      ],
+      "bytes": 1293135,
+      "sha256": "daa5f6a1708bf7b8368ae00c59a10071691985809debe63036508f37a758a99b",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/fta3000_nfe1_k4__start_1787396461__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396060__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903201/policy_review.mp4"
+      ],
+      "bytes": 1078838,
+      "sha256": "eca5acb5a4115faa409df81fdfbf95ec5b048c813a78fff69f2698c273f3a3be",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396060__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903202/policy_review.mp4"
+      ],
+      "bytes": 1118541,
+      "sha256": "35387492e70843171dd441e65a7f1bdefe8e044c4ee854a4c1be31f937f008af",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396060__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396094__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903201/policy_review.mp4"
+      ],
+      "bytes": 861161,
+      "sha256": "f15bb75a215ef471065ddaf1107607a383af6c765a001d3bb8396b60c0c985c9",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396094__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903202/policy_review.mp4"
+      ],
+      "bytes": 515378,
+      "sha256": "47033b81a505164f27e56e830933cfcf070a4571fbcbe4f975fa2c883fb112ee",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396094__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396128__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903201/policy_review.mp4"
+      ],
+      "bytes": 446567,
+      "sha256": "8b50e9f20490902f8ad2667c775de8684f3c6d6b4f4ee864e91db40c198febb3",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396128__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903202/policy_review.mp4"
+      ],
+      "bytes": 489011,
+      "sha256": "1522a13d09b3911b01d3bf4a901691df79d9d5235c853503ccd55f69d0749ad8",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396128__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396314__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903201/policy_review.mp4"
+      ],
+      "bytes": 2206869,
+      "sha256": "26ea55315d73b1000924a0c47253f94289cd1c4c4db29ab42fb5415005718ebe",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396314__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903202/policy_review.mp4"
+      ],
+      "bytes": 1115881,
+      "sha256": "3d4cbcae922d335102576b0b53a04927a954972fbd9076aa638e089854c628a1",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396314__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396346__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903201/policy_review.mp4"
+      ],
+      "bytes": 2287472,
+      "sha256": "39317c426a88e31f41f39a46ee6f1b370a3c50acf36c191a23a5860d665dd6ca",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396346__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903202/policy_review.mp4"
+      ],
+      "bytes": 2811346,
+      "sha256": "0b4ca68e1e3b99e627a829ebf9aa464d4d2c1247e63cef7f9f3e40f15613948e",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396346__seed903202/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396461__seed903201",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903201",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903201/policy_review.mp4"
+      ],
+      "bytes": 2037467,
+      "sha256": "ef6a67954daeb9473d500e8375c36139fcea32ab063454076be688329bc6a5e1",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903201/policy_review.mp4"
+    },
+    {
+      "stage": "confirmation",
+      "trial": "v5_6_nfe1_k4__start_1787396461__seed903202",
+      "exit_code": 0,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/review_tools/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903202",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903202/policy_review.mp4"
+      ],
+      "bytes": 1150335,
+      "sha256": "9c5cd9498257705f9983b3089c8598cd003e1df9cd320f3ef761c51de1642a02",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts/v5_6_nfe1_k4__start_1787396461__seed903202/policy_review.mp4"
+    }
+  ],
+  "complete": true
+}
