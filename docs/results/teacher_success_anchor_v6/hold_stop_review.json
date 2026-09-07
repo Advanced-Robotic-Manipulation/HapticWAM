@@ -1,0 +1,60 @@
+{
+  "scope": "Prospective CPU/source review only; no GPU, hardware, frozen source, runtime or score changes. No prediction of v6 outcomes.",
+  "frozen_sim_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_limiter_v6",
+  "frozen_source_sha256": {
+    "phantom/drivers/servo_limiter.py": "41c0c6beebd805dda4d9bf7c66e507491eb1121cdb5cf70a701ce845b37e027f",
+    "phantom/drivers/real/ur.py": "2ee975a3cce284d6197199d5d07f0b440c7ae196f464be5ec3982cd028b0f731",
+    "phantom/sim/policy_adapter.py": "97adde55eb1b6e619054c45426e571ab08fe39f5f2da16e51b3b5a02022eae88",
+    "phantom/deploy/executor.py": "0684178fffbe549bb5b4dca002500f3188f633d8d414cd78fdb6875d86d15d49",
+    "tools/sim/run_waffles.py": "903eae23fe5f09e3b1b5fc6c2153edc3de1d43619d0f2719201eb5f373443be2"
+  },
+  "live_native_driver": "/home/physicalai/phantom-icra-2027/phantom/phantom/drivers/real/ur.py",
+  "live_native_driver_sha256": "b24cbdb9c21b6a5b113d59145e08b716655d9036f9bc2bc371e614f4879587a0",
+  "native_scope_note": "Live driver checked separately. Historical UR source bundled in simulator is not used for simulated actuation.",
+  "current_clock": {
+    "executor_rate_hz": 125,
+    "consecutive_reject_limit": 25,
+    "first_reject_to_stop_request_s": 0.192,
+    "first_reject_to_next_stopped_execution_s": 0.200,
+    "tail_s_max": 2.0,
+    "native_clock_note": "Tick count; actual native wall duration may be longer with IK/RTDE overhead.",
+    "motivating_planning_range_s": [0.8, 1.2],
+    "planning_range_is_hard_bound": false,
+    "post_hold_replan_grace_exists": false,
+    "plan_submission_resets_rejects": false,
+    "sim_stop_clears_pending_plan": true,
+    "sim_two_reject_counters": ["runner servo_limiter_rejects", "adapter ik_rejects"],
+    "sim_first_stop_reason": "servo_limiter_stall",
+    "native_exception_stop_reason": "executor_crash"
+  },
+  "synthetic_search_counterexample": {
+    "scope": "Smooth synthetic linear IK, not UR3 or physics",
+    "qref": [0.0, -1.0, 0.6, 1.0, 1.0, 0.0],
+    "previous_pose": [1.0, 0.0, 0.1519, 0.0, 0.0, 0.0],
+    "target_pose": [1.0, 0.08, 0.1519, 0.0, 0.0, 0.0],
+    "ik_definition": "qref copied, with q[0] = queried_pose[1]",
+    "dt_s": 0.008,
+    "limits": {"elbow_min_rad": 0.4, "joint_speed_max_rad_s": 1.0, "branch_tolerance_rad": 0.35, "bisection_iterations": 3},
+    "current_anchor_feasible": true,
+    "selection": {"accepted": false, "reason": "limiter_hold", "violation": "joint_speed", "ik_calls": 7},
+    "untested_fraction": 0.0625,
+    "untested_fraction_feasible": true,
+    "untested_fraction_joint_speed_rad_s": 0.625
+  },
+  "existing_test": {
+    "file": "tests/test_shared_servo_limiter.py",
+    "test": "test_limiter_stall_is_a_controller_stop_preserving_grip_and_feedback",
+    "result": "1 passed, 22 deselected in 0.97 s",
+    "environment": "/tmp/phantom-sim-venv/bin/python; PYTHONDONTWRITEBYTECODE=1; pytest -p no:cacheprovider"
+  },
+  "future_option": {
+    "status": "Proposal only, not implemented or enabled",
+    "distinguish_verified_constraint_hold_from_ik_fault": true,
+    "preserve_measured_safety_limits": true,
+    "illustrative_timeout_s": 2.5,
+    "timeout_is_qualified_hardware_setting": false,
+    "timeout_rationale": "Illustrative 1.2 s old pending request + 1.2 s fresh request + 0.1 s scheduling; not a guaranteed latency bound.",
+    "native_hold_requires_explicit_servo_send_qualification": true,
+    "must_not_change_frozen_v6": true
+  }
+}

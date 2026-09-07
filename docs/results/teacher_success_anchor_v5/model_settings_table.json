@@ -1,0 +1,191 @@
+{
+  "status": "completed_confirmation_conditional_lab_candidate_no_validated_winner",
+  "selected_id": null,
+  "source_config": {
+    "path": "configs/sim/teacher_success_anchor_v5_screen.json",
+    "sha256": "3392e9f703ef008f2a16d6c133870192ddb1642526ef7adb3702b2e8a6c9b9c5"
+  },
+  "parent_protocol": {
+    "path": "docs/results/teacher_success_anchor_v5/protocol.json",
+    "sha256": "f67fe79a5267c6d253d7d90f67f2a367c8899f030959c8f42fa714d072ab7ac2",
+    "protocol_id": "teacher_success_anchor_v5"
+  },
+  "five_inference_controls": [
+    "nfe",
+    "k_seeds",
+    "guidance",
+    "parity",
+    "persistent_noise"
+  ],
+  "separate_constants": {
+    "weights": "EMA",
+    "task_text": "waffles",
+    "max_play": 10,
+    "architecture": "teacher"
+  },
+  "candidate_rows": [
+    {
+      "id": "fta1500_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "weights": "EMA",
+      "inference_settings": {
+        "use_ema": true,
+        "nfe": 1,
+        "k_seeds": 4,
+        "guidance": 1.0,
+        "parity": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "max_play": 10
+      },
+      "native_inference_flag_fragment": [
+        "--nfe",
+        "1",
+        "--k-seeds",
+        "4",
+        "--guidance",
+        "1.0",
+        "--parity-fixes",
+        "--persistent-noise"
+      ],
+      "fragment_is_not_a_hardware_launch_command": true
+    },
+    {
+      "id": "fta3000_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "weights": "EMA",
+      "inference_settings": {
+        "use_ema": true,
+        "nfe": 1,
+        "k_seeds": 4,
+        "guidance": 1.0,
+        "parity": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "max_play": 10
+      },
+      "native_inference_flag_fragment": [
+        "--nfe",
+        "1",
+        "--k-seeds",
+        "4",
+        "--guidance",
+        "1.0",
+        "--parity-fixes",
+        "--persistent-noise"
+      ],
+      "fragment_is_not_a_hardware_launch_command": true
+    },
+    {
+      "id": "v5_6_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "weights": "EMA",
+      "inference_settings": {
+        "use_ema": true,
+        "nfe": 1,
+        "k_seeds": 4,
+        "guidance": 1.0,
+        "parity": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "max_play": 10
+      },
+      "native_inference_flag_fragment": [
+        "--nfe",
+        "1",
+        "--k-seeds",
+        "4",
+        "--guidance",
+        "1.0",
+        "--parity-fixes",
+        "--persistent-noise"
+      ],
+      "fragment_is_not_a_hardware_launch_command": true
+    },
+    {
+      "id": "fta1500_nfe5_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "weights": "EMA",
+      "inference_settings": {
+        "use_ema": true,
+        "nfe": 5,
+        "k_seeds": 4,
+        "guidance": 1.0,
+        "parity": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "max_play": 10
+      },
+      "native_inference_flag_fragment": [
+        "--nfe",
+        "5",
+        "--k-seeds",
+        "4",
+        "--guidance",
+        "1.0",
+        "--parity-fixes",
+        "--persistent-noise"
+      ],
+      "fragment_is_not_a_hardware_launch_command": true
+    }
+  ],
+  "after_results": "selected_id retains the formal clear_simulator_winner meaning and remains null. recommended_lab_candidate_id is an explicit conditional operational choice from completed reserved confirmation; it does not enable the winner-only simulator arm extension. No pooled screening/development counts or physical validation claim.",
+  "recommended_lab_candidate_id": "fta1500_nfe1_k4",
+  "recommendation_qualification": "Next attended lab calibration/transfer candidate; not a validated reliable winner or hardware-qualified configuration",
+  "confirmation": {
+    "path": "confirmation/selection.json",
+    "sha256": "464d7d354d334232ab4861e0e15faf6e118e1f46e8f2882df0cd6248289d0d60",
+    "campaign_sha256": "fe62f45fcaf2e71e4df890ff7303bf70a2b49e35fc2a745f6f7492a5f200b855",
+    "clear_simulator_winner": null,
+    "paired_physical_place_difference": {
+      "difference_a_minus_b": 0.08333333333333333,
+      "interval": [
+        0.0,
+        0.25
+      ],
+      "confidence_level": 0.95,
+      "bootstrap_replicates": 10000,
+      "bootstrap_seed": 20260907,
+      "paired_seed_count": 12,
+      "bootstrap_unit": "Matched sampling-seed pair at ONE fixed physical state; no arm-start resampling",
+      "discordant_a_only": 1,
+      "discordant_b_only": 0,
+      "exact_two_sided_mcnemar_p": 1.0,
+      "degenerate_interval": false,
+      "interpretation": "Descriptive conditional simulator uncertainty. A degenerate interval does not establish equivalence."
+    },
+    "winner_gates": {
+      "physical_place_at_least_8_of_12": false,
+      "paired_95pct_lower_bound_positive": false,
+      "exact_two_sided_p_le_0_05": false,
+      "no_increase_in_drops": false,
+      "no_increase_in_pre_placement_force_limit_stops": true
+    },
+    "counts_unpooled": {
+      "fta1500_nfe1_k4": {
+        "trials": 12,
+        "strict_full_place": 1,
+        "clean_place": 1,
+        "acquired": 12,
+        "lifted": 7,
+        "carried": 6,
+        "dropped": 1,
+        "safety_stop": 11
+      },
+      "fta3000_nfe1_k4": {
+        "trials": 12,
+        "strict_full_place": 0,
+        "clean_place": 0,
+        "acquired": 8,
+        "lifted": 4,
+        "carried": 4,
+        "dropped": 0,
+        "safety_stop": 12
+      }
+    }
+  }
+}

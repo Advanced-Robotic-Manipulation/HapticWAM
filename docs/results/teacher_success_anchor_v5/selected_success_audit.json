@@ -1,0 +1,455 @@
+{
+  "case_id": "fta1500_nfe1_k4__successful_anchor__seed904510",
+  "scope": "Selected held-out illustration; all 24 confirmation trials remain the denominator. Read-only source and telemetry checks; no model selection or rescoring.",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+  "source_sha256": {
+    "phantom/sim/policy_adapter.py": "97adde55eb1b6e619054c45426e571ab08fe39f5f2da16e51b3b5a02022eae88",
+    "phantom/sim/release_controller.py": "9719c8fc98d8eb390c67e81462fbf48f926d017b27bfe62f5eedeb51162c0284",
+    "tools/sim/deployment_filters.py": "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675"
+  },
+  "input_sha256": {
+    "execution_trace.jsonl": "5724ff7b16c0c2326be833508387e14e893bba7344fd804249350eead31959f1",
+    "delivered_plans.jsonl": "6239d01197c15e0e0937c2b989c6b749b49ed38708769a60d7e8b6f02d63c719",
+    "planner_trace.json": "025157f45fe96435055874bdd3e00958eabc67bd47335d96510c1a842ba81820",
+    "policy_tactile.npz": "13b9790a5009114bdedda8e80c34101b5708a5ee45ab26c4adf87a6a1506ae4b",
+    "sim_trace.npz": "a1cb2b6edffd7f0dfc52b881fb02e0b7cf3a84fc432ad7cbbbaa1f4c649be237",
+    "policy_info.json": "011682a465e5b13a219f41a0cf0b32ea316a05f57b4d5337b3a65a6019025d10",
+    "run.json": "d66d9ac568e7483e1db422d49d523dd169bf67257587255573dc38262e4b189f"
+  },
+  "score_sha256": "005881cf8a4a207608b7e20c083a99b945d87b0d58741d1e09fe056a8c4b560d",
+  "score_input_hashes_match": true,
+  "primary_metrics": {
+    "schema_version": 1,
+    "valid_for_scoring": true,
+    "invalid_reasons": [],
+    "thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    },
+    "outcomes": {
+      "reach_before_closure": true,
+      "acquired": true,
+      "lifted": true,
+      "carried": true,
+      "released_in_bin": true,
+      "full_task": true,
+      "dropped": false
+    },
+    "event_times_s": {
+      "reach": 6.268,
+      "closure": 7.668,
+      "acquisition": 7.936,
+      "lift": 11.200000000000001,
+      "carry": 13.6,
+      "release_in_bin": 23.6,
+      "full_task": 24.268,
+      "first_drop": null
+    },
+    "object": {
+      "initial_center_m": [
+        -0.393706738948822,
+        -0.29306915402412415,
+        0.06999999284744263
+      ],
+      "final_center_m": [
+        -0.4226782023906708,
+        0.08411949872970581,
+        0.07200001925230026
+      ],
+      "max_lift_m": 0.3433929681777954,
+      "carry_distance_m": 0.39835544414563756,
+      "final_inside_bin": true,
+      "final_contacts_unloaded": true,
+      "final_speed_m_s": 8.330002343281004e-07,
+      "final_angular_speed_rad_s": 2.51118832027204e-05,
+      "minimum_pad_midpoint_to_object_m": 0.0,
+      "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+      "bilateral_contact_duration_s": 15.06,
+      "pad_packet_normal_force_peak_n": 6.384119510650635
+    },
+    "placement_support": {
+      "required": true,
+      "telemetry_status": "available",
+      "verified_placement": true,
+      "confirmation_time_s": 24.268,
+      "robot_contact_peak_n": 12.589601874351501,
+      "bin_contact_peak_n": 0.3435523882508278,
+      "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+    },
+    "control": {
+      "stop_reason": null,
+      "execution_rows": 7500,
+      "execution_clock_valid": true,
+      "ik_rejects": 0,
+      "ik_reject_reasons": {},
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "replans": 31,
+      "inference_errors": 0,
+      "plans_activated": 30,
+      "effective_latency_s": {
+        "count": 31,
+        "mean": 0.8262013412989496,
+        "p95": 1.1559771650354378,
+        "max": 1.2140106910374016
+      },
+      "inference_wall_time_s": {
+        "count": 31,
+        "mean": 0.9954808572863019,
+        "p95": 1.3731122319586575,
+        "max": 1.434495355002582
+      },
+      "activation_delay_s": {
+        "count": 30,
+        "mean": 0.8170666666666667,
+        "p95": 1.0071999999999992,
+        "max": 1.176
+      },
+      "lift_complete_is_task_success": false
+    },
+    "collisions": {
+      "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "reported_count": 0,
+      "pad_environment_force_peak_n": 0.0,
+      "reported_events": []
+    },
+    "trace_sampling": {
+      "rows": 901,
+      "duration_s": 59.996,
+      "maximum_interval_s": 0.06800000000000495,
+      "physics_clock_max_error_s": 2.8496570863012494e-06,
+      "event_time_uncertainty_s": 0.06800000000000495
+    },
+    "reach_diagnostic": {
+      "absolute_threshold_already_exceeded_at_start": false,
+      "initial_measured_closure": 0.07840987294912338,
+      "first_closing_motion_s": 1.436,
+      "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+      "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+      "sample_time_s": 1.4000000000000001,
+      "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+    },
+    "limitations": [
+      "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+      "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+      "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+      "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+      "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+    ]
+  },
+  "release_config": {
+    "tcp_min_m": [
+      -0.5429275160642127,
+      -0.06853791240695331,
+      0.057999999999999996
+    ],
+    "tcp_max_m": [
+      -0.24020644059509488,
+      0.14193716917871008,
+      0.274
+    ],
+    "open_command_max": 0.45,
+    "opening_hold_s": 0.2,
+    "unloaded_force_max_n": 0.5,
+    "unloaded_hold_s": 0.2,
+    "rearm_close_command_min": 0.5,
+    "finish_after_release": true,
+    "finish_observation_s": 2.0
+  },
+  "events": {
+    "opening": {
+      "t": 23.38,
+      "measured_tcp": [
+        -0.4120505701788265,
+        0.07857778116158642,
+        0.10169286448452883,
+        -2.1741740785865056,
+        -0.9509424662972963,
+        0.6112539094321422
+      ],
+      "measured_gripper": [
+        0.5553392767906189,
+        2
+      ],
+      "gripper_command": 0.646243155002594,
+      "active_replan_id": 27,
+      "diagnostics": {
+        "safety_events": [],
+        "completed_reason": null,
+        "completed_at_s": null,
+        "completion_hold": false,
+        "stale_plan_hold": false,
+        "plan_activated": true,
+        "play_time_s": 0.006244940507556007,
+        "ik_rejects": 0,
+        "ik_rejects_total": 0,
+        "placement_release": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "holding",
+          "window_active": true,
+          "opening_since_s": 23.38,
+          "committed_at_s": null,
+          "finished_at_s": null,
+          "controller_finished": false,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": null,
+          "suppress_latch": false,
+          "event": null
+        },
+        "grip_latch": 0.646243155002594
+      }
+    },
+    "committed": {
+      "t": 23.580000000000002,
+      "measured_tcp": [
+        -0.4122869202640567,
+        0.07821296009265417,
+        0.10111312394945479,
+        -2.173813338623663,
+        -0.9499571436122634,
+        0.6121406715463187
+      ],
+      "measured_gripper": [
+        0.5553402304649353,
+        2
+      ],
+      "gripper_command": 0.4323485195636749,
+      "active_replan_id": 27,
+      "diagnostics": {
+        "safety_events": [],
+        "completed_reason": null,
+        "completed_at_s": null,
+        "completion_hold": false,
+        "stale_plan_hold": false,
+        "plan_activated": false,
+        "play_time_s": 0.14773552922554845,
+        "ik_rejects": 0,
+        "ik_rejects_total": 0,
+        "placement_release": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "releasing",
+          "window_active": true,
+          "opening_since_s": 23.38,
+          "committed_at_s": 23.580000000000002,
+          "finished_at_s": null,
+          "controller_finished": false,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": null,
+          "suppress_latch": true,
+          "event": "policy_release_committed"
+        },
+        "grip_latch": null
+      }
+    },
+    "unloaded_open": {
+      "t": 24.876,
+      "measured_tcp": [
+        -0.41316766114047127,
+        0.08016752279972683,
+        0.10374589726416424,
+        -2.159317416910231,
+        -0.9390699937035711,
+        0.6258555565745607
+      ],
+      "measured_gripper": [
+        0.4478026032447815,
+        0
+      ],
+      "gripper_command": 0.437418133020401,
+      "active_replan_id": 28,
+      "diagnostics": {
+        "safety_events": [],
+        "completed_reason": null,
+        "completed_at_s": null,
+        "completion_hold": false,
+        "stale_plan_hold": false,
+        "plan_activated": false,
+        "play_time_s": 0.41241599436874027,
+        "ik_rejects": 0,
+        "ik_rejects_total": 0,
+        "placement_release": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "releasing",
+          "window_active": true,
+          "opening_since_s": 23.38,
+          "committed_at_s": 23.580000000000002,
+          "finished_at_s": null,
+          "controller_finished": false,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": 24.876,
+          "suppress_latch": true,
+          "event": null
+        },
+        "grip_latch": null
+      }
+    },
+    "finished": {
+      "t": 25.076,
+      "measured_tcp": [
+        -0.41321709773644844,
+        0.08066520779612053,
+        0.10537992509533818,
+        -2.1543882470800138,
+        -0.9364622536096356,
+        0.6283342299678409
+      ],
+      "measured_gripper": [
+        0.23168116807937622,
+        3
+      ],
+      "gripper_command": 0.23199999332427979,
+      "active_replan_id": 29,
+      "diagnostics": {
+        "safety_events": [],
+        "completed_reason": "placement_release_finished",
+        "completed_at_s": 25.076,
+        "completion_hold": true,
+        "stale_plan_hold": false,
+        "plan_activated": false,
+        "play_time_s": 0.08674385969889059,
+        "ik_rejects": 0,
+        "ik_rejects_total": 0,
+        "placement_release": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "finished",
+          "window_active": false,
+          "opening_since_s": 23.38,
+          "committed_at_s": 23.580000000000002,
+          "finished_at_s": 25.076,
+          "controller_finished": true,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": 24.876,
+          "suppress_latch": true,
+          "event": "placement_release_finished"
+        },
+        "grip_latch": null
+      }
+    }
+  },
+  "opening_evidence": {
+    "unmodified_teacher_delivered_chunk_equals_original": true,
+    "active_plan_index": 27,
+    "execution_rows": 26,
+    "teacher_grip_sample_range": [
+      0.4323485195636749,
+      0.4489428997039795
+    ],
+    "all_teacher_grip_samples_at_or_below_open_threshold": true,
+    "all_measured_tcp_inside_release_volume": true,
+    "sampling": "Frozen _pose_at: min(int(play_time_s*10),9), max_play_steps10. No pose/grip interpolation is invented."
+  },
+  "unloaded_open_dwell": {
+    "duration_s": 0.1999999999999993,
+    "measured_grip_max": 0.4478026032447815,
+    "accepted_open_at_finish": 0.23199999332427979,
+    "saved_gel_window": {
+      "sample_count": 6,
+      "gel_normal_force_max_n_by_pad": [
+        0.0,
+        0.0
+      ]
+    },
+    "scope": "Saved gel normal force is an uncalibrated proxy; it is not a calibrated physical pressure measurement."
+  },
+  "last_plan_before_finish": {
+    "index": 29,
+    "delivery_t_s": 25.004,
+    "raw_teacher_grip": [
+      0.3365224599838257,
+      0.32161635160446167,
+      0.33168768882751465,
+      0.32956236600875854,
+      0.3444092869758606,
+      0.3245132565498352,
+      0.33183878660202026,
+      0.32887810468673706,
+      0.33702266216278076,
+      0.3252072334289551,
+      0.3355668783187866,
+      0.3282511830329895,
+      0.3318915367126465,
+      0.31934264302253723,
+      0.3391822874546051,
+      0.3288576900959015
+    ],
+    "delivered_grip": [
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979,
+      0.23199999332427979
+    ],
+    "terminal_veto": {
+      "p_contact": 0.0056,
+      "retries": 1,
+      "action": "recovery_open",
+      "snapshot_t_s": 24.196,
+      "applied_at_s": 25.004,
+      "replan_index": 29,
+      "cpk_invalidated": true,
+      "stop_reason": null,
+      "implementation": "fd4a032",
+      "native_source_sha256": "7c71eea057710ca1ea3331e9b52934584c56709bef5427d1f1f37eb08ecc22b7"
+    },
+    "interpretation": "Teacher already commanded opening and physical placement was confirmed before this plan. Native historical recovery_open increases opening to .232 before the final accepted-open gate; final aperture is not attributed solely to the teacher."
+  },
+  "finish_hold": {
+    "first_t_s": 25.076,
+    "last_t_s": 59.996,
+    "rows": 4366,
+    "all_not_stopped": true,
+    "all_post_finish_completion_hold": true,
+    "hold_target_equals_first_finish_measured_tcp": true,
+    "requested_tcp_max_change": 0.0,
+    "measured_tcp_max_translation_error_m": 0.002756451810329282,
+    "post_finish_replan_count": 0,
+    "controller_completion_is_object_success": false
+  },
+  "physical_summary": {
+    "trace_t_s": [
+      0.0,
+      59.996
+    ],
+    "scene_samples": 901,
+    "peak_packet_pad_normal_n": 6.384119510650635,
+    "packet_robot_normal_max_after_finish_n": 0.0,
+    "packet_bin_normal_final_n": 0.3435521125793457,
+    "packet_final_position_m": [
+      -0.4226782023906708,
+      0.08411949872970581,
+      0.07200001925230026
+    ],
+    "packet_post_finish_max_displacement_m": 4.998001301714794e-08
+  },
+  "diagnostic_helper_sha256": "acebd8007db31bee936ee674a3bbdfb1fb3839736e16db1f1a4ab5e5c24266f7",
+  "reproduction": "ssh compute3 PYTHONDONTWRITEBYTECODE=1 /home/physicalai/phantom-icra-2027/phantom/.venv/bin/python - < docs/results/teacher_success_anchor_v5/selected_success_audit.py"
+}

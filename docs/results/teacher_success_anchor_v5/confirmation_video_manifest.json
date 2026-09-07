@@ -1,0 +1,2169 @@
+{
+  "status": "complete",
+  "pid": 2422184,
+  "started_at_unix_s": 1788775732.1233246,
+  "watch_timeout_s": 5400,
+  "cpu_affinity": [
+    30,
+    31
+  ],
+  "nice": 19,
+  "expected_cases": [
+    "fta1500_nfe1_k4__successful_anchor__seed904501",
+    "fta1500_nfe1_k4__successful_anchor__seed904502",
+    "fta1500_nfe1_k4__successful_anchor__seed904503",
+    "fta1500_nfe1_k4__successful_anchor__seed904504",
+    "fta1500_nfe1_k4__successful_anchor__seed904505",
+    "fta1500_nfe1_k4__successful_anchor__seed904506",
+    "fta1500_nfe1_k4__successful_anchor__seed904507",
+    "fta1500_nfe1_k4__successful_anchor__seed904508",
+    "fta1500_nfe1_k4__successful_anchor__seed904509",
+    "fta1500_nfe1_k4__successful_anchor__seed904510",
+    "fta1500_nfe1_k4__successful_anchor__seed904511",
+    "fta1500_nfe1_k4__successful_anchor__seed904512",
+    "fta3000_nfe1_k4__successful_anchor__seed904501",
+    "fta3000_nfe1_k4__successful_anchor__seed904502",
+    "fta3000_nfe1_k4__successful_anchor__seed904503",
+    "fta3000_nfe1_k4__successful_anchor__seed904504",
+    "fta3000_nfe1_k4__successful_anchor__seed904505",
+    "fta3000_nfe1_k4__successful_anchor__seed904506",
+    "fta3000_nfe1_k4__successful_anchor__seed904507",
+    "fta3000_nfe1_k4__successful_anchor__seed904508",
+    "fta3000_nfe1_k4__successful_anchor__seed904509",
+    "fta3000_nfe1_k4__successful_anchor__seed904510",
+    "fta3000_nfe1_k4__successful_anchor__seed904511",
+    "fta3000_nfe1_k4__successful_anchor__seed904512"
+  ],
+  "helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "campaign_sha256": "fe62f45fcaf2e71e4df890ff7303bf70a2b49e35fc2a745f6f7492a5f200b855",
+  "watcher_sha256": "272a989edd01a0fcf049eddd0ea4da8ef478f812ade655c43fd897fcd807f118",
+  "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+  "entries": [
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904501",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904501/policy_review.mp4",
+      "video_bytes": 1086489,
+      "video_sha256": "ccb9707001461b544155c3843bb371ac11fedd2db298315029ccb77d5efee264",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904501/policy_review.json",
+      "metadata_sha256": "cac7bc5096cffd028e1667ecad1351d717bb1737a9395f98fa89603922207743",
+      "decoded_frames": 272,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.096,
+      "score_sha256": "d90932bf0912c390c0fab3d775961f1a6c58cabd7edf01813f84798aee660a87",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            129
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "eff994bd33f23e984650db6659af69813f0da0b8c4468f7afd87047ac3773a13"
+        },
+        "gel": {
+          "shape": [
+            129,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "a28ecd8ce51ac988c5e131dfea2d60f66963dc771b5e5f54b1b78fc4b830f360"
+        },
+        "gel_normal_force": {
+          "shape": [
+            129,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "b3b47961a6195cae5f53caf6c8a7829f2de6b8557662b9c08ed6ea9d733be7de"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "4bc21f61347f4365b11b99a04d96a46b52eeb909022bb91e64a761e7bd9ec268",
+        "sim.mp4": "cc5dd1a89a5acd77c78f95a71a5e4743d0b6e6fbaa443749f727cd9c9decfdfa",
+        "sim_trace.npz": "63724779cd5f2fac55a75d51d6ef62be9e39e96046a03c61d8dd1a91ec376cda",
+        "policy_tactile.npz": "11a78ca584002fa9f34d85d7e8eb7288f54846ef7541ba9c61ae4e8318d07cba",
+        "execution_trace.jsonl": "dd8fc3127e75647435e12bd8bb0dfa5e24aa5fe5297b5efaec505dfa003c15ea",
+        "planner_trace.json": "72063437a1844c44dea347678f2e3d9fd3f80621fa258ddbd67f8c02e5739ea6",
+        "run.json": "1f2100765d8db6ec4c75886e11e4d74ecbf723107b7b62a45a191165cd6d5e71",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "f388eb2cea20eb26e966c9264a8ff480bf566cc36c6f33dd4634ec0db9197ea0",
+        "policy_info.json": "0b5fdc744e27751b6dbfc08b498e33e91d816ff92bba2405201ed5f55e66b9e8"
+      },
+      "score_inputs_sha256": {
+        "run.json": "1f2100765d8db6ec4c75886e11e4d74ecbf723107b7b62a45a191165cd6d5e71",
+        "sim_trace.npz": "63724779cd5f2fac55a75d51d6ef62be9e39e96046a03c61d8dd1a91ec376cda",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "dd8fc3127e75647435e12bd8bb0dfa5e24aa5fe5297b5efaec505dfa003c15ea",
+        "planner_trace.json": "72063437a1844c44dea347678f2e3d9fd3f80621fa258ddbd67f8c02e5739ea6",
+        "policy_info.json": "0b5fdc744e27751b6dbfc08b498e33e91d816ff92bba2405201ed5f55e66b9e8",
+        "server_ready.json": "92f1c2c47afa174ea70f621e8b48c0b2dfa9e5b80b0ba3b36af2bb35d84c8b82"
+      },
+      "mapping_sha256": "7f61466fb5cf6e2ab3f36b43bed72f0ab162d5559028ca373b8c58461eaa82a6",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904501",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904501",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904501/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904502",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904502/policy_review.mp4",
+      "video_bytes": 995577,
+      "video_sha256": "3ff84fee3401684a1ec5ce89c0c76322f88d8dfe544e377cfc326a60700c4d11",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904502/policy_review.json",
+      "metadata_sha256": "85ab91bc1328a66611264b2b3e7d28ba4e9bc26652c27b4c1446fdf4665a7063",
+      "decoded_frames": 266,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 17.712,
+      "score_sha256": "1a0d4e28dff5ba8ae49cab426b7a78cd5c7dc97cd84aa09e278f51d7820fb66f",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": false,
+        "acquired": true,
+        "lifted": true,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": true
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            126
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "695cec10acdbaec9bb2126d6e83835d2e3a0dcd1a6cf092b054476418b88361e"
+        },
+        "gel": {
+          "shape": [
+            126,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "a8df05aa4c6c3573485f806b27b1da669c11012fb009316440e517ad8eeb7186"
+        },
+        "gel_normal_force": {
+          "shape": [
+            126,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "189a028bbe0663dc7eb5510d3ebeea372264a48e792c7a0f68358958c38f21f6"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "45bd895400bd5b6dbe82b30c6ed0bb31b45387ffffa267a36e827e3be119f805",
+        "sim.mp4": "4f83fca5974ecc226f70c4720cf17b41f3959d2c5899a5c128201a686f9a5d61",
+        "sim_trace.npz": "c4575f003f24db1f94ff6c242533abd615d12fa945006c0ec0fe2ad1603aedcd",
+        "policy_tactile.npz": "78f4a745c67ea34f98f8889271419e7c1513d15bb9d4bf919a25803a63024d71",
+        "execution_trace.jsonl": "42738b4c526ddcc62828ab2205b5c924fa05b8c448e625674969f219c293c4e0",
+        "planner_trace.json": "38f93e31adc44fdbaf22bb854f3962d586b76443d6f54424ec09e27cbacce5f1",
+        "run.json": "d5515608082f295c93d94959062aaa6ebaf29729f078293f708258303aefd281",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "a3a16aac3cd5cf41d19b8c23ecf5de66ea7a16e32fa26487ca21dbb3f9212ae1",
+        "policy_info.json": "3db5547370322a14d6b64514d3caf772e55655eba06982c74c9d49eb1c0c17e0"
+      },
+      "score_inputs_sha256": {
+        "run.json": "d5515608082f295c93d94959062aaa6ebaf29729f078293f708258303aefd281",
+        "sim_trace.npz": "c4575f003f24db1f94ff6c242533abd615d12fa945006c0ec0fe2ad1603aedcd",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "42738b4c526ddcc62828ab2205b5c924fa05b8c448e625674969f219c293c4e0",
+        "planner_trace.json": "38f93e31adc44fdbaf22bb854f3962d586b76443d6f54424ec09e27cbacce5f1",
+        "policy_info.json": "3db5547370322a14d6b64514d3caf772e55655eba06982c74c9d49eb1c0c17e0",
+        "server_ready.json": "92f1c2c47afa174ea70f621e8b48c0b2dfa9e5b80b0ba3b36af2bb35d84c8b82"
+      },
+      "mapping_sha256": "08d4799719906e108fc2d1f6ae6805b92bb0cd0fdf79cc7630fff75d69bdf955",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904502",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904502",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904502/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904501",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904501/policy_review.mp4",
+      "video_bytes": 616310,
+      "video_sha256": "81cfb4d06a1cb088251dc5765bdd41c94e42e0f8abae4adb9072835911bb7cda",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904501/policy_review.json",
+      "metadata_sha256": "8969d5c3b66687695965e581d7e8fa030fb811d2d601ac1cb8e8da33dbae1198",
+      "decoded_frames": 169,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 11.208,
+      "score_sha256": "865bf4a0635c7eb0915420f447718f383d06be9efe5ae96609b179683c0db8f2",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            74
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "3390b1eb36115b830943507a09a1b8e4fb16717d602730300c4da9c87aa84004"
+        },
+        "gel": {
+          "shape": [
+            74,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "bb343a0c8194382dd2718563fa170ae0f65eb5a6d821518ce927c6d6b0c657c5"
+        },
+        "gel_normal_force": {
+          "shape": [
+            74,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "7081ba3d8887be22551f56b5f50da675bda7dd02f40e9fcb150ac84fccbe387f"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "3a6bc21e725b10bfdfa2d6e3c7ce1ebd3474e665649fa77e3744350a8bbc945a",
+        "sim.mp4": "e4011ae9ec25dacf8ed7e50cb83080382e22ea8061ac4a85ee062026e8d011e5",
+        "sim_trace.npz": "e04cc24b7de77b7c7fdc139999600f93f2c600d96ab0f9a0dc29e00838caa834",
+        "policy_tactile.npz": "0652a598ae84599fd11ed9563c4fb9e7411c12a9afb009c1866648a0147c0604",
+        "execution_trace.jsonl": "991fe10b42d33d03e534d20001754b78b1d7a0a028c219ebb69ee3882ecb5c96",
+        "planner_trace.json": "b10a9c2ff3560d3eb33f14149178bb9ae5a46f63ba56cb3b659ba6d7b6426dda",
+        "run.json": "621c7cf40c91eee3281dc522b0bc667a24dec92ce0783e5aed453e72d6321f7c",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "ca8a1166a6eff80226837f257d77c3913e14027dc7f4fc5acd32c21537008272",
+        "policy_info.json": "8ccf49123f032a31038eab29e670acf0d3704f432bed23ad71bc5caa0693aa86"
+      },
+      "score_inputs_sha256": {
+        "run.json": "621c7cf40c91eee3281dc522b0bc667a24dec92ce0783e5aed453e72d6321f7c",
+        "sim_trace.npz": "e04cc24b7de77b7c7fdc139999600f93f2c600d96ab0f9a0dc29e00838caa834",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "991fe10b42d33d03e534d20001754b78b1d7a0a028c219ebb69ee3882ecb5c96",
+        "planner_trace.json": "b10a9c2ff3560d3eb33f14149178bb9ae5a46f63ba56cb3b659ba6d7b6426dda",
+        "policy_info.json": "8ccf49123f032a31038eab29e670acf0d3704f432bed23ad71bc5caa0693aa86",
+        "server_ready.json": "a71748341a0ae914fc302383795ad74e33f65e9a1717c8bfbc4a4baf318d07b3"
+      },
+      "mapping_sha256": "2cc550e66019abce4cfbda425c1bae54ace88a55f018cf005140e10f0e631851",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904501",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904501",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904501/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904502",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904502/policy_review.mp4",
+      "video_bytes": 527827,
+      "video_sha256": "00ffa34c04171611246229ce7d18c16460e3337ff9a3c741223e2a94ff00febc",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904502/policy_review.json",
+      "metadata_sha256": "3db1351922d1f127f27e31ae0f4eb2c56df8a582b230721dbec2ca7ee5f0e538",
+      "decoded_frames": 153,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 10.192,
+      "score_sha256": "89de9576c556eb2379cacbd0254c568216e4a51d0532453d4ef9d57b1e61a09f",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            66
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "9594217ef47dba7ceef209a75502a439c0a2007d8f4971311ca21c88cf14f683"
+        },
+        "gel": {
+          "shape": [
+            66,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "9299f628ac68c7aa43fe735bee2042d02165018ebc774cf1bce075865f8fc0cb"
+        },
+        "gel_normal_force": {
+          "shape": [
+            66,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "10e2103ee73921931a7828ebdf325d3a3a64c7a90cc1da5c0ca6fe17b1e3dd78"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "84a160ade4e41feac82cfc6d81f4e15451e8195cdd0abad27336845bd297df1b",
+        "sim.mp4": "4773f072e0046f3120fdd13e5fa9538f4eeccdb40f9f2224ebb755db8bc2afd5",
+        "sim_trace.npz": "e496d1c6fdde387e2be5a2ea97216d2ce517e091c3e1a9524a218f40bf94eb4d",
+        "policy_tactile.npz": "0d7856c0ef8d3584d36fa7e7cbab5c5850219a0f4d6429ff2ede704091f47959",
+        "execution_trace.jsonl": "0aba0f18ba4c3f5f79c9bc5b4a7ceee6e858881bee572bc309b829328551c931",
+        "planner_trace.json": "11dd8c6364eb27c84d868ddd19f9c7b4601a8842d963a2e295035c9058fc1a3a",
+        "run.json": "4a6b163d9060937515e0230537e020e965b975e8db9ac237773f325448fa2263",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "e881f3be9a5e77f5f5976fbf15467e862a64a19089328173d845e411a898ab9a",
+        "policy_info.json": "1fad7c3ff0963968cfd27e31a5c96c3a348160f63b3d21a69952045175ff35f4"
+      },
+      "score_inputs_sha256": {
+        "run.json": "4a6b163d9060937515e0230537e020e965b975e8db9ac237773f325448fa2263",
+        "sim_trace.npz": "e496d1c6fdde387e2be5a2ea97216d2ce517e091c3e1a9524a218f40bf94eb4d",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "0aba0f18ba4c3f5f79c9bc5b4a7ceee6e858881bee572bc309b829328551c931",
+        "planner_trace.json": "11dd8c6364eb27c84d868ddd19f9c7b4601a8842d963a2e295035c9058fc1a3a",
+        "policy_info.json": "1fad7c3ff0963968cfd27e31a5c96c3a348160f63b3d21a69952045175ff35f4",
+        "server_ready.json": "a71748341a0ae914fc302383795ad74e33f65e9a1717c8bfbc4a4baf318d07b3"
+      },
+      "mapping_sha256": "2cc28a12ae5ef70e34abf4b17002eaa647f033986b64de911ad8636d65751861",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904502",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904502",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904502/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904503",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904503/policy_review.mp4",
+      "video_bytes": 986500,
+      "video_sha256": "78735c32b80857bdb5350d137cc1763f587b98c5bde292d908951af8ff8fb3c1",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904503/policy_review.json",
+      "metadata_sha256": "243f51f039d956fec9a73e1e250c619869cd9d0a208d60e390d282f466658d52",
+      "decoded_frames": 267,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 17.76,
+      "score_sha256": "555f266327db46d8d85b8af6d5ebb063c3e897595be68c20b41b467bf1b3f56b",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            127
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "ea8859bb87173ecb3116e4f66605633130ff947418e0cc83eccc518c336b6333"
+        },
+        "gel": {
+          "shape": [
+            127,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "73d07e937023be781ecc49cf0e182902f19fe2f12b57722f7f6fe8008362d230"
+        },
+        "gel_normal_force": {
+          "shape": [
+            127,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "78d7df806d36992a41a7f8710a1e59ef897c8fee8e318d69b137e1c34558359c"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "d323b556f802b33e99f345d374a040440e94ca171d2c3db0b4f4c29b1d788c65",
+        "sim.mp4": "5b90a751b520c8d457dbd80feba3621eab89dcd13b2721e83a1bd310c63c7519",
+        "sim_trace.npz": "5c7dc007810b62866c42fca23d0534b501d0e467ecd7ec29e575e290b4df5cf9",
+        "policy_tactile.npz": "8f9ddb0555f2811422f2e07885ee2c6e74ade70a95ae6d08b19257cca9999c4f",
+        "execution_trace.jsonl": "338e8668c0d9263623753fc7b2339f6434072c0304f1ddd4a9985471fbb1cf84",
+        "planner_trace.json": "f56a950c28287b00e7bba4d47c2d965bb5c70d5937ccad7a07c12cceeebaf840",
+        "run.json": "b6383290fe700e784e31c215f9f1f142c0742e22f7502081a02c9e7895438541",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "a96fc423ae7e69265ba41c026f3ec9d1442ed0ad7a94b3599a07069c8adc6b2c",
+        "policy_info.json": "51f7803be282f9af0e7d0eb95f0b6ae08f2a3d80e5bcf89d6ef0cb3155b4f549"
+      },
+      "score_inputs_sha256": {
+        "run.json": "b6383290fe700e784e31c215f9f1f142c0742e22f7502081a02c9e7895438541",
+        "sim_trace.npz": "5c7dc007810b62866c42fca23d0534b501d0e467ecd7ec29e575e290b4df5cf9",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "338e8668c0d9263623753fc7b2339f6434072c0304f1ddd4a9985471fbb1cf84",
+        "planner_trace.json": "f56a950c28287b00e7bba4d47c2d965bb5c70d5937ccad7a07c12cceeebaf840",
+        "policy_info.json": "51f7803be282f9af0e7d0eb95f0b6ae08f2a3d80e5bcf89d6ef0cb3155b4f549",
+        "server_ready.json": "4e21f223f3b1144b7f065354c7df733c2157aeb5d82a2bf489c8f30876fe25ba"
+      },
+      "mapping_sha256": "cc64707e74fa92894b16d146204da7374940e7c961cb7ff4332e8363bfbc8458",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904503",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904503",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904503/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904504",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904504/policy_review.mp4",
+      "video_bytes": 1037528,
+      "video_sha256": "d042ddb27bd926f786e89706a7e7323543764f055a56514d25a27934bb9c2808",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904504/policy_review.json",
+      "metadata_sha256": "eb872380ea0690aced09b0c0e713bbf9343cb62fe69efe5b8ab2b6f19cd64475",
+      "decoded_frames": 275,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.304000000000002,
+      "score_sha256": "271ee587f5d5fd616960b9de49bd281c886566c50744ad52976643ef45c70676",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            131
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "06d62ddb613327a5796c731fe58d275748c755f16cac69f1c71c67427277f767"
+        },
+        "gel": {
+          "shape": [
+            131,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "858112c7b27a1d6fd2305b01db32b63a93dd4043872cb1bc54e955976fe915d9"
+        },
+        "gel_normal_force": {
+          "shape": [
+            131,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "3250379222b367377fdd1510df1d366868a2de67c5fdf270c3d5aed9d520da22"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "5a5a33d4a02bcf4362e5f92d6e350347796e790181f6936c0394497288f159f8",
+        "sim.mp4": "16657e00504787d9da6a47281f3594b378e0c84ec9d491da2915998f8f0fadff",
+        "sim_trace.npz": "cb18a5bca609f5d191b627c27fbf4b6f27b858580554755de90abb9b92a0474d",
+        "policy_tactile.npz": "d1ae9a84dd32158ab4b90e3f3d6dc970ce722fb7e9488ffd3704eb6f312e36cc",
+        "execution_trace.jsonl": "a3a5086fc20a8090ba36b857510c07d65c3a87a73026a94776115dbf17e803f3",
+        "planner_trace.json": "36b3e99f32a3061aea2e0a02dc757102f12372c0ea2532345b7ce21d36e5809f",
+        "run.json": "62ab0ab54ab7586e81334aad8aec6b498a67f51fe0af4d21690d30606110eea0",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "130a861ad5681ef025a37e9a4c176902a1b945cf36301ee51a4f295fd0ba1622",
+        "policy_info.json": "ef60758ff0f20036783f56e1f910d37c1f7653654f20d8f2180aa1a7dd40d383"
+      },
+      "score_inputs_sha256": {
+        "run.json": "62ab0ab54ab7586e81334aad8aec6b498a67f51fe0af4d21690d30606110eea0",
+        "sim_trace.npz": "cb18a5bca609f5d191b627c27fbf4b6f27b858580554755de90abb9b92a0474d",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "a3a5086fc20a8090ba36b857510c07d65c3a87a73026a94776115dbf17e803f3",
+        "planner_trace.json": "36b3e99f32a3061aea2e0a02dc757102f12372c0ea2532345b7ce21d36e5809f",
+        "policy_info.json": "ef60758ff0f20036783f56e1f910d37c1f7653654f20d8f2180aa1a7dd40d383",
+        "server_ready.json": "4e21f223f3b1144b7f065354c7df733c2157aeb5d82a2bf489c8f30876fe25ba"
+      },
+      "mapping_sha256": "ccae7c2091ab3ab44f0cddf45182c0274f6a5719c7408b7e2175971b3f671407",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904504",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904504",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904504/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904503",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904503/policy_review.mp4",
+      "video_bytes": 1000469,
+      "video_sha256": "9d921357f567e49cc317622d96a217fada97de151494b4d20b5d2fa593dbab80",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904503/policy_review.json",
+      "metadata_sha256": "d8ab402989a2f97aa7bdcc3fc66f002a538c241c8559fa9544b94858276c7f2a",
+      "decoded_frames": 281,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.688,
+      "score_sha256": "7386fbdc995a73100c91f639cb810b8216300ef236214e1bd3289bda7e0e90d9",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            134
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "297f3e24f4f46c0f4dbc7ec64fb6e03a60a11e40064e7ae0840580a1574b5797"
+        },
+        "gel": {
+          "shape": [
+            134,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "c8b7955b9e43eacdf84d72dcb6fd8f393dd5645095691531941f1d2385087e4b"
+        },
+        "gel_normal_force": {
+          "shape": [
+            134,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "c7524f6ca7cc9e624833c5ce9fb224c68f08cd15fc255bfe35ffae869b23ff94"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "46fa3db19713ef6ebe664f72d815678ffd79a2dd501c14d43ab414aab0f01a48",
+        "sim.mp4": "a3264f654f7ba3a3c59b487bb6dc14daf7059d33981cdc293971a0be3c0b72da",
+        "sim_trace.npz": "72f17265e32093f1eff063fa06864e89c3f6c7c7207144f8d4aab62c6929e407",
+        "policy_tactile.npz": "3355eac4ce85adaa0bbd33791d9f878f1022366752e7d10775f5c538fa900811",
+        "execution_trace.jsonl": "aa71137d39500a5b420b179987e561ac62e0cbda2cc858d15636e453c65c42ca",
+        "planner_trace.json": "5885e6a1ef581841fcadf08e63d5eb879929de0ff0d1fb522f2c1007fbe05f97",
+        "run.json": "8b214295ec23463169fb6a69610fee84782004255c88499a3cc68232075ebea8",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "855013df13c4eaf9c6152a2bd0b00b0ba972b090b74da618b5fb87a5978f1f12",
+        "policy_info.json": "0ef51459876fd1a4bffc6c002fe5502827cdb4ce1085941b0420ea24778dd0ef"
+      },
+      "score_inputs_sha256": {
+        "run.json": "8b214295ec23463169fb6a69610fee84782004255c88499a3cc68232075ebea8",
+        "sim_trace.npz": "72f17265e32093f1eff063fa06864e89c3f6c7c7207144f8d4aab62c6929e407",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "aa71137d39500a5b420b179987e561ac62e0cbda2cc858d15636e453c65c42ca",
+        "planner_trace.json": "5885e6a1ef581841fcadf08e63d5eb879929de0ff0d1fb522f2c1007fbe05f97",
+        "policy_info.json": "0ef51459876fd1a4bffc6c002fe5502827cdb4ce1085941b0420ea24778dd0ef",
+        "server_ready.json": "333e40614e472b2ec5e603317d3b4d1fc8cd0160538c61440c5da1040b851207"
+      },
+      "mapping_sha256": "931a2fb20ed78b5ab68018532390a7e6e0f450731a931dede7592f6ebc7fd3ec",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904503",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904503",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904503/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904504",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904504/policy_review.mp4",
+      "video_bytes": 1015604,
+      "video_sha256": "6151027351c353f1b8dfd38b87e5b83e795b1c6d4d52aa1901b11e8ddb739e95",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904504/policy_review.json",
+      "metadata_sha256": "aa487f82559f69fcd6fd5080893f00f930fb32369d42779db129ae24d5d633c3",
+      "decoded_frames": 285,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.968,
+      "score_sha256": "fdfaa6bc442f81300cda4221cc8c8d7b52de740798780378f62ca0cd711d47e5",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            136
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "e3343438fea751ed9cda7fb4861a114ff102a430bd35888e3393dd238f393f45"
+        },
+        "gel": {
+          "shape": [
+            136,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "8fa238528f0da1fe1ebe9744cef2d8e5a42e6e87943022a04be97788a9645bde"
+        },
+        "gel_normal_force": {
+          "shape": [
+            136,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "b23980af688d7c5e8081e2df475657a1a3c0bb256084a20efcdd1d7131ce8f2a"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "e7aeffac5880044fb3277137399db7637d9588857d0428dd3055ce73d805cbc2",
+        "sim.mp4": "e02e3dab34926cac76ba02da777bdc826f9043e14ef8412332b0f06d0f8c4eb1",
+        "sim_trace.npz": "0cbb9d435ebb0de84aefc802b6f43183a70947a6c9b504f1674a51499c8f7014",
+        "policy_tactile.npz": "dfeae393defa97f7643af7839ee03abe378c01629e861cb5b13e89a160d5bae4",
+        "execution_trace.jsonl": "b186929f3b583c6a7b7a9434bd69dc9a31a520c3cba9adda1970a6eeb1cea4b1",
+        "planner_trace.json": "49a00d7bc7cb26704b72f0400bacfc249ba9fe2fa0e6b5b38308152a0f38d451",
+        "run.json": "3e6c3aba3ec581389f87a05f5ba7b545ffe86b4902b85625b4c53dd7e37a51a8",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "f14a87cc474ed223abcea393aa2b7c025f81ede8be208082dfb6712cec1af66e",
+        "policy_info.json": "c468ed2dcaf148a714b6d71b8cf7e7c420f37fb29cab1661185f54967757c529"
+      },
+      "score_inputs_sha256": {
+        "run.json": "3e6c3aba3ec581389f87a05f5ba7b545ffe86b4902b85625b4c53dd7e37a51a8",
+        "sim_trace.npz": "0cbb9d435ebb0de84aefc802b6f43183a70947a6c9b504f1674a51499c8f7014",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "b186929f3b583c6a7b7a9434bd69dc9a31a520c3cba9adda1970a6eeb1cea4b1",
+        "planner_trace.json": "49a00d7bc7cb26704b72f0400bacfc249ba9fe2fa0e6b5b38308152a0f38d451",
+        "policy_info.json": "c468ed2dcaf148a714b6d71b8cf7e7c420f37fb29cab1661185f54967757c529",
+        "server_ready.json": "333e40614e472b2ec5e603317d3b4d1fc8cd0160538c61440c5da1040b851207"
+      },
+      "mapping_sha256": "d5a7895ebcd7e4d440c7410ec325ece5b44eb7c0bc86ffe810ae41c96f922991",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904504",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904504",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904504/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904505",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904505/policy_review.mp4",
+      "video_bytes": 1123512,
+      "video_sha256": "afa16b994149ab558f260bd355d7ea71fc42eb90818c05cffbeae789fc311538",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904505/policy_review.json",
+      "metadata_sha256": "2c6c212d87e030b0813550f7fa0c89d0d82f089d30e65fefdfa8559f911902b8",
+      "decoded_frames": 299,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.928,
+      "score_sha256": "0ba99ad7bfbd07a771b5e2bc5a45d0009582649ce4b2c021e4dddbb684969b27",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            144
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "aef3f2bc3f055587d73e8a77147054d8b4c9561079d43ecd92177205f67f19b8"
+        },
+        "gel": {
+          "shape": [
+            144,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "6e34128c83e950db27ca1bda5642f869392118c84316c0a3c5d61fc57459ac82"
+        },
+        "gel_normal_force": {
+          "shape": [
+            144,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "a76e449dda81f9433da4ec6da84edc2105173f423cb6c2b05fac72e6e445e5db"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "3af1055f3b8effe60e4f6bd7364bd8c348d540f5930f10d9798838a6a8df0a91",
+        "sim.mp4": "109e229c76a2b737e864fb5d83dcdd8ad4a259e416166987bcf39ee808e8e7f4",
+        "sim_trace.npz": "67ac9aaaeb6e50ad7733f160013f2d68e6b9afbd2b46d358d78f8b0a31360cbd",
+        "policy_tactile.npz": "561a0a45dc7c8be31fc1d22308eaa0bbb5e72caa8ccabf2dddebfc0145c15a4e",
+        "execution_trace.jsonl": "f2c0a67d8c529b3c0184ae3ab1181d6c273db9a12f17d4b1ac40f65e2159bc39",
+        "planner_trace.json": "cfd30e58f8b33197c5a03cd6a11fb057d325d2f197a6389832e74b003002bf99",
+        "run.json": "8e09d57e460f27fad8c0cb6a25c307f64827124753f3c9d4468454ddc57e2dd9",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "40ee83e1d75f0bdc7d11bc546c6b84d56ac0e3e47c552366a2d9460fd30dceee",
+        "policy_info.json": "e0cf1728c70c532a3167cd4768cefb890d5a28f8507f5156a8caf3b6e0a5089c"
+      },
+      "score_inputs_sha256": {
+        "run.json": "8e09d57e460f27fad8c0cb6a25c307f64827124753f3c9d4468454ddc57e2dd9",
+        "sim_trace.npz": "67ac9aaaeb6e50ad7733f160013f2d68e6b9afbd2b46d358d78f8b0a31360cbd",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "f2c0a67d8c529b3c0184ae3ab1181d6c273db9a12f17d4b1ac40f65e2159bc39",
+        "planner_trace.json": "cfd30e58f8b33197c5a03cd6a11fb057d325d2f197a6389832e74b003002bf99",
+        "policy_info.json": "e0cf1728c70c532a3167cd4768cefb890d5a28f8507f5156a8caf3b6e0a5089c",
+        "server_ready.json": "3b8472ec17da62defe63fc8f7a0deafc5e147d244dcce648190607c5f81d91d1"
+      },
+      "mapping_sha256": "439f1a0dab4e9964c5a0a30b47e436cf64f2398471558c94dce27c54f0cf2828",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904505",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904505",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904505/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904506",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904506/policy_review.mp4",
+      "video_bytes": 1087569,
+      "video_sha256": "6e4ed8d5a85ed4b5fde179ea746d93ce7a27cbd1f6188063c621c24e90a6b627",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904506/policy_review.json",
+      "metadata_sha256": "be5cf96cfbddc84f3ddaf3c194b8fa480a0a1c2ddde36e69623cf03cc0ea4e86",
+      "decoded_frames": 279,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.552,
+      "score_sha256": "f8dd1b6093968bc2ce1b159161f28dc9781c1b587abc2eeadf97f0bb5994c627",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            133
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "09c02b759f69167b8d4cd436cdd3ebbee55ae59eff44f51571c08fdd6f32f435"
+        },
+        "gel": {
+          "shape": [
+            133,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "7f4747f2f86e2924b999e867487501f629d75d4282716a87a0d5550a722f062d"
+        },
+        "gel_normal_force": {
+          "shape": [
+            133,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "54157cad65374bf301d938898aa024d463d0f8d38d93c0873fde1a14217a97a1"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "73764a3b436b8ded99249888d44511e4d07ee2a8299f42419859cf72aaae0a00",
+        "sim.mp4": "a9a74af7f9378de55b971ff57a6eaa56c3b6915150492f8cff1789490d0c0313",
+        "sim_trace.npz": "57f12ce63764f7d742bfd3e2b7a8e0ac4d943ad992f2ba10be10e413a21f6fc5",
+        "policy_tactile.npz": "a60a232a2d7b5a78adcab76a1036c330965ce1c89f8e685e3db3997c7114bcf1",
+        "execution_trace.jsonl": "c8b87d4290bc6765dd78f5e6dce3f28cec17a3c72330f8c63ff0da0ddc24623b",
+        "planner_trace.json": "6b65069049661d8a6e0b2bbbacafeded9c5441acfc23c16f6922f0ccd274e4ec",
+        "run.json": "f5b72050dab0588d4a2db461addbc95c02c6522223dce5260dc3e2e29ee8ff9c",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "4f95979af888573e93cd710feeabb6efcf1ef6c90a92b8ce09df320ddd1d5d05",
+        "policy_info.json": "36a7082b323448cac75f1897ae5192d6105ceb08292b3c8032d1360b0e40723f"
+      },
+      "score_inputs_sha256": {
+        "run.json": "f5b72050dab0588d4a2db461addbc95c02c6522223dce5260dc3e2e29ee8ff9c",
+        "sim_trace.npz": "57f12ce63764f7d742bfd3e2b7a8e0ac4d943ad992f2ba10be10e413a21f6fc5",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "c8b87d4290bc6765dd78f5e6dce3f28cec17a3c72330f8c63ff0da0ddc24623b",
+        "planner_trace.json": "6b65069049661d8a6e0b2bbbacafeded9c5441acfc23c16f6922f0ccd274e4ec",
+        "policy_info.json": "36a7082b323448cac75f1897ae5192d6105ceb08292b3c8032d1360b0e40723f",
+        "server_ready.json": "3b8472ec17da62defe63fc8f7a0deafc5e147d244dcce648190607c5f81d91d1"
+      },
+      "mapping_sha256": "88cc4b3d0d227ae4ae36194dcef83c86cfe3f9b5e435b99510df61dbcde0fab4",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904506",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904506",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904506/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904505",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904505/policy_review.mp4",
+      "video_bytes": 512912,
+      "video_sha256": "2aaca9c2bf4a59aa748c216f853fd20f08b7279b15fe403d425f6fa175c85d0c",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904505/policy_review.json",
+      "metadata_sha256": "d488dcf7ff3650baabe6cae8119402588a349727759666079ab9c1c47b6f9284",
+      "decoded_frames": 147,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 9.752,
+      "score_sha256": "1147bec0b313fd33f617f9b5afb2d76757f18c0dc92f5ebc3b0fe2390e0ddf66",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            63
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "2d1ce319c0dddb5660e7a4f315b0ef057a9f9b850713277cbbb38839426c5b20"
+        },
+        "gel": {
+          "shape": [
+            63,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "a166c0dab509315d6c0033c06c1ce684ca81d67d245f589666d77bbba3c52519"
+        },
+        "gel_normal_force": {
+          "shape": [
+            63,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "a9e080790cc3b9e7a988324b4ec1cc1432a8f43cf897c78318943a0670f171f6"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "b6f8a2e7e6c90a84ad1af538594882f7a1f33fb8278b25de9e48facab376df9a",
+        "sim.mp4": "3be217d04c1b8617ecfcc3fb4c8745e094c7d1aabcb04a0379bad9b7f1771f90",
+        "sim_trace.npz": "8ca9cabd48eea1e1cac03f52f0375bd6ffe36a36b57d52ee43ff32ff566c06d4",
+        "policy_tactile.npz": "6a2efc056dc6d907342f41b118fe7622b9188790e358cdc13c41bc634f2d91f5",
+        "execution_trace.jsonl": "ae8d36280df31a81b02027e5e9a1abfae9c5f9d80979fa1d2e5144ec626cd4bd",
+        "planner_trace.json": "ffd9cec5fd7812a7c685627648e488043f0763d0d88e48d3db330a19115e0325",
+        "run.json": "4ebd20e8ff007c9c0745d94628286497cf0122c6d059bf645801d2a30675cc1b",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "adaf47c0233a0b3a06f82cf127f6175cfcd77e411fb6942cf2beea0a333c494c",
+        "policy_info.json": "d92e7c22edee3310eb98ad6df8f2e2c1156193d936a08236064aff656b7f885d"
+      },
+      "score_inputs_sha256": {
+        "run.json": "4ebd20e8ff007c9c0745d94628286497cf0122c6d059bf645801d2a30675cc1b",
+        "sim_trace.npz": "8ca9cabd48eea1e1cac03f52f0375bd6ffe36a36b57d52ee43ff32ff566c06d4",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "ae8d36280df31a81b02027e5e9a1abfae9c5f9d80979fa1d2e5144ec626cd4bd",
+        "planner_trace.json": "ffd9cec5fd7812a7c685627648e488043f0763d0d88e48d3db330a19115e0325",
+        "policy_info.json": "d92e7c22edee3310eb98ad6df8f2e2c1156193d936a08236064aff656b7f885d",
+        "server_ready.json": "9728d7f7854ca06f25959791d4c38ca6268bd63b6aaf0ab6fe37f8fb0cebc19a"
+      },
+      "mapping_sha256": "78cc030795fc3d8e092bc7a154b62a2efa68dcd2eb5bbc8c0558a336a873d26e",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904505",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904505",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904505/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904506",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904506/policy_review.mp4",
+      "video_bytes": 1110338,
+      "video_sha256": "1b88a087e30341da2854ae578ffd3532b180430a0b7613340e1e019dbd40c3ae",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904506/policy_review.json",
+      "metadata_sha256": "8f8d638931a8657f6a5abd590b52130c5d6c7ebec8c38f636e8d5d03c7f5d222",
+      "decoded_frames": 290,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.28,
+      "score_sha256": "227a40f2ab5b22be9d8eb217e8eb4e444ff50cad25e706cdae746d4b94079fef",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            139
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "fa183f91820a628703731d2b0507bedbdfbacdde95297fca473c9f651dead8d5"
+        },
+        "gel": {
+          "shape": [
+            139,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "cc559b02e6e9f4e02baf8d413892cf131cd42c5e58a642b637f187e78023d5e6"
+        },
+        "gel_normal_force": {
+          "shape": [
+            139,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "427a2fdcab7c70c91d40fd93ce5136db5fc7699aae8400633fc1cad19c2a408e"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "445c9e8d6cedd58b9f6dbd4bffceff01aaa64b9e25a6c780d42752d3571ca2b3",
+        "sim.mp4": "e5e353bddd7ebc27bfa6bd523cde14212647ce5f0bb4b09fa018dd879d3548da",
+        "sim_trace.npz": "2077ecaa89d0b8c550c9aef45aec7c345c77bc0954b39626109fd24d284cf211",
+        "policy_tactile.npz": "0ddc2d9d6155a5a08cd89c9b0a906f05f942446d6caa299aa6ae8904856ba204",
+        "execution_trace.jsonl": "5e1e366cece1ecc7f3c64eea07d989efcc44b5d33f7c9e5bce6f4bbc927fb2e6",
+        "planner_trace.json": "1ba39a12361b79713594ef460b27e7e5d4a6ec3075cf1ec022cdef8ec760c233",
+        "run.json": "a0bbdb6b1f884458c980326200df95eaab39e349c4dbe82ca9dc0671b2dee61e",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "e2d0ad11d5f00f80df48978f0c8e4e42a9e853a022e3eca8d7c77e08162e86c1",
+        "policy_info.json": "4446749762074ae5415fa1ce817013a9c464934bd61738a9c21c871c7953faf2"
+      },
+      "score_inputs_sha256": {
+        "run.json": "a0bbdb6b1f884458c980326200df95eaab39e349c4dbe82ca9dc0671b2dee61e",
+        "sim_trace.npz": "2077ecaa89d0b8c550c9aef45aec7c345c77bc0954b39626109fd24d284cf211",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "5e1e366cece1ecc7f3c64eea07d989efcc44b5d33f7c9e5bce6f4bbc927fb2e6",
+        "planner_trace.json": "1ba39a12361b79713594ef460b27e7e5d4a6ec3075cf1ec022cdef8ec760c233",
+        "policy_info.json": "4446749762074ae5415fa1ce817013a9c464934bd61738a9c21c871c7953faf2",
+        "server_ready.json": "9728d7f7854ca06f25959791d4c38ca6268bd63b6aaf0ab6fe37f8fb0cebc19a"
+      },
+      "mapping_sha256": "1dae102f591d30bfdf10b5a36e3590e3cf8cb0de27d16e7e5a862a62f2d932ee",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904506",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904506",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904506/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904507",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904507/policy_review.mp4",
+      "video_bytes": 930848,
+      "video_sha256": "59ae516bde5e2fe9d820e33ab4338df211d312a2d990be7622aae6ab588412aa",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904507/policy_review.json",
+      "metadata_sha256": "e78c2d6bcdb29e6df87d4f6c957b8d205de1a0ca5ab7b6fa16abd23afd323d66",
+      "decoded_frames": 255,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 16.936,
+      "score_sha256": "e6097712e25a3ef8589c17fbaee2abe28af959717915f2b66912c738bf498789",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            120
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "439294bd6604a0640c8b5526eedb9be48b904a85a148f7a821f0727af7c26e92"
+        },
+        "gel": {
+          "shape": [
+            120,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "5de698e6d06a6057e93d6ba7c112378c85a510061face1e1538e04158a6e361a"
+        },
+        "gel_normal_force": {
+          "shape": [
+            120,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "78a32b02ac6c0f13ad35fdf9c47903cee7bb607c9818c739d8ddfb2c9c568537"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "f2942c83d1f2f23f1bdf84ed5ae8b72d0e882724734c35cd9add7fccd3553974",
+        "sim.mp4": "13cfad2a3e098bab51de2beb6c1ffc1bf0af808b0786038caddf41d50960968a",
+        "sim_trace.npz": "126f8b844dec8935ad820044c52662f56e23b2cbc9a9a00d7f1e00f0072bbe94",
+        "policy_tactile.npz": "1c10e9f3102b2183d76efe1a1dcb581137273a98ce1066f6b79ab8dda63dc8b0",
+        "execution_trace.jsonl": "bf3554318477437b56124d5c4c1031442e3274c79acc7795eee8b51dcf22864f",
+        "planner_trace.json": "8bc2b18cc30bf7dd3f899cf766d895594eab54a6e9af1ab887c9c0bd1c1eebd7",
+        "run.json": "05ce25f0d6b213677e52643ffb1f030eae77f08d4c2d17b79dac3189e160ed31",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "61f641667619187486357ee5cee8fefcf5cabf6e7d813a0d73285305d4cec9ef",
+        "policy_info.json": "c7af844259750ce48708347326100166f89062e1d348988269c23106f376a5ee"
+      },
+      "score_inputs_sha256": {
+        "run.json": "05ce25f0d6b213677e52643ffb1f030eae77f08d4c2d17b79dac3189e160ed31",
+        "sim_trace.npz": "126f8b844dec8935ad820044c52662f56e23b2cbc9a9a00d7f1e00f0072bbe94",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "bf3554318477437b56124d5c4c1031442e3274c79acc7795eee8b51dcf22864f",
+        "planner_trace.json": "8bc2b18cc30bf7dd3f899cf766d895594eab54a6e9af1ab887c9c0bd1c1eebd7",
+        "policy_info.json": "c7af844259750ce48708347326100166f89062e1d348988269c23106f376a5ee",
+        "server_ready.json": "0ff7a962e7ae2a4f700c129ae5433c784de63f269ed0043ba1c74e9b572c96f5"
+      },
+      "mapping_sha256": "3f2ee3dec340c30589fe571d709a728757d39191d0c2a6f08d254383502ed903",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904507",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904507",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904507/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904508",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904508/policy_review.mp4",
+      "video_bytes": 1052231,
+      "video_sha256": "ca2468da61a552aa202b28691fa7f6b89f182441518230cf77942111e0ea623f",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904508/policy_review.json",
+      "metadata_sha256": "e760f873ee813ea1569c621c40a5889450b1c0d6f1da33d16c1327f525d8a8d7",
+      "decoded_frames": 279,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.536,
+      "score_sha256": "6d4ef879c957b8395193fb42fc2ce782d9697847d219d9e50565dbb2b39260f2",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            133
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "09c02b759f69167b8d4cd436cdd3ebbee55ae59eff44f51571c08fdd6f32f435"
+        },
+        "gel": {
+          "shape": [
+            133,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "bbfbb2f03744b93567a816b8bbfb193fbe3839c42849c948b6c7223d7e1bd47c"
+        },
+        "gel_normal_force": {
+          "shape": [
+            133,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "ee2b1402300d6b3d0614b2917d44b8d66acf7d377148605bc0aa01f89ef16798"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "a403ff3ff8ddf45bce6035bb1b5478ea13f9c03348c5cffe0850141ce85e9fb4",
+        "sim.mp4": "89a2bd110b6d4d1190faa4fc10bf0fd1b3fe3a5efe95c7fbda67c928d02e6a40",
+        "sim_trace.npz": "8b9119ceef4062cf3bd8e11976ab95f769c1df735a409487e031325056fc47ac",
+        "policy_tactile.npz": "6b513a97110b2f35e2e065ac67fc6e5b5a929bfc0b79415894cae31b80fb339f",
+        "execution_trace.jsonl": "6ff29f2e874ee2d86819a015a19739b0dc82e7d378d74c86e2f4ffc278c834cd",
+        "planner_trace.json": "a38d9949e4394eaf0d3ee10189423e019ecd93085ee924eee58cf151b6a9724f",
+        "run.json": "cd9d2605c1f1305b8823d3b67f9801513b304a6fe070210ee0bd84ae0e3db7cd",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "4ab2ed6fe9ec0d1ed6fde070685d4f32c90fe302e9f14fe80522497629106945",
+        "policy_info.json": "d4f53a9326420293dddd80e47072020ac27f8e21fefba8f2dc780327a64e87c3"
+      },
+      "score_inputs_sha256": {
+        "run.json": "cd9d2605c1f1305b8823d3b67f9801513b304a6fe070210ee0bd84ae0e3db7cd",
+        "sim_trace.npz": "8b9119ceef4062cf3bd8e11976ab95f769c1df735a409487e031325056fc47ac",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "6ff29f2e874ee2d86819a015a19739b0dc82e7d378d74c86e2f4ffc278c834cd",
+        "planner_trace.json": "a38d9949e4394eaf0d3ee10189423e019ecd93085ee924eee58cf151b6a9724f",
+        "policy_info.json": "d4f53a9326420293dddd80e47072020ac27f8e21fefba8f2dc780327a64e87c3",
+        "server_ready.json": "0ff7a962e7ae2a4f700c129ae5433c784de63f269ed0043ba1c74e9b572c96f5"
+      },
+      "mapping_sha256": "88cc4b3d0d227ae4ae36194dcef83c86cfe3f9b5e435b99510df61dbcde0fab4",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904508",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904508",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904508/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904507",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904507/policy_review.mp4",
+      "video_bytes": 1081830,
+      "video_sha256": "4fb0bd989562832b44989b69bdecd149a94c1f636b63a256691c9162ee140846",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904507/policy_review.json",
+      "metadata_sha256": "785450abfd7ff3963c865f01a92c1a25219a9bed8be23ccd27c015c087be13af",
+      "decoded_frames": 297,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.784,
+      "score_sha256": "ad8c1ee3af4d0ff361f6a315f30c02e2917725e1b4361c5c1389089967c95689",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            143
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "599623fd699ef1bc2b941acc32693865326701f33041507cde10c2ba9e0a6f67"
+        },
+        "gel": {
+          "shape": [
+            143,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "29f9765f278edafdd57e1d584bcea7d167adf47ff56c0f49adad15e62878cfe8"
+        },
+        "gel_normal_force": {
+          "shape": [
+            143,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "6d9bcaad8e7f0ea6b3474c20f84288d85240a2db02b19d2e51e053f43c72e898"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "822d7b4c07c393e1ae7c724a42ac8bd6f958986d3cf965dc2d557af3dd19e682",
+        "sim.mp4": "d46fee9b9271c811c5740da829d5edc123fb8c4587ddf7ec6156387a881613a5",
+        "sim_trace.npz": "7ec004e902d9069b0ce10f3aa5b08a8fbe343b67b797786cf497a7cf71918f72",
+        "policy_tactile.npz": "063e616fa37ba50babcca378ff6ea9184ca71e56e6372d866640927c1667bfe7",
+        "execution_trace.jsonl": "16fa91713236a277c97892f8527276bcbb789e89cd7a226dc177e504a31467c7",
+        "planner_trace.json": "3bf93171b1ac3d99994906b7fbc6e8dd0aace80976c2458fe19742e6ce170de2",
+        "run.json": "347a1f40d0998af336977543892977f59d21b142222c2f176f6c27113d9fa7a7",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "504c895f518de26d4bd87e259b9b234f6fb5c87c64e4fee711d257d38ad82de5",
+        "policy_info.json": "cccadce1d7cb2615e701cbea77b9f16de28d540f6efb6a17745a8666ebe47168"
+      },
+      "score_inputs_sha256": {
+        "run.json": "347a1f40d0998af336977543892977f59d21b142222c2f176f6c27113d9fa7a7",
+        "sim_trace.npz": "7ec004e902d9069b0ce10f3aa5b08a8fbe343b67b797786cf497a7cf71918f72",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "16fa91713236a277c97892f8527276bcbb789e89cd7a226dc177e504a31467c7",
+        "planner_trace.json": "3bf93171b1ac3d99994906b7fbc6e8dd0aace80976c2458fe19742e6ce170de2",
+        "policy_info.json": "cccadce1d7cb2615e701cbea77b9f16de28d540f6efb6a17745a8666ebe47168",
+        "server_ready.json": "3138519be50343ca11cd3e3c0848d2e63f4c761151db1cbc0cc624d51fe59a89"
+      },
+      "mapping_sha256": "5469cb3225865470e42832a30d64ada36ce9616247e4d4832181ac316be50b3e",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904507",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904507",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904507/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904508",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904508/policy_review.mp4",
+      "video_bytes": 1062432,
+      "video_sha256": "9af55b4a88fb8d3abde3cec39f4fd1f4622dfe7f2fe357019976386789df7f4e",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904508/policy_review.json",
+      "metadata_sha256": "bd4b6855aa9ff06019743d77917136f976d2905db1221f2ce6bfb7684e017a0d",
+      "decoded_frames": 290,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.28,
+      "score_sha256": "6c3ced1601a956b008e0c93c696a9aeac5d14a8ce657653dd69b97bd36bf538d",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            139
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "fa183f91820a628703731d2b0507bedbdfbacdde95297fca473c9f651dead8d5"
+        },
+        "gel": {
+          "shape": [
+            139,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "adb8484bd8aafd255dd01c240b967ef672229a256bef029a0f74b159613699b5"
+        },
+        "gel_normal_force": {
+          "shape": [
+            139,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8f46af3cecbd14bbba9fcc274b865ad4213b59de5289ca13fa928733f699509d"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "da73f59bef30f199937acf5f12a803637d470dc4917e482da4d11bc99e431dec",
+        "sim.mp4": "374a2827cf79208648cf6b5cbc935282182d63d8c34879eb5e9b31d993980ca1",
+        "sim_trace.npz": "32b5e2ec7f0a4578c58f700f873a19f1e36e8e9e0d868dccc7c77d2e4aad16af",
+        "policy_tactile.npz": "cbb00abe89d7ded7ce839bd08cb2835fe3d27cec27e8ffc5a08344a06cb6714f",
+        "execution_trace.jsonl": "a4ab61eb50a7377e1863b795e75dfc56b286e034cf03a04c78dfb1d5a655a91c",
+        "planner_trace.json": "433ecc430f56e8a8bfbb6cbd86a3345309a752623aeafa8daea8d71728735a53",
+        "run.json": "88fc7bd3fb5a55290025681dc1d119c204cd20f6ae23880e5238d68dc25ac4e7",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "49dcc64f256b50ab1a7a729f52ff2cae42365154215121c38972ed62348177c6",
+        "policy_info.json": "30e555d68f67cc51a63b2950aa691c77a68773e8ef3397381f18ec910b75ce38"
+      },
+      "score_inputs_sha256": {
+        "run.json": "88fc7bd3fb5a55290025681dc1d119c204cd20f6ae23880e5238d68dc25ac4e7",
+        "sim_trace.npz": "32b5e2ec7f0a4578c58f700f873a19f1e36e8e9e0d868dccc7c77d2e4aad16af",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "a4ab61eb50a7377e1863b795e75dfc56b286e034cf03a04c78dfb1d5a655a91c",
+        "planner_trace.json": "433ecc430f56e8a8bfbb6cbd86a3345309a752623aeafa8daea8d71728735a53",
+        "policy_info.json": "30e555d68f67cc51a63b2950aa691c77a68773e8ef3397381f18ec910b75ce38",
+        "server_ready.json": "3138519be50343ca11cd3e3c0848d2e63f4c761151db1cbc0cc624d51fe59a89"
+      },
+      "mapping_sha256": "1dae102f591d30bfdf10b5a36e3590e3cf8cb0de27d16e7e5a862a62f2d932ee",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904508",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904508",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904508/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904509",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904509/policy_review.mp4",
+      "video_bytes": 949285,
+      "video_sha256": "e3aba2b6a639881e579d257092d493e4a989f6ba06481cd010f432cd11ddc1dc",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904509/policy_review.json",
+      "metadata_sha256": "50a1faf8cf0acca038a4bf9bef45ac1494cbb6936562a56450c4f732a134ccfb",
+      "decoded_frames": 257,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 17.12,
+      "score_sha256": "37ebcc2593bd66be9f59005cce465c7ca61acd6d193804296f27c3b8a774d8bd",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            121
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "ee33614dc0e7ad234539e02c5d085d309cf0627ffeaa93e7e06310987d450819"
+        },
+        "gel": {
+          "shape": [
+            121,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "60056360cea000488fba096011e4daa09b9a450d360c2430273708d629b6bbfe"
+        },
+        "gel_normal_force": {
+          "shape": [
+            121,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "bc65b7ddc49135fef56a530b3f5f6fda26a3a60cfb435b0a040777f1e7b50a0f"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "3ce2c767e094946ad94c37195185df5e6af2a438868c99be0e740d2373601283",
+        "sim.mp4": "27fde6eb7b6609acea324b3038972d1d22adf082e635d96cc84df5bd9eaac967",
+        "sim_trace.npz": "bfa18373ac5f6a17999ec6d3b8dae72ca050e4b46f2aa53a3ddb4769f6d3df73",
+        "policy_tactile.npz": "4f9915f89d1bc582c50e89d58138eff0e8cc9d094325e74dbd630dd4f38a8fc1",
+        "execution_trace.jsonl": "75c01c9f17cdc06b2cacc0ece8a40be301f39e24473afb33f88974686a441624",
+        "planner_trace.json": "8b7d1551b9fb5c816f592f3a76f94138ad04317f29c9acbd29917e12b3d49fa2",
+        "run.json": "0f8e3f9cbe8f2e65f4f2c27b0016fe69eee280c7d1ace79e86d874708e0ac9e5",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "89144adc244e0fdfdccf39a0754e7f5a913945000981ee9ae7fc32f5549d223a",
+        "policy_info.json": "577e1d7e977653e0cb2d305439c5e88bbe40257f23b55ef742d6c537bd65ef70"
+      },
+      "score_inputs_sha256": {
+        "run.json": "0f8e3f9cbe8f2e65f4f2c27b0016fe69eee280c7d1ace79e86d874708e0ac9e5",
+        "sim_trace.npz": "bfa18373ac5f6a17999ec6d3b8dae72ca050e4b46f2aa53a3ddb4769f6d3df73",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "75c01c9f17cdc06b2cacc0ece8a40be301f39e24473afb33f88974686a441624",
+        "planner_trace.json": "8b7d1551b9fb5c816f592f3a76f94138ad04317f29c9acbd29917e12b3d49fa2",
+        "policy_info.json": "577e1d7e977653e0cb2d305439c5e88bbe40257f23b55ef742d6c537bd65ef70",
+        "server_ready.json": "5e97000c5f2cb277778956fef6b155a74d8f689452a94f984a4985481f9e04a1"
+      },
+      "mapping_sha256": "17f27c44dfa10db726a9a4f3af894909ce156b134925d8d716a8a5b7b86dc00a",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904509",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904509",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904509/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904510",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904510/policy_review.mp4",
+      "video_bytes": 2330377,
+      "video_sha256": "762017cc904af7cb49c1043b9e779666b1cccb92b3dbe932ec7720c3d002c9bf",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904510/policy_review.json",
+      "metadata_sha256": "c3c59126b9abf8207bbd9444f71aad62c73a8371befb19105e70e7e58ab866aa",
+      "decoded_frames": 900,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 59.996,
+      "score_sha256": "005881cf8a4a207608b7e20c083a99b945d87b0d58741d1e09fe056a8c4b560d",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "controller_completion": {
+        "completed_reason": "placement_release_finished",
+        "completed_at_s": 25.076,
+        "first_execution_row": 3134,
+        "first_execution_t_s": 25.076,
+        "display_from_s": 25.076,
+        "source": "execution_trace.jsonl diagnostics; visible no earlier than both event and first reporting row",
+        "is_object_task_success": false
+      },
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            480
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "555b3a35c7ffc507a40fedfcd7d83334e892f81ee7bab328a5c8499a1959bdee"
+        },
+        "gel": {
+          "shape": [
+            480,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "3cb80cc787a0890fb57393830f965314d810a529a5b5456357f87428ae4f15ed"
+        },
+        "gel_normal_force": {
+          "shape": [
+            480,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "3dbd8e318ae4f1420f260153995ff22359e0023cf89085a3d1425dce90b29699"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "937b993d1a0508d684157e1e30aef2f5ae6ddecebc25f90984a295a07f2ef7c0",
+        "sim.mp4": "81e6205d91db162a615aaed86b9f0bb9e78fe725f8df8e9c34a1457434a460e4",
+        "sim_trace.npz": "a1cb2b6edffd7f0dfc52b881fb02e0b7cf3a84fc432ad7cbbbaa1f4c649be237",
+        "policy_tactile.npz": "13b9790a5009114bdedda8e80c34101b5708a5ee45ab26c4adf87a6a1506ae4b",
+        "execution_trace.jsonl": "5724ff7b16c0c2326be833508387e14e893bba7344fd804249350eead31959f1",
+        "planner_trace.json": "025157f45fe96435055874bdd3e00958eabc67bd47335d96510c1a842ba81820",
+        "run.json": "d66d9ac568e7483e1db422d49d523dd169bf67257587255573dc38262e4b189f",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "81ff9917a180bdcf72b814d98513021d7035e2077f17d615ea4273c9f11199d1",
+        "policy_info.json": "011682a465e5b13a219f41a0cf0b32ea316a05f57b4d5337b3a65a6019025d10"
+      },
+      "score_inputs_sha256": {
+        "run.json": "d66d9ac568e7483e1db422d49d523dd169bf67257587255573dc38262e4b189f",
+        "sim_trace.npz": "a1cb2b6edffd7f0dfc52b881fb02e0b7cf3a84fc432ad7cbbbaa1f4c649be237",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "5724ff7b16c0c2326be833508387e14e893bba7344fd804249350eead31959f1",
+        "planner_trace.json": "025157f45fe96435055874bdd3e00958eabc67bd47335d96510c1a842ba81820",
+        "policy_info.json": "011682a465e5b13a219f41a0cf0b32ea316a05f57b4d5337b3a65a6019025d10",
+        "server_ready.json": "5e97000c5f2cb277778956fef6b155a74d8f689452a94f984a4985481f9e04a1"
+      },
+      "mapping_sha256": "4f475a2ba17ee22ae36db31a92448dc3db3bc52e1b0425fda53cefdce821cf11",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904510",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904510",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904510/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904509",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904509/policy_review.mp4",
+      "video_bytes": 1226710,
+      "video_sha256": "0fa8feb2b4729a975bdba5fc9d9d504b81be29977946de4d127d6127521c89ca",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904509/policy_review.json",
+      "metadata_sha256": "9836ef7b095dabbf6b34258a06976c1fdb30b52aa3e90f6c8369d586001469e0",
+      "decoded_frames": 304,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 20.240000000000002,
+      "score_sha256": "b09913ce8406a96f713b53b38de6108cc32c38994b7eb49af315f454218ade23",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            146
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8d55032e39984d3cf18d7de32455671b5c3374a67a9bcc21836a81e42c0ebbe6"
+        },
+        "gel": {
+          "shape": [
+            146,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "518c414b0131a4b6039cefce74204276f9a09824ec44e7d73a9695a0eb433c75"
+        },
+        "gel_normal_force": {
+          "shape": [
+            146,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "272e7c70f36391013ba3dc5e69ec9bfe28e0f507c3e134803691b155dd924a34"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "290ca5eb391a1000ee3d932cd3384acbd8b13f1a2681fa25e6f340a6149ef399",
+        "sim.mp4": "6faa08ee395e340c753fae08c69fc49afa4bba3e6444cab0dc666be57fdb3072",
+        "sim_trace.npz": "d1863db95c785ab4e623b32fa593f4abb2e95774c9901323e5c3855f11991128",
+        "policy_tactile.npz": "cfa1d03cf5825e2a77d5be1224966f77789b0fb9a99c5654005bc74837221553",
+        "execution_trace.jsonl": "89a17872ce40ce5b39edf593ff6ed009522bb98b0ae9d406f07852773a522ab1",
+        "planner_trace.json": "52365d26fd6c4727ed2f54f1e791ce1cb2c5cf58ded99bcd2444d3c6133be741",
+        "run.json": "4c59f58043ca83a7950c74de3f9338173ed6f1771aac2efaaadffba0364c7502",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "c7546bd11696723159b2da682634f72a941d5b88fabcce16ae098c9e66e392b9",
+        "policy_info.json": "272a654df135097a9a86316da102a8e7c6d878ff3e104c5cd56845d9b543e3b5"
+      },
+      "score_inputs_sha256": {
+        "run.json": "4c59f58043ca83a7950c74de3f9338173ed6f1771aac2efaaadffba0364c7502",
+        "sim_trace.npz": "d1863db95c785ab4e623b32fa593f4abb2e95774c9901323e5c3855f11991128",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "89a17872ce40ce5b39edf593ff6ed009522bb98b0ae9d406f07852773a522ab1",
+        "planner_trace.json": "52365d26fd6c4727ed2f54f1e791ce1cb2c5cf58ded99bcd2444d3c6133be741",
+        "policy_info.json": "272a654df135097a9a86316da102a8e7c6d878ff3e104c5cd56845d9b543e3b5",
+        "server_ready.json": "2596f6aea1bbfe574d335f976a9a157a43aace9531e980d23b37fac891e3f4fb"
+      },
+      "mapping_sha256": "48bb7c7090611e5a433f63161f1f5ad2653e482f1a4b4501da01b2138492164e",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904509",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904509",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904509/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904510",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904510/policy_review.mp4",
+      "video_bytes": 1131369,
+      "video_sha256": "7d153eaa1579575a47333e98c7d44f0e7d67bd4a7eade26d5ac2f0d7ef4b1632",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904510/policy_review.json",
+      "metadata_sha256": "40b2259a914dae5555558ba55fdd4281015122ba9ae0a6757b3d93430b28a9a2",
+      "decoded_frames": 289,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.256,
+      "score_sha256": "9bac373d9d52880f71cbbb2c6411a3bd64808319ebdfcd7f8c475f29adef8a58",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            139
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "fa183f91820a628703731d2b0507bedbdfbacdde95297fca473c9f651dead8d5"
+        },
+        "gel": {
+          "shape": [
+            139,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "28fbc54f15eb1be35794d006e131cbd834289a3a4f49173e20ca19db80bbc49c"
+        },
+        "gel_normal_force": {
+          "shape": [
+            139,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "ea27a36f3fd9c167f183c866f947391bef05dc34a29607aaeb8053b50f45d2b9"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "76940bc97192e13f3cb8d28cbc3fbd64e862b170e532a132e0d2ee42288936bb",
+        "sim.mp4": "dc1a7848c4cdcff93b9cdf5c13d32db3b570fb87f77d90d4c1fe29178d5e721f",
+        "sim_trace.npz": "61f448a10dbdb03c27c171d3b1ae0e9bbe77365c0e9fbe9a0ad5cf7835f92c9c",
+        "policy_tactile.npz": "1bfaed41e860fc13e05b03fb1fb816d7cd32ec9be62f4b7e519e8e3a9a579bc0",
+        "execution_trace.jsonl": "ba8e0f400cb0df7c58a445f27f07444a9c1eedbbdafea4de8e3d6c2c9bd7e0e1",
+        "planner_trace.json": "158f725671dfa4d03483985b373be35426f94f01e08f9a05457b2a623951d9f3",
+        "run.json": "2a43d484a5a69c9600f9a792d5fd13459a5b865318ee7b10c6eb6e55122e0730",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "51740e66bc7b6575854ed8677d8cdc6a6ce54cd56eb068bfb8b5367cd9dfb4dc",
+        "policy_info.json": "f78a24fdeedccf05e21f1d3d89800c18580c6247f9716cfb3c02e3309e72928d"
+      },
+      "score_inputs_sha256": {
+        "run.json": "2a43d484a5a69c9600f9a792d5fd13459a5b865318ee7b10c6eb6e55122e0730",
+        "sim_trace.npz": "61f448a10dbdb03c27c171d3b1ae0e9bbe77365c0e9fbe9a0ad5cf7835f92c9c",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "ba8e0f400cb0df7c58a445f27f07444a9c1eedbbdafea4de8e3d6c2c9bd7e0e1",
+        "planner_trace.json": "158f725671dfa4d03483985b373be35426f94f01e08f9a05457b2a623951d9f3",
+        "policy_info.json": "f78a24fdeedccf05e21f1d3d89800c18580c6247f9716cfb3c02e3309e72928d",
+        "server_ready.json": "2596f6aea1bbfe574d335f976a9a157a43aace9531e980d23b37fac891e3f4fb"
+      },
+      "mapping_sha256": "e6ffe8bd48c08cfb05c696de75d0a65dee3e61bbcf6c69431293a82382fac3ff",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904510",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904510",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904510/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904511",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904511/policy_review.mp4",
+      "video_bytes": 1005777,
+      "video_sha256": "b32f1639d8bde1c9fd8e752808f23106172d993ba772cd0843048be959fa8f13",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904511/policy_review.json",
+      "metadata_sha256": "ffcd13c286ed57e3e5535be90caabe885aaf38f13372c2962d747553cdf87db2",
+      "decoded_frames": 274,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.224,
+      "score_sha256": "354300b6af36d4bde7d7af27c2857f835cac9d1f09af4fca0a72a83fea3e3bc9",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            130
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "06901065664dda6c06e005f83c23604ebb4ff651518fc40120409dfd16321767"
+        },
+        "gel": {
+          "shape": [
+            130,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "d4c2d2aa89251bd5acb9e91ec015d75b3326f544bffdc17d85965dfde8c8815e"
+        },
+        "gel_normal_force": {
+          "shape": [
+            130,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "74ad040475ba3d4aac1053a289121a2c5922daac47e395648debf7165ec7e08f"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "af917cf33630f171b3b1f23c25e6cd6397750b8673f9f16b7b4dca519e845650",
+        "sim.mp4": "982d6bf67f27b614ad0a50d941c245dd7e403d463a029cd3e3941802827488c1",
+        "sim_trace.npz": "dd4eea08f6b65cb28ad2e2c8911d01de4ec9afca84e213f732ae1bac9b60e1ca",
+        "policy_tactile.npz": "4df2e0ee42750fd6e0894f9d9f282f49e04db3c19791add61389da742bd7d497",
+        "execution_trace.jsonl": "6b87db4b1a7e52871b145973701102d02658c375d1d7bc729b5725f3d757fdd0",
+        "planner_trace.json": "b320579fc8aa9f80cd34c304c2d421b1458375d913008e486a7724a4562d6084",
+        "run.json": "352682a7c447df5ca71045baefc2d46c7739e8907bfab896edc9ce9a87888923",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "7e028092c6f25432b3247b2df0c82a2457c2ac1933139015bccb557f05b794e1",
+        "policy_info.json": "28b8ffdc933dacc4ec6e45bf7065c03ed3ef4e93e2f4b7feab41ff7e348ecf39"
+      },
+      "score_inputs_sha256": {
+        "run.json": "352682a7c447df5ca71045baefc2d46c7739e8907bfab896edc9ce9a87888923",
+        "sim_trace.npz": "dd4eea08f6b65cb28ad2e2c8911d01de4ec9afca84e213f732ae1bac9b60e1ca",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "6b87db4b1a7e52871b145973701102d02658c375d1d7bc729b5725f3d757fdd0",
+        "planner_trace.json": "b320579fc8aa9f80cd34c304c2d421b1458375d913008e486a7724a4562d6084",
+        "policy_info.json": "28b8ffdc933dacc4ec6e45bf7065c03ed3ef4e93e2f4b7feab41ff7e348ecf39",
+        "server_ready.json": "47f3b72c6d4655073dd88be2f3a3199c4b8484ce035b4664e3921805bbb3a5a3"
+      },
+      "mapping_sha256": "1a100301875cf57c62885a7eeaf394714c68c99847472d4c0f100dfa673e7fb1",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904511",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904511",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904511/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904512",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904512/policy_review.mp4",
+      "video_bytes": 1079838,
+      "video_sha256": "d68f411b2c359fd7a5b4e376525d913c6ba59854fb006098978de03cdff30b59",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904512/policy_review.json",
+      "metadata_sha256": "64ffd91f6a62dedd38b674a24915074334da45591b09a64c0a4449ef0a79ba85",
+      "decoded_frames": 273,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 18.192,
+      "score_sha256": "071490b84773f486816b5c9ec3f2eb208723524bb1be35dcac0f30507f17b644",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            130
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "06901065664dda6c06e005f83c23604ebb4ff651518fc40120409dfd16321767"
+        },
+        "gel": {
+          "shape": [
+            130,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "29b239ce133b663bb3b07dafc4d06f868e8d15b7768bbdb86e913f2e90659049"
+        },
+        "gel_normal_force": {
+          "shape": [
+            130,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "2620b223ba178db807bfb1c05dab8d092f8a471f2bd5b91e2da32b1641d6f1c6"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "079de1f9cfb15f5001de27e89190b60371690b24af2b8b73639ee92603d0efe7",
+        "sim.mp4": "224374e9e4ca4fd83fb8f6c7a85f289fa2315bd02174c13e36be6820dbe7c9e5",
+        "sim_trace.npz": "7938de208aad7655952f4a90c38c397e28f1479f57b1d24c2d4e50409aea5856",
+        "policy_tactile.npz": "1da907d4011540b96a56860c07e3ee31590d04002286dce475b0060d313802c5",
+        "execution_trace.jsonl": "428db43586d1c227478877fb778cb38c17ce129e18ac37e5251f0c840d6b6355",
+        "planner_trace.json": "093b4a41cd160c6ef60077424e047405988bc3587243cc9cfd27e3bc3208a384",
+        "run.json": "84300b1aef2f2b0b3c393170a6c65fffe215b58176cfb740ce539eefe6bf2d6f",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "d527f81043b8cf98fda385fac010eb91d34fd707de9f3dba958084958a711c92",
+        "policy_info.json": "972e5a0f4776e4a056e7a7f45d54b11785b5116c7db77c8611af94394a6d7896"
+      },
+      "score_inputs_sha256": {
+        "run.json": "84300b1aef2f2b0b3c393170a6c65fffe215b58176cfb740ce539eefe6bf2d6f",
+        "sim_trace.npz": "7938de208aad7655952f4a90c38c397e28f1479f57b1d24c2d4e50409aea5856",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "428db43586d1c227478877fb778cb38c17ce129e18ac37e5251f0c840d6b6355",
+        "planner_trace.json": "093b4a41cd160c6ef60077424e047405988bc3587243cc9cfd27e3bc3208a384",
+        "policy_info.json": "972e5a0f4776e4a056e7a7f45d54b11785b5116c7db77c8611af94394a6d7896",
+        "server_ready.json": "47f3b72c6d4655073dd88be2f3a3199c4b8484ce035b4664e3921805bbb3a5a3"
+      },
+      "mapping_sha256": "4cf71335625311e39cb75aa4f3183592e6aec1357a295bba3b3cafab4434da97",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta3000_nfe1_k4__successful_anchor__seed904512",
+        "--label",
+        "fta3000_nfe1_k4__successful_anchor__seed904512",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta3000_nfe1_k4__successful_anchor__seed904512/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904511",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904511/policy_review.mp4",
+      "video_bytes": 1146663,
+      "video_sha256": "1fc4d0d53507b0ccbe4c0e26cfdf9c8a242c03f3dab97252d5630d98e232a1f6",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904511/policy_review.json",
+      "metadata_sha256": "3292dfd41f2d58114f9630d0bfdb81091b45a00cefb59615bffbe4d791851570",
+      "decoded_frames": 298,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 19.808,
+      "score_sha256": "733a8e6fd1dd723280b112db72d82646d4aed40eea3a46bde78fb710e68ebb92",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            143
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "599623fd699ef1bc2b941acc32693865326701f33041507cde10c2ba9e0a6f67"
+        },
+        "gel": {
+          "shape": [
+            143,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "cbf9cb44ac54d9ea0b51d08c372066625770560590fdeec64d40ad5a0421a217"
+        },
+        "gel_normal_force": {
+          "shape": [
+            143,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "41e84694816f0c83115d533607981e3829afb5b330c902d592d593afb84e05d2"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "c6984e208fdd891d38e1f3de62204dae1b29a53138341e859e9e6a7f2a7998bc",
+        "sim.mp4": "7dff51fd50136bdee67427970195244dc3cbd29680a585de5eb7540883bc4084",
+        "sim_trace.npz": "77f7f2a8626ef945d5ec8b19edf6a6d840afdb7c2204b07b8453b215a37ec545",
+        "policy_tactile.npz": "86fe0f37ffc189ae00729a965d17c5293869b852e23dbb9f839c6c2f31429c8c",
+        "execution_trace.jsonl": "70a76b813e06359706f4f18a165bb0c1e3d437bd3ffe8df7ed653d003be2a30c",
+        "planner_trace.json": "5dddbe88b14e5065630a4275a4bbb2b16936162557bbfaefe816caac68edc882",
+        "run.json": "6f8103d66dc95df2e2f339b7220ad6ff8a6c67e534da62f242c8efe516fea9c9",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "211cb26ed6aed30ae77148350c987ea2dd57f3465a288f2e5f6aa374237f4624",
+        "policy_info.json": "5de939693cacfcdaa1517af3fbcc5e33292bd58c124ef834718b873e69cb3ca5"
+      },
+      "score_inputs_sha256": {
+        "run.json": "6f8103d66dc95df2e2f339b7220ad6ff8a6c67e534da62f242c8efe516fea9c9",
+        "sim_trace.npz": "77f7f2a8626ef945d5ec8b19edf6a6d840afdb7c2204b07b8453b215a37ec545",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "70a76b813e06359706f4f18a165bb0c1e3d437bd3ffe8df7ed653d003be2a30c",
+        "planner_trace.json": "5dddbe88b14e5065630a4275a4bbb2b16936162557bbfaefe816caac68edc882",
+        "policy_info.json": "5de939693cacfcdaa1517af3fbcc5e33292bd58c124ef834718b873e69cb3ca5",
+        "server_ready.json": "6f9288696a5eb5c57e5809b7baedb61c937b4743067ac727948a64a273bf9ae5"
+      },
+      "mapping_sha256": "63bb84bf320c6cf6483deeabefe06286614e3e2e78aa1d778fa6385a4459c31d",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904511",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904511",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904511/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904512",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904512/policy_review.mp4",
+      "video_bytes": 1636605,
+      "video_sha256": "c680943765b713d4475173ac24660f71c9fb714b7861aaa11ce1340b2d7e8572",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904512/policy_review.json",
+      "metadata_sha256": "50f642d20e2d4c463785c4171cffaf11e90a6b39f0f23b28358461d7374e8d91",
+      "decoded_frames": 474,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 31.592000000000002,
+      "score_sha256": "da6f5e4fb58d62c0a2a2cbe26d356064cea00c3ec765529ef8cca1398eeb2110",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            237
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "647c3688269e4f2346d29df24d2481023c70ca301abba54e2bceb2d3645e2464"
+        },
+        "gel": {
+          "shape": [
+            237,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "02d87494cc8fba9e99ce5628cc14b8207e5dea3d86ff25974f37ede723651092"
+        },
+        "gel_normal_force": {
+          "shape": [
+            237,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "e052c1c097112d96ccd6d346cc5597b0951be7aab69a1178973233799b04b461"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "bf51aa1aab06dc7e7ad983b8de35d12c7615f400507af5a81d379b083eae1e22",
+        "sim.mp4": "5c6c5c73a389f14be7f37855cb6c73d34e16ae16f20f3d026b3c6c7499c7e5c0",
+        "sim_trace.npz": "9e2d4fac5af435a1b480940dc0acdfde428fe928b5da46a44404941165bd5bde",
+        "policy_tactile.npz": "b4c236d544d7ed25c024577014cae37d109fd083655c4468e83985cd32e6d1b9",
+        "execution_trace.jsonl": "a14e18d105be79a231468c2b3f4f49aaf958094ac7e48ed810db639e6e010c3a",
+        "planner_trace.json": "35ba2f1a23b2427d36f21a1e51f94bb5691a85812a159061483b48d2c26d85bf",
+        "run.json": "65f46a3c517e6d194461de418f3e311f39a3f82aac248fe413ff8dc866445aa4",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "988a49791ff9fc9fef700e683254f064dbbad804c6ecf0e1477281b8045f7039",
+        "policy_info.json": "695f0adb8943d66c7128a69875147168e3c30f3831bc162adbf5ca2891a7e094"
+      },
+      "score_inputs_sha256": {
+        "run.json": "65f46a3c517e6d194461de418f3e311f39a3f82aac248fe413ff8dc866445aa4",
+        "sim_trace.npz": "9e2d4fac5af435a1b480940dc0acdfde428fe928b5da46a44404941165bd5bde",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "a14e18d105be79a231468c2b3f4f49aaf958094ac7e48ed810db639e6e010c3a",
+        "planner_trace.json": "35ba2f1a23b2427d36f21a1e51f94bb5691a85812a159061483b48d2c26d85bf",
+        "policy_info.json": "695f0adb8943d66c7128a69875147168e3c30f3831bc162adbf5ca2891a7e094",
+        "server_ready.json": "6f9288696a5eb5c57e5809b7baedb61c937b4743067ac727948a64a273bf9ae5"
+      },
+      "mapping_sha256": "241198c3872567dd5ff064591ca648c932db11c389edd78b77221ce7e0fa5d42",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts/fta1500_nfe1_k4__successful_anchor__seed904512",
+        "--label",
+        "fta1500_nfe1_k4__successful_anchor__seed904512",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904512/policy_review.mp4"
+      ]
+    }
+  ],
+  "failures": [],
+  "raw_writes": false,
+  "last_progress_status": "all_trials_completed",
+  "finished_at_unix_s": 1788777747.2110615,
+  "total_video_bytes": 25734600,
+  "missing_cases": []
+}

@@ -1,0 +1,409 @@
+{
+  "scope": "Read-only FK feedback, actual held anchors, pending-plan clocks, and CPU first/last hold selector replay. No physics/model inference.",
+  "source_sha256": {
+    "phantom/sim/kinematics.py": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+    "phantom/drivers/servo_limiter.py": "41c0c6beebd805dda4d9bf7c66e507491eb1121cdb5cf70a701ce845b37e027f"
+  },
+  "cases": [
+    {
+      "seed": 904301,
+      "input_sha256": {
+        "execution_trace.jsonl": "92b004a336cd915d6a523bb95686872253ed5fb3096ae0172f40fff78c4844e7",
+        "planner_trace.json": "13f49fff0bc1b2dad04f136d1a27e0c77ad7d04526550bea57c04531fa426772",
+        "delivered_plans.jsonl": "01b9b5e6ef9663558744355a787f2cb199a7ee5e16101d79e2669e1b0e575ac0"
+      },
+      "accepted_rows": 1609,
+      "max_accepted_tcp_vs_fk_target_q_absolute_component_error": 0.0,
+      "all_held_targets_equal_previous_target_q": true,
+      "all_hold_accepted_tcp_null": true,
+      "hold_first_t": 12.876,
+      "hold_last_t": 13.068,
+      "stop_t": 13.076,
+      "last_hold_to_stop_s": 0.008000000000000895,
+      "hold_count": 25,
+      "hold_active_replan_ids": [
+        14
+      ],
+      "first_hold_latch": 0.6237486004829407,
+      "last_hold_latch": 0.6237486004829407,
+      "stop_latch": 0.6237486004829407,
+      "last_hold_gripper_command": 0.6237486004829407,
+      "stop_gripper_command": 0.6237486004829407,
+      "first_hold_measured_tcp": [
+        -0.42306252835085195,
+        -0.2219760576346823,
+        0.4059753306276279,
+        -1.1278565484394847,
+        -1.53835473200993,
+        1.183754691549364
+      ],
+      "first_hold_requested_tcp": [
+        -0.42370645384799466,
+        -0.21727619856113262,
+        0.4150313653432352,
+        -1.1208624937558611,
+        -1.5207444322764943,
+        1.178215699184041
+      ],
+      "late_plans": [
+        {
+          "replan_id": 13,
+          "t": 11.196,
+          "status": "superseded",
+          "t_created": 11.196,
+          "latency_s": 0.7794488610234112,
+          "inference_wall_time_s": 0.9152304430026561,
+          "first_action_t": 11.97544886102341,
+          "last_action_t": 13.47544886102341,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.7794488610234112,
+            "sim_effective_inference_latency_s": 0.7794488610234112,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 11.196,
+            "sim_inference_request_t": 11.196
+          }
+        },
+        {
+          "replan_id": 14,
+          "t": 11.988,
+          "status": "active",
+          "t_created": 11.988,
+          "latency_s": 0.7807219320675358,
+          "inference_wall_time_s": 0.9286849648924544,
+          "first_action_t": 12.768721932067535,
+          "last_action_t": 14.268721932067535,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.7807219320675358,
+            "sim_effective_inference_latency_s": 0.7807219320675358,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 11.988,
+            "sim_inference_request_t": 11.988
+          }
+        },
+        {
+          "replan_id": 15,
+          "t": 12.780000000000001,
+          "status": "not_activated_before_end",
+          "t_created": 12.780000000000001,
+          "latency_s": 0.7718261680565774,
+          "inference_wall_time_s": 0.9306441949447617,
+          "first_action_t": 13.551826168056579,
+          "last_action_t": 15.051826168056579,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.7718261680565774,
+            "sim_effective_inference_latency_s": 0.7718261680565774,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 12.780000000000001,
+            "sim_inference_request_t": 12.780000000000001
+          }
+        }
+      ],
+      "cpu_hold_replay": [
+        {
+          "t": 12.876,
+          "recorded_reason": "limiter_hold",
+          "anchor_feasible": true,
+          "anchor_q2_rad": 0.40007930101950806,
+          "selector_reason": "limiter_hold",
+          "selector_violation": "elbow",
+          "ik_solves": [
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.36124135681956154
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3842770199847988
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3921783145821318
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.396128846317778
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39792536217552027
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3990024856774928
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3995409318654588
+            }
+          ]
+        },
+        {
+          "t": 13.068,
+          "recorded_reason": "limiter_hold",
+          "anchor_feasible": true,
+          "anchor_q2_rad": 0.40007930101950806,
+          "selector_reason": "limiter_hold",
+          "selector_violation": "elbow",
+          "ik_solves": [
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3885348441536831
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39431290424077525
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3971975603575628
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3986387950972059
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3968424162139776
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.398462316344164
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39927117309050647
+            }
+          ]
+        }
+      ],
+      "last_delivery_keys": [
+        "captured_snapshot_t",
+        "delivery_t",
+        "activated",
+        "actions",
+        "diagnostics"
+      ],
+      "last_delivery_summary": {
+        "delivery_t": 12.772,
+        "activated": true
+      }
+    },
+    {
+      "seed": 904302,
+      "input_sha256": {
+        "execution_trace.jsonl": "d47d621beb13b465eb0a1ae80ceaf95fe600cb2015dc62b31c40b930946b28ff",
+        "planner_trace.json": "687ba3769d47408bfc39d429bec9c5ea145dee7ad1d057499c107771db419ede",
+        "delivered_plans.jsonl": "d73bc7b96f6a3685022cd9aa8028f43d51c6614d6381f47252faa497371ba948"
+      },
+      "accepted_rows": 1748,
+      "max_accepted_tcp_vs_fk_target_q_absolute_component_error": 0.0,
+      "all_held_targets_equal_previous_target_q": true,
+      "all_hold_accepted_tcp_null": true,
+      "hold_first_t": 13.988,
+      "hold_last_t": 14.18,
+      "stop_t": 14.188,
+      "last_hold_to_stop_s": 0.008000000000000895,
+      "hold_count": 25,
+      "hold_active_replan_ids": [
+        15
+      ],
+      "first_hold_latch": 0.6112303137779236,
+      "last_hold_latch": 0.6112303137779236,
+      "stop_latch": 0.6112303137779236,
+      "last_hold_gripper_command": 0.6112303137779236,
+      "stop_gripper_command": 0.6112303137779236,
+      "first_hold_measured_tcp": [
+        -0.40925089328537123,
+        -0.23649222149817464,
+        0.3889395918061732,
+        -1.1073998943763441,
+        -1.697788337872729,
+        1.227907684666157
+      ],
+      "first_hold_requested_tcp": [
+        -0.41024548586079235,
+        -0.23080368620941294,
+        0.39718156879009897,
+        -1.1071812949244464,
+        -1.6691804160985444,
+        1.2146535741935298
+      ],
+      "late_plans": [
+        {
+          "replan_id": 14,
+          "t": 12.316,
+          "status": "superseded",
+          "t_created": 12.316,
+          "latency_s": 0.8383767219493166,
+          "inference_wall_time_s": 1.0093136910581961,
+          "first_action_t": 13.154376721949317,
+          "last_action_t": 14.654376721949317,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.8383767219493166,
+            "sim_effective_inference_latency_s": 0.8383767219493166,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 12.316,
+            "sim_inference_request_t": 12.316
+          }
+        },
+        {
+          "replan_id": 15,
+          "t": 13.164,
+          "status": "active",
+          "t_created": 13.164,
+          "latency_s": 0.823067118995823,
+          "inference_wall_time_s": 0.9762432089773938,
+          "first_action_t": 13.987067118995823,
+          "last_action_t": 15.487067118995823,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.823067118995823,
+            "sim_effective_inference_latency_s": 0.823067118995823,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 13.164,
+            "sim_inference_request_t": 13.164
+          }
+        },
+        {
+          "replan_id": 16,
+          "t": 13.996,
+          "status": "not_activated_before_end",
+          "t_created": 13.996,
+          "latency_s": 0.8141362119931728,
+          "inference_wall_time_s": 0.9621203779242933,
+          "first_action_t": 14.810136211993173,
+          "last_action_t": 16.310136211993175,
+          "timing_diagnostics": {
+            "sim_native_inference_latency_s": 0.8141362119931728,
+            "sim_effective_inference_latency_s": 0.8141362119931728,
+            "sim_inference_delay_add_s": 0.0,
+            "sim_observation_delay_s": 0.0,
+            "sim_observation_capture_t": 13.996,
+            "sim_inference_request_t": 13.996
+          }
+        }
+      ],
+      "cpu_hold_replay": [
+        {
+          "t": 13.988,
+          "recorded_reason": "limiter_hold",
+          "anchor_feasible": true,
+          "anchor_q2_rad": 0.4001950534584762,
+          "selector_reason": "limiter_hold",
+          "selector_violation": "elbow",
+          "ik_solves": [
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3862833592060725
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3932446755261707
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3967212315582623
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3984584842458604
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3966325446867865
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39841516613857
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3993054515360142
+            }
+          ]
+        },
+        {
+          "t": 14.18,
+          "recorded_reason": "limiter_hold",
+          "anchor_feasible": true,
+          "anchor_q2_rad": 0.4001950534584762,
+          "selector_reason": "limiter_hold",
+          "selector_violation": "elbow",
+          "ik_solves": [
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39149319940020727
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3958490087194545
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39802325138478195
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3991094574610777
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39825287504624896
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.39922518454817957
+            },
+            {
+              "success": true,
+              "reason": "converged",
+              "q2_rad": 0.3997104240427763
+            }
+          ]
+        }
+      ],
+      "last_delivery_keys": [
+        "captured_snapshot_t",
+        "delivery_t",
+        "activated",
+        "actions",
+        "diagnostics"
+      ],
+      "last_delivery_summary": {
+        "delivery_t": 13.988,
+        "activated": true
+      }
+    }
+  ]
+}

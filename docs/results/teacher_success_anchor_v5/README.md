@@ -1,5 +1,11 @@
 # Minimal-profile teacher comparison
 
+**Completed 7 September 2026: all 24 screen and 24 confirmation cases are valid and independently audited. Choose ftA1500 EMA, NFE1, K4, guidance1 as the next teacher lab candidate. It is the conditional leader, not a reliable or statistically established full-task winner.** Confirmation: ftA1500 acquired12/12, lifted7/12, carried6/12 and placed1/12, versus ftA3000 acquired8/12, lifted/carried4/12 and placed0/12. One ftA1500 trial dropped the packet. See the [final independent audit](confirmation/independent_audit.md), [selected successful video audit](selected_success_audit.md), and [lab card](../../isaac_teacher_lab_card_20260907.md).
+
+The successful fresh seed904510 physically placed at24.268s and held safely after FINISH through60s. All48 comparison videos, including every failure, have synchronized tactile presentation and passed full decoding/hash audits. The original seed4242 success remains a physical success too. Neither a selected video nor the later post-placement stop in the original establishes repeatability.
+
+The v6 reach limiter was evaluated separately and is **not promoted**: both development trials acquired/lifted/carried, but stopped on servo_limiter_stall before release. The v7 full-RPC K1/K4 diagnostic is a separate declared settings study; it does not modify or pool into these results.
+
 V5 is a **new development-informed amendment**, not a relabeling of v3 or v4. The combined v4 bridge failed both valid trials: wrist-extension stop at16.824s and tactile-depth stop at19.624s, with no physical placement. Its [authoritative failed gate](../teacher_success_anchor_v4/failed_gate.json) remains preserved and prohibits v4 model ranking. V3 and v4 prospective model screens were never executed.
 
 The [frozen v5 protocol](protocol.json) compares all four teachers/recipes under the minimal gel-v2 plus FINISH profile, regardless of reference ftA1500 development performance. Both minimal-profile development trials also failed; they remain excluded and do not prevent testing other candidates. Environment admission comes from reproducible mechanics, saved-input inference validation and verified source/input integrity, not requiring a teacher win in advance.
@@ -56,4 +62,4 @@ The confirmer re-audits the raw screen and rejects changed inputs, incomplete ma
 
 The helper supports old FINISH telemetry explicitly: when `run.json` omits its completion field, consistent execution-trace completion diagnostics supply that controller metadata, with `completion_reason_source=execution_only`. Explicit conflicts remain invalid. No raw recording is edited, and completion cannot substitute for physical success. Ten focused CPU tests cover that schema distinction, profile/seed/recipe preservation, confirmation and the exact statistical guard; Ruff passes.
 
-Prospective model results are pending. These diagnostics and changes do not themselves establish a clear model winner.
+The completed confirmation's paired placement difference is +8.33 percentage points, 95% interval [0,+25], exact McNemar p=1. The frozen winner gates fail; the arm-start extension was therefore not launched. The recommendation above is a practical next-candidate choice with its failure rate disclosed.

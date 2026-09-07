@@ -1,5 +1,16 @@
 # Native latency and held-command diagnosis
 
+**Timing-label correction, 2026-09-07:** the previous description of the
+approximately 0.2 s difference as RPC overhead was unsupported. The saved
+`inference_wall_time_s` measures the **outer runner replan path**, including
+snapshot/observation-saving callbacks and adapter work. It does not isolate
+client transport. All raw numbers and frozen v5 results below are unchanged;
+legacy `rpc` labels in the numeric JSON must be read with this correction.
+The new [v7 measurement](../teacher_success_anchor_v7/initial_runtime_rpc_audit.json)
+separates the actual client call: its first sample has 5.886 ms client-minus-native
+duration and 186.602 ms outer-minus-client duration. That single sample does not
+establish a typical overhead or a physical outcome.
+
 This read-only audit uses ftA1500 screen seeds **904401–904405**, which were
 complete when inspected. It compares timing at two declared recipes; it neither
 replaces the final screen analysis nor attributes placement outcomes to latency.
@@ -7,7 +18,7 @@ The [numeric audit](latency_audit.json) records source, server and all ten input
 identities, definitions and per-case values. No inference, source change or
 hardware action was performed for this audit.
 
-| Declared recipe | Calls | Median saved native latency | Median observed total RPC | Median RPC minus native |
+| Declared recipe | Calls | Median saved native latency | Median outer runner elapsed time | Median outer minus native |
 |---|---:|---:|---:|---:|
 | ftA1500 NFE1/K4 | 99 | 0.7816 s | 0.9786 s | 0.1930 s |
 | ftA1500 NFE5/K4 | 79 | 3.8360 s | 4.0478 s | 0.2123 s |
@@ -44,11 +55,15 @@ There are two different clocks in the records. Native `policy.py:239–253`
 measures a host `perf_counter` duration around observation batching and sampler
 execution, ending **before** CPU materialization and selection. It contains no
 explicit CUDA synchronization at that endpoint. The saved
-`inference_wall_time_s` brackets the complete client replan call, including
-transport and remaining work. It is not a pure GPU timer either. **V5 simulation
-uses native L; remote physical deployment pays the full RPC duration** and must
-handle the resulting later delivery. The approximately 0.2-second difference
-cannot be erased when judging deployable response time.
+`inference_wall_time_s` brackets the outer adapter replan call, including
+snapshot preparation, observation-saving callbacks, the policy client call and
+adapter postprocessing. It is neither an isolated RPC timer nor a GPU timer.
+**V5 simulation uses native L.** A remote client must account for its actual
+complete policy-call duration, but the approximately 0.2 s outer-minus-native
+difference does not measure that duration's overhead. It cannot be assigned to
+network transport or assumed to occur on the physical rig. The opt-in v7 timer
+measures only the complete synchronous policy client call and logs the outer
+runner time separately, preserving native action/CPK conditioning.
 
 CPK indices below are **reconstructed from native code and saved timings**, not
 logged CPK telemetry. The native latent period is 4/4 = 1 s. It computes

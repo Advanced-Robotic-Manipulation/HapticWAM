@@ -1,0 +1,205 @@
+{
+  "status": "complete",
+  "scope": "CPU presentation of both completed diagnostic cases; not a model-ranking study",
+  "pid": 2543916,
+  "started_at_unix_s": 1788779263.742321,
+  "cpu_affinity": [
+    30,
+    31
+  ],
+  "nice": 19,
+  "expected_cases": [
+    "teacher__fixed_anchor__seed904301",
+    "teacher__fixed_anchor__seed904302"
+  ],
+  "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_limiter_v6",
+  "render_helper": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+  "render_helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "reused_batch_helper": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/render_confirmation_reviews.py",
+  "reused_batch_helper_sha256": "272a989edd01a0fcf049eddd0ea4da8ef478f812ade655c43fd897fcd807f118",
+  "batch_sha256": "4a526459d23994c136c82959384694b874b5fe62a6227b6ad67b4b738a8d07f0",
+  "campaign_sha256": "55a5ad7852b1f08b6cce6a6d7f136454cac69504aed11ad1b441c36945aac9b6",
+  "raw_writes": false,
+  "entries": [
+    {
+      "case_id": "teacher__fixed_anchor__seed904301",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904301/policy_review.mp4",
+      "video_bytes": 805359,
+      "video_sha256": "62515fe413c162a0214293538456ecd8582c09ef7368416d31d2df5896838e8e",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904301/policy_review.json",
+      "metadata_sha256": "32a4c19d663a3cdf8a8cc1f1d4178e355ac8cd6b177209a0e2d67721d8a4e47b",
+      "decoded_frames": 227,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 15.072000000000001,
+      "score_sha256": "15cd70125cbfca37f812e5446ffb6973d4c2d94bd023c0a1dc0e1e9e9cec1c18",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": false,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            105
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "52683353d5148e038ba3cab594c75967b109d7ec033c91b36c6b70461b6645bb"
+        },
+        "gel": {
+          "shape": [
+            105,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "2847780640fed5884c3a979eba804dabca2ffd392ca01731e5fc2b3c19c0579a"
+        },
+        "gel_normal_force": {
+          "shape": [
+            105,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "1ecd95b79808faaf85627868fddddd34b3456ab884730f0501b71ec3327d0feb"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "aa5bd1023e4d591744017a953870ef674d7c8f3a7621876484d55fdc86ce7bf8",
+        "sim.mp4": "9b6ead8003a89a69bb41c9667cfc64a644c97d6264c48b5e623bf8fa4baa38d7",
+        "sim_trace.npz": "2df4ad703e563d17cec4d8c3196c43bac8e1bd6b7e2f5d53f6dc8219fe955829",
+        "policy_tactile.npz": "0b31eb7c062785e76ac43acd46929576e9ea921d65861981f5b2dd0251e50997",
+        "execution_trace.jsonl": "92b004a336cd915d6a523bb95686872253ed5fb3096ae0172f40fff78c4844e7",
+        "planner_trace.json": "13f49fff0bc1b2dad04f136d1a27e0c77ad7d04526550bea57c04531fa426772",
+        "run.json": "da79c5b8a7e33b31a99b7f2b4620b6ce9914c36f7eceb9b633f34f724ef7ec31",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "436c2a33b3d2d1d1b51d9054178f0533dce1dfbc5de917c75577a5742fab5180",
+        "policy_info.json": "8529590f605683ccee4f93fe145735e09b151876c531e2a75a75feb38972064e"
+      },
+      "score_inputs_sha256": {
+        "run.json": "da79c5b8a7e33b31a99b7f2b4620b6ce9914c36f7eceb9b633f34f724ef7ec31",
+        "sim_trace.npz": "2df4ad703e563d17cec4d8c3196c43bac8e1bd6b7e2f5d53f6dc8219fe955829",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "92b004a336cd915d6a523bb95686872253ed5fb3096ae0172f40fff78c4844e7",
+        "planner_trace.json": "13f49fff0bc1b2dad04f136d1a27e0c77ad7d04526550bea57c04531fa426772",
+        "policy_info.json": "8529590f605683ccee4f93fe145735e09b151876c531e2a75a75feb38972064e",
+        "server_ready.json": "adc611e86d300bb25c47fa9393758abd04c986dabc15b49e0b7349235302a68e"
+      },
+      "mapping_sha256": "2c66ec50c35709199d1ee3fef02bb4483dddf4e21eab6cde72292bd1c6cba247",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/diagnostic/rollouts/teacher__fixed_anchor__seed904301",
+        "--label",
+        "teacher__fixed_anchor__seed904301",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904301/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "teacher__fixed_anchor__seed904302",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904302/policy_review.mp4",
+      "video_bytes": 838161,
+      "video_sha256": "efdd3b9e135e9710abde5ae444f7bcb0a2680e662a3517586da2db94bd8012c1",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904302/policy_review.json",
+      "metadata_sha256": "60ab72caa5f7fb913ab6fa21953a32d5a9e970d7c1953e017ad82cfc56577d21",
+      "decoded_frames": 243,
+      "fps": 15,
+      "planned_horizon_s": 60,
+      "actual_duration_s": 16.184,
+      "score_sha256": "7439efd643512614f682055e69519d3cd133c844c36a405a2cd89415cdeca0ea",
+      "score_valid_for_scoring": true,
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "controller_completion": null,
+      "gel_arrays": {
+        "t": {
+          "shape": [
+            114
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "3b23a39bf2782aea13a1181ce1a9fb2e3c8d6f537a32e520eafd5f09b2b843f4"
+        },
+        "gel": {
+          "shape": [
+            114,
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "5318a8ea371b3146bb7343f3819245334d7171834bca6b4d8539a9b8d349fda2"
+        },
+        "gel_normal_force": {
+          "shape": [
+            114,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "82daf8e165a0f8dde5b71530da795790f3af105c61c223a31ea66773406da7dd"
+        }
+      },
+      "input_sha256": {
+        "run_status.json": "388af9d79554665aae2d13c5c594218e6b3ceb47737412fa947999161d2484e8",
+        "sim.mp4": "be8c31338b55397b89896f5b30e6dbf92596a45733f60df87887515adc8751ff",
+        "sim_trace.npz": "b2315045e98d192d1b54f2c40124610dcb72118e2ec6df4cf008c697d44c0470",
+        "policy_tactile.npz": "fba91d81fabaa34c363562d3671849d0bdc6d28dcd697a084f850302e3037953",
+        "execution_trace.jsonl": "d47d621beb13b465eb0a1ae80ceaf95fe600cb2015dc62b31c40b930946b28ff",
+        "planner_trace.json": "687ba3769d47408bfc39d429bec9c5ea145dee7ad1d057499c107771db419ede",
+        "run.json": "b9ca9f9044998568cb28e973a4a759f16f42e9778a77fe723caeeaf2b8dbe9a6",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "case.json": "6a09eaf6d6ba13439ad1ca139cce45077c4ab20099a91fe0f90af18e04b98ce1",
+        "policy_info.json": "8bb41c45c8852b8f403a1f223ec47fc7d308e411594eba8050ff333b92745a86"
+      },
+      "score_inputs_sha256": {
+        "run.json": "b9ca9f9044998568cb28e973a4a759f16f42e9778a77fe723caeeaf2b8dbe9a6",
+        "sim_trace.npz": "b2315045e98d192d1b54f2c40124610dcb72118e2ec6df4cf008c697d44c0470",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "d47d621beb13b465eb0a1ae80ceaf95fe600cb2015dc62b31c40b930946b28ff",
+        "planner_trace.json": "687ba3769d47408bfc39d429bec9c5ea145dee7ad1d057499c107771db419ede",
+        "policy_info.json": "8bb41c45c8852b8f403a1f223ec47fc7d308e411594eba8050ff333b92745a86",
+        "server_ready.json": "adc611e86d300bb25c47fa9393758abd04c986dabc15b49e0b7349235302a68e"
+      },
+      "mapping_sha256": "d4f57e325a11eb7f53a98e974c36b2141eb8f8072b4bc1c941adbbdeb0a528bf",
+      "full_decode_verified": true,
+      "causal_mappings_verified": true,
+      "stored_runtime_gel_verified": true,
+      "metrics_exactly_match_primary_score": true,
+      "raw_inputs_unchanged_after_render": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/diagnostic/rollouts/teacher__fixed_anchor__seed904302",
+        "--label",
+        "teacher__fixed_anchor__seed904302",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/video_reviews/diagnostic/teacher__fixed_anchor__seed904302/policy_review.mp4"
+      ]
+    }
+  ],
+  "failures": [],
+  "finished_at_unix_s": 1788779272.2277584,
+  "total_video_bytes": 1643520,
+  "total_decoded_frames": 470
+}

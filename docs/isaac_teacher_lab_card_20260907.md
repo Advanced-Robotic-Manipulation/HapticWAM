@@ -1,20 +1,24 @@
-# Teacher-only lab card — 7 September 2026
+# Teacher lab card — final v5 results
 
-**There is no validated final pick-and-place winner.** The completed simulator confirmation gave ftA3000 and v5_6 each **3/12 acquisitions, 1/12 lifts/carries, 0/12 placements**. Both carries stopped at wrist extension while holding, above the release region. The models remain paired diagnostic pickup candidates. These estimated sensor/contact results do not predict real success rates.
+**Next lab candidate: ftA1500, teacher EMA, NFE1, K4, guidance 1.** This is a conditional recommendation, not a validated reliable winner.
 
-1. **Measure and record the rig.** Prioritize base/table height, TCP-to-pad faces/backing, actual aperture, packet/box dimensions and reset marks, then camera calibration and unloaded wrist/tactile readings at rest and through reviewed motion. Use the [37-row sheet](measurements/setup_20260907_template.csv) and [measurement guide](isaac_teacher_measurements_20260907.md).
-2. **Reproduce the existing native pickup path.** The [full handoff](isaac_lab_handoff_20260907.md) contains exact read-only checks, server identity checks, reviewed starts and attended commands. Its first pickup gate uses the historical ftA1500 reference. Score visible object clearance and retained hold; a `lift_complete` flag alone is insufficient.
-3. **Run a bounded paired pickup pilot after that gate.** Compare ftA3000 versus v5_6 for five reviewed starts, seeds 101–105, ten episodes. Both use **teacher, EMA, NFE1, K4, guidance 1, persistent noise, parity, live terminal veto and max-play 10**. Alternate which candidate runs first as specified in the handoff. Preserve achieved starting q/TCP/aperture, all attempts, proposals, accepted commands, videos and stop reasons. Keep packet/camera/box fixed and verify the loaded server checkpoint for every change.
-4. **Qualify transfer and release separately.** Both simulated carries remained outside the release volume; no eligible opening was played after the latch. Nominal in-volume IK solutions exist, but their paths and collision clearance are unvalidated. Measure the real release region and bench-test the opt-in release/FINISH bridge before policy placement. Keep wrist-extension, force, speed and workspace limits unchanged.
+| Reserved confirmation only | Acquired | Lifted | Carried | Full placement | Clean finish | Drops |
+|---|---:|---:|---:|---:|---:|---:|
+| ftA1500 / NFE1 / K4 |12/12|7/12|6/12|1/12|1/12|1/12|
+| ftA3000 / NFE1 / K4 |8/12|4/12|4/12|0/12|0/12|0/12|
 
-| Candidate | Checkpoint on compute3 | SHA256 prefix; full digest in handoff |
-|---|---|---|
-| ftA3000 | `/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt` | `ee0a448c00da` |
-| v5_6 | `/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt` | `7edcb8335681` |
-| ftA1500 historical reference | `/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt` | `67c93287123e` |
+The physical-placement difference is +8.33 percentage points, paired 95% interval [0,+25], exact McNemar p=1. The predeclared winner gates fail. Screening, older studies, and development successes are not pooled into these counts. [Independent final audit](results/teacher_success_anchor_v5/confirmation/independent_audit.md).
 
-The new [fixed wrist-reference mode](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/13) is a separate opt-in experiment. It detects a saved gradual overload earlier, but changing real wrist bias can also create stops; one later recorded-demo trigger remains unadjudicated. It is not enabled by the study or this card. No hardware has been controlled or updated by this work.
+Use `/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt`, SHA256 `67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e`. Keep teacher architecture, EMA, task/text `waffles`, persistent noise, parity, and maximum 10 played actions. K4 means four candidate chunks per replan; it is separate from the episode seed.
 
-[Complete results and failure analysis](results/teacher_robustness_v2_delivery/README.md) · [Tactile comparison video](results/teacher_robustness_v2_delivery/media/paired_pickup_attempts_60s.mp4) · [Full operational handoff](isaac_lab_handoff_20260907.md).
+The native controller to qualify is the explicit **`--placement-controller-profile minimal_v5`** port in [PR14](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/14), introduced by commit `51457a36a8f3af3e4dbdc0100a8d6121aae70804`. It retains historical request-time veto and uses live real sensors. It requires `--terminal-veto` and an explicitly measured `--placement-release-config` with FINISH enabled. It has CPU parity evidence, not hardware validation or automatic installation. See [exact configuration and operator handoff](isaac_lab_handoff_20260907.md).
 
-After calibration, reuse the completed simulator cases as regression checks and reserve fresh measured starts/seeds for another teacher selection. Test measured small waffle-reset jitter afterward as a separate factor; avoid simultaneous arbitrary arm/object randomization.
+For the next bench session:
+
+1. Measure base/table datum, pad/TCP faces and backing, actual aperture, packet/box dimensions and reset marks, camera alignment, and unloaded/known-load sensor response. Use the [measurement guide](isaac_teacher_measurements_20260907.md) and [sheet](measurements/setup_20260907_template.csv).
+2. Qualify attended pickup/retention and the measured release/FINISH volume on one reviewed start. Keep existing reach, speed, load, freshness and start-distribution guards.
+3. Fix the waffle, box, camera and lighting. Then vary authentic measured arm/gripper starts in a declared 12-case pilot: six reviewed starts × two fresh seeds, with all attempts retained. The policy generates the trajectory. Object-reset jitter is a later separate factor; do not randomize both factors together.
+
+The successful illustration physically placed at 24.268 s, finished controller release at 25.076 s, and remained unloaded in the box through 60 s. Its final aperture also includes historical recovery after physical placement; this is documented in the [event audit](results/teacher_success_anchor_v5/selected_success_audit.md).
+
+Rigid packet/compliance, gel mapping and the pad-only wrist proxy remain approximate. A failed approach exceeded 120 N in simulated contact while the rolling wrist reference absorbed gradual load; that is a realism/guard limitation, not evidence of safe force transfer. [Contact audit](results/teacher_success_anchor_v5/contact_force_audit.md). V6 limiter and V7 full-RPC timing follow-ups are separate and **not promoted to this lab configuration**. No hardware was run or changed by this work.

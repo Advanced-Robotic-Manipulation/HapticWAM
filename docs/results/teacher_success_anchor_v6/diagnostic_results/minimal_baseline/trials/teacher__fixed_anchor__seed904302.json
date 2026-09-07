@@ -1,0 +1,217 @@
+{
+  "policy_id": "teacher",
+  "condition_id": "fixed_anchor",
+  "sampling_seed": 904302,
+  "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/minimal_profile_diagnostic/rollouts/teacher__fixed_anchor__seed904302",
+  "case_sha256": "84fe39d6147db0af4fa20d6b81f99dc7b1a4799cbe6f112d4660eaa82fb5a831",
+  "case": {
+    "schema_version": 1,
+    "campaign_sha256": "1f8e8d1f1db9ec7b22f4ad44c1fd76502633f482165d429b12622b27ca90e8b9",
+    "policy_id": "teacher",
+    "condition_id": "fixed_anchor",
+    "sampling_seed": 904302,
+    "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "attempt": 1,
+    "phase": "minimal_gel_finish__teacher",
+    "server_metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/minimal_profile_diagnostic/servers/00_minimal_gel_finish__teacher_1788771756305109059/server.json",
+    "server_ready_sha256": "9639bff4f58865aefb962fed883f2fa608612d1869a2b2d38585e2526444f8e5",
+    "intended_parameters": {
+      "id": "fixed_anchor",
+      "family": "nominal",
+      "object_offset_m": [
+        -0.01,
+        -0.01
+      ],
+      "friction_scale": 1.0,
+      "camera_override": null,
+      "observation_delay_s": 0.0,
+      "inference_delay_add_s": 0.0,
+      "intended_parameters": {
+        "object_translation_world_xy_m": [
+          -0.01,
+          -0.01
+        ]
+      }
+    },
+    "intended_scene_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+    "effective_parameters": {
+      "scene_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "policy_info_sha256": "c8334b6c01f23a7c90b65a131cedaac5fd7d97956cef03bbcfc6c8bd7fb66923",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "observation_delay_s": 0.0,
+      "inference_delay_add_s": 0.0,
+      "max_play_steps": 10,
+      "duration_s": 17.864,
+      "stop_reason": "safety_stop"
+    },
+    "scoring_thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    }
+  },
+  "status": "scored",
+  "metrics": {
+    "schema_version": 1,
+    "valid_for_scoring": true,
+    "invalid_reasons": [],
+    "thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    },
+    "outcomes": {
+      "reach_before_closure": true,
+      "acquired": true,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "full_task": false,
+      "dropped": false
+    },
+    "event_times_s": {
+      "reach": 6.0680000000000005,
+      "closure": 7.468,
+      "acquisition": 8.4,
+      "lift": null,
+      "carry": null,
+      "release_in_bin": null,
+      "full_task": null,
+      "first_drop": null
+    },
+    "object": {
+      "initial_center_m": [
+        -0.393706738948822,
+        -0.29306915402412415,
+        0.06999999284744263
+      ],
+      "final_center_m": [
+        -0.38237476348876953,
+        -0.3064914643764496,
+        0.06999997794628143
+      ],
+      "max_lift_m": 0.021328918635845184,
+      "carry_distance_m": 0.0,
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_speed_m_s": 1.1641532182693471e-07,
+      "final_angular_speed_rad_s": 9.313225746154777e-07,
+      "minimum_pad_midpoint_to_object_m": 0.0,
+      "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+      "bilateral_contact_duration_s": 2.403999999999998,
+      "pad_packet_normal_force_peak_n": 9.625993728637695
+    },
+    "placement_support": {
+      "required": true,
+      "telemetry_status": "available",
+      "verified_placement": false,
+      "confirmation_time_s": null,
+      "robot_contact_peak_n": 17.29506927728653,
+      "bin_contact_peak_n": 0.0,
+      "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+    },
+    "control": {
+      "stop_reason": "safety_stop",
+      "execution_rows": 1984,
+      "execution_clock_valid": true,
+      "ik_rejects": 0,
+      "ik_reject_reasons": {},
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "replans": 18,
+      "inference_errors": 0,
+      "plans_activated": 17,
+      "effective_latency_s": {
+        "count": 18,
+        "mean": 0.8974260533254387,
+        "p95": 1.1958147265424486,
+        "max": 1.1993879480287433
+      },
+      "inference_wall_time_s": {
+        "count": 18,
+        "mean": 1.1009640431083325,
+        "p95": 1.3894644532585516,
+        "max": 1.4010983420303091
+      },
+      "activation_delay_s": {
+        "count": 17,
+        "mean": 0.8861176470588237,
+        "p95": 1.1999999999999995,
+        "max": 1.2
+      },
+      "lift_complete_is_task_success": false
+    },
+    "collisions": {
+      "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "reported_count": 0,
+      "pad_environment_force_peak_n": 0.0,
+      "reported_events": []
+    },
+    "trace_sampling": {
+      "rows": 269,
+      "duration_s": 17.864,
+      "maximum_interval_s": 0.06800000000000139,
+      "physics_clock_max_error_s": 8.484944693520902e-07,
+      "event_time_uncertainty_s": 0.06800000000000139
+    },
+    "reach_diagnostic": {
+      "absolute_threshold_already_exceeded_at_start": false,
+      "initial_measured_closure": 0.07840987294912338,
+      "first_closing_motion_s": 1.46,
+      "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+      "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+      "sample_time_s": 1.4000000000000001,
+      "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+    },
+    "limitations": [
+      "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+      "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+      "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+      "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+      "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+    ]
+  },
+  "input_sha256": {
+    "run.json": "44e1f639c5fbdb7f3feb0c7c96a7e6089024ed4dca134696e896884f7a009448",
+    "sim_trace.npz": "59992c3caa565b3cb9da6fd204e249b2f21a1f80576577a5f5c5b38db681ef49",
+    "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+    "execution_trace.jsonl": "dc26c7e9b941f4213ec9d919e51083037019cf40f4025c89bafcba3bee289089",
+    "planner_trace.json": "3125e17211c44aeee7f3145a118486eb12f7717d0c3c6b73c55b066d063cdded",
+    "policy_info.json": "c8334b6c01f23a7c90b65a131cedaac5fd7d97956cef03bbcfc6c8bd7fb66923",
+    "server_ready.json": "9639bff4f58865aefb962fed883f2fa608612d1869a2b2d38585e2526444f8e5"
+  }
+}

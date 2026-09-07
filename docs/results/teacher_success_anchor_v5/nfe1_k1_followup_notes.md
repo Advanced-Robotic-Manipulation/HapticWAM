@@ -1,7 +1,18 @@
 # Possible ftA1500 NFE1/K1 versus NFE1/K4 follow-up
 
-**Planning notes only: no setting change, inference, experiment or model
-recommendation.** Resolve the separate limiter/controller diagnosis first.
+**Timing-label correction, 2026-09-07:** the earlier approximately 0.2 s
+outer-minus-native difference includes observation-saving callbacks and adapter
+bookkeeping; it is not measured RPC transport overhead. The old numbers and
+frozen v5 outcomes are preserved in the [corrected latency audit](latency_audit.md).
+V7 now measures the client call separately; its first sample adds 5.886 ms over
+native inference, while the outer runner adds another 186.602 ms. This one
+sample does not establish typical latency.
+
+**Historical planning notes, not a model recommendation.** These notes preceded
+the separately declared four-case v7 development diagnostic, which uses full
+client-call delivery and reused development seeds. That diagnostic does not
+constitute fresh model-ranking confirmation. The original proposal below did
+not itself change a setting or launch an experiment. Resolve the separate limiter/controller diagnosis first.
 Then freeze one identical runtime profile for both arms of any comparison.
 Do not mix K changes with a controller, geometry, force threshold or sensor-map
 change, and do not use this note to alter v5 results.
@@ -50,8 +61,12 @@ release/support, FINISH, all stops and actual timing independently, preserving
 every planned failure and invalid case. Do not choose additional seeds until a
 preferred recipe wins.
 
-Use the same native-L simulation convention as the comparison, while publishing
-full RPC separately. Real remote deployment pays the full client/server delay;
-it cannot inherit the simulator's roughly 0.2-second omitted component for free.
+For any new comparison, explicitly freeze the same delivery-clock convention
+for both recipes and publish native inference, measured client call and outer
+runner duration separately. The historical table above used native-L delivery;
+the separate v7 diagnostic instead uses measured client-call delivery while
+preserving native internal action/CPK clocks. Real remote deployment pays its
+actual client/server delay, but the earlier outer-minus-native difference
+cannot be treated as a measured 0.2 s transport component.
 Do not extend the stale timeout or maximum playback to conceal slow inference.
 This note proposes a bounded single-setting question, not a new broad model study.

@@ -1,0 +1,28 @@
+{
+  "scope": "Final read-only confirmation presentation audit; output/metadata/primary-score hashes recomputed. Full decode already performed once by watcher; selected 904510 also decoded after local transfer. No policy scoring or raw writes.",
+  "checked_at_unix_s": 1788778120.639673,
+  "manifest": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/video_manifest.json",
+  "manifest_sha256": "bc8b17398f3f4629242633f9be1a31fba74b7b9c83f5d4f3a2cfcf5d118f2253",
+  "cases": 24,
+  "all_video_metadata_primary_score_hashes_match": true,
+  "all_saved_gel_and_causal_mapping_checks_passed": true,
+  "full_decode_once_per_video_recorded": true,
+  "total_video_bytes": 25734600,
+  "total_decoded_frames": 7173,
+  "actual_duration_range_s": [
+    9.752,
+    59.996
+  ],
+  "watcher_pid": 2422184,
+  "watcher_proc_state": null,
+  "watcher_running": false,
+  "log": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation_renderer.log",
+  "campaign_status": "all_trials_completed",
+  "presentation_helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "watcher_sha256": "272a989edd01a0fcf049eddd0ea4da8ef478f812ade655c43fd897fcd807f118",
+  "campaign_sha256": "fe62f45fcaf2e71e4df890ff7303bf70a2b49e35fc2a745f6f7492a5f200b855",
+  "qualified_controller_completion_is_not_physical_task_success": true,
+  "selected_video_illustration": "fta1500_nfe1_k4__successful_anchor__seed904510",
+  "clear_simulator_winner": null,
+  "selection_json_sha256": "464d7d354d334232ab4861e0e15faf6e118e1f46e8f2882df0cd6248289d0d60"
+}

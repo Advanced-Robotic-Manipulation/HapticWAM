@@ -1,0 +1,823 @@
+{
+  "schema_version": 1,
+  "wrapper_pid": 2367044,
+  "wrapper_sha256": "95c316468c4f0f8221a529d91eea2823f73f0bed65fc04a2b9ed392b7c4be9bd",
+  "screen_identity": {
+    "pid": 2306707,
+    "boot_id": "9b1fae31-5718-4674-bf3b-f3b413a89cc8",
+    "start_ticks": "102173374",
+    "argv": [
+      "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/run_policy_campaign.py",
+      "--campaign",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/configs/sim/teacher_success_anchor_v5_screen.json",
+      "--source",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+      "--live-repo",
+      "/home/physicalai/phantom-icra-2027/phantom",
+      "--server-python",
+      "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+      "--evidence",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+      "--hardware-config",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+      "--robot-usd",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+      "--output",
+      "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen",
+      "--port",
+      "7799",
+      "--execute"
+    ]
+  },
+  "events": [
+    {
+      "at_utc": "2026-09-07T09:42:16.444527+00:00",
+      "stage": "waiting_screen"
+    },
+    {
+      "at_utc": "2026-09-07T09:42:16.444992+00:00",
+      "stage": "waiting_screen",
+      "completed": 13
+    },
+    {
+      "at_utc": "2026-09-07T09:42:46.445496+00:00",
+      "stage": "waiting_screen",
+      "completed": 13
+    },
+    {
+      "at_utc": "2026-09-07T09:43:16.446029+00:00",
+      "stage": "waiting_screen",
+      "completed": 13
+    },
+    {
+      "at_utc": "2026-09-07T09:43:46.446639+00:00",
+      "stage": "waiting_screen",
+      "completed": 13
+    },
+    {
+      "at_utc": "2026-09-07T09:44:16.447306+00:00",
+      "stage": "waiting_screen",
+      "completed": 14
+    },
+    {
+      "at_utc": "2026-09-07T09:44:46.448481+00:00",
+      "stage": "waiting_screen",
+      "completed": 14
+    },
+    {
+      "at_utc": "2026-09-07T09:45:16.450586+00:00",
+      "stage": "waiting_screen",
+      "completed": 14
+    },
+    {
+      "at_utc": "2026-09-07T09:45:46.451952+00:00",
+      "stage": "waiting_screen",
+      "completed": 15
+    },
+    {
+      "at_utc": "2026-09-07T09:46:16.452737+00:00",
+      "stage": "waiting_screen",
+      "completed": 15
+    },
+    {
+      "at_utc": "2026-09-07T09:46:46.453357+00:00",
+      "stage": "waiting_screen",
+      "completed": 15
+    },
+    {
+      "at_utc": "2026-09-07T09:47:16.453977+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:47:46.454620+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:48:16.455414+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:48:46.457154+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:49:16.458573+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:49:46.459383+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:50:16.460157+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:50:46.460941+00:00",
+      "stage": "waiting_screen",
+      "completed": 16
+    },
+    {
+      "at_utc": "2026-09-07T09:51:16.462051+00:00",
+      "stage": "waiting_screen",
+      "completed": 17
+    },
+    {
+      "at_utc": "2026-09-07T09:51:46.464668+00:00",
+      "stage": "waiting_screen",
+      "completed": 17
+    },
+    {
+      "at_utc": "2026-09-07T09:52:16.465528+00:00",
+      "stage": "waiting_screen",
+      "completed": 17
+    },
+    {
+      "at_utc": "2026-09-07T09:52:46.466212+00:00",
+      "stage": "waiting_screen",
+      "completed": 18
+    },
+    {
+      "at_utc": "2026-09-07T09:53:16.466807+00:00",
+      "stage": "waiting_screen",
+      "completed": 18
+    },
+    {
+      "at_utc": "2026-09-07T09:53:46.467517+00:00",
+      "stage": "waiting_screen",
+      "completed": 18
+    },
+    {
+      "at_utc": "2026-09-07T09:54:16.468292+00:00",
+      "stage": "waiting_screen",
+      "completed": 19
+    },
+    {
+      "at_utc": "2026-09-07T09:54:46.469115+00:00",
+      "stage": "waiting_screen",
+      "completed": 19
+    },
+    {
+      "at_utc": "2026-09-07T09:55:16.470563+00:00",
+      "stage": "waiting_screen",
+      "completed": 19
+    },
+    {
+      "at_utc": "2026-09-07T09:55:46.471571+00:00",
+      "stage": "waiting_screen",
+      "completed": 19
+    },
+    {
+      "at_utc": "2026-09-07T09:56:16.472213+00:00",
+      "stage": "waiting_screen",
+      "completed": 20
+    },
+    {
+      "at_utc": "2026-09-07T09:56:46.472851+00:00",
+      "stage": "waiting_screen",
+      "completed": 20
+    },
+    {
+      "at_utc": "2026-09-07T09:57:16.473610+00:00",
+      "stage": "waiting_screen",
+      "completed": 20
+    },
+    {
+      "at_utc": "2026-09-07T09:57:46.474372+00:00",
+      "stage": "waiting_screen",
+      "completed": 20
+    },
+    {
+      "at_utc": "2026-09-07T09:58:16.475478+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T09:58:46.476402+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T09:59:16.477327+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T09:59:46.478257+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T10:00:16.479061+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T10:00:46.479732+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T10:01:16.480381+00:00",
+      "stage": "waiting_screen",
+      "completed": 21
+    },
+    {
+      "at_utc": "2026-09-07T10:01:46.481070+00:00",
+      "stage": "waiting_screen",
+      "completed": 22
+    },
+    {
+      "at_utc": "2026-09-07T10:02:16.481774+00:00",
+      "stage": "waiting_screen",
+      "completed": 22
+    },
+    {
+      "at_utc": "2026-09-07T10:02:46.483338+00:00",
+      "stage": "waiting_screen",
+      "completed": 22
+    },
+    {
+      "at_utc": "2026-09-07T10:03:16.484923+00:00",
+      "stage": "waiting_screen",
+      "completed": 22
+    },
+    {
+      "at_utc": "2026-09-07T10:03:46.485823+00:00",
+      "stage": "waiting_screen",
+      "completed": 23
+    },
+    {
+      "at_utc": "2026-09-07T10:04:16.486814+00:00",
+      "stage": "waiting_screen",
+      "completed": 23
+    },
+    {
+      "at_utc": "2026-09-07T10:04:46.487548+00:00",
+      "stage": "waiting_screen",
+      "completed": 23
+    },
+    {
+      "at_utc": "2026-09-07T10:05:16.488640+00:00",
+      "stage": "waiting_screen",
+      "completed": 23
+    },
+    {
+      "at_utc": "2026-09-07T10:05:46.496551+00:00",
+      "stage": "screen_complete",
+      "status": "passed",
+      "completed_valid_trials": 24
+    },
+    {
+      "at_utc": "2026-09-07T10:05:47.352766+00:00",
+      "stage": "score_screen",
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/review_teacher_anchor_v5/tools/sim/teacher_anchor_compare.py",
+        "score",
+        "--protocol",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/docs/results/teacher_success_anchor_v5/protocol.json",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/campaign_snapshot.json",
+        "--runs",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/rollouts",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/selection",
+        "--stage",
+        "screen"
+      ]
+    },
+    {
+      "at_utc": "2026-09-07T10:05:47.353403+00:00",
+      "stage": "score_screen_started",
+      "child_pid": 2415320
+    },
+    {
+      "at_utc": "2026-09-07T10:05:50.477361+00:00",
+      "stage": "score_screen_exited",
+      "exit_code": 0,
+      "child_pid": 2415320
+    },
+    {
+      "at_utc": "2026-09-07T10:05:50.477984+00:00",
+      "stage": "derive_confirmation",
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/review_teacher_anchor_v5/tools/sim/teacher_anchor_compare.py",
+        "confirm",
+        "--protocol",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/docs/results/teacher_success_anchor_v5/protocol.json",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/campaign_snapshot.json",
+        "--selection",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/selection/selection.json",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation_campaign.json"
+      ]
+    },
+    {
+      "at_utc": "2026-09-07T10:05:50.479520+00:00",
+      "stage": "derive_confirmation_started",
+      "child_pid": 2415409
+    },
+    {
+      "at_utc": "2026-09-07T10:05:53.750197+00:00",
+      "stage": "derive_confirmation_exited",
+      "exit_code": 0,
+      "child_pid": 2415409
+    },
+    {
+      "at_utc": "2026-09-07T10:05:53.751070+00:00",
+      "stage": "plan_confirmation",
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/run_policy_campaign.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation_campaign.json",
+        "--source",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+        "--live-repo",
+        "/home/physicalai/phantom-icra-2027/phantom",
+        "--server-python",
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "--evidence",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+        "--hardware-config",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+        "--robot-usd",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation_plan",
+        "--port",
+        "7799"
+      ]
+    },
+    {
+      "at_utc": "2026-09-07T10:05:53.751781+00:00",
+      "stage": "plan_confirmation_started",
+      "child_pid": 2415555
+    },
+    {
+      "at_utc": "2026-09-07T10:05:53.866925+00:00",
+      "stage": "plan_confirmation_exited",
+      "exit_code": 0,
+      "child_pid": 2415555
+    },
+    {
+      "at_utc": "2026-09-07T10:05:54.702956+00:00",
+      "stage": "execute_confirmation",
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/run_policy_campaign.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation_campaign.json",
+        "--source",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+        "--live-repo",
+        "/home/physicalai/phantom-icra-2027/phantom",
+        "--server-python",
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "--evidence",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+        "--hardware-config",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+        "--robot-usd",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation",
+        "--port",
+        "7799",
+        "--execute"
+      ]
+    },
+    {
+      "at_utc": "2026-09-07T10:05:54.703711+00:00",
+      "stage": "execute_confirmation_started",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:06:24.705532+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:06:54.706202+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:07:24.706755+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:07:54.707860+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:08:24.708631+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:08:54.709134+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:09:24.709753+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:09:54.710461+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:10:24.711165+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:10:54.711673+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:11:24.712367+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:11:54.713006+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:12:24.713692+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:12:54.714411+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:13:24.714939+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:13:54.715599+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:14:24.717097+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:14:54.718067+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:15:24.718786+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:15:54.719583+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:16:24.720133+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:16:54.720818+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:17:24.721350+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:17:54.721863+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:18:24.722360+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:18:54.722902+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:19:24.723658+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:19:54.724195+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:20:24.724761+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:20:54.725287+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:21:24.726086+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:21:54.726835+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:22:24.727523+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:22:54.728241+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:23:24.731227+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:23:54.731757+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:24:24.732495+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:24:54.735158+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:25:24.735836+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:25:54.736653+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:26:24.737856+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:26:54.739093+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:27:24.739846+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:27:54.740362+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:28:24.742707+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:28:54.743493+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:29:24.744355+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:29:54.746070+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:30:24.748210+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:30:54.749019+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:31:24.749739+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:31:54.750542+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:32:24.751426+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:32:54.752335+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:33:24.753235+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:33:54.753793+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:34:24.756107+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:34:54.758660+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:35:24.759417+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:35:54.760654+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:36:24.762796+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:36:54.763411+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:37:24.764027+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:37:54.765084+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:38:24.765789+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:38:54.766548+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:39:24.767605+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:39:54.768177+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:40:24.768850+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:40:54.769748+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:41:24.770651+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:41:54.771236+00:00",
+      "stage": "execute_confirmation_running",
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:42:04.505829+00:00",
+      "stage": "execute_confirmation_exited",
+      "exit_code": 0,
+      "child_pid": 2415593
+    },
+    {
+      "at_utc": "2026-09-07T10:42:04.511760+00:00",
+      "stage": "confirmation_complete",
+      "status": "passed",
+      "completed_valid_trials": 24
+    },
+    {
+      "at_utc": "2026-09-07T10:42:05.917839+00:00",
+      "stage": "score_confirmation",
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/review_teacher_anchor_v5/tools/sim/teacher_anchor_compare.py",
+        "score",
+        "--protocol",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/docs/results/teacher_success_anchor_v5/protocol.json",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation_campaign.json",
+        "--runs",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/rollouts",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/confirmation/selection",
+        "--stage",
+        "confirmation"
+      ]
+    },
+    {
+      "at_utc": "2026-09-07T10:42:05.918750+00:00",
+      "stage": "score_confirmation_started",
+      "child_pid": 2492331
+    },
+    {
+      "at_utc": "2026-09-07T10:42:08.086353+00:00",
+      "stage": "score_confirmation_exited",
+      "exit_code": 0,
+      "child_pid": 2492331
+    },
+    {
+      "at_utc": "2026-09-07T10:42:08.087621+00:00",
+      "stage": "study_complete",
+      "screen_trials": 24,
+      "confirmation_trials": 24,
+      "selected_ids": [
+        "fta1500_nfe1_k4",
+        "fta3000_nfe1_k4"
+      ],
+      "clear_simulator_winner": null,
+      "conclusion": "conditional_ranked_leader_without_validated_winner",
+      "arm_extension_executed": false
+    }
+  ],
+  "status": "study_complete"
+}
