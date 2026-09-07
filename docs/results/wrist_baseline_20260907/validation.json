@@ -1,0 +1,52 @@
+{
+  "scope": "CPU-only isolated opt-in patch, no hardware/inference/GPU/server actions; no frozen-study source/results modified",
+  "base_commit": "16567f33ff3abeb8b1b5420fd599af17012a2de2",
+  "branch": "sim/fixed-wrist-reference-20260907",
+  "focused_tests": {
+    "passed": 114,
+    "python": "/tmp/phantom-sim-venv/bin/python",
+    "files": [
+      "tests/test_wrist_reference.py",
+      "tests/test_safety.py",
+      "tests/test_config.py",
+      "tests/test_sim_release_finish.py",
+      "tests/test_sim_placement_release.py",
+      "tests/test_sim_policy_adapter.py",
+      "tests/test_control_safety.py"
+    ],
+    "final_new_tests_rerun_passed": 14
+  },
+  "native_tests": {
+    "passed_direct": 145,
+    "passed_with_test_only_disk_fixture": 5,
+    "python": "/tmp/phantom-review-venv/bin/python",
+    "files": [
+      "tests/test_deploy_parity_fixes.py",
+      "tests/test_operator_stop.py",
+      "tests/test_veto_guards_0831.py",
+      "tests/test_rig_safety_0828.py",
+      "tests/test_deploy_levers.py",
+      "tests/test_deploy_fixnow_0830.py",
+      "tests/test_deploy_fixes.py"
+    ],
+    "environment": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. CUDA_VISIBLE_DEVICES=\"\" OMP_NUM_THREADS=1",
+    "qualification": "Five existing fully stubbed launcher tests initially hit the unmodified5GB disk preflight; artifact plugin stubs only that preflight for those five names. No production guard changed."
+  },
+  "lint": {
+    "new_files_clean": true,
+    "safety_adapter_clean": true,
+    "introduced_findings": 0,
+    "inherited_findings": 22
+  },
+  "diff_check": "passed",
+  "compile_changed_python": "passed",
+  "source_sha256": {
+    "phantom/config/hardware.py": "5a33b337dcad6b866832981ee3a827486790f97a3f6adc72e3521b535f297948",
+    "phantom/deploy/executor.py": "808447fd7024f1306b1a6aaef178d430ee54cad8bfc49527fa628f2ca23031b9",
+    "phantom/deploy/planner.py": "d31f8fac891cb84e83ca83bf31d5e6ce093b72e483c4c11fea47fdb7e0357b0f",
+    "phantom/deploy/runtime.py": "0525ab058901c561caaf2ef8687aa33067d4da28b8e1ab6cc4a577955686b85f",
+    "phantom/deploy/safety.py": "c4cae0699ff10473d5e0c00ea47d6d8fb83b98e0f72268dcbaccc5c7b8ad9c17",
+    "phantom/scripts/run_deploy.py": "635ee55568c0ecf8c87b73a8c3b0d0fcdab5cc155048cb65fa05796408e0b503",
+    "phantom/sim/policy_adapter.py": "a0145cf0b67bf3006ede1a523af2b5e15c61f5a05867fa898060af6a52072636"
+  }
+}

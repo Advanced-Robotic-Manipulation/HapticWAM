@@ -791,6 +791,8 @@ class PlannerLoop:
                                    "gate": plan.gate, "p_evt": plan.p_evt.tolist(),
                                    "sigma": plan.sigma.tolist(), "accepted": False,
                                    "actions": plan.actions.tolist(), "diag": {},
+                                   **({"wrist_guard": self.executor.safety.wrench_diagnostics()}
+                                      if hasattr(self.executor, "safety") else {}),
                                    "tcp_pose": tcp_row,
                                    "terminal_veto": veto_rec})
                 log.error("terminal veto: %d open/re-descend retries exhausted — "
@@ -799,6 +801,8 @@ class PlannerLoop:
                 break
             accepted = self.executor.submit(plan)
             row = {
+                **({"wrist_guard": self.executor.safety.wrench_diagnostics()}
+                   if hasattr(self.executor, "safety") else {}),
                 "t": snap.t, "latency_s": plan.latency_s, "gate": plan.gate,
                 "p_evt": plan.p_evt.tolist(), "sigma": plan.sigma.tolist(),
                 "accepted": accepted,
