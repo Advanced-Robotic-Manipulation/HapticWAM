@@ -24,6 +24,7 @@ def observation():
     arrays = {name: np.zeros(1, dtype=np.float32) for name in OBS_FIELDS}
     arrays.update(
         t=np.asarray(0.26),
+        reactive=np.asarray(np.float32(0.12345)),
         rgb=np.zeros((4, 5, 3), dtype=np.uint8),
         ur_state=np.arange(26, dtype=np.float32),
     )
@@ -215,3 +216,167 @@ def test_server_guard_pins_owned_pid_recipe_and_native_source(tmp_path, monkeypa
     ready_path.write_text(json.dumps(changed))
     with pytest.raises(ValueError, match="inference settings"):
         validate_owned_server(ready_path, 5678, original)
+
+
+class OwnershipProtocol:
+    """Native info/claim/refuse semantics, with the real lightweight client."""
+
+    def __init__(self, owner=None, race=False):
+        self.owner, self.race = owner, race
+        self.connections, self.events = [], []
+
+    def connect(self, *args, **kwargs):
+        protocol = self
+        identity = len(self.connections) + 1
+        if identity == 2 and self.race:
+            self.owner = 99
+
+        class Connection:
+            closed = False
+
+            def send(self, message):
+                protocol.events.append((identity, message))
+                kind = message[0]
+                if kind != "info" and protocol.owner not in (None, identity):
+                    self.reply = (
+                        "err",
+                        f"busy: client #{protocol.owner} owns the policy",
+                    )
+                    return
+                if kind != "info":
+                    protocol.owner = identity
+                info = {
+                    "busy": protocol.owner is not None,
+                    "owner": protocol.owner,
+                    "ckpt_sha": diagnostic.CHECKPOINT_SHA,
+                }
+                if kind == "configure":
+                    assert message[1] == {}  # no settings mutation for this diagnostic
+                    info["effective"] = dict(diagnostic.SETTINGS)
+                self.reply = ("ok", info)
+
+            def poll(self, timeout):
+                return True
+
+            def recv(self):
+                return self.reply
+
+            def close(self):
+                self.closed = True
+                if protocol.owner == identity:
+                    protocol.owner = None
+
+        connection = Connection()
+        self.connections.append(connection)
+        return connection
+
+
+def test_info_probe_is_read_only_then_own_busy_ack_is_accepted(tmp_path, monkeypatch):
+    protocol = OwnershipProtocol()
+    monkeypatch.setattr("multiprocessing.connection.Client", protocol.connect)
+    with diagnostic.acquire_diagnostic_policy({"port": 7798}, tmp_path) as policy:
+        assert policy.info["busy"] and protocol.owner == 2
+        assert (
+            json.loads((tmp_path / "preconnection_info.json").read_text())["busy"]
+            is False
+        )
+        assert (
+            json.loads((tmp_path / "ownership.json").read_text())["owner_connection_id"]
+            == 2
+        )
+    assert protocol.owner is None
+    assert protocol.events == [(1, ("info",)), (2, ("info",)), (2, ("configure", {}))]
+    assert all(c.closed for c in protocol.connections)
+
+
+def test_busy_preconnection_probe_refuses_without_claim_or_inference(
+    tmp_path, monkeypatch
+):
+    protocol = OwnershipProtocol(owner=55)
+    monkeypatch.setattr("multiprocessing.connection.Client", protocol.connect)
+    with (
+        pytest.raises(RuntimeError, match="active inference owner"),
+        diagnostic.acquire_diagnostic_policy({"port": 7798}, tmp_path),
+    ):
+        raise AssertionError("A foreign owner must never reach inference")
+    assert protocol.events == [(1, ("info",))]
+    assert protocol.owner == 55 and protocol.connections[0].closed
+
+
+def test_native_configure_refusal_closes_connection_when_competitor_wins_race(
+    tmp_path, monkeypatch
+):
+    protocol = OwnershipProtocol(race=True)
+    monkeypatch.setattr("multiprocessing.connection.Client", protocol.connect)
+    with (
+        pytest.raises(RuntimeError, match="busy: client #99"),
+        diagnostic.acquire_diagnostic_policy({"port": 7798}, tmp_path),
+    ):
+        raise AssertionError("A refused claim must never reach inference")
+    assert protocol.events == [(1, ("info",)), (2, ("info",)), (2, ("configure", {}))]
+    assert protocol.owner == 99 and all(c.closed for c in protocol.connections)
+    assert not (tmp_path / "ownership.json").exists()
+
+
+def test_info_probe_response_timeout_closes_unowned_connection(monkeypatch):
+    protocol = OwnershipProtocol()
+    connection = protocol.connect()
+    connection.poll = lambda _: False
+    monkeypatch.setattr("multiprocessing.connection.Client", lambda *a, **k: connection)
+    with pytest.raises(TimeoutError, match="timed out"):
+        diagnostic.probe_server_info(("127.0.0.1", 7798), timeout_s=0.05)
+    assert connection.closed and protocol.owner is None
+    assert protocol.events == [(1, ("info",))]
+
+
+def test_saved_scalar_reconstruction_preserves_values_and_all_array_bytes():
+    original = observation()
+    obs = diagnostic.native_observation(original)
+    assert type(obs.t) is float and type(obs.reactive) is float
+    assert obs.t == float(original["t"]) and obs.reactive == float(original["reactive"])
+    for name, value in original.items():
+        if name not in ("t", "reactive"):
+            assert isinstance(getattr(obs, name), np.ndarray)
+            assert array_sha(getattr(obs, name)) == array_sha(value)
+    assert original["reactive"].shape == () and original["reactive"].dtype == np.float32
+    original["reactive"] = np.array([0.0])
+    with pytest.raises(ValueError, match="finite scalar"):
+        diagnostic.native_observation(original)
+
+
+def test_restored_teacher_snapshot_passes_actual_native_batch_preprocessing_cpu():
+    torch = pytest.importorskip("torch")
+    from phantom_test_utils import make_small_hw
+
+    from phantom.inference.policy import PhantomPolicy
+
+    hw = make_small_hw()
+    arrays = observation()
+    arrays.update(
+        wrist_window=np.ones((hw.wrist_ft.window_len, 6), np.float32),
+        ur_state=np.ones(26, np.float32),
+        gel=np.zeros((2, 12, 16), np.uint8),
+        fields=np.ones((2, 4, 5, hw.tactile.field_ch), np.float32),
+        contact_state=np.ones((2, 11), np.float32),
+        prev_chunk=np.ones((16, 7), np.float32),
+    )
+    context = SimpleNamespace(
+        hw=hw,
+        bb=SimpleNamespace(res_h=8, res_w=8, frames_pix=5, t_video=2),
+        rf=SimpleNamespace(device=torch.device("cpu"), dtype=torch.float32),
+        norm=SimpleNamespace(normalize=lambda _kind, value: value),
+        pm=SimpleNamespace(layout=SimpleNamespace(student=False)),
+        task_text="waffles",
+    )
+    obs = diagnostic.native_observation(arrays)
+    batch = PhantomPolicy._batch_from_obs(context, obs, None)
+    assert batch["reactive"].shape == (1,) and batch["reactive"].dtype == torch.float32
+    assert batch["reactive"].item() == float(arrays["reactive"])
+    assert batch["video"].shape == (1, 5, 3, 8, 8)
+    assert batch["gel"].shape == (1, 2, 3, 8, 8)
+    assert batch["wrist"].shape == (1, hw.wrist_ft.window_len, 6)
+    assert batch["ur_state"].shape == (1, 26)
+    assert batch["fields"].shape == (1, 2, 4, 5, hw.tactile.field_ch)
+    assert batch["contact_state"].shape == (1, 2, 11)
+    assert batch["prev_chunk"].shape == (1, 16, 7)
+    assert batch["text"] == ["waffles"]

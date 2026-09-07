@@ -14,6 +14,8 @@ import importlib
 import inspect
 import json
 import sys
+import threading
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -39,6 +41,83 @@ SETTINGS = {
 }
 SEEDS = (903101, 903102)
 PROC_ROOT = Path("/proc")
+
+
+def probe_server_info(address, timeout_s=6.0):
+    """Bounded, info-only native protocol request; never claims ownership."""
+    from multiprocessing.connection import Client
+
+    if not np.isfinite(timeout_s) or timeout_s <= 0:
+        raise ValueError("Probe timeout must be finite and positive")
+    box, ready, abandoned = {}, threading.Event(), threading.Event()
+    lock = threading.Lock()
+
+    def request():
+        connection = None
+        try:
+            connection = Client(address, authkey=remote_module.AUTHKEY)
+            with lock:
+                if abandoned.is_set():
+                    return
+                box["connection"] = connection
+            connection.send(("info",))
+            if not connection.poll(timeout_s):
+                raise TimeoutError("Dedicated policy info response timed out")
+            status, info = connection.recv()
+            if status != "ok":
+                raise RuntimeError(f"Dedicated policy info refused: {info}")
+            box["info"] = info
+        except Exception as exc:  # noqa: BLE001 -- relay bounded worker failures
+            box["error"] = exc
+        finally:
+            if connection is not None:
+                connection.close()
+            ready.set()
+
+    threading.Thread(target=request, daemon=True).start()
+    if not ready.wait(timeout_s):
+        with lock:
+            abandoned.set()
+            if "connection" in box:
+                box["connection"].close()
+        raise TimeoutError("Dedicated policy info connection/response timed out")
+    if "error" in box:
+        raise box["error"]
+    return box["info"]
+
+
+@contextmanager
+def acquire_diagnostic_policy(ready, out):
+    """Reject foreign ownership before attach; native configure guards races."""
+    address = ("127.0.0.1", ready["port"])
+    info = probe_server_info(address)
+    write_json(out / "preconnection_info.json", info)
+    if info.get("busy") is not False or info.get("owner") is not None:
+        raise RuntimeError("Dedicated server already has an active inference owner")
+    if info.get("ckpt_sha") != CHECKPOINT_SHA:
+        raise ValueError("Probed checkpoint differs from dedicated ready marker")
+    # The constructor sends configure({}), which claims ownership without
+    # changing settings. A competitor winning after the probe is refused by
+    # the native server; do not suppress that exception or try another model.
+    with RemoteSimulationPolicy(address) as policy:
+        if policy.info.get("busy") is not True or policy.info.get("owner") is None:
+            raise RuntimeError("Native server did not acknowledge owned connection")
+        if policy.info.get("ckpt_sha") != CHECKPOINT_SHA or any(
+            policy.info.get("effective", {}).get(k) != v for k, v in SETTINGS.items()
+        ):
+            raise ValueError("Live server identity/settings differ from ready marker")
+        write_json(out / "live_server_info.json", policy.info)
+        write_json(
+            out / "ownership.json",
+            {
+                "preconnection_probe": "info only; idle",
+                "native_configure_acknowledged": True,
+                "owner_connection_id": policy.info["owner"],
+                "busy_after_attach": True,
+                "semantics": "busy means this connection owns the server after successful configure({}); competing claims are refused natively",
+            },
+        )
+        yield policy
 
 
 def file_sha(path):
@@ -100,6 +179,22 @@ def replace_rgb(original, rgb):
         array_sha(original[k]) == array_sha(swapped[k]) for k in original if k != "rgb"
     )
     return swapped
+
+
+def native_observation(arrays):
+    """Restore snapshot wire types lost by np.savez's scalar array coercion.
+
+    SimulationObservation.t and derived.reactive_score are Python floats;
+    the remaining seven fields here are NumPy arrays in this saved
+    full teacher request. Floating scalar values are preserved exactly.
+    """
+    values = {key: np.array(value, copy=True) for key, value in arrays.items()}
+    for key in ("t", "reactive"):
+        value = values[key]
+        if value.shape != () or not np.isfinite(value):
+            raise ValueError(f"Saved {key} must be one finite scalar")
+        values[key] = float(value)
+    return SimpleNamespace(**values)
 
 
 def same_clock_arm_indices(q_times, tcp_times, target):
@@ -190,6 +285,15 @@ def prepare(observation, initial_state, episode, out):
             ).magnitude()
         ),
         "non_rgb_array_hashes": non_rgb,
+        "native_wire_field_contract": {
+            key: {
+                "saved_dtype": str(value.dtype),
+                "saved_shape": list(value.shape),
+                "wire_type": "float" if key in ("t", "reactive") else "numpy.ndarray",
+            }
+            for key, value in arrays.items()
+        },
+        "scalar_reconstruction": "np.savez converts original Python floats t/reactive into zero-dimensional arrays; restore Python float values without modifying saved arrays or numerical values",
         "original_rgb_sha256": array_sha(arrays["rgb"]),
         "real_rgb_sha256": array_sha(rgb),
         "rgb_mae_0_255": float(
@@ -372,9 +476,7 @@ def paired_calls(policy, rendered, real_rgb, persist=None):
         )
         for variant in order:
             arrays = real_rgb if variant == "real_rgb" else rendered
-            obs = SimpleNamespace(
-                **{k: np.array(v, copy=True) for k, v in arrays.items()}
-            )
+            obs = native_observation(arrays)
             policy.remote_reset(seed)
             plan = policy.replan(
                 obs, None, np.asarray(rendered["ur_state"][12:18], float)
@@ -464,14 +566,7 @@ def main():
         return
     write_json(args.out / "dedicated_server_ready.json", ready)
     write_json(args.out / "completed_study_guard.json", evidence)
-    with RemoteSimulationPolicy(("127.0.0.1", ready["port"])) as policy:
-        if policy.info.get("busy"):
-            raise RuntimeError("Dedicated server already has an active inference owner")
-        if policy.info.get("ckpt_sha") != CHECKPOINT_SHA or any(
-            policy.info.get("effective", {}).get(k) != v for k, v in SETTINGS.items()
-        ):
-            raise ValueError("Live server identity/settings differ from ready marker")
-        write_json(args.out / "live_server_info.json", policy.info)
+    with acquire_diagnostic_policy(ready, args.out) as policy:
         rows, comparisons = paired_calls(
             policy,
             rendered,
