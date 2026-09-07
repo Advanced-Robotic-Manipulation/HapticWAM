@@ -369,6 +369,10 @@ class SafetyConfig(_Frozen):
     wrench_limit_Nm: float = Field(gt=0)
     wrench_baseline_tau_s: float = Field(default=2.0, gt=0)   # rolling-baseline time constant
     wrench_debounce_ticks: int = Field(default=3, ge=1)       # consecutive over-limit checks to trip
+    # Deployment SafetyMonitor only; data-collection ArmGuard remains rolling.
+    # Fixed mode requires a reviewed unloaded episode start. It does not model
+    # the CB3's pose-dependent current-estimate bias or alter teacher inputs.
+    wrench_baseline_mode: Literal["rolling_calm", "episode_fixed"] = "rolling_calm"
     # Measured joint-speed stop (rig 2026-09-01): near a singular configuration
     # servoL turns a LEGAL Cartesian step into a joint whip (wrists hit
     # 5-7 rad/s carrying a grasped object toward full extension) — the
@@ -589,7 +593,12 @@ class HardwareConfig(_Frozen):
 
     def snapshot_yaml(self) -> str:
         """Canonical YAML dump for episode/checkpoint provenance."""
-        return yaml.safe_dump(self.model_dump(mode="json"), sort_keys=True)
+        data = self.model_dump(mode="json")
+        # Preserve legacy hashes for the unchanged default controller. Full
+        # model_dump metadata still records the effective mode explicitly.
+        if self.safety.wrench_baseline_mode == "rolling_calm":
+            data["safety"].pop("wrench_baseline_mode", None)
+        return yaml.safe_dump(data, sort_keys=True)
 
     def config_hash(self) -> str:
         return hashlib.sha256(self.snapshot_yaml().encode()).hexdigest()[:16]

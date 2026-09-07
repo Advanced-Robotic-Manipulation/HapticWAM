@@ -222,6 +222,8 @@ class ChunkExecutor:
         # AFTER the let-go: a driver read must never delay a release
         if not self.halt_state:
             self.halt_state = self._snapshot_arm(reason)
+            if hasattr(self.safety, "wrench_diagnostics"):
+                self.halt_state["wrist_guard"] = self.safety.wrench_diagnostics()
 
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to

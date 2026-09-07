@@ -788,6 +788,7 @@ class SimulationPolicyAdapter:
             self.stopped_reason,
             {
                 "safety_events": kinds,
+                "wrist_guard": self.safety.wrench_diagnostics(),
                 "completed_reason": self.completed_reason,
                 "completed_at_s": self.completed_at_s,
                 "completion_hold": self.completed_reason is not None,
