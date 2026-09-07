@@ -51,9 +51,11 @@ evidence of repeatable placement.
 The four-recipe screen launched at 09:11:14 UTC on 2026-09-07 under
 [the frozen protocol](protocol.json), campaign SHA256
 `3392e9f703ef008f2a16d6c133870192ddb1642526ef7adb3702b2e8a6c9b9c5`.
-Twenty-four screening cells precede the top-two paired confirmation. No
-prospective model result is available yet. Raw recordings and earlier outcomes
-are retained on compute3.
+All 24 screening cells completed with valid scores. The independent raw-score audit agrees with every published metric and input hash. No recipe placed the object. The two selected recipes are ftA1500 NFE1/K4 (5/6 acquisitions, 4/6 lifts and carries) and ftA3000 NFE1/K4 (5/6 acquisitions, 3/6 lifts and carries). The older v5_6 lifted/carried once; ftA1500 NFE5/K4 never lifted. All settings use EMA, guidance1 and persistent noise.
+
+The reserved paired confirmation began at 10:05:54 UTC on 7 September under owned controller PID2415593: the selected two recipes each use seeds904501–904512, the same source and the same physical state. No winner is declared before that stage finishes. The [transition wrapper](transition.md) preserves its full command and verification ledger. Raw recordings and earlier outcomes remain on compute3.
+
+A separate [command-limiter diagnostic](../teacher_success_anchor_v6/README.md) is prepared after repeated wrist-extension stops. It will run only after v5 confirmation; it cannot alter v5 model scores. The [timing audit](latency_audit.md) explains the NFE5 stale-plan holds and discloses the extra full-RPC delay absent from v5's native-latency simulation convention.
 
 Simulated tactile inputs are uncalibrated; this selected historical controller
 profile is not the current live rig software. A simulator ranking requires a

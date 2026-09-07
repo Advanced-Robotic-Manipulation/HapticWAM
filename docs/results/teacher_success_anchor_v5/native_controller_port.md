@@ -50,7 +50,7 @@ its common 60 s physics horizon. The parity tests use ideal acknowledged mailbox
 timing and do not claim identical wall-clock trajectories on the real robot.
 
 The executor, SafetyMonitor, governor, shared release controller, simulator
-adapter, inference implementation and hardware schema are byte-identical to the
+adapter, inference implementation and hardware schema are byte-identical to
 the pinned pre-port HEAD in the audit. This audit describes only the controller
 port and does not qualify a separately proposed reach-limiter extraction.
 The default planner class identity and existing default metadata

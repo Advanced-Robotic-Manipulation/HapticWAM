@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_limiter_v6",
+  "cli_default_off": true,
+  "cli_explicit_flag_parses": true,
+  "consecutive_rejects_before_accepted_stop_hold": 25,
+  "counter_after_accepted_stop_hold": 0,
+  "stop_requested_at_s": 0.192,
+  "next_stopped_tick_s": 0.2,
+  "stop_reason": "servo_limiter_stall",
+  "held_gripper_command": 0.61,
+  "runner_ordinary_stop_tail_ast": "min(t + 2.0, duration)",
+  "ik_rejection_exception": false,
+  "GPU_model_hardware_connections": false,
+  "limitation": "CPU feedback/runner-source audit; actual Isaac dynamics and full scored stop validity require the separately authorized diagnostic."
+}

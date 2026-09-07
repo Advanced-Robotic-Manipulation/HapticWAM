@@ -1,0 +1,820 @@
+{
+  "scope": "Read-only post hoc timing diagnosis, fixed first5 completed matched screen seeds; not a model selection or causal task-outcome comparison",
+  "captured_at_unix_s": 1788775260.9706075,
+  "source_root": "/home/physicalai/phantom-icra-2027/phantom",
+  "root": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen",
+  "sampling_seeds": [
+    904401,
+    904402,
+    904403,
+    904404,
+    904405
+  ],
+  "source_sha256": {
+    "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+    "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+    "phantom/model/ace/packing.py": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c",
+    "phantom/config/backbone.py": "f554451c2331fbd4431c9d67993b498d1ecbe0d16d98b38a275e56814d93a949",
+    "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1"
+  },
+  "policies": [
+    {
+      "id": "fta1500_nfe1_k4",
+      "cases": [
+        {
+          "case_id": "fta1500_nfe1_k4__successful_anchor__seed904401",
+          "planner_calls": 23,
+          "native_latency": {
+            "n": 23,
+            "min_s": 0.7683647420490161,
+            "median_s": 0.7784209690289572,
+            "max_s": 1.2327231019735336
+          },
+          "total_rpc_wall": {
+            "n": 23,
+            "min_s": 0.8990353790577501,
+            "median_s": 0.9634704110212624,
+            "max_s": 1.4466964489547536
+          },
+          "stale_hold_s": 0,
+          "cap_dwell_excluding_stale_finish_s": 0,
+          "first_activation_s": 1.5,
+          "first_native_latency_s": 1.2327231019735336,
+          "action_grid_error_max_s": 4.440892098500626e-16,
+          "activation_quantization_max_s": 0.007635257950984187,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 18.748,
+          "input_sha256": {
+            "run_status.json": "ff0f9464b12663cd7587da0f3238fde8c22058da1a993e533f793b07c30c075d",
+            "planner_trace.json": "dcad1b7313b7fb90848a2882e191141393635ce5e78f71ab82c7fe004b6243fc",
+            "delivered_plans.jsonl": "bb5b48a9cf82648394a5373e2403140c483fa6389fae1b38fd22b6d0a8a4ca8a",
+            "execution_trace.jsonl": "d2987dde2c67ade071c157031a6421908096a8650315d3339bd48f278dc7eb7e",
+            "policy_info.json": "d24f534c9aa8774e72a59cd3e79ec0f38d91b9d5438236ee32c486f5ca9829e8"
+          },
+          "reconstructed_indices_not_logged": [
+            {
+              "replan_id": 1,
+              "prior_replan_id": 0,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 2,
+              "prior_replan_id": 1,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 3,
+              "prior_replan_id": 2,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 4,
+              "prior_replan_id": 3,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 5,
+              "prior_replan_id": 4,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 6,
+              "prior_replan_id": 5,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 7,
+              "prior_replan_id": 6,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 12,
+              "k_reference_clipped_index": 12
+            },
+            {
+              "replan_id": 8,
+              "prior_replan_id": 7,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 9,
+              "prior_replan_id": 8,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 10,
+              "prior_replan_id": 9,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 11,
+              "prior_replan_id": 10,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 12,
+              "prior_replan_id": 11,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 13,
+              "prior_replan_id": 12,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 14,
+              "prior_replan_id": 13,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 15,
+              "prior_replan_id": 14,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 16,
+              "prior_replan_id": 15,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 17,
+              "prior_replan_id": 16,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 18,
+              "prior_replan_id": 17,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 19,
+              "prior_replan_id": 18,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 20,
+              "prior_replan_id": 19,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 21,
+              "prior_replan_id": 20,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            },
+            {
+              "replan_id": 22,
+              "prior_replan_id": 21,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 1,
+              "cpk_clipped_index_if_present": 1,
+              "k_reference_raw_index": 8,
+              "k_reference_clipped_index": 8
+            }
+          ]
+        },
+        {
+          "case_id": "fta1500_nfe1_k4__successful_anchor__seed904402",
+          "planner_calls": 21,
+          "native_latency": {
+            "n": 21,
+            "min_s": 0.7699010099750012,
+            "median_s": 0.7842593109235168,
+            "max_s": 1.2244109619641677
+          },
+          "total_rpc_wall": {
+            "n": 21,
+            "min_s": 0.9062151809921488,
+            "median_s": 0.975108538987115,
+            "max_s": 1.4244406330399215
+          },
+          "stale_hold_s": 0,
+          "cap_dwell_excluding_stale_finish_s": 0,
+          "first_activation_s": 1.492,
+          "first_native_latency_s": 1.2244109619641677,
+          "action_grid_error_max_s": 4.440892098500626e-16,
+          "activation_quantization_max_s": 0.007740689076483509,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 17.18,
+          "input_sha256": {
+            "run_status.json": "03c3af0e23e20639887b8e23b38b57fd5b246627c6f135fc6c85555f2f00c405",
+            "planner_trace.json": "a2ecb36afc1697c469056d4cc86eb5bc06d403b62808ca0cb18acae22e131c41",
+            "delivered_plans.jsonl": "e37032693c03224c64af7d87bc22f8c615024014e19c68a3aebe203fdd6c0ea5",
+            "execution_trace.jsonl": "ad93a23e4b03a1c1b81860a8907be3407121d8e8592d1125dd76eefb0d60578c",
+            "policy_info.json": "cf95e80a9daab3eb939c8adff7910831f303b308f631c51beb7feb0d4d7d446d"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe1_k4__successful_anchor__seed904403",
+          "planner_calls": 18,
+          "native_latency": {
+            "n": 18,
+            "min_s": 0.770474422024563,
+            "median_s": 0.7863281030440703,
+            "max_s": 1.209056859021075
+          },
+          "total_rpc_wall": {
+            "n": 18,
+            "min_s": 0.9369354209629819,
+            "median_s": 0.9928729655221105,
+            "max_s": 1.404095789999701
+          },
+          "stale_hold_s": 0,
+          "cap_dwell_excluding_stale_finish_s": 0,
+          "first_activation_s": 1.476,
+          "first_native_latency_s": 1.209056859021075,
+          "action_grid_error_max_s": 4.440892098500626e-16,
+          "activation_quantization_max_s": 0.007320967983455162,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 16.396,
+          "input_sha256": {
+            "run_status.json": "c3deaef741cda44d5b8ddeb669df4832be170b2d49a852c0360fa840b2205f16",
+            "planner_trace.json": "8682befd872332a3dc619ee9e8502d3b9510965fa81909f7be7549c03a294498",
+            "delivered_plans.jsonl": "743d0b48bf64ae1a803ce56ee2be0a57fb0b74edbd443f139aa43f8c18da83ec",
+            "execution_trace.jsonl": "d23048e32ab092425bc7ae2905fcbc65918b45719c3fa111b00e78f6d8fd00f1",
+            "policy_info.json": "f82870aa64509e2d16b628d69bdea4448f0cd1371bdbea1271330c9770be8e5c"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe1_k4__successful_anchor__seed904404",
+          "planner_calls": 18,
+          "native_latency": {
+            "n": 18,
+            "min_s": 0.7703871220583096,
+            "median_s": 0.7740941519732587,
+            "max_s": 1.359493903000839
+          },
+          "total_rpc_wall": {
+            "n": 18,
+            "min_s": 0.9012863809475675,
+            "median_s": 0.9741532050538808,
+            "max_s": 1.5574067360721529
+          },
+          "stale_hold_s": 0,
+          "cap_dwell_excluding_stale_finish_s": 0,
+          "first_activation_s": 1.62,
+          "first_native_latency_s": 1.359493903000839,
+          "action_grid_error_max_s": 4.440892098500626e-16,
+          "activation_quantization_max_s": 0.007174634995870122,
+          "executor_max_gap_s": 0.008000000000000895,
+          "execution_trace_end_s": 15.268,
+          "input_sha256": {
+            "run_status.json": "268a98344dbad584f39a4e2d7d98131e43a89137e7f02fd75bda9b0b046663d9",
+            "planner_trace.json": "9d01fc9f6ee84800554353b346e1c46d74b03baadcc22da62b026e00a3d17a33",
+            "delivered_plans.jsonl": "e8591be016df8f60335bb30f28618eecf6c7174589e2bef7d3bcc22e45730be1",
+            "execution_trace.jsonl": "d44a5a8a6815cea257a462ee0bf367e0805fac853649a9904c35375165f92e2e",
+            "policy_info.json": "d007b3a3e2c2898634555ac452450375a002fa28141af33daf8815a26454ed6d"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe1_k4__successful_anchor__seed904405",
+          "planner_calls": 19,
+          "native_latency": {
+            "n": 19,
+            "min_s": 0.7696099060121924,
+            "median_s": 0.8044720869511366,
+            "max_s": 1.2571938370820135
+          },
+          "total_rpc_wall": {
+            "n": 19,
+            "min_s": 0.9076515410561115,
+            "median_s": 0.9825874989619479,
+            "max_s": 1.4580342340050265
+          },
+          "stale_hold_s": 0,
+          "cap_dwell_excluding_stale_finish_s": 0,
+          "first_activation_s": 1.524,
+          "first_native_latency_s": 1.2571938370820135,
+          "action_grid_error_max_s": 1.7763568394002505e-15,
+          "activation_quantization_max_s": 0.006806162917986525,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 16.612000000000002,
+          "input_sha256": {
+            "run_status.json": "7b405266a3440f9c43bd08db6d0631c1aecf82ddb9c51167bec8ae730eb14acb",
+            "planner_trace.json": "57baa08b3b55fbfb85a93a394109943e084c4b4e3c54f7a734db2036d5c1f49a",
+            "delivered_plans.jsonl": "8eda0011efdbfcf84cf845621d889296bdfb1d51670b7213f6a1da58246ad4f6",
+            "execution_trace.jsonl": "177d09689adc30af3a174d2642427401e247d221717841c5293e0134e6a2b813",
+            "policy_info.json": "d61941100bacc3ef816a9b3ab77b5e6d23c2f3d61439ea8b742f1ffad6a88cba"
+          }
+        }
+      ],
+      "native_all": {
+        "n": 99,
+        "min_s": 0.7683647420490161,
+        "median_s": 0.7815740749938414,
+        "max_s": 1.359493903000839
+      },
+      "native_after_first": {
+        "n": 94,
+        "min_s": 0.7683647420490161,
+        "median_s": 0.7790452800109051,
+        "max_s": 1.1981048539746553
+      },
+      "total_rpc_wall": {
+        "n": 99,
+        "min_s": 0.8990353790577501,
+        "median_s": 0.9785564730409533,
+        "max_s": 1.5574067360721529
+      },
+      "rpc_minus_native": {
+        "n": 99,
+        "min_s": 0.1287138881161809,
+        "median_s": 0.1929849348962307,
+        "max_s": 0.24049396999180317
+      },
+      "later_native_given_previous_cpk_invalidated": {
+        "n": 9,
+        "min_s": 1.1425458560697734,
+        "median_s": 1.1642671009758487,
+        "max_s": 1.1981048539746553
+      },
+      "later_native_given_previous_cpk_not_invalidated": {
+        "n": 85,
+        "min_s": 0.7683647420490161,
+        "median_s": 0.7776062150951475,
+        "max_s": 0.8349911289988086
+      }
+    },
+    {
+      "id": "fta1500_nfe5_k4",
+      "cases": [
+        {
+          "case_id": "fta1500_nfe5_k4__successful_anchor__seed904401",
+          "planner_calls": 16,
+          "native_latency": {
+            "n": 16,
+            "min_s": 3.7185537619516253,
+            "median_s": 3.8831248759524897,
+            "max_s": 4.280467570060864
+          },
+          "total_rpc_wall": {
+            "n": 16,
+            "min_s": 3.9460423350101337,
+            "median_s": 4.093826485041063,
+            "max_s": 4.494090164080262
+          },
+          "stale_hold_s": 18.94399999999999,
+          "cap_dwell_excluding_stale_finish_s": 22.072000000000017,
+          "first_activation_s": 4.404,
+          "first_native_latency_s": 4.1379020740278065,
+          "action_grid_error_max_s": 3.552713678800501e-15,
+          "activation_quantization_max_s": 0.007541180010889548,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 59.996,
+          "input_sha256": {
+            "run_status.json": "bfbbf576cf1d2dec68eceddeb745a67cf028b8b64a1fb4b5da6216b24ea431fa",
+            "planner_trace.json": "de469872b81c32cce10a8cdabb50c859a8e0e92bf879e65c204f8a7a6fca0630",
+            "delivered_plans.jsonl": "ab9238faa912b6f4ad659f6d3cf7d734da565c58c2ff64cba47b8dfa43ed0261",
+            "execution_trace.jsonl": "266c93b3b332b49aa9539204944b1add003ab59c9503531a7d7ad7ac50af4589",
+            "policy_info.json": "732012e990e024fc5d25e63040da183598f17aef6ca4237b0dda2453ea50941f"
+          },
+          "reconstructed_indices_not_logged": [
+            {
+              "replan_id": 1,
+              "prior_replan_id": 0,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 38,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 2,
+              "prior_replan_id": 1,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 38,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 3,
+              "prior_replan_id": 2,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 37,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 4,
+              "prior_replan_id": 3,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 39,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 5,
+              "prior_replan_id": 4,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 37,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 6,
+              "prior_replan_id": 5,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 38,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 7,
+              "prior_replan_id": 6,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 42,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 8,
+              "prior_replan_id": 7,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 41,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 9,
+              "prior_replan_id": 8,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 41,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 10,
+              "prior_replan_id": 9,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 43,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 11,
+              "prior_replan_id": 10,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 41,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 12,
+              "prior_replan_id": 11,
+              "prior_cpk_invalidated_logged": true,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 41,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 13,
+              "prior_replan_id": 12,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 39,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 14,
+              "prior_replan_id": 13,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 37,
+              "k_reference_clipped_index": 15
+            },
+            {
+              "replan_id": 15,
+              "prior_replan_id": 14,
+              "prior_cpk_invalidated_logged": false,
+              "cpk_index_formula_before_null_handling": 4,
+              "cpk_clipped_index_if_present": 2,
+              "k_reference_raw_index": 38,
+              "k_reference_clipped_index": 15
+            }
+          ]
+        },
+        {
+          "case_id": "fta1500_nfe5_k4__successful_anchor__seed904402",
+          "planner_calls": 16,
+          "native_latency": {
+            "n": 16,
+            "min_s": 3.716900266939774,
+            "median_s": 3.789369602513034,
+            "max_s": 4.259746165014803
+          },
+          "total_rpc_wall": {
+            "n": 16,
+            "min_s": 3.908425824949518,
+            "median_s": 4.008010894001927,
+            "max_s": 4.465518748969771
+          },
+          "stale_hold_s": 17.487999999999985,
+          "cap_dwell_excluding_stale_finish_s": 23.016000000000016,
+          "first_activation_s": 4.476,
+          "first_native_latency_s": 4.215374594088644,
+          "action_grid_error_max_s": 3.552713678800501e-15,
+          "activation_quantization_max_s": 0.007842006973923787,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 59.996,
+          "input_sha256": {
+            "run_status.json": "a3fbbe245c9dcb1a1530a380b95a41461e429dd499cc749ad95cbb7dda2c9dc7",
+            "planner_trace.json": "17a58ac64722333868aebdb5edcdc0ded8d695a6ddde4f8938e1a64229357ea5",
+            "delivered_plans.jsonl": "e0d67d71d02503d8ce1895baedaa993879f02f03d4a0a368793d38135ce35715",
+            "execution_trace.jsonl": "2dcd1540f494aaa65085cf049d82d82db71b7fd873a63ab14523010af3d4f1c6",
+            "policy_info.json": "66fe503ade5637cd0ec9371d644724f548f0c805076787e07038e022f9ec3dea"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe5_k4__successful_anchor__seed904403",
+          "planner_calls": 15,
+          "native_latency": {
+            "n": 15,
+            "min_s": 3.716070084949024,
+            "median_s": 4.101888859062456,
+            "max_s": 4.225948578910902
+          },
+          "total_rpc_wall": {
+            "n": 15,
+            "min_s": 3.941679519950412,
+            "median_s": 4.30911516607739,
+            "max_s": 4.418565057916567
+          },
+          "stale_hold_s": 19.167999999999996,
+          "cap_dwell_excluding_stale_finish_s": 22.384000000000015,
+          "first_activation_s": 4.388,
+          "first_native_latency_s": 4.122276426991448,
+          "action_grid_error_max_s": 3.552713678800501e-15,
+          "activation_quantization_max_s": 0.006632638001818236,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 59.996,
+          "input_sha256": {
+            "run_status.json": "a2fe86c18e7ba76f5e2eb1d4b3ffe0eec6b7819d988991f0283e040738e585fc",
+            "planner_trace.json": "227e3ffffa4e60bec1abd0685a61d0d2e64fae83aaf598b2e82b95e07f21077c",
+            "delivered_plans.jsonl": "401d4b88e1e5809e0a5f8f3c42aefaa8153b6cf40ec5835f34232bbea33ace39",
+            "execution_trace.jsonl": "5fec102f5e63ff407dfe7788891e6439c3ae0313eb26397923e3265ee58e2a5a",
+            "policy_info.json": "39d5d4997031ddec5b3f8aaeb07242536f8dbcb64131627080317ecb27f14889"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe5_k4__successful_anchor__seed904404",
+          "planner_calls": 16,
+          "native_latency": {
+            "n": 16,
+            "min_s": 3.7161249730270356,
+            "median_s": 3.826780883013271,
+            "max_s": 4.171390751027502
+          },
+          "total_rpc_wall": {
+            "n": 16,
+            "min_s": 3.9069728010799736,
+            "median_s": 4.03884386154823,
+            "max_s": 4.394434817950241
+          },
+          "stale_hold_s": 17.06399999999999,
+          "cap_dwell_excluding_stale_finish_s": 23.455999999999996,
+          "first_activation_s": 4.436,
+          "first_native_latency_s": 4.171390751027502,
+          "action_grid_error_max_s": 3.552713678800501e-15,
+          "activation_quantization_max_s": 0.007264873970298069,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 59.996,
+          "input_sha256": {
+            "run_status.json": "eb02ba13d8514e888e004b5c70a04ad8a620a39437243f1dbe98cbd17d61e3d2",
+            "planner_trace.json": "8fe14876d3481cdb389606625663b7f4eec1e9433160ec63d3fcf35bffc5f6bd",
+            "delivered_plans.jsonl": "65dbbe6da966b65d9d349a6bc94003c9775e7a61dceed4cf580df80508ca973d",
+            "execution_trace.jsonl": "37e0d7ac5b669d7957dd353862166722b0d44e5c012f176541bc8b10ded6f99a",
+            "policy_info.json": "56b7064c1445eada2ca4e682fb2fc78a03286fb3b292ee2e5ad1faa578f0deb9"
+          }
+        },
+        {
+          "case_id": "fta1500_nfe5_k4__successful_anchor__seed904405",
+          "planner_calls": 16,
+          "native_latency": {
+            "n": 16,
+            "min_s": 3.714919946040027,
+            "median_s": 3.8333158894674852,
+            "max_s": 4.278089260100387
+          },
+          "total_rpc_wall": {
+            "n": 16,
+            "min_s": 3.926790415891446,
+            "median_s": 4.038655123964418,
+            "max_s": 4.479111455031671
+          },
+          "stale_hold_s": 17.83199999999999,
+          "cap_dwell_excluding_stale_finish_s": 22.344000000000015,
+          "first_activation_s": 4.54,
+          "first_native_latency_s": 4.278089260100387,
+          "action_grid_error_max_s": 3.552713678800501e-15,
+          "activation_quantization_max_s": 0.0077246790537621735,
+          "executor_max_gap_s": 0.008000000000002672,
+          "execution_trace_end_s": 59.996,
+          "input_sha256": {
+            "run_status.json": "41cb670c95382549dc65f0e23049eb20d9ebfdc54a05b6a95c8bdda63127fa32",
+            "planner_trace.json": "30e5dd9c687dd857585f556413bae936091c00dd122e8b8290e91b5a8fcdad38",
+            "delivered_plans.jsonl": "3fc8f7ee93f6b81088ef0f207881de60d5e223b7d263812db0390e6d1d29ca60",
+            "execution_trace.jsonl": "5bd6a0cd0b9482c9accc2b84070a7197f71a7deabc21dedd085053b1b870f0dc",
+            "policy_info.json": "a2c458e42e855eb98845c28d545e4c64158f910b9acc0fe25bc9dbc62a36eeae"
+          }
+        }
+      ],
+      "native_all": {
+        "n": 79,
+        "min_s": 3.714919946040027,
+        "median_s": 3.8360150930238888,
+        "max_s": 4.280467570060864
+      },
+      "native_after_first": {
+        "n": 74,
+        "min_s": 3.714919946040027,
+        "median_s": 3.8102456440101378,
+        "max_s": 4.280467570060864
+      },
+      "total_rpc_wall": {
+        "n": 79,
+        "min_s": 3.9069728010799736,
+        "median_s": 4.047774058068171,
+        "max_s": 4.494090164080262
+      },
+      "rpc_minus_native": {
+        "n": 79,
+        "min_s": 0.18961449980270118,
+        "median_s": 0.2123265159316361,
+        "max_s": 0.2543381820432842
+      },
+      "later_native_given_previous_cpk_invalidated": {
+        "n": 21,
+        "min_s": 4.090450715040788,
+        "median_s": 4.137463263934478,
+        "max_s": 4.280467570060864
+      },
+      "later_native_given_previous_cpk_not_invalidated": {
+        "n": 53,
+        "min_s": 3.714919946040027,
+        "median_s": 3.7782899469602853,
+        "max_s": 3.895851929904893
+      }
+    }
+  ],
+  "actually_read_server": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/servers/06_screen_block2__fta1500_nfe5_k4_1788773008004352841/server.json",
+    "sha256": "e624d0db7c931cdb17a4a42cff898967972a9c6a818d68a926a1d7c2dc174e78",
+    "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "weights": "EMA",
+    "dtype": "torch.bfloat16",
+    "effective": {
+      "nfe": 5,
+      "guidance": 1.0,
+      "k_seeds": 4,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "drop_video": false,
+      "task_text": "waffles",
+      "close_p": 0.5
+    },
+    "saved_self_anticipation": "two_pass",
+    "inference_source_sha256": {
+      "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "phantom/inference/remote.py": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+      "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+    }
+  },
+  "measurement_definitions": {
+    "native_latency_s": "Saved Plan.latency_s: host perf_counter around batch_from_obs + rf.sample, ending before CPU materialization/selection; no explicit CUDA synchronization at endpoint.",
+    "total_rpc_wall_s": "Saved planner_trace.inference_wall_time_s around adapter replan call, including client/native work and transport; not a pure GPU timer.",
+    "dwell_s": "Forward executor intervals [row.t,next.t) selected by left-row flag; excludes stopped rows. Cap dwell requires play_time>=1s and excludes stale_plan_hold/completion_hold. No final-row extrapolation.",
+    "cpk_reconstruction": "Using latent_dt=4/4=1s and3 saved contact frames; native selects round(previous Plan.latency_s/latent_dt), packer clips to index2 if CPK exists. Logged invalidation means no previous CPK is provided; calculated index then does not select an actual package.",
+    "k_reference_reconstruction": "Round((current request+native latency - previous accepted action_times[0])*10), clip0..15. Saved previous activation was verified before each current request. No CPK tensor inspection."
+  },
+  "source_line_references": {
+    "phantom/inference/policy.py": [
+      98,
+      101,
+      222,
+      239,
+      243,
+      252,
+      253,
+      255
+    ],
+    "phantom/model/rf.py": [
+      496,
+      519,
+      544,
+      547,
+      598
+    ],
+    "phantom/model/ace/packing.py": [
+      247,
+      251
+    ],
+    "phantom/config/backbone.py": [
+      52,
+      67
+    ],
+    "phantom/train/builder.py": [
+      49
+    ]
+  },
+  "limitations": [
+    "Incomplete screen at audit time; first5 matched seeds only, not final experiment ranking.",
+    "Observed latency explains held intervals under fixed playback/stale rules; it does not establish task failure causality.",
+    "v5 sim advances delivery by nativeL; a physical remote deployment pays observed totalRPC and late delivery/skipping.",
+    "No GPU benchmark, CUDA events, K1 inference, source change, latency override or hardware action performed."
+  ]
+}

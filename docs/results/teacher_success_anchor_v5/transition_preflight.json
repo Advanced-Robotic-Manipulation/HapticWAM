@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "wrapper_sha256": "95c316468c4f0f8221a529d91eea2823f73f0bed65fc04a2b9ed392b7c4be9bd",
+  "remote_wrapper": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/transition_to_confirmation.py",
+  "default_cpu_preflight": {
+    "static": "passed",
+    "screen_running": true,
+    "runtime_inputs": 120,
+    "driver_files": 343,
+    "actions": "none; omit --execute for checks only"
+  },
+  "actual_completed_case_schema_check": {
+    "ledger_status": "running",
+    "controller_pid": 2306707,
+    "completed_cases": 12,
+    "cached_scores_checked": 12,
+    "pending_cached_scores": [],
+    "schema_errors": [],
+    "server_metadata_checked": 13
+  },
+  "focused_cpu_tests": {
+    "file": "tests/test_teacher_v5_transition.py",
+    "passed": 8,
+    "ruff": "passed"
+  },
+  "interpretation": "Partial schema and provenance audit, not a completed-screen selection or model ranking. The wrapper still requires all24 valid matched cases before transition.",
+  "execute_watcher_launched_during_preparation": false,
+  "gpu_model_or_hardware_actions_during_preparation": false
+}

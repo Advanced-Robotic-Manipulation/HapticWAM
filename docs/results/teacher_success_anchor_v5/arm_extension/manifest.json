@@ -1,0 +1,30 @@
+{
+  "scope": "Prospective planning amendment only; no model outcome reads or execution",
+  "parent_protocol_sha256": "f67fe79a5267c6d253d7d90f67f2a367c8899f030959c8f42fa714d072ab7ac2",
+  "files": {
+    "README.md": {
+      "sha256": "07693720b7ea254d0ebba2e0fac5376fb6b24b8ef9379d9a2705ca9469cfd517",
+      "bytes": 2906
+    },
+    "amendment_v5.json": {
+      "sha256": "d7cef954c5f145cb5fff90f05a5b8329453ee40ce0cc1ffb9a94a77f78077114",
+      "bytes": 12676
+    },
+    "command_derivation.md": {
+      "sha256": "9db7cfaead571357ccd9f59633c696aee1802901b697345ed84023538935e4c8",
+      "bytes": 4234
+    }
+  },
+  "validated": {
+    "six_original_state_file_hashes_match": true,
+    "all_seven_original_v3_v4_extension_files_unchanged": true,
+    "same_selected_pool_ranges_order": true,
+    "new_sampling_seeds": [
+      904601,
+      904602
+    ],
+    "planned_total": 12,
+    "conditional_winner_only": true,
+    "gpu_or_hardware_actions": false
+  }
+}

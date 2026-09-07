@@ -1,0 +1,19 @@
+{
+  "scope": "Final read-only screen presentation audit; no second decode or policy scoring",
+  "checked_at_unix_s": 1788775678.7362547,
+  "manifest": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/screen/video_manifest.json",
+  "manifest_sha256": "263f4eabc56397059e11cfe8775459253c1553fb2feb0f9b21f499495ee92bd1",
+  "cases": 24,
+  "all_video_metadata_primary_score_hashes_match": true,
+  "all_saved_gel_and_causal_mapping_checks_passed": true,
+  "full_decode_once_per_video_recorded": true,
+  "total_video_bytes": 29085103,
+  "total_decoded_frames": 9555,
+  "watcher_pid": 2367102,
+  "watcher_proc_state": null,
+  "watcher_running": false,
+  "log": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/screen_renderer.log",
+  "campaign_status": "all_trials_completed",
+  "presentation_helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "runtime_metric_sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+}
