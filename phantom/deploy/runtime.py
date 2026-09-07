@@ -342,6 +342,7 @@ class DeploymentRuntime:
                      "count": int(getattr(e, "count", 1))}
                     for e in safety.log_events],
             stop_state={**self._arm_state_now(),
+                        "wrist_guard": safety.wrench_diagnostics(),
                         **({"placement_release": executor.release_diagnostics()}
                            if getattr(executor, "release_controller", None) is not None else {}),
                         **({"at_halt": executor.halt_state}

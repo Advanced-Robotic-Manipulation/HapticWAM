@@ -92,7 +92,7 @@ class SafetyMonitor:
                                        hw.cameras.scene.fps)
         self._cam_stale_s = camera_stale_s(hw)
         self._arm_stale_s = arm_stale_s(hw)
-        # Wrench guard state — same scheme as data_collect.safeguard.ArmGuard:
+        # Wrench guard state — default matches data_collect.safeguard.ArmGuard:
         # the CB3 "wrench" is a current-based estimate with a large pose-
         # dependent static bias plus acceleration spikes, so the raw value vs
         # an absolute limit false-trips on ordinary motion. Track a slow
@@ -101,9 +101,14 @@ class SafetyMonitor:
         # (wrench_debounce_ticks / control.action_rate_hz seconds — the ticks
         # are defined at the record-loop rate, while check() runs at the much
         # faster executor tick, so the debounce is time-based here). The
-        # baseline is frozen while over-limit so a real collision is never
-        # absorbed into it.
+        # baseline is frozen while over-limit. Slow external loads can still
+        # enter a rolling baseline below the deviation threshold. The opt-in
+        # episode_fixed mode retains the initial reference instead; physical
+        # pose-dependent bias therefore needs separate qualification.
         self._wrench_base: np.ndarray | None = None
+        self._wrench_initial: np.ndarray | None = None
+        self._wrench_capture_t: float | None = None
+        self._wrench_report: dict = {"valid": False, "error": "not_sampled"}
         self._wrench_over_since: float | None = None
         self._wrench_last_t: float | None = None
         # lift_complete state (per episode — the monitor is built per episode)
@@ -168,29 +173,15 @@ class SafetyMonitor:
                 events.append(SafetyEvent(t_now, "joint_speed", qd_max,
                                           SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
-            ft = np.asarray(arm["ft"][0], dtype=np.float64).reshape(-1)
-            if self._wrench_base is None:
-                self._wrench_base = ft.copy()   # episode starts at rest: bias
-            dev = ft - self._wrench_base
-            f_mag = float(np.linalg.norm(dev[:3]))
-            t_mag = float(np.linalg.norm(dev[3:]))
-            dt = (t_now - self._wrench_last_t) if self._wrench_last_t is not None else 0.0
-            self._wrench_last_t = t_now
-            debounce_s = (hw.safety.wrench_debounce_ticks
-                          / hw.control.action_rate_hz)
-            if f_mag > hw.safety.wrench_limit_N or t_mag > hw.safety.wrench_limit_Nm:
-                if self._wrench_over_since is None:
-                    self._wrench_over_since = t_now
-                if t_now - self._wrench_over_since >= debounce_s:
-                    events.append(SafetyEvent(t_now, "wrench_limit", max(f_mag, t_mag),
-                                              SafetyAction.STOP_EPISODE))
-                    action = _max(action, SafetyAction.STOP_EPISODE)
-            else:
-                self._wrench_over_since = None
-                # adapt the baseline ONLY when calm — never track an event in
-                if dt > 0.0:
-                    alpha = min(1.0, dt / hw.safety.wrench_baseline_tau_s)
-                    self._wrench_base += alpha * (ft - self._wrench_base)
+            event = self._check_wrench(t_now, float(ts[0]), arm["ft"][0])
+            if event is not None:
+                events.append(event)
+                action = _max(action, event.action)
+        elif hw.safety.wrench_baseline_mode == "episode_fixed":
+            self._wrench_report = {"valid": False, "error": "missing_arm_sample"}
+            events.append(SafetyEvent(t_now, "wrench_invalid", 0.0,
+                                      SafetyAction.STOP_EPISODE))
+            action = _max(action, SafetyAction.STOP_EPISODE)
 
         # fingertip force / indentation e-stop (teacher rigs always record tactile)
         pad_load: dict[str, float] = {}
@@ -347,12 +338,82 @@ class SafetyMonitor:
         for kind in [k for k in self._active if k not in seen]:
             self._active.pop(kind, None)    # condition cleared: re-arm the edge
 
+    def _check_wrench(self, t_now: float, sample_t: float, value) -> SafetyEvent | None:
+        """Shared wrist subguard; default arithmetic/order remains unchanged."""
+        sf = self.hw.safety
+        fixed = sf.wrench_baseline_mode == "episode_fixed"
+        ft = np.asarray(value, dtype=np.float64).reshape(-1)
+        if fixed and (
+                ft.shape != (6,) or not np.isfinite(ft).all()
+                or not np.isfinite([t_now, sample_t]).all()
+                # The receive thread can publish between the caller's clock
+                # read and latest(1). Allow the same bounded clock skew as age.
+                or sample_t - t_now > self._arm_stale_s
+                or (self._wrench_last_t is not None and t_now < self._wrench_last_t)
+                or t_now - sample_t > self._arm_stale_s):
+            # No invalid, excessively future-dated or stale sample can
+            # establish or move a reference.
+            # Existing arm freshness/protective-stop events keep their priority.
+            self._wrench_report = {"valid": False, "error": "invalid_or_stale_wrist"}
+            return SafetyEvent(t_now, "wrench_invalid", 0.0, SafetyAction.STOP_EPISODE)
+        if self._wrench_base is None:
+            self._wrench_base = ft.copy()  # operator-reviewed unloaded start
+            self._wrench_initial = ft.copy()
+            self._wrench_capture_t = float(sample_t)
+        reference = self._wrench_base.copy()
+        dev = ft - self._wrench_base
+        f_mag = float(np.linalg.norm(dev[:3]))
+        t_mag = float(np.linalg.norm(dev[3:]))
+        dt = (t_now - self._wrench_last_t) if self._wrench_last_t is not None else 0.0
+        self._wrench_last_t = t_now
+        debounce_s = sf.wrench_debounce_ticks / self.hw.control.action_rate_hz
+        event, adapted = None, False
+        if f_mag > sf.wrench_limit_N or t_mag > sf.wrench_limit_Nm:
+            if self._wrench_over_since is None:
+                self._wrench_over_since = t_now
+            if t_now - self._wrench_over_since >= debounce_s:
+                event = SafetyEvent(t_now, "wrench_limit", max(f_mag, t_mag),
+                                    SafetyAction.STOP_EPISODE)
+        else:
+            self._wrench_over_since = None
+            if dt > 0.0 and not fixed:
+                alpha = min(1.0, dt / sf.wrench_baseline_tau_s)
+                self._wrench_base += alpha * (ft - self._wrench_base)
+                adapted = True
+        self._wrench_report = {
+            "valid": True, "checked_at_s": float(t_now), "sample_t_s": float(sample_t),
+            "measured_wrench": ft.tolist(), "reference_before": reference.tolist(),
+            "reference_after": self._wrench_base.tolist(), "deviation": dev.tolist(),
+            "force_deviation_n": f_mag, "torque_deviation_nm": t_mag,
+            "over_since_s": self._wrench_over_since, "baseline_adapted": adapted,
+        }
+        return event
+
+    def wrench_diagnostics(self) -> dict:
+        """Copy the latest decision, including pre-update reference and tare."""
+        from copy import deepcopy
+        return {
+            "mode": self.hw.safety.wrench_baseline_mode,
+            "capture_t_s": self._wrench_capture_t,
+            "initial_reference": (self._wrench_initial.tolist()
+                                  if self._wrench_initial is not None else None),
+            **deepcopy(self._wrench_report),
+        }
+
     def recovered(self, frac: float = 0.8) -> bool:
         """Hysteresis gate for resuming after a STOP_EPISODE: True when the
         protective stop is clear and wrist wrench + fingertip peaks are all
         below frac * their limits (avoids stop/resume chatter at the limit)."""
         hw = self.hw
         ts, arm = self.rings["arm"].latest(1)
+        if self.hw.safety.wrench_baseline_mode == "episode_fixed":
+            if not len(ts) or self._wrench_base is None:
+                return False
+            ft = np.asarray(arm["ft"][0], dtype=float).reshape(-1)
+            if (ft.shape != (6,) or not np.isfinite(ft).all()
+                    or not np.isfinite(ts[0])
+                    or float(ts[0]) - time.perf_counter() > self._arm_stale_s):
+                return False
         if len(ts):
             if time.perf_counter() - float(ts[0]) > self._arm_stale_s:
                 return False   # dead/stale arm stream: no resume without it
@@ -432,6 +493,16 @@ _ORDER = [SafetyAction.OK, SafetyAction.CLAMP, SafetyAction.STOP_EPISODE,
 
 def _max(a: SafetyAction, b: SafetyAction) -> SafetyAction:
     return a if _ORDER.index(a) >= _ORDER.index(b) else b
+
+
+def apply_wrench_baseline_mode(hw: HardwareConfig, mode: str | None) -> HardwareConfig:
+    """Validated explicit deployment override; None preserves the YAML mode."""
+    if mode is None:
+        return hw
+    safety = type(hw.safety).model_validate({
+        **hw.safety.model_dump(), "wrench_baseline_mode": mode,
+    })
+    return hw.model_copy(update={"safety": safety})
 
 
 def apply_z_floor(hw: HardwareConfig, floor_m: float) -> HardwareConfig:

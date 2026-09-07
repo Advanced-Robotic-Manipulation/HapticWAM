@@ -1,0 +1,4576 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-07T01:18:18.785453+00:00",
+  "scope": "Ten native Aug22 wrist-stream descriptive replays; separate qualification for future opt-in guard. No simulator/model/hardware, source writes, or primary-study score changes.",
+  "rules": {
+    "force_limit_n": 60,
+    "torque_limit_nm": 15,
+    "debounce_s": 0.3,
+    "rolling_tau_s": 2,
+    "initialization": "exact first native arm_ft row in each stream",
+    "time": "native stored master-clock timestamps; not resampled",
+    "baseline_update": "rolling only while deviation is below both limits; episode_fixed never updates"
+  },
+  "counts": {
+    "rolling": {
+      "full_stream_debounced_triggers": 0,
+      "initial_0_to_1s_debounced_triggers": 0,
+      "full_stream_instantaneous_crossings": 6,
+      "initial_0_to_1s_instantaneous_crossings": 4
+    },
+    "episode_fixed": {
+      "full_stream_debounced_triggers": 1,
+      "initial_0_to_1s_debounced_triggers": 0,
+      "full_stream_instantaneous_crossings": 9,
+      "initial_0_to_1s_instantaneous_crossings": 5
+    }
+  },
+  "episodes": [
+    {
+      "episode": "ep_waffles_1787395928_000",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000",
+      "duration_s": 19.850087807979435,
+      "arm_ft_samples": 2482,
+      "first_arm_ft_n_nm": [
+        4.879707293038624,
+        11.318608072036698,
+        -18.62147401077401,
+        -3.9895496242638413,
+        3.947735170225807,
+        1.4901002887565649
+      ],
+      "first_arm_ft_master_s": 5581.732623199234,
+      "timestamp_step_min_median_max_s": [
+        6.454810500144958e-05,
+        0.008000461151823401,
+        0.015921799931675196
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/arm_ft.zarr",
+          "count": 2482,
+          "timestamps_payload_sha256": "3c124d5d1b7152f6ea0e715ea5dea846dcb213f0b98ae11cff4b5bce8eecd1e9",
+          "data_payload_sha256": "bcf017151ba7fef2240949dd8aae4b5723c8fe2c10a96b15ec016b3ae8c54add"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/arm_q.zarr",
+          "count": 2477,
+          "timestamps_payload_sha256": "954bba585402c4fbcbd560d0404d0b61f9d7309b50cd578dba945cc911e5ab77",
+          "data_payload_sha256": "dd7dad1ff51ce706d5db9bc6ad65a1abf48c8d3e5f3e97bf78b1928f331c66a8"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/arm_qd.zarr",
+          "count": 2479,
+          "timestamps_payload_sha256": "e70d1efb2e478f34ce9fcccafa69d36b3c5048c68d53ff6d0a121aae20f8469f",
+          "data_payload_sha256": "d8dfc2b2ab68c570d8d0bb6d4e7ff832fbfa9e2d01ae657134c55f212d582bc9"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/arm_tcp_pose.zarr",
+          "count": 2480,
+          "timestamps_payload_sha256": "485f06e63fadcf768a4103c0013c3e4c8d4ab1a689ed0f8816a19f1a7c8f1c15",
+          "data_payload_sha256": "a8d91b05f90148ea4888c178ff9fd7ce2131bfd8baa4a0a9e878d1f8b8a7ff4b"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/gripper.zarr",
+          "count": 1853,
+          "timestamps_payload_sha256": "a8347a5d98dfba13bb067cf980a841afe54e42eebc44389c2b6d620f748099cd",
+          "data_payload_sha256": "6f304b7f2dffcf0ca8c1b38d2602c02afb5fa589b2f7007e521264633f5f699f"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_area.zarr",
+          "count": 115,
+          "timestamps_payload_sha256": "cd3b7ea4ae60fb1ccc68e32f82e8d09559aad38e3800132972a6439aa019b333",
+          "data_payload_sha256": "cab03985261afcc67ffaf0e46f20d0610268d6a371de02a508eef019f28dbffb"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_wrench.zarr",
+          "count": 115,
+          "timestamps_payload_sha256": "cd3b7ea4ae60fb1ccc68e32f82e8d09559aad38e3800132972a6439aa019b333",
+          "data_payload_sha256": "8f2cd44fba528ccedd67ae14389deeadeb8f0fb43620b6aa1de8759e123c55bb"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_left_fields_ds.zarr",
+          "count": 114,
+          "timestamps_payload_sha256": "eb7694b4f19acd07d5b7d0c257e5ed1e9299e3c7a6c74b55768c31794bb3ecc2",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_area.zarr",
+          "count": 113,
+          "timestamps_payload_sha256": "902a9736cd241030a1e9be84ac6c749bd1aca62cb4aa09bb47e617e88abe2e0f",
+          "data_payload_sha256": "a64f72b87de9838d4a7e825e74b65eb1978857c04e478afb6990cffcf19b82ac"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_wrench.zarr",
+          "count": 113,
+          "timestamps_payload_sha256": "902a9736cd241030a1e9be84ac6c749bd1aca62cb4aa09bb47e617e88abe2e0f",
+          "data_payload_sha256": "fbbb867f063063e8c2eabd631455bdbf6d9cee42160f5ef8bf215aa887518c5d"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/tactile_right_fields_ds.zarr",
+          "count": 113,
+          "timestamps_payload_sha256": "902a9736cd241030a1e9be84ac6c749bd1aca62cb4aa09bb47e617e88abe2e0f",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000/camera_scene_color.zarr",
+          "count": 298,
+          "timestamps_payload_sha256": "f6e6ae481313f3e0e6c75948a3767355ef55427776d41c62056e0b598e88e196",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 34,
+          "t_master_s": 5582.0047568872105,
+          "relative_s": 0.27213368797674775,
+          "force_deviation_n": 54.00160932062085,
+          "torque_deviation_nm": 15.049441493508539,
+          "baseline_n_nm": [
+            5.498733039218267,
+            10.671640700935233,
+            -17.847853424382045,
+            -3.8001334017510047,
+            3.85855087345582,
+            1.2841342226580297
+          ],
+          "actual_wrist_n_nm": [
+            -10.121727122015523,
+            -20.84812692705727,
+            23.123835364898152,
+            6.4514084610324876,
+            -6.581718635131174,
+            -2.236142938334098
+          ],
+          "over_since_relative_s": 0.27213368797674775
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1165,
+          "t_master_s": 5591.052625308279,
+          "relative_s": 9.320002109045163,
+          "force_deviation_n": 63.51298562640804,
+          "torque_deviation_nm": 17.216042241035794,
+          "baseline_n_nm": [
+            -2.5238573984021557,
+            -2.401857619334384,
+            -3.3611776111920078,
+            0.5158990543715101,
+            -0.3451396881963634,
+            -0.13176576031640452
+          ],
+          "actual_wrist_n_nm": [
+            27.681954321921566,
+            44.158909299791915,
+            -34.24164498782771,
+            -5.2772401870718175,
+            11.373288081233218,
+            11.07136321274464
+          ],
+          "over_since_relative_s": 9.320002109045163
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1165,
+          "t_master_s": 5591.052625308279,
+          "relative_s": 9.320002109045163,
+          "force_deviation_n": 63.51298562640804,
+          "torque_deviation_nm": 17.216042241035794,
+          "baseline_n_nm": [
+            -2.5238573984021557,
+            -2.401857619334384,
+            -3.3611776111920078,
+            0.5158990543715101,
+            -0.3451396881963634,
+            -0.13176576031640452
+          ],
+          "actual_wrist_n_nm": [
+            27.681954321921566,
+            44.158909299791915,
+            -34.24164498782771,
+            -5.2772401870718175,
+            11.373288081233218,
+            11.07136321274464
+          ],
+          "over_since_relative_s": 9.320002109045163
+        },
+        "maximum_baseline_force_shift_n": 32.71287028488266,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 56.39477324024655,
+          "maximum_torque_deviation_nm": 15.696321581327187,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 34,
+          "t_master_s": 5582.0047568872105,
+          "relative_s": 0.27213368797674775,
+          "force_deviation_n": 54.79427643359925,
+          "torque_deviation_nm": 15.28946996352393,
+          "baseline_n_nm": [
+            4.879707293038624,
+            11.318608072036698,
+            -18.62147401077401,
+            -3.9895496242638413,
+            3.947735170225807,
+            1.4901002887565649
+          ],
+          "actual_wrist_n_nm": [
+            -10.121727122015523,
+            -20.84812692705727,
+            23.123835364898152,
+            6.4514084610324876,
+            -6.581718635131174,
+            -2.236142938334098
+          ],
+          "over_since_relative_s": 0.27213368797674775
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1314,
+          "t_master_s": 5592.244618554134,
+          "relative_s": 10.511995354900137,
+          "force_deviation_n": 63.60504048681006,
+          "torque_deviation_nm": 17.5306565698379,
+          "baseline_n_nm": [
+            4.879707293038624,
+            11.318608072036698,
+            -18.62147401077401,
+            -3.9895496242638413,
+            3.947735170225807,
+            1.4901002887565649
+          ],
+          "actual_wrist_n_nm": [
+            -31.12729086465208,
+            -27.12627251636161,
+            17.030852919520456,
+            0.6725813265404881,
+            -9.228599468508792,
+            -9.09161319513799
+          ],
+          "over_since_relative_s": 10.511995354900137
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1314,
+          "t_master_s": 5592.244618554134,
+          "relative_s": 10.511995354900137,
+          "force_deviation_n": 63.60504048681006,
+          "torque_deviation_nm": 17.5306565698379,
+          "baseline_n_nm": [
+            4.879707293038624,
+            11.318608072036698,
+            -18.62147401077401,
+            -3.9895496242638413,
+            3.947735170225807,
+            1.4901002887565649
+          ],
+          "actual_wrist_n_nm": [
+            -31.12729086465208,
+            -27.12627251636161,
+            17.030852919520456,
+            0.6725813265404881,
+            -9.228599468508792,
+            -9.09161319513799
+          ],
+          "over_since_relative_s": 10.511995354900137
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 57.18916486483936,
+          "maximum_torque_deviation_nm": 16.167806680048738,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919964710716158,
+          "first_value": [
+            0.24458305537700653,
+            -1.5101473967181605,
+            0.9252877235412598,
+            0.8998452425003052,
+            1.1859948635101318,
+            -3.203757349644796
+          ],
+          "last_value": [
+            0.2648116946220398,
+            -1.5103266874896448,
+            0.9251317977905273,
+            0.897889256477356,
+            1.2259008884429932,
+            -3.209958855305807
+          ],
+          "maximum_absolute_component_change": 0.03990602493286133
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919964710716158,
+          "first_value": [
+            -7.669904152862728e-05,
+            0.005062136799097061,
+            -0.004122573416680098,
+            -0.0027084348257631063,
+            -0.01318264752626419,
+            -0.0012223910307511687
+          ],
+          "last_value": [
+            0.09949783235788345,
+            0.0,
+            -0.006735134869813919,
+            -0.0027563718613237143,
+            0.21324729919433594,
+            -0.024232104420661926
+          ],
+          "maximum_absolute_component_change": 0.29821545630693436,
+          "maximum_absolute_joint_speed_rad_s": 0.28503280878067017
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919964710716158,
+          "first_value": [
+            -0.3353840301731834,
+            -0.2998146692033888,
+            0.3563046161651479,
+            -1.0312455926700135,
+            -1.924134565331102,
+            1.472221164397271
+          ],
+          "last_value": [
+            -0.33548150316100134,
+            -0.2980824518107575,
+            0.35571478111758353,
+            -1.0288574894033913,
+            -1.914238199792684,
+            1.4479072353133509
+          ],
+          "maximum_absolute_component_change": 0.02431392908392005,
+          "maximum_translation_from_first_m": 0.001832480139598734,
+          "z_min_max_m": [
+            0.35571478111758353,
+            0.35675678225982127
+          ]
+        },
+        "gripper": {
+          "samples": 92,
+          "first_relative_s": 0.00018739490769803524,
+          "last_relative_s": 0.9949054499156773,
+          "first_value": [
+            0.4274509847164154,
+            3.0
+          ],
+          "last_value": [
+            0.2549019753932953,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.2549019753932953,
+            0.4274509847164154
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.029850127873942256,
+            "last_relative_s": 0.831349256914109,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.029850127873942256,
+            "last_relative_s": 0.831349256914109,
+            "selected_payload_sha256": "142b064ddf45f0d40ce62a9d5a81543ef4c4375eaa766e806fbeb1495dc0c053",
+            "first_sdk_value": [
+              0.16218701004981995,
+              -0.148872971534729,
+              -1.0228517055511475,
+              -0.0031203606631606817,
+              0.014406746253371239,
+              -0.0011507216840982437
+            ],
+            "max_force_change_sdk": 1.0935150384902954
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.029850127873942256,
+            "last_relative_s": 0.831349256914109,
+            "selected_payload_sha256": "dcc5f9032e385bc09302836cd63503fa194b5bb3ba39d1ff6174acdce4f7875c",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.1744384765625
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.09436133806593716,
+            "last_relative_s": 0.9199131699278951,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.09436133806593716,
+            "last_relative_s": 0.9199131699278951,
+            "selected_payload_sha256": "aeabdd5e19d9f0fcfda8102182ffbd77724d726ab8c0285acb898abc406baa2e",
+            "first_sdk_value": [
+              -0.020133042708039284,
+              0.002673713956028223,
+              -0.009239930659532547,
+              -0.00034039950696751475,
+              0.0001715046091703698,
+              0.00032765528885647655
+            ],
+            "max_force_change_sdk": 0.03915663808584213
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.09436133806593716,
+            "last_relative_s": 0.9199131699278951,
+            "selected_payload_sha256": "22de529b766c30ad86443872fa8be106f2f0f8b8aa8263364dc314ba8794ee86",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.0235443115234375
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.0220316790509969,
+            "stored_payload_sha256": "6119f7477bd7ec6be4284321084f6c28ccce2e8bbc0dac61d6f98792bea5941d",
+            "decoded_bgr_sha256": "666883b07b574ae60d05e039685c631f033254fd1055fd7bf6ee33ff4b21688b",
+            "preview_jpeg_sha256": "31acd0a1fb3285ffbdd35d90a712d26aeed56aae12015e966950239e4ff452cc"
+          },
+          {
+            "index": 8,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5521815528627485,
+            "stored_payload_sha256": "4d99d5b0ec517e1806a26c8395c3bef4236856212a1ba5c188cf2cc4fd458066",
+            "decoded_bgr_sha256": "b0e7a96ad8831755053bd9b4dc84ed511683679bef764a46e06fdb3f3ad9163b",
+            "preview_jpeg_sha256": "5cd2627e1a199916231078c01923e1fcae0644fb5abdda6915c6cc7dbf95c45f"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0188068649731576,
+            "stored_payload_sha256": "c37e464c2547ebde8848c879fd1566bf52f08fa38a7e7f076098848b5f852a1e",
+            "decoded_bgr_sha256": "89b0f0fba9bf40e156531d1c04ac894bb2a52d0019f353d21597f17b1b570aae",
+            "preview_jpeg_sha256": "7e345c9433dda37473d3fbfca846e2f7654e680702845d87717d8bcf5522804b"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.257628+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787395963_001",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001",
+      "duration_s": 22.216979946009815,
+      "arm_ft_samples": 2778,
+      "first_arm_ft_n_nm": [
+        16.49100151528894,
+        -8.938782817111958,
+        -13.685593946781536,
+        -2.6627279528074217,
+        4.598197745477487,
+        -4.547888366204026
+      ],
+      "first_arm_ft_master_s": 5616.130650503095,
+      "timestamp_step_min_median_max_s": [
+        7.4329087510705e-05,
+        0.008000188041478395,
+        0.01634203689172864
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/arm_ft.zarr",
+          "count": 2778,
+          "timestamps_payload_sha256": "05ecafad0158d8c6bb3d4eaca2f6df392a1450aad7567bc777dcfeee85763060",
+          "data_payload_sha256": "ff49cfcc986dfd0763a66a9058fcd45db832b2ef4b1119cec0108e1771f0f6fc"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/arm_q.zarr",
+          "count": 2773,
+          "timestamps_payload_sha256": "41ce9f5f92bb713c953c2f1f6efb36733a240f9b5fc5a1e21f52313e25cab790",
+          "data_payload_sha256": "2fc1f2eb8b8e194f535f0587ffa100b5e2fed3ed1ba71bc97e474753194d4710"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/arm_qd.zarr",
+          "count": 2775,
+          "timestamps_payload_sha256": "448f2b2327198b79006f667b4bb7c6668ac876aa43ce5e415f4a7f6f423ceb1b",
+          "data_payload_sha256": "357265800994e87a3d1d9ba58e30d1904b25693efbe9ca425209486300cf795d"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/arm_tcp_pose.zarr",
+          "count": 2777,
+          "timestamps_payload_sha256": "b71e249e05f85ffa9081bfe96ffd39272537ff38c355f1d028d182a2a0f1d39a",
+          "data_payload_sha256": "66b0dc2d7ce6e5a2f10e2fe8765248f9f2751ce339eab36e165d4cd255190677"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/gripper.zarr",
+          "count": 2068,
+          "timestamps_payload_sha256": "918ad7d679fc431ae48ddaf7094dfa14633ed9d4b2145c6c4b76f6acd6b76754",
+          "data_payload_sha256": "6b61b0df66b1c9eb6bd5829a79b14af9fa1d7ce913412425414fe7e642c692f5"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_left_area.zarr",
+          "count": 125,
+          "timestamps_payload_sha256": "58605696235ddba19d748b652e8679e6b32f77350629ee95ce854762180fee2b",
+          "data_payload_sha256": "53639472e6430b5bec316ebf23535e735e35797dabfda01475900434314bc25f"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_left_wrench.zarr",
+          "count": 125,
+          "timestamps_payload_sha256": "58605696235ddba19d748b652e8679e6b32f77350629ee95ce854762180fee2b",
+          "data_payload_sha256": "96d823f88cd512155c8e08f9f14a84c9cda63565bc8ed0ecd985fc6bffc2d473"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_left_fields_ds.zarr",
+          "count": 124,
+          "timestamps_payload_sha256": "b5dc4ab2954bf1b176b4ef6ce091db757f57372790861e6526a39e40d4113ece",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_right_area.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "fe036bfee2a31f835aa29a60b98e7fa12dd96e56b14feac3555d377f827fee04",
+          "data_payload_sha256": "8f42a1f12ae018ff904373fbec39052de22a4591c50fe91a3bec5e73a5ddd346"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_right_wrench.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "fe036bfee2a31f835aa29a60b98e7fa12dd96e56b14feac3555d377f827fee04",
+          "data_payload_sha256": "8e18394b26f995e6aa96862c1bfda9ff6ad21328b57359781ba7f3341d046bf6"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/tactile_right_fields_ds.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "fe036bfee2a31f835aa29a60b98e7fa12dd96e56b14feac3555d377f827fee04",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001/camera_scene_color.zarr",
+          "count": 333,
+          "timestamps_payload_sha256": "4882bf8500b732bf47806f65922c1703a6f467fb77e916bac921934409641803",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 1218,
+          "t_master_s": 5625.87563804118,
+          "relative_s": 9.744987538084388,
+          "force_deviation_n": 55.62218422099788,
+          "torque_deviation_nm": 15.244073111743154,
+          "baseline_n_nm": [
+            -0.4699869428102268,
+            1.192326617250713,
+            -6.91180559695011,
+            -0.5257626224373383,
+            0.6391731615571891,
+            0.22196512225418688
+          ],
+          "actual_wrist_n_nm": [
+            22.977013108310434,
+            41.55622313751176,
+            -37.15782060420407,
+            -3.0545341239453236,
+            10.987920810239517,
+            11.12565724158806
+          ],
+          "over_since_relative_s": 9.744987538084388
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1218,
+          "t_master_s": 5625.87563804118,
+          "relative_s": 9.744987538084388,
+          "force_deviation_n": 55.62218422099788,
+          "torque_deviation_nm": 15.244073111743154,
+          "baseline_n_nm": [
+            -0.4699869428102268,
+            1.192326617250713,
+            -6.91180559695011,
+            -0.5257626224373383,
+            0.6391731615571891,
+            0.22196512225418688
+          ],
+          "actual_wrist_n_nm": [
+            22.977013108310434,
+            41.55622313751176,
+            -37.15782060420407,
+            -3.0545341239453236,
+            10.987920810239517,
+            11.12565724158806
+          ],
+          "over_since_relative_s": 9.744987538084388
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2206,
+          "t_master_s": 5633.779614266241,
+          "relative_s": 17.64896376314573,
+          "force_deviation_n": 55.06497741043464,
+          "torque_deviation_nm": 15.295889785398293,
+          "baseline_n_nm": [
+            -2.4004087260907156,
+            -1.3395807087967462,
+            -0.08573265062098542,
+            0.09084458038388744,
+            -0.7817206407782634,
+            -0.45626863567170506
+          ],
+          "actual_wrist_n_nm": [
+            34.12659664885431,
+            20.06213432637347,
+            -35.29789261140419,
+            0.2967016387315613,
+            12.467392156370087,
+            7.184600247316672
+          ],
+          "over_since_relative_s": 17.64896376314573
+        },
+        "maximum_baseline_force_shift_n": 33.89242967779242,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 37.42771282173363,
+          "maximum_torque_deviation_nm": 8.554240098651329,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 1213,
+          "t_master_s": 5625.835619863123,
+          "relative_s": 9.704969360027462,
+          "force_deviation_n": 58.28581137629012,
+          "torque_deviation_nm": 17.481920165669866,
+          "baseline_n_nm": [
+            16.49100151528894,
+            -8.938782817111958,
+            -13.685593946781536,
+            -2.6627279528074217,
+            4.598197745477487,
+            -4.547888366204026
+          ],
+          "actual_wrist_n_nm": [
+            6.242974160065506,
+            48.3937680859844,
+            -11.406921073609862,
+            -3.657182019282016,
+            2.592042199490644,
+            12.790045008735246
+          ],
+          "over_since_relative_s": 9.704969360027462
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1396,
+          "t_master_s": 5627.299629451241,
+          "relative_s": 11.168978948146105,
+          "force_deviation_n": 60.346411010914025,
+          "torque_deviation_nm": 15.775350577546066,
+          "baseline_n_nm": [
+            16.49100151528894,
+            -8.938782817111958,
+            -13.685593946781536,
+            -2.6627279528074217,
+            4.598197745477487,
+            -4.547888366204026
+          ],
+          "actual_wrist_n_nm": [
+            -28.503790998012043,
+            -26.549484429989523,
+            22.467153629099215,
+            0.7776861039770956,
+            -10.350348549635692,
+            -8.231120727217995
+          ],
+          "over_since_relative_s": 11.168978948146105
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1213,
+          "t_master_s": 5625.835619863123,
+          "relative_s": 9.704969360027462,
+          "force_deviation_n": 58.28581137629012,
+          "torque_deviation_nm": 17.481920165669866,
+          "baseline_n_nm": [
+            16.49100151528894,
+            -8.938782817111958,
+            -13.685593946781536,
+            -2.6627279528074217,
+            4.598197745477487,
+            -4.547888366204026
+          ],
+          "actual_wrist_n_nm": [
+            6.242974160065506,
+            48.3937680859844,
+            -11.406921073609862,
+            -3.657182019282016,
+            2.592042199490644,
+            12.790045008735246
+          ],
+          "over_since_relative_s": 9.704969360027462
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 39.193850153553,
+          "maximum_torque_deviation_nm": 9.052557396728288,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920020150020719,
+          "first_value": [
+            0.14518064260482788,
+            -1.5508273283587855,
+            1.0001111030578613,
+            0.8747776746749878,
+            1.1362910270690918,
+            -3.161736075078146
+          ],
+          "last_value": [
+            0.15043535828590393,
+            -1.545509163533346,
+            0.9914040565490723,
+            0.8744417428970337,
+            1.136735200881958,
+            -3.161220375691549
+          ],
+          "maximum_absolute_component_change": 0.00871896743774414
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920020150020719,
+          "first_value": [
+            -0.00036432043998502195,
+            0.0025310683995485306,
+            0.0006711166352033615,
+            0.0011025487910956144,
+            0.002205097582191229,
+            -0.0007190534961409867
+          ],
+          "last_value": [
+            0.10202889889478683,
+            -0.005483981221914291,
+            -0.004026699811220169,
+            0.0,
+            0.016634104773402214,
+            -0.006447513122111559
+          ],
+          "maximum_absolute_component_change": 0.10239321933477186,
+          "maximum_absolute_joint_speed_rad_s": 0.10202889889478683
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920020150020719,
+          "first_value": [
+            -0.3495555759785932,
+            -0.27512946790625037,
+            0.35035050920628125,
+            -1.136475954428743,
+            -1.8711905948184857,
+            1.4784136435633781
+          ],
+          "last_value": [
+            -0.3496503912928912,
+            -0.27708795699258,
+            0.35165878198033373,
+            -1.1299723697123827,
+            -1.8723518113052147,
+            1.4828777470150638
+          ],
+          "maximum_absolute_component_change": 0.006503584716360367,
+          "maximum_translation_from_first_m": 0.0023571692973616983,
+          "z_min_max_m": [
+            0.34855016290096297,
+            0.35165878198033373
+          ]
+        },
+        "gripper": {
+          "samples": 93,
+          "first_relative_s": 0.010058253072202206,
+          "last_relative_s": 0.9937741500325501,
+          "first_value": [
+            0.3137255012989044,
+            3.0
+          ],
+          "last_value": [
+            0.3137255012989044,
+            3.0
+          ],
+          "maximum_absolute_component_change": 0.0,
+          "closure_min_max": [
+            0.3137255012989044,
+            0.3137255012989044
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 5,
+            "first_relative_s": 0.11794294114224613,
+            "last_relative_s": 0.8770129820331931,
+            "selected_payload_sha256": "5267978a1da197a8d431e99dd87e40e0bf353ee7d4d2e523af36febe331e425c",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 5,
+            "first_relative_s": 0.11794294114224613,
+            "last_relative_s": 0.8770129820331931,
+            "selected_payload_sha256": "0cc46d5ad5e5298ed689f6b374b01764adef26a15bf3542aceabb4bae32ee952",
+            "first_sdk_value": [
+              0.5153683423995972,
+              0.06271256506443024,
+              -1.3520379066467285,
+              -0.01279802992939949,
+              0.03358042240142822,
+              -0.003493648022413254
+            ],
+            "max_force_change_sdk": 0.9662516713142395
+          },
+          "fields_ds": {
+            "samples": 5,
+            "first_relative_s": 0.11794294114224613,
+            "last_relative_s": 0.8770129820331931,
+            "selected_payload_sha256": "015d3cce481eb64546f3e7650b2a9b473e276c366e92dd78127cae57ee66935c",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.12744140625
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.0995602251496166,
+            "last_relative_s": 0.9220366410445422,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.0995602251496166,
+            "last_relative_s": 0.9220366410445422,
+            "selected_payload_sha256": "070b7b2dc652040204cb72ca9be3c833a56cd49b6e49d46b2ed2d48f468fcc0c",
+            "first_sdk_value": [
+              -0.004528122954070568,
+              -0.01940874755382538,
+              -0.02918018400669098,
+              -0.0008177010458894074,
+              0.0005595413385890424,
+              3.080286114709452e-05
+            ],
+            "max_force_change_sdk": 0.03259938955307007
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.0995602251496166,
+            "last_relative_s": 0.9220366410445422,
+            "selected_payload_sha256": "d156aaa0457b8ed3eedd4d843b68e9ec9aeea48a1374b8627e83e74a01c1c029",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.027984619140625
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.049397939117625356,
+            "stored_payload_sha256": "85f7c4685cf717508955365fe0d81af302050578b38c61c769f5d4b8267ebda8",
+            "decoded_bgr_sha256": "488ed4397b54197825daf65eb660184759aa3e270178795c84c4aeaaa1936240",
+            "preview_jpeg_sha256": "deae0f2dbdf262e1eb01c284f9b9296fb5668f6870e8ee3d9fd95eacb3f91536"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5152564269956201,
+            "stored_payload_sha256": "429e75341e06e39b45d6d89d09542a7b7c5cea5ecf6dd373ae80b84aa677edcf",
+            "decoded_bgr_sha256": "6d4b53d0d393df1fe5b57e739b8ede99fa2e88d585c318b942c1ecfbc12ebdc0",
+            "preview_jpeg_sha256": "6a1d04a1747f4ff170355c60a63aae455aeaf6743f774a743745bf7ecfd90f22"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.050995904020965,
+            "stored_payload_sha256": "be3ea7453586e845fc285487323f217b4b31455d255c4280ee19678327d7dcda",
+            "decoded_bgr_sha256": "9c9a407997d681fc64404816f60a6c59fc9ddbc898453b2dfbfbbf22ab002100",
+            "preview_jpeg_sha256": "2b0b4f998a473c9d8fdbb3427bb32aaccc76b57b2b246e8503effbf04509aa52"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.258002+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396028_003",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003",
+      "duration_s": 21.31200664700009,
+      "arm_ft_samples": 2665,
+      "first_arm_ft_n_nm": [
+        21.59501696977888,
+        23.49260964397193,
+        -33.74722032894615,
+        -7.81367449562381,
+        8.470540276716235,
+        0.7594182372823203
+      ],
+      "first_arm_ft_master_s": 5681.403629903216,
+      "timestamp_step_min_median_max_s": [
+        0.00046543311327695847,
+        0.00800000096205622,
+        0.015521483961492777
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/arm_ft.zarr",
+          "count": 2665,
+          "timestamps_payload_sha256": "180b3dec1f98827df083015e8d86beb8eaaaa8d80d1c4df470d66c82aa6a344a",
+          "data_payload_sha256": "66e82a7225aee39ff2b6fce1e88eb3f5da8ce1a2b63efb5ecf5b67df712d4c46"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/arm_q.zarr",
+          "count": 2663,
+          "timestamps_payload_sha256": "d6a9cce6ce4e9bcc4e361e8b603eae765e11517839715d8bf72cc39cec1cb802",
+          "data_payload_sha256": "597cb199ffab175d275e5601547c0d0247c401114eb3e5423ea7c5cb6a66a3b0"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/arm_qd.zarr",
+          "count": 2663,
+          "timestamps_payload_sha256": "d6a9cce6ce4e9bcc4e361e8b603eae765e11517839715d8bf72cc39cec1cb802",
+          "data_payload_sha256": "26269f0861389bc1adf298a464438f5ecfab9b4262728c4182df6969d4db7988"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/arm_tcp_pose.zarr",
+          "count": 2664,
+          "timestamps_payload_sha256": "c7856c74fadf0fa3d9f3b381172c9d448b29b33e66e2af454936afa6fd61b210",
+          "data_payload_sha256": "ba51e4cac2ddf20ab11e57fafaa0661bc3799628ebe4588950dc8d2087723ed1"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/gripper.zarr",
+          "count": 1984,
+          "timestamps_payload_sha256": "674ee16f4ab38e32310ebd65a07f91a02dbd1a7866d671cd3ccfbf20c13df62a",
+          "data_payload_sha256": "5ea5d904b61202e50f273310a14f31aeb225608107a3e4d0945b0068a8329eee"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_left_area.zarr",
+          "count": 120,
+          "timestamps_payload_sha256": "05895bfc9cee61f9afcf1f4f29262a631549d5926c0df184d6d12eff0df6eda0",
+          "data_payload_sha256": "81a96a64be6bfee07df590fa5ea437d7c911f4cea0042a78e90ee99171901e45"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_left_wrench.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "37952d867f4de964a883db0457638097d5dbaf9549fb334b37ca1053be891470",
+          "data_payload_sha256": "d05b1f0874ee73bf480954750ed89b4803fbcdaa456167ea3b1fb92ddd1fc9cd"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_left_fields_ds.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "37952d867f4de964a883db0457638097d5dbaf9549fb334b37ca1053be891470",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_right_area.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "9ec6e0d5aa667d16a4e0665cd547c404727a5f062f5fd922ca8117b4b18930e0",
+          "data_payload_sha256": "52cd2e22d0b6cdc57e779e63889baa18cf0c4427ffc76c1dad06ba16c90576bc"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_right_wrench.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "9ec6e0d5aa667d16a4e0665cd547c404727a5f062f5fd922ca8117b4b18930e0",
+          "data_payload_sha256": "d412379cd4220b8690d8f4269327242e71dbd9d4a4d8dc414e1a16702f96900f"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/tactile_right_fields_ds.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "9ec6e0d5aa667d16a4e0665cd547c404727a5f062f5fd922ca8117b4b18930e0",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003/camera_scene_color.zarr",
+          "count": 320,
+          "timestamps_payload_sha256": "d9d430cd93417bcb8d89aaef282668776e88e44c60a121e23504e6f2ce7a1a58",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 131,
+          "t_master_s": 5682.454459368251,
+          "relative_s": 1.0508294650353491,
+          "force_deviation_n": 60.10228558356739,
+          "torque_deviation_nm": 15.303579236076754,
+          "baseline_n_nm": [
+            15.752028564510933,
+            14.649545999086932,
+            -24.45391617842171,
+            -5.484217218163389,
+            6.1042310267839595,
+            0.10552397348879208
+          ],
+          "actual_wrist_n_nm": [
+            -5.378460481233909,
+            -23.88241174661101,
+            16.547003291025533,
+            4.750749687279489,
+            -4.586024034946057,
+            -3.78850178329869
+          ],
+          "over_since_relative_s": 1.0508294650353491
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2645,
+          "t_master_s": 5702.563637079205,
+          "relative_s": 21.16000717598945,
+          "force_deviation_n": 77.62278817459188,
+          "torque_deviation_nm": 20.283816564810525,
+          "baseline_n_nm": [
+            3.3011637815740213,
+            5.914104576348385,
+            -7.467089908010831,
+            -1.030697333036975,
+            1.7295729877429102,
+            0.9119645986416449
+          ],
+          "actual_wrist_n_nm": [
+            -28.25590801312803,
+            -44.69343214347658,
+            42.21515733276069,
+            8.076331956426314,
+            -14.014786097242762,
+            -8.066364252473617
+          ],
+          "over_since_relative_s": 21.088001644006
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2645,
+          "t_master_s": 5702.563637079205,
+          "relative_s": 21.16000717598945,
+          "force_deviation_n": 77.62278817459188,
+          "torque_deviation_nm": 20.283816564810525,
+          "baseline_n_nm": [
+            3.3011637815740213,
+            5.914104576348385,
+            -7.467089908010831,
+            -1.030697333036975,
+            1.7295729877429102,
+            0.9119645986416449
+          ],
+          "actual_wrist_n_nm": [
+            -28.25590801312803,
+            -44.69343214347658,
+            42.21515733276069,
+            8.076331956426314,
+            -14.014786097242762,
+            -8.066364252473617
+          ],
+          "over_since_relative_s": 21.088001644006
+        },
+        "maximum_baseline_force_shift_n": 58.707103908979555,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 49.70784376035847,
+          "maximum_torque_deviation_nm": 13.046176885245444,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 122,
+          "t_master_s": 5682.379628559109,
+          "relative_s": 0.9759986558929086,
+          "force_deviation_n": 61.760014920345036,
+          "torque_deviation_nm": 15.964751769764574,
+          "baseline_n_nm": [
+            21.59501696977888,
+            23.49260964397193,
+            -33.74722032894615,
+            -7.81367449562381,
+            8.470540276716235,
+            0.7594182372823203
+          ],
+          "actual_wrist_n_nm": [
+            2.026514000201842,
+            -10.712345648745233,
+            13.806897977611868,
+            2.8898933532061424,
+            -2.9156886867850242,
+            -2.5056582344744855
+          ],
+          "over_since_relative_s": 0.9759986558929086
+        },
+        "first_debounced_stop": {
+          "sample_index": 1744,
+          "t_master_s": 5695.355631170096,
+          "relative_s": 13.952001266879961,
+          "force_deviation_n": 72.14644916953362,
+          "torque_deviation_nm": 18.405570123951055,
+          "baseline_n_nm": [
+            21.59501696977888,
+            23.49260964397193,
+            -33.74722032894615,
+            -7.81367449562381,
+            8.470540276716235,
+            0.7594182372823203
+          ],
+          "actual_wrist_n_nm": [
+            -21.99557932551205,
+            -18.277531246828644,
+            5.752467927491251,
+            1.9422201786103979,
+            -5.833923056111475,
+            -5.4831661195939105
+          ],
+          "over_since_relative_s": 13.64937553787604
+        },
+        "largest_force_deviation": {
+          "sample_index": 2645,
+          "t_master_s": 5702.563637079205,
+          "relative_s": 21.16000717598945,
+          "force_deviation_n": 113.599004556866,
+          "torque_deviation_nm": 28.91326069031532,
+          "baseline_n_nm": [
+            21.59501696977888,
+            23.49260964397193,
+            -33.74722032894615,
+            -7.81367449562381,
+            8.470540276716235,
+            0.7594182372823203
+          ],
+          "actual_wrist_n_nm": [
+            -28.25590801312803,
+            -44.69343214347658,
+            42.21515733276069,
+            8.076331956426314,
+            -14.014786097242762,
+            -8.066364252473617
+          ],
+          "over_since_relative_s": 20.97600142401643
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2645,
+          "t_master_s": 5702.563637079205,
+          "relative_s": 21.16000717598945,
+          "force_deviation_n": 113.599004556866,
+          "torque_deviation_nm": 28.91326069031532,
+          "baseline_n_nm": [
+            21.59501696977888,
+            23.49260964397193,
+            -33.74722032894615,
+            -7.81367449562381,
+            8.470540276716235,
+            0.7594182372823203
+          ],
+          "actual_wrist_n_nm": [
+            -28.25590801312803,
+            -44.69343214347658,
+            42.21515733276069,
+            8.076331956426314,
+            -14.014786097242762,
+            -8.066364252473617
+          ],
+          "over_since_relative_s": 20.97600142401643
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 61.760014920345036,
+          "maximum_torque_deviation_nm": 15.964751769764574,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920049069914967,
+          "first_value": [
+            0.24646683037281036,
+            -1.541903320943014,
+            1.1035356521606445,
+            0.7348610162734985,
+            1.1002368927001953,
+            -3.0855892340289515
+          ],
+          "last_value": [
+            0.2355368435382843,
+            -1.5409567991839808,
+            1.1026601791381836,
+            0.7342854738235474,
+            1.1238888502120972,
+            -3.1101556460009974
+          ],
+          "maximum_absolute_component_change": 0.0245664119720459
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920049069914967,
+          "first_value": [
+            -0.00015339808305725455,
+            0.0027228158432990313,
+            -0.0012463594321161509,
+            -0.00021571606339421123,
+            0.0,
+            -0.011792478151619434
+          ],
+          "last_value": [
+            -0.0014381069922819734,
+            0.0003067961661145091,
+            0.010953581891953945,
+            -0.001701759989373386,
+            0.12988503277301788,
+            -0.0020133499056100845
+          ],
+          "maximum_absolute_component_change": 0.14218084514141083,
+          "maximum_absolute_joint_speed_rad_s": 0.14218084514141083
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920049069914967,
+          "first_value": [
+            -0.331271794061223,
+            -0.3206862559838003,
+            0.33590352669063406,
+            -1.0971474202467968,
+            -1.9389271057965896,
+            1.6164470773148114
+          ],
+          "last_value": [
+            -0.33890246042238303,
+            -0.3123113043494215,
+            0.3351964768868748,
+            -1.0912591477047255,
+            -1.9193451866033067,
+            1.5788656682511903
+          ],
+          "maximum_absolute_component_change": 0.03758140906362106,
+          "maximum_translation_from_first_m": 0.011351951524672733,
+          "z_min_max_m": [
+            0.3351964768868748,
+            0.33626065331488
+          ]
+        },
+        "gripper": {
+          "samples": 95,
+          "first_relative_s": 0.00040052388794720173,
+          "last_relative_s": 0.9959166469052434,
+          "first_value": [
+            0.3450980484485626,
+            3.0
+          ],
+          "last_value": [
+            0.33725491166114807,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.33725491166114807,
+            0.3450980484485626
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.043625524966046214,
+            "last_relative_s": 0.8813732929993421,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.043625524966046214,
+            "last_relative_s": 0.8813732929993421,
+            "selected_payload_sha256": "abdcfdae2ffe6f0826ea9f9a7aaf6d596baf361fb252d3f069630e6bbd8d0352",
+            "first_sdk_value": [
+              0.5965725183486938,
+              0.11401458829641342,
+              -1.584969401359558,
+              -0.025521107017993927,
+              0.03473130241036415,
+              -0.0023411603178828955
+            ],
+            "max_force_change_sdk": 0.7690600752830505
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.043625524966046214,
+            "last_relative_s": 0.8813732929993421,
+            "selected_payload_sha256": "ca99847c3fc4cd16941637ea3c1c087bfd98b9442aa776a2da61a6423ffec964",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.193603515625
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.11982703697867692,
+            "last_relative_s": 0.9686548530589789,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.11982703697867692,
+            "last_relative_s": 0.9686548530589789,
+            "selected_payload_sha256": "bcf0e12a61c4026a3507ce8e425c2954af30d9df006d692aa95c163823ddd4e7",
+            "first_sdk_value": [
+              0.006118159741163254,
+              0.01694580726325512,
+              -0.025285419076681137,
+              -0.00031336076790466905,
+              0.0007567998836748302,
+              0.00017339736223220825
+            ],
+            "max_force_change_sdk": 0.030357953161001205
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.11982703697867692,
+            "last_relative_s": 0.9686548530589789,
+            "selected_payload_sha256": "f42ea7a9384fcd970362b05131ea656b2bae428b4be192f6e040de9fabc53787",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.0227813720703125
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.026749595068395138,
+            "stored_payload_sha256": "dd3b7891aa10ecd6f6ab42efe198f6e1f866137a2528778f0e0a899023591008",
+            "decoded_bgr_sha256": "dac765e7a44a9b43937ffbed43814f1f20a32e2a54475f8d0b3cbb5496b54c12",
+            "preview_jpeg_sha256": "4712328291cfe8688d790607e095720ea821456708d7804d362a3b5ecf8089a5"
+          },
+          {
+            "index": 8,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5632947168778628,
+            "stored_payload_sha256": "e361b33ca4928873443ca57852100885db9fecdf640c5ffd4910b11f961f2a06",
+            "decoded_bgr_sha256": "1f6346dfd3829b76cc8fdb2a5bcb2e23c0e351512babf688142157c5b96f9b8d",
+            "preview_jpeg_sha256": "bdec181b8a876ea66f67e61d0efa6c50449e63515a8b429f5e68b95012f536db"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0300151018891484,
+            "stored_payload_sha256": "d58964842c00a762a385de2d4f09861a8d504c3c832b528e0bc9b32289f5169c",
+            "decoded_bgr_sha256": "50f32ee2e2364eb623f1b1f45032908fb07eee6ada18d790e6ffdd5d2e804348",
+            "preview_jpeg_sha256": "86cda7e81fe3d7955130587e7388a7f34b37663adc2702b4e916097feec12655"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.258317+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396060_004",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004",
+      "duration_s": 22.15450221300125,
+      "arm_ft_samples": 2770,
+      "first_arm_ft_n_nm": [
+        6.2553018788381145,
+        -10.769218277040645,
+        0.5807904582908218,
+        -0.15049646765805402,
+        -0.0715928426920059,
+        -2.554842937553769
+      ],
+      "first_arm_ft_master_s": 5713.619656782132,
+      "timestamp_step_min_median_max_s": [
+        6.669014692306519e-05,
+        0.008000302826985717,
+        0.017741407034918666
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/arm_ft.zarr",
+          "count": 2770,
+          "timestamps_payload_sha256": "b0c845cb5e0790ce63e96886982d098db4b57abc8373f8300fbd1e3956bb4100",
+          "data_payload_sha256": "b478878c4d5a1bdaea9fddfeba48ae1842af601991cae86ea9a5dfdd92aafc04"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/arm_q.zarr",
+          "count": 2767,
+          "timestamps_payload_sha256": "d0977852296349654155949e1d501e638049d927780bdf9a302c8a0ba0d0efcb",
+          "data_payload_sha256": "04a09aa08ac4916c2eb8d8fb14d3da1550311a2ec7fd09362d2564b8b78cfe97"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/arm_qd.zarr",
+          "count": 2768,
+          "timestamps_payload_sha256": "7874ad27ec5a58a86e38d2f5a69c9f1a9b769c638f2b347c18f3b7e492b4c4e7",
+          "data_payload_sha256": "a9f80b8b3aab2ec8f0333ee02930333fbb1e7df359cfa1772137506a6b094a53"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/arm_tcp_pose.zarr",
+          "count": 2769,
+          "timestamps_payload_sha256": "08ba11aab17ab9d996425ada7dba94096d8119b52092cf53b87e71567464a109",
+          "data_payload_sha256": "e1688e8a79f939bd8e15914ce5f55f0a2901e515b17872635891502cdc02750d"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/gripper.zarr",
+          "count": 2086,
+          "timestamps_payload_sha256": "c275663dc1fd0de117f33f91ab77c804d40e5c938f2f33658f3791964e1b35b5",
+          "data_payload_sha256": "3a565ef6527b796ce030dbc2c39005e24a881ce12d41a6cd7ebc4d6fc96f1996"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_left_area.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "7b717979892cfec7331adbfca37d97787834cdcb980512a34823ba7c700c7bcd",
+          "data_payload_sha256": "2dac688764f4b536fedddda806cdee8f0d227fe08905b0ec66b2bc734c593cf8"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_left_wrench.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "7b717979892cfec7331adbfca37d97787834cdcb980512a34823ba7c700c7bcd",
+          "data_payload_sha256": "a9fa7201ba5c3f0c2cad77445a9bcd2f28f7f0e9656e1005e8b54b9d67227f1e"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_left_fields_ds.zarr",
+          "count": 122,
+          "timestamps_payload_sha256": "d3d64f3186c8b7a3d27fb00919281de2cdeb39f2d470fb1af42a09c72634a69c",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_right_area.zarr",
+          "count": 121,
+          "timestamps_payload_sha256": "b04925288cc0ae0c5e906b067261628a2dc1b9c6fd29a8f6d60da9d7270f34d5",
+          "data_payload_sha256": "1e2807442ee1945b40d1a5b5d10c8b098b282ad94251c4b99e15fd08e1eb9b4d"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_right_wrench.zarr",
+          "count": 121,
+          "timestamps_payload_sha256": "b04925288cc0ae0c5e906b067261628a2dc1b9c6fd29a8f6d60da9d7270f34d5",
+          "data_payload_sha256": "5de03719ac25c9b2fded7e095c10e017c6149f24c60821c79bd019cff5c72789"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/tactile_right_fields_ds.zarr",
+          "count": 121,
+          "timestamps_payload_sha256": "b04925288cc0ae0c5e906b067261628a2dc1b9c6fd29a8f6d60da9d7270f34d5",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004/camera_scene_color.zarr",
+          "count": 332,
+          "timestamps_payload_sha256": "7fac4ffef58d94e660d126f17ea06d07e805d3fec0fccb1d30d344c148d7a260",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": null,
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2334,
+          "t_master_s": 5732.294169171248,
+          "relative_s": 18.67451238911599,
+          "force_deviation_n": 50.633967189252175,
+          "torque_deviation_nm": 13.373622452122916,
+          "baseline_n_nm": [
+            -0.3079104190617964,
+            0.6847895948325072,
+            -2.690135399994684,
+            -0.00869755229425756,
+            0.09027962066657468,
+            0.3651270188328837
+          ],
+          "actual_wrist_n_nm": [
+            32.256536091272096,
+            26.182565120665302,
+            -31.900046389795914,
+            -1.3388179267184739,
+            11.566838377272884,
+            7.101086964351472
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2334,
+          "t_master_s": 5732.294169171248,
+          "relative_s": 18.67451238911599,
+          "force_deviation_n": 50.633967189252175,
+          "torque_deviation_nm": 13.373622452122916,
+          "baseline_n_nm": [
+            -0.3079104190617964,
+            0.6847895948325072,
+            -2.690135399994684,
+            -0.00869755229425756,
+            0.09027962066657468,
+            0.3651270188328837
+          ],
+          "actual_wrist_n_nm": [
+            32.256536091272096,
+            26.182565120665302,
+            -31.900046389795914,
+            -1.3388179267184739,
+            11.566838377272884,
+            7.101086964351472
+          ],
+          "over_since_relative_s": null
+        },
+        "maximum_baseline_force_shift_n": 19.41926006251866,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 32.02392074420933,
+          "maximum_torque_deviation_nm": 6.584572799013492,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 2334,
+          "t_master_s": 5732.294169171248,
+          "relative_s": 18.67451238911599,
+          "force_deviation_n": 55.6462329290389,
+          "torque_deviation_nm": 15.169119006139567,
+          "baseline_n_nm": [
+            6.2553018788381145,
+            -10.769218277040645,
+            0.5807904582908218,
+            -0.15049646765805402,
+            -0.0715928426920059,
+            -2.554842937553769
+          ],
+          "actual_wrist_n_nm": [
+            32.256536091272096,
+            26.182565120665302,
+            -31.900046389795914,
+            -1.3388179267184739,
+            11.566838377272884,
+            7.101086964351472
+          ],
+          "over_since_relative_s": 18.67451238911599
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1613,
+          "t_master_s": 5726.5236321513075,
+          "relative_s": 12.903975369175896,
+          "force_deviation_n": 56.4741190206587,
+          "torque_deviation_nm": 13.744196526509635,
+          "baseline_n_nm": [
+            6.2553018788381145,
+            -10.769218277040645,
+            0.5807904582908218,
+            -0.15049646765805402,
+            -0.0715928426920059,
+            -2.554842937553769
+          ],
+          "actual_wrist_n_nm": [
+            -48.859821757702946,
+            -20.137589254455822,
+            8.573467789313431,
+            1.8176075187592364,
+            -12.457786828443915,
+            -8.177271541394912
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2334,
+          "t_master_s": 5732.294169171248,
+          "relative_s": 18.67451238911599,
+          "force_deviation_n": 55.6462329290389,
+          "torque_deviation_nm": 15.169119006139567,
+          "baseline_n_nm": [
+            6.2553018788381145,
+            -10.769218277040645,
+            0.5807904582908218,
+            -0.15049646765805402,
+            -0.0715928426920059,
+            -2.554842937553769
+          ],
+          "actual_wrist_n_nm": [
+            32.256536091272096,
+            26.182565120665302,
+            -31.900046389795914,
+            -1.3388179267184739,
+            11.566838377272884,
+            7.101086964351472
+          ],
+          "over_since_relative_s": 18.67451238911599
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 35.28913174958069,
+          "maximum_torque_deviation_nm": 6.6191668996038135,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 126,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9999749599955976,
+          "first_value": [
+            0.20768961310386658,
+            -1.5362733046161097,
+            1.0329737663269043,
+            0.7646476030349731,
+            1.094473958015442,
+            -3.1706131140338343
+          ],
+          "last_value": [
+            0.2062017023563385,
+            -1.5333388487445276,
+            1.0491771697998047,
+            0.7645872831344604,
+            1.158381700515747,
+            -3.1724842230426233
+          ],
+          "maximum_absolute_component_change": 0.06390774250030518
+        },
+        "arm_qd": {
+          "samples": 126,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9999749599955976,
+          "first_value": [
+            -0.0008245147182606161,
+            0.003585680155083537,
+            0.00028762139845639467,
+            0.00043143212678842247,
+            0.0017736653098836541,
+            -0.0005033374764025211
+          ],
+          "last_value": [
+            0.044082771986722946,
+            0.003930825740098953,
+            0.16408801078796387,
+            0.001294296351261437,
+            0.25854766368865967,
+            -0.006591323763132095
+          ],
+          "maximum_absolute_component_change": 0.352935423492454,
+          "maximum_absolute_joint_speed_rad_s": 0.35470908880233765
+        },
+        "arm_tcp_pose": {
+          "samples": 126,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9999749599955976,
+          "first_value": [
+            -0.34277963668580624,
+            -0.308841994404968,
+            0.3554547508270639,
+            -0.9987376773577588,
+            -1.903617597273998,
+            1.5706860066580144
+          ],
+          "last_value": [
+            -0.35296735055199047,
+            -0.29487785479182177,
+            0.34602786540476127,
+            -1.0522231898166676,
+            -1.876475930921497,
+            1.5081714618476703
+          ],
+          "maximum_absolute_component_change": 0.06251454481034413,
+          "maximum_translation_from_first_m": 0.01968890240008072,
+          "z_min_max_m": [
+            0.34602786540476127,
+            0.35545729214558164
+          ]
+        },
+        "gripper": {
+          "samples": 93,
+          "first_relative_s": 0.005452892044559121,
+          "last_relative_s": 0.9959899811074138,
+          "first_value": [
+            0.3137255012989044,
+            3.0
+          ],
+          "last_value": [
+            0.21176470816135406,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.21176470816135406,
+            0.3137255012989044
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 7,
+            "first_relative_s": 0.022187610156834126,
+            "last_relative_s": 0.9559445511549711,
+            "selected_payload_sha256": "b09e3d5db6cd2415e9956bf5c66ad4c6026df536e46fdbffc6a821d7b470fc9a",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 7,
+            "first_relative_s": 0.022187610156834126,
+            "last_relative_s": 0.9559445511549711,
+            "selected_payload_sha256": "5df7ce077f6e7e60498304fe5fd733868ddc96229e8556046cd94873bd2ed81e",
+            "first_sdk_value": [
+              0.45505455136299133,
+              0.19095629453659058,
+              -1.8479714393615723,
+              -0.03034844994544983,
+              0.043066538870334625,
+              -0.0012756262440234423
+            ],
+            "max_force_change_sdk": 1.0321123600006104
+          },
+          "fields_ds": {
+            "samples": 7,
+            "first_relative_s": 0.022187610156834126,
+            "last_relative_s": 0.9559445511549711,
+            "selected_payload_sha256": "68243f97734c165ae6f3c77fc88e7d0b77c1e39913c74a630cd35cb647116057",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.137939453125
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.060578427044674754,
+            "last_relative_s": 0.8431890211068094,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.060578427044674754,
+            "last_relative_s": 0.8431890211068094,
+            "selected_payload_sha256": "2f8d02774355338095410c87e201865540b12889c98c0601dcd08e919304de52",
+            "first_sdk_value": [
+              -0.009391942992806435,
+              0.00803357269614935,
+              -0.027499571442604065,
+              -0.001378604443743825,
+              0.00041527769644744694,
+              -0.0003296328941360116
+            ],
+            "max_force_change_sdk": 0.027331452816724777
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.060578427044674754,
+            "last_relative_s": 0.8431890211068094,
+            "selected_payload_sha256": "2a2bc47d32445a796353eb0093aeed637d369a82c5f8d42f36e513e28397014e",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.0288543701171875
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.03726558503694832,
+            "stored_payload_sha256": "02b092bc74ef91fc34b083e657e619e6bd18287861339950aecfb334bf57e9cb",
+            "decoded_bgr_sha256": "7c252031b591f754751851c24550d76090c518b7c16a7cf06363fc79ccfc4efb",
+            "preview_jpeg_sha256": "ad85674b3081aa800270cf43d0d1d8b021a233c13f65e8a8c30a45278419d243"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5034569120034575,
+            "stored_payload_sha256": "ae08af61ae65db1e9782a9f28dc753c5f6ef1b1cccd841845e8b5d8da31ccd52",
+            "decoded_bgr_sha256": "0d383686e27163385edccdbee0062aaff7ce61c3a7aeb11fea93cbf2821651dd",
+            "preview_jpeg_sha256": "caf06e7e42aac6c071a4727a773609c5d89f849efea215c03eb6cf8d7bdc8a9d"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0470270630903542,
+            "stored_payload_sha256": "db73da0f88912ced1938806609880578635cd6aa0420aff484efc29253c8c22c",
+            "decoded_bgr_sha256": "2e3aefee737c48640ab74e1027713f9faadc924dd1a83444156098d92ea7b6e5",
+            "preview_jpeg_sha256": "5bbe702c9d54ffa9428e42addfc38976a6a6609e840d5d55ad7d88f74ae9876e"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.258662+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396094_005",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005",
+      "duration_s": 21.5714591818396,
+      "arm_ft_samples": 2697,
+      "first_arm_ft_n_nm": [
+        7.83084246483561,
+        11.491502812676615,
+        -17.472843007285228,
+        -3.1181330648531556,
+        3.4663530037198544,
+        -0.16546594189947145
+      ],
+      "first_arm_ft_master_s": 5747.702267833287,
+      "timestamp_step_min_median_max_s": [
+        6.392900831997395e-05,
+        0.008000050438567996,
+        0.01897809701040387
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/arm_ft.zarr",
+          "count": 2697,
+          "timestamps_payload_sha256": "723ff6e23c6b79612df1c7d06a924de25222c3d030649c2d2570e5a20af72a7a",
+          "data_payload_sha256": "596b33eb9b6a7cbb4254825687d25a465513d15d9c007cccfe688ffeb45880e3"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/arm_q.zarr",
+          "count": 2693,
+          "timestamps_payload_sha256": "fa2ba7a7ff1f016e7efcf413475da886664b048617498b89107031901f1c0a15",
+          "data_payload_sha256": "80dc83e30d79c53c8253a092714ade49491b3371f1f9a308e5f4b803f40fe66f"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/arm_qd.zarr",
+          "count": 2693,
+          "timestamps_payload_sha256": "fa2ba7a7ff1f016e7efcf413475da886664b048617498b89107031901f1c0a15",
+          "data_payload_sha256": "1edaea899d5e5a9589e1f8683bf7820950edee3182d610abbf0dccc33758cbcc"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/arm_tcp_pose.zarr",
+          "count": 2694,
+          "timestamps_payload_sha256": "2928edd07a2ebbb0f7449480259d6a69df0dff3507cdec246292da69e58cd620",
+          "data_payload_sha256": "a49470476ec08a712dca0f9016917f18fe383ead184b5b2a75ec16567a7352bb"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/gripper.zarr",
+          "count": 2025,
+          "timestamps_payload_sha256": "178233e8babf1c6ea5bdb0779d1ed733c6f40792d11da9e1c92adbbabe9e5b0b",
+          "data_payload_sha256": "0a398889584f3c3b8b83adfe92da7e467701bd3df68f57afda3f3141fc17e3ea"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_left_area.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "37706d44c1feb9c174e50da8ad654dc92744b44d32525a5af920ee0127e31bd8",
+          "data_payload_sha256": "77a0c89f6e993c469ca6f07f560c399090f956bba14cf18e69521820937601c6"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_left_wrench.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "37706d44c1feb9c174e50da8ad654dc92744b44d32525a5af920ee0127e31bd8",
+          "data_payload_sha256": "dc4dffd4eb79275b23efaffc6b551944cc3d78d734de7cd6fd934d9907f66665"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_left_fields_ds.zarr",
+          "count": 123,
+          "timestamps_payload_sha256": "37706d44c1feb9c174e50da8ad654dc92744b44d32525a5af920ee0127e31bd8",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_right_area.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "6d083b0ece88517d6ab6608576ff35b85f23b9676e8baaf628534b80fc44c33e",
+          "data_payload_sha256": "deb38bb2f0554a4038bd0eec7221910152b075e7bf934e8c9a69e8ea10c33ebe"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_right_wrench.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "6d083b0ece88517d6ab6608576ff35b85f23b9676e8baaf628534b80fc44c33e",
+          "data_payload_sha256": "befe1662e8bcd24f3cf27da819765226c59ba63aff9ceb7f1c3299c1b5b2cf5d"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/tactile_right_fields_ds.zarr",
+          "count": 118,
+          "timestamps_payload_sha256": "c0ba16c639b8f17362cbf740f20df39ae30f483524039f76d5e1d0518aa314ef",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005/camera_scene_color.zarr",
+          "count": 323,
+          "timestamps_payload_sha256": "f3baed2ef7dca1bf4b2970365a494c4336a9d6e02eb27514cec2a2e9c849ef94",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": null,
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 183,
+          "t_master_s": 5749.1668646330945,
+          "relative_s": 1.464596799807623,
+          "force_deviation_n": 57.14990032539884,
+          "torque_deviation_nm": 13.545415333517461,
+          "baseline_n_nm": [
+            3.120391907209693,
+            2.1177302728348937,
+            -10.324702596356198,
+            -1.2943529568425365,
+            1.606652673946868,
+            -0.7385071940405314
+          ],
+          "actual_wrist_n_nm": [
+            -24.7400149207262,
+            -36.686810813207586,
+            21.045927452888378,
+            6.860543296245897,
+            -8.426203208630858,
+            -4.778030247357557
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1516,
+          "t_master_s": 5759.833721382311,
+          "relative_s": 12.131453549023718,
+          "force_deviation_n": 50.735491372277735,
+          "torque_deviation_nm": 14.42459161539974,
+          "baseline_n_nm": [
+            -4.340514104563151,
+            -2.9268122530557013,
+            -3.0250495443490064,
+            -0.1654886028241341,
+            -0.7319092455283794,
+            -1.0872404527166695
+          ],
+          "actual_wrist_n_nm": [
+            -40.920506521114135,
+            -26.252798594682083,
+            23.27880189953275,
+            1.1783491342444932,
+            -12.594842362085735,
+            -9.182532990950078
+          ],
+          "over_since_relative_s": null
+        },
+        "maximum_baseline_force_shift_n": 36.122364169191236,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 48.36973528452272,
+          "maximum_torque_deviation_nm": 11.217577433479514,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 167,
+          "t_master_s": 5749.038173365174,
+          "relative_s": 1.335905531886965,
+          "force_deviation_n": 62.379801725641165,
+          "torque_deviation_nm": 14.58251414587757,
+          "baseline_n_nm": [
+            7.83084246483561,
+            11.491502812676615,
+            -17.472843007285228,
+            -3.1181330648531556,
+            3.4663530037198544,
+            -0.16546594189947145
+          ],
+          "actual_wrist_n_nm": [
+            -16.914759392560228,
+            -29.807292812872966,
+            22.19205749586288,
+            5.8346137966766785,
+            -7.483022124840206,
+            -3.7164132439806363
+          ],
+          "over_since_relative_s": 1.335905531886965
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1516,
+          "t_master_s": 5759.833721382311,
+          "relative_s": 12.131453549023718,
+          "force_deviation_n": 73.90549965524072,
+          "torque_deviation_nm": 18.913731890687572,
+          "baseline_n_nm": [
+            7.83084246483561,
+            11.491502812676615,
+            -17.472843007285228,
+            -3.1181330648531556,
+            3.4663530037198544,
+            -0.16546594189947145
+          ],
+          "actual_wrist_n_nm": [
+            -40.920506521114135,
+            -26.252798594682083,
+            23.27880189953275,
+            1.1783491342444932,
+            -12.594842362085735,
+            -9.182532990950078
+          ],
+          "over_since_relative_s": 12.123455683002248
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1516,
+          "t_master_s": 5759.833721382311,
+          "relative_s": 12.131453549023718,
+          "force_deviation_n": 73.90549965524072,
+          "torque_deviation_nm": 18.913731890687572,
+          "baseline_n_nm": [
+            7.83084246483561,
+            11.491502812676615,
+            -17.472843007285228,
+            -3.1181330648531556,
+            3.4663530037198544,
+            -0.16546594189947145
+          ],
+          "actual_wrist_n_nm": [
+            -40.920506521114135,
+            -26.252798594682083,
+            23.27880189953275,
+            1.1783491342444932,
+            -12.594842362085735,
+            -9.182532990950078
+          ],
+          "over_since_relative_s": 12.123455683002248
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 51.15753733957379,
+          "maximum_torque_deviation_nm": 11.75760166502289,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919060848187655,
+          "first_value": [
+            0.234540656208992,
+            -1.5268338362323206,
+            1.1830739974975586,
+            0.6896997690200806,
+            1.1060237884521484,
+            -3.101266686116354
+          ],
+          "last_value": [
+            0.19026868045330048,
+            -1.5271933714496058,
+            1.1830859184265137,
+            0.6892558336257935,
+            1.1942546367645264,
+            -3.168633762990133
+          ],
+          "maximum_absolute_component_change": 0.08823084831237793
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919060848187655,
+          "first_value": [
+            0.000690291344653815,
+            0.009913351386785507,
+            -0.0006950850947760046,
+            -0.003523362334817648,
+            0.027707528322935104,
+            -0.0195582564920187
+          ],
+          "last_value": [
+            0.0054456316865980625,
+            -0.002837864449247718,
+            -0.00014381069922819734,
+            -0.0025166873820126057,
+            0.176983043551445,
+            -0.012415657751262188
+          ],
+          "maximum_absolute_component_change": 0.38668300583958626,
+          "maximum_absolute_joint_speed_rad_s": 0.41439053416252136
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919060848187655,
+          "first_value": [
+            -0.3395905070405749,
+            -0.3163842552842901,
+            0.3072351250228556,
+            -1.1358515925772772,
+            -1.966217277880878,
+            1.5717210815667384
+          ],
+          "last_value": [
+            -0.3659530825601333,
+            -0.28195224204738223,
+            0.30432229247303194,
+            -1.1422753082482802,
+            -1.8890637143210314,
+            1.439718740011981
+          ],
+          "maximum_absolute_component_change": 0.13200234155475732,
+          "maximum_translation_from_first_m": 0.04346301320702846,
+          "z_min_max_m": [
+            0.30432229247303194,
+            0.30755439198021006
+          ]
+        },
+        "gripper": {
+          "samples": 95,
+          "first_relative_s": 0.0054872590117156506,
+          "last_relative_s": 0.9985150948632509,
+          "first_value": [
+            0.42352941632270813,
+            3.0
+          ],
+          "last_value": [
+            0.27843138575553894,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.27843138575553894,
+            0.42352941632270813
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.058388697914779186,
+            "last_relative_s": 0.8559193089604378,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.058388697914779186,
+            "last_relative_s": 0.8559193089604378,
+            "selected_payload_sha256": "0ab9c37d7658b2a240f6dec9c68b01362c96fcac268ae98e103e93c16879ffcc",
+            "first_sdk_value": [
+              0.14795124530792236,
+              0.03886470943689346,
+              -0.5394967794418335,
+              -0.010638407431542873,
+              0.011337487027049065,
+              -0.0014304413925856352
+            ],
+            "max_force_change_sdk": 0.9345024228096008
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.058388697914779186,
+            "last_relative_s": 0.8559193089604378,
+            "selected_payload_sha256": "744280abd9cd9623190100d72a9d8a580886237d54e8100279a67410abef9fbc",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.17041015625
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 5,
+            "first_relative_s": 0.09661925793625414,
+            "last_relative_s": 0.8350661899894476,
+            "selected_payload_sha256": "5267978a1da197a8d431e99dd87e40e0bf353ee7d4d2e523af36febe331e425c",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 5,
+            "first_relative_s": 0.09661925793625414,
+            "last_relative_s": 0.8350661899894476,
+            "selected_payload_sha256": "2d34746fd33e85a1b8a9219c073b1abb373522a0793ef854fadab534418d2c91",
+            "first_sdk_value": [
+              0.003067461773753166,
+              -0.007498523220419884,
+              -0.05288298428058624,
+              -0.0005285676452331245,
+              0.0009073589462786913,
+              7.85325828474015e-05
+            ],
+            "max_force_change_sdk": 0.05175544694066048
+          },
+          "fields_ds": {
+            "samples": 5,
+            "first_relative_s": 0.09661925793625414,
+            "last_relative_s": 0.8350661899894476,
+            "selected_payload_sha256": "909a004ff5412f7dce1c0a4659ee3c0bf9d25b06bf07d1ce3b5907dd37407d20",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.0394287109375
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.04737035487778485,
+            "stored_payload_sha256": "dfe7802cbbb565e57a8476fa8ff6056ae0f0936d5055ba0122453a6feb2a23c7",
+            "decoded_bgr_sha256": "d43521dacda976a1d16f25e0ea9d716e0ad3ec7ca5122d46c2007b637c442f4e",
+            "preview_jpeg_sha256": "72dd8f31b8232eb8bdebfcfee4a7749244d8a2fe8051d4f922f59e232910b10a"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5166698608081788,
+            "stored_payload_sha256": "c0b478c937fb5c3ecd81045c2f9380f39a224e693187caccff7a74fcc0d60042",
+            "decoded_bgr_sha256": "ed5bf8f39680c21cc95861467e3de9ac1e770a57c8b9fd0268c55d3eb8b9b099",
+            "preview_jpeg_sha256": "e3d326e1db94f39c64a54d7e23499711b4e23d4f23f6d341449aa33d23d49193"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0517668398097157,
+            "stored_payload_sha256": "c12f55f0336a52f137535132054deb8f8668ab52d20aa2c01d421413fc70928c",
+            "decoded_bgr_sha256": "2f40a8df2d46bfead849c71602d8de2d0b00ff9b2b146917c16339feaebf014a",
+            "preview_jpeg_sha256": "59e23baa72375f28dbc0be4367611e3545599246efb35954f7c5226dc0fa4045"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.259009+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396128_006",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006",
+      "duration_s": 19.12378105102107,
+      "arm_ft_samples": 2391,
+      "first_arm_ft_n_nm": [
+        3.6102082811202774,
+        -16.139854317369252,
+        3.531083540240857,
+        1.06825841644843,
+        -0.4876215853629211,
+        -4.315550185506177
+      ],
+      "first_arm_ft_master_s": 5781.534386103274,
+      "timestamp_step_min_median_max_s": [
+        6.862008012831211e-05,
+        0.00800064136274159,
+        0.018747786059975624
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/arm_ft.zarr",
+          "count": 2391,
+          "timestamps_payload_sha256": "53072330bb72818f81fc7cffc02f6c81e1087da9f79804b9185dc3364e738522",
+          "data_payload_sha256": "3cf62806510885423592d1d6fbd7da3067ff36cee8cdcac34904ec2ea7912a90"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/arm_q.zarr",
+          "count": 2387,
+          "timestamps_payload_sha256": "f3da1f794a7998515b85eeb5c8f18613680bc4a6fe58ebd40b0519a3d8b7e6b7",
+          "data_payload_sha256": "edf5056ce4aa2a69f37cee7a0361b30fd81f6966eb11f581fc79aa25e9716133"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/arm_qd.zarr",
+          "count": 2389,
+          "timestamps_payload_sha256": "7d54bfc3f5d5dbea2a65cdbcfe7749162a162eb4c13a9e9bb76ac0a43f29b8d1",
+          "data_payload_sha256": "2eedc9a960d8cebc20ecb51c433272a6a0cf6acf3ce458e7d66f01a582cf57ec"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/arm_tcp_pose.zarr",
+          "count": 2389,
+          "timestamps_payload_sha256": "7d54bfc3f5d5dbea2a65cdbcfe7749162a162eb4c13a9e9bb76ac0a43f29b8d1",
+          "data_payload_sha256": "b01ef6ac863c129474dc1cf4a11f28992f727633463988f998e1b983d1865969"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/gripper.zarr",
+          "count": 1780,
+          "timestamps_payload_sha256": "bde50ebbf41e30d96dc0250af7d5153a3a0c4391c90813cdf2e4cb4cd82d459a",
+          "data_payload_sha256": "575f205fcb96ef88fb6cbd2483cf8fb8ba2b4ee1692e5131383f3955acf7a51f"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_left_area.zarr",
+          "count": 104,
+          "timestamps_payload_sha256": "3fee1ceb1e457386717ae6eae4489808a8ba1f3128572dff8774416c3c8975c7",
+          "data_payload_sha256": "d3743c2b7b5c49dd7e4e4bc605e55dd5c4b4058df1b2f73d161782f1776d601c"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_left_wrench.zarr",
+          "count": 104,
+          "timestamps_payload_sha256": "3fee1ceb1e457386717ae6eae4489808a8ba1f3128572dff8774416c3c8975c7",
+          "data_payload_sha256": "4e3b99899e75bb0ed6a06740ad673e1e73a88c465472e2a7ee6a0569bcf65e7e"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_left_fields_ds.zarr",
+          "count": 104,
+          "timestamps_payload_sha256": "3fee1ceb1e457386717ae6eae4489808a8ba1f3128572dff8774416c3c8975c7",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_right_area.zarr",
+          "count": 108,
+          "timestamps_payload_sha256": "80c74eb13a67fca4b4dd6f3ed638807ca6332d4e29d3dd8b30c7e520fe992143",
+          "data_payload_sha256": "c5fcccdb4be50451733de8e5e6bffe1d3d79d7e3885741852f113a0942c9532b"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_right_wrench.zarr",
+          "count": 108,
+          "timestamps_payload_sha256": "80c74eb13a67fca4b4dd6f3ed638807ca6332d4e29d3dd8b30c7e520fe992143",
+          "data_payload_sha256": "5a771466b7002da4362a6d56629af265e51d93ef568c86db97aba9a9766ea782"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/tactile_right_fields_ds.zarr",
+          "count": 107,
+          "timestamps_payload_sha256": "9e6f598787fd3757f9455a9f1c8bd6b069fbe0e1acf85fa562804f119fac570e",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006/camera_scene_color.zarr",
+          "count": 287,
+          "timestamps_payload_sha256": "bc05a3bdf6bd7e08e323a550e54733f9db03f4daf29e8350f6a2da59f22faa76",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 54,
+          "t_master_s": 5781.966379653197,
+          "relative_s": 0.4319935499224812,
+          "force_deviation_n": 60.49978095512753,
+          "torque_deviation_nm": 13.704143989050975,
+          "baseline_n_nm": [
+            4.299249592296107,
+            -13.945595698291315,
+            1.1740604616479806,
+            0.5713667225192612,
+            0.04110646648789457,
+            -3.9680624392960944
+          ],
+          "actual_wrist_n_nm": [
+            26.708641654951798,
+            30.396578303677483,
+            -33.34860235250524,
+            -7.8887302914074855,
+            9.438273676196276,
+            1.316213236742326
+          ],
+          "over_since_relative_s": 0.4319935499224812
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 60,
+          "t_master_s": 5782.014383736299,
+          "relative_s": 0.47999763302505016,
+          "force_deviation_n": 62.347641478647766,
+          "torque_deviation_nm": 14.995777213287258,
+          "baseline_n_nm": [
+            4.6634790369057,
+            -13.263872859922229,
+            0.5875313258317826,
+            0.4268244012459266,
+            0.1970309263441686,
+            -3.8854125712647987
+          ],
+          "actual_wrist_n_nm": [
+            24.018152451273302,
+            34.020149746341595,
+            -35.14545373200384,
+            -8.969574430173148,
+            9.785406858905265,
+            2.7962092533624188
+          ],
+          "over_since_relative_s": 0.47999763302505016
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2025,
+          "t_master_s": 5797.738169497112,
+          "relative_s": 16.20378339383751,
+          "force_deviation_n": 57.901860757070565,
+          "torque_deviation_nm": 16.14814366772826,
+          "baseline_n_nm": [
+            -3.9732539317522075,
+            -2.871510146814582,
+            -1.7300418446420018,
+            0.252937567397653,
+            -0.6955350609032962,
+            -1.1229738644982905
+          ],
+          "actual_wrist_n_nm": [
+            29.08580324273058,
+            35.18750226621312,
+            -30.21224316424632,
+            -3.036455191242273,
+            11.62814349079631,
+            8.780024981678489
+          ],
+          "over_since_relative_s": 16.20378339383751
+        },
+        "maximum_baseline_force_shift_n": 30.340583281638587,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 62.347641478647766,
+          "maximum_torque_deviation_nm": 14.995777213287258,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 54,
+          "t_master_s": 5781.966379653197,
+          "relative_s": 0.4319935499224812,
+          "force_deviation_n": 63.71254520866493,
+          "torque_deviation_nm": 14.507508493889565,
+          "baseline_n_nm": [
+            3.6102082811202774,
+            -16.139854317369252,
+            3.531083540240857,
+            1.06825841644843,
+            -0.4876215853629211,
+            -4.315550185506177
+          ],
+          "actual_wrist_n_nm": [
+            26.708641654951798,
+            30.396578303677483,
+            -33.34860235250524,
+            -7.8887302914074855,
+            9.438273676196276,
+            1.316213236742326
+          ],
+          "over_since_relative_s": 0.4319935499224812
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 65,
+          "t_master_s": 5782.054378861096,
+          "relative_s": 0.5199927578214556,
+          "force_deviation_n": 67.12474422531375,
+          "torque_deviation_nm": 16.031366498802182,
+          "baseline_n_nm": [
+            3.6102082811202774,
+            -16.139854317369252,
+            3.531083540240857,
+            1.06825841644843,
+            -0.4876215853629211,
+            -4.315550185506177
+          ],
+          "actual_wrist_n_nm": [
+            22.635123040678064,
+            36.24654957264153,
+            -33.87812111821205,
+            -8.635287076071554,
+            9.620399767808482,
+            3.4737900315688863
+          ],
+          "over_since_relative_s": 0.4562015498522669
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2025,
+          "t_master_s": 5797.738169497112,
+          "relative_s": 16.20378339383751,
+          "force_deviation_n": 66.4989892373711,
+          "torque_deviation_nm": 18.30667982298332,
+          "baseline_n_nm": [
+            3.6102082811202774,
+            -16.139854317369252,
+            3.531083540240857,
+            1.06825841644843,
+            -0.4876215853629211,
+            -4.315550185506177
+          ],
+          "actual_wrist_n_nm": [
+            29.08580324273058,
+            35.18750226621312,
+            -30.21224316424632,
+            -3.036455191242273,
+            11.62814349079631,
+            8.780024981678489
+          ],
+          "over_since_relative_s": 16.20378339383751
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 67.12474422531375,
+          "maximum_torque_deviation_nm": 16.031366498802182,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920046899933368,
+          "first_value": [
+            0.21729984879493713,
+            -1.5454734007464808,
+            1.1461524963378906,
+            0.6903711557388306,
+            1.1115949153900146,
+            -3.1324790159808558
+          ],
+          "last_value": [
+            0.2203112542629242,
+            -1.5454133192645472,
+            1.1455650329589844,
+            0.69041907787323,
+            1.141873836517334,
+            -3.1629117170916956
+          ],
+          "maximum_absolute_component_change": 0.030432701110839844
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920046899933368,
+          "first_value": [
+            -0.0004985437844879925,
+            -0.0011696603614836931,
+            0.0019893813878297806,
+            0.005249090492725372,
+            -0.0009587380336597562,
+            -0.0023009711876511574
+          ],
+          "last_value": [
+            0.017659954726696014,
+            0.00036432043998502195,
+            -0.0010066749528050423,
+            0.00043143212678842247,
+            0.15440475940704346,
+            -0.04947088286280632
+          ],
+          "maximum_absolute_component_change": 0.24172182113397866,
+          "maximum_absolute_joint_speed_rad_s": 0.2407630831003189
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9920046899933368,
+          "first_value": [
+            -0.34553959891096603,
+            -0.3092751088664797,
+            0.32902270496445724,
+            -1.069263396597869,
+            -1.914371325018002,
+            1.5695785690078452
+          ],
+          "last_value": [
+            -0.34939000736940995,
+            -0.3040251118285989,
+            0.3282641320967399,
+            -1.0503176757200567,
+            -1.9040660095029989,
+            1.5301145405320082
+          ],
+          "maximum_absolute_component_change": 0.039464028475836965,
+          "maximum_translation_from_first_m": 0.0065546584190368145,
+          "z_min_max_m": [
+            0.3282641320967399,
+            0.32922793907978565
+          ]
+        },
+        "gripper": {
+          "samples": 89,
+          "first_relative_s": 0.00710167596116662,
+          "last_relative_s": 0.9868115510325879,
+          "first_value": [
+            0.4274509847164154,
+            3.0
+          ],
+          "last_value": [
+            0.364705890417099,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.364705890417099,
+            0.4274509847164154
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 5,
+            "first_relative_s": 0.09027819498442113,
+            "last_relative_s": 0.8670014860108495,
+            "selected_payload_sha256": "5267978a1da197a8d431e99dd87e40e0bf353ee7d4d2e523af36febe331e425c",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 5,
+            "first_relative_s": 0.09027819498442113,
+            "last_relative_s": 0.8670014860108495,
+            "selected_payload_sha256": "eb5ade693b03cdcffd93cdcb8e616694c2bb6ce75705faa9c3bb16d521974b96",
+            "first_sdk_value": [
+              0.45226866006851196,
+              -0.20545583963394165,
+              -0.3615841865539551,
+              0.0039721098728477955,
+              0.014857192523777485,
+              -0.002592282136902213
+            ],
+            "max_force_change_sdk": 1.1856964826583862
+          },
+          "fields_ds": {
+            "samples": 5,
+            "first_relative_s": 0.09027819498442113,
+            "last_relative_s": 0.8670014860108495,
+            "selected_payload_sha256": "4601afb548863b89b2f14ee193108acbd506505893e13778ef8bc4427760e598",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.1766357421875
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.03317401581443846,
+            "last_relative_s": 0.8300612659659237,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.03317401581443846,
+            "last_relative_s": 0.8300612659659237,
+            "selected_payload_sha256": "a4b4bbe3b6d4a1e21f8d6566e5c8d67476746bea3c55e8307d012d10d15061a0",
+            "first_sdk_value": [
+              -0.001021786592900753,
+              0.011186763644218445,
+              -0.04614732787013054,
+              -0.0011331040877848864,
+              0.0005521330167539418,
+              0.00012822069402318448
+            ],
+            "max_force_change_sdk": 0.030715057626366615
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.03317401581443846,
+            "last_relative_s": 0.8300612659659237,
+            "selected_payload_sha256": "4670ffd1eaead5aca46bb52a69c6e52506355c6d1f59f98f53eac357c63f4a00",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.026580810546875
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.041655023815110326,
+            "stored_payload_sha256": "61e8a82328c88741d18e7c7b79b0fd7070cb3ac8f5bdea91b3a8a7948479017e",
+            "decoded_bgr_sha256": "92300bd161269df290b98fce22f34fee8d620164187f659dab0bb5e0b5b1e2ff",
+            "preview_jpeg_sha256": "9ed80e4d3b77208331dc138d235bd4242062e17646446a772023321fc8915bc9"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5095475139096379,
+            "stored_payload_sha256": "52d28b3cc22fafd6af1f659ad057f2eb7ad440a9cbb077025df92ed6b49b1d19",
+            "decoded_bgr_sha256": "809df804946b42c8da7aee27cc7eb3eb95d5645cb2de5455766919de3f74124b",
+            "preview_jpeg_sha256": "c5cbb7867ab04da8f9c6f4c9dc444b640ba2d2538f5d14d8dffdeb2e846468fb"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0443720000330359,
+            "stored_payload_sha256": "6758f073c338b550e673f656fe4fb0e076a8446a403135186b1692512c9f04f3",
+            "decoded_bgr_sha256": "c3644b9ca1bdc86f4e0493f1fdcce1145d9ed76b77c46397ee090c3186e820e3",
+            "preview_jpeg_sha256": "16ca71d5260c5207de212ca426686abd59e80ef293bed1854dba1ab7211e1993"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.259336+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396273_010",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010",
+      "duration_s": 21.01476015103981,
+      "arm_ft_samples": 2627,
+      "first_arm_ft_n_nm": [
+        -2.1097366286896255,
+        -18.10817328457381,
+        13.528334591648038,
+        4.1344895392337895,
+        -3.3642810417039106,
+        -4.023871174036208
+      ],
+      "first_arm_ft_master_s": 5926.013616300188,
+      "timestamp_step_min_median_max_s": [
+        7.604295387864113e-05,
+        0.008000148925930262,
+        0.01769941416569054
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/arm_ft.zarr",
+          "count": 2627,
+          "timestamps_payload_sha256": "3980861aef55678e9fdc252114a426c700105b5d30b70cbdb7288daa5b40c3b4",
+          "data_payload_sha256": "e2da6435ed913a2cb075588112b770c91825104bb2ca5d9ea18668c9c68f5b83"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/arm_q.zarr",
+          "count": 2623,
+          "timestamps_payload_sha256": "9add106ae6c5064f45533b8a67fedd82da9d88adad3926e1c7a9f95b719978a1",
+          "data_payload_sha256": "aa8b282f88f6e18aaa035a03888fc56afb67aba6d2efa7b28eaa206f5253b5dd"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/arm_qd.zarr",
+          "count": 2623,
+          "timestamps_payload_sha256": "9add106ae6c5064f45533b8a67fedd82da9d88adad3926e1c7a9f95b719978a1",
+          "data_payload_sha256": "15dd759f5d8c29ab5d54a2626f85ae9606a25c8c4073124d24f6539572139162"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/arm_tcp_pose.zarr",
+          "count": 2625,
+          "timestamps_payload_sha256": "278424d07877c15dfc4351fb36052b30e7307f2e691a62c2d7a6d996b61378a0",
+          "data_payload_sha256": "619b2f5220ccd2cfdee9651f90e1ff8c1c08e3602169d431039f42716a0b632b"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/gripper.zarr",
+          "count": 1964,
+          "timestamps_payload_sha256": "648905d5c60eb807d6c235007dbce8e7f8d41887d2b4712b4bce131aec484cd7",
+          "data_payload_sha256": "d87e6ba463db7c5dc362d869ccdd57d42d372fbb1ae4040fa4a16709fe7b6064"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_left_area.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "c947f8464e80f67e44477ce43716e7b3d512ef60a92fe8e621c1625a379744be",
+          "data_payload_sha256": "8d8b713587581d646794a74d16fa41c463c357157a18766a82930be60406d327"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_left_wrench.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "c947f8464e80f67e44477ce43716e7b3d512ef60a92fe8e621c1625a379744be",
+          "data_payload_sha256": "295d6f5f634630d122fd4a7722fb44f47167db9e3a68e9cd1c85a2c5a3886b79"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_left_fields_ds.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "c947f8464e80f67e44477ce43716e7b3d512ef60a92fe8e621c1625a379744be",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_right_area.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "1883afc307c4ebbe4ba38bc7ebd5caceb07eded6a5c0b5729c09c7ab140231d3",
+          "data_payload_sha256": "6bfb7ffc33da3169bd78ca814efb31b780255f85f49a274804d8e1384806a7b9"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_right_wrench.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "1883afc307c4ebbe4ba38bc7ebd5caceb07eded6a5c0b5729c09c7ab140231d3",
+          "data_payload_sha256": "ea4228fd67c852609d12b2d82c49284ce4cf47908492745cb33bd4cabb250a79"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/tactile_right_fields_ds.zarr",
+          "count": 117,
+          "timestamps_payload_sha256": "1883afc307c4ebbe4ba38bc7ebd5caceb07eded6a5c0b5729c09c7ab140231d3",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010/camera_scene_color.zarr",
+          "count": 315,
+          "timestamps_payload_sha256": "ab44419ac44178f983d0878d7f5ac77e49e99eea39e8bdaf116dd768f073c190",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 45,
+          "t_master_s": 5926.374860518146,
+          "relative_s": 0.3612442179583013,
+          "force_deviation_n": 58.311971481265545,
+          "torque_deviation_nm": 15.844064131426862,
+          "baseline_n_nm": [
+            -2.364310386688541,
+            -16.347535860337146,
+            11.921549074442929,
+            3.6755495991013283,
+            -3.014686550449416,
+            -3.5733062194421974
+          ],
+          "actual_wrist_n_nm": [
+            13.643658297292465,
+            30.494087612483952,
+            -18.898789455090863,
+            -6.487108754822061,
+            6.344317545889296,
+            4.183225589743761
+          ],
+          "over_since_relative_s": 0.3612442179583013
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 51,
+          "t_master_s": 5926.422466302291,
+          "relative_s": 0.40885000210255384,
+          "force_deviation_n": 65.75120433658238,
+          "torque_deviation_nm": 17.549350319861436,
+          "baseline_n_nm": [
+            -2.3747344175808305,
+            -15.981158649961248,
+            11.627834973988119,
+            3.5902895435051017,
+            -2.95239150979099,
+            -3.4884200787547344
+          ],
+          "actual_wrist_n_nm": [
+            17.286512133643072,
+            36.90692358188495,
+            -22.12874977033207,
+            -7.541509159343421,
+            7.57991089495958,
+            5.063384429263793
+          ],
+          "over_since_relative_s": 0.40885000210255384
+        },
+        "largest_torque_deviation": {
+          "sample_index": 51,
+          "t_master_s": 5926.422466302291,
+          "relative_s": 0.40885000210255384,
+          "force_deviation_n": 65.75120433658238,
+          "torque_deviation_nm": 17.549350319861436,
+          "baseline_n_nm": [
+            -2.3747344175808305,
+            -15.981158649961248,
+            11.627834973988119,
+            3.5902895435051017,
+            -2.95239150979099,
+            -3.4884200787547344
+          ],
+          "actual_wrist_n_nm": [
+            17.286512133643072,
+            36.90692358188495,
+            -22.12874977033207,
+            -7.541509159343421,
+            7.57991089495958,
+            5.063384429263793
+          ],
+          "over_since_relative_s": 0.40885000210255384
+        },
+        "maximum_baseline_force_shift_n": 33.681561748148205,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 65.75120433658238,
+          "maximum_torque_deviation_nm": 17.549350319861436,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 45,
+          "t_master_s": 5926.374860518146,
+          "relative_s": 0.3612442179583013,
+          "force_deviation_n": 60.51336703524454,
+          "torque_deviation_nm": 16.565979420045004,
+          "baseline_n_nm": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "actual_wrist_n_nm": [
+            13.643658297292465,
+            30.494087612483952,
+            -18.898789455090863,
+            -6.487108754822061,
+            6.344317545889296,
+            4.183225589743761
+          ],
+          "over_since_relative_s": 0.3612442179583013
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1216,
+          "t_master_s": 5935.742356867297,
+          "relative_s": 9.728740567108616,
+          "force_deviation_n": 77.57949936378422,
+          "torque_deviation_nm": 20.57442780053011,
+          "baseline_n_nm": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "actual_wrist_n_nm": [
+            7.207351716835729,
+            47.9773492124698,
+            -26.02510144859778,
+            -6.022770587429538,
+            5.579855794392764,
+            11.472565909877634
+          ],
+          "over_since_relative_s": 9.696003963937983
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1215,
+          "t_master_s": 5935.734158700099,
+          "relative_s": 9.72054239991121,
+          "force_deviation_n": 77.43056302623805,
+          "torque_deviation_nm": 20.76365906179176,
+          "baseline_n_nm": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "actual_wrist_n_nm": [
+            7.149669000096216,
+            47.65871534719432,
+            -26.27709038609136,
+            -6.277065821577698,
+            5.690021129815105,
+            11.492206448543238
+          ],
+          "over_since_relative_s": 9.696003963937983
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 68.36887460294706,
+          "maximum_torque_deviation_nm": 18.403328426005285,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9923123770859092,
+          "first_value": [
+            0.3042255640029907,
+            -1.5296967665301722,
+            1.175276756286621,
+            0.7342854738235474,
+            1.2763934135437012,
+            -3.1310036818133753
+          ],
+          "last_value": [
+            0.284536212682724,
+            -1.5306194464312952,
+            1.1758170127868652,
+            0.7860018014907837,
+            1.2724202871322632,
+            -3.1501484552966517
+          ],
+          "maximum_absolute_component_change": 0.05171632766723633
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9923123770859092,
+          "first_value": [
+            -0.00026844663079828024,
+            0.004659466911107302,
+            0.0005033374764025211,
+            0.0,
+            -0.0004793690168298781,
+            -4.793690095539205e-05
+          ],
+          "last_value": [
+            -0.046191997826099396,
+            -5.752428114647046e-05,
+            0.0003834952076431364,
+            0.08326639980077744,
+            -0.023752734065055847,
+            -0.014381070621311665
+          ],
+          "maximum_absolute_component_change": 0.19522303342819214,
+          "maximum_absolute_joint_speed_rad_s": 0.19522303342819214
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9923123770859092,
+          "first_value": [
+            -0.3370493634399271,
+            -0.30213036323570486,
+            0.29697775211803923,
+            -1.1624367861118623,
+            -1.9447234218056493,
+            1.4297003194997182
+          ],
+          "last_value": [
+            -0.33340569970624895,
+            -0.2936881989600465,
+            0.2870780752335619,
+            -1.193840207104947,
+            -1.977293945134774,
+            1.3807411098017888
+          ],
+          "maximum_absolute_component_change": 0.04895920969792944,
+          "maximum_translation_from_first_m": 0.013511107485264805,
+          "z_min_max_m": [
+            0.2870780752335619,
+            0.2974464532404635
+          ]
+        },
+        "gripper": {
+          "samples": 93,
+          "first_relative_s": 0.008392815012484789,
+          "last_relative_s": 0.9948535929434001,
+          "first_value": [
+            0.37254902720451355,
+            3.0
+          ],
+          "last_value": [
+            0.08627451211214066,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.08627451211214066,
+            0.37254902720451355
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.12286962009966373,
+            "last_relative_s": 0.9339857310988009,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.12286962009966373,
+            "last_relative_s": 0.9339857310988009,
+            "selected_payload_sha256": "65cbd965321875cdf0b165678e6564781e531d9167caeea7dc7091e3bfaec3b1",
+            "first_sdk_value": [
+              0.4285898208618164,
+              0.1964496523141861,
+              -1.1119059324264526,
+              -0.017378069460392,
+              0.023077866062521935,
+              -0.0011191068915650249
+            ],
+            "max_force_change_sdk": 1.528571367263794
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.12286962009966373,
+            "last_relative_s": 0.9339857310988009,
+            "selected_payload_sha256": "f04e36569d933a4f2eacede91e3c3ae4a715b594bc48eaaca283cd1ba6789f5d",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.1588134765625
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.07510311412625015,
+            "last_relative_s": 0.9007157639134675,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.07510311412625015,
+            "last_relative_s": 0.9007157639134675,
+            "selected_payload_sha256": "e14b372c0525b1decf2607cad97435786f08976bcec44a79b051038f1c77758f",
+            "first_sdk_value": [
+              0.011294743046164513,
+              0.011022882536053658,
+              -0.02936669811606407,
+              -0.0005571474903263152,
+              0.00039689609548076987,
+              6.0670561651932076e-05
+            ],
+            "max_force_change_sdk": 0.024899186566472054
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.07510311412625015,
+            "last_relative_s": 0.9007157639134675,
+            "selected_payload_sha256": "39ae364aa6a8cc4d22ae4753c86013f9a75e4c37258cd2ea024ec0e45dc0b8e8",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.031890869140625
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.008059557061642408,
+            "stored_payload_sha256": "8a305c480be3ee2df4134206ab0ddd6f6689071fd59bf94b38789086a6d45c71",
+            "decoded_bgr_sha256": "4a5de86cd1daeaeb9aaf681cd661b127da580f7f0132ef74e94efedb96a5e040",
+            "preview_jpeg_sha256": "c36bec00e997a41012985eb73fe8e4ceea414625d157770c2b4a47ec6ebd4eaa"
+          },
+          {
+            "index": 8,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5423596489708871,
+            "stored_payload_sha256": "9260252a3734895441ba7a751bcce5047b48557d70b375ede8c011f23810e0cd",
+            "decoded_bgr_sha256": "e15bdc510b5f215c8ca6d8e41d4f10cbb6980df6f66a15e079ad54f4c67e7789",
+            "preview_jpeg_sha256": "1d31f828e35592b21b38d3761e02e46143bfd0ededc92637ade1437fce2a2f2b"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.009114246116951,
+            "stored_payload_sha256": "130b02e67ca3b576ae8a2105c83554313cd90aa7070fdd26e56f0e615b013304",
+            "decoded_bgr_sha256": "7cc7decae279621cbc0e3538d58e6e875d1382878f8982b90ca1344fe8771edc",
+            "preview_jpeg_sha256": "e14833fe19f800d186692464022f55fba57a921b3e27f0603e0b44e9ab52e4d3"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.259631+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396314_011",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011",
+      "duration_s": 21.144443548982963,
+      "arm_ft_samples": 2644,
+      "first_arm_ft_n_nm": [
+        0.10968550044703924,
+        0.26121669889587484,
+        -1.7539223686855585,
+        -0.3475088036964095,
+        0.4172783500940842,
+        -0.039813357048320105
+      ],
+      "first_arm_ft_master_s": 5967.20253423322,
+      "timestamp_step_min_median_max_s": [
+        0.0020854880567640066,
+        0.008000263012945652,
+        0.014686109963804483
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/arm_ft.zarr",
+          "count": 2644,
+          "timestamps_payload_sha256": "62904c0ccd41ea3deb5c234056df4706c7159f883e50769bb8955e8eab2d6d66",
+          "data_payload_sha256": "b3ca852a5aff73e6d1d36ca5c44238ce308ed1b87c0353eeb5bfccb72c5087b1"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/arm_q.zarr",
+          "count": 2640,
+          "timestamps_payload_sha256": "e89083529ac1c2172f7c1abea35b55816e73e846dbfe33db702b83590264cdda",
+          "data_payload_sha256": "46befe287ed757b668ce2246ea7a8a2f7cb2a3adb251dd07b004bbc26d843e29"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/arm_qd.zarr",
+          "count": 2642,
+          "timestamps_payload_sha256": "e517f23a3d1ed2479235f3ee779749461b8416307a68ec1185fb6296fa315b3a",
+          "data_payload_sha256": "5df456d6ceea6c4aaa171c05ce6addb3b1d80535adb6a1bf9b1cbd8bae784879"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/arm_tcp_pose.zarr",
+          "count": 2643,
+          "timestamps_payload_sha256": "5b88b7ea1e7e4f0ae1b35c87c12c7c459c405b0862d777addb9b74e15bfbb54c",
+          "data_payload_sha256": "7df93ac5cb1023a2302228c7f06b79bdc7f288cb51db7765815c57076baf0824"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/gripper.zarr",
+          "count": 1980,
+          "timestamps_payload_sha256": "d5a4a19b3968d3c3ab1934555e5986cf18cea872f7aeb16bafff17784f863cf0",
+          "data_payload_sha256": "2f108c988d6661bcd447ed280d8fd900e923e7ae95d928bd1c97daf1bcbdb81d"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_left_area.zarr",
+          "count": 116,
+          "timestamps_payload_sha256": "5e014d99195930a47b93dca60938b6f5fab6ec29c2d5919c48ab8e4f873a38c9",
+          "data_payload_sha256": "1dd585027f117472f7ebe47a74b375ebcf9a71347a98ce3e7afdd5c849628d2f"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_left_wrench.zarr",
+          "count": 116,
+          "timestamps_payload_sha256": "5e014d99195930a47b93dca60938b6f5fab6ec29c2d5919c48ab8e4f873a38c9",
+          "data_payload_sha256": "5a659c4e748c6cb3c2055c255bc5526660fd104b273788488a7c12f90c0feca6"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_left_fields_ds.zarr",
+          "count": 115,
+          "timestamps_payload_sha256": "5673be3bcf45e01d4b3697f514fd321be0e48a76853b7f184f0370f901c711a5",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_right_area.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "c9d03834fc903d23c1c67feb6ba9612862e6ba68c6aa945db3a1ac5760db3445",
+          "data_payload_sha256": "b50ec2b83d2da801da9f0c5e32504ea6582e76daa753419b198375bd0edee215"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_right_wrench.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "c9d03834fc903d23c1c67feb6ba9612862e6ba68c6aa945db3a1ac5760db3445",
+          "data_payload_sha256": "ab597f28a0e23d9cf45f14a6e9822f6071afc781b817cb62e44cf7036801885a"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/tactile_right_fields_ds.zarr",
+          "count": 119,
+          "timestamps_payload_sha256": "c9d03834fc903d23c1c67feb6ba9612862e6ba68c6aa945db3a1ac5760db3445",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011/camera_scene_color.zarr",
+          "count": 317,
+          "timestamps_payload_sha256": "05506d2238cb5b70759f7ef188d6ed05354e48de2ed27fabbed95a866ba42df7",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": null,
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2206,
+          "t_master_s": 5984.851100145141,
+          "relative_s": 17.64856591192074,
+          "force_deviation_n": 53.032583933026736,
+          "torque_deviation_nm": 14.250300207985763,
+          "baseline_n_nm": [
+            1.4016466731616029,
+            1.692481764614353,
+            -5.918828395528859,
+            -0.023917789645946888,
+            1.1957613697352936,
+            0.38829580550846166
+          ],
+          "actual_wrist_n_nm": [
+            24.242226915622897,
+            40.65119968974674,
+            -33.72136695644412,
+            -4.244353848955936,
+            11.173067442666184,
+            9.6463916688084
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2153,
+          "t_master_s": 5984.426819823217,
+          "relative_s": 17.224285589996725,
+          "force_deviation_n": 52.43886304211619,
+          "torque_deviation_nm": 14.29675660300327,
+          "baseline_n_nm": [
+            -1.447241730756536,
+            -1.3756719882949666,
+            -1.818530422027524,
+            0.25696441075491744,
+            -0.19025436598765558,
+            -0.4312154069129488
+          ],
+          "actual_wrist_n_nm": [
+            22.56152954457591,
+            34.68338421336162,
+            -31.367772795468543,
+            -3.145583897941676,
+            10.024774281659651,
+            8.974798844631028
+          ],
+          "over_since_relative_s": null
+        },
+        "maximum_baseline_force_shift_n": 15.719140594838438,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 37.506372562141145,
+          "maximum_torque_deviation_nm": 10.02562271214144,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": null,
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2206,
+          "t_master_s": 5984.851100145141,
+          "relative_s": 17.64856591192074,
+          "force_deviation_n": 56.88275480870995,
+          "torque_deviation_nm": 14.989828822024242,
+          "baseline_n_nm": [
+            0.10968550044703924,
+            0.26121669889587484,
+            -1.7539223686855585,
+            -0.3475088036964095,
+            0.4172783500940842,
+            -0.039813357048320105
+          ],
+          "actual_wrist_n_nm": [
+            24.242226915622897,
+            40.65119968974674,
+            -33.72136695644412,
+            -4.244353848955936,
+            11.173067442666184,
+            9.6463916688084
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2206,
+          "t_master_s": 5984.851100145141,
+          "relative_s": 17.64856591192074,
+          "force_deviation_n": 56.88275480870995,
+          "torque_deviation_nm": 14.989828822024242,
+          "baseline_n_nm": [
+            0.10968550044703924,
+            0.26121669889587484,
+            -1.7539223686855585,
+            -0.3475088036964095,
+            0.4172783500940842,
+            -0.039813357048320105
+          ],
+          "actual_wrist_n_nm": [
+            24.242226915622897,
+            40.65119968974674,
+            -33.72136695644412,
+            -4.244353848955936,
+            11.173067442666184,
+            9.6463916688084
+          ],
+          "over_since_relative_s": null
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 38.68567109545636,
+          "maximum_torque_deviation_nm": 10.348961825099984,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919945150613785,
+          "first_value": [
+            0.18156999349594116,
+            -1.5060628096209925,
+            0.8773670196533203,
+            0.9839259386062622,
+            1.149857997894287,
+            -3.132179323826925
+          ],
+          "last_value": [
+            0.19134800136089325,
+            -1.5074647108661097,
+            0.889958381652832,
+            0.9840935468673706,
+            1.2011215686798096,
+            -3.1860154310809534
+          ],
+          "maximum_absolute_component_change": 0.05383610725402832
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919945150613785,
+          "first_value": [
+            -0.012942963279783726,
+            -0.0026077674701809883,
+            0.004026699811220169,
+            0.0003115898580290377,
+            0.0004793690168298781,
+            -4.793690095539205e-05
+          ],
+          "last_value": [
+            0.11903691291809082,
+            0.0004793690168298781,
+            0.1366681009531021,
+            0.004793690051883459,
+            0.34334805607795715,
+            -0.06996390968561172
+          ],
+          "maximum_absolute_component_change": 0.3428686870611273,
+          "maximum_absolute_joint_speed_rad_s": 0.34334805607795715
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9919945150613785,
+          "first_value": [
+            -0.33800959737255803,
+            -0.28412251318613274,
+            0.35708817542148297,
+            -1.1751379850236425,
+            -1.9067098922007875,
+            1.4867239612564587
+          ],
+          "last_value": [
+            -0.3414858129249998,
+            -0.2759689794895544,
+            0.3511477089975523,
+            -1.1437159951151221,
+            -1.9069604946508174,
+            1.4137779308781868
+          ],
+          "maximum_absolute_component_change": 0.07294603037827185,
+          "maximum_translation_from_first_m": 0.010670207478869556,
+          "z_min_max_m": [
+            0.3511477089975523,
+            0.35846688084797157
+          ]
+        },
+        "gripper": {
+          "samples": 95,
+          "first_relative_s": 0.004911716096103191,
+          "last_relative_s": 0.9980894590262324,
+          "first_value": [
+            0.3333333432674408,
+            3.0
+          ],
+          "last_value": [
+            0.21176470816135406,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.21176470816135406,
+            0.3333333432674408
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.08395872008986771,
+            "last_relative_s": 0.899788002949208,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.08395872008986771,
+            "last_relative_s": 0.899788002949208,
+            "selected_payload_sha256": "9148d96d5ad75b9ea478132e04c002b7f2ede4f5df0f6e3af2b8d5952853025c",
+            "first_sdk_value": [
+              0.4262654483318329,
+              0.5682787299156189,
+              -2.204535961151123,
+              -0.046512726694345474,
+              0.04575448855757713,
+              0.0062187546864151955
+            ],
+            "max_force_change_sdk": 1.4201263189315796
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.08395872008986771,
+            "last_relative_s": 0.899788002949208,
+            "selected_payload_sha256": "43956bc2e3ff62fee35bcbb8a3d0cfbadecd3690fce85333fc8a379413acf004",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.1387939453125
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.0059637450613081455,
+            "last_relative_s": 0.843606622889638,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.0059637450613081455,
+            "last_relative_s": 0.843606622889638,
+            "selected_payload_sha256": "9e0ff6c41a5b60bacdddd3ce6e9abf73c9861618f69a81a18c4f6e10f5a9d762",
+            "first_sdk_value": [
+              0.0018859878182411194,
+              0.029227273538708687,
+              -0.028454657644033432,
+              -0.0011041308753192425,
+              0.0006758270901627839,
+              -0.00015679105126764625
+            ],
+            "max_force_change_sdk": 0.039025209844112396
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.0059637450613081455,
+            "last_relative_s": 0.843606622889638,
+            "selected_payload_sha256": "7f819837e3ebdb41d905f22df1ba6fc9c6820117fa2fe1e7d7568f03544f4a4a",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.03131103515625
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.05055477889254689,
+            "stored_payload_sha256": "38c8739ba16ee1162f75432b6170f98508fc867cc30e850c3157db98aedd8e8e",
+            "decoded_bgr_sha256": "7bc96ee3125bff00dd22bcc9ff7ad254d809451ba458a8e1552cee53bae0eeb8",
+            "preview_jpeg_sha256": "d90709cc565eafdb48fcf8601255e546d577f065d68bc3f6e67a9c8f7c543577"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5176699429284781,
+            "stored_payload_sha256": "0734d5f329707f9c0fab09d40ba467a39de9bc2996b49bfe10f5f9ba4256c9ef",
+            "decoded_bgr_sha256": "1ea9b7a982616846e391506615d9019ca9febfc8622ad8b92ac1972b682d6bcd",
+            "preview_jpeg_sha256": "433e1a93983cc5061905dba4927d0e60dfa9e242013cab2cf86f499921b6c560"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0549125839024782,
+            "stored_payload_sha256": "9038dfbb06f69b8b3e6f830935a130a0f0bcd83bf063a4ab4e347f68e7e0d7f1",
+            "decoded_bgr_sha256": "e769059eb4c51825c6aa88317442f9a39f0259804bed5cde97fbdc7bd2e66e08",
+            "preview_jpeg_sha256": "c7738df35a801d7af2bc199339654353d007fb3f03eb6d1e87e848037ced9412"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.259928+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396346_012",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012",
+      "duration_s": 22.39249319792725,
+      "arm_ft_samples": 2800,
+      "first_arm_ft_n_nm": [
+        -8.07882741859701,
+        -29.86209272269996,
+        20.01713847767513,
+        6.257934535975291,
+        -5.7685785708231885,
+        -5.140842439376243
+      ],
+      "first_arm_ft_master_s": 5999.23813057621,
+      "timestamp_step_min_median_max_s": [
+        7.183291018009186e-05,
+        0.008000170113518834,
+        0.016721529187634587
+      ],
+      "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/arm_ft.zarr",
+          "count": 2800,
+          "timestamps_payload_sha256": "0ff70629481ff809cd3fb73d19b8e83a016b7eaed3af1e090ff5e09468af240d",
+          "data_payload_sha256": "f7ab96ef273678398856836ab451c155744aaea58fe9947de56d32533f9aa167"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/arm_q.zarr",
+          "count": 2795,
+          "timestamps_payload_sha256": "2db0c5034797fb0b49840196274c8ffa126bed435715fbf4a4a3c5620540dbc6",
+          "data_payload_sha256": "3fcb2e34d9f6a1c74978f980fd96e8e33edae5e78f4e6830abb2aa873641cf9a"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/arm_qd.zarr",
+          "count": 2796,
+          "timestamps_payload_sha256": "c6222460a356fcd2aba41e5cd722a4b43939a75ac7c1248165c04323b7519791",
+          "data_payload_sha256": "61b22c4d660350ad6177d1332b7ef0a88b69202636b39b32b89e6a68f2ea9ea3"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/arm_tcp_pose.zarr",
+          "count": 2798,
+          "timestamps_payload_sha256": "99b66044125c3670669b7a6a87f7a12b51dc20c0179ddca2d272d804ca326b16",
+          "data_payload_sha256": "306c39b615a0e3dd8061ac5ad7e1c3d8e8e89e145b0c87f32774ee9369d3bbb4"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/gripper.zarr",
+          "count": 2082,
+          "timestamps_payload_sha256": "5aaefa5300360e859695f8c0e25819df9c62668c1c7affb22674328400b97ec1",
+          "data_payload_sha256": "12c1548e6268230bde08472ee3786c23737f2a344fbed02558e3113b64c94e2d"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_left_area.zarr",
+          "count": 122,
+          "timestamps_payload_sha256": "0b30e1503c6160d289db4ddba29ac7f349bf398a2b46fee7a3b0705c4d32da01",
+          "data_payload_sha256": "9128196b5903fa12542ac2da6f592798c4b20aa0af51103b2ed9dce994d28c7f"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_left_wrench.zarr",
+          "count": 122,
+          "timestamps_payload_sha256": "0b30e1503c6160d289db4ddba29ac7f349bf398a2b46fee7a3b0705c4d32da01",
+          "data_payload_sha256": "6bbc605f9a3b69508bf80bc2e294bbf462a501285f2189ff7ac6e8b6176aa30e"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_left_fields_ds.zarr",
+          "count": 121,
+          "timestamps_payload_sha256": "011d52a020b2aed876e84750430b2c81b2f975bd72b83d77099058b520027659",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_right_area.zarr",
+          "count": 122,
+          "timestamps_payload_sha256": "981689e983e6df0944b76f163365429a8f1709b69f2c4d646499bad7852c1871",
+          "data_payload_sha256": "378f5f66aa3bd927a8c3f84e4c72815ac37d94f98795e798e53c56be6f2ff31b"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_right_wrench.zarr",
+          "count": 122,
+          "timestamps_payload_sha256": "981689e983e6df0944b76f163365429a8f1709b69f2c4d646499bad7852c1871",
+          "data_payload_sha256": "48500ecb3b1418ca6a7a9b1627b7a0393430e477c9e823f66209c7b4bb8a27b6"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/tactile_right_fields_ds.zarr",
+          "count": 121,
+          "timestamps_payload_sha256": "f5fbba0b21f615b1751ad54a61216f15f2f82efe20d29b8385a02bce84bea326",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012/camera_scene_color.zarr",
+          "count": 336,
+          "timestamps_payload_sha256": "e8bb5d7188a916e13321892c83e238c7ddc8ec00beed200a6e7b042a8c713e98",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": {
+          "sample_index": 56,
+          "t_master_s": 5999.685782101238,
+          "relative_s": 0.44765152502804995,
+          "force_deviation_n": 62.07007632937859,
+          "torque_deviation_nm": 15.576020852185682,
+          "baseline_n_nm": [
+            -6.581236280090306,
+            -26.50213921208523,
+            16.478693387716685,
+            5.372997150669482,
+            -4.815196936664761,
+            -4.647560025624505
+          ],
+          "actual_wrist_n_nm": [
+            10.272330754302159,
+            23.47364699473018,
+            -16.248549801449148,
+            -4.442739133119715,
+            4.2543619338806655,
+            3.352868005958443
+          ],
+          "over_since_relative_s": 0.44765152502804995
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 69,
+          "t_master_s": 5999.789747691248,
+          "relative_s": 0.5516171150375158,
+          "force_deviation_n": 66.46002826627817,
+          "torque_deviation_nm": 15.898730353851933,
+          "baseline_n_nm": [
+            -6.111919621708463,
+            -24.848242605624307,
+            15.55693442309043,
+            5.082722067199237,
+            -4.561888085116235,
+            -4.357917117098864
+          ],
+          "actual_wrist_n_nm": [
+            8.69598294097593,
+            35.225679051674305,
+            -8.707964413733244,
+            -4.2845291807111145,
+            2.439931803847228,
+            6.412354428481147
+          ],
+          "over_since_relative_s": 0.5363372289575636
+        },
+        "largest_torque_deviation": {
+          "sample_index": 69,
+          "t_master_s": 5999.789747691248,
+          "relative_s": 0.5516171150375158,
+          "force_deviation_n": 66.46002826627817,
+          "torque_deviation_nm": 15.898730353851933,
+          "baseline_n_nm": [
+            -6.111919621708463,
+            -24.848242605624307,
+            15.55693442309043,
+            5.082722067199237,
+            -4.561888085116235,
+            -4.357917117098864
+          ],
+          "actual_wrist_n_nm": [
+            8.69598294097593,
+            35.225679051674305,
+            -8.707964413733244,
+            -4.2845291807111145,
+            2.439931803847228,
+            6.412354428481147
+          ],
+          "over_since_relative_s": 0.5363372289575636
+        },
+        "maximum_baseline_force_shift_n": 47.45134383348657,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 66.46002826627817,
+          "maximum_torque_deviation_nm": 15.898730353851933,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 43,
+          "t_master_s": 5999.5818899353035,
+          "relative_s": 0.34375935909338295,
+          "force_deviation_n": 58.39927765091743,
+          "torque_deviation_nm": 15.369063924293865,
+          "baseline_n_nm": [
+            -8.07882741859701,
+            -29.86209272269996,
+            20.01713847767513,
+            6.257934535975291,
+            -5.7685785708231885,
+            -5.140842439376243
+          ],
+          "actual_wrist_n_nm": [
+            9.801338094824644,
+            13.208673633369303,
+            -15.135164389455541,
+            -3.59796521367982,
+            4.182402142054967,
+            1.187455031958869
+          ],
+          "over_since_relative_s": 0.34375935909338295
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 1421,
+          "t_master_s": 6010.605803385144,
+          "relative_s": 11.367672808934003,
+          "force_deviation_n": 86.21447671935867,
+          "torque_deviation_nm": 21.740111359881436,
+          "baseline_n_nm": [
+            -8.07882741859701,
+            -29.86209272269996,
+            20.01713847767513,
+            6.257934535975291,
+            -5.7685785708231885,
+            -5.140842439376243
+          ],
+          "actual_wrist_n_nm": [
+            22.558993781670306,
+            29.30169607652926,
+            -34.699458666276435,
+            -0.4421024737179168,
+            9.763342326717845,
+            8.515708341890425
+          ],
+          "over_since_relative_s": 11.328195875044912
+        },
+        "largest_torque_deviation": {
+          "sample_index": 1421,
+          "t_master_s": 6010.605803385144,
+          "relative_s": 11.367672808934003,
+          "force_deviation_n": 86.21447671935867,
+          "torque_deviation_nm": 21.740111359881436,
+          "baseline_n_nm": [
+            -8.07882741859701,
+            -29.86209272269996,
+            20.01713847767513,
+            6.257934535975291,
+            -5.7685785708231885,
+            -5.140842439376243
+          ],
+          "actual_wrist_n_nm": [
+            22.558993781670306,
+            29.30169607652926,
+            -34.699458666276435,
+            -0.4421024737179168,
+            9.763342326717845,
+            8.515708341890425
+          ],
+          "over_since_relative_s": 11.328195875044912
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 73.09544331403062,
+          "maximum_torque_deviation_nm": 17.663508758346712,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9916104879230261,
+          "first_value": [
+            0.19657911360263824,
+            -1.525013271962301,
+            0.984987735748291,
+            0.8925610780715942,
+            1.1516945362091064,
+            -3.171548906956808
+          ],
+          "last_value": [
+            0.18500161170959473,
+            -1.5220063368426722,
+            1.0426406860351562,
+            0.8897174596786499,
+            1.172176718711853,
+            -3.232187573109762
+          ],
+          "maximum_absolute_component_change": 0.0606386661529541
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9916104879230261,
+          "first_value": [
+            -0.0011696603614836931,
+            -0.010852914303541183,
+            0.005440838169306517,
+            -0.0019174760673195124,
+            -0.0007669904152862728,
+            0.0011265171924605966
+          ],
+          "last_value": [
+            0.021149760112166405,
+            0.000997087568975985,
+            0.26154372096061707,
+            -0.08355402201414108,
+            0.18105767667293549,
+            -0.03465837985277176
+          ],
+          "maximum_absolute_component_change": 0.27060379879549146,
+          "maximum_absolute_joint_speed_rad_s": 0.276044636964798
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9916104879230261,
+          "first_value": [
+            -0.34008499875177967,
+            -0.28997706205554635,
+            0.3420260232590564,
+            -1.1176276942840462,
+            -1.9281811684998833,
+            1.4738718117282699
+          ],
+          "last_value": [
+            -0.34357955525427,
+            -0.2810194980786901,
+            0.3188303995246088,
+            -1.1174360619503898,
+            -1.967969883515771,
+            1.3895883828814426
+          ],
+          "maximum_absolute_component_change": 0.08428342884682727,
+          "maximum_translation_from_first_m": 0.025109496967853414,
+          "z_min_max_m": [
+            0.3188303995246088,
+            0.34205801605514824
+          ]
+        },
+        "gripper": {
+          "samples": 91,
+          "first_relative_s": 0.020854464964941144,
+          "last_relative_s": 0.9970050530973822,
+          "first_value": [
+            0.3490196168422699,
+            3.0
+          ],
+          "last_value": [
+            0.24705882370471954,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.24705882370471954,
+            0.3490196168422699
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.11592942010611296,
+            "last_relative_s": 0.9801040370948613,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.11592942010611296,
+            "last_relative_s": 0.9801040370948613,
+            "selected_payload_sha256": "fe06691541daae87ea8b1d5ba9036aa31e1cd60d3ff13f5afce8fa840a0afc5d",
+            "first_sdk_value": [
+              0.41790205240249634,
+              0.8757531642913818,
+              -1.9689021110534668,
+              -0.06165219470858574,
+              0.03820985555648804,
+              0.005382365547120571
+            ],
+            "max_force_change_sdk": 1.211786150932312
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.11592942010611296,
+            "last_relative_s": 0.9801040370948613,
+            "selected_payload_sha256": "bdce20462085c77cb76a5d43e0ce3f6b62d6c7764835ba72e739b5313cf145aa",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.129638671875
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.05852871993556619,
+            "last_relative_s": 0.9245671699754894,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.05852871993556619,
+            "last_relative_s": 0.9245671699754894,
+            "selected_payload_sha256": "75f0adf80a78339342647f38d4204d052a1247eb512868700e2b9d348cb323ae",
+            "first_sdk_value": [
+              -0.0004783831536769867,
+              -0.011182751506567001,
+              -0.025841020047664642,
+              -0.00036872312193736434,
+              0.00029368995456025004,
+              -4.718825152849604e-07
+            ],
+            "max_force_change_sdk": 0.035668883472681046
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.05852871993556619,
+            "last_relative_s": 0.9245671699754894,
+            "selected_payload_sha256": "88cbf47411d160eff165ec0a577e5666aae979378f95f3a1fc7e5cfeafb1d374",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.033203125
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.04055843804962933,
+            "stored_payload_sha256": "6c91433f3280862e2f3b78c5fd79eb53ca1227a14c118424e8425044a8cb015c",
+            "decoded_bgr_sha256": "c3318883b620882f44eeb37886910f646922530144499dc8d9de7ac39be0168a",
+            "preview_jpeg_sha256": "c10652f925aba7191977860770ad0d22dfe3a3c8fdcf8b5d79ab8860bfc88264"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5070409008767456,
+            "stored_payload_sha256": "890a94ce7f52a5f502a4b472644506b39ff91da76990f5215bad6acb00672b8e",
+            "decoded_bgr_sha256": "ef1658fb103862cff9c749d05e11a079ab0ee39947f2952ec9cf57549a88ca64",
+            "preview_jpeg_sha256": "85a86191e78e94b587c2279c71f66ca64ae6b3cee70b2ca963bd85175bb42d4e"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0402303820010275,
+            "stored_payload_sha256": "e0c022a3e15ce9a70c8fdadb97e09a548071aa361ba2c0159a3e63c9e6dde11b",
+            "decoded_bgr_sha256": "c7d3d8ae13909748e835c28f32494c1a6c319d8e50ad6b78c0ab5ac3d7fc1003",
+            "preview_jpeg_sha256": "622a68f7bb3765aba09674a29d1ca5059c6103434b5f09674c3513a0a44a5b2b"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.260232+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    },
+    {
+      "episode": "ep_waffles_1787396461_000",
+      "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000",
+      "duration_s": 22.041955643100664,
+      "arm_ft_samples": 2756,
+      "first_arm_ft_n_nm": [
+        2.9477290963111633,
+        -12.182910597202357,
+        6.899319620873847,
+        2.423999587375755,
+        -1.341440360221059,
+        -2.8718301664341728
+      ],
+      "first_arm_ft_master_s": 6114.58297238918,
+      "timestamp_step_min_median_max_s": [
+        7.649394683539867e-05,
+        0.008000314002856612,
+        0.015857605962082744
+      ],
+      "meta_sha256": "441b55765ed104d8a4aac6e960f9ccb6ca01c5f2c918785e7b466bf19161c1e5",
+      "stream_provenance": {
+        "arm_ft": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/arm_ft.zarr",
+          "count": 2756,
+          "timestamps_payload_sha256": "3c21419566830caff3ee74728d9d0d4c4f1439ac81571323bc4f2153c6a6a730",
+          "data_payload_sha256": "ff0ab6c722209d8fa05ae2e28fd04ca69734ea2744171babb16398170d33b773"
+        },
+        "arm_q": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/arm_q.zarr",
+          "count": 2754,
+          "timestamps_payload_sha256": "a92776ed9e02fef28b81702a4e3fcb15df13a0838e63ef284d74265cf511803c",
+          "data_payload_sha256": "0c52a79d22dd7e085b9f21e7d6edd8ec92d12b0ac84f36311f881995ae6cbef7"
+        },
+        "arm_qd": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/arm_qd.zarr",
+          "count": 2754,
+          "timestamps_payload_sha256": "a92776ed9e02fef28b81702a4e3fcb15df13a0838e63ef284d74265cf511803c",
+          "data_payload_sha256": "c40e44ad4e4e9fe1b36f6f9d4ea9198175d6b338b00c1da5643ef9d2755577a5"
+        },
+        "arm_tcp_pose": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/arm_tcp_pose.zarr",
+          "count": 2754,
+          "timestamps_payload_sha256": "a92776ed9e02fef28b81702a4e3fcb15df13a0838e63ef284d74265cf511803c",
+          "data_payload_sha256": "b5d1502679fcf3ecc6a5752f5cc9f3de864cce4c7bab62a76c3d98d5b9d76e03"
+        },
+        "gripper": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/gripper.zarr",
+          "count": 2067,
+          "timestamps_payload_sha256": "579c7b538bfe5544c99265b070f62c9d7f1290097efaf3eba1382192a4ebccfb",
+          "data_payload_sha256": "1f84a64ac00fd4d521a3930d450a6ef78c942a80defad8a640050991f93adfd5"
+        },
+        "tactile_left_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_left_area.zarr",
+          "count": 136,
+          "timestamps_payload_sha256": "e31f9af4fa14103693dfa038a0f68bc88000fe024ed926ddd2414e1481578836",
+          "data_payload_sha256": "34f9510617bd90e81e22045a68ca9eab6769e8140c1d0b0abcd0ffc630af5d74"
+        },
+        "tactile_left_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_left_wrench.zarr",
+          "count": 136,
+          "timestamps_payload_sha256": "e31f9af4fa14103693dfa038a0f68bc88000fe024ed926ddd2414e1481578836",
+          "data_payload_sha256": "5b7c8cdf3a0c7fa08fa4c20974c110bb6bf6da88cd3a5609a3e168d9513b74b0"
+        },
+        "tactile_left_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_left_fields_ds.zarr",
+          "count": 135,
+          "timestamps_payload_sha256": "1e2a4a4de93538e28e2d077365aaec1e27c92b8017a90d71106ba4cda0936dbb",
+          "data_payload_sha256": null
+        },
+        "tactile_right_area": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_right_area.zarr",
+          "count": 142,
+          "timestamps_payload_sha256": "9ba69d4ddedf32154d44725e070c44360a58f8e4d12529fb5cb33dc423d2a5f8",
+          "data_payload_sha256": "bd78c35d36205a7b2db8b8b5274aee7146b1b8ebf3cf1ec3b835123d235a6b2b"
+        },
+        "tactile_right_wrench": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_right_wrench.zarr",
+          "count": 142,
+          "timestamps_payload_sha256": "9ba69d4ddedf32154d44725e070c44360a58f8e4d12529fb5cb33dc423d2a5f8",
+          "data_payload_sha256": "8923ab23e2326b433aa0e4e9ef7239a64c77be9c823c76d38b021d426c6b0be6"
+        },
+        "tactile_right_fields_ds": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/tactile_right_fields_ds.zarr",
+          "count": 141,
+          "timestamps_payload_sha256": "6c9df0272e80fdfed2c2af6116e4b6d43b3a6f8f3deccc669763fbf8f79a442c",
+          "data_payload_sha256": null
+        },
+        "camera_scene_color": {
+          "path": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000/camera_scene_color.zarr",
+          "count": 330,
+          "timestamps_payload_sha256": "4dbaa8fd367a0ce0dab231c29247cb8ec9324aab3258c7ed35bf83c46fe455d0",
+          "data_payload_sha256": null
+        }
+      },
+      "rolling": {
+        "reference": "rolling",
+        "first_crossing": null,
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2551,
+          "t_master_s": 6134.991769885179,
+          "relative_s": 20.408797495998442,
+          "force_deviation_n": 50.3440089836568,
+          "torque_deviation_nm": 13.383107065186548,
+          "baseline_n_nm": [
+            5.5023793457705565,
+            8.085868288522889,
+            -10.402810686112662,
+            -1.5081005185800098,
+            2.845629772168601,
+            1.295714984742913
+          ],
+          "actual_wrist_n_nm": [
+            -13.1833423984026,
+            -26.489929393394853,
+            21.059504201780488,
+            5.667705054278941,
+            -7.140658064347373,
+            -3.985328884136199
+          ],
+          "over_since_relative_s": null
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2551,
+          "t_master_s": 6134.991769885179,
+          "relative_s": 20.408797495998442,
+          "force_deviation_n": 50.3440089836568,
+          "torque_deviation_nm": 13.383107065186548,
+          "baseline_n_nm": [
+            5.5023793457705565,
+            8.085868288522889,
+            -10.402810686112662,
+            -1.5081005185800098,
+            2.845629772168601,
+            1.295714984742913
+          ],
+          "actual_wrist_n_nm": [
+            -13.1833423984026,
+            -26.489929393394853,
+            21.059504201780488,
+            5.667705054278941,
+            -7.140658064347373,
+            -3.985328884136199
+          ],
+          "over_since_relative_s": null
+        },
+        "maximum_baseline_force_shift_n": 29.280124445556776,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 43.460575932485675,
+          "maximum_torque_deviation_nm": 11.08595699917897,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "episode_fixed": {
+        "reference": "episode_fixed",
+        "first_crossing": {
+          "sample_index": 1195,
+          "t_master_s": 6124.1466044972185,
+          "relative_s": 9.563632108038291,
+          "force_deviation_n": 57.98830438690196,
+          "torque_deviation_nm": 15.470088602955657,
+          "baseline_n_nm": [
+            2.9477290963111633,
+            -12.182910597202357,
+            6.899319620873847,
+            2.423999587375755,
+            -1.341440360221059,
+            -2.8718301664341728
+          ],
+          "actual_wrist_n_nm": [
+            3.9266516375705933,
+            32.52234723762455,
+            -30.021204187001008,
+            -3.7698863090177364,
+            6.9912554154995625,
+            8.596630933253266
+          ],
+          "over_since_relative_s": 9.563632108038291
+        },
+        "first_debounced_stop": null,
+        "largest_force_deviation": {
+          "sample_index": 2659,
+          "t_master_s": 6135.856626760215,
+          "relative_s": 21.273654371034354,
+          "force_deviation_n": 64.67787182447104,
+          "torque_deviation_nm": 16.878594082387078,
+          "baseline_n_nm": [
+            2.9477290963111633,
+            -12.182910597202357,
+            6.899319620873847,
+            2.423999587375755,
+            -1.341440360221059,
+            -2.8718301664341728
+          ],
+          "actual_wrist_n_nm": [
+            15.832065049350078,
+            40.01224216069075,
+            -29.057418542815814,
+            -7.2897893032491545,
+            8.538216989046521,
+            6.767755625882181
+          ],
+          "over_since_relative_s": 21.273654371034354
+        },
+        "largest_torque_deviation": {
+          "sample_index": 2306,
+          "t_master_s": 6133.033612321131,
+          "relative_s": 18.450639931950718,
+          "force_deviation_n": 63.6075211429761,
+          "torque_deviation_nm": 17.56487475436299,
+          "baseline_n_nm": [
+            2.9477290963111633,
+            -12.182910597202357,
+            6.899319620873847,
+            2.423999587375755,
+            -1.341440360221059,
+            -2.8718301664341728
+          ],
+          "actual_wrist_n_nm": [
+            16.552527331820066,
+            41.4238669517321,
+            -24.519458390759592,
+            -5.875838338909631,
+            8.418792175827818,
+            9.143800336211367
+          ],
+          "over_since_relative_s": 18.450639931950718
+        },
+        "maximum_baseline_force_shift_n": 0.0,
+        "initial_0_to_1s": {
+          "maximum_force_deviation_n": 45.94304638907963,
+          "maximum_torque_deviation_nm": 11.831738452690363,
+          "first_debounced_stop": null
+        },
+        "continuation_semantics": "Entire observed stream is inspected descriptively after hypothetical first stop; no alternate closed-loop trajectory is inferred."
+      },
+      "initial_0_to_1s_evidence": {
+        "time_reference": "first native arm_ft row; no preselected simulator anchor or timestamp-offset reapplication",
+        "arm_q": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9928031780291349,
+          "first_value": [
+            0.30573704838752747,
+            -1.5146878401385706,
+            1.0304789543151855,
+            0.8531790971755981,
+            1.263884425163269,
+            -3.1646154562579554
+          ],
+          "last_value": [
+            0.3077290654182434,
+            -1.5113089720355433,
+            1.0615553855895996,
+            0.8369089365005493,
+            1.2530803680419922,
+            -3.161940399800436
+          ],
+          "maximum_absolute_component_change": 0.031076431274414062
+        },
+        "arm_qd": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9928031780291349,
+          "first_value": [
+            -0.0016298546688631177,
+            -0.004486893769353628,
+            0.0004074636672157794,
+            -0.0023489082232117653,
+            0.0001917476038215682,
+            -0.0004793690168298781
+          ],
+          "last_value": [
+            0.007880826480686665,
+            -0.002281796419993043,
+            0.2052418440580368,
+            -0.09513077884912491,
+            0.003499393817037344,
+            0.007190535310655832
+          ],
+          "maximum_absolute_component_change": 0.208980926516233,
+          "maximum_absolute_joint_speed_rad_s": 0.2093883901834488
+        },
+        "arm_tcp_pose": {
+          "samples": 125,
+          "first_relative_s": 0.0,
+          "last_relative_s": 0.9928031780291349,
+          "first_value": [
+            -0.32934843403965874,
+            -0.3036396676083807,
+            0.3246262599854344,
+            -1.1088251740594433,
+            -1.9557082618900303,
+            1.4303413354594965
+          ],
+          "last_value": [
+            -0.3281195149558359,
+            -0.3069249914555373,
+            0.314677837543915,
+            -1.118281771135168,
+            -1.9784639493657075,
+            1.430650171402276
+          ],
+          "maximum_absolute_component_change": 0.022755687475677133,
+          "maximum_translation_from_first_m": 0.010548682570359513,
+          "z_min_max_m": [
+            0.314677837543915,
+            0.3252638106322795
+          ]
+        },
+        "gripper": {
+          "samples": 92,
+          "first_relative_s": 0.011047076899558306,
+          "last_relative_s": 0.991589548997581,
+          "first_value": [
+            0.2549019753932953,
+            3.0
+          ],
+          "last_value": [
+            0.12156862765550613,
+            0.0
+          ],
+          "maximum_absolute_component_change": 3.0,
+          "closure_min_max": [
+            0.12156862765550613,
+            0.2549019753932953
+          ]
+        },
+        "left_tactile": {
+          "area": {
+            "samples": 6,
+            "first_relative_s": 0.15485109691508114,
+            "last_relative_s": 0.8786322539672256,
+            "selected_payload_sha256": "e7cce636dd91f33981103e4dfaebfd040932d66129f285b614c760bcaaa1fc79",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 6,
+            "first_relative_s": 0.15485109691508114,
+            "last_relative_s": 0.8786322539672256,
+            "selected_payload_sha256": "33a1f9b25048752fc342761a5847f91700b3c1c23571afce6e5e4646cd461599",
+            "first_sdk_value": [
+              0.17936298251152039,
+              0.3266485333442688,
+              -1.0006107091903687,
+              -0.017275521531701088,
+              0.01747119426727295,
+              0.0036907081957906485
+            ],
+            "max_force_change_sdk": 0.7541801333427429
+          },
+          "fields_ds": {
+            "samples": 6,
+            "first_relative_s": 0.15485109691508114,
+            "last_relative_s": 0.8786322539672256,
+            "selected_payload_sha256": "bbc58c13cc9afd16bddefd88a8085faa09bd2e1cf0f94fa7a5017fa82d04f28c",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.102294921875
+            ]
+          }
+        },
+        "right_tactile": {
+          "area": {
+            "samples": 7,
+            "first_relative_s": 0.12107756990008056,
+            "last_relative_s": 0.9604633250273764,
+            "selected_payload_sha256": "b09e3d5db6cd2415e9956bf5c66ad4c6026df536e46fdbffc6a821d7b470fc9a",
+            "min_max_sdk": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrench": {
+            "samples": 7,
+            "first_relative_s": 0.12107756990008056,
+            "last_relative_s": 0.9604633250273764,
+            "selected_payload_sha256": "f3ef8fd202f1ee82d132264fec84083c2cc9fe22b0708aa5ef8b1b405428d194",
+            "first_sdk_value": [
+              -0.018088795244693756,
+              -9.39294695854187e-05,
+              -0.025726135820150375,
+              0.0002987523621413857,
+              1.3237502571428195e-05,
+              0.0003668893768917769
+            ],
+            "max_force_change_sdk": 0.04618010297417641
+          },
+          "fields_ds": {
+            "samples": 7,
+            "first_relative_s": 0.12107756990008056,
+            "last_relative_s": 0.9604633250273764,
+            "selected_payload_sha256": "a2cb82dedf2c196d6033862d5187594fe97747ecc30ceef4ac8127f6d16f1cb8",
+            "recorded_depth_channel2_min_max": [
+              0.0,
+              0.031219482421875
+            ]
+          }
+        },
+        "rgb_frames": [
+          {
+            "index": 0,
+            "requested_relative_s": 0,
+            "actual_relative_s": 0.04162182006984949,
+            "stored_payload_sha256": "1b1131cf92e22edbea3e2aee76c6e1c9b7967d45aa8f5c7e0cf51f2231fb02da",
+            "decoded_bgr_sha256": "4cdff5ced73876f43d7135ea50d696471a0455b943718f8bf4cf98d7b426f755",
+            "preview_jpeg_sha256": "04192ecef7f0bdac2152be9d027fb40bbfef83803eccdbd1dc218110514da348"
+          },
+          {
+            "index": 7,
+            "requested_relative_s": 0.5,
+            "actual_relative_s": 0.5071319059934467,
+            "stored_payload_sha256": "7f1b3b18387a8a9f370bfe3b9b96241ced00c85452a425067f17a3084ae67183",
+            "decoded_bgr_sha256": "b6b4af6c5156982c57cd82f678ef0685663c98d93b703f8b0ca481beaabca8be",
+            "preview_jpeg_sha256": "2e99728292fd53e5abeb1685cecf6b996080054c74547014e00de49c86c1215b"
+          },
+          {
+            "index": 15,
+            "requested_relative_s": 1,
+            "actual_relative_s": 1.0426674359478056,
+            "stored_payload_sha256": "e727912fcaf760ab323e71c81e72b5061beb3b3dd0bdba26238baaab76899b00",
+            "decoded_bgr_sha256": "23bf4854b5ad649df76c1990716e9ed701c033b0bb18dfce8c24ef08b9996ae1",
+            "preview_jpeg_sha256": "4ea3ddfb6143f0abcb79ccf03b9aefc6211a3b7f6d38c4aa7dfa990325eb539f"
+          }
+        ],
+        "unloaded_adjudication": {
+          "assessment": "initial distal-unloaded interval supported by combined sampled RGB, continuous tactile-area and high-TCP evidence; not certification of all robot external contacts",
+          "reviewed_utc": "2026-09-07T01:22:50.260531+00:00",
+          "sampled_rgb_no_human_hand": true,
+          "sampled_rgb_packet_on_mat_without_visible_grasp": true,
+          "both_tactile_area_streams_zero_through_initial_second": true,
+          "stationary_required_or_assumed": false,
+          "temporal_limit": "Three RGB samples near0/.5/1s, exact timestamps and hashes listed; RGB alone does not establish continuous depth clearance or exclude occluded proximal contacts."
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Recorded later contacts are not adjudicated, so trigger counts are not false-positive rates.",
+    "No current-based UR3 wrench calibration or real-hardware safety qualification is inferred.",
+    "Three RGB samples support only sampled visual evidence; tactile area/wrench and arm motion characterize the full initial second.",
+    "Continuing the fixed recorded stream after a hypothetical stop is descriptive, not a predicted altered demonstration."
+  ],
+  "analysis_script_sha256": "0f08c968af5c9fe49e7dbaa66867888be73ea12ac8f0546039144eb833c5cb48",
+  "manual_review_semantics": "Numerical extractor initially marks unloaded adjudication pending; these review annotations were added after inspecting all30 hashed RGB previews. Re-running --with-preview regenerates the reviewed images."
+}
