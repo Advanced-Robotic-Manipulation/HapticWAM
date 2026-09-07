@@ -1,0 +1,17 @@
+{
+  "scope": "CPU-only exact-source composition audit; completion must be read from execution diagnostics",
+  "manifest_sha256": "7d23478b72ee87209bad1f80277ae70bbd4d9b3154606701bf9d7e6c489ff35d",
+  "focused_tests_passed": 6,
+  "ruff_pass": true,
+  "completion_fields": [
+    "diagnostics.completed_reason",
+    "diagnostics.completed_at_s",
+    "diagnostics.completion_hold",
+    "diagnostics.placement_release"
+  ],
+  "run_json_top_level_completion_available": false,
+  "files": {
+    "assemble_minimal_source.py": "298c9f11fb70b302d02e0f615623592771a4065c213c43496a1bff07870adc74",
+    "minimal_profile_audit.md": "cf81ded2ccade54b6af662bd3bd8a22c5a5e928bb404ac78b05a5eafb47411a4"
+  }
+}

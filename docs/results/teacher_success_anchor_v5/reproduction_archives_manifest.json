@@ -1,0 +1,2272 @@
+{
+  "created_at_utc": "2026-09-07T09:18:37.115630+00:00",
+  "archives": [
+    {
+      "label": "minimal_runtime",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+      "archive": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/reproduction_archives/minimal_runtime.tar.gz",
+      "bytes": 4563341,
+      "sha256": "714ab9ea54398f12879ea93fd4d361f21cef97baf85568adb842eebdbfe568e3",
+      "files": [
+        {
+          "path": "phantom/__init__.py",
+          "sha256": "61f6ee535109488730fab62da80ead983d5a29bf64684e7b263602648e24643c"
+        },
+        {
+          "path": "phantom/backbone/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/backbone/compat.py",
+          "sha256": "06ebc1fc2b38e6f255ede6e3eadd49ec1dd84c388c8ce0b8e0690c5e63d3add5"
+        },
+        {
+          "path": "phantom/backbone/loader.py",
+          "sha256": "100a345e7bc7ca6fc7e63494b986f800815f979a15067296130b6565cb7dd485"
+        },
+        {
+          "path": "phantom/backbone/text_embedding.py",
+          "sha256": "055342e238f0b9383286c57b3f99ff6c47776cd313e53ad18077b3a367505ce6"
+        },
+        {
+          "path": "phantom/backbone/vae.py",
+          "sha256": "52bab8d26efcbf4195622b6100671073e7e780006aebff904b2dbd254771bcdb"
+        },
+        {
+          "path": "phantom/config/__init__.py",
+          "sha256": "0d9dfada3d7cdd37f4dfb7d9c9247986d9d39f967e6b6dd0bb8bfffeb1944c7c"
+        },
+        {
+          "path": "phantom/config/backbone.py",
+          "sha256": "f554451c2331fbd4431c9d67993b498d1ecbe0d16d98b38a275e56814d93a949"
+        },
+        {
+          "path": "phantom/config/compute.py",
+          "sha256": "90e3c99b0681516b0caec08f6f63d21218f9ef75f63bfc1fc4caf205050763ea"
+        },
+        {
+          "path": "phantom/config/hardware.py",
+          "sha256": "4349a9f49be83421b8901bc46fb3897161829684af818c517726f6ccf50abc77"
+        },
+        {
+          "path": "phantom/config/model.py",
+          "sha256": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2"
+        },
+        {
+          "path": "phantom/config/paths.py",
+          "sha256": "8aa2c7c11258dac5d07f4957378a109a087daa5124ba2df002e2b77be6d47652"
+        },
+        {
+          "path": "phantom/config/training.py",
+          "sha256": "17fc61fb6b967c07602064b2f86d4de90985853793586d94763125f2477e5b20"
+        },
+        {
+          "path": "phantom/dagger/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/dagger/manifest.py",
+          "sha256": "fdfebd90684f672199d98756c57f0948cedae36f34c88d91af1cc6538e30e5f7"
+        },
+        {
+          "path": "phantom/dagger/relabel.py",
+          "sha256": "726d320f52aadcab1dc9715125a3046f696fa04b74ef21b603631466235ed5ab"
+        },
+        {
+          "path": "phantom/dagger/rollout.py",
+          "sha256": "252e2f5e69b754a06154496f8be4f1f784518362b89f3b0f439e96ebad86d2b5"
+        },
+        {
+          "path": "phantom/data/__init__.py",
+          "sha256": "a070c7838412d6010ee18516c047a2e819483850f2aa638403278455ba7df761"
+        },
+        {
+          "path": "phantom/data/contact_play.py",
+          "sha256": "225929f1438a57d0e4bc7a7a3701d111702393fe39848b7f2971c5e933072093"
+        },
+        {
+          "path": "phantom/data/derived.py",
+          "sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494"
+        },
+        {
+          "path": "phantom/data/episode_store.py",
+          "sha256": "6fb45f36729e6d3e54eb4f9208b19fc5025f5ee769857392c2b2864671e4f8be"
+        },
+        {
+          "path": "phantom/data/jpeg_codec.py",
+          "sha256": "fec5e8dfbe6198915d5cf2a387bf4303e24a47af5e47b719f07b2e09e15b5f39"
+        },
+        {
+          "path": "phantom/data/schema.py",
+          "sha256": "5b95795682596cfc7a53c3bcf18a1b8814f99323762bda43e516dd757ca89951"
+        },
+        {
+          "path": "phantom/data/synthetic.py",
+          "sha256": "3eeaa2b27ee87a14e83c93c6c9cecdc06f5cf3c523b065789d05fb6c013bfb16"
+        },
+        {
+          "path": "phantom/data/windows.py",
+          "sha256": "a9a3036b5a73043d68f59a6d3ff6cdc19cff806543313f075242cde0cf9d545c"
+        },
+        {
+          "path": "phantom/data_collect/__init__.py",
+          "sha256": "5db74cafb4ccbeb4c872bc1ca16121594c2b7be38591f583ba697f9c565f729a"
+        },
+        {
+          "path": "phantom/data_collect/config.py",
+          "sha256": "622d9bfbc4a8db515642039238890423d8bbb4e490ea580c01869a07abc121ab"
+        },
+        {
+          "path": "phantom/data_collect/gripper.py",
+          "sha256": "bfbe165f5604a6fb79703280bf16b05554b740b0bfca7ab2789040b417f09d30"
+        },
+        {
+          "path": "phantom/data_collect/offload.py",
+          "sha256": "03ba3e4e4c79c5d71254eb18fcc3981c9878ba50f50577d1ed41d49370a495f3"
+        },
+        {
+          "path": "phantom/data_collect/panel.py",
+          "sha256": "f6dfe681a2c808ad8d618fb7d446277611ec1256fedf175ee530dd7aa822d84c"
+        },
+        {
+          "path": "phantom/data_collect/playback.py",
+          "sha256": "8ec4710566bef43795315e78032347b4fd7b173827e31b57ce5ac4d5c34a2364"
+        },
+        {
+          "path": "phantom/data_collect/rerun_view.py",
+          "sha256": "c4b02165cc4d883e3547fd93f4e0746284ffe7f1e2b64228dc2f5dd6223f6ae6"
+        },
+        {
+          "path": "phantom/data_collect/safeguard.py",
+          "sha256": "053498d62a5d90c62614c436b423826cd5cb9a353688815ebc776c13c5b900cc"
+        },
+        {
+          "path": "phantom/data_collect/session.py",
+          "sha256": "067a2583fcfb7117dd7744d6aed881808007275cf4195dc2430af44679de5a7c"
+        },
+        {
+          "path": "phantom/data_collect/teleop.py",
+          "sha256": "73cf56ad97a9665d40668948cb76c75a47a63afbf7317287f7390c1846e25e85"
+        },
+        {
+          "path": "phantom/deploy/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/deploy/executor.py",
+          "sha256": "0684178fffbe549bb5b4dca002500f3188f633d8d414cd78fdb6875d86d15d49"
+        },
+        {
+          "path": "phantom/deploy/governor.py",
+          "sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a"
+        },
+        {
+          "path": "phantom/deploy/planner.py",
+          "sha256": "23c2958e99aaa8e7103f473b2dca4491b3a23b3634a84f15cc1ecdef9b0844c3"
+        },
+        {
+          "path": "phantom/deploy/runtime.py",
+          "sha256": "6596af592e907524b1c1da6932718963af1dc1b97170b0d8d6631e6f9da9cc7c"
+        },
+        {
+          "path": "phantom/deploy/safety.py",
+          "sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc"
+        },
+        {
+          "path": "phantom/deploy/start_pose.py",
+          "sha256": "247709265be12293620e354c2e89b392e225f51266aa70eb80633bc51607fee9"
+        },
+        {
+          "path": "phantom/drivers/__init__.py",
+          "sha256": "683776c939a80cc3ac3ebaa0d52fa8570012bcb7f90af9a297f7bd73d909ee3a"
+        },
+        {
+          "path": "phantom/drivers/base.py",
+          "sha256": "2245dc63f049fc43a947fcf50b433e30c804aa173778f1e31325e580201a2c1e"
+        },
+        {
+          "path": "phantom/drivers/factory.py",
+          "sha256": "ef83a32f41474ff466af466f041b59dcf0d45f93e30275f62ff953f556c98617"
+        },
+        {
+          "path": "phantom/drivers/mock/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/drivers/mock/dmtac.py",
+          "sha256": "bbe26d1d7145089eced0e337669a2eaac45139f2f16f1499cd7655f1abb62dc9"
+        },
+        {
+          "path": "phantom/drivers/mock/realsense.py",
+          "sha256": "35d89baf3d905c0535d27df15ebd59211711365c551902e1bf2bdf9aabd5c213"
+        },
+        {
+          "path": "phantom/drivers/mock/robotiq.py",
+          "sha256": "d402f19fd47f4588fe79c89bd0ab11dd44b98c9a1746b1f147dd7afe1b23ab4a"
+        },
+        {
+          "path": "phantom/drivers/mock/scenario.py",
+          "sha256": "f208ccec870e6c8ab5420a366ae5ddbc91f64e09ac4368fa30e8cb779211106f"
+        },
+        {
+          "path": "phantom/drivers/mock/ur.py",
+          "sha256": "315cc1e4c02cc241321a35cf75b54aadebe51bf9e8131a82360f46318d4dfed2"
+        },
+        {
+          "path": "phantom/drivers/real/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/drivers/real/dmtac.py",
+          "sha256": "2d54f6f2b274d544ed15b81f1477fe8a3cba89d5c1d5206efdada40bc6244c96"
+        },
+        {
+          "path": "phantom/drivers/real/realsense.py",
+          "sha256": "6cf8fa450980ef9637ecb4a06263129aa5ac54058eb9578748bd726221570b83"
+        },
+        {
+          "path": "phantom/drivers/real/robotiq.py",
+          "sha256": "8c02ea1a3a84d5d3c96f98d757433d037b249703190ed43d1fd3d04069108fdb"
+        },
+        {
+          "path": "phantom/drivers/real/ur.py",
+          "sha256": "2ee975a3cce284d6197199d5d07f0b440c7ae196f464be5ec3982cd028b0f731"
+        },
+        {
+          "path": "phantom/drivers/record_episodes.py",
+          "sha256": "6c65aab5ac14a1196c8e23fe6499b1c50524a01aabff4803ce8395b1c6d186e5"
+        },
+        {
+          "path": "phantom/eval/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/eval/aggregate.py",
+          "sha256": "cf713e1675cfdc42fc79c3b833ab605f8bc66c68361186907423661e02cc3520"
+        },
+        {
+          "path": "phantom/eval/grasp_label.py",
+          "sha256": "948964d5944cb30d643c3fefec0c75ee1495f82679e8b8d7a5d3e34d5b74e027"
+        },
+        {
+          "path": "phantom/eval/metrics.py",
+          "sha256": "dde97f9c294a310d2bd86e610e936c09291c8398af9ab80d4b730b4dc234d0ad"
+        },
+        {
+          "path": "phantom/eval/trial_runner.py",
+          "sha256": "9e0ee66110e491fd31e41165f30d9a5b7351a806f2b6c6c5b356e2a181db691f"
+        },
+        {
+          "path": "phantom/inference/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/inference/policy.py",
+          "sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435"
+        },
+        {
+          "path": "phantom/inference/remote.py",
+          "sha256": "22d4d80cd3d08ebc219b4280b8e36b74572efb0dbf7d7ed5e49278bf713f16a2"
+        },
+        {
+          "path": "phantom/model/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/acc.py",
+          "sha256": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254"
+        },
+        {
+          "path": "phantom/model/ace/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/ace/heads.py",
+          "sha256": "ca68b625a71cfdbd2fc16538e7988bc1609090423226be19e0b8f8afd4b02ab1"
+        },
+        {
+          "path": "phantom/model/ace/losses.py",
+          "sha256": "8841bb196d5ad24195f9f81bc50515b8f07cd3e137c20809b63f6a2b8e88a6f5"
+        },
+        {
+          "path": "phantom/model/ace/packing.py",
+          "sha256": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c"
+        },
+        {
+          "path": "phantom/model/attention_bias.py",
+          "sha256": "7e2fcce654ba077e521662081ad9045bbb82d8a5a374a0f4d8120bb7aa6ac740"
+        },
+        {
+          "path": "phantom/model/hht/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/hht/encoders.py",
+          "sha256": "cc0e36b7cd257c51c4504bdd1d93ce292bbafbe55c71527722dd7e9ba1c6db8e"
+        },
+        {
+          "path": "phantom/model/hht/hht.py",
+          "sha256": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f"
+        },
+        {
+          "path": "phantom/model/hht/tactile_encoder.py",
+          "sha256": "8f7dc892e14c49876d08cb2094ec4f912d18cb5c425d82ee8a4f956dfb2f826b"
+        },
+        {
+          "path": "phantom/model/phantom_dit.py",
+          "sha256": "5640d756ee48818f38a9f32f7bee71c0191e2e7d4587981a0fd03370efded877"
+        },
+        {
+          "path": "phantom/model/rf.py",
+          "sha256": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+        },
+        {
+          "path": "phantom/model/sequence.py",
+          "sha256": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0"
+        },
+        {
+          "path": "phantom/recording/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/recording/postprocess.py",
+          "sha256": "ee08e60b3bc5db05f47f97bc315c411ed5d75cabf7d40163df1131d693538d80"
+        },
+        {
+          "path": "phantom/recording/recorder.py",
+          "sha256": "608608800051101b4945610f2b6a43910dbe2f4e3fae489e03922287eb178623"
+        },
+        {
+          "path": "phantom/recording/ringbuffer.py",
+          "sha256": "2219da84c297512f5f900ffe032241437c42f812ede956c67a883866615eb66a"
+        },
+        {
+          "path": "phantom/recording/workers.py",
+          "sha256": "c6279f917c1076f45ab8fb2e49058459cc5352f351a41e9facd9ae4089693bd7"
+        },
+        {
+          "path": "phantom/scripts/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/scripts/bench_day1.py",
+          "sha256": "ea773860bf6314ffd9427cc531fcb302e08baed79dc160361ab2d9fde5f8f8d7"
+        },
+        {
+          "path": "phantom/scripts/bench_inference.py",
+          "sha256": "f54fc20a760c3a8d778e1c98c25ecc51d872f5a129369b60672be437fe6510a9"
+        },
+        {
+          "path": "phantom/scripts/collect.py",
+          "sha256": "162b7239d59fc366af96673ca030f0ed99afabc9ec4a94a9c4f99f76d2591576"
+        },
+        {
+          "path": "phantom/scripts/dump_norm_stats.py",
+          "sha256": "0f04a8b77582e56606b6a9dcbc7f256c6326fbb14855cf4e3d81ba0702c5d100"
+        },
+        {
+          "path": "phantom/scripts/embed_task_texts.py",
+          "sha256": "6716ed177f925986a3bd604dfd7b896a9cff365ac4bb6965fe2262e954cd0cdc"
+        },
+        {
+          "path": "phantom/scripts/gripper_ctl.py",
+          "sha256": "7111f9da15271f17f3057903dd29b23489d43ca7cd7a5ee280b026bb9e08bdf1"
+        },
+        {
+          "path": "phantom/scripts/mock_smoke.py",
+          "sha256": "6ca127c6fea7e97ed392e5ce4289fc7b2e6e056b72b4cf3fbaf77cb71efd9aab"
+        },
+        {
+          "path": "phantom/scripts/panel.py",
+          "sha256": "45c3b409a258374b74cdbd166ed7d86954abea65f57d798aac9aeaaa7ed05f2f"
+        },
+        {
+          "path": "phantom/scripts/play_episode.py",
+          "sha256": "55adfb24e359ce1e711da7b7ed19c1560ecf2301889f6c8db110bf8c085bc586"
+        },
+        {
+          "path": "phantom/scripts/policy_server.py",
+          "sha256": "3643faf343050948e5d60ef3dcdeea9480fb29c3898d2e918205ee783fc2b451"
+        },
+        {
+          "path": "phantom/scripts/postprocess_episodes.py",
+          "sha256": "9c54bf1857ec68af31e4e161ef2cf53629c49073e553f4fe4a5d5e7e3ce17b0a"
+        },
+        {
+          "path": "phantom/scripts/recompute_fields.py",
+          "sha256": "834493d5750b3b12430309a82f849e20109f4ea7db90d942a60b2bdfa9dbe4ad"
+        },
+        {
+          "path": "phantom/scripts/record_episodes.py",
+          "sha256": "42383d9fc0fb0d88facb1d28b39aaeaebc41dc561611d21f438c33d546f9a4fd"
+        },
+        {
+          "path": "phantom/scripts/run_dagger_round.py",
+          "sha256": "77c72b12dbf650c8789da25c75dd70ce9e94ee1ac1ee537ae05ad1b99ba79fd1"
+        },
+        {
+          "path": "phantom/scripts/run_deploy.py",
+          "sha256": "6c39a288ffbed2f51f2a19591b6fc3629845599a783aad660c1f58a74c334b61"
+        },
+        {
+          "path": "phantom/scripts/run_eval.py",
+          "sha256": "3a652660ec5e4787c5d874fb448036270c6eea622ed5945ff9d6c93b31cbc0c1"
+        },
+        {
+          "path": "phantom/scripts/smoke_test.py",
+          "sha256": "a1f05fd24baf3fc696f4b3f3cd5400a3d6563bedc6bc08f9457822769f0609f7"
+        },
+        {
+          "path": "phantom/scripts/tactile_monitor.py",
+          "sha256": "41e0e4f55b50dfe43c2576ca23a0ad61b924efeb7e098333eab727b264e41350"
+        },
+        {
+          "path": "phantom/scripts/verify_backbone.py",
+          "sha256": "031fa0f02a2eb89d152aff29c98b72453a7091821888392a4f18171077cb7103"
+        },
+        {
+          "path": "phantom/sim/__init__.py",
+          "sha256": "04efb0df76e72e006c318878d8f9818418d45d557d62fb371ed0ea19e5e2492b"
+        },
+        {
+          "path": "phantom/sim/contact_probe.py",
+          "sha256": "0f8a051a2388dc6d677ffb59272ecb56e468c46169e140073e2df4174bfa2d09"
+        },
+        {
+          "path": "phantom/sim/gripper_visual.py",
+          "sha256": "0fda4d4a08678537c4428fceb933de67a44528cc847a6d1837abdd568be053d7"
+        },
+        {
+          "path": "phantom/sim/kinematics.py",
+          "sha256": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6"
+        },
+        {
+          "path": "phantom/sim/policy_adapter.py",
+          "sha256": "97adde55eb1b6e619054c45426e571ab08fe39f5f2da16e51b3b5a02022eae88"
+        },
+        {
+          "path": "phantom/sim/policy_metrics.py",
+          "sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+        },
+        {
+          "path": "phantom/sim/release_controller.py",
+          "sha256": "9719c8fc98d8eb390c67e81462fbf48f926d017b27bfe62f5eedeb51162c0284"
+        },
+        {
+          "path": "phantom/sim/remote_policy.py",
+          "sha256": "2e4f3d5cc09db1db2e2ab97e478266304d9645670f0afb0a4b14ce6c45c06f02"
+        },
+        {
+          "path": "phantom/sim/scene.py",
+          "sha256": "a117795df712150f35dfb0a27ede410f08c97070e592d03d595a8cf109e24d80"
+        },
+        {
+          "path": "phantom/sim/tactile_proxy.py",
+          "sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520"
+        },
+        {
+          "path": "phantom/teleop/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/teleop/base.py",
+          "sha256": "dee3b54734fa12b86d26a06972383ed0b1256fc86ba9a4ae238e559b2dcdc24a"
+        },
+        {
+          "path": "phantom/teleop/echo.py",
+          "sha256": "02251d3d0b6b87633f12ef394d9b2e65036cf77380b633c604bf29d3f41d8784"
+        },
+        {
+          "path": "phantom/teleop/filters.py",
+          "sha256": "284edab45d2196dfdfe8cd7a98777790ab8a91b81e95e82a11f2b4529ce94d4e"
+        },
+        {
+          "path": "phantom/teleop/keyboard.py",
+          "sha256": "7c757cd359d1bdc30e790227ef4e61e8de4d99705c66d3f9c23dca0b8a46625f"
+        },
+        {
+          "path": "phantom/teleop/null.py",
+          "sha256": "2d03862c36b2f61c48cde4b7a777066abbab3da11c5a5b8ecd5a3f5d131f6b6f"
+        },
+        {
+          "path": "phantom/teleop/spacemouse.py",
+          "sha256": "adeb3b47fc47ac4a6fdb60130d28d69a715df577285ac0df63fca98cd5a21339"
+        },
+        {
+          "path": "phantom/teleop/streamer.py",
+          "sha256": "384b3e527a012dd52c51c14b03db8b922390b4edf48d1619ad16b13e2bb4bd1e"
+        },
+        {
+          "path": "phantom/timesync/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/timesync/clock.py",
+          "sha256": "7dffca3c0fe7e3f85dcafdb328b493c372a12ba8bc23c69df7279f4ee5261918"
+        },
+        {
+          "path": "phantom/train/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/train/builder.py",
+          "sha256": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1"
+        },
+        {
+          "path": "phantom/train/common.py",
+          "sha256": "1752f439c454cd919a62213da4185a5bc051edf2ad485e71abdd9c9ef7f2680e"
+        },
+        {
+          "path": "phantom/train/dagger_driver.py",
+          "sha256": "e037ad5ee8f904a07442c26fbe9f66c79549879dfebced517a2426ec4fae953b"
+        },
+        {
+          "path": "phantom/train/distill_hid.py",
+          "sha256": "af958822e9a10f22400b07583b610046221acda22fc0a7bab9e188644efa3a20"
+        },
+        {
+          "path": "phantom/train/finetune_hids.py",
+          "sha256": "49828df86e89ecf05aef42beb92c5378d8f12d0cf835aa928b2fc38c008f9f75"
+        },
+        {
+          "path": "phantom/train/pretrain_tactile.py",
+          "sha256": "90287a756a658f6f3d66bcde9536bc254319a447c1ce8042705ddf8a5e68fb1a"
+        },
+        {
+          "path": "phantom/train/train_teacher.py",
+          "sha256": "5f0bd1115e86d23009b00dcc8cecdb79b766a0b6488cdc98bb8aa2d8062dea63"
+        },
+        {
+          "path": "phantom/viz/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/viz/panel.py",
+          "sha256": "6115a783c9114387fdcdb64623cf6ac7637e5b0642adcd63d111f190d5baf1b7"
+        },
+        {
+          "path": "phantom/viz/rerun_logger.py",
+          "sha256": "4bb53941761af4b26f77dea205ad312f16698322027ddc21313a441f9477601d"
+        },
+        {
+          "path": "phantom/viz/session.py",
+          "sha256": "537f735dccef127c1ca3252f66439a6d4ff247346caf194bd0b26b2a0cf54fb9"
+        },
+        {
+          "path": "tools/sim/analyze_pick_place_evidence.py",
+          "sha256": "f133e8a9aec01b07fbacb01a6de27153e8732f2aad47342779b24bda80c45430"
+        },
+        {
+          "path": "tools/sim/analyze_policy_campaign.py",
+          "sha256": "4e24cb06efb987493e4818dd673949b1097abb02c526176357bf5496d5ee3e9c"
+        },
+        {
+          "path": "tools/sim/audit_policy_checkpoints.py",
+          "sha256": "c375f1001733e469667a46783333004f912d15f18b50616ed068b610da9a8ec8"
+        },
+        {
+          "path": "tools/sim/compare_replay.py",
+          "sha256": "dd5ad2f128105a552f1590531d698cf5c50f92dcacdd5a897f0069545a519269"
+        },
+        {
+          "path": "tools/sim/deployment_filters.py",
+          "sha256": "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675"
+        },
+        {
+          "path": "tools/sim/diagnose_contact_geometry.py",
+          "sha256": "dab618be92c9c9feef65385688c4b1906c8f38ce45ff70dd6be30df4a1981f84"
+        },
+        {
+          "path": "tools/sim/evaluate_pick_place.py",
+          "sha256": "7b42f67350a6d2a5f73f094f61d756faa0b223294a1fc5e788879cb589b595e9"
+        },
+        {
+          "path": "tools/sim/fit_camera_landmarks.py",
+          "sha256": "c439e5abc25a7194782a2c46b6b90af0467a75c7b71001bb6037d3b2368de1e6"
+        },
+        {
+          "path": "tools/sim/gel_contact.py",
+          "sha256": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e"
+        },
+        {
+          "path": "tools/sim/launch_waffles.sh",
+          "sha256": "c72ddaee3dbee06bc6790198c3870e827b770ad5254b45278aef5992fff2fcde"
+        },
+        {
+          "path": "tools/sim/make_pad_collision.py",
+          "sha256": "5399bf8d524d814910b5417e49797cb51f402f346fb4be0bbb81aa297a341510"
+        },
+        {
+          "path": "tools/sim/make_policy_video.py",
+          "sha256": "9bc7fd4d8f6c68e410f5da5f8ffd1cfea1ded1db2d623ab40e2f7b6315c86883"
+        },
+        {
+          "path": "tools/sim/object_support.py",
+          "sha256": "cffb7694ee30e44ba23e2686b8c74e7c18a368b8a9d13eae8419d4d271afe20a"
+        },
+        {
+          "path": "tools/sim/policy_server.py",
+          "sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a"
+        },
+        {
+          "path": "tools/sim/prepare_waffles.py",
+          "sha256": "8121ed77bbf8dfa9f6a1bf20134318c36f7bd4da72a0468e80561ea695189209"
+        },
+        {
+          "path": "tools/sim/refine_camera_static.py",
+          "sha256": "2dc7fd78f4aa305ba926ad4a365deb62de61a46c551e89dcababc3e067b5bb21"
+        },
+        {
+          "path": "tools/sim/refine_gripper_centroids.py",
+          "sha256": "45d63535fba5cb4fc39a966a8f5a76e1dd495de42431f990ad78aef1bbde9dc6"
+        },
+        {
+          "path": "tools/sim/run_campaign.py",
+          "sha256": "f44c3fcb71c73fff9664551839ead2155e2d716d4abb57b8d12471d56029e9a6"
+        },
+        {
+          "path": "tools/sim/run_policy_campaign.py",
+          "sha256": "d3058248d4438ab743f9a58a164eddaadce410d3e10081673111d1ef796c3a5c"
+        },
+        {
+          "path": "tools/sim/run_teacher_pick.py",
+          "sha256": "5e7977ec37a7d5a8e951e9b4c21eb7c5a1038232a584d26a5a8d5e65858378fd"
+        },
+        {
+          "path": "tools/sim/run_waffles.py",
+          "sha256": "b5184eb802ed2d99e1ac2f678fe485b810c72d878b0a52f330d4fec9423ca923"
+        },
+        {
+          "path": "tools/sim/tactile_panels.py",
+          "sha256": "f59d1c8b76be5f356a887c5e60adee8f0d9eca92b345644d79b2711798764a37"
+        },
+        {
+          "path": "tools/sim/view_waffles.sh",
+          "sha256": "a5e99bea0def162a83299ac769cf0ce9852d98dd41b8c091d10b5156e1b2685e"
+        },
+        {
+          "path": "configs/compute.yaml",
+          "sha256": "8f7d644dc366ffb8d41b4896ee74e78a948c5e10eb6082140c9e96b8f2b03518"
+        },
+        {
+          "path": "configs/data_collect.yaml",
+          "sha256": "932953e98e8c635109fb9a1a77ff9e7dca3f80730c685ac86207f4a5c436616f"
+        },
+        {
+          "path": "configs/eval_campaign.example.yaml",
+          "sha256": "33c9dc793e6bcd16254dcdae060de4fcf0a9779805ee1da0a10dbd7b96ce3df8"
+        },
+        {
+          "path": "configs/hardware.nuc.mock.yaml",
+          "sha256": "45e0a074212815f87964cb44486fedc60225b26df9a92c56eeddefef359e9692"
+        },
+        {
+          "path": "configs/hardware.nuc.yaml",
+          "sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524"
+        },
+        {
+          "path": "configs/hardware.yaml",
+          "sha256": "c291039e24087295897a1eae3de085cf6184784514e303746482443a9ec91172"
+        },
+        {
+          "path": "configs/paths.yaml",
+          "sha256": "9c66141f2148f6ec1f07e78ba78ab1651b78d45d25f454dc29d074b6e34b65a2"
+        },
+        {
+          "path": "configs/rerun_blueprint.rbl",
+          "sha256": "f6f61c50dd1f43672a05629a6c5115efc14472bfd38d02468d12f8bb48938856"
+        },
+        {
+          "path": "configs/sim/policy_campaign.json",
+          "sha256": "a43bd24f73aaaaf5fd3dd1e1b02bca1f7fa4df311f34f1170a301da7b7d97c48"
+        },
+        {
+          "path": "configs/sim/teacher_pick_place_campaign.json",
+          "sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c"
+        },
+        {
+          "path": "configs/sim/waffles.json",
+          "sha256": "f7a1b2b11b1e8e3fa17044a07a3968b0d88e6f89372576bd62ed9dfe2569ddc2"
+        },
+        {
+          "path": "configs/sim/waffles_camera_estimate.json",
+          "sha256": "45ef55afdc104a5d99d672d591d3e4cd917cc23eb7dc24e8036d60a1a87a1d08"
+        },
+        {
+          "path": "configs/sim/waffles_evidence.json",
+          "sha256": "5221a483728a66f7cf9af1a399b11f3929ca4ca82114a52bbc49016499c052c6"
+        },
+        {
+          "path": "configs/sim/waffles_pick_place.json",
+          "sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        {
+          "path": "configs/sim/waffles_reconstruction_v1.json",
+          "sha256": "cd8abdc3c7a0ceb42bc1f8810a152bbc9cf1224da6ea89631981b86955f46391"
+        },
+        {
+          "path": "configs/start_poses.yaml",
+          "sha256": "13498363d7b3bac018ed41b248c4a933103a52555264e76c30fbc68fc4fbeb4c"
+        },
+        {
+          "path": "assets/sim/pads/pad_elliptical_12x26x55mm.json",
+          "sha256": "1251d5657381cd64d971c53ef82b1db33e963c10b20e67b4fd7731ab8a73c910"
+        },
+        {
+          "path": "assets/sim/pads/pad_elliptical_12x26x55mm.stl",
+          "sha256": "94fb43781819f64bc217028ad1a88982f34a7cb03eafea9a57e42869569edbc9"
+        },
+        {
+          "path": "assets/sim/robotiq/LICENSE",
+          "sha256": "bfe9a4de3ec95dac1d2bf02df4d774ecfd6d492df1fa33476c3af5576bd08435"
+        },
+        {
+          "path": "assets/sim/robotiq/PROVENANCE.json",
+          "sha256": "9be1ab1e142fd4ccbf9bb4222e6aceb7aa2abb3e29c2242fc7cf9652b1f1801c"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_base_link.stl",
+          "sha256": "d8844d7d09e05423b6edb56b354eef561ad6cf4787d8b7f980232cd4346f46bf"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_finger.dae",
+          "sha256": "807aff52c5a12ca5429cfb2eb19cc88dfaf0083bac6b69e24d49f6beb29aa2c8"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_knuckle.dae",
+          "sha256": "a8e6bb0b3b5ef6ea1323aa698a16dc1ec1a878ed2c2bcd43547750a18e72d9b4"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_finger.dae",
+          "sha256": "5e45e7773260cc4b04bbae626af94bfdd49c38b3c69fc248cf0708e5fa65a39f"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_knuckle.dae",
+          "sha256": "8c7ce8ee42044149f9a956d55f33f06e6b75e5e35080ee4bf1e8cb381535aeb7"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/collision/robotiq_arg2f_base_link.stl",
+          "sha256": "111e37f13a664989dd54226f80f521b32ea0b71c975282a16696b14be7cc9249"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_base_link.dae",
+          "sha256": "d03d6e7395b0aa11ae7954b2f04a0a650448547d5d4f367238098ccd848b3eb5"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_finger.dae",
+          "sha256": "3172e8fe000fda75b9b29b48cd8cad4011d184a6df23eb2c3adb6c1f5a4eae93"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_knuckle.dae",
+          "sha256": "19b12510eec739a1a4655ff633ce3f02ad3c2eda2cb8f451df900ddfa76c8f14"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_finger.dae",
+          "sha256": "32d842e51e0ddd25b3354af212131befa191c183cf4cdb61f82ecbe5c5276323"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_knuckle.dae",
+          "sha256": "f1cc5198c9f3b06979af07d2944034b32acbb6130df5396dc2c7253cb656f587"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_pad.dae",
+          "sha256": "0f1d5b8403fed489fb40b389e3d9ec27882db324d77d20cc84cf8bb8901fee80"
+        },
+        {
+          "path": "assets/sim/robotiq/meshes/visual/robotiq_gripper_coupling.stl",
+          "sha256": "4281e83002a25c20dc07c68b8d77da30a13e9a8401f157f6848ed8287d7cce44"
+        },
+        {
+          "path": "assets/sim/robotiq/robotiq_2f85.urdf",
+          "sha256": "7993b6e349d9eddab0bcb293288c28200567b63c6d02f26e43cf200cc138224a"
+        },
+        {
+          "path": "assets/sim/ur3/LICENSE",
+          "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8"
+        },
+        {
+          "path": "assets/sim/ur3/PROVENANCE.json",
+          "sha256": "8bc925024dda6bb1a2a2e5016fb5b26aa146bbf13a2f244e04e0a7b03f00e883"
+        },
+        {
+          "path": "assets/sim/ur3/config/default_kinematics.yaml",
+          "sha256": "62ccae1768678cfddaee8e2a1b621365d7ac8a58b4a7607aed680ed572c8a423"
+        },
+        {
+          "path": "assets/sim/ur3/config/joint_limits.yaml",
+          "sha256": "3ca03a6b107fab1d20a18a4e3a967ed0f14de228208a95c4735a6c966ea18534"
+        },
+        {
+          "path": "assets/sim/ur3/config/physical_parameters.yaml",
+          "sha256": "019c14da684526f8ff7f1ca37dcab62edb370859db4e18f6805ec3d5e29a1ceb"
+        },
+        {
+          "path": "assets/sim/ur3/config/visual_parameters.yaml",
+          "sha256": "e51a4e2d59909a963ceee34c47c8fdf71810db5edbac90aed66705f4f7222deb"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/base.stl",
+          "sha256": "a4632b7941b0a090c0817255d01a1b3e759b47291487c5742d621395a0a8df2e"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/forearm.stl",
+          "sha256": "08a578aa50bba584f236591b25dfdf0a03a060f05946a7d1c450d800cae5cbb8"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/shoulder.stl",
+          "sha256": "c6a66fc64afa98f694307014cb5ec9cd73a3c4a03730cdbee700a835292ce3d0"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/upperarm.stl",
+          "sha256": "81ccc4d6ee7cac170ace494dc88cf2930f78a1d7edf3c38a96e6b1b90c540c60"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/wrist1.stl",
+          "sha256": "fec8baaeffb31e3de92e62a5b5ce4dba1e3d36cf253ff2a0346c32a6c2b7ef6d"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/wrist2.stl",
+          "sha256": "efb209b3659d4864d17bbdacb1820f9be45aa7b6418c42fda447d6ff7a1da220"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/collision/wrist3.stl",
+          "sha256": "27ad47ace7b5318c2259de92f340e13e25a119f91fb42e5c40d608850db06883"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/base.dae",
+          "sha256": "cebc07433aa6be5d38efa7fd7f8bef5b886add457631caa194fa3d4de7b8d764"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/forearm.dae",
+          "sha256": "c059ae9d135dff9c2b6319d6d07c44f4470b84d61398a85a15262c9cde893393"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/shoulder.dae",
+          "sha256": "53bfe7808ad7bfe7260818022fdf18bf2c3640fa9cc7cb3b571d527ef0d53e5a"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/upperarm.dae",
+          "sha256": "6b8c8a4d68ce0a964abd7c3f493728b3d0d10921ee378c857bcf15b8dd2f9869"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/wrist1.dae",
+          "sha256": "0a9302c733b031d7b33aa3c0a8ea0d8c3180bc98c819fb6e7f0e0803a851d9c5"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/wrist2.dae",
+          "sha256": "ff6a157c9dc6174082b7a595bbf8024051ceace6c34911b405b48ebf76b4523e"
+        },
+        {
+          "path": "assets/sim/ur3/meshes/visual/wrist3.dae",
+          "sha256": "24f68bc002b640779d3632716e07867288f08c01cbd5f3351ce67b94290e44ce"
+        },
+        {
+          "path": "assets/sim/ur3/ur3_cb3.urdf",
+          "sha256": "0d8cec58f04bce10b8829f2c95c51fae04464950cb48c316b6913d2b90a72fe0"
+        },
+        {
+          "path": "assets/sim/waffles/packet_green_top.png",
+          "sha256": "ea10307a458e060f5f0c6cfa56ae365a228be604b544fb00b1df5cd7de38492d"
+        },
+        {
+          "path": "assets/sim/waffles/packet_green_top.provenance.json",
+          "sha256": "752ad9e6afddd821638003634d832424132217192d7c969997737129c3aa45ae"
+        },
+        {
+          "path": "assets/sim/waffles/packet_top.png",
+          "sha256": "79b297a0c6116726d9ef63391ea01f9ed695677ad3f8e63ff78a753d9260ab61"
+        },
+        {
+          "path": "assets/sim/waffles/packet_top.provenance.json",
+          "sha256": "1247d22772e9db43a9afd109f24c7aa3223462b27da9791de0ce2aeaa71965bc"
+        },
+        {
+          "path": "pyproject.toml",
+          "sha256": "c7136d2b2f2c57762c6fb962f99a9d571b6ac3c42fe570815aaff87ce75f9fa5"
+        }
+      ]
+    },
+    {
+      "label": "experiment_driver",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5",
+      "archive": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/reproduction_archives/experiment_driver.tar.gz",
+      "bytes": 1376548,
+      "sha256": "8c5f7e5f4650a8becb9407b51a9de64e9691790bd4ea6626cc670b76f27cae1c",
+      "files": [
+        {
+          "path": "phantom/__init__.py",
+          "sha256": "61f6ee535109488730fab62da80ead983d5a29bf64684e7b263602648e24643c"
+        },
+        {
+          "path": "phantom/backbone/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/backbone/compat.py",
+          "sha256": "06ebc1fc2b38e6f255ede6e3eadd49ec1dd84c388c8ce0b8e0690c5e63d3add5"
+        },
+        {
+          "path": "phantom/backbone/loader.py",
+          "sha256": "100a345e7bc7ca6fc7e63494b986f800815f979a15067296130b6565cb7dd485"
+        },
+        {
+          "path": "phantom/backbone/text_embedding.py",
+          "sha256": "055342e238f0b9383286c57b3f99ff6c47776cd313e53ad18077b3a367505ce6"
+        },
+        {
+          "path": "phantom/backbone/vae.py",
+          "sha256": "52bab8d26efcbf4195622b6100671073e7e780006aebff904b2dbd254771bcdb"
+        },
+        {
+          "path": "phantom/config/__init__.py",
+          "sha256": "0d9dfada3d7cdd37f4dfb7d9c9247986d9d39f967e6b6dd0bb8bfffeb1944c7c"
+        },
+        {
+          "path": "phantom/config/backbone.py",
+          "sha256": "f554451c2331fbd4431c9d67993b498d1ecbe0d16d98b38a275e56814d93a949"
+        },
+        {
+          "path": "phantom/config/compute.py",
+          "sha256": "90e3c99b0681516b0caec08f6f63d21218f9ef75f63bfc1fc4caf205050763ea"
+        },
+        {
+          "path": "phantom/config/hardware.py",
+          "sha256": "aba922446ebbef60209273475a5ed8867edebb21148d1130653bf6261a51ee63"
+        },
+        {
+          "path": "phantom/config/model.py",
+          "sha256": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2"
+        },
+        {
+          "path": "phantom/config/paths.py",
+          "sha256": "8aa2c7c11258dac5d07f4957378a109a087daa5124ba2df002e2b77be6d47652"
+        },
+        {
+          "path": "phantom/config/training.py",
+          "sha256": "6c27b0d8c1da84b896ec837b8e05e95cc1738bb335cb5fadbf3871129cc5f02f"
+        },
+        {
+          "path": "phantom/dagger/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/dagger/manifest.py",
+          "sha256": "fdfebd90684f672199d98756c57f0948cedae36f34c88d91af1cc6538e30e5f7"
+        },
+        {
+          "path": "phantom/dagger/relabel.py",
+          "sha256": "fc7f3bca63079cfde251db2ac3fd9ffe3fc14115a267bbfef17774a6969aeae1"
+        },
+        {
+          "path": "phantom/dagger/rollout.py",
+          "sha256": "252e2f5e69b754a06154496f8be4f1f784518362b89f3b0f439e96ebad86d2b5"
+        },
+        {
+          "path": "phantom/data/__init__.py",
+          "sha256": "a070c7838412d6010ee18516c047a2e819483850f2aa638403278455ba7df761"
+        },
+        {
+          "path": "phantom/data/contact_play.py",
+          "sha256": "225929f1438a57d0e4bc7a7a3701d111702393fe39848b7f2971c5e933072093"
+        },
+        {
+          "path": "phantom/data/derived.py",
+          "sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494"
+        },
+        {
+          "path": "phantom/data/episode_store.py",
+          "sha256": "6fb45f36729e6d3e54eb4f9208b19fc5025f5ee769857392c2b2864671e4f8be"
+        },
+        {
+          "path": "phantom/data/jpeg_codec.py",
+          "sha256": "fec5e8dfbe6198915d5cf2a387bf4303e24a47af5e47b719f07b2e09e15b5f39"
+        },
+        {
+          "path": "phantom/data/schema.py",
+          "sha256": "5b95795682596cfc7a53c3bcf18a1b8814f99323762bda43e516dd757ca89951"
+        },
+        {
+          "path": "phantom/data/synthetic.py",
+          "sha256": "3eeaa2b27ee87a14e83c93c6c9cecdc06f5cf3c523b065789d05fb6c013bfb16"
+        },
+        {
+          "path": "phantom/data/windows.py",
+          "sha256": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2"
+        },
+        {
+          "path": "phantom/data_collect/__init__.py",
+          "sha256": "5db74cafb4ccbeb4c872bc1ca16121594c2b7be38591f583ba697f9c565f729a"
+        },
+        {
+          "path": "phantom/data_collect/config.py",
+          "sha256": "622d9bfbc4a8db515642039238890423d8bbb4e490ea580c01869a07abc121ab"
+        },
+        {
+          "path": "phantom/data_collect/gripper.py",
+          "sha256": "bfbe165f5604a6fb79703280bf16b05554b740b0bfca7ab2789040b417f09d30"
+        },
+        {
+          "path": "phantom/data_collect/offload.py",
+          "sha256": "03ba3e4e4c79c5d71254eb18fcc3981c9878ba50f50577d1ed41d49370a495f3"
+        },
+        {
+          "path": "phantom/data_collect/panel.py",
+          "sha256": "f6dfe681a2c808ad8d618fb7d446277611ec1256fedf175ee530dd7aa822d84c"
+        },
+        {
+          "path": "phantom/data_collect/playback.py",
+          "sha256": "8ec4710566bef43795315e78032347b4fd7b173827e31b57ce5ac4d5c34a2364"
+        },
+        {
+          "path": "phantom/data_collect/rerun_view.py",
+          "sha256": "c4b02165cc4d883e3547fd93f4e0746284ffe7f1e2b64228dc2f5dd6223f6ae6"
+        },
+        {
+          "path": "phantom/data_collect/safeguard.py",
+          "sha256": "053498d62a5d90c62614c436b423826cd5cb9a353688815ebc776c13c5b900cc"
+        },
+        {
+          "path": "phantom/data_collect/session.py",
+          "sha256": "067a2583fcfb7117dd7744d6aed881808007275cf4195dc2430af44679de5a7c"
+        },
+        {
+          "path": "phantom/data_collect/teleop.py",
+          "sha256": "73cf56ad97a9665d40668948cb76c75a47a63afbf7317287f7390c1846e25e85"
+        },
+        {
+          "path": "phantom/deploy/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/deploy/executor.py",
+          "sha256": "3ff6b9345352729a39d5b5cc2e9cdcc08c5355c74391a07b63b0cc64ae4afcb9"
+        },
+        {
+          "path": "phantom/deploy/governor.py",
+          "sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a"
+        },
+        {
+          "path": "phantom/deploy/planner.py",
+          "sha256": "3a49e184b94adb6d57b33a25cfae010a45b88da3e982696695617fb632f30500"
+        },
+        {
+          "path": "phantom/deploy/release_controller.py",
+          "sha256": "3405da4cf01617d42ff0348e8ad6d2e20b69801572b853588fb5fb8c1f867e26"
+        },
+        {
+          "path": "phantom/deploy/runtime.py",
+          "sha256": "9a4fabac62461e6380def1af1768cd50e6e7c6b5ca3dc829f08ef478cbf5dfaf"
+        },
+        {
+          "path": "phantom/deploy/safety.py",
+          "sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc"
+        },
+        {
+          "path": "phantom/deploy/start_pose.py",
+          "sha256": "247709265be12293620e354c2e89b392e225f51266aa70eb80633bc51607fee9"
+        },
+        {
+          "path": "phantom/drivers/__init__.py",
+          "sha256": "683776c939a80cc3ac3ebaa0d52fa8570012bcb7f90af9a297f7bd73d909ee3a"
+        },
+        {
+          "path": "phantom/drivers/base.py",
+          "sha256": "0a75fdb916e101d8e34ef5068794f55b4173c13c601323821aea3f115d9f862a"
+        },
+        {
+          "path": "phantom/drivers/factory.py",
+          "sha256": "ef83a32f41474ff466af466f041b59dcf0d45f93e30275f62ff953f556c98617"
+        },
+        {
+          "path": "phantom/drivers/mock/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/drivers/mock/dmtac.py",
+          "sha256": "bbe26d1d7145089eced0e337669a2eaac45139f2f16f1499cd7655f1abb62dc9"
+        },
+        {
+          "path": "phantom/drivers/mock/realsense.py",
+          "sha256": "35d89baf3d905c0535d27df15ebd59211711365c551902e1bf2bdf9aabd5c213"
+        },
+        {
+          "path": "phantom/drivers/mock/robotiq.py",
+          "sha256": "d402f19fd47f4588fe79c89bd0ab11dd44b98c9a1746b1f147dd7afe1b23ab4a"
+        },
+        {
+          "path": "phantom/drivers/mock/scenario.py",
+          "sha256": "f208ccec870e6c8ab5420a366ae5ddbc91f64e09ac4368fa30e8cb779211106f"
+        },
+        {
+          "path": "phantom/drivers/mock/ur.py",
+          "sha256": "315cc1e4c02cc241321a35cf75b54aadebe51bf9e8131a82360f46318d4dfed2"
+        },
+        {
+          "path": "phantom/drivers/real/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/drivers/real/dmtac.py",
+          "sha256": "2d54f6f2b274d544ed15b81f1477fe8a3cba89d5c1d5206efdada40bc6244c96"
+        },
+        {
+          "path": "phantom/drivers/real/realsense.py",
+          "sha256": "6cf8fa450980ef9637ecb4a06263129aa5ac54058eb9578748bd726221570b83"
+        },
+        {
+          "path": "phantom/drivers/real/rig_lease.py",
+          "sha256": "9512bc4cdd57dc5a92180a9084f1b3f0152fd38722f3422cfa1abb118b28fbd1"
+        },
+        {
+          "path": "phantom/drivers/real/robotiq.py",
+          "sha256": "8c02ea1a3a84d5d3c96f98d757433d037b249703190ed43d1fd3d04069108fdb"
+        },
+        {
+          "path": "phantom/drivers/real/ur.py",
+          "sha256": "b24cbdb9c21b6a5b113d59145e08b716655d9036f9bc2bc371e614f4879587a0"
+        },
+        {
+          "path": "phantom/drivers/record_episodes.py",
+          "sha256": "6c65aab5ac14a1196c8e23fe6499b1c50524a01aabff4803ce8395b1c6d186e5"
+        },
+        {
+          "path": "phantom/eval/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/eval/aggregate.py",
+          "sha256": "90e3e4a7494eefeb9727e7da9ad9fec08504666c8b9c389b9d27ac80ac64143c"
+        },
+        {
+          "path": "phantom/eval/grasp_label.py",
+          "sha256": "948964d5944cb30d643c3fefec0c75ee1495f82679e8b8d7a5d3e34d5b74e027"
+        },
+        {
+          "path": "phantom/eval/metrics.py",
+          "sha256": "f0c542ce97fe58449450b23df866d3957b5fb2250cd92a902119a8f3d1cdff79"
+        },
+        {
+          "path": "phantom/eval/trial_runner.py",
+          "sha256": "9e0ee66110e491fd31e41165f30d9a5b7351a806f2b6c6c5b356e2a181db691f"
+        },
+        {
+          "path": "phantom/inference/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/inference/policy.py",
+          "sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435"
+        },
+        {
+          "path": "phantom/inference/remote.py",
+          "sha256": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557"
+        },
+        {
+          "path": "phantom/model/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/acc.py",
+          "sha256": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254"
+        },
+        {
+          "path": "phantom/model/ace/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/ace/heads.py",
+          "sha256": "ca68b625a71cfdbd2fc16538e7988bc1609090423226be19e0b8f8afd4b02ab1"
+        },
+        {
+          "path": "phantom/model/ace/losses.py",
+          "sha256": "8841bb196d5ad24195f9f81bc50515b8f07cd3e137c20809b63f6a2b8e88a6f5"
+        },
+        {
+          "path": "phantom/model/ace/packing.py",
+          "sha256": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c"
+        },
+        {
+          "path": "phantom/model/attention_bias.py",
+          "sha256": "7e2fcce654ba077e521662081ad9045bbb82d8a5a374a0f4d8120bb7aa6ac740"
+        },
+        {
+          "path": "phantom/model/hht/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/model/hht/encoders.py",
+          "sha256": "cc0e36b7cd257c51c4504bdd1d93ce292bbafbe55c71527722dd7e9ba1c6db8e"
+        },
+        {
+          "path": "phantom/model/hht/hht.py",
+          "sha256": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f"
+        },
+        {
+          "path": "phantom/model/hht/tactile_encoder.py",
+          "sha256": "8f7dc892e14c49876d08cb2094ec4f912d18cb5c425d82ee8a4f956dfb2f826b"
+        },
+        {
+          "path": "phantom/model/phantom_dit.py",
+          "sha256": "5640d756ee48818f38a9f32f7bee71c0191e2e7d4587981a0fd03370efded877"
+        },
+        {
+          "path": "phantom/model/rf.py",
+          "sha256": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+        },
+        {
+          "path": "phantom/model/sequence.py",
+          "sha256": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0"
+        },
+        {
+          "path": "phantom/recording/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/recording/postprocess.py",
+          "sha256": "ee08e60b3bc5db05f47f97bc315c411ed5d75cabf7d40163df1131d693538d80"
+        },
+        {
+          "path": "phantom/recording/recorder.py",
+          "sha256": "608608800051101b4945610f2b6a43910dbe2f4e3fae489e03922287eb178623"
+        },
+        {
+          "path": "phantom/recording/ringbuffer.py",
+          "sha256": "2219da84c297512f5f900ffe032241437c42f812ede956c67a883866615eb66a"
+        },
+        {
+          "path": "phantom/recording/workers.py",
+          "sha256": "c6279f917c1076f45ab8fb2e49058459cc5352f351a41e9facd9ae4089693bd7"
+        },
+        {
+          "path": "phantom/scripts/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/scripts/bench_day1.py",
+          "sha256": "ea773860bf6314ffd9427cc531fcb302e08baed79dc160361ab2d9fde5f8f8d7"
+        },
+        {
+          "path": "phantom/scripts/bench_inference.py",
+          "sha256": "f54fc20a760c3a8d778e1c98c25ecc51d872f5a129369b60672be437fe6510a9"
+        },
+        {
+          "path": "phantom/scripts/collect.py",
+          "sha256": "162b7239d59fc366af96673ca030f0ed99afabc9ec4a94a9c4f99f76d2591576"
+        },
+        {
+          "path": "phantom/scripts/dump_norm_stats.py",
+          "sha256": "0f04a8b77582e56606b6a9dcbc7f256c6326fbb14855cf4e3d81ba0702c5d100"
+        },
+        {
+          "path": "phantom/scripts/embed_task_texts.py",
+          "sha256": "6716ed177f925986a3bd604dfd7b896a9cff365ac4bb6965fe2262e954cd0cdc"
+        },
+        {
+          "path": "phantom/scripts/gripper_ctl.py",
+          "sha256": "7111f9da15271f17f3057903dd29b23489d43ca7cd7a5ee280b026bb9e08bdf1"
+        },
+        {
+          "path": "phantom/scripts/mock_smoke.py",
+          "sha256": "6ca127c6fea7e97ed392e5ce4289fc7b2e6e056b72b4cf3fbaf77cb71efd9aab"
+        },
+        {
+          "path": "phantom/scripts/panel.py",
+          "sha256": "45c3b409a258374b74cdbd166ed7d86954abea65f57d798aac9aeaaa7ed05f2f"
+        },
+        {
+          "path": "phantom/scripts/play_episode.py",
+          "sha256": "55adfb24e359ce1e711da7b7ed19c1560ecf2301889f6c8db110bf8c085bc586"
+        },
+        {
+          "path": "phantom/scripts/policy_server.py",
+          "sha256": "0143b6b41ac5af35397b523b97e675e7d8529df9ce1f5ed07ae8711e55aa4970"
+        },
+        {
+          "path": "phantom/scripts/postprocess_episodes.py",
+          "sha256": "9c54bf1857ec68af31e4e161ef2cf53629c49073e553f4fe4a5d5e7e3ce17b0a"
+        },
+        {
+          "path": "phantom/scripts/recompute_fields.py",
+          "sha256": "834493d5750b3b12430309a82f849e20109f4ea7db90d942a60b2bdfa9dbe4ad"
+        },
+        {
+          "path": "phantom/scripts/record_episodes.py",
+          "sha256": "42383d9fc0fb0d88facb1d28b39aaeaebc41dc561611d21f438c33d546f9a4fd"
+        },
+        {
+          "path": "phantom/scripts/run_dagger_round.py",
+          "sha256": "77c72b12dbf650c8789da25c75dd70ce9e94ee1ac1ee537ae05ad1b99ba79fd1"
+        },
+        {
+          "path": "phantom/scripts/run_deploy.py",
+          "sha256": "7754680e2eecd403409d2e060b829617db7f42f77eac9e9f735880844e7377d9"
+        },
+        {
+          "path": "phantom/scripts/run_eval.py",
+          "sha256": "3a652660ec5e4787c5d874fb448036270c6eea622ed5945ff9d6c93b31cbc0c1"
+        },
+        {
+          "path": "phantom/scripts/smoke_test.py",
+          "sha256": "a1f05fd24baf3fc696f4b3f3cd5400a3d6563bedc6bc08f9457822769f0609f7"
+        },
+        {
+          "path": "phantom/scripts/tactile_monitor.py",
+          "sha256": "41e0e4f55b50dfe43c2576ca23a0ad61b924efeb7e098333eab727b264e41350"
+        },
+        {
+          "path": "phantom/scripts/verify_backbone.py",
+          "sha256": "031fa0f02a2eb89d152aff29c98b72453a7091821888392a4f18171077cb7103"
+        },
+        {
+          "path": "phantom/sim/__init__.py",
+          "sha256": "04efb0df76e72e006c318878d8f9818418d45d557d62fb371ed0ea19e5e2492b"
+        },
+        {
+          "path": "phantom/sim/command_replay.py",
+          "sha256": "81178cd4e416f4c4d8d8651f79548c664b8fdfe05a34e872c0cbbab854e10690"
+        },
+        {
+          "path": "phantom/sim/contact_probe.py",
+          "sha256": "0f8a051a2388dc6d677ffb59272ecb56e468c46169e140073e2df4174bfa2d09"
+        },
+        {
+          "path": "phantom/sim/gripper_visual.py",
+          "sha256": "0fda4d4a08678537c4428fceb933de67a44528cc847a6d1837abdd568be053d7"
+        },
+        {
+          "path": "phantom/sim/kinematics.py",
+          "sha256": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6"
+        },
+        {
+          "path": "phantom/sim/policy_adapter.py",
+          "sha256": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+        },
+        {
+          "path": "phantom/sim/policy_metrics.py",
+          "sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+        },
+        {
+          "path": "phantom/sim/release_controller.py",
+          "sha256": "b0b8a75d58ea800817bf8ddd256ca06e97ecdf58be78462d6d712605fb255ad8"
+        },
+        {
+          "path": "phantom/sim/remote_policy.py",
+          "sha256": "2e4f3d5cc09db1db2e2ab97e478266304d9645670f0afb0a4b14ce6c45c06f02"
+        },
+        {
+          "path": "phantom/sim/scene.py",
+          "sha256": "a117795df712150f35dfb0a27ede410f08c97070e592d03d595a8cf109e24d80"
+        },
+        {
+          "path": "phantom/sim/tactile_proxy.py",
+          "sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520"
+        },
+        {
+          "path": "phantom/teleop/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/teleop/base.py",
+          "sha256": "dee3b54734fa12b86d26a06972383ed0b1256fc86ba9a4ae238e559b2dcdc24a"
+        },
+        {
+          "path": "phantom/teleop/echo.py",
+          "sha256": "02251d3d0b6b87633f12ef394d9b2e65036cf77380b633c604bf29d3f41d8784"
+        },
+        {
+          "path": "phantom/teleop/filters.py",
+          "sha256": "284edab45d2196dfdfe8cd7a98777790ab8a91b81e95e82a11f2b4529ce94d4e"
+        },
+        {
+          "path": "phantom/teleop/keyboard.py",
+          "sha256": "7c757cd359d1bdc30e790227ef4e61e8de4d99705c66d3f9c23dca0b8a46625f"
+        },
+        {
+          "path": "phantom/teleop/null.py",
+          "sha256": "2d03862c36b2f61c48cde4b7a777066abbab3da11c5a5b8ecd5a3f5d131f6b6f"
+        },
+        {
+          "path": "phantom/teleop/spacemouse.py",
+          "sha256": "adeb3b47fc47ac4a6fdb60130d28d69a715df577285ac0df63fca98cd5a21339"
+        },
+        {
+          "path": "phantom/teleop/streamer.py",
+          "sha256": "384b3e527a012dd52c51c14b03db8b922390b4edf48d1619ad16b13e2bb4bd1e"
+        },
+        {
+          "path": "phantom/timesync/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/timesync/clock.py",
+          "sha256": "7dffca3c0fe7e3f85dcafdb328b493c372a12ba8bc23c69df7279f4ee5261918"
+        },
+        {
+          "path": "phantom/train/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/train/builder.py",
+          "sha256": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1"
+        },
+        {
+          "path": "phantom/train/common.py",
+          "sha256": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8"
+        },
+        {
+          "path": "phantom/train/dagger_driver.py",
+          "sha256": "e037ad5ee8f904a07442c26fbe9f66c79549879dfebced517a2426ec4fae953b"
+        },
+        {
+          "path": "phantom/train/distill_hid.py",
+          "sha256": "302831269780d0b94566555d41af27873b7cc29ca346a6f84fd976a81174a6de"
+        },
+        {
+          "path": "phantom/train/finetune_hids.py",
+          "sha256": "02932ba383f0dae6046f80c7fad2ec88ef201e6dd61d5a54cb2ab39bcd720e99"
+        },
+        {
+          "path": "phantom/train/pretrain_tactile.py",
+          "sha256": "90287a756a658f6f3d66bcde9536bc254319a447c1ce8042705ddf8a5e68fb1a"
+        },
+        {
+          "path": "phantom/train/train_teacher.py",
+          "sha256": "26971b1a501a97dc1a16a7aee42dce66e7b6c4f0fd09e8ac652ff767f4ab62ac"
+        },
+        {
+          "path": "phantom/viz/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "phantom/viz/panel.py",
+          "sha256": "6115a783c9114387fdcdb64623cf6ac7637e5b0642adcd63d111f190d5baf1b7"
+        },
+        {
+          "path": "phantom/viz/rerun_logger.py",
+          "sha256": "4bb53941761af4b26f77dea205ad312f16698322027ddc21313a441f9477601d"
+        },
+        {
+          "path": "phantom/viz/session.py",
+          "sha256": "537f735dccef127c1ca3252f66439a6d4ff247346caf194bd0b26b2a0cf54fb9"
+        },
+        {
+          "path": "tools/apply_grasp_labels.py",
+          "sha256": "7cf836eca560d7ec8eb288bedf3ff1f9151bd5099fe0d9f5a8950e86ecace1d1"
+        },
+        {
+          "path": "tools/episode_qc.py",
+          "sha256": "15445a6f3f09d5d2a4a48c4233d89c9eecca870269d149fb526c541a82f882a9"
+        },
+        {
+          "path": "tools/gen_start_poses.py",
+          "sha256": "f550975a5dd5ebcb35ba9c51dc0a25d851a5b3effb21b0875b684189dc4cc71e"
+        },
+        {
+          "path": "tools/intake_recovery.py",
+          "sha256": "887d32f7b7663b23ab9d1473bd77f94e4c564cb7f06c5ed1494ec1100512cada"
+        },
+        {
+          "path": "tools/label_grasps.py",
+          "sha256": "0109288d929fe6793307173fed93667583f884d9cfe7495a4f9893241eca26d3"
+        },
+        {
+          "path": "tools/nuc/analyze_episodes_obj.py",
+          "sha256": "dd84fa89a4d310e75f667943b63d0819677ef1e630de7a89e12e616c774d8565"
+        },
+        {
+          "path": "tools/nuc/diagnostics/probe_gripper_current.py",
+          "sha256": "3415bac8cdf27e99c42974e5d7875f620f8ae08a9f792a9f4dc5202e5fce2be0"
+        },
+        {
+          "path": "tools/nuc/diagnostics/probe_rtde_generic_tool_current.py",
+          "sha256": "6cbeb5fe1d8abcab36f32f8ba242029b332d08f2de3ab2ec14fb85c8fe54ea37"
+        },
+        {
+          "path": "tools/nuc/diagnostics/probe_rtde_tool_current.py",
+          "sha256": "9dad7e9c2d76bd285023afa2f862f67385040084c1c4570cd2e23d327413bbdb"
+        },
+        {
+          "path": "tools/nuc/episode_census.py",
+          "sha256": "5770a463afbd2e0cb46f907e93f73a0ae2ba679df1825e67db38f4873cec6e01"
+        },
+        {
+          "path": "tools/nuc/episode_quality.py",
+          "sha256": "934c018342062bb451db7f03b7a63a9eef4d6f9ef7a82bbd2fafa6c80665d5e7"
+        },
+        {
+          "path": "tools/nuc/hf_reorg.py",
+          "sha256": "273abf4b1f8c54a1f15197d843ba6a7e6628e0164562a8f8b49a5035e2bb69c0"
+        },
+        {
+          "path": "tools/nuc/hf_reorg_upload.py",
+          "sha256": "f76d654a9f2ffa02f439d8872a5716e734ae94699b145a48709b3e77d2cc08d7"
+        },
+        {
+          "path": "tools/nuc/hf_upload_episodes.py",
+          "sha256": "e19566827954d44811674e40d84776fbb02e29972922387b11a8afbcb80c51ee"
+        },
+        {
+          "path": "tools/nuc/phantom-hf-upload.service",
+          "sha256": "9888bfbfe0033ccad3c0f5d1f81440c595a00c395e11478b7fe026085e045d75"
+        },
+        {
+          "path": "tools/nuc/phantom-hf-upload.timer",
+          "sha256": "7a66fb61ff6d22fb08fa96a2b10268f47a959cc0bfa51ebb910448e61c0e1578"
+        },
+        {
+          "path": "tools/nuc/recover_episodes.py",
+          "sha256": "fe10e5be8a62b66a28a1f5dabaa8b968308d61c72db5656158459e641abfe197"
+        },
+        {
+          "path": "tools/nuc/replay_episode.py",
+          "sha256": "bad71b8374452e27e8680e38072abf5d6e42cd16b7bbf3143dd788bfc4e259f6"
+        },
+        {
+          "path": "tools/nuc/sync_task_view.py",
+          "sha256": "728ce482ba97045ec70624319cce71085568aba2cc34e00d20e93c39659ad4f1"
+        },
+        {
+          "path": "tools/nuc/viewer.sh",
+          "sha256": "2cd339b679942e8643e02d2702ac41573c9333f2f865c309ed32b685c15be867"
+        },
+        {
+          "path": "tools/nuc/whiteboard_compare.py",
+          "sha256": "4bcf0a0799837f225e5679c5aed1378cf2ec34526aef9d4edd37dcd749f7bf3b"
+        },
+        {
+          "path": "tools/pack_repo.sh",
+          "sha256": "d3fb1dba527e33a586308a06e9847c03ad7bf94e0ac65c39e7346e3eb2629435"
+        },
+        {
+          "path": "tools/provision_distill.sh",
+          "sha256": "213bbbbe419b8d322ca7ea6a7adb67595d011cd2b84176cd939cab8e7183eef4"
+        },
+        {
+          "path": "tools/provision_v4.sh",
+          "sha256": "54cd8ea3a2b832fb96a6fcd92976de1338d75d869622b9165f2372910557ee8a"
+        },
+        {
+          "path": "tools/provision_v5.sh",
+          "sha256": "c0a4269833762be6a68a02a73cc2f38fe298ba5d46eb6de74844e5d521f398a6"
+        },
+        {
+          "path": "tools/rederive_rollout_actions.py",
+          "sha256": "409667862a0be6cdbc22665bd5c5c5f6f2dc6b636bdc9fdb98e5305f92ec0701"
+        },
+        {
+          "path": "tools/replay_deploy_path.py",
+          "sha256": "eefaa4d7dc4297a8c0019d8642bc8683a3ed335d94dc99ecaf0bf678e501d965"
+        },
+        {
+          "path": "tools/replay_rig.py",
+          "sha256": "48297c81abd8bae4b6a14b1d035ed8164390508c858f9d4f8c3a2a2abb59721a"
+        },
+        {
+          "path": "tools/rig/GO.sh",
+          "sha256": "c8aaac57dd045fb39baa67908ab533acbe366791c917603b1443ec1d2d0b746b"
+        },
+        {
+          "path": "tools/rig/GO_ANY.sh",
+          "sha256": "9a7065403c09a0aa82edcddc5c1cdf06951d75b962aab576caf43e2d28e79169"
+        },
+        {
+          "path": "tools/rig/GO_Carton.sh",
+          "sha256": "e68fd5d5f30d5b69f8bf3b94b4f334d82d08546ac7907252f399badac55f4e3a"
+        },
+        {
+          "path": "tools/rig/GO_Carton_fast.sh",
+          "sha256": "3cb98b96df1fd7d64420476f8eb53d4129363fd505482d5efecc4bc096072223"
+        },
+        {
+          "path": "tools/rig/GO_Carton_hq.sh",
+          "sha256": "accf48fea5d2b410949111c59ae4c0b29bc5b523649236e64d3d2818502828bb"
+        },
+        {
+          "path": "tools/rig/GO_egg.sh",
+          "sha256": "7927f426c15c0b1958eab57a1adeacd64b23157419e5d24ae93523d443963ae3"
+        },
+        {
+          "path": "tools/rig/GO_egg_fast.sh",
+          "sha256": "177043c6d218038395b8414aed26472375a5c7c9ba6a0472b09c11a5dc5c159e"
+        },
+        {
+          "path": "tools/rig/GO_egg_hq.sh",
+          "sha256": "1c97e9a8dc55276e5d382aaa810e86c1de690a28b6d35edc74e6ab7e9113fded"
+        },
+        {
+          "path": "tools/rig/GO_v5_ANY.sh",
+          "sha256": "42399f5f26ce277eeef48094b62634c07ca55f37395732639c1dbfcfe0f5b135"
+        },
+        {
+          "path": "tools/rig/GO_v5_Carton.sh",
+          "sha256": "a96de85b692bded9de827d14c6548f4aa681c4ba357f149ca01bde83d07cbf0f"
+        },
+        {
+          "path": "tools/rig/GO_v5_egg.sh",
+          "sha256": "7335db47e3ad027e4649e32ad43a31821502c4c76cbd42d72829ae5562777be6"
+        },
+        {
+          "path": "tools/rig/GO_v5_waffles.sh",
+          "sha256": "e10dd12f336326b22ba024c50e0ba7c4c00f380a5b9e85c58e852fed3686ab12"
+        },
+        {
+          "path": "tools/rig/GO_v5_whiteboard.sh",
+          "sha256": "9ad768e97ecc4d971c0c253f41a471311750b99e782198026ed44e0ff5041ca1"
+        },
+        {
+          "path": "tools/rig/GO_waffles.sh",
+          "sha256": "c88ab11d99b764f0b823b9e3955cf5294a903240fc1a3a27e59ed36f2cdc7bd0"
+        },
+        {
+          "path": "tools/rig/GO_waffles_fast.sh",
+          "sha256": "51920c2a2e585391f68b31e6511230078aff5485161fb89f74698ac5ecc1ed0d"
+        },
+        {
+          "path": "tools/rig/GO_waffles_hq.sh",
+          "sha256": "4fc6556a05ae423df5194d3794463d7dd864bbd756f5fb4af3b95ba44cee8318"
+        },
+        {
+          "path": "tools/rig/GO_whiteboard.sh",
+          "sha256": "d7710299c27c20979a87bfaca0eaa7b273cb47589746fa4a720a83d76bab4eff"
+        },
+        {
+          "path": "tools/rig/GO_whiteboard_fast.sh",
+          "sha256": "6ebca183e774f9c340deabf96f9599cec2460f287c4c9d28058fdabb6dc3f343"
+        },
+        {
+          "path": "tools/rig/GO_whiteboard_hq.sh",
+          "sha256": "2d8dafc2fb02f6b147155a33e2f0ef7c4c6e51166cc4a9e0bf809233b4d8fdeb"
+        },
+        {
+          "path": "tools/rig/GRIPPER_OPEN.sh",
+          "sha256": "7cb2e26e2e2fe88f922cbfa653f860f5cf4ec9bfd05165a7f04da93d5518d656"
+        },
+        {
+          "path": "tools/rig/GRIPPER_RESET.sh",
+          "sha256": "cbefdff75d7418e7438660efa10602771b98758b7bfde5ccdb689af582151f6b"
+        },
+        {
+          "path": "tools/rig/MODELS.tsv",
+          "sha256": "8158d26d1ca2553ae36967955583f0aa333d41b7c265e1396f8c76b43b2c92ea"
+        },
+        {
+          "path": "tools/rig/PICK.sh",
+          "sha256": "9b8b9d320d17ea0f555d25bd0167bd4a117ecc3da9b8b03fba02e5b49c7663df"
+        },
+        {
+          "path": "tools/rig/README.md",
+          "sha256": "56d85426f29d21a65857e3de73594fd2c8a102589708dad26b7c7e2a0915a21c"
+        },
+        {
+          "path": "tools/rig/SERVE.sh",
+          "sha256": "8c24632a0e3e2d4462b4b02468da74ec91f0b239141648c9a15583830959a227"
+        },
+        {
+          "path": "tools/rig/SNAP_ANY.sh",
+          "sha256": "25a6bf1e0ef6e70307a70abc3253bd303791781b448c6701950c91fe10159570"
+        },
+        {
+          "path": "tools/rig/WRIST.sh",
+          "sha256": "6b56339ce82282e18c51e8fcb55d055b9e392f705073a0b515bfd9486be47269"
+        },
+        {
+          "path": "tools/rig/gate_check.py",
+          "sha256": "043d5d15575c686e0b015cda901aa53de2c0e662153cf3168e45af70d0b8d4da"
+        },
+        {
+          "path": "tools/rig/probe_rig.py",
+          "sha256": "cc6648a387f7138563f7038ca1b13a406e854bcc1a862490f2575ac350848f2c"
+        },
+        {
+          "path": "tools/rig/screenshot_Carton.sh",
+          "sha256": "1e9e03627f997c82c7a2dcdaf7f04857c6984b8db404a1c54f412670612d0c0f"
+        },
+        {
+          "path": "tools/rig/screenshot_egg.sh",
+          "sha256": "151dbe7d2856f412604374dbf31d03f8e4357bae99eb3f46045288e7b0cdb1bf"
+        },
+        {
+          "path": "tools/rig/screenshot_waffles.sh",
+          "sha256": "2c3d1684f8891381619a19e7639dfb53963851c96fe72c3d920f6548846b3cd4"
+        },
+        {
+          "path": "tools/rig/screenshot_whiteboard.sh",
+          "sha256": "fc6a43515310c30da7e30a7be6737af33b67dd0fa433a7f62fe29e048dcb2e4f"
+        },
+        {
+          "path": "tools/rig/stage_v5.sh",
+          "sha256": "440e894095f46e5a050fc0142fad762d492d183a17b812171b341be141fc2d51"
+        },
+        {
+          "path": "tools/rig_trace_decompose.py",
+          "sha256": "376a329476f638740218f574bff377517bd512006558f0d297c772a835e9bf61"
+        },
+        {
+          "path": "tools/sim/analyze_pick_place_evidence.py",
+          "sha256": "f133e8a9aec01b07fbacb01a6de27153e8732f2aad47342779b24bda80c45430"
+        },
+        {
+          "path": "tools/sim/analyze_policy_campaign.py",
+          "sha256": "1c9ff5d13f7e98f60346cd9c27eb834f4720011623dd988ab20c03e2b14c0245"
+        },
+        {
+          "path": "tools/sim/anchor_inference_timing.py",
+          "sha256": "cb40aeaf02c364a6c2719312a728c11a69f2a7b36ad713c629a16a553eb3512b"
+        },
+        {
+          "path": "tools/sim/audit_policy_checkpoints.py",
+          "sha256": "c375f1001733e469667a46783333004f912d15f18b50616ed068b610da9a8ec8"
+        },
+        {
+          "path": "tools/sim/compare_replay.py",
+          "sha256": "dd5ad2f128105a552f1590531d698cf5c50f92dcacdd5a897f0069545a519269"
+        },
+        {
+          "path": "tools/sim/deployment_filters.py",
+          "sha256": "c0bf8fec9d260e9fe19629dcf80118aa5ad6609e041d695c2aab2decf0074584"
+        },
+        {
+          "path": "tools/sim/diagnose_anchor_inputs.py",
+          "sha256": "c00ee22dfa5d7ed75d33ac5839e0fd0cbad92071aa73e135dea9802f1fb588e8"
+        },
+        {
+          "path": "tools/sim/diagnose_contact_geometry.py",
+          "sha256": "dab618be92c9c9feef65385688c4b1906c8f38ce45ff70dd6be30df4a1981f84"
+        },
+        {
+          "path": "tools/sim/diagnose_rgb_transfer.py",
+          "sha256": "2aee711780e3e2dbecec9c928e46efcdf8486b9d5e05a24ae42a1b03bc32b5a0"
+        },
+        {
+          "path": "tools/sim/evaluate_pick_place.py",
+          "sha256": "7b42f67350a6d2a5f73f094f61d756faa0b223294a1fc5e788879cb589b595e9"
+        },
+        {
+          "path": "tools/sim/fit_camera_landmarks.py",
+          "sha256": "c439e5abc25a7194782a2c46b6b90af0467a75c7b71001bb6037d3b2368de1e6"
+        },
+        {
+          "path": "tools/sim/freeze_teacher_anchor_confirmation.py",
+          "sha256": "b0e67a291263bdf4ac8ba5cc4028149efe4059deb6e9135d3fe0ea8141e38eba"
+        },
+        {
+          "path": "tools/sim/freeze_teacher_confirmation.py",
+          "sha256": "06f1f576f5430b82bc5b958188aaa6a316a55987ba1b584c639b4b30475f1109"
+        },
+        {
+          "path": "tools/sim/gel_contact.py",
+          "sha256": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e"
+        },
+        {
+          "path": "tools/sim/gripper_wrist.py",
+          "sha256": "819780c79bfbabb76c4f2b913b5774437255bd31b69e41eb9e05e026ab1c2846"
+        },
+        {
+          "path": "tools/sim/launch_waffles.sh",
+          "sha256": "c72ddaee3dbee06bc6790198c3870e827b770ad5254b45278aef5992fff2fcde"
+        },
+        {
+          "path": "tools/sim/make_pad_collision.py",
+          "sha256": "5399bf8d524d814910b5417e49797cb51f402f346fb4be0bbb81aa297a341510"
+        },
+        {
+          "path": "tools/sim/make_policy_video.py",
+          "sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054"
+        },
+        {
+          "path": "tools/sim/object_support.py",
+          "sha256": "cffb7694ee30e44ba23e2686b8c74e7c18a368b8a9d13eae8419d4d271afe20a"
+        },
+        {
+          "path": "tools/sim/policy_server.py",
+          "sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a"
+        },
+        {
+          "path": "tools/sim/prepare_teacher_anchor_diagnostic.py",
+          "sha256": "add94fa80c425c65d7c15cfd9f5a0e02329039535ffab201e5d3e1d8d2f4cba1"
+        },
+        {
+          "path": "tools/sim/prepare_teacher_anchor_feedback.py",
+          "sha256": "a7222206e106dbec1648fb21e8ee4ff000a6a56dc52c0d046936f4e97d79517a"
+        },
+        {
+          "path": "tools/sim/prepare_teacher_anchor_finish.py",
+          "sha256": "209201114d649004fbb8220bab913e8edd87dfebd480c7034fca74067e939966"
+        },
+        {
+          "path": "tools/sim/prepare_teacher_anchor_sensors.py",
+          "sha256": "8688cdd12ad0013dac632e802627efdfc148e51550d065ae6ad0b4becc708048"
+        },
+        {
+          "path": "tools/sim/prepare_waffles.py",
+          "sha256": "8121ed77bbf8dfa9f6a1bf20134318c36f7bd4da72a0468e80561ea695189209"
+        },
+        {
+          "path": "tools/sim/refine_camera_static.py",
+          "sha256": "2dc7fd78f4aa305ba926ad4a365deb62de61a46c551e89dcababc3e067b5bb21"
+        },
+        {
+          "path": "tools/sim/refine_gripper_centroids.py",
+          "sha256": "45d63535fba5cb4fc39a966a8f5a76e1dd495de42431f990ad78aef1bbde9dc6"
+        },
+        {
+          "path": "tools/sim/robot_environment_contacts.py",
+          "sha256": "7585e9474b681f460300d8b94b9c8bc25529dd45a85683aff83d5de7b87c47d0"
+        },
+        {
+          "path": "tools/sim/run_campaign.py",
+          "sha256": "f44c3fcb71c73fff9664551839ead2155e2d716d4abb57b8d12471d56029e9a6"
+        },
+        {
+          "path": "tools/sim/run_policy_campaign.py",
+          "sha256": "54a099ed6a5b3fdba7afa1991a0689bff61c10d35a0b107b641855423a2f66ee"
+        },
+        {
+          "path": "tools/sim/run_teacher_pick.py",
+          "sha256": "5e7977ec37a7d5a8e951e9b4c21eb7c5a1038232a584d26a5a8d5e65858378fd"
+        },
+        {
+          "path": "tools/sim/run_waffles.py",
+          "sha256": "7a3dd9eb4ef909dbd0e8b0c377ff1d8667885123a7910a2e8bd971816be38da6"
+        },
+        {
+          "path": "tools/sim/select_teacher_anchor.py",
+          "sha256": "db2fe668d71d58c24ca85b70898cb921c9c48779f7cf50b857f41d53e5a48772"
+        },
+        {
+          "path": "tools/sim/select_teacher_candidate.py",
+          "sha256": "4ec14256168b89759348fbc7659f65c1d81d787464338ac25257925f41e40ffa"
+        },
+        {
+          "path": "tools/sim/tactile_panels.py",
+          "sha256": "f59d1c8b76be5f356a887c5e60adee8f0d9eca92b345644d79b2711798764a37"
+        },
+        {
+          "path": "tools/sim/teacher_anchor_design.py",
+          "sha256": "6a1716779877b537e32476a2f9a174ec0747b01a4e38eb794e85d49955e135fb"
+        },
+        {
+          "path": "tools/sim/view_waffles.sh",
+          "sha256": "a5e99bea0def162a83299ac769cf0ce9852d98dd41b8c091d10b5156e1b2685e"
+        },
+        {
+          "path": "tools/terminal_eval.py",
+          "sha256": "aac7c03ba965e7d4d8b01aa1e8661bf2d8f8f3eb94e921c2a0e1978ebffdaad4"
+        },
+        {
+          "path": "tools/upload_run_ckpts.py",
+          "sha256": "e5d503b7f18efddc618baed3c6fae0618e0c0c5f47034d22ccbb1e8eff20cb61"
+        },
+        {
+          "path": "configs/compute.yaml",
+          "sha256": "8f7d644dc366ffb8d41b4896ee74e78a948c5e10eb6082140c9e96b8f2b03518"
+        },
+        {
+          "path": "configs/data_collect.yaml",
+          "sha256": "932953e98e8c635109fb9a1a77ff9e7dca3f80730c685ac86207f4a5c436616f"
+        },
+        {
+          "path": "configs/eval_campaign.example.yaml",
+          "sha256": "33c9dc793e6bcd16254dcdae060de4fcf0a9779805ee1da0a10dbd7b96ce3df8"
+        },
+        {
+          "path": "configs/hardware.nuc.mock.yaml",
+          "sha256": "45e0a074212815f87964cb44486fedc60225b26df9a92c56eeddefef359e9692"
+        },
+        {
+          "path": "configs/hardware.nuc.yaml",
+          "sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524"
+        },
+        {
+          "path": "configs/hardware.yaml",
+          "sha256": "c291039e24087295897a1eae3de085cf6184784514e303746482443a9ec91172"
+        },
+        {
+          "path": "configs/paths.yaml",
+          "sha256": "9c66141f2148f6ec1f07e78ba78ab1651b78d45d25f454dc29d074b6e34b65a2"
+        },
+        {
+          "path": "configs/rerun_blueprint.rbl",
+          "sha256": "f6f61c50dd1f43672a05629a6c5115efc14472bfd38d02468d12f8bb48938856"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+          "sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+          "sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+          "sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+          "sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+          "sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+          "sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+          "sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+          "sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+          "sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505"
+        },
+        {
+          "path": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+          "sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d"
+        },
+        {
+          "path": "configs/sim/policy_campaign.json",
+          "sha256": "a43bd24f73aaaaf5fd3dd1e1b02bca1f7fa4df311f34f1170a301da7b7d97c48"
+        },
+        {
+          "path": "configs/sim/student_nominal_smoke_v1.json",
+          "sha256": "dc02a6ea05cbfa3c9b3bb410a731f77aa7e8fff74352e3c16548346b5efa307a"
+        },
+        {
+          "path": "configs/sim/teacher_pick_place_campaign.json",
+          "sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c"
+        },
+        {
+          "path": "configs/sim/teacher_success_anchor_v3_screen.json",
+          "sha256": "7822b6d87e5030d910f820767de37401a68fb418ce05ca2801fe8e75b7f67db9"
+        },
+        {
+          "path": "configs/sim/teacher_success_anchor_v5_screen.json",
+          "sha256": "3392e9f703ef008f2a16d6c133870192ddb1642526ef7adb3702b2e8a6c9b9c5"
+        },
+        {
+          "path": "configs/sim/teacher_v2_delivery_protocol.json",
+          "sha256": "5cba45bfb944d621a2b5ffc2850366aba83c60b0c95f013b3593d37fc5ff8b70"
+        },
+        {
+          "path": "configs/sim/teacher_v2_delivery_screen.json",
+          "sha256": "5ea36cfb5404b6e20461a251beb1173c9e0ee809e279dfca4733e6acc502bda0"
+        },
+        {
+          "path": "configs/sim/teacher_v2_protocol.json",
+          "sha256": "9226c8c2779116616cb33fe4970fecd1fe0e5204b1ae4fd6ce614be7252b5170"
+        },
+        {
+          "path": "configs/sim/teacher_v2_screen.json",
+          "sha256": "8445fae218b18a455162b19664e89973707ddfbd83aca88e46acc8d9345f0c98"
+        },
+        {
+          "path": "configs/sim/waffles.json",
+          "sha256": "f7a1b2b11b1e8e3fa17044a07a3968b0d88e6f89372576bd62ed9dfe2569ddc2"
+        },
+        {
+          "path": "configs/sim/waffles_camera_estimate.json",
+          "sha256": "45ef55afdc104a5d99d672d591d3e4cd917cc23eb7dc24e8036d60a1a87a1d08"
+        },
+        {
+          "path": "configs/sim/waffles_evidence.json",
+          "sha256": "5221a483728a66f7cf9af1a399b11f3929ca4ca82114a52bbc49016499c052c6"
+        },
+        {
+          "path": "configs/sim/waffles_pick_place.json",
+          "sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        {
+          "path": "configs/sim/waffles_reconstruction_v1.json",
+          "sha256": "cd8abdc3c7a0ceb42bc1f8810a152bbc9cf1224da6ea89631981b86955f46391"
+        },
+        {
+          "path": "configs/start_poses.yaml",
+          "sha256": "13498363d7b3bac018ed41b248c4a933103a52555264e76c30fbc68fc4fbeb4c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/README.md",
+          "sha256": "d018c2d3efc59e49cf8ad88e8ab1925b4935286ff67b4c7bda261255be29eb57"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/anchor_launch_dependencies.json",
+          "sha256": "cbb890e343e05c787c0bfb45655842bb395a62eef72b082d1095ae6c407ed5bd"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/audit_anchor_dependencies.py",
+          "sha256": "561025c964e8f9d250b5fa994001df80e97bb7ace353bdada5746b5283b97b76"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/audit_mechanics.py",
+          "sha256": "adb1b5dd19d60e545bb7f3a183edd60918971bda653eb535636653fb30a35ad0"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/audit_mechanics_gate.py",
+          "sha256": "ae95f4077b2638af6cd7c527a0ea9e1547939a1fcd2c05049d3b993b620cdc4c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/audit_reproduction.py",
+          "sha256": "f5f5d6993517d330dc791c5a7e358bb881051b7b59f973111dbb7104a63f245d"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/audit_reproduction_contact_detail.py",
+          "sha256": "9b70af0fbff818fae90f1fdff51153a2c4381ded1d2188affb1d5063b4bf027c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/baseline.json",
+          "sha256": "309f39dc4a7916f5f8b1efd9c4ca09744000aaf5370ab9452bfb478cb0b44a9d"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/delivery_feedback_only.json",
+          "sha256": "9afc9725f9fa3d800aa60d89aaf87660891f2d639b9f3e174d6df6165865e839"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/finish_only.json",
+          "sha256": "b696d772a0bc324d0871ba53447bd7e51cdec8994de58082e3b0e639bf799c70"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/gel_v2_only.json",
+          "sha256": "8706d2be0896a9b913c22f58a9bcdf2878e47327ec413b7a52a6035f48aa1149"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/live_veto_only.json",
+          "sha256": "cc5468ad904f04595d6b4861b88816ff0aa2ab8645e97e91e84f834c4eedfde9"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns/wrist_distal_only.json",
+          "sha256": "e314420e2c59ed497cc67a312602def01a40ac39f6fa6a6546f86a6223a17365"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_campaigns_manifest.json",
+          "sha256": "7baead31a8ccc3b7bf451d1d1ab6af8b71e5b48e73013db69806f899413f9a58"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/component_design_audit.json",
+          "sha256": "e0b77a2e06df9ffc256ed4d02d4042d0c7222b01c20d0985acdfca264abeaa45"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/controller_variants.md",
+          "sha256": "85ad12d50cc46a157612f3341f15ef9f76b8a59c10f0540c0c4b9728fa0b70cf"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/dependency_audit.json",
+          "sha256": "90e991419f067b4b7ae9b462a90b7d8056a37fa803f23e496313ce611295f62b"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/execution.md",
+          "sha256": "e8f4f08ad147a54cedb4d7a914e14647dcefe7b2c7f17aac6ad7d3cdcee23e90"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/gel_v2_runner.patch",
+          "sha256": "e448d5b764e0d2f44cbf3ed914de8a8b1f7816fbaba143021d57a104cac49ca3"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/gripper_wrist_runner.patch",
+          "sha256": "39dbfc021af6acc4235fdb39a9a0ec0a266ea1fbaf8d3cc6b033904c8fd49f51"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/inference_diagnostic_audit.md",
+          "sha256": "4c7e3a9e905e7e27f11fa0ac3883f449ec2a524b695a1edea812fcd8894c1711"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/initial_audit.json",
+          "sha256": "bb6757b6ed0efc7585eeffd0c9372d0c7cb9770ab8233e4e10a8a7ffe62b4dc7"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/initial_audit.md",
+          "sha256": "650454fd630d1bb3939745e88c123bdb1b9f551aa57516073fd8b7f1956ac8a6"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_first_plan_audit.json",
+          "sha256": "b524fff859c948a9df77a20ecf6af315886529931a4caba03cc43667962675d8"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/comparisons.json",
+          "sha256": "fcdf88a251bfcf7309a9eeeed01b9941bd468b9921d919e42ecff0ea601c7a55"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/historical.json",
+          "sha256": "c5ef9b663027294edd3ed338b8776b5a46a621804450886eb9555d0ba03a8af6"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/historical_output_comparison.json",
+          "sha256": "9d6f4d8df17d5c39f43d802955940b37c377bc799233b55fb06ae1b00250a8a1"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/historical_repeat.json",
+          "sha256": "6d12f19a8934cd656f58a2eb478e422004e6caeb78b6ab1f1390b0e1744d72d3"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/live_server_info.json",
+          "sha256": "720d60db6089ca3eb0b661e3ef98a424519441f433b75ab537c7bdf6bff68ddf"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/manifest.json",
+          "sha256": "cdb9b2f67cecded966d6c42e12ca6c83495ad2cee8e26b9b494192bad4b29e4e"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/ownership.json",
+          "sha256": "2d3020ae817bd121a2c0fb5d1179fe44ee6986b8756ac592d37fe3ce10eab306"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/preconnection_info.json",
+          "sha256": "70296a7cdee0bbc15356e87db6e7944d9d9b2c1889faab598a9c32c3a22a3843"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/repeat1.json",
+          "sha256": "0ed4863c3fb05d8add519a190cd5a5cbeb05f73026fb5bb91a364a17017af0dd"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/input_replay_audit/repeat2.json",
+          "sha256": "72eae3e79bf4a4ebc7d7eda8840ddd8bd7c0a372f9f9765b940c6edfe5ccce80"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/latency_diagnostic_plan.json",
+          "sha256": "a2fdb8d0dd19907830e3103223412b807b81936e5c2ae06282e74525cb93bb07"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/latency_source_audit.json",
+          "sha256": "10bc9993b3e46f0e90953d9bb3bfee81d789ae8a26e76546fef68e7ffcc11636"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/launch_latency_diagnostic.py",
+          "sha256": "f781027f08b5209aaa3201add2585e44357e2b83a464614a7cd7e1ceef91d6f6"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_audit.json",
+          "sha256": "9735eed30647479c04e7bb6beba1492608c90a052e1b23bf3e68e2f7da510d7c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_audit.md",
+          "sha256": "7c58a968a6a7abe6087f5708906e5c8859c31297077ac0ecc75648b44bb5b849"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_replay/command_replay.json",
+          "sha256": "1d172065f4e201bd41d2d97562518619a7bdc56e9788c0a3e250caf161b4e30c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_replay/initialization.json",
+          "sha256": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_replay/mechanics_metrics.json",
+          "sha256": "4312bbbbc81fdb4e78d0a122ce78a40f8bcfcd104910cb5bb08d23df1c42d344"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_replay/run.json",
+          "sha256": "e5fb6ba39c021105e5cac3628220c4851b34128d5d48e6e3cbfcf25690d9e470"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/mechanics_replay/trace_comparison.json",
+          "sha256": "86bde8872a5f5ed60f68e858410b3f580a35761a0d04a64234ce6b86eb2c2252"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/native_selection_audit.json",
+          "sha256": "2f242e00aed8cdb65ec2d5c8a6095cb7eaf38f7c1695c14f5f6db92551009f31"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/prepare_latency_diagnostic.py",
+          "sha256": "967c32cdb02fcc0435421bb4bee26b58ae9e5639636786d3f0b0e92ebd0c89b5"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/protocol.json",
+          "sha256": "2e02af9dd1a5bf7b9059d1a71d1a8aec1f95618f491a35e50c455c70bf765cd9"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/protocol_draft.json",
+          "sha256": "9067ad23c429a93c81d602c96fbd1e8d00749a0762f472337a88104ad7b26ca3"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_campaign.json",
+          "sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_contact_detail.json",
+          "sha256": "fa7f25cc62d8598d8c775de3941193995dd2d8ef8a850a14944d80f259ab587c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_diagnostic.md",
+          "sha256": "aae8784868310e9dba7e325b482396518e8dcff361a35534ce0fbe36daffdae0"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_first_divergence.json",
+          "sha256": "7af9528fc0eacfec624fa5dcd1add4ebe57e42e80116a8350a04b226eba0d80e"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_scores/summary.json",
+          "sha256": "f49bdec3c38d99b57c44d0892e880680e4b4170cd60fa6f023f5f59bd8d49462"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_scores/trials/teacher__anchor_repeat1__seed4242.json",
+          "sha256": "cb75dfc600f65a5f2e43b560b6b1d71847af7b89fbb4ec839d138d0cdb933584"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_scores/trials/teacher__anchor_repeat1__seed4243.json",
+          "sha256": "47c021113633bb374c4175aa41c0eb900926cbc2cc0d26017819c1573baa7e4a"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_scores/trials/teacher__anchor_repeat2__seed4242.json",
+          "sha256": "5ded553621514a8e01865a4c141708843be5f6536d7ce10949e3e3b4599688d8"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/reproduction_scores/trials/teacher__anchor_repeat2__seed4243.json",
+          "sha256": "6b25d7a3a21b8f3dd2107956f656b45c2e8c023b698822a40b9c3a98bd8b6e7c"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/screen_plan.json",
+          "sha256": "6dd5ed32471b32e79e4500017700be2270276c4a765a0b5359a287b2b1366783"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/sensor_overlay_pins.json",
+          "sha256": "fb3b9fb3ef1ecab7531f7c34c39ccbe15341bdf0d5d96f0462bfaef62608b0be"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/sensor_overlays.md",
+          "sha256": "73fa1208da9365fa7df370503d3c65da50c5ec61f5adf9a37cb7bd600fc01423"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/stage_gate_amendment.json",
+          "sha256": "c61f7d1b2d310686cb0e53aeb1101aba8864f09a388aff289e1534e5b0938312"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/stage_gate_audit.json",
+          "sha256": "6fd04ba18b8bf3f9695b950b6f5e56f45f0fc6d9311b3c4280c9857eeafb44c2"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v3/stage_gate_audit_pre_guard.json",
+          "sha256": "0856dd5f814b1cb9a65b32957ed32e4a978f74fe6e2ff40660cd7fb7226ef27e"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/admission_audit.json",
+          "sha256": "a8136ae31daefeeb5072f08c37322bed9eb2f6faea478bcdf8f6683f04cb5da6"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/audit_admission.py",
+          "sha256": "a4fe8338d1817e962acfb75eab56448457f776d8d4344f1b343ef4ac4b23f148"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/minimal_diagnostic_campaign.json",
+          "sha256": "1f8e8d1f1db9ec7b22f4ad44c1fd76502633f482165d429b12622b27ca90e8b9"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/minimal_profile_audit.md",
+          "sha256": "cf81ded2ccade54b6af662bd3bd8a22c5a5e928bb404ac78b05a5eafb47411a4"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/minimal_profile_source_manifest.json",
+          "sha256": "7d23478b72ee87209bad1f80277ae70bbd4d9b3154606701bf9d7e6c489ff35d"
+        },
+        {
+          "path": "docs/results/teacher_success_anchor_v5/protocol.json",
+          "sha256": "f67fe79a5267c6d253d7d90f67f2a367c8899f030959c8f42fa714d072ab7ac2"
+        }
+      ]
+    }
+  ],
+  "external_dependencies": "Existing Isaac Sim6installation, live native inference Python/checkpoint files and evidence/fit/start/tactile-baseline/robotUSD inputs bound by campaign runtime_contract; no source recordings or checkpoints included."
+}

@@ -1,0 +1,35 @@
+{
+  "scope": "Existing recorded/documented evidence only; no hardware query or new calibration.",
+  "variant": {
+    "name": "UR3 CB3",
+    "evidence": "hardware.nuc.yaml records dashboard read dated 2026-07-17: Polyscope 3.14.3, serial 2018333547. generation:e-series is explicitly a schema workaround; official nominal UR3 asset is used, not UR3e.",
+    "serial_specific_kinematic_calibration_recovered": false
+  },
+  "nominal_joint_to_tcp_validation": {
+    "three_heldout_sample_weighted_tcp_translation_rmse_m": 0.00134,
+    "heldout_max_translation_error_m": 0.0015,
+    "joint_rmse_rad_range": [
+      3.75e-08,
+      3.79e-08
+    ],
+    "interpretation": "Replay directly assigns recorded joint positions; near-zero joint error checks replay ordering/interpolation, not servo tracking. Remaining TCP error reflects nominal-model/serial-calibration/frame approximation."
+  },
+  "driven_measured_replay_validation": {
+    "joint_rmse_rad": 0.009425,
+    "tcp_translation_rmse_m": 0.006347,
+    "tcp_rotation_rmse_deg": 1.025,
+    "interpretation": "Separate driven-dynamics measured support preflight reported in isaac_teacher_pick_place.md; includes tracking/contact effects and must not be conflated with nominal FK residual."
+  },
+  "ten_measured_start_pose_fk_residual_m_range": [
+    0.001416,
+    0.001463
+  ],
+  "frames_units": "UR controller base frame, XYZ metres plus rotation vector radians, recorded raw six-joint order and multi-turn branches; 180 mm TCP offset. Nominal factory geometry does not certify custom-pad/table transforms.",
+  "local_evidence_sha256": {
+    "configs/hardware.nuc.yaml": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524",
+    "docs/isaac_waffles.md": "1eb064bf59114a3ee118f28707861aa561cdc2b687e83a43ac3f96c5443c1f7e",
+    "docs/isaac_teacher_pick_place.md": "f1c2153a1ee10982f9b2c4c5debf19186eb2a036d5a70c697998f9934bb42905",
+    "docs/results/teacher_v2_design/start_preflight_audit.md": "839cfcdf2fa577bd2434adcef12c3cd59efc2efb1ba58ecc312d1cbc57079c40",
+    "assets/sim/ur3/PROVENANCE.json": "8bc925024dda6bb1a2a2e5016fb5b26aa146bbf13a2f244e04e0a7b03f00e883"
+  }
+}

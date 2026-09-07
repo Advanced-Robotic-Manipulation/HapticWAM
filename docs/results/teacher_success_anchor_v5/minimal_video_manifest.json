@@ -1,0 +1,220 @@
+{
+  "status": "complete",
+  "pid": 2305250,
+  "cpu_affinity": [
+    30,
+    31
+  ],
+  "helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "entries": [
+    {
+      "case_id": "teacher__fixed_anchor__seed904301",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904301/policy_review.mp4",
+      "video_bytes": 1080266,
+      "video_sha256": "ab65dc56671712f8c91fdcdfda74cb6ee8575e0af81782c4278265e07fd39f15",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904301/policy_review.json",
+      "metadata_bytes": 129570,
+      "metadata_sha256": "dd778d898162f6c9f8a335718f47eeda08b91cd7a00bced7258a5041b5e5b1ad",
+      "decoded_frames": 270,
+      "fps": 15,
+      "horizon_s": 17.984,
+      "score_sha256": "517c3145b08f5c1207327448f00795e3656b09b3b5b7a20cd011d2b95d82d552",
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "score_events_s": {
+        "reach": 5.936,
+        "closure": 7.8,
+        "acquisition": 8.068,
+        "lift": 11.6,
+        "carry": 14.0,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "execution_completion": {
+        "first_completion_execution_row": null,
+        "completion_report_rows": 0,
+        "completion_hold_rows": 0,
+        "run_json_completion_field": null,
+        "meaning": "Completion is taken from execution diagnostics only; absence of a run.json field is not evidence of missing FINISH."
+      },
+      "physical_force_arrays": {
+        "t": {
+          "shape": [
+            271
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "66946f2c7c00982cb7b040966bc0e9da59904edeed3b68b4319a89879fbd3a16"
+        },
+        "pad_force": {
+          "shape": [
+            271,
+            2,
+            3
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "c0b044dee555ed6e4661f30ee25886a4fa1e6fdf67cff26eb20fb5c36842e066"
+        },
+        "pad_packet_normal_force": {
+          "shape": [
+            271,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "6bd4bc3c814a6749fc25d65e56fa5fa74892f8bdfe4c3786c5a47d461bcd991c"
+        },
+        "packet_robot_normal_force": {
+          "shape": [
+            271
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "bb934d0e6fda9b73d6240c49699770451d0babc623279f9d8cc93f496714748e"
+        },
+        "packet_bin_normal_force": {
+          "shape": [
+            271
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "f3b35998743b183aeecaaa98b1ead6caab382ef94e0da9327dfb7d34e4528471"
+        }
+      },
+      "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+      "runtime_metrics_sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f",
+      "source_execution_sha256": "2b8f6d4f390315c760e599259120eaeefcfff58f45ecfcc597caac08b38056d4",
+      "score_inputs_sha256": {
+        "run.json": "2d066d412e3caa107d69ce9b2be36e5f8d8ffb4127d19cfba3da89f09200a142",
+        "sim_trace.npz": "6163e20319e810367246b1e2ebc1e0b958ea0762be73df6091e9680ea9dbb76f",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "2b8f6d4f390315c760e599259120eaeefcfff58f45ecfcc597caac08b38056d4",
+        "planner_trace.json": "61c34bf2c2e9b193b3ac12264eece623aaea3f488bbae059c449fe08c315cdf2",
+        "policy_info.json": "2db70f4631a86fef98a83ddaaba7469170dea64290291a84ccb288c83bd394a8",
+        "server_ready.json": "9639bff4f58865aefb962fed883f2fa608612d1869a2b2d38585e2526444f8e5"
+      },
+      "full_decode_verified": true,
+      "metrics_exactly_match_frozen_score": true,
+      "causal_mappings_verified": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v3/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/minimal_profile_diagnostic/rollouts/teacher__fixed_anchor__seed904301",
+        "--label",
+        "minimal gel+FINISH seed904301",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904301/policy_review.mp4"
+      ]
+    },
+    {
+      "case_id": "teacher__fixed_anchor__seed904302",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904302/policy_review.mp4",
+      "video_bytes": 1007797,
+      "video_sha256": "8644417da392613ae0fb4554c344ded17895d791fb01faf8ee3c6d8258d21e13",
+      "metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904302/policy_review.json",
+      "metadata_bytes": 128661,
+      "metadata_sha256": "ea7f04e6494e29fdac2499411064dcf64aad22c1c93521f6294aa34a024ceab8",
+      "decoded_frames": 268,
+      "fps": 15,
+      "horizon_s": 17.864,
+      "score_sha256": "c0b7325f83604aa9177adabd9b5f054416b2f9d9cc1e35d576e7f29be17a0840",
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "score_events_s": {
+        "reach": 6.0680000000000005,
+        "closure": 7.468,
+        "acquisition": 8.4,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "execution_completion": {
+        "first_completion_execution_row": null,
+        "completion_report_rows": 0,
+        "completion_hold_rows": 0,
+        "run_json_completion_field": null,
+        "meaning": "Completion is taken from execution diagnostics only; absence of a run.json field is not evidence of missing FINISH."
+      },
+      "physical_force_arrays": {
+        "t": {
+          "shape": [
+            269
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "126f4fc833344517b66001594ae8ddbf53e0bd7ed7370ed3c6b96f493b6f314a"
+        },
+        "pad_force": {
+          "shape": [
+            269,
+            2,
+            3
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "1b928b6816aab0a0716a1f801be7d625ace706b7549711af9ef167e897bc58ee"
+        },
+        "pad_packet_normal_force": {
+          "shape": [
+            269,
+            2
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "b142c3263f4acf25e69b85751a812fa8b34ffbb299530eec8d548ff39daf0bc3"
+        },
+        "packet_robot_normal_force": {
+          "shape": [
+            269
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "b78a39b2fbf37cae3a64cf0606b86e9fe579058db22ccba9b437caa42e870fcf"
+        },
+        "packet_bin_normal_force": {
+          "shape": [
+            269
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "c41c8b20857c1383b60468d0ee3ccbeb13683d55300138e39e69b187fb4471e0"
+        }
+      },
+      "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5",
+      "runtime_metrics_sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f",
+      "source_execution_sha256": "dc26c7e9b941f4213ec9d919e51083037019cf40f4025c89bafcba3bee289089",
+      "score_inputs_sha256": {
+        "run.json": "44e1f639c5fbdb7f3feb0c7c96a7e6089024ed4dca134696e896884f7a009448",
+        "sim_trace.npz": "59992c3caa565b3cb9da6fd204e249b2f21a1f80576577a5f5c5b38db681ef49",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "dc26c7e9b941f4213ec9d919e51083037019cf40f4025c89bafcba3bee289089",
+        "planner_trace.json": "3125e17211c44aeee7f3145a118486eb12f7717d0c3c6b73c55b066d063cdded",
+        "policy_info.json": "c8334b6c01f23a7c90b65a131cedaac5fd7d97956cef03bbcfc6c8bd7fb66923",
+        "server_ready.json": "9639bff4f58865aefb962fed883f2fa608612d1869a2b2d38585e2526444f8e5"
+      },
+      "full_decode_verified": true,
+      "metrics_exactly_match_frozen_score": true,
+      "causal_mappings_verified": true,
+      "command": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v3/tools/sim/make_policy_video.py",
+        "--run",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/minimal_profile_diagnostic/rollouts/teacher__fixed_anchor__seed904302",
+        "--label",
+        "minimal gel+FINISH seed904302",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/video_reviews/minimal_profile_diagnostic/teacher__fixed_anchor__seed904302/policy_review.mp4"
+      ]
+    }
+  ],
+  "total_video_bytes": 2088063
+}

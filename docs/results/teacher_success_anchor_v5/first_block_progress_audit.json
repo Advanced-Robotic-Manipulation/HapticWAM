@@ -1,0 +1,1382 @@
+{
+  "schema_version": 1,
+  "status": "first_block_complete",
+  "pid": 2319150,
+  "campaign_sha256": "3392e9f703ef008f2a16d6c133870192ddb1642526ef7adb3702b2e8a6c9b9c5",
+  "frozen_inputs_sha256": "020716a74584897ddc798a039c055384943828d45705165b6e80009e6be8ad0a",
+  "external_analyzer_path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/tools/sim/analyze_policy_campaign.py",
+  "external_analyzer_sha256": "1c9ff5d13f7e98f60346cd9c27eb834f4720011623dd988ab20c03e2b14c0245",
+  "frozen_hash_counts_verified": {
+    "source_sha256": 94,
+    "external_controller_source_sha256": 46,
+    "live_core_sha256": 7,
+    "episode_sha256": 2
+  },
+  "profile_input_sha256": {
+    "initial_state": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+    "tactile_baseline": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce",
+    "hardware": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3",
+    "robot_usd": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637"
+  },
+  "checkpoint_file_hashes_verified": {
+    "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+    "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c"
+  },
+  "expected_cases": [
+    "fta1500_nfe1_k4__successful_anchor__seed904401",
+    "fta3000_nfe1_k4__successful_anchor__seed904401",
+    "v5_6_nfe1_k4__successful_anchor__seed904401",
+    "fta1500_nfe5_k4__successful_anchor__seed904401"
+  ],
+  "cases": [
+    {
+      "case_id": "fta1500_nfe1_k4__successful_anchor__seed904401",
+      "policy_id": "fta1500_nfe1_k4",
+      "sampling_seed": 904401,
+      "status": "pass",
+      "external_strict_score_valid": true,
+      "invalid_reasons": [],
+      "independent_score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/live_audit/first_block/trials/fta1500_nfe1_k4__successful_anchor__seed904401.json",
+      "independent_score_sha256": "ea5f736d02a67da9ec2a63e782339edbe61b4eee21f8294808e9449bc1a1626a",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "actual_weights": "EMA",
+      "actual_system": "teacher",
+      "expected_recipe": {
+        "use_ema": true,
+        "nfe": 1,
+        "guidance": 1.0,
+        "persistent_noise": true,
+        "parity": true,
+        "k_seeds": 4,
+        "max_play": 10,
+        "task_text": "waffles",
+        "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "policy_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "every_raw_plan_nfe_k": [
+        [
+          1,
+          4
+        ]
+      ],
+      "scene_config_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "initialization_sha256": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+      "configured_and_settled_initialization": {
+        "policy_initial_state": {
+          "schema_version": 1,
+          "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+          "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+          "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+          "reference_camera_t0_master_s": 5586.389835389913,
+          "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+          "units": {
+            "q": "radians, UR RTDE joint order",
+            "gripper": "normalized position:0 open,1 closed",
+            "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+            "tcp": "xyz metres + rotation vector radians, UR controller base"
+          },
+          "q": [
+            0.23474512994289398,
+            -1.5198147932635706,
+            1.0754203796386719,
+            0.7233453989028931,
+            1.174745798110962,
+            -3.004658285771505
+          ],
+          "gripper": 0.0784313753247261,
+          "gripper_OBJ": 3,
+          "wrist_ft": [
+            -6.679699239150466,
+            -3.7754789060686464,
+            3.5474054977869613,
+            1.3528524004078362,
+            -1.7378262552134158,
+            0.45864556310759486
+          ],
+          "tcp": [
+            -0.35399662759562023,
+            -0.3030532626417874,
+            0.33813600255248893,
+            -1.222512987419507,
+            -1.8390053895682799,
+            1.6032091101687962
+          ],
+          "samples": {
+            "arm_q": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                0.23474512994289398,
+                -1.5198147932635706,
+                1.0754203796386719,
+                0.7233453989028931,
+                1.174745798110962,
+                -3.004658285771505
+              ]
+            },
+            "gripper": {
+              "native_index": 3,
+              "relative_time_s": -0.0030142919858917594,
+              "master_time_s": 5586.386821097927,
+              "values": [
+                0.0784313753247261,
+                3.0
+              ]
+            },
+            "arm_ft": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -6.679699239150466,
+                -3.7754789060686464,
+                3.5474054977869613,
+                1.3528524004078362,
+                -1.7378262552134158,
+                0.45864556310759486
+              ]
+            },
+            "arm_tcp_pose": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -0.35399662759562023,
+                -0.3030532626417874,
+                0.33813600255248893,
+                -1.222512987419507,
+                -1.8390053895682799,
+                1.6032091101687962
+              ]
+            }
+          }
+        },
+        "policy_initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+        "configured_packet_center_m": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "settled_packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "settling_displacement_m": 1.2485123601417956e-07,
+        "packet_velocity_m_s": [
+          -2.341555227758363e-05,
+          -8.967499161371961e-05,
+          0.00023604962916579098
+        ],
+        "configured_robot_q": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ],
+        "settled_robot_q": [
+          0.23475541174411774,
+          -1.5160894393920898,
+          1.0783542394638062,
+          0.7237048745155334,
+          1.1747539043426514,
+          -3.004678964614868
+        ],
+        "settled_robot_qd": [
+          -0.0066641164012253284,
+          -0.017554694786667824,
+          -0.0294484943151474,
+          -0.004574921913444996,
+          -0.001079935347661376,
+          0.0003212571609765291
+        ],
+        "policy_robot_settling_s": 2.0,
+        "robot_initial_max_joint_error_rad": 0.0037253538714807632,
+        "robot_initial_max_joint_speed_rad_s": 0.0294484943151474,
+        "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay."
+      },
+      "first_non_rgb_observation_arrays": {
+        "t": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8e33404fc6b7e20c5f75cb20d14ba43c24d6a07bbd2aa10e08fe126d31e90b7d"
+        },
+        "wrist_window": {
+          "shape": [
+            31,
+            6
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "2b2425b1c63f36185e22d4587b8e48ff78cba8e763f3391136f8153b013ceb5f"
+        },
+        "ur_state": {
+          "shape": [
+            26
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "0f7b9c68d7f04b42ab6d1aadfba0b6a16fdec65e98bc3c6fdb08ab884a67053c"
+        },
+        "gel": {
+          "shape": [
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "ed2da8ae904ca0a799837b5994e91114b391378e9c92a7ebeac77ede0ed6d56c"
+        },
+        "fields": {
+          "shape": [
+            2,
+            144,
+            192,
+            8
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "5124c9b6849766fc4948e3522a72fd02cf98dafebe1f886975df95c5f7a03be0"
+        },
+        "contact_state": {
+          "shape": [
+            2,
+            11
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "b54e102c0f64e9094af353b7593b39a48a30667fb3626e60d899b306e1f1c445"
+        },
+        "reactive": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        "prev_chunk": {
+          "shape": [
+            16,
+            7
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "7e584fd4870eb8fa5278c6435fc973f935dc733b72d7e24ac084492f75add15d"
+        }
+      },
+      "initial_state_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      },
+      "runtime_profile": {
+        "tactile_model": "measured_baseline_proxy",
+        "gel_contact_coverage": "manifold_patch_v2",
+        "wrist_model": "contact_proxy",
+        "terminal_veto": {
+          "implementation": "fd4a032",
+          "config": {
+            "z_ref": 0.0415,
+            "z_floor": 0.0315,
+            "z_margin": 0.0615,
+            "open_aperture": 0.232,
+            "p_close": 0.5,
+            "p_none": 0.9,
+            "max_retries": 3
+          },
+          "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+        },
+        "terminal_veto_feedback_source": null,
+        "placement_release": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true,
+          "finish_observation_s": 2.0
+        },
+        "max_play_steps": 10,
+        "policy_latency_override_s": null
+      },
+      "coverage": "recorded_safety_termination_with_observation_tail",
+      "clocks": {
+        "first_trace_t_s": 0.0,
+        "last_trace_t_s": 20.744,
+        "run_reported_duration_s": 20.744,
+        "configured_horizon_s": 60,
+        "trace_rows": 313,
+        "scene_frames": 313,
+        "finite_q_tcp_object": true,
+        "max_abs_reported_minus_physics_time_s": 9.852871301063715e-07
+      },
+      "first_stop_t_s": 18.748,
+      "first_safety_events": [
+        "wrist_extension"
+      ],
+      "first_FINISH_execution_t_s": null,
+      "full_task": false,
+      "full_task_t_s": null,
+      "score_input_sha256": {
+        "run.json": "d997d7be54f2cd2c285e4b8ee37646b390416a542686e54db228005c8c4c3dfd",
+        "sim_trace.npz": "222e71efbe158a802b46d392828c1748479ebbd7ab89ca95bfbc9647c64b3479",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "d2987dde2c67ade071c157031a6421908096a8650315d3339bd48f278dc7eb7e",
+        "planner_trace.json": "dcad1b7313b7fb90848a2882e191141393635ce5e78f71ab82c7fe004b6243fc",
+        "policy_info.json": "d24f534c9aa8774e72a59cd3e79ec0f38d91b9d5438236ee32c486f5ca9829e8",
+        "server_ready.json": "f4a5fed30687c767f49c02b433b75daf8cd20b7067d922e598a5604396f8e168"
+      }
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__successful_anchor__seed904401",
+      "policy_id": "fta3000_nfe1_k4",
+      "sampling_seed": 904401,
+      "status": "pass",
+      "external_strict_score_valid": true,
+      "invalid_reasons": [],
+      "independent_score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/live_audit/first_block/trials/fta3000_nfe1_k4__successful_anchor__seed904401.json",
+      "independent_score_sha256": "babbc8b3aff9547ccd5b4a48d31d5ccd689336dfaa3d2bfcd711c6df1ef349fc",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "actual_weights": "EMA",
+      "actual_system": "teacher",
+      "expected_recipe": {
+        "use_ema": true,
+        "nfe": 1,
+        "guidance": 1.0,
+        "persistent_noise": true,
+        "parity": true,
+        "k_seeds": 4,
+        "max_play": 10,
+        "task_text": "waffles",
+        "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "policy_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "every_raw_plan_nfe_k": [
+        [
+          1,
+          4
+        ]
+      ],
+      "scene_config_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "initialization_sha256": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+      "configured_and_settled_initialization": {
+        "policy_initial_state": {
+          "schema_version": 1,
+          "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+          "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+          "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+          "reference_camera_t0_master_s": 5586.389835389913,
+          "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+          "units": {
+            "q": "radians, UR RTDE joint order",
+            "gripper": "normalized position:0 open,1 closed",
+            "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+            "tcp": "xyz metres + rotation vector radians, UR controller base"
+          },
+          "q": [
+            0.23474512994289398,
+            -1.5198147932635706,
+            1.0754203796386719,
+            0.7233453989028931,
+            1.174745798110962,
+            -3.004658285771505
+          ],
+          "gripper": 0.0784313753247261,
+          "gripper_OBJ": 3,
+          "wrist_ft": [
+            -6.679699239150466,
+            -3.7754789060686464,
+            3.5474054977869613,
+            1.3528524004078362,
+            -1.7378262552134158,
+            0.45864556310759486
+          ],
+          "tcp": [
+            -0.35399662759562023,
+            -0.3030532626417874,
+            0.33813600255248893,
+            -1.222512987419507,
+            -1.8390053895682799,
+            1.6032091101687962
+          ],
+          "samples": {
+            "arm_q": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                0.23474512994289398,
+                -1.5198147932635706,
+                1.0754203796386719,
+                0.7233453989028931,
+                1.174745798110962,
+                -3.004658285771505
+              ]
+            },
+            "gripper": {
+              "native_index": 3,
+              "relative_time_s": -0.0030142919858917594,
+              "master_time_s": 5586.386821097927,
+              "values": [
+                0.0784313753247261,
+                3.0
+              ]
+            },
+            "arm_ft": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -6.679699239150466,
+                -3.7754789060686464,
+                3.5474054977869613,
+                1.3528524004078362,
+                -1.7378262552134158,
+                0.45864556310759486
+              ]
+            },
+            "arm_tcp_pose": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -0.35399662759562023,
+                -0.3030532626417874,
+                0.33813600255248893,
+                -1.222512987419507,
+                -1.8390053895682799,
+                1.6032091101687962
+              ]
+            }
+          }
+        },
+        "policy_initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+        "configured_packet_center_m": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "settled_packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "settling_displacement_m": 1.2485123601417956e-07,
+        "packet_velocity_m_s": [
+          -2.341555227758363e-05,
+          -8.967499161371961e-05,
+          0.00023604962916579098
+        ],
+        "configured_robot_q": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ],
+        "settled_robot_q": [
+          0.23475541174411774,
+          -1.5160894393920898,
+          1.0783542394638062,
+          0.7237048745155334,
+          1.1747539043426514,
+          -3.004678964614868
+        ],
+        "settled_robot_qd": [
+          -0.0066641164012253284,
+          -0.017554694786667824,
+          -0.0294484943151474,
+          -0.004574921913444996,
+          -0.001079935347661376,
+          0.0003212571609765291
+        ],
+        "policy_robot_settling_s": 2.0,
+        "robot_initial_max_joint_error_rad": 0.0037253538714807632,
+        "robot_initial_max_joint_speed_rad_s": 0.0294484943151474,
+        "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay."
+      },
+      "first_non_rgb_observation_arrays": {
+        "t": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8e33404fc6b7e20c5f75cb20d14ba43c24d6a07bbd2aa10e08fe126d31e90b7d"
+        },
+        "wrist_window": {
+          "shape": [
+            31,
+            6
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "2b2425b1c63f36185e22d4587b8e48ff78cba8e763f3391136f8153b013ceb5f"
+        },
+        "ur_state": {
+          "shape": [
+            26
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "0f7b9c68d7f04b42ab6d1aadfba0b6a16fdec65e98bc3c6fdb08ab884a67053c"
+        },
+        "gel": {
+          "shape": [
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "ed2da8ae904ca0a799837b5994e91114b391378e9c92a7ebeac77ede0ed6d56c"
+        },
+        "fields": {
+          "shape": [
+            2,
+            144,
+            192,
+            8
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "5124c9b6849766fc4948e3522a72fd02cf98dafebe1f886975df95c5f7a03be0"
+        },
+        "contact_state": {
+          "shape": [
+            2,
+            11
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "b54e102c0f64e9094af353b7593b39a48a30667fb3626e60d899b306e1f1c445"
+        },
+        "reactive": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        "prev_chunk": {
+          "shape": [
+            16,
+            7
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "7e584fd4870eb8fa5278c6435fc973f935dc733b72d7e24ac084492f75add15d"
+        }
+      },
+      "initial_state_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      },
+      "runtime_profile": {
+        "tactile_model": "measured_baseline_proxy",
+        "gel_contact_coverage": "manifold_patch_v2",
+        "wrist_model": "contact_proxy",
+        "terminal_veto": {
+          "implementation": "fd4a032",
+          "config": {
+            "z_ref": 0.0415,
+            "z_floor": 0.0315,
+            "z_margin": 0.0615,
+            "open_aperture": 0.232,
+            "p_close": 0.5,
+            "p_none": 0.9,
+            "max_retries": 3
+          },
+          "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+        },
+        "terminal_veto_feedback_source": null,
+        "placement_release": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true,
+          "finish_observation_s": 2.0
+        },
+        "max_play_steps": 10,
+        "policy_latency_override_s": null
+      },
+      "coverage": "recorded_safety_termination_with_observation_tail",
+      "clocks": {
+        "first_trace_t_s": 0.0,
+        "last_trace_t_s": 9.816,
+        "run_reported_duration_s": 9.816,
+        "configured_horizon_s": 60,
+        "trace_rows": 149,
+        "scene_frames": 149,
+        "finite_q_tcp_object": true,
+        "max_abs_reported_minus_physics_time_s": 4.662349812889488e-07
+      },
+      "first_stop_t_s": 7.82,
+      "first_safety_events": [
+        "wrench_limit"
+      ],
+      "first_FINISH_execution_t_s": null,
+      "full_task": false,
+      "full_task_t_s": null,
+      "score_input_sha256": {
+        "run.json": "192503d5572b75ac406ba1a15a1da7a8c9a4201ebbcf61cb5f5f2d4322ed4009",
+        "sim_trace.npz": "26c13efa2fa9ce2838fbedafa6c41617e6d4a05d982eb4313df43bf1a194fb3e",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "c565207144fb2d37949187469948e7d61ec05c85d6f61d85714a81100bc619f5",
+        "planner_trace.json": "5fbaf253cb516b4558e4c9208948f908b4ac4b2005198c0318ca817bffb247f9",
+        "policy_info.json": "b11019da04e102b4e59744542562196b65f715f8a2d5f80bc6d47700f43eeef3",
+        "server_ready.json": "a10d13b515113820952861e76a52494957e92398aad65bc13149786fccdc8628"
+      },
+      "comparison_to_first_case": {
+        "scene_bytes_identical": true,
+        "initialization_bytes_identical": true,
+        "non_rgb_arrays_identical": true,
+        "initial_state_hash_identical": true,
+        "tactile_baseline_hash_identical": true
+      }
+    },
+    {
+      "case_id": "v5_6_nfe1_k4__successful_anchor__seed904401",
+      "policy_id": "v5_6_nfe1_k4",
+      "sampling_seed": 904401,
+      "status": "pass",
+      "external_strict_score_valid": true,
+      "invalid_reasons": [],
+      "independent_score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/live_audit/first_block/trials/v5_6_nfe1_k4__successful_anchor__seed904401.json",
+      "independent_score_sha256": "9529187b99d5208499448663a556db894e96b4214777dc4fe9a089b4d1f64062",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "actual_weights": "EMA",
+      "actual_system": "teacher",
+      "expected_recipe": {
+        "use_ema": true,
+        "nfe": 1,
+        "guidance": 1.0,
+        "persistent_noise": true,
+        "parity": true,
+        "k_seeds": 4,
+        "max_play": 10,
+        "task_text": "waffles",
+        "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "policy_effective": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "every_raw_plan_nfe_k": [
+        [
+          1,
+          4
+        ]
+      ],
+      "scene_config_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "initialization_sha256": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+      "configured_and_settled_initialization": {
+        "policy_initial_state": {
+          "schema_version": 1,
+          "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+          "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+          "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+          "reference_camera_t0_master_s": 5586.389835389913,
+          "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+          "units": {
+            "q": "radians, UR RTDE joint order",
+            "gripper": "normalized position:0 open,1 closed",
+            "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+            "tcp": "xyz metres + rotation vector radians, UR controller base"
+          },
+          "q": [
+            0.23474512994289398,
+            -1.5198147932635706,
+            1.0754203796386719,
+            0.7233453989028931,
+            1.174745798110962,
+            -3.004658285771505
+          ],
+          "gripper": 0.0784313753247261,
+          "gripper_OBJ": 3,
+          "wrist_ft": [
+            -6.679699239150466,
+            -3.7754789060686464,
+            3.5474054977869613,
+            1.3528524004078362,
+            -1.7378262552134158,
+            0.45864556310759486
+          ],
+          "tcp": [
+            -0.35399662759562023,
+            -0.3030532626417874,
+            0.33813600255248893,
+            -1.222512987419507,
+            -1.8390053895682799,
+            1.6032091101687962
+          ],
+          "samples": {
+            "arm_q": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                0.23474512994289398,
+                -1.5198147932635706,
+                1.0754203796386719,
+                0.7233453989028931,
+                1.174745798110962,
+                -3.004658285771505
+              ]
+            },
+            "gripper": {
+              "native_index": 3,
+              "relative_time_s": -0.0030142919858917594,
+              "master_time_s": 5586.386821097927,
+              "values": [
+                0.0784313753247261,
+                3.0
+              ]
+            },
+            "arm_ft": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -6.679699239150466,
+                -3.7754789060686464,
+                3.5474054977869613,
+                1.3528524004078362,
+                -1.7378262552134158,
+                0.45864556310759486
+              ]
+            },
+            "arm_tcp_pose": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -0.35399662759562023,
+                -0.3030532626417874,
+                0.33813600255248893,
+                -1.222512987419507,
+                -1.8390053895682799,
+                1.6032091101687962
+              ]
+            }
+          }
+        },
+        "policy_initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+        "configured_packet_center_m": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "settled_packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "settling_displacement_m": 1.2485123601417956e-07,
+        "packet_velocity_m_s": [
+          -2.341555227758363e-05,
+          -8.967499161371961e-05,
+          0.00023604962916579098
+        ],
+        "configured_robot_q": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ],
+        "settled_robot_q": [
+          0.23475541174411774,
+          -1.5160894393920898,
+          1.0783542394638062,
+          0.7237048745155334,
+          1.1747539043426514,
+          -3.004678964614868
+        ],
+        "settled_robot_qd": [
+          -0.0066641164012253284,
+          -0.017554694786667824,
+          -0.0294484943151474,
+          -0.004574921913444996,
+          -0.001079935347661376,
+          0.0003212571609765291
+        ],
+        "policy_robot_settling_s": 2.0,
+        "robot_initial_max_joint_error_rad": 0.0037253538714807632,
+        "robot_initial_max_joint_speed_rad_s": 0.0294484943151474,
+        "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay."
+      },
+      "first_non_rgb_observation_arrays": {
+        "t": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8e33404fc6b7e20c5f75cb20d14ba43c24d6a07bbd2aa10e08fe126d31e90b7d"
+        },
+        "wrist_window": {
+          "shape": [
+            31,
+            6
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "2b2425b1c63f36185e22d4587b8e48ff78cba8e763f3391136f8153b013ceb5f"
+        },
+        "ur_state": {
+          "shape": [
+            26
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "0f7b9c68d7f04b42ab6d1aadfba0b6a16fdec65e98bc3c6fdb08ab884a67053c"
+        },
+        "gel": {
+          "shape": [
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "ed2da8ae904ca0a799837b5994e91114b391378e9c92a7ebeac77ede0ed6d56c"
+        },
+        "fields": {
+          "shape": [
+            2,
+            144,
+            192,
+            8
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "5124c9b6849766fc4948e3522a72fd02cf98dafebe1f886975df95c5f7a03be0"
+        },
+        "contact_state": {
+          "shape": [
+            2,
+            11
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "b54e102c0f64e9094af353b7593b39a48a30667fb3626e60d899b306e1f1c445"
+        },
+        "reactive": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        "prev_chunk": {
+          "shape": [
+            16,
+            7
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "7e584fd4870eb8fa5278c6435fc973f935dc733b72d7e24ac084492f75add15d"
+        }
+      },
+      "initial_state_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      },
+      "runtime_profile": {
+        "tactile_model": "measured_baseline_proxy",
+        "gel_contact_coverage": "manifold_patch_v2",
+        "wrist_model": "contact_proxy",
+        "terminal_veto": {
+          "implementation": "fd4a032",
+          "config": {
+            "z_ref": 0.0415,
+            "z_floor": 0.0315,
+            "z_margin": 0.0615,
+            "open_aperture": 0.232,
+            "p_close": 0.5,
+            "p_none": 0.9,
+            "max_retries": 3
+          },
+          "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+        },
+        "terminal_veto_feedback_source": null,
+        "placement_release": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true,
+          "finish_observation_s": 2.0
+        },
+        "max_play_steps": 10,
+        "policy_latency_override_s": null
+      },
+      "coverage": "recorded_safety_termination_with_observation_tail",
+      "clocks": {
+        "first_trace_t_s": 0.0,
+        "last_trace_t_s": 10.556000000000001,
+        "run_reported_duration_s": 10.556000000000001,
+        "configured_horizon_s": 60,
+        "trace_rows": 160,
+        "scene_frames": 160,
+        "finite_q_tcp_object": true,
+        "max_abs_reported_minus_physics_time_s": 5.013830950417741e-07
+      },
+      "first_stop_t_s": 8.556000000000001,
+      "first_safety_events": [
+        "wrench_limit"
+      ],
+      "first_FINISH_execution_t_s": null,
+      "full_task": false,
+      "full_task_t_s": null,
+      "score_input_sha256": {
+        "run.json": "45d26a3c4ecb0e1187e8078fb52653dde76bd8edcdf7ed90e9767ac6cb9d9d6e",
+        "sim_trace.npz": "67196b460cbd22cedf7430e95732f07c0ae5f6af86e7961ede7b05131cd49428",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "a4169f45118347cd299be4898f836c0cee12c287aaf70f14117bb48aa858342b",
+        "planner_trace.json": "8c0d0ccf953f33dd57c346a981c8576088838cf3016074203797615e7879a4bc",
+        "policy_info.json": "fad606ef7ac1dafc52bdf2ae0a4c9092e0746141c3e61b4a33fdb5a2fab46bc3",
+        "server_ready.json": "a833e84088d08500b681c6e3eabaf3e7408f8cd459312921f3af85cf360fc2ae"
+      },
+      "comparison_to_first_case": {
+        "scene_bytes_identical": true,
+        "initialization_bytes_identical": true,
+        "non_rgb_arrays_identical": true,
+        "initial_state_hash_identical": true,
+        "tactile_baseline_hash_identical": true
+      }
+    },
+    {
+      "case_id": "fta1500_nfe5_k4__successful_anchor__seed904401",
+      "policy_id": "fta1500_nfe5_k4",
+      "sampling_seed": 904401,
+      "status": "pass",
+      "external_strict_score_valid": true,
+      "invalid_reasons": [],
+      "independent_score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/screen/live_audit/first_block/trials/fta1500_nfe5_k4__successful_anchor__seed904401.json",
+      "independent_score_sha256": "1d9cc8401149947c838162c0b1a269946ef7229c8c1ba960334e5b2cfb2bc93d",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "actual_weights": "EMA",
+      "actual_system": "teacher",
+      "expected_recipe": {
+        "use_ema": true,
+        "nfe": 5,
+        "guidance": 1.0,
+        "persistent_noise": true,
+        "parity": true,
+        "k_seeds": 4,
+        "max_play": 10,
+        "task_text": "waffles",
+        "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_effective": {
+        "nfe": 5,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "drop_video": false,
+        "task_text": "waffles",
+        "close_p": 0.5
+      },
+      "policy_effective": {
+        "nfe": 5,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "every_raw_plan_nfe_k": [
+        [
+          5,
+          4
+        ]
+      ],
+      "scene_config_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "initialization_sha256": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+      "configured_and_settled_initialization": {
+        "policy_initial_state": {
+          "schema_version": 1,
+          "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+          "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+          "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+          "reference_camera_t0_master_s": 5586.389835389913,
+          "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+          "units": {
+            "q": "radians, UR RTDE joint order",
+            "gripper": "normalized position:0 open,1 closed",
+            "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+            "tcp": "xyz metres + rotation vector radians, UR controller base"
+          },
+          "q": [
+            0.23474512994289398,
+            -1.5198147932635706,
+            1.0754203796386719,
+            0.7233453989028931,
+            1.174745798110962,
+            -3.004658285771505
+          ],
+          "gripper": 0.0784313753247261,
+          "gripper_OBJ": 3,
+          "wrist_ft": [
+            -6.679699239150466,
+            -3.7754789060686464,
+            3.5474054977869613,
+            1.3528524004078362,
+            -1.7378262552134158,
+            0.45864556310759486
+          ],
+          "tcp": [
+            -0.35399662759562023,
+            -0.3030532626417874,
+            0.33813600255248893,
+            -1.222512987419507,
+            -1.8390053895682799,
+            1.6032091101687962
+          ],
+          "samples": {
+            "arm_q": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                0.23474512994289398,
+                -1.5198147932635706,
+                1.0754203796386719,
+                0.7233453989028931,
+                1.174745798110962,
+                -3.004658285771505
+              ]
+            },
+            "gripper": {
+              "native_index": 3,
+              "relative_time_s": -0.0030142919858917594,
+              "master_time_s": 5586.386821097927,
+              "values": [
+                0.0784313753247261,
+                3.0
+              ]
+            },
+            "arm_ft": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -6.679699239150466,
+                -3.7754789060686464,
+                3.5474054977869613,
+                1.3528524004078362,
+                -1.7378262552134158,
+                0.45864556310759486
+              ]
+            },
+            "arm_tcp_pose": {
+              "native_index": 3,
+              "relative_time_s": -0.006108818924985826,
+              "master_time_s": 5586.383726570988,
+              "values": [
+                -0.35399662759562023,
+                -0.3030532626417874,
+                0.33813600255248893,
+                -1.222512987419507,
+                -1.8390053895682799,
+                1.6032091101687962
+              ]
+            }
+          }
+        },
+        "policy_initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+        "configured_packet_center_m": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "settled_packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "settling_displacement_m": 1.2485123601417956e-07,
+        "packet_velocity_m_s": [
+          -2.341555227758363e-05,
+          -8.967499161371961e-05,
+          0.00023604962916579098
+        ],
+        "configured_robot_q": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ],
+        "settled_robot_q": [
+          0.23475541174411774,
+          -1.5160894393920898,
+          1.0783542394638062,
+          0.7237048745155334,
+          1.1747539043426514,
+          -3.004678964614868
+        ],
+        "settled_robot_qd": [
+          -0.0066641164012253284,
+          -0.017554694786667824,
+          -0.0294484943151474,
+          -0.004574921913444996,
+          -0.001079935347661376,
+          0.0003212571609765291
+        ],
+        "policy_robot_settling_s": 2.0,
+        "robot_initial_max_joint_error_rad": 0.0037253538714807632,
+        "robot_initial_max_joint_speed_rad_s": 0.0294484943151474,
+        "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay."
+      },
+      "first_non_rgb_observation_arrays": {
+        "t": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "8e33404fc6b7e20c5f75cb20d14ba43c24d6a07bbd2aa10e08fe126d31e90b7d"
+        },
+        "wrist_window": {
+          "shape": [
+            31,
+            6
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "2b2425b1c63f36185e22d4587b8e48ff78cba8e763f3391136f8153b013ceb5f"
+        },
+        "ur_state": {
+          "shape": [
+            26
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "0f7b9c68d7f04b42ab6d1aadfba0b6a16fdec65e98bc3c6fdb08ab884a67053c"
+        },
+        "gel": {
+          "shape": [
+            2,
+            288,
+            384
+          ],
+          "dtype": "uint8",
+          "sha256_array_bytes": "ed2da8ae904ca0a799837b5994e91114b391378e9c92a7ebeac77ede0ed6d56c"
+        },
+        "fields": {
+          "shape": [
+            2,
+            144,
+            192,
+            8
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "5124c9b6849766fc4948e3522a72fd02cf98dafebe1f886975df95c5f7a03be0"
+        },
+        "contact_state": {
+          "shape": [
+            2,
+            11
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "b54e102c0f64e9094af353b7593b39a48a30667fb3626e60d899b306e1f1c445"
+        },
+        "reactive": {
+          "shape": [
+            1
+          ],
+          "dtype": "float64",
+          "sha256_array_bytes": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        "prev_chunk": {
+          "shape": [
+            16,
+            7
+          ],
+          "dtype": "float32",
+          "sha256_array_bytes": "7e584fd4870eb8fa5278c6435fc973f935dc733b72d7e24ac084492f75add15d"
+        }
+      },
+      "initial_state_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline_provenance": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      },
+      "runtime_profile": {
+        "tactile_model": "measured_baseline_proxy",
+        "gel_contact_coverage": "manifold_patch_v2",
+        "wrist_model": "contact_proxy",
+        "terminal_veto": {
+          "implementation": "fd4a032",
+          "config": {
+            "z_ref": 0.0415,
+            "z_floor": 0.0315,
+            "z_margin": 0.0615,
+            "open_aperture": 0.232,
+            "p_close": 0.5,
+            "p_none": 0.9,
+            "max_retries": 3
+          },
+          "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+        },
+        "terminal_veto_feedback_source": null,
+        "placement_release": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true,
+          "finish_observation_s": 2.0
+        },
+        "max_play_steps": 10,
+        "policy_latency_override_s": null
+      },
+      "coverage": "full_horizon",
+      "clocks": {
+        "first_trace_t_s": 0.0,
+        "last_trace_t_s": 59.996,
+        "run_reported_duration_s": 59.996,
+        "configured_horizon_s": 60,
+        "trace_rows": 901,
+        "scene_frames": 901,
+        "finite_q_tcp_object": true,
+        "max_abs_reported_minus_physics_time_s": 2.8496570863012494e-06
+      },
+      "first_stop_t_s": null,
+      "first_safety_events": [],
+      "first_FINISH_execution_t_s": null,
+      "full_task": false,
+      "full_task_t_s": null,
+      "score_input_sha256": {
+        "run.json": "c123ff22859e53eca1de10b631ff305a7e8db13b6e1cb48795361c5b5b54b74f",
+        "sim_trace.npz": "8574b28e8a6781dcf51df5837bafa03bd82659c12374de6cbacd8bbc64c80c0c",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "266c93b3b332b49aa9539204944b1add003ab59c9503531a7d7ad7ac50af4589",
+        "planner_trace.json": "de469872b81c32cce10a8cdabb50c859a8e0e92bf879e65c204f8a7a6fca0630",
+        "policy_info.json": "732012e990e024fc5d25e63040da183598f17aef6ca4237b0dda2453ea50941f",
+        "server_ready.json": "1b13e39c48e99a3a106e7c9e30b9fc1653e28c986b7e6f003c4a5b84bd8b49a7"
+      },
+      "comparison_to_first_case": {
+        "scene_bytes_identical": true,
+        "initialization_bytes_identical": true,
+        "non_rgb_arrays_identical": true,
+        "initial_state_hash_identical": true,
+        "tactile_baseline_hash_identical": true
+      }
+    }
+  ],
+  "scope": "Four candidates at shared first-block seed904401; integrity/recipe/time coverage only, no model ranking."
+}

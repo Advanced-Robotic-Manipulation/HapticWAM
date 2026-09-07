@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-09-07T09:22:15.708051+00:00",
+  "purpose": "Separate CPU review tools; no frozen driver/runtime edits, no policy outcome read",
+  "driver_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5",
+  "source_sha256": {
+    "tools/sim/analyze_policy_campaign.py": "1c9ff5d13f7e98f60346cd9c27eb834f4720011623dd988ab20c03e2b14c0245",
+    "tools/sim/select_teacher_anchor.py": "db2fe668d71d58c24ca85b70898cb921c9c48779f7cf50b857f41d53e5a48772",
+    "tools/sim/select_teacher_candidate.py": "4ec14256168b89759348fbc7659f65c1d81d787464338ac25257925f41e40ffa",
+    "tools/sim/teacher_anchor_compare.py": "989f7af2dfbbd42a1e0f748e2553cf2776c87518513168465411e8a6a6f06067",
+    "tools/sim/teacher_anchor_design.py": "6a1716779877b537e32476a2f9a174ec0747b01a4e38eb794e85d49955e135fb"
+  },
+  "shared_modules_equal_frozen_driver": {
+    "tools/sim/analyze_policy_campaign.py": true,
+    "tools/sim/select_teacher_anchor.py": true,
+    "tools/sim/select_teacher_candidate.py": true,
+    "tools/sim/teacher_anchor_design.py": true
+  },
+  "read_only_import_links": {
+    "phantom": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/phantom",
+    "configs": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/configs",
+    "docs": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_driver_v5/docs"
+  },
+  "protocol_sha256": "f67fe79a5267c6d253d7d90f67f2a367c8899f030959c8f42fa714d072ab7ac2",
+  "screen_sha256": "3392e9f703ef008f2a16d6c133870192ddb1642526ef7adb3702b2e8a6c9b9c5",
+  "frozen_design_validation": "passed",
+  "requires_environment": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "prefinal_format_only_change": "Add spaces to report expected/missing/invalid counts before any scoring; initial manifest preserved."
+}
