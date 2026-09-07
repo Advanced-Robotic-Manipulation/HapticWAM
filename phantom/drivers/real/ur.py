@@ -532,6 +532,10 @@ class URArm(Arm):
             return self._reject(selection.reason, "unverified constrained hold or IK fault")
         sent_q = np.asarray(qref if held else selection.q, dtype=float)
         sent_pose = np.asarray(prev if held else selection.pose, dtype=float)
+        if np.array_equal(sent_q, np.asarray(qref)):
+            # IK tolerance can accept a nearby pose with identical joints.
+            # Re-sending those joints cannot advance the Cartesian anchor.
+            sent_pose = np.asarray(prev, dtype=float)
         state = self._constraint_hold_budget.check(time.perf_counter(), sent_q, held=held)
         self.constraint_hold_last = {
             **state, "held": held, "mode": selection.mode,

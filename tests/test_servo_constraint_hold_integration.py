@@ -95,10 +95,13 @@ def test_native_accepted_stationary_commands_do_not_clear_hold_deadline(monkeypa
     arm, clock = native_arm(monkeypatch)
     arm.servo_l(target(), 0.008, 0.1, 300)
     arm._ctrl.mode = "stationary"
+    nearby = POSE.copy()
+    nearby[0] += 1e-6  # A tolerance-level IK acceptance with identical joints.
     for tick in range(1, 50):
         clock[0] = tick * 0.008
-        result = arm.servo_l(POSE, 0.008, 0.1, 300)
+        result = arm.servo_l(nearby, 0.008, 0.1, 300)
         assert result.sent and result.reason == "sent"
+        np.testing.assert_array_equal(result.pose, POSE)
         assert arm.constraint_hold_last["active"]
         assert arm.constraint_hold_last["started_at_s"] == 0
     clock[0] = 0.5
