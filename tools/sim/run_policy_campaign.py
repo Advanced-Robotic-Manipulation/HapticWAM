@@ -29,6 +29,7 @@ fingerprint = _analysis.fingerprint
 load_design = _analysis.load_design
 policy_settings = _analysis.policy_settings
 adapter_input = _analysis.adapter_input
+servo_reach_limiter_metadata = _analysis.servo_reach_limiter_metadata
 
 
 def write_json(path, value):
@@ -193,6 +194,8 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         command += ["--save-policy-observations"]
     if profile.get("record_packet_support"):
         command += ["--record-packet-support"]
+    if servo_reach_limiter_metadata(design) is not None:
+        command += ["--servo-reach-limiter"]
     return command
 
 
@@ -267,6 +270,13 @@ def source_manifest(args, design_sha, design):
         "configs/hardware.nuc.yaml",
     ]
     paths.update(args.source / name for name in core_names)
+    if servo_reach_limiter_metadata(design) is not None:
+        limiter_path = args.source / "phantom/drivers/servo_limiter.py"
+        if not limiter_path.is_file():
+            raise FileNotFoundError(
+                "Enabled servo limiter source is missing: " + str(limiter_path)
+            )
+        paths.add(limiter_path)
     episode = args.evidence / Path(design["prepared_episode"]).relative_to("evidence")
     profile_inputs = {}
     for field in ("initial_state", "tactile_baseline"):
