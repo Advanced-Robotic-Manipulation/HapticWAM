@@ -134,6 +134,7 @@ def server_command(args, design, policy, directory):
 
 def simulation_command(args, design, policy, condition, seed, directory, robot_usd):
     profile = design.get("adapter_profile", {})
+    delivery_clock = _analysis.policy_delivery_clock(design)
     settings = policy_settings(design, policy)
     relative_episode = Path(design["prepared_episode"]).relative_to("evidence")
     command = [
@@ -182,6 +183,8 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
             command += [flag, spec["path"]]
     if design.get("delivery_latency_s") is not None:
         command += ["--policy-latency", str(design["delivery_latency_s"])]
+    if delivery_clock != "native":
+        command += ["--policy-delivery-clock", delivery_clock]
     for field, flag in (
         ("terminal_veto", "--terminal-veto-config"),
         ("placement_release", "--placement-release-config"),
@@ -467,6 +470,7 @@ def main():
                 for condition in design["conditions"]
             },
             "delivery_latency_override_s": design.get("delivery_latency_s"),
+            "policy_delivery_clock": _analysis.policy_delivery_clock(design),
         }
         write_json(args.output / "plan.json", plan)
         if not args.execute:
@@ -689,6 +693,9 @@ def main():
                             "max_play_steps": info.get("max_play_steps"),
                             "policy_latency_override_s": info.get(
                                 "policy_latency_override_s"
+                            ),
+                            "policy_delivery_clock": info.get(
+                                "policy_delivery_clock", "native"
                             ),
                             "policy_initial_state_provenance": info.get(
                                 "policy_initial_state_provenance"
