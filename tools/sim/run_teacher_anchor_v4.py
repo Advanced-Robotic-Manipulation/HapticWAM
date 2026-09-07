@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan or execute the frozen simulator campaign using dedicated owned servers.
+"""Plan or execute the frozen v4 corrected-anchor campaign using dedicated owned servers.
 
 Default mode writes a reviewable plan only. --execute starts one inference
 server at a time and sequential Isaac subprocesses. No hardware launcher is
@@ -386,7 +386,9 @@ def completed_case(directory, design_sha, policy, condition, seed):
 def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
-        "--campaign", type=Path, default=REPO / "configs/sim/policy_campaign.json"
+        "--campaign",
+        type=Path,
+        default=REPO / "configs/sim/teacher_success_anchor_v4_screen.json",
     )
     p.add_argument("--source", type=Path, default=REPO)
     p.add_argument(
@@ -402,7 +404,7 @@ def parser():
     p.add_argument(
         "--stage-gate-audit",
         type=Path,
-        help="Passed, hash-linked mechanics/reproduction audit when required by the design",
+        help="Passed, hash-linked two-trial corrected-profile bridge audit",
     )
     p.add_argument("--port", type=int, default=7792)
     p.add_argument("--server-timeout", type=float, default=600)
@@ -464,7 +466,7 @@ def main():
             return
         gate = None
         if design.get("stage_gate"):
-            from tools.sim.teacher_anchor_design import verify_execution_gate
+            from tools.sim.teacher_anchor_v4_design import verify_execution_gate
 
             gate = verify_execution_gate(design, args.stage_gate_audit, args.source)
             episode = args.evidence / Path(design["prepared_episode"]).relative_to(
