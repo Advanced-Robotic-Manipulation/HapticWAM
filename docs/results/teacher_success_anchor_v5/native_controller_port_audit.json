@@ -1,0 +1,90 @@
+{
+  "scope": "Opt-in native controller-port CPU qualification only; not a hardware test or a change to frozen simulator scores",
+  "profile": "minimal_v5",
+  "cli_selector": "--placement-controller-profile minimal_v5",
+  "required_explicit_inputs": [
+    "teacher mode",
+    "--terminal-veto",
+    "--placement-release-config with measured explicit bounds and finish_after_release=true",
+    "unchanged enabled native load latch"
+  ],
+  "default_profile": null,
+  "files_sha256": {
+    "phantom/deploy/minimal_v5.py": "aaf9c620e199b16bf04f3ab5aba7b11ea83b788e46a95bdbf14e16085a112b6f",
+    "phantom/deploy/planner.py": "a9bda16fe08f858993c50ea9ec662162697d50c5a03030cf4993440804620243",
+    "phantom/deploy/runtime.py": "baabb7ddc26e8795cb2c7510f8b26cf56a23825b2472693adda66d868fe6a7fc",
+    "phantom/scripts/run_deploy.py": "cb6f5ecdb012f6334f7b1dc992bdb64760f30ddd3d278abb088c20cf97abc74a",
+    "tests/test_native_minimal_v5.py": "9068a2b1dd4ea232650afbc46c0e21b74a141c87fe3b9c66c55b5ebd4e1e8a68",
+    "tests/fixtures/teacher_anchor_v1/saved_native_port_plans.json": "1e5e43e166c63b50ecbfcce30654a25df9a4a1fc39614ce9a553a580dbc95f4b"
+  },
+  "unchanged_vs_base_HEAD": {
+    "phantom/deploy/executor.py": true,
+    "phantom/deploy/safety.py": true,
+    "phantom/deploy/governor.py": true,
+    "phantom/deploy/release_controller.py": true,
+    "phantom/sim/policy_adapter.py": true,
+    "phantom/inference/policy.py": true,
+    "phantom/config/hardware.py": true
+  },
+  "base_HEAD": "98b05b9432f2acba5f355ade66959d7eb31bfdc1",
+  "planner_changed_methods": [
+    "run"
+  ],
+  "planner_change": "One explicit-profile predicate preserves request TCP/aperture; all default current-native paths retain previous feedback choice",
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/phantom-sim-venv/bin/python -m pytest -p no:cacheprovider tests/test_native_minimal_v5.py tests/test_sim_release_finish.py tests/test_sim_teacher_anchor_finish.py -q",
+    "passed": 32,
+    "gpu_or_hardware_actions": false,
+    "saved_delivered_plans_bitwise_equal": 37,
+    "saved_actions_tested": [
+      "none",
+      "close_allowed",
+      "close_masked",
+      "recovery_open"
+    ],
+    "synthetic_checks": [
+      "default class identity and metadata",
+      "required opt-in flags before fake driver factory",
+      "request versus delivery feedback, captured observation unchanged",
+      "pickup/loaded retention/release/FINISH state and command parity versus hash-pinned minimal adapter",
+      "default disabled FINISH through release/rearm",
+      "no unloaded/unarmed completion",
+      "accepted-open mailbox and fresh gripper gating",
+      "recovery/mask CPK invalidation and policy-opening passthrough",
+      "safety before same-tick finish and after measured hold",
+      "sensor/operator interruption of post-FINISH observation",
+      "finite plan/request input rejection before mutation",
+      "negative and above-hardware-limit recovery aperture rejected before fake driver construction"
+    ]
+  },
+  "raw_fixture_provenance": {
+    "scope": "Saved teacher proposals/request proprio and contextual execution feedback; no images, model loading or raw-recording modification",
+    "source": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242",
+    "source_sha256": {
+      "planner_trace.json": "0370254ce95558b881f765b00067fb5c20e86feee815dfc9302ab85b1cfca700",
+      "delivered_plans.jsonl": "71e759f6d2747dc90bace8278aa25d1c0be4f56857693ad056e332167bcbea12",
+      "execution_trace.jsonl": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d"
+    }
+  },
+  "metadata": {
+    "episode": "meta.json deploy_overrides.placement_controller_profile (ID, source SHA, effective veto/release, native timing limitations)",
+    "veto": "planner_trace.json terminal_veto implementation/feedback_source/controller_profile plus actions/actions_pre_veto",
+    "completion": "stop.json completed_reason/completed_at_s and runtime placement_release diagnostics; independent of stronger stop/object success"
+  },
+  "limitations": [
+    "No live repository or frozen source updated. No hardware, socket probe, model or GPU started.",
+    "Controller parity uses frozen saved plans and synthetic measured feedback, not physical execution qualification.",
+    "Native acknowledged gripper mailbox and stale-gripper checks may delay FINISH relative to ideal simulator acceptance.",
+    "Native finish_observation_s is explicit and differs from simulator hold through60s.",
+    "Historical optional veto predates live loaded-pad recovery exclusions and tactile phantom recovery; that difference is explicit and only applies under this opt-in. SafetyMonitor and driver guards remain unchanged.",
+    "Real wrist/tactile/RGB streams and normalizers retained; simulator gel/wrist proxies are not ported.",
+    "Physical TCP/release volume, sensors, UR3CB3 servo timing and retained optional limiter settings require lab qualification."
+  ],
+  "documentation_sha256": {
+    "native_controller_port.md": "01156e866c073f120841cc3058ac6c748595baa64624c95be6ad7116525bc4ea",
+    "lab_handoff_draft.md": "9c9d6633a302a98608c3c11ac2e548a60f9630b63b49f5ded0407fe3220e1c5f"
+  },
+  "audited_at_utc": "2026-09-07T09:28:30.226902+00:00",
+  "working_tree_HEAD_at_final_audit": "28e734fe3dc5a201f7777700f8efb247fb0f3561",
+  "scope_note": "Pinned files and pre-port unchanged checks cover this controller port only; separate reach-limiter extraction is not included or qualified."
+}

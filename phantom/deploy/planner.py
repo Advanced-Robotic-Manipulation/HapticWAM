@@ -772,9 +772,10 @@ class PlannerLoop:
                 veto_rec = {"action": "completion_hold", "completed_reason": self.executor.completed_reason}
             else:
                 veto_tcp = tcp_pose
-                if getattr(self.executor, "release_controller", None) is not None:
-                    # The opt-in bridge uses live delivery feedback, just as
-                    # its simulator counterpart; model inputs remain captured.
+                if (getattr(self.executor, "release_controller", None) is not None
+                        and not getattr(self, "request_snapshot_veto", False)):
+                    # Current-native release uses delivery feedback. The explicit
+                    # minimal_v5 historical profile retains request feedback.
                     veto_tcp, grip_now, _ = self.executor._release_feedback()
                 veto_rec = self._apply_veto(plan, veto_tcp, grip_now, veto_state, n)
                 if getattr(self.executor, "release_controller", None) is not None:
