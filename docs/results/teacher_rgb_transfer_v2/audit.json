@@ -1,0 +1,64 @@
+{
+  "status": "preserved_failed_attempt_zero_valid_proposals",
+  "audited_unix_s": 1788745627.9738393,
+  "owned_server_pid": 1565506,
+  "owned_server_pid_exists": false,
+  "seed_proposal_files": [],
+  "results_json_exists": false,
+  "attempted_diagnostic_replans": 1,
+  "valid_proposals": 0,
+  "failure": "First replan reached native _batch_from_obs but torch.tensor([obs.reactive]) rejected zero-dimensional NumPy array; failed before model sampling",
+  "source_contract": "SimulationObservation.t is float; reactive_score returns float; recording serializes all fields with np.asarray, losing Python scalar wire types",
+  "fixed_by": "explicit v3 restores only scalar t/reactive to Python float; numeric values and seven NumPy array bytes/dtypes unchanged",
+  "tests": "18 RGB/remote CPU tests including actual native teacher _batch_from_obs preprocessing; no model load or GPU calls",
+  "raw_files": {
+    "orchestration/status.json": {
+      "sha256": "b2aeadcfb8aa68cb8a544a4cb944589f68d5b5242fdbf8850920d90e4f2efa80",
+      "bytes": 1110
+    },
+    "orchestration/client.log": {
+      "sha256": "9150e671d5715a274b81c059f12f71cbd931bb7aafe9182506254c04d31d22fd",
+      "bytes": 2374
+    },
+    "orchestration.log": {
+      "sha256": "20099ddabab4f5c262b379e18df51a89838138ac1a9e5363b7cfad4e0ff0c84b",
+      "bytes": 1550
+    },
+    "launcher.json": {
+      "sha256": "e20d0b2626e879ad8a2e7f95e7dfed3634d7325ca7d420e360208ca270173a7e",
+      "bytes": 436
+    },
+    "server/command.json": {
+      "sha256": "54f089b584db5b64d0c19c762f40dc8f14bb39778801a7fb16f6cec69c1a89bd",
+      "bytes": 827
+    },
+    "server/server.json": {
+      "sha256": "fb614e6cc506dd2029b64b1aef66975fb1588682db9c3568e1af483f34e9aa8a",
+      "bytes": 3630
+    },
+    "execution/dedicated_server_ready.json": {
+      "sha256": "d4acc7a8516ffe08a92ba042c25c598eace5c587c1b9298196b7ed6be86b9e5a",
+      "bytes": 3628
+    },
+    "execution/manifest.json": {
+      "sha256": "fd524f67534298b075a061a7c35af236368ba7d824e9298f3cd738528383d558",
+      "bytes": 11738
+    },
+    "execution/completed_study_guard.json": {
+      "sha256": "af8597575a3e154b8ca7558be1059c4d644c2b828d458a094b05c206cfa9b779",
+      "bytes": 411
+    },
+    "execution/preconnection_info.json": {
+      "sha256": "70296a7cdee0bbc15356e87db6e7944d9d9b2c1889faab598a9c32c3a22a3843",
+      "bytes": 283
+    },
+    "execution/live_server_info.json": {
+      "sha256": "6bfb5679411c6c1dfaaebd6d2e6ee71ed0540af5a20665772616347f6803e407",
+      "bytes": 513
+    },
+    "execution/ownership.json": {
+      "sha256": "2d3020ae817bd121a2c0fb5d1179fe44ee6986b8756ac592d37fe3ce10eab306",
+      "bytes": 276
+    }
+  }
+}

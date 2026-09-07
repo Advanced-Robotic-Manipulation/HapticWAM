@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-06T23:28:36.567246+00:00",
+  "source_case": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_yp10mm__seed4242",
+  "source_trace_sha256": "e07d351482dceea62fbff883e91db9f5ac6bdc1ace4bbf9b1e40f5768cf5afd0",
+  "results": [
+    {
+      "dt_s": 0.004,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/teacher_commands_full_dt4ms",
+      "mode": "command_replay",
+      "rows": 305,
+      "first_t_s": 0.0,
+      "last_t_s": 20.232,
+      "maximum_sample_gap_s": 0.06800000000000139,
+      "command_input_sha256": "f02dd3373473e0b99cb7406f7cf68e22c3609d1f3a841a867e86da08ce6b28cf",
+      "command_last_t_s": 18.236,
+      "covers_all_commands_and_2s_tail": true,
+      "command_target_q_max_error_rad": 0.0,
+      "recorded_finger_targets_min_max_m": [
+        0.010339349442058141,
+        0.035
+      ],
+      "finger_target_validation_limit": "Exact input file hashed; target_finger_q is not separately logged in sim_trace. Its gripper columns are measured closure and estimated OBJ status, not target closure. dt4 measured finger/OBJ state equality is checked against the original run.",
+      "force_peak_n": 116.71423435211182,
+      "force_peak_t_s": 11.736,
+      "sampled_normal_impulse_ns": 467.75424419914935,
+      "sampled_time_mean_normal_force_n": 23.11952571170173,
+      "force_peak_pose_m": [
+        -0.39669927954673767,
+        -0.28559234738349915,
+        0.0699206069111824
+      ],
+      "final_packet_m": [
+        -0.3913334906101227,
+        -0.3008829951286316,
+        0.07000000029802322
+      ],
+      "max_qd_rad_s": 0.9735090136528015,
+      "max_target_q_error_rad": 0.057025767943758354,
+      "max_gel_force_n": 0,
+      "max_gel_accounting_error_n": 0,
+      "per_filter_raw_peak_n": {
+        "/World/Waffle": 116.71423435211182
+      },
+      "deepest_contact": {
+        "t_s": 10.936,
+        "side": "left",
+        "body": "/World/Waffle",
+        "signed_separation_m": -0.010172096081078053,
+        "normal_force_n": 86.83316802978516,
+        "point_pad_m": [
+          -0.005999937754240393,
+          0.009190413743312769,
+          0.019443672151609186
+        ],
+        "normal_pad": [
+          0.07524017668350153,
+          -0.8860352813893667,
+          -0.4574717212937801
+        ]
+      },
+      "initial_q_error_rad": 0.0037253538714807632,
+      "initial_qd_rad_s": 0.0294484943151474,
+      "input_sha256": {
+        "sim_trace.npz": "e07d351482dceea62fbff883e91db9f5ac6bdc1ace4bbf9b1e40f5768cf5afd0",
+        "command_replay.json": "83167a5b2cf4eecb92fdff553c2794808f782b86bead07c90a233db5d0b504ea",
+        "effective_config.json": "b0bbefa39ed254ccafedf1c5e254eef9332c980e434f2afe6a0c60eed406fb36",
+        "run.json": "2c50fa20abda06b1cbc836015250b18b71d196d5f0c1a70340f4735166fa4417",
+        "initialization.json": "3ee63af6ab997e081443373e97b7bf6f0e5a229a5c5db84d2ab37f795698e88d",
+        "gel_contact_trace.json": "724e82e882e781628324339035bdcf50a40b2cca836fb5cb36a1fd3f1f12f575"
+      }
+    },
+    {
+      "dt_s": 0.002,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/teacher_commands_full_dt2ms",
+      "mode": "command_replay",
+      "rows": 305,
+      "first_t_s": 0.0,
+      "last_t_s": 20.234,
+      "maximum_sample_gap_s": 0.06800000000000139,
+      "command_input_sha256": "f02dd3373473e0b99cb7406f7cf68e22c3609d1f3a841a867e86da08ce6b28cf",
+      "command_last_t_s": 18.236,
+      "covers_all_commands_and_2s_tail": true,
+      "command_target_q_max_error_rad": 0.0,
+      "recorded_finger_targets_min_max_m": [
+        0.010339349442058141,
+        0.035
+      ],
+      "finger_target_validation_limit": "Exact input file hashed; target_finger_q is not separately logged in sim_trace. Its gripper columns are measured closure and estimated OBJ status, not target closure. dt4 measured finger/OBJ state equality is checked against the original run.",
+      "force_peak_n": 136.17773056030273,
+      "force_peak_t_s": 11.734,
+      "sampled_normal_impulse_ns": 523.6999221019149,
+      "sampled_time_mean_normal_force_n": 25.882174661555545,
+      "force_peak_pose_m": [
+        -0.39640724658966064,
+        -0.2856655716896057,
+        0.06998299807310104
+      ],
+      "final_packet_m": [
+        -0.39144688844680786,
+        -0.30074232816696167,
+        0.06999999284744263
+      ],
+      "max_qd_rad_s": 0.9929618835449219,
+      "max_target_q_error_rad": 0.056779302737612114,
+      "max_gel_force_n": 0,
+      "max_gel_accounting_error_n": 0,
+      "per_filter_raw_peak_n": {
+        "/World/Waffle": 136.17773056030273
+      },
+      "deepest_contact": {
+        "t_s": 11.734,
+        "side": "left",
+        "body": "/World/Waffle",
+        "signed_separation_m": -0.010186408646404743,
+        "normal_force_n": 103.12641906738281,
+        "point_pad_m": [
+          -0.005996222095409673,
+          0.009187824714005127,
+          0.01944485994432078
+        ],
+        "normal_pad": [
+          0.07755555695296608,
+          -0.8889861117076998,
+          -0.4513188860775371
+        ]
+      },
+      "initial_q_error_rad": 0.0032790342914026382,
+      "initial_qd_rad_s": 0.02014179714024067,
+      "input_sha256": {
+        "sim_trace.npz": "2d1b67b08e9c5ec81412902527c11010d63b7f235052b3f27e4776a10f78e63b",
+        "command_replay.json": "83167a5b2cf4eecb92fdff553c2794808f782b86bead07c90a233db5d0b504ea",
+        "effective_config.json": "d6b705c8113c1df67fc8d6441a01edc851de2eddb685217642f6b56137c9b2cf",
+        "run.json": "907b9538e970bac29205628310719b965a5e7659d5c5a647e108358de46cab47",
+        "initialization.json": "8175861adf54ff5f4cff6e9c95a01ca3e592608470fda5e0df26971011d0c474",
+        "gel_contact_trace.json": "47fad7b52990fdf4078098cddce6972425f724d55c0a8c3569415777d71d32ed"
+      }
+    },
+    {
+      "dt_s": 0.001,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/teacher_commands_full_dt1ms",
+      "mode": "command_replay",
+      "rows": 305,
+      "first_t_s": 0.0,
+      "last_t_s": 20.235,
+      "maximum_sample_gap_s": 0.06700000000000017,
+      "command_input_sha256": "f02dd3373473e0b99cb7406f7cf68e22c3609d1f3a841a867e86da08ce6b28cf",
+      "command_last_t_s": 18.236,
+      "covers_all_commands_and_2s_tail": true,
+      "command_target_q_max_error_rad": 0.0,
+      "recorded_finger_targets_min_max_m": [
+        0.010339349442058141,
+        0.035
+      ],
+      "finger_target_validation_limit": "Exact input file hashed; target_finger_q is not separately logged in sim_trace. Its gripper columns are measured closure and estimated OBJ status, not target closure. dt4 measured finger/OBJ state equality is checked against the original run.",
+      "force_peak_n": 138.81859397888184,
+      "force_peak_t_s": 11.734,
+      "sampled_normal_impulse_ns": 547.8853853978218,
+      "sampled_time_mean_normal_force_n": 27.076124803450547,
+      "force_peak_pose_m": [
+        -0.39659661054611206,
+        -0.2853880822658539,
+        0.06999491900205612
+      ],
+      "final_packet_m": [
+        -0.39133089780807495,
+        -0.30064401030540466,
+        0.07000003010034561
+      ],
+      "max_qd_rad_s": 0.9868360757827759,
+      "max_target_q_error_rad": 0.05307372417153122,
+      "max_gel_force_n": 0,
+      "max_gel_accounting_error_n": 0,
+      "per_filter_raw_peak_n": {
+        "/World/Waffle": 138.81859397888184
+      },
+      "deepest_contact": {
+        "t_s": 11.734,
+        "side": "left",
+        "body": "/World/Waffle",
+        "signed_separation_m": -0.009877612814307213,
+        "normal_force_n": 108.66889953613281,
+        "point_pad_m": [
+          -0.00599774035585297,
+          0.00919198634105118,
+          0.019445529615821276
+        ],
+        "normal_pad": [
+          0.07912436910883598,
+          -0.8889712431886816,
+          -0.451075888703607
+        ]
+      },
+      "initial_q_error_rad": 0.0030517021762292984,
+      "initial_qd_rad_s": 0.013188817538321018,
+      "input_sha256": {
+        "sim_trace.npz": "8fd39f484e677aedadec1fe530813012570e0d504c815751589c0d9278ad847b",
+        "command_replay.json": "83167a5b2cf4eecb92fdff553c2794808f782b86bead07c90a233db5d0b504ea",
+        "effective_config.json": "6f11bb325cf0c16d5d86ba2c767db78283cbf98e77da50019410a0d0771892b6",
+        "run.json": "ebfee5806cc3b323348eba5a24d22075eeafc33d576f10968ceccb7bab76b4d5",
+        "initialization.json": "4c36b3145230037f2a8cedabe836b9a322b7f2d7761f2265c1747f8d0cdc1a81",
+        "gel_contact_trace.json": "ed608db4c2e13d9d2d3c8931be0c2c0fd9c50f2a0915bcf33309fe50ac3a9ef8"
+      }
+    }
+  ],
+  "only_dt_changed_in_effective_scene_config": {
+    "2": true,
+    "1": true
+  },
+  "dt4_original_same_time_prefix": {
+    "matched_rows": 305,
+    "last_matched_time_s": 20.232,
+    "original_rows": 305,
+    "replay_rows": 305,
+    "array_comparison": {
+      "frame_t": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "gripper": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "packet_bin_normal_force": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "packet_robot_normal_force": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_contact_count": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_contact_uv": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_force": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_force_local": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_orientation_wxyz": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_packet_force": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_packet_normal_force": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "pad_position": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "physics_t": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "q": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "qd": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "t": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "target_q": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "tcp": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "tcp_nominal_fk": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "waffle_orientation_wxyz": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      },
+      "waffle_position": {
+        "bitwise_equal": true,
+        "max_difference": 0.0
+      }
+    }
+  },
+  "convergence": {
+    "dt2_vs_dt1_peak_relative_difference": 0.019023845025982977,
+    "dt2_vs_dt1_sampled_impulse_relative_difference": 0.044143289710758926,
+    "dt2_vs_dt1_max_packet_translation_difference_m_on_dt2_grid": 0.0007093301773514486,
+    "comparison_interpolation": "linear on saved scene-rate positions; no physical high-rate force integration available",
+    "thresholds_proposed_before_results": {
+      "relative_peak": 0.1,
+      "relative_impulse": 0.05,
+      "max_pose_difference_m": 0.002
+    },
+    "passes_sampled_diagnostic_thresholds": true
+  },
+  "conclusion": "High arm-driven packet/toe load persists and increases with reduced timestep; mapper correction does not eliminate this physical load. Keep force and safety realism explicitly unvalidated.",
+  "limitations": [
+    "Sampled 15Hz force peaks/impulses can miss subframe transients; this is a bounded numerical sensitivity diagnostic, not solver or material calibration.",
+    "Recorded target replay does not re-run policy, asynchronous timing, or safety logic; no trial success score is assigned.",
+    "Force magnitudes, packet deformation and contact offsets require physical measurements. No force clipping, safety-limit relaxation or contact disabling is justified by this diagnostic."
+  ]
+}

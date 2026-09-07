@@ -242,6 +242,52 @@ class TerminalVetoFilter:
         self.executor = self.session = None
         self.snapshots = SimpleNamespace(wrench_base=deepcopy(self._wrench_base))
 
+    @staticmethod
+    def feedback_source(adapter):
+        """Match the native opt-in release bridge without changing defaults."""
+        return (
+            "current_delivery"
+            if getattr(adapter, "release_controller", None) is not None
+            else "request_snapshot_historical"
+        )
+
+    def _feedback(self, snapshot, adapter, ur, now):
+        source = self.feedback_source(adapter)
+        if source == "request_snapshot_historical":
+            return (
+                ur[2 * self.hw.arm.dof : 2 * self.hw.arm.dof + 6].copy(),
+                float(ur[-2]),
+                {"feedback_source": source},
+            )
+        feedback = {}
+        timestamps = {}
+        for name, field, shape in (
+            ("arm", "tcp_pose", (6,)),
+            ("gripper", "state", (2,)),
+        ):
+            ring = adapter.rings.get(name)
+            times, values = ring.latest(1) if ring is not None else ([], {})
+            if not len(times) or field not in values:
+                raise RuntimeError(
+                    f"terminal veto release profile requires measured {name} feedback"
+                )
+            value = np.asarray(values[field][-1], dtype=float)
+            timestamp = float(times[-1])
+            if (
+                value.shape != shape
+                or not np.isfinite(value).all()
+                or not np.isfinite(timestamp)
+                or timestamp > now + 1e-9
+            ):
+                raise ValueError(f"invalid terminal veto delivery {name} feedback")
+            feedback[name] = value.copy()
+            timestamps[f"feedback_{name}_t_s"] = timestamp
+        return (
+            feedback["arm"],
+            float(feedback["gripper"][0]),
+            {"feedback_source": source, **timestamps},
+        )
+
     def __call__(self, plan, snapshot, adapter):
         for method in ("entered_grip_after", "clear_grip_latch", "request_stop"):
             if not callable(getattr(adapter, method, None)):
@@ -269,6 +315,12 @@ class TerminalVetoFilter:
         ur = np.asarray(snapshot.ur_state, float)
         if ur.shape != (self.hw.ur_state_dim,) or not np.isfinite(ur).all():
             raise ValueError("terminal veto requires a finite native UR state")
+        # Model conditioning remains the captured request snapshot. Only the
+        # opt-in native release bridge evaluates veto rules on live delivery
+        # TCP/aperture. Safety separately checks feedback freshness each tick.
+        veto_tcp, veto_grip, feedback_metadata = self._feedback(
+            snapshot, adapter, ur, float(now)
+        )
         original = np.asarray(plan.actions)
         if (
             original.ndim != 2
@@ -293,8 +345,8 @@ class TerminalVetoFilter:
         )
         rec = apply_veto(
             filtered,
-            ur[2 * self.hw.arm.dof : 2 * self.hw.arm.dof + 6],
-            float(ur[-2]),
+            veto_tcp,
+            veto_grip,
             self.state,
             self.replan_index,
         )
@@ -302,17 +354,9 @@ class TerminalVetoFilter:
         # an opening prefix "closing" because of a later close sample. Only
         # restore the teacher's opening samples inside the declared release
         # window. Recovery, arm-channel rewrites and retry stops stay native.
-        opening_mask = getattr(adapter, "placement_release_opening_mask", None)
-        if rec["action"] == "close_masked" and callable(opening_mask):
-            permitted = np.asarray(opening_mask(original[:, 6]), dtype=bool)
-            if permitted.shape != (len(original),):
-                raise ValueError("placement release opening mask has wrong shape")
-            if permitted.any():
-                filtered.actions[permitted, 6] = original[permitted, 6]
-                rec["placement_release_passthrough_indices"] = np.flatnonzero(
-                    permitted
-                ).tolist()
-                rec["placement_release_variant"] = "placement_policy_release_v1"
+        from phantom.deploy.release_controller import restore_policy_openings
+
+        restore_policy_openings(filtered, original, rec, adapter)
         rewritten = rec["action"] in (
             "close_masked",
             "recovery_open",
@@ -320,6 +364,9 @@ class TerminalVetoFilter:
         )
         stop_reason = "veto_retry_cap" if rec["action"] == "retry_cap" else None
         rec.update(
+            **feedback_metadata,
+            feedback_tcp_pose=veto_tcp.tolist(),
+            feedback_gripper=veto_grip,
             snapshot_t_s=float(snapshot.t),
             applied_at_s=self._now,
             replan_index=self.replan_index,

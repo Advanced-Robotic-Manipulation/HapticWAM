@@ -33,10 +33,15 @@ def arguments():
     p.add_argument("--output", type=Path, required=True)
     p.add_argument(
         "--mode",
-        choices=["replay", "dynamics", "policy", "contact_probe"],
+        choices=["replay", "dynamics", "policy", "contact_probe", "command_replay"],
         default="replay",
     )
     p.add_argument("--duration", type=float, default=None)
+    p.add_argument(
+        "--command-trace",
+        type=Path,
+        help="Recorded drive-submission JSONL for command_replay mechanics diagnostics",
+    )
     p.add_argument(
         "--render-hz",
         type=float,
@@ -81,6 +86,11 @@ def arguments():
         help="Record independent packet-to-bin and packet-to-robot normal forces for strict placement scoring",
     )
     p.add_argument(
+        "--record-robot-environment-contacts",
+        action="store_true",
+        help="Diagnostic only: save every robot body's explicit table/mat/bin/packet contacts; no controller or safety feedback",
+    )
+    p.add_argument(
         "--hardware-config", type=Path, default=REPO / "configs/hardware.nuc.yaml"
     )
     p.add_argument("--ignore-episode-overrides", action="store_true")
@@ -104,15 +114,20 @@ def arguments():
     )
     p.add_argument(
         "--gel-contact-coverage",
-        choices=["point", "manifold_patch"],
+        choices=["point", "manifold_patch", "manifold_patch_v2"],
         default="point",
         help="Explicit contact-area estimate for the tactile proxy; physics colliders and force limits are unchanged",
     )
     p.add_argument(
+        "--record-gel-contacts",
+        action="store_true",
+        help="Record read-only contact geometry/separations during measured replay as well as policy runs",
+    )
+    p.add_argument(
         "--wrist",
-        choices=["contact_proxy", "zero_ablation"],
+        choices=["contact_proxy", "gripper_contact_proxy", "zero_ablation"],
         default="contact_proxy",
-        help="Uncalibrated contact wrench plus recorded initial bias, or explicit zero ablation",
+        help="Uncalibrated pad-only or full gripper external-normal-contact wrench plus recorded bias, or zero ablation",
     )
     p.add_argument(
         "--policy-latency",
@@ -370,7 +385,7 @@ def main():
         if args.duration is None
         else (
             args.duration
-            if args.mode == "policy"
+            if args.mode in ("policy", "command_replay")
             else min(args.duration, float(data["t"][-1]))
         )
     )
@@ -510,8 +525,30 @@ def run(app, args, cfg, data, duration):
             ],
             rigid_prim_cls=RigidPrim,
         )
+    robot_environment_views = None
+    if args.record_robot_environment_contacts:
+        from tools.sim.robot_environment_contacts import RobotEnvironmentContactViews
+
+        robot_environment_views = RobotEnvironmentContactViews(
+            [
+                str(prim.GetPath())
+                for prim in stage.Traverse()
+                if prim.HasAPI(UsdPhysics.RigidBodyAPI)
+                and str(prim.GetPath()).startswith(paths["robot_path"] + "/")
+            ],
+            rigid_prim_cls=RigidPrim,
+        )
+    gripper_wrist = None
+    if args.wrist == "gripper_contact_proxy":
+        from tools.sim.gripper_wrist import GripperContactWrist
+
+        gripper_wrist = GripperContactWrist(
+            str(housing.GetPath()), paths["pad_paths"], rigid_prim_cls=RigidPrim
+        )
     gel_views = None
-    if args.mode == "policy" and args.tactile == "measured_baseline_proxy":
+    if args.record_gel_contacts or (
+        args.mode == "policy" and args.tactile == "measured_baseline_proxy"
+    ):
         from tools.sim.gel_contact import GelContactViews
 
         environment_paths = [
@@ -569,6 +606,10 @@ def run(app, args, cfg, data, duration):
         gel_views.initialize()
     if support_views is not None:
         support_views.initialize()
+    if robot_environment_views is not None:
+        robot_environment_views.initialize()
+    if gripper_wrist is not None:
+        gripper_wrist.initialize()
     tool_body.initialize()
     camera.initialize()
     if args.gui:
@@ -607,8 +648,10 @@ def run(app, args, cfg, data, duration):
     g0 = float(data["gripper"][initial_row, 0])
     initial_state = None
     if args.policy_initial_state:
-        if args.mode != "policy":
-            raise ValueError("--policy-initial-state is only valid in policy mode")
+        if args.mode not in ("policy", "command_replay"):
+            raise ValueError(
+                "--policy-initial-state requires policy or command_replay mode"
+            )
         initial_state = json.loads(args.policy_initial_state.read_text())
         q0 = np.asarray(initial_state["q"], dtype=float)
         g0 = float(initial_state["gripper"])
@@ -623,6 +666,20 @@ def run(app, args, cfg, data, duration):
                 "Initial state requires finite q[6], wrist_ft[6], gripper in [0,1]"
             )
     gripper_visual.update(g0)
+    recorded_commands = None
+    if args.mode == "command_replay":
+        from phantom.sim.command_replay import RecordedDriveCommands
+
+        if not args.command_trace or not args.policy_initial_state:
+            raise ValueError(
+                "command_replay requires an explicit command trace and measured initial state"
+            )
+        recorded_commands = RecordedDriveCommands(
+            args.command_trace, finger_limit_m=cfg["gripper"]["stroke"] / 2
+        )
+        (args.output / "command_replay.json").write_text(
+            json.dumps(recorded_commands.metadata, indent=2) + "\n"
+        )
 
     def gap(closure):
         return (
@@ -688,7 +745,7 @@ def run(app, args, cfg, data, duration):
         world.step(render=False)
         world.render()
     robot_settling = []
-    if args.mode == "policy":
+    if args.mode in ("policy", "command_replay"):
         # Pose assignment during renderer initialization is not a controller
         # equilibrium. Let the position drives settle before enabling safety
         # and starting the trial clock; never waive a velocity safety check.
@@ -718,10 +775,15 @@ def run(app, args, cfg, data, duration):
         "settled_packet_center_m": settled_position.tolist(),
         "settling_displacement_m": settling_error,
         "packet_velocity_m_s": np.asarray(packet.get_linear_velocity()).tolist(),
+        "packet_support_contacts": support_views.get_all(dt)
+        if support_views is not None
+        else None,
         "configured_robot_q": q0.tolist(),
         "settled_robot_q": robot.get_joint_positions()[ids].tolist(),
         "settled_robot_qd": robot.get_joint_velocities()[ids].tolist(),
-        "policy_robot_settling_s": 2.0 if args.mode == "policy" else 0.0,
+        "policy_robot_settling_s": 2.0
+        if args.mode in ("policy", "command_replay")
+        else 0.0,
         "robot_initial_max_joint_error_rad": float(
             np.max(np.abs(robot.get_joint_positions()[ids] - q0))
         ),
@@ -730,6 +792,10 @@ def run(app, args, cfg, data, duration):
         ),
         "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay.",
     }
+    if robot_environment_views is not None:
+        initialization["robot_environment_contacts"] = robot_environment_views.get_all(
+            dt
+        )
     (args.output / "initialization.json").write_text(
         json.dumps(initialization, indent=2) + "\n"
     )
@@ -737,7 +803,7 @@ def run(app, args, cfg, data, duration):
         raise RuntimeError(
             f"Packet moved {settling_error:.4f}m before replay; initial geometry/settling is invalid"
         )
-    if args.mode == "policy" and (
+    if args.mode in ("policy", "command_replay") and (
         initialization["robot_initial_max_joint_error_rad"] > 0.02
         or initialization["robot_initial_max_joint_speed_rad_s"] > 0.05
     ):
@@ -791,9 +857,14 @@ def run(app, args, cfg, data, duration):
     policy_gel_trace = []
     policy_gel_normal_trace = []
     policy_gel_contact_diagnostics = []
+    robot_environment_contact_trace = []
     measured_sensor_proxy = None
     next_control = 0.0
     wrist_bias = np.zeros(6)
+    wrist_contact_file = None
+    wrist_value = None
+    wrist_sample_t = None
+    next_wrist_t = 0.0
     stop_after_step = False
     terminal_until = None
 
@@ -808,12 +879,23 @@ def run(app, args, cfg, data, duration):
     def wrist_proxy(tcp, forces):
         if args.wrist == "zero_ablation":
             return np.zeros(6)
+        if gripper_wrist is not None:
+            if wrist_value is None:
+                raise RuntimeError("Gripper wrist input has not been sampled")
+            return wrist_value.copy()
         value = wrist_bias.copy()
         for pad, force in zip(pads, forces):
             position = np.asarray(pad.get_world_poses()[0]).reshape(-1, 3)[0]
             value[:3] += force
             value[3:] += np.cross(position - tcp[:3], force)
         return value
+
+    def sample_gripper_wrist(t, tcp):
+        nonlocal wrist_value, wrist_sample_t, next_wrist_t
+        wrist_value, record = gripper_wrist.sample(tcp, wrist_bias, dt)
+        wrist_sample_t = float(t)
+        wrist_contact_file.write(json.dumps({"t": t, **record}) + "\n")
+        next_wrist_t = t + control_dt
 
     def tactile_proxy(t, forces):
         if measured_sensor_proxy is not None:
@@ -894,6 +976,21 @@ def run(app, args, cfg, data, duration):
     physics_origin = world.current_time
     start = time.monotonic()
     try:
+        if gripper_wrist is not None:
+            # Command replay needs the same recorded residual as policy mode.
+            # Loading this configuration is read-only and imports no driver.
+            from phantom.config.hardware import load_hardware
+
+            wrist_hw = load_hardware(args.hardware_config, quiet=True)
+            control_dt = 1 / wrist_hw.control.executor_rate_hz
+            if dt > control_dt + 1e-9:
+                raise ValueError("Physics dt exceeds wrist sample/control period")
+            if "native_arm_ft" in data:
+                ft_idx = int(np.argmin(np.abs(data["native_arm_ft_t"])))
+                wrist_bias = np.asarray(data["native_arm_ft"][ft_idx], dtype=float)
+            if initial_state is not None:
+                wrist_bias = initial_wrist.copy()
+            wrist_contact_file = (args.output / "wrist_contact_trace.jsonl").open("w")
         if args.mode == "policy":
             audit = PolicyAudit(args.output)
             from phantom.config.hardware import load_hardware
@@ -997,6 +1094,12 @@ def run(app, args, cfg, data, duration):
                         if args.policy_config
                         else "prepared episode manifest.meta.text",
                         "wrist_model": args.wrist,
+                        "wrist_proxy_metadata": gripper_wrist.metadata()
+                        if gripper_wrist is not None
+                        else None,
+                        "wrist_sampling_rate_hz": 1 / control_dt
+                        if gripper_wrist is not None
+                        else None,
                         "initial_recorded_wrist_bias": wrist_bias.tolist(),
                         "observation_warmup_s": hw.wrist_ft.window_s,
                         "control_rate_hz": hw.control.executor_rate_hz,
@@ -1027,6 +1130,11 @@ def run(app, args, cfg, data, duration):
                         "max_play_steps": args.max_play_steps,
                         "planner_stall_watchdog": True,
                         "terminal_veto": terminal_veto_spec or False,
+                        "terminal_veto_feedback_source": terminal_veto.feedback_source(
+                            adapter
+                        )
+                        if terminal_veto
+                        else None,
                         "placement_release": release_spec,
                         "record_packet_support": args.record_packet_support,
                         "save_policy_observations": args.save_policy_observations,
@@ -1038,7 +1146,10 @@ def run(app, args, cfg, data, duration):
                         }
                         if args.policy_initial_state
                         else None,
-                        "inference_delivery_clock": "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
+                        "policy_latency_override_s": args.policy_latency,
+                        "inference_delivery_clock": "explicit fixed latency plus response delay; native compute and RPC times logged separately"
+                        if args.policy_latency is not None
+                        else "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
                         "phantom_recovery": bool(
                             terminal_veto and terminal_veto.implementation == "live"
                         ),
@@ -1056,7 +1167,17 @@ def run(app, args, cfg, data, duration):
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
-            if args.mode in ("replay", "dynamics"):
+            if (
+                gripper_wrist is not None
+                and (wrist_value is None or args.mode != "policy" or stop_after_step)
+                and t + 1e-9 >= next_wrist_t
+            ):
+                sample_gripper_wrist(t, tcp)
+            if recorded_commands is not None:
+                targets = recorded_commands.at(t)
+                if targets is not None:
+                    desired[ids], desired[fingers] = targets
+            elif args.mode in ("replay", "dynamics"):
                 desired[ids] = interp("q", t)
                 desired[fingers] = gap(interp("gripper", t)[0])
                 if args.mode == "replay":
@@ -1081,6 +1202,9 @@ def run(app, args, cfg, data, duration):
                 )
                 twist = measured_tcp_twist(previous_tcp, tcp, dt)
                 forces = measured_pad_forces()
+                if gripper_wrist is not None:
+                    sample_gripper_wrist(t, tcp)
+                measured_wrist = wrist_proxy(tcp, forces)
                 target_closure = float(
                     np.clip(
                         (1 - desired[fingers].mean() / (cfg["gripper"]["stroke"] / 2))
@@ -1123,10 +1247,14 @@ def run(app, args, cfg, data, duration):
                     tcp_pose=tcp,
                     tcp_speed=twist,
                     gripper_state=[closure, obj],
-                    wrist_ft=wrist_proxy(tcp, forces),
+                    wrist_ft=measured_wrist,
                     tactile=tactile_sample,
                 )
-                if t + 1e-9 >= policy_ready_t and adapter.ready_for_replan(t):
+                if (
+                    t + 1e-9 >= policy_ready_t
+                    and not getattr(adapter, "completed_reason", None)
+                    and adapter.ready_for_replan(t)
+                ):
                     stall_check = stall_watchdog.check(t, tcp, adapter._last_cmd)
                     events.append({"event": "planner_stall_watchdog", **stall_check})
                     if stall_check["stop_reason"]:
@@ -1155,7 +1283,10 @@ def run(app, args, cfg, data, duration):
                     "measured_qd": np.array(qd, copy=True),
                     "measured_tcp": np.array(tcp, copy=True),
                     "measured_gripper": [closure, obj],
-                    "measured_wrist_ft": wrist_proxy(tcp, forces),
+                    "measured_wrist_ft": measured_wrist,
+                    "wrist_capture_t": wrist_sample_t
+                    if gripper_wrist is not None
+                    else t,
                     "tactile_capture_t": policy_tactile_trace[-1][0],
                     "requested_tcp": command.tcp_pose,
                     "gripper_command": command.gripper,
@@ -1249,6 +1380,10 @@ def run(app, args, cfg, data, duration):
             render = t + 1e-9 >= next_frame or last_tick
             previous_tcp = tcp
             if render:
+                if args.record_gel_contacts and args.mode != "policy":
+                    policy_gel_contact_diagnostics.append(
+                        {"t": t, **gel_views.get_all(dt)}
+                    )
                 visual_closure = float(
                     np.clip(
                         (
@@ -1379,10 +1514,21 @@ def run(app, args, cfg, data, duration):
                 trace["pad_contact_uv"].append(contact_uvs)
                 trace["pad_contact_count"].append(contact_counts)
                 trace["pad_packet_normal_force"].append(packet_normal_forces)
+                if gripper_wrist is not None:
+                    trace.setdefault("wrist_capture_t", []).append(
+                        np.nan if wrist_sample_t is None else wrist_sample_t
+                    )
+                    trace.setdefault("wrist_ft", []).append(
+                        wrist_bias.copy() if wrist_value is None else wrist_value.copy()
+                    )
                 if support_views is not None:
                     support = support_views.get_all(dt)
                     for key in ("packet_robot_normal_force", "packet_bin_normal_force"):
                         trace.setdefault(key, []).append(support[key])
+                if robot_environment_views is not None:
+                    robot_environment_contact_trace.append(
+                        {"t": t, **robot_environment_views.get_all(dt)}
+                    )
                 for key in (
                     "q",
                     "qd",
@@ -1408,6 +1554,8 @@ def run(app, args, cfg, data, duration):
         )
     finally:
         writer.release()
+        if wrist_contact_file is not None:
+            wrist_contact_file.close()
         # Preserve measured states even when a policy or transport call fails.
         # FAILED.txt and the planner audit retain the failure; partial traces
         # must never be interpreted as a completed rollout by the scorer.
@@ -1427,13 +1575,17 @@ def run(app, args, cfg, data, duration):
                     else {}
                 ),
             )
-            if measured_sensor_proxy is not None:
-                (args.output / "gel_contact_trace.json").write_text(
-                    json.dumps(
-                        policy_gel_contact_diagnostics, default=_json_value, indent=2
-                    )
-                    + "\n"
+        if measured_sensor_proxy is not None or args.record_gel_contacts:
+            (args.output / "gel_contact_trace.json").write_text(
+                json.dumps(
+                    policy_gel_contact_diagnostics, default=_json_value, indent=2
                 )
+                + "\n"
+            )
+        if robot_environment_views is not None:
+            (args.output / "robot_environment_contact_trace.json").write_text(
+                json.dumps(robot_environment_contact_trace, indent=2) + "\n"
+            )
         try:
             if audit is not None:
                 audit.close()
@@ -1442,6 +1594,9 @@ def run(app, args, cfg, data, duration):
                 policy.close()
     report = {
         "mode": args.mode,
+        "command_replay": recorded_commands.metadata
+        if recorded_commands is not None
+        else None,
         "episode": str(args.episode),
         "frames": len(trace["t"]),
         "duration_s": float(trace["t"][-1]) if trace["t"] else 0,
@@ -1457,14 +1612,29 @@ def run(app, args, cfg, data, duration):
             "initialization": "configured table pose before settling; contact_probe alone subsequently uses its documented one-time synthetic starting pose before t=0",
         },
         "tactile_model": args.tactile if args.mode == "policy" else None,
-        "wrist_model": args.wrist if args.mode == "policy" else None,
+        "wrist_model": args.wrist
+        if args.mode == "policy" or gripper_wrist is not None
+        else None,
+        "wrist_proxy_metadata": gripper_wrist.metadata()
+        if gripper_wrist is not None
+        else None,
+        "wrist_sampling_rate_hz": 1 / control_dt if gripper_wrist is not None else None,
+        "initial_recorded_wrist_bias": wrist_bias.tolist()
+        if gripper_wrist is not None
+        else None,
         "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
         "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
         "control_rate_hz": hw.control.executor_rate_hz if hw else None,
         "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
         "policy_stop_reason": adapter.stopped_reason if adapter else None,
+        "policy_completed_reason": getattr(adapter, "completed_reason", None),
+        "policy_completion_is_task_success": False,
         "post_stop_observation_s": 2.0 if adapter else None,
         "record_packet_support": args.record_packet_support,
+        "record_gel_contacts": args.record_gel_contacts,
+        "gel_contact_coverage": args.gel_contact_coverage
+        if gel_views is not None
+        else None,
         "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller"
         if support_views is not None
         else None,
@@ -1477,6 +1647,15 @@ def run(app, args, cfg, data, duration):
         else None,
         "camera_intrinsics_px": camera.get_intrinsics_matrix().tolist(),
     }
+    if robot_environment_views is not None:
+        report["robot_environment_contact_diagnostic"] = {
+            "file": "robot_environment_contact_trace.json",
+            "sampling": "scene frame times, same t as sim_trace; contact impulses from current physics step",
+            "robot_paths": robot_environment_views.robot_paths,
+            "environment_paths": robot_environment_views.environment_paths,
+            "policy_or_safety_feedback": False,
+            "self_collision_observed": False,
+        }
     if probe is not None:
         positions = np.asarray(trace["waffle_position"])
         times = np.asarray(trace["t"])

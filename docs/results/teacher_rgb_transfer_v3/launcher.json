@@ -1,0 +1,12 @@
+{
+  "pid": 1576778,
+  "command": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_rgb_transfer_v3/run_rgb_after_study.py"
+  ],
+  "client_sha256": "2aee711780e3e2dbecec9c928e46efcdf8486b9d5e05a24ae42a1b03bc32b5a0",
+  "preserved_failed_attempts": [
+    "teacher_rgb_transfer_v1: self-ownership preflight bug, zero proposals",
+    "teacher_rgb_transfer_v2: native reactive scalar wire-type bug, zero proposals; failed before model sampling"
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "kind": "read-only teacher availability and native demonstration start evidence; candidate design, not scored outcomes",
+  "files": [
+    {
+      "path": "docs/results/teacher_v2_design/README.md",
+      "bytes": 11943,
+      "sha256": "b82282584133224812bf14d339796e06c27005ae77cc90fdbf3d865a507fd7b6"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/audit_checkpoint_payloads.py",
+      "bytes": 2318,
+      "sha256": "8f6fb99521ac5428bc2e92b40fd679bd349d1422ca58699eacad00e39281ba45"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/audit_demo_starts.py",
+      "bytes": 6666,
+      "sha256": "350f86d2b58c64d0c37eabeafdc6611c1b384f581e1df13fd16b956cf3230a0e"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/cohort_candidate.json",
+      "bytes": 8754,
+      "sha256": "c7a7acb4a53c930837908521adf42962231d187b76afbc9eea25b804c1030a92"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/cohort_starts.csv",
+      "bytes": 3492,
+      "sha256": "3aaf11d744e71cb227c5487ef9ef04e3a7ab55bfe8d69665e3744c7e2472f5c1"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/demo_starts_raw.json",
+      "bytes": 801832,
+      "sha256": "96a3f44aa0f3595b0b5a7bff9e4039c80c764241aa20120525e46f6fd0a37eb8"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395928_000_0.jpg",
+      "bytes": 41891,
+      "sha256": "660e7c9ac6ef65658b3fcab1d9444474adee004abb356bb66339b33b3dea2643"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395928_000_1.jpg",
+      "bytes": 41929,
+      "sha256": "1553902f4aeb31471412af156d595d48c9af87fbcacd9319f3f9a50531852a25"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395928_000_2.jpg",
+      "bytes": 41797,
+      "sha256": "e780dcffed5238b9c94293037638a614e2dec377e3d1a208f6df43c1b1f940c2"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395963_001_0.jpg",
+      "bytes": 41954,
+      "sha256": "5d382c6c129cc51877b0687005adc5bf00cfe3a58de6a6dd305f0458c2ff5898"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395963_001_1.jpg",
+      "bytes": 41979,
+      "sha256": "ad16a954a40cc01d28f1b11519013fb744a760404017dead92a7264623e1f823"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787395963_001_2.jpg",
+      "bytes": 41779,
+      "sha256": "14199ac8c3a92a820495bcb11825f2afcdfc780acba43d8ad59b33b4317b5ee3"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396028_003_0.jpg",
+      "bytes": 42377,
+      "sha256": "866b75151b1ddb49d0bea87d31f2e2ac381e2d2d2957b9ec76f868a2336f5dff"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396028_003_1.jpg",
+      "bytes": 42334,
+      "sha256": "cd4b86307394f67869cfacb037afb03a00fabc489e15d111f603e4d37392a3a8"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396028_003_2.jpg",
+      "bytes": 42132,
+      "sha256": "1599f40bf91c42def10a869cc9bb9e2cd0ff14fd97e419238220787aed234ff1"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396060_004_0.jpg",
+      "bytes": 42414,
+      "sha256": "d96c9d1c8317400421edd57c54b4edfedc9da6c1b52b8480926fafb526eb935b"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396060_004_1.jpg",
+      "bytes": 42367,
+      "sha256": "4bb484a0ceb438f53c82617d5554685d3c6ca2e734da0becf22b74c755492564"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396060_004_2.jpg",
+      "bytes": 41732,
+      "sha256": "01a70e57404f347234ed9e12970c0ed15f149e673c0db089191ea7c96a0ce223"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396094_005_0.jpg",
+      "bytes": 42247,
+      "sha256": "7e5f0bf174f0d0d37b7ae34b96464f2e2eb7f1729a876d8e663628bad268a17b"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396094_005_1.jpg",
+      "bytes": 42276,
+      "sha256": "db2c2f850c6a283b0e858649d9baad270d15c894c5f5668b2e2dbd7010624d18"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396094_005_2.jpg",
+      "bytes": 41438,
+      "sha256": "005bd01e78efd1bdd5b7c8e89a56f01b234fa1a2ac003186604c11cf4b4499b0"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396128_006_0.jpg",
+      "bytes": 42267,
+      "sha256": "b8d83abc849f0af36644856153851a51f4e679db049f7b92b8962979194c07c9"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396128_006_1.jpg",
+      "bytes": 42241,
+      "sha256": "7412f2dbfeaa2cfaf48870d7558ed64b6539f2a6e3a5e6f16c87d609304877ac"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396128_006_2.jpg",
+      "bytes": 41929,
+      "sha256": "8d5736a312c285fe28e42fb688f32c3ca1519467997e82b64adbcbd2ec5fed4a"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396273_010_0.jpg",
+      "bytes": 41990,
+      "sha256": "d22008e0d012465c5527d49ecb643a4fe6a9e13ab3bd84ab9569613d0b30a7f0"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396273_010_1.jpg",
+      "bytes": 42097,
+      "sha256": "8f5e4f06688952a83b016fee0d07f98a1bd43b1ea45da8c8b6642e3988dfaba9"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396273_010_2.jpg",
+      "bytes": 41836,
+      "sha256": "cf6fb39b76880856c2cf3b374b4146037b0303ff45b2159e2d9682e6cd7102e2"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396314_011_0.jpg",
+      "bytes": 42075,
+      "sha256": "4449c01502e39ffaa0162e9a91cd9790915d9e27bed973e366e6d1ccf79f4dc3"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396314_011_1.jpg",
+      "bytes": 42127,
+      "sha256": "3ce23199fc3ab355490b14b3a0cdd1df42d7c99ce8f19246a5c9de0a26f447c0"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396314_011_2.jpg",
+      "bytes": 41826,
+      "sha256": "f81151fdffaa18876dcc97c68b5118bf79a33b3306a0b019236fd6a8e2af9286"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396346_012_0.jpg",
+      "bytes": 42191,
+      "sha256": "3818bebf9c35d66cf5f46434275c2fba8b1a9ffea68a4026152042134a84d377"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396346_012_1.jpg",
+      "bytes": 42223,
+      "sha256": "317588460bb916459482e722adae3d584a2ad8324b7955af17fde5466e13623a"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396346_012_2.jpg",
+      "bytes": 41315,
+      "sha256": "8bd096c270d072d0803b6ea07fa91afeaa29d95be0348bd4f11de48465fe1b7d"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396461_000_0.jpg",
+      "bytes": 42386,
+      "sha256": "4ba700ac3ad93ebdc1c458e6e8844d15349a7bdb96af2eef43b1d7396de2c27f"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396461_000_1.jpg",
+      "bytes": 42478,
+      "sha256": "878a96e61d99e185193eb2f3d415bbf8d7c6a6c64653c62c92eb30d5c45cc361"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/frames/ep_waffles_1787396461_000_2.jpg",
+      "bytes": 41882,
+      "sha256": "eb6ac7331cfa9885cdce942ba9a927d9b5fce2873aa6329d565c9380cb21f9db"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/image_session_checks.json",
+      "bytes": 9998,
+      "sha256": "767b70e0f9ca635e555af5351669ef514a4796476898c49de7c6fb7dc68f7d1e"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/initial_frames_contact_sheet.jpg",
+      "bytes": 591982,
+      "sha256": "bc982e2135fecd78db29967c3b5a832eb0534d5a153d4002ff0816476f2edc12"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/inventory_teachers.py",
+      "bytes": 4254,
+      "sha256": "0d85fd1b196eb59886b1507072f9b5ed679c604805c046a8c966839edf1f58e9"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/source_provenance.json",
+      "bytes": 1740,
+      "sha256": "6aaa61a8c513b3fb79484a14154a2a5d266b470bb4040b66b4c497557c5af62e"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/start_settling_contact_sheet.jpg",
+      "bytes": 558770,
+      "sha256": "364a05dca3bbe8ef4202c6f580c188daf94e4923eb101650cd08e584208c908d"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/teacher_inventory.json",
+      "bytes": 14109,
+      "sha256": "6d10232a99ae6bdb3bf9cfa88857dd434c5ac314a7b01513607697f1b9722ae3"
+    },
+    {
+      "path": "docs/results/teacher_v2_design/teacher_payloads.json",
+      "bytes": 28029,
+      "sha256": "242280b74216c2be7886d148f46eda1992335cf91e426198996c51cacc7d1500"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "bytes": 5264,
+      "sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "bytes": 5268,
+      "sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+      "bytes": 5236,
+      "sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+      "bytes": 5275,
+      "sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+      "bytes": 5273,
+      "sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "bytes": 5266,
+      "sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "bytes": 5257,
+      "sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+      "bytes": 5288,
+      "sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+      "bytes": 5272,
+      "sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505"
+    },
+    {
+      "path": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "bytes": 5271,
+      "sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "ckpt": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+  "ckpt_sha": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+  "warmed": true,
+  "busy": true,
+  "wrench_baseline_rows": 0,
+  "owner": 2,
+  "owner_since": 1788745324.7597306,
+  "applied": [],
+  "effective": {
+    "nfe": 1,
+    "guidance": 1.0,
+    "k_seeds": 4,
+    "parity_fixes": true,
+    "persistent_noise": true,
+    "task_text": "waffles",
+    "drop_video": false,
+    "close_p": 0.5
+  }
+}

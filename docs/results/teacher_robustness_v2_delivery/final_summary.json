@@ -1,0 +1,497 @@
+{
+  "captured_at_utc": "2026-09-07T01:35:04.667553+00:00",
+  "study_root": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery",
+  "status": "complete_valid_56_trial_study",
+  "excludes": "Original ten halted trials, all preflights and optional RGB proposal diagnostic; no hardware success inference.",
+  "stages": {
+    "screen": {
+      "status": "complete_valid_matched_stage",
+      "campaign_sha256": "5ea36cfb5404b6e20461a251beb1173c9e0ee809e279dfca4733e6acc502bda0",
+      "expected_trials": 32,
+      "available_trials": 32,
+      "missing_trial_keys": [],
+      "invalid_trial_keys": [],
+      "ranking": [
+        {
+          "policy_id": "v5_6_nfe1_k4",
+          "candidate_order": 2,
+          "trials": 8,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 0,
+          "acquired": 2,
+          "safety_stop": 8,
+          "carried": 0,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 8,
+          "wrench_limit_stop": 8,
+          "tactile_force_limit_stop": 0,
+          "ranking_key": [
+            0,
+            0,
+            0,
+            -2,
+            8,
+            2
+          ]
+        },
+        {
+          "policy_id": "fta3000_nfe1_k4",
+          "candidate_order": 1,
+          "trials": 8,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 0,
+          "acquired": 1,
+          "safety_stop": 6,
+          "carried": 0,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 6,
+          "wrench_limit_stop": 4,
+          "tactile_force_limit_stop": 1,
+          "ranking_key": [
+            0,
+            0,
+            0,
+            -1,
+            6,
+            1
+          ]
+        },
+        {
+          "policy_id": "fta1500_nfe5_k1",
+          "candidate_order": 3,
+          "trials": 8,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 0,
+          "acquired": 1,
+          "safety_stop": 7,
+          "carried": 0,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 8,
+          "wrench_limit_stop": 6,
+          "tactile_force_limit_stop": 0,
+          "ranking_key": [
+            0,
+            0,
+            0,
+            -1,
+            7,
+            3
+          ]
+        },
+        {
+          "policy_id": "fta1500_nfe1_k4",
+          "candidate_order": 0,
+          "trials": 8,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 0,
+          "acquired": 0,
+          "safety_stop": 4,
+          "carried": 0,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 4,
+          "wrench_limit_stop": 4,
+          "tactile_force_limit_stop": 0,
+          "ranking_key": [
+            0,
+            0,
+            0,
+            0,
+            4,
+            0
+          ]
+        }
+      ],
+      "selected_ids": [
+        "v5_6_nfe1_k4",
+        "fta3000_nfe1_k4"
+      ],
+      "clear_simulator_winner": null,
+      "conclusion": "screen_top_two_for_reserved_confirmation; no winner claim",
+      "comparison": null,
+      "confirmation_gates": null,
+      "report": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/selection/selection.json",
+      "report_sha256": "3417ffb569caee0d0b7c0a07fac0e667f968dc19be6961cb0b970cd2f6a7a63f",
+      "candidates": {
+        "fta1500_nfe1_k4": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 357,
+              "event_weighted_mean_s": 0.8420208375372713
+            },
+            "delivery_latency_s": {
+              "count": 357,
+              "event_weighted_mean_s": 0.8420208375372713
+            },
+            "inference_wall_time_s": {
+              "count": 357,
+              "event_weighted_mean_s": 1.0248329491081911
+            },
+            "activation_delay_s": {
+              "count": 349,
+              "event_weighted_mean_s": 0.8459828080229226
+            }
+          },
+          "valid": 8,
+          "available": 8,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 0,
+            "lifted": 0,
+            "carried": 0,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 4,
+            "safety_stop": 4,
+            "wrench_limit_stop": 4,
+            "tactile_force_limit_stop": 0
+          },
+          "terminal_controller_reasons": {
+            "no_stop": 4,
+            "safety_stop": 4
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrench_limit": 4
+          },
+          "native_latency_plan_count": 357,
+          "native_latency_plan_weighted_mean_s": 0.8420208375372713,
+          "strict_placements_with_later_stop": 0
+        },
+        "fta1500_nfe5_k1": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 106,
+              "event_weighted_mean_s": 0.9874520022092598
+            },
+            "delivery_latency_s": {
+              "count": 106,
+              "event_weighted_mean_s": 0.9874520022092598
+            },
+            "inference_wall_time_s": {
+              "count": 106,
+              "event_weighted_mean_s": 1.1699545553013384
+            },
+            "activation_delay_s": {
+              "count": 98,
+              "event_weighted_mean_s": 0.9969795918367349
+            }
+          },
+          "valid": 8,
+          "available": 8,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 1,
+            "lifted": 0,
+            "carried": 0,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 8,
+            "safety_stop": 7,
+            "wrench_limit_stop": 6,
+            "tactile_force_limit_stop": 0
+          },
+          "terminal_controller_reasons": {
+            "safety_stop": 7,
+            "veto_retry_cap": 1
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrench_limit": 6,
+            "joint_speed": 1
+          },
+          "native_latency_plan_count": 106,
+          "native_latency_plan_weighted_mean_s": 0.9874520022092598,
+          "strict_placements_with_later_stop": 0
+        },
+        "fta3000_nfe1_k4": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 295,
+              "event_weighted_mean_s": 0.8220341302438686
+            },
+            "delivery_latency_s": {
+              "count": 295,
+              "event_weighted_mean_s": 0.8220341302438686
+            },
+            "inference_wall_time_s": {
+              "count": 295,
+              "event_weighted_mean_s": 1.0043834866553356
+            },
+            "activation_delay_s": {
+              "count": 287,
+              "event_weighted_mean_s": 0.8275679442508711
+            }
+          },
+          "valid": 8,
+          "available": 8,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 1,
+            "lifted": 0,
+            "carried": 0,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 6,
+            "safety_stop": 6,
+            "wrench_limit_stop": 4,
+            "tactile_force_limit_stop": 1
+          },
+          "terminal_controller_reasons": {
+            "no_stop": 2,
+            "safety_stop": 6
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrench_limit": 4,
+            "tactile_depth": 1,
+            "wrist_extension": 1
+          },
+          "native_latency_plan_count": 295,
+          "native_latency_plan_weighted_mean_s": 0.8220341302438686,
+          "strict_placements_with_later_stop": 0
+        },
+        "v5_6_nfe1_k4": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 156,
+              "event_weighted_mean_s": 0.8116055017401381
+            },
+            "delivery_latency_s": {
+              "count": 156,
+              "event_weighted_mean_s": 0.8116055017401381
+            },
+            "inference_wall_time_s": {
+              "count": 156,
+              "event_weighted_mean_s": 0.9934605839304053
+            },
+            "activation_delay_s": {
+              "count": 148,
+              "event_weighted_mean_s": 0.8179459459459458
+            }
+          },
+          "valid": 8,
+          "available": 8,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 2,
+            "lifted": 0,
+            "carried": 0,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 8,
+            "safety_stop": 8,
+            "wrench_limit_stop": 8,
+            "tactile_force_limit_stop": 0
+          },
+          "terminal_controller_reasons": {
+            "safety_stop": 8
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrench_limit": 8
+          },
+          "native_latency_plan_count": 156,
+          "native_latency_plan_weighted_mean_s": 0.8116055017401381,
+          "strict_placements_with_later_stop": 0
+        }
+      }
+    },
+    "confirmation": {
+      "status": "complete_valid_matched_stage",
+      "campaign_sha256": "8242935967b8d16616759fd3282834c346f16f51f779f2a2dab64ecdb20298fe",
+      "expected_trials": 24,
+      "available_trials": 24,
+      "missing_trial_keys": [],
+      "invalid_trial_keys": [],
+      "ranking": [
+        {
+          "policy_id": "fta3000_nfe1_k4",
+          "candidate_order": 1,
+          "trials": 12,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 1,
+          "acquired": 3,
+          "safety_stop": 9,
+          "carried": 1,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 9,
+          "wrench_limit_stop": 7,
+          "tactile_force_limit_stop": 0,
+          "ranking_key": [
+            0,
+            0,
+            -1,
+            -3,
+            9,
+            1
+          ]
+        },
+        {
+          "policy_id": "v5_6_nfe1_k4",
+          "candidate_order": 0,
+          "trials": 12,
+          "clean_place": 0,
+          "strict_full_place": 0,
+          "lifted": 1,
+          "acquired": 3,
+          "safety_stop": 12,
+          "carried": 1,
+          "released_in_bin": 0,
+          "dropped": 0,
+          "actual_stop": 12,
+          "wrench_limit_stop": 5,
+          "tactile_force_limit_stop": 0,
+          "ranking_key": [
+            0,
+            0,
+            -1,
+            -3,
+            12,
+            0
+          ]
+        }
+      ],
+      "selected_ids": [],
+      "clear_simulator_winner": null,
+      "conclusion": "inconclusive; pickup_candidate_only",
+      "comparison": {
+        "policy_a": "fta3000_nfe1_k4",
+        "policy_b": "v5_6_nfe1_k4",
+        "outcome": "clean_place",
+        "estimate": {
+          "difference_a_minus_b": 0.0,
+          "confidence_level": 0.95,
+          "interval": [
+            0.0,
+            0.0
+          ],
+          "configuration_clusters": 6,
+          "seeds_per_cluster": 2,
+          "bootstrap_replicates": 10000,
+          "bootstrap_seed": 20260906,
+          "degenerate_interval": true,
+          "interpretation": "Descriptive paired scenario-resampling interval; not a hardware/population generalization bound. A degenerate interval does not establish equivalence."
+        }
+      },
+      "confirmation_gates": {
+        "clean_place_at_least_8_of_12": false,
+        "paired_95pct_lower_bound_positive": false,
+        "no_increase_in_drops": true,
+        "no_increase_in_wrench_limit_stops": false,
+        "no_increase_in_tactile_force_limit_stops": true
+      },
+      "report": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/selection/selection.json",
+      "report_sha256": "d08bfc15c9fc3e94b570d7ca14d3d9fdfa8c94e21bce87adab79c24ac024bc02",
+      "candidates": {
+        "fta3000_nfe1_k4": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 417,
+              "event_weighted_mean_s": 0.8507437301256383
+            },
+            "delivery_latency_s": {
+              "count": 417,
+              "event_weighted_mean_s": 0.8507437301256383
+            },
+            "inference_wall_time_s": {
+              "count": 417,
+              "event_weighted_mean_s": 1.0323342039493835
+            },
+            "activation_delay_s": {
+              "count": 405,
+              "event_weighted_mean_s": 0.8553876543209878
+            }
+          },
+          "valid": 12,
+          "available": 12,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 3,
+            "lifted": 1,
+            "carried": 1,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 9,
+            "safety_stop": 9,
+            "wrench_limit_stop": 7,
+            "tactile_force_limit_stop": 0
+          },
+          "terminal_controller_reasons": {
+            "safety_stop": 9,
+            "no_stop": 3
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrench_limit": 7,
+            "wrist_extension": 1,
+            "hitbox_exit": 1
+          },
+          "native_latency_plan_count": 417,
+          "native_latency_plan_weighted_mean_s": 0.8507437301256383,
+          "strict_placements_with_later_stop": 0
+        },
+        "v5_6_nfe1_k4": {
+          "latency": {
+            "native_inference_latency_s": {
+              "count": 368,
+              "event_weighted_mean_s": 0.8092689847300948
+            },
+            "delivery_latency_s": {
+              "count": 368,
+              "event_weighted_mean_s": 0.8092689847300948
+            },
+            "inference_wall_time_s": {
+              "count": 368,
+              "event_weighted_mean_s": 0.9894447636783614
+            },
+            "activation_delay_s": {
+              "count": 356,
+              "event_weighted_mean_s": 0.8146966292134833
+            }
+          },
+          "valid": 12,
+          "available": 12,
+          "outcome_counts": {
+            "clean_place": 0,
+            "strict_full_place": 0,
+            "acquired": 3,
+            "lifted": 1,
+            "carried": 1,
+            "released_in_bin": 0,
+            "dropped": 0,
+            "actual_stop": 12,
+            "safety_stop": 12,
+            "wrench_limit_stop": 5,
+            "tactile_force_limit_stop": 0
+          },
+          "terminal_controller_reasons": {
+            "safety_stop": 12
+          },
+          "events_logged_on_first_stopped_tick_including_nonterminal": {
+            "wrist_extension": 2,
+            "wrench_limit": 5,
+            "hitbox_exit": 3,
+            "joint_speed": 2,
+            "workspace_clamp": 1
+          },
+          "native_latency_plan_count": 368,
+          "native_latency_plan_weighted_mean_s": 0.8092689847300948,
+          "strict_placements_with_later_stop": 0
+        }
+      }
+    }
+  },
+  "interpretation": "Fixed August packet with authentic recorded robot/gripper/wrist starts. Conditional simulator study; no proven training-unseen or hardware probability claim.",
+  "clear_simulator_winner": null,
+  "conclusion": "inconclusive; pickup_candidate_only"
+}

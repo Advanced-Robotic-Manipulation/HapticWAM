@@ -1,0 +1,9 @@
+{
+  "ckpt": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+  "ckpt_sha": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+  "warmed": true,
+  "busy": false,
+  "wrench_baseline_rows": 0,
+  "owner": null,
+  "owner_since": null
+}

@@ -285,6 +285,91 @@ def test_delayed_adapter_filter_gets_captured_snapshot_and_current_feedback_then
     np.testing.assert_array_equal(deliveries[0][0].actions[:, 6], 0.35)
 
 
+@pytest.mark.parametrize("release_enabled", [False, True])
+@pytest.mark.parametrize(("request_z", "delivery_z"), [(0.2, 0.08), (0.08, 0.2)])
+def test_native_veto_release_profile_uses_delivery_feedback_and_keeps_model_snapshot(
+    release_enabled, request_z, delivery_z
+):
+    hw = make_small_hw(safety={"wrist_extension_stop_m": None, "reach_clamp_m": None})
+    veto = TerminalVetoFilter(hw, {"z_ref": 0.0415, "z_margin": 0.0615})
+    captured, deliveries = [], []
+    raw = proposal()
+    raw.actions = np.zeros((16, 7))
+    raw.actions[:, 6] = 0.65
+    raw.t0_pose = np.array([-0.3, -0.12, request_z, 0, np.pi, 0])
+    raw.t_created = 0.0
+    raw.action_times = 0.2 + np.arange(16) / hw.control.action_rate_hz
+    raw.sigma, raw.gate, raw.latency_s = np.zeros(3), 0.0, 0.2
+
+    def replan(obs, *_):
+        captured.append(obs)
+        return raw
+
+    ad = SimulationPolicyAdapter(
+        hw,
+        SimpleNamespace(replan=replan),
+        mode="student",
+        plan_filter=veto,
+        release_config={
+            "tcp_min_m": [-0.55, -0.076, 0.058],
+            "tcp_max_m": [-0.23, 0.149, 0.274],
+        }
+        if release_enabled
+        else None,
+        delivered_plan_callback=lambda *args: deliveries.append(args),
+    )
+
+    def observe(t, grip, z):
+        tcp = raw.t0_pose.copy()
+        tcp[2] = z
+        ad.observe(
+            t,
+            rgb=np.zeros((12, 16, 3), dtype=np.uint8),
+            q=np.array([0, -1.4, 1.5, -1.7, 1.4, 0]),
+            qd=np.zeros(6),
+            tcp_pose=tcp,
+            tcp_speed=np.zeros(6),
+            gripper_state=np.array([grip, 0]),
+            wrist_ft=np.zeros(6),
+            tactile={s.name: {"wrench": np.zeros(6)} for s in hw.tactile.sensors},
+        )
+
+    observe(0, 0.2, request_z)
+    ad.replan(t=0)
+    before = captured[0].ur_state.copy()
+    assert not deliveries
+    observe(0.2, 0.29, delivery_z)
+    ad.step(0.2)
+    result = deliveries[0][0]
+    z_used = delivery_z if release_enabled else request_z
+    grip_used = 0.29 if release_enabled else 0.2
+    masked = z_used > 0.103
+    assert action(result) == ("close_masked" if masked else "close_allowed")
+    np.testing.assert_allclose(result.actions[:, 6], grip_used if masked else 0.65)
+    rec = result.diag["terminal_veto"]
+    assert rec["feedback_source"] == (
+        "current_delivery" if release_enabled else "request_snapshot_historical"
+    )
+    assert rec["feedback_tcp_pose"][2] == pytest.approx(z_used)
+    assert rec["feedback_gripper"] == pytest.approx(grip_used)
+    if release_enabled:
+        assert rec["feedback_arm_t_s"] == rec["feedback_gripper_t_s"] == 0.2
+    assert rec["snapshot_t_s"] == 0 and rec["applied_at_s"] == 0.2
+    np.testing.assert_array_equal(captured[0].ur_state, before)
+    assert before[14] == pytest.approx(request_z) and before[-2] == pytest.approx(0.2)
+    np.testing.assert_array_equal(raw.actions[:, 6], 0.65)
+    assert "terminal_veto" not in raw.diag
+    assert raw._cpk_token == "remote-contact-package"
+    assert (result._cpk_token is None) == masked
+
+
+def test_opt_in_veto_does_not_silently_fall_back_when_delivery_feedback_missing():
+    feedback = Feedback()
+    feedback.release_controller = object()
+    with pytest.raises(RuntimeError, match="measured arm feedback"):
+        TerminalVetoFilter(hardware())(proposal(), snapshot(), feedback)
+
+
 @pytest.mark.parametrize(("load", "expected_command"), [(3.0, 0.63), (2.5, 0.55)])
 def test_loaded_latch_preserves_preload_through_measured_aperture_veto(
     load, expected_command

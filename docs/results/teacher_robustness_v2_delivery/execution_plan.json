@@ -1,0 +1,103 @@
+{
+  "created_unix_s": 1788739416.3677442,
+  "protocol_sha256": "5cba45bfb944d621a2b5ffc2850366aba83c60b0c95f013b3593d37fc5ff8b70",
+  "screen_sha256": "5ea36cfb5404b6e20461a251beb1173c9e0ee809e279dfca4733e6acc502bda0",
+  "archive_sha256": "5f4a0cf7027d00a1463c53e61e17e73919bc9453a5be1b733554672692be4f07",
+  "archive_bytes": 4619878,
+  "commands": [
+    {
+      "name": "screen",
+      "argv": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/run_policy_campaign.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/teacher_v2_delivery_screen.json",
+        "--source",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+        "--live-repo",
+        "/home/physicalai/phantom-icra-2027/phantom",
+        "--evidence",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+        "--hardware-config",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+        "--robot-usd",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+        "--port",
+        "7799",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen",
+        "--execute"
+      ]
+    },
+    {
+      "name": "select_screen",
+      "argv": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/select_teacher_candidate.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/teacher_v2_delivery_screen.json",
+        "--runs",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/selection",
+        "--stage",
+        "screen"
+      ]
+    },
+    {
+      "name": "derive_confirmation",
+      "argv": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/freeze_teacher_confirmation.py",
+        "--protocol",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/teacher_v2_delivery_protocol.json",
+        "--screen",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/teacher_v2_delivery_screen.json",
+        "--selection",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/selection/selection.json",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/teacher_v2_delivery_confirmation.json"
+      ]
+    },
+    {
+      "name": "confirmation",
+      "argv": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/run_policy_campaign.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/teacher_v2_delivery_confirmation.json",
+        "--source",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+        "--live-repo",
+        "/home/physicalai/phantom-icra-2027/phantom",
+        "--evidence",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+        "--hardware-config",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+        "--robot-usd",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+        "--port",
+        "7799",
+        "--output",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation",
+        "--execute"
+      ]
+    },
+    {
+      "name": "select_confirmation",
+      "argv": [
+        "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/select_teacher_candidate.py",
+        "--campaign",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/teacher_v2_delivery_confirmation.json",
+        "--runs",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/rollouts",
+        "--out",
+        "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/confirmation/selection",
+        "--stage",
+        "confirmation"
+      ]
+    }
+  ],
+  "supersedes_preserved_partial_output": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2"
+}

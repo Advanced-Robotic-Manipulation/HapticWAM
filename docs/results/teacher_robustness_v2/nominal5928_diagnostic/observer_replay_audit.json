@@ -1,0 +1,1632 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-06T23:52:31.202102+00:00",
+  "fresh_directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/first_seed903102_full_robot_contacts",
+  "original_directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102",
+  "source_directory": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_contact_diagnostic",
+  "mode": "command_replay",
+  "source_sha256": {
+    "tools/sim/robot_environment_contacts.py": "7585e9474b681f460300d8b94b9c8bc25529dd45a85683aff83d5de7b87c47d0",
+    "tools/sim/run_waffles.py": "57ccad93c88f0d9f501d79d06b3261150eedbad9227fa5b3d16dc8373799c0b0"
+  },
+  "input_sha256": {
+    "fresh": {
+      "robot_environment_contact_trace.json": "c926d0bf26039017c63b664bbb21c837096456e2be9e12bc34e54c71c216fd71",
+      "sim_trace.npz": "9b4ed555150d3646eb56ca76fbfc23bc8d16b729466ea5ca7152080af97b6d2e",
+      "command_replay.json": "f7d4751aa4015bc481706dde96f7a9a7e7c2f5f57621a7b8aa634180f727860f",
+      "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+      "run.json": "ea446d17ab76561e375194537912473f997eafe444f9cdf9cc9c5c15871ce773",
+      "initialization.json": "bfd9754ecdce5caca977754068bbbfd55c8a0f7b5c4b3c8079b8da94db2f8acd"
+    },
+    "original": {
+      "execution_trace.jsonl": "3459b482b3096b719798a09a4c263c187a9546fb970bc32cbd09f19dc163271b",
+      "sim_trace.npz": "9b4ed555150d3646eb56ca76fbfc23bc8d16b729466ea5ca7152080af97b6d2e",
+      "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+      "run.json": "b186ba4ff68e10ebc7e3a9c0a1f6f3dc599c36e381101e44fd233bf1376f1edb",
+      "initialization.json": "40e2c9d27fa118aae2136599a8a5144ea2ddca30654adb1fcbc8291f88d70121"
+    }
+  },
+  "array_comparison_bitwise": {
+    "t": true,
+    "physics_t": true,
+    "q": true,
+    "qd": true,
+    "tcp": true,
+    "tcp_nominal_fk": true,
+    "gripper": true,
+    "waffle_position": true,
+    "frame_t": true,
+    "target_q": true,
+    "pad_force": true,
+    "pad_position": true,
+    "pad_orientation_wxyz": true,
+    "pad_force_local": true,
+    "pad_packet_force": true,
+    "pad_contact_uv": true,
+    "pad_contact_count": true,
+    "pad_packet_normal_force": true,
+    "waffle_orientation_wxyz": true,
+    "packet_robot_normal_force": true,
+    "packet_bin_normal_force": true
+  },
+  "all_21_arrays_identical": true,
+  "frames": 182,
+  "first_t_s": 0.0,
+  "last_t_s": 12.016,
+  "scene_configuration_identical": true,
+  "initial_total_robot_environment_normal_force_n": 0.0,
+  "robot_paths": [
+    "/World/Robot/Geometry/world/base_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+  ],
+  "environment_paths": [
+    "/World/Bench/Slab",
+    "/World/Mat/Base",
+    "/World/Bin/Bottom",
+    "/World/Bin/Left",
+    "/World/Bin/Right",
+    "/World/Bin/Front",
+    "/World/Bin/Back",
+    "/World/Waffle"
+  ],
+  "contact_populated_count": 1061,
+  "zero_impulse_populated_count": 952,
+  "maximum_contacts_per_actor": 4,
+  "maximum_impulse_to_force_conversion_error_n": 0.0,
+  "maximum_accounting_error_n": 0.0,
+  "first_pair_load_above_0_1n_s": {
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 5.136,
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 9.8
+  },
+  "pair_peaks": {
+    "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": {
+      "t_s": 0.0,
+      "normal_force_n": 0.0,
+      "contact": {
+        "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia",
+        "filter_path": "/World/Bench/Slab",
+        "filter_column": 0,
+        "contact_count": 4,
+        "populated_buffer_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "normal_impulse_signed_ns": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_force_signed_n": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_impulse_magnitude_ns": 0.0,
+        "normal_force_magnitude_n": 0.0,
+        "points_world_m": [
+          [
+            -0.015153110027313232,
+            0.09384994953870773,
+            -0.0007128289435058832
+          ],
+          [
+            -0.0012657640036195517,
+            -0.06399507075548172,
+            -4.110916052013636e-09
+          ],
+          [
+            0.06390713155269623,
+            0.003445923328399658,
+            2.2259882825892419e-10
+          ],
+          [
+            -0.06352340430021286,
+            -0.007898271083831787,
+            -5.093170329928398e-10
+          ]
+        ],
+        "normals_world": [
+          [
+            -0.00023406230320688337,
+            0.0009717293432913721,
+            0.9999995231628418
+          ],
+          [
+            -0.00023406230320688337,
+            0.0009717293432913721,
+            0.9999995231628418
+          ],
+          [
+            -0.00023406230320688337,
+            0.0009717293432913721,
+            0.9999995231628418
+          ],
+          [
+            -0.00023406230320688337,
+            0.0009717293432913721,
+            0.9999995231628418
+          ]
+        ],
+        "signed_separation_m": [
+          -0.053712863475084305,
+          -0.05300002917647362,
+          -0.05300002917647362,
+          -0.05300002917647362
+        ]
+      }
+    },
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": {
+      "t_s": 5.2,
+      "normal_force_n": 175.19551515579224,
+      "contact": {
+        "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+        "filter_path": "/World/Bin/Front",
+        "filter_column": 5,
+        "contact_count": 2,
+        "populated_buffer_indices": [
+          0,
+          1
+        ],
+        "normal_impulse_signed_ns": [
+          0.0,
+          0.700782060623169
+        ],
+        "normal_force_signed_n": [
+          0.0,
+          175.19551515579224
+        ],
+        "normal_impulse_magnitude_ns": 0.700782060623169,
+        "normal_force_magnitude_n": 175.19551515579224,
+        "points_world_m": [
+          [
+            -0.29596376419067383,
+            -0.07653717696666718,
+            0.1940000057220459
+          ],
+          [
+            -0.2959165871143341,
+            -0.08053750544786453,
+            0.1940000057220459
+          ]
+        ],
+        "normals_world": [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "signed_separation_m": [
+          0.0012162327766418457,
+          -1.2367963790893555e-06
+        ]
+      }
+    },
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": {
+      "t_s": 5.936,
+      "normal_force_n": 0.0,
+      "contact": {
+        "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad",
+        "filter_path": "/World/Bin/Front",
+        "filter_column": 5,
+        "contact_count": 2,
+        "populated_buffer_indices": [
+          0,
+          1
+        ],
+        "normal_impulse_signed_ns": [
+          0.0,
+          0.0
+        ],
+        "normal_force_signed_n": [
+          0.0,
+          0.0
+        ],
+        "normal_impulse_magnitude_ns": 0.0,
+        "normal_force_magnitude_n": 0.0,
+        "points_world_m": [
+          [
+            -0.4290286898612976,
+            -0.08245902508497238,
+            0.1673673540353775
+          ],
+          [
+            -0.43613317608833313,
+            -0.08247345685958862,
+            0.16905556619167328
+          ]
+        ],
+        "normals_world": [
+          [
+            -4.172321723672212e-07,
+            -1.0,
+            2.9802296808156825e-07
+          ],
+          [
+            -4.172321723672212e-07,
+            -1.0,
+            2.9802296808156825e-07
+          ]
+        ],
+        "signed_separation_m": [
+          0.0019211529288440943,
+          0.0019355856347829103
+        ]
+      }
+    },
+    "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": {
+      "t_s": 9.936,
+      "normal_force_n": 4.491803701967001,
+      "contact": {
+        "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+        "filter_path": "/World/Bin/Front",
+        "filter_column": 5,
+        "contact_count": 4,
+        "populated_buffer_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "normal_impulse_signed_ns": [
+          0.017967214807868004,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_force_signed_n": [
+          4.491803701967001,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_impulse_magnitude_ns": 0.017967214807868004,
+        "normal_force_magnitude_n": 4.491803701967001,
+        "points_world_m": [
+          [
+            -0.47783395648002625,
+            -0.07684575021266937,
+            0.19395557045936584
+          ],
+          [
+            -0.5063896775245667,
+            -0.07538507878780365,
+            0.19416633248329163
+          ],
+          [
+            -0.5042986869812012,
+            -0.07534486055374146,
+            0.19313085079193115
+          ],
+          [
+            -0.4845225512981415,
+            -0.07625729590654373,
+            0.19229768216609955
+          ]
+        ],
+        "normals_world": [
+          [
+            0.05161260813474655,
+            0.9884319305419922,
+            0.14261315762996674
+          ],
+          [
+            0.05161260813474655,
+            0.9884319305419922,
+            0.14261315762996674
+          ],
+          [
+            0.05161260813474655,
+            0.9884319305419922,
+            0.14261315762996674
+          ],
+          [
+            0.05161260813474655,
+            0.9884319305419922,
+            0.14261315762996674
+          ]
+        ],
+        "signed_separation_m": [
+          -0.0003114454448223114,
+          0.0011663269251585007,
+          0.001207010354846716,
+          0.0002839035587385297
+        ]
+      }
+    }
+  },
+  "deepest_loaded_constraint": {
+    "t_s": 9.936,
+    "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+    "filter_path": "/World/Bin/Front",
+    "signed_separation_m": -0.0003114454448223114,
+    "normal_force_n": 4.491803701967001,
+    "point_world_m": [
+      -0.47783395648002625,
+      -0.07684575021266937,
+      0.19395557045936584
+    ]
+  },
+  "deepest_unloaded_constraint": {
+    "t_s": 0.0,
+    "actor_path": "/World/Robot/Geometry/world/base_link/base_link_inertia",
+    "filter_path": "/World/Bench/Slab",
+    "signed_separation_m": -0.053712863475084305,
+    "normal_force_n": 0.0,
+    "point_world_m": [
+      -0.015153110027313232,
+      0.09384994953870773,
+      -0.0007128289435058832
+    ]
+  },
+  "series": [
+    {
+      "t_s": 0.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 0.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.1360000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.4000000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 1.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.2680000000000002,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.8000000000000003,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 2.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.2680000000000002,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.8000000000000003,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 3.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.0680000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.5360000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.6000000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 4.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 5.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0
+      }
+    },
+    {
+      "t_s": 5.0680000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 5.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 127.44465470314026
+      }
+    },
+    {
+      "t_s": 5.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 175.19551515579224
+      }
+    },
+    {
+      "t_s": 5.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 171.35222256183624
+      }
+    },
+    {
+      "t_s": 5.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 170.48557102680206
+      }
+    },
+    {
+      "t_s": 5.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 169.70887780189514
+      }
+    },
+    {
+      "t_s": 5.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 168.52755844593048
+      }
+    },
+    {
+      "t_s": 5.5360000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 168.59295964241028
+      }
+    },
+    {
+      "t_s": 5.6000000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 167.46576130390167
+      }
+    },
+    {
+      "t_s": 5.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 165.6421422958374
+      }
+    },
+    {
+      "t_s": 5.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 165.31799733638763
+      }
+    },
+    {
+      "t_s": 5.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 164.50707614421844
+      }
+    },
+    {
+      "t_s": 5.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 162.97867894172668
+      }
+    },
+    {
+      "t_s": 5.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 162.68397867679596,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 6.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 162.09247708320618,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 6.0680000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 160.99189221858978,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 6.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 160.87386012077332,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 6.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 160.275399684906,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 6.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 159.1128557920456
+      }
+    },
+    {
+      "t_s": 6.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 159.36420857906342
+      }
+    },
+    {
+      "t_s": 6.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 158.44443440437317
+      }
+    },
+    {
+      "t_s": 6.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 157.07166492938995
+      }
+    },
+    {
+      "t_s": 6.5360000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 157.2369635105133
+      }
+    },
+    {
+      "t_s": 6.6000000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 157.03755617141724
+      }
+    },
+    {
+      "t_s": 6.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 155.9436023235321
+      }
+    },
+    {
+      "t_s": 6.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 156.20598196983337
+      }
+    },
+    {
+      "t_s": 6.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 155.62044084072113
+      }
+    },
+    {
+      "t_s": 6.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 154.86441552639008
+      }
+    },
+    {
+      "t_s": 6.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 155.22053837776184
+      }
+    },
+    {
+      "t_s": 7.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 154.9854427576065
+      }
+    },
+    {
+      "t_s": 7.0680000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 154.1977822780609
+      }
+    },
+    {
+      "t_s": 7.136,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 153.9566069841385
+      }
+    },
+    {
+      "t_s": 7.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 152.71808207035065
+      }
+    },
+    {
+      "t_s": 7.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 151.6357809305191
+      }
+    },
+    {
+      "t_s": 7.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 152.01862156391144
+      }
+    },
+    {
+      "t_s": 7.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 152.21020579338074
+      }
+    },
+    {
+      "t_s": 7.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 151.19771659374237
+      }
+    },
+    {
+      "t_s": 7.5360000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 151.45350992679596
+      }
+    },
+    {
+      "t_s": 7.6000000000000005,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 150.18703043460846
+      }
+    },
+    {
+      "t_s": 7.668,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 149.58105981349945
+      }
+    },
+    {
+      "t_s": 7.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 150.838240981102
+      }
+    },
+    {
+      "t_s": 7.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 150.8939266204834
+      }
+    },
+    {
+      "t_s": 7.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 148.96950125694275
+      }
+    },
+    {
+      "t_s": 7.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 147.55284786224365
+      }
+    },
+    {
+      "t_s": 8.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 145.0280398130417
+      }
+    },
+    {
+      "t_s": 8.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 144.31992173194885
+      }
+    },
+    {
+      "t_s": 8.136000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 145.3894078731537
+      }
+    },
+    {
+      "t_s": 8.2,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 146.47366106510162
+      }
+    },
+    {
+      "t_s": 8.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 143.68188381195068
+      }
+    },
+    {
+      "t_s": 8.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 142.7464336156845
+      }
+    },
+    {
+      "t_s": 8.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 139.80905711650848
+      }
+    },
+    {
+      "t_s": 8.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 141.6657269001007
+      }
+    },
+    {
+      "t_s": 8.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 141.41036570072174
+      }
+    },
+    {
+      "t_s": 8.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 140.9766674041748
+      }
+    },
+    {
+      "t_s": 8.668000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 138.09971511363983
+      }
+    },
+    {
+      "t_s": 8.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 133.6323767900467
+      }
+    },
+    {
+      "t_s": 8.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 130.7341605424881
+      }
+    },
+    {
+      "t_s": 8.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 131.63121044635773
+      }
+    },
+    {
+      "t_s": 8.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 129.1448175907135
+      }
+    },
+    {
+      "t_s": 9.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 128.29847633838654
+      }
+    },
+    {
+      "t_s": 9.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 126.32772326469421
+      }
+    },
+    {
+      "t_s": 9.136000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 122.07258492708206
+      }
+    },
+    {
+      "t_s": 9.200000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 123.09493124485016
+      }
+    },
+    {
+      "t_s": 9.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 123.02573025226593
+      }
+    },
+    {
+      "t_s": 9.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 123.61469119787216
+      }
+    },
+    {
+      "t_s": 9.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 125.72680413722992
+      }
+    },
+    {
+      "t_s": 9.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 123.32569062709808
+      }
+    },
+    {
+      "t_s": 9.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 125.30073523521423
+      }
+    },
+    {
+      "t_s": 9.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 125.60494244098663
+      }
+    },
+    {
+      "t_s": 9.668000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 125.52414834499359
+      }
+    },
+    {
+      "t_s": 9.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 127.57979333400726,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 9.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 130.20946085453033,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.7611291948705912
+      }
+    },
+    {
+      "t_s": 9.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 128.1529814004898,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 2.237443288322538
+      }
+    },
+    {
+      "t_s": 9.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 112.34094947576523,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 4.491803701967001
+      }
+    },
+    {
+      "t_s": 10.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 122.06041067838669,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.809133425354958,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.136000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.696763768792152,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.200000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.601143017411232,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.677895173430443,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.673678144812584,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.65828524529934,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.64314752817154,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.708990171551704,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.546494871377945,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.668000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.714058429002762,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.730205699801445,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.61791241168976,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.62115155160427,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 10.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.646405294537544,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.604860857129097,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.068,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.720898061990738,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.136000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.562144815921783,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.200000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.638289749622345,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.268,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.75298398733139,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.336,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.6049782037735,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.4,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.689860805869102,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.468,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.640420615673065,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.536,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.728272274136543,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.6,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.56101232767105,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.668000000000001,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.688765570521355,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.736,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.592999532818794,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.8,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.68974904716015,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.868,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.622528046369553,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 11.936,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.608187541365623,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 12.0,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.73910914361477,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    },
+    {
+      "t_s": 12.016,
+      "normal_force_by_pair_n": {
+        "/World/Robot/Geometry/world/base_link/base_link_inertia -> /World/Bench/Slab": 0.0,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing -> /World/Bin/Front": 25.605633854866028,
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad -> /World/Bin/Front": 0.0
+      }
+    }
+  ],
+  "diagnosis": "Gripper housing on top edge of bin front supplies the principal blocking load. Housing peak precedes accepted/measured TCP error >20mm at5.3s. Frozen wrist proxy omits housing forces, so wrist guard cannot see this modeled tool-body load. Pad-only load is much smaller. No collision changes or new safety decisions in diagnostic replay.",
+  "limitations": [
+    "Exact actor/filter attribution does not calibrate physical force magnitude, housing shape or bin pose.",
+    "Scene-rate force samples can miss transient peaks; raw impulse belongs to the last physics step, not the whole interval between rendered samples.",
+    "Robot/environment contacts are observed; robot self-contact is not.",
+    "Fixed robot base overlaps the raised table and creates zero-impulse geometric constraints; this is an existing mounting approximation, not positive dynamic load.",
+    "No teacher ranking or new policy score is inferred from this separate command replay."
+  ],
+  "observer_audit_pass": true
+}

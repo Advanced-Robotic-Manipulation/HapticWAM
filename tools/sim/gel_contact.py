@@ -14,6 +14,14 @@ and centroid. This spatial-pressure assumption is not a calibration; disconnecte
 patches on one body can be bridged by their convex hull. Sparse/collinear manifolds
 explicitly retain point selection. An inscribed 512-sided ellipse makes overlap
 conservative (ellipse area deficit below 0.0026%). Neither mode changes physics.
+
+``manifold_patch_v2`` separates geometric support vertices from loaded solver
+constraints. Zero-impulse vertices may define support, but never add force.
+This is restricted to explicitly declared single-convex-body filters, finite
+separations inside the fixed contact-generation envelope, and coherent normals.
+The default declaration is the scene's single Cube collider at /World/Waffle.
+Other bodies, unknown separations, and ambiguous patches retain point fallback.
+Positive separation is speculative contact, not measured gel indentation.
 """
 
 from __future__ import annotations
@@ -24,6 +32,8 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 _ELLIPSE_SEGMENTS = 512
+_COVERAGE_MODES = ("point", "manifold_patch", "manifold_patch_v2")
+_DEFAULT_CONVEX_SUPPORT_FILTERS = ("/World/Waffle",)
 
 
 def _cross2(a, b):
@@ -93,6 +103,11 @@ class GelSurfaceGeometry:
     minimum_normal_alignment: float = 0.75
     sdk_uv_axes: tuple[int, int] = (2, 1)  # image columns=padZ, rows=padY
     sdk_uv_signs: tuple[int, int] = (1, 1)
+    # scene.collider() authors contactOffset=1 mm, restOffset=0 on both the
+    # packet and pad shapes. The sum is a collision-generation envelope, not
+    # evidence that a 2 mm air gap is compressed gel. Force remains measured.
+    support_max_separation_m: float = 0.002
+    support_minimum_normal_agreement: float = 0.99
 
     def __post_init__(self):
         x = np.r_[
@@ -106,6 +121,13 @@ class GelSurfaceGeometry:
             raise ValueError("SDK UV axes must be a signed permutation of padY/Z")
         if not np.isfinite(self.active_center_yz_m).all():
             raise ValueError("gel center must be finite")
+        if (
+            not np.isfinite(self.support_max_separation_m)
+            or self.support_max_separation_m < 0
+        ):
+            raise ValueError("support separation must be finite and nonnegative")
+        if not 0 < self.support_minimum_normal_agreement <= 1:
+            raise ValueError("support normal agreement must lie in (0,1]")
 
 
 def select_gel_contacts(
@@ -118,6 +140,7 @@ def select_gel_contacts(
     max_contact_count=None,
     filter_paths=None,
     coverage="point",
+    convex_support_filter_paths=_DEFAULT_CONVEX_SUPPORT_FILTERS,
 ):
     """Filter the six-array result of RigidPrim.get_contact_force_data(dt).
 
@@ -128,10 +151,10 @@ def select_gel_contacts(
     """
     if side not in ("left", "right"):
         raise ValueError("side must be left or right")
-    if coverage not in ("point", "manifold_patch"):
-        raise ValueError("coverage must be point or manifold_patch")
+    if coverage not in _COVERAGE_MODES:
+        raise ValueError(f"coverage must be one of {_COVERAGE_MODES}")
     g = geometry or GelSurfaceGeometry()
-    force, points, normals, _, counts, starts = contact_data
+    force, points, normals, separation_data, counts, starts = contact_data
     force = np.asarray(force).reshape(-1)
     points, normals = (
         np.asarray(points).reshape(-1, 3),
@@ -183,6 +206,14 @@ def select_gel_contacts(
     if np.any((weights > 0) & (lengths < 1e-9)):
         raise RuntimeError("loaded PhysX contact has zero normal")
     alignment = abs(local_normals[:, 0]) / np.maximum(lengths, 1e-9)
+    separations = None
+    if coverage == "manifold_patch_v2" and separation_data is not None:
+        separation_buffer = np.asarray(separation_data).reshape(-1)
+        if len(ids) and ids[-1] >= len(separation_buffer):
+            raise RuntimeError("PhysX separation range exceeds buffer")
+        separations = separation_buffer[ids].astype(float)
+        if not np.isfinite(separations).all():
+            raise RuntimeError("nonfinite populated PhysX contact separation")
     # Left pad is positiveX: inner face at−thickness/2; right is the reverse.
     face_x = (-1 if side == "left" else 1) * g.pad_thickness_m / 2
     face = abs(local[:, 0] - face_x) <= g.inner_face_tolerance_m
@@ -197,6 +228,10 @@ def select_gel_contacts(
     fractions = accepted.astype(float)
     centroid_locations = local.copy()
     patch_diagnostics = {}
+    separation_eligible = np.ones(len(ids), dtype=bool)
+    if coverage == "manifold_patch_v2" and separations is not None:
+        separation_eligible = separations <= g.support_max_separation_m
+        fractions[~separation_eligible] = 0
     if coverage == "manifold_patch":
         # Shared buffer indices cannot identify one body unambiguously. Keep
         # those contacts in legacy point mode, without double counting force.
@@ -237,6 +272,93 @@ def select_gel_contacts(
                     {
                         "method": "manifold_patch",
                         "fallback_reason": None,
+                        "overlap_area_m2": overlap_area,
+                        "overlap_fraction": overlap_fraction,
+                        "overlap_centroid_yz_m": None
+                        if patch_centroid is None
+                        else patch_centroid.tolist(),
+                    }
+                )
+            patch_diagnostics[column] = diagnostic
+        accepted = fractions > 0
+    elif coverage == "manifold_patch_v2":
+        memberships = np.zeros(len(ids), dtype=int)
+        for indices in per_filter_ids:
+            memberships[np.searchsorted(ids, np.unique(indices))] += 1
+        declared = set(convex_support_filter_paths)
+        labels_match = filter_paths is not None and len(filter_paths) == filter_count
+        for column, indices in enumerate(per_filter_ids):
+            rows = np.searchsorted(ids, np.unique(indices)).astype(np.int64)
+            # Geometry selection deliberately does not depend on constraint
+            # force. Fixed geometry/separations therefore survive an impulse
+            # redistribution or a vertex's impulse becoming exactly zero.
+            geometric = rows[
+                face[rows]
+                & aligned[rows]
+                & separation_eligible[rows]
+                & (memberships[rows] == 1)
+            ]
+            loaded = geometric[weights[geometric] > 0]
+            hull = _convex_hull(local[geometric, 1:3])
+            support_area, _ = _polygon_area_centroid(hull)
+            path = filter_paths[column] if labels_match else None
+            normals_agree = False
+            minimum_agreement = None
+            if len(geometric):
+                unit = local_normals[geometric] / lengths[geometric, None]
+                unit *= np.where(unit[:, :1] < 0, -1, 1)
+                minimum_agreement = float(np.min(unit @ unit.T))
+                normals_agree = minimum_agreement >= g.support_minimum_normal_agreement
+            if separations is None:
+                reason = "separation_evidence_missing"
+            elif path not in declared:
+                reason = "single_convex_contact_body_not_declared"
+            elif np.any(memberships[rows] > 1):
+                reason = "ambiguous_shared_filter_indices"
+            elif not len(loaded):
+                reason = "no_positive_eligible_load"
+            elif support_area <= 0:
+                reason = "fewer_than_three_noncollinear_geometric_points"
+            elif not normals_agree:
+                reason = "incoherent_contact_normals"
+            else:
+                reason = None
+            diagnostic = {
+                "method": "point_fallback",
+                "fallback_reason": reason,
+                "eligible_contact_count": len(geometric),
+                "loaded_contact_count": len(loaded),
+                "zero_impulse_geometric_count": int((weights[geometric] == 0).sum()),
+                "shared_filter_contact_count": int((memberships[rows] > 1).sum()),
+                "support_polygon_yz_m": hull.tolist(),
+                "support_area_m2": support_area,
+                "overlap_area_m2": None,
+                "overlap_fraction": None,
+                "overlap_centroid_yz_m": None,
+                "single_convex_body_declared": path in declared,
+                "minimum_pairwise_normal_agreement": minimum_agreement,
+                "support_max_separation_m": g.support_max_separation_m,
+                "separation_status": "missing" if separations is None else "available",
+                "contiguity_evidence": (
+                    "declared single convex contacting body plus coherent inner-face normals; "
+                    "tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+                ),
+            }
+            if reason is None:
+                overlap_area, patch_centroid = _ellipse_patch_overlap(hull, g)
+                overlap_fraction = float(np.clip(overlap_area / support_area, 0, 1))
+                fractions[geometric] = (
+                    0  # Zero-load geometry never counts as loaded contact.
+                )
+                fractions[loaded] = overlap_fraction
+                if patch_centroid is not None:
+                    centroid_locations[loaded, 0] = np.average(
+                        local[loaded, 0], weights=compression[loaded]
+                    )
+                    centroid_locations[loaded, 1:3] = patch_centroid
+                diagnostic.update(
+                    {
+                        "method": "manifold_patch_v2",
                         "overlap_area_m2": overlap_area,
                         "overlap_fraction": overlap_fraction,
                         "overlap_centroid_yz_m": None
@@ -291,7 +413,19 @@ def select_gel_contacts(
                 "coverage": patch_diagnostics.get(column, {"method": "point"}),
             }
         )
-    return {
+        if coverage == "manifold_patch_v2":
+            by_filter[-1].update(
+                {
+                    "separation_by_contact_m": None
+                    if separations is None
+                    else separations[rows].tolist(),
+                    "separation_eligible_by_contact": separation_eligible[
+                        rows
+                    ].tolist(),
+                    "populated_buffer_indices": indices.tolist(),
+                }
+            )
+    result = {
         "normal_force_n": total,
         "contact_uv": uv,
         "has_gel_contact": total > 0,
@@ -331,6 +465,36 @@ def select_gel_contacts(
         if coverage == "manifold_patch"
         else None,
     }
+    if coverage == "manifold_patch_v2":
+        result.update(
+            {
+                "coverage_assumption": (
+                    "uniform pressure over declared single-convex-body geometric support; "
+                    "zero-impulse vertices add geometry only; unknown/ambiguous support uses points"
+                ),
+                "ellipse_polygon_segments": _ELLIPSE_SEGMENTS,
+                "separation_status": "missing" if separations is None else "available",
+                "separation_semantics": (
+                    "stage metres; negative=penetration, positive=gap; "
+                    "contactOffset admits speculative contacts, not gel indentation"
+                ),
+                "convex_support_filter_paths": sorted(declared),
+                "populated_buffer_indices": ids.tolist(),
+                "ignored_by_reason_n": {
+                    "not_inner_face": float(weights[~face].sum()),
+                    "normal_not_aligned": float(weights[face & ~aligned].sum()),
+                    "outside_support_separation": float(
+                        weights[face & aligned & ~separation_eligible].sum()
+                    ),
+                    "outside_active_ellipse_or_point_fallback": float(
+                        (weights * (1 - fractions))[
+                            face & aligned & separation_eligible
+                        ].sum()
+                    ),
+                },
+            }
+        )
+    return result
 
 
 class GelContactViews:
@@ -345,6 +509,7 @@ class GelContactViews:
         max_contact_count=256,
         geometry=None,
         coverage="point",
+        convex_support_filter_paths=_DEFAULT_CONVEX_SUPPORT_FILTERS,
     ):
         if len(pad_paths) != 2 or pad_paths[0] == pad_paths[1]:
             raise ValueError("two distinct pad paths required in left/right order")
@@ -353,9 +518,10 @@ class GelContactViews:
 
             rigid_prim_cls = RigidPrim
         self.geometry = geometry or GelSurfaceGeometry()
-        if coverage not in ("point", "manifold_patch"):
-            raise ValueError("coverage must be point or manifold_patch")
+        if coverage not in _COVERAGE_MODES:
+            raise ValueError(f"coverage must be one of {_COVERAGE_MODES}")
         self.coverage = coverage
+        self.convex_support_filter_paths = tuple(convex_support_filter_paths)
         self.max_contact_count = int(max_contact_count)
         if self.max_contact_count <= 0:
             raise ValueError("max_contact_count must be positive")
@@ -398,6 +564,7 @@ class GelContactViews:
                     max_contact_count=self.max_contact_count,
                     filter_paths=self.filter_paths[i],
                     coverage=self.coverage,
+                    convex_support_filter_paths=self.convex_support_filter_paths,
                 )
             )
         return {

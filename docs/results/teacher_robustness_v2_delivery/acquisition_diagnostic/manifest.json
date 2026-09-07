@@ -1,0 +1,54 @@
+{
+  "README.md": {
+    "bytes": 8058,
+    "sha256": "1023953cab61139356793b0ce7fb1eb452aa0caea0a08173c9897bb658ea77c9"
+  },
+  "acquisition_traces.pdf": {
+    "bytes": 58064,
+    "sha256": "5a31ba7360203967a11d75af0b9eba18dc8ea8eda91933a5d10110916389520a"
+  },
+  "acquisition_traces.png": {
+    "bytes": 604189,
+    "sha256": "5d62778a6b15b67008ec4d2ae7ecb530239acb9da928a334cc9963df111ae8ce"
+  },
+  "audit.json": {
+    "bytes": 1014993,
+    "sha256": "7d2a602115bd21f1c047589a9c11dc4b56c5650863fbbb8a7b1746c50ebaf402"
+  },
+  "audit_acquisitions.py": {
+    "bytes": 9467,
+    "sha256": "2eaf2af2aed276d1c1eba7a6ac953eb8bbca97e6d08a3167321e37456142ba01"
+  },
+  "extract_wrist_baseline.py": {
+    "bytes": 4920,
+    "sha256": "5babfbb01675958a27bd5f5282434648c3f41bcedc5d75a303c40f88941e86c6"
+  },
+  "peak_height_geometry.json": {
+    "bytes": 3909,
+    "sha256": "9ce2a0b1e35a5508a39c5778b7f875367fc1d1ff930ec256f60940eec26dbf9e"
+  },
+  "peak_height_geometry.py": {
+    "bytes": 2345,
+    "sha256": "6f74d9fd9b28f2d375c0bc7486983fe580a7a62c2fc8a448806faad867d10eea"
+  },
+  "plot_acquisitions.py": {
+    "bytes": 4577,
+    "sha256": "39ff669e11a9468051e9b7bdd9a9da4f2ef454f03401e7551cd59f6319542d4f"
+  },
+  "plot_wrist_baseline.py": {
+    "bytes": 2753,
+    "sha256": "5f87d62cae48261dac701f9c9b87e28f75e36acb749b954f91b021737364adc5"
+  },
+  "wrist_baseline_drift.pdf": {
+    "bytes": 70772,
+    "sha256": "647d77fe3ba9ebc681c9485290ae2e235f45512a98aec105556b899c207077af"
+  },
+  "wrist_baseline_drift.png": {
+    "bytes": 373174,
+    "sha256": "31ab451138d57b6fd4e8ce84f02b4fac462347f123ee03ff3046cffa3dab9ec3"
+  },
+  "wrist_baseline_trace.json": {
+    "bytes": 469724,
+    "sha256": "8e61eff3158acf43f75dc879103f5825749369a5cd6754a329f2348ebf78e2d5"
+  }
+}

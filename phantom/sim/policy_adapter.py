@@ -183,28 +183,9 @@ class SimulationPolicyAdapter:
         self.plan_filter = plan_filter
         self.observation_callback = observation_callback
         self.delivered_plan_callback = delivered_plan_callback
-        self.release_controller = None
-        if release_config is not None:
-            from phantom.sim.release_controller import (
-                PlacementReleaseConfig,
-                PlacementReleaseController,
-            )
+        from phantom.deploy.release_controller import make_release_controller
 
-            if isinstance(release_config, dict):
-                release_config = PlacementReleaseConfig.from_dict(release_config)
-            if not isinstance(release_config, PlacementReleaseConfig):
-                raise TypeError(
-                    "release_config must be a PlacementReleaseConfig or dict"
-                )
-            if hw.safety.grip_latch_fz_n <= 0:
-                raise ValueError(
-                    "placement release requires the native load latch enabled"
-                )
-            if release_config.rearm_close_command_min > hw.gripper.max_close_cmd:
-                raise ValueError(
-                    "release rearm threshold exceeds hardware closure limit"
-                )
-            self.release_controller = PlacementReleaseController(release_config)
+        self.release_controller = make_release_controller(release_config, hw)
         self.governor = SpeedGovernor(hw.safety.governor)
         self.reset(reset_policy=False)
 
@@ -246,6 +227,9 @@ class SimulationPolicyAdapter:
         self._grip_hist: deque = deque(maxlen=self._history_capacity)
         self._prev_fields = None
         self.stopped_reason = None
+        self.completed_reason = None
+        self.completed_at_s = None
+        self._finish_pose = self._finish_grip = None
         self.ik_rejects = self.ik_rejects_total = 0
         if self.plan_filter is not None and hasattr(self.plan_filter, "reset"):
             self.plan_filter.reset()
@@ -466,6 +450,7 @@ class SimulationPolicyAdapter:
     def ready_for_replan(self, t: float) -> bool:
         return (
             self.stopped_reason is None
+            and self.completed_reason is None
             and self._pending is None
             and self._last_observe_t is not None
             and (
@@ -483,8 +468,10 @@ class SimulationPolicyAdapter:
         observation_delay_s: float = 0.0,
     ):
         """Run the existing policy; activate the result after inference latency."""
-        if self.stopped_reason:
-            raise RuntimeError(f"episode stopped: {self.stopped_reason}")
+        if self.stopped_reason or self.completed_reason:
+            raise RuntimeError(
+                f"episode ended: {self.stopped_reason or self.completed_reason}"
+            )
         if self._pending is not None:
             raise RuntimeError("a policy plan is already pending activation")
         now = self._last_observe_t if t is None else float(t)
@@ -570,6 +557,7 @@ class SimulationPolicyAdapter:
             raise ValueError("plan submission time must cover the newest observation")
         if (
             self.stopped_reason
+            or self.completed_reason
             or self._last_cmd is None
             or plan.action_times[0] > t + 1e-9
             or plan.action_times[-1] <= t + self.hw.control.replan_min_lead_s
@@ -597,7 +585,11 @@ class SimulationPolicyAdapter:
         while still inside the volume, after the native latch was armed.
         """
         values = np.asarray(proposed_grip)
-        if self.release_controller is None or self.stopped_reason:
+        if (
+            self.release_controller is None
+            or self.stopped_reason
+            or self.completed_reason
+        ):
             return np.zeros(values.shape, dtype=bool)
         tcp = self.rings["arm"].latest(1)[1]["tcp_pose"][0]
         return (
@@ -607,22 +599,14 @@ class SimulationPolicyAdapter:
         )
 
     def _original_policy_grip(self):
-        """Whether the played gripper sample survived the native veto unchanged."""
-        if self._plan is None:
-            return False
-        veto = self._plan.diag.get("terminal_veto", {})
-        action = veto.get("action")
-        if action in ("recovery_open", "recovery_tactile", "retry_cap"):
-            return False
-        if action == "close_masked":
-            cap = len(self._plan.actions)
-            if self.max_play_steps is not None:
-                cap = min(cap, self.max_play_steps)
-            index = int(
-                np.clip(self._play_time * self.hw.control.action_rate_hz, 0, cap - 1e-6)
-            )
-            return index in veto.get("placement_release_passthrough_indices", [])
-        return True
+        from phantom.deploy.release_controller import original_policy_grip
+
+        return original_policy_grip(
+            self._plan,
+            self._play_time,
+            self.hw.control.action_rate_hz,
+            self.max_play_steps,
+        )
 
     def entered_grip_after(self, t):
         """Actually issued gripper transitions, strictly after the given time."""
@@ -662,7 +646,11 @@ class SimulationPolicyAdapter:
                 self.delivered_plan_callback(plan, captured_snapshot, t, activated)
         target, grip = self._last_cmd.copy(), self._last_grip
         stale = False
-        if self._plan is not None and not self.stopped_reason:
+        if (
+            self._plan is not None
+            and not self.stopped_reason
+            and not self.completed_reason
+        ):
             stale = (
                 t - self._swap_t
                 > len(self._plan.actions) / self.hw.control.action_rate_hz
@@ -695,6 +683,8 @@ class SimulationPolicyAdapter:
                     target = (1 - beta) * prev_target + beta * target
                 else:
                     self._prev_plan = None
+        if self.completed_reason and not self.stopped_reason:
+            target, grip = self._finish_pose.copy(), self._finish_grip
         verdict = self.safety.check(t, target)
         kinds = [e.kind for e in verdict.events]
         if self.rings["camera_scene"].latest_ts() is None:
@@ -740,6 +730,13 @@ class SimulationPolicyAdapter:
                     measured_grip=float(measured_grip),
                     pad_loads=loads,
                     eligible=not stale and self._original_policy_grip(),
+                    accepted_grip=self._last_grip,
+                    finish_permitted=np.allclose(
+                        self.safety.clamp_target(measured),
+                        measured,
+                        atol=1e-9,
+                        rtol=0,
+                    ),
                 )
                 if suppress_latch:
                     self._grip_latch = None
@@ -756,18 +753,32 @@ class SimulationPolicyAdapter:
                 grip = self._grip_latch
             if self.release_controller is not None:
                 self.release_controller.note_latch(self._grip_latch)
+                if self.release_controller.finished:
+                    if self.completed_reason is None:
+                        self.completed_reason = "placement_release_finished"
+                        self.completed_at_s = float(t)
+                        self._finish_pose = measured.copy()
+                        self._finish_grip = self._last_grip
+                        self._pending = self._prev_plan = None
+                    target, grip = self._finish_pose.copy(), self._finish_grip
+                    target = self.safety.clamp_target(target)
         dt_eff = float(np.clip(dt, period, 2 * period))
         target = np.asarray(target, dtype=np.float64).copy()
+        rate_reference = (
+            self._finish_pose
+            if self.completed_reason and not self.stopped_reason
+            else self._last_cmd
+        )
         for sl, vmax in (
             (slice(0, 3), self.hw.arm.limits.tcp_speed_m_s),
             (slice(3, 6), self.hw.arm.limits.joint_speed_rad_s),
         ):
             if sl.start == 3:
-                target[sl] = dv.rotvec_nearest(self._last_cmd[sl], target[sl])
-            delta = target[sl] - self._last_cmd[sl]
+                target[sl] = dv.rotvec_nearest(rate_reference[sl], target[sl])
+            delta = target[sl] - rate_reference[sl]
             norm = np.linalg.norm(delta)
             if norm > vmax * dt_eff:
-                target[sl] = self._last_cmd[sl] + delta * (vmax * dt_eff / norm)
+                target[sl] = rate_reference[sl] + delta * (vmax * dt_eff / norm)
         command = SimulationCommand(
             t,
             target,
@@ -777,6 +788,9 @@ class SimulationPolicyAdapter:
             self.stopped_reason,
             {
                 "safety_events": kinds,
+                "completed_reason": self.completed_reason,
+                "completed_at_s": self.completed_at_s,
+                "completion_hold": self.completed_reason is not None,
                 "stale_plan_hold": stale,
                 "plan_activated": activated,
                 "play_time_s": self._play_time,

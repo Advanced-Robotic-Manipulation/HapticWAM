@@ -1,0 +1,57 @@
+{
+  "status": "six_native_first_plan_proposals_completed",
+  "calls": 6,
+  "comparisons": [
+    {
+      "seed": 903101,
+      "rgb_swap": {
+        "xyz_step_rmse_m": 0.00017409519493374333,
+        "rotvec_step_rmse_rad": 0.0007833140365471011,
+        "closure_rmse": 0.007215006176448642,
+        "endpoint_10step_xyz_difference_m": 0.002205875417674123,
+        "endpoint_16step_xyz_difference_m": 0.002600842533085658,
+        "k_pick_a": 0,
+        "k_pick_b": 0
+      },
+      "rendered_repeat_control": {
+        "xyz_step_rmse_m": 0.0,
+        "rotvec_step_rmse_rad": 0.0,
+        "closure_rmse": 0.0,
+        "endpoint_10step_xyz_difference_m": 0.0,
+        "endpoint_16step_xyz_difference_m": 0.0,
+        "k_pick_a": 0,
+        "k_pick_b": 0
+      }
+    },
+    {
+      "seed": 903102,
+      "rgb_swap": {
+        "xyz_step_rmse_m": 0.00030980481829863865,
+        "rotvec_step_rmse_rad": 0.0007848819179962711,
+        "closure_rmse": 0.003173407678459096,
+        "endpoint_10step_xyz_difference_m": 0.004952788955477978,
+        "endpoint_16step_xyz_difference_m": 0.005195658621220962,
+        "k_pick_a": 0,
+        "k_pick_b": 0
+      },
+      "rendered_repeat_control": {
+        "xyz_step_rmse_m": 0.0,
+        "rotvec_step_rmse_rad": 0.0,
+        "closure_rmse": 0.0,
+        "endpoint_10step_xyz_difference_m": 0.0,
+        "endpoint_16step_xyz_difference_m": 0.0,
+        "k_pick_a": 0,
+        "k_pick_b": 0
+      }
+    }
+  ],
+  "manifest_sha256": "9dbd2885adbdac2bf63e2d4addb9658ee48669c018e0641eb2ecd63b2ad97ebd",
+  "limitations": [
+    "One saved request from the halted original study, including its original non-RGB proxy/state limitations.",
+    "Real image includes small arm motion and estimated pose/camera mismatch; not a calibrated optical intervention.",
+    "Only raw RGB changes; teacher predictions can change jointly through video/contact/action heads.",
+    "Paired proposed chunks are not executed, safety-filtered, or scored as physical success.",
+    "Two seeds and repeat controls characterize this input only; no hardware causality or model selection claim."
+  ],
+  "closed_loop_task_score": null
+}

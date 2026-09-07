@@ -1,0 +1,1037 @@
+{
+  "captured_at_utc": "2026-09-06T23:41:19.468134+00:00",
+  "method": "Read-only completed first-start diagnostic. No ranking before all32screen cases.",
+  "campaign_sha256": "8445fae218b18a455162b19664e89973707ddfbd83aca88e46acc8d9345f0c98",
+  "condition_id": "start_1787395928",
+  "expected_trials": 8,
+  "completed": 8,
+  "statuses": {
+    "fta1500_nfe1_k4__start_1787395928__seed903101": "completed",
+    "fta1500_nfe1_k4__start_1787395928__seed903102": "completed",
+    "fta3000_nfe1_k4__start_1787395928__seed903101": "completed",
+    "fta3000_nfe1_k4__start_1787395928__seed903102": "completed",
+    "v5_6_nfe1_k4__start_1787395928__seed903101": "completed",
+    "v5_6_nfe1_k4__start_1787395928__seed903102": "completed",
+    "fta1500_nfe5_k1__start_1787395928__seed903101": "completed",
+    "fta1500_nfe5_k1__start_1787395928__seed903102": "completed"
+  },
+  "selection_permitted": false,
+  "limitation": "One recorded start only. No candidate selection, winner inference, tuning or source mutation; all32matched screen cases required.",
+  "status": "complete_first_start_diagnostic",
+  "trials": [
+    {
+      "policy_id": "fta1500_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903101,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": 0.05761301979820711,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": false,
+      "stop_reason": null,
+      "stop_time_s": null,
+      "terminal_safety_events": [],
+      "logged_safety_events_including_nonterminal": [],
+      "safety_stop": false,
+      "wrench_limit_stop": false,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 75,
+        "mean": 0.7868736380121361,
+        "p95": 0.804831504332833
+      },
+      "delivery_latency_s": {
+        "count": 75,
+        "mean": 0.7868736380121361,
+        "p95": 0.804831504332833
+      },
+      "inference_wall_time_s": {
+        "count": 75,
+        "mean": 0.9690287176410978,
+        "p95": 0.9902035782928579
+      },
+      "activation_delay_s": {
+        "count": 74,
+        "mean": 0.7911351351351348,
+        "p95": 0.8080000000000002,
+        "max": 1.176
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.7595655918121338,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": 10.916,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": 0.05761301979820711,
+        "sample_time_s": 10.868,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 5.438923835754395e-07,
+      "minimum_pad_midpoint_to_object_m": 0.03168227621216962,
+      "trace_end_s": 59.996,
+      "max_clock_error_s": 2.8496570863012494e-06,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "fta1500_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903102,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 10.02,
+      "terminal_safety_events": [
+        "joint_speed",
+        "workspace_clamp"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "joint_speed",
+        "workspace_clamp"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": false,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 12,
+        "mean": 0.8125104513213349,
+        "p95": 0.9734215570380909
+      },
+      "delivery_latency_s": {
+        "count": 12,
+        "mean": 0.8125104513213349,
+        "p95": 0.9734215570380909
+      },
+      "inference_wall_time_s": {
+        "count": 12,
+        "mean": 0.9946515179181006,
+        "p95": 1.1629618636914527
+      },
+      "activation_delay_s": {
+        "count": 11,
+        "mean": 0.8203636363636364,
+        "p95": 0.9959999999999999,
+        "max": 1.184
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.0,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0,
+      "minimum_pad_midpoint_to_object_m": 0.18281461847811717,
+      "trace_end_s": 12.016,
+      "max_clock_error_s": 5.707293748713482e-07,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "fta3000_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903101,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 22.66,
+      "terminal_safety_events": [
+        "wrist_extension"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "wrist_extension"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": false,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 28,
+        "mean": 0.7959093433954487,
+        "p95": 0.80423015911947
+      },
+      "delivery_latency_s": {
+        "count": 28,
+        "mean": 0.7959093433954487,
+        "p95": 0.80423015911947
+      },
+      "inference_wall_time_s": {
+        "count": 28,
+        "mean": 0.9782128767567754,
+        "p95": 0.989244490058627
+      },
+      "activation_delay_s": {
+        "count": 27,
+        "mean": 0.8005925925925924,
+        "p95": 0.8079999999999998,
+        "max": 1.176
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.0,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0,
+      "minimum_pad_midpoint_to_object_m": 0.07767243627234383,
+      "trace_end_s": 24.656,
+      "max_clock_error_s": 1.171097160579393e-06,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "fta3000_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903102,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 10.540000000000001,
+      "terminal_safety_events": [
+        "joint_speed"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "joint_speed"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": false,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 13,
+        "mean": 0.8104723523764943,
+        "p95": 0.9653448071796441
+      },
+      "delivery_latency_s": {
+        "count": 13,
+        "mean": 0.8104723523764943,
+        "p95": 0.9653448071796441
+      },
+      "inference_wall_time_s": {
+        "count": 13,
+        "mean": 0.9913811921858444,
+        "p95": 1.1477269633905955
+      },
+      "activation_delay_s": {
+        "count": 12,
+        "mean": 0.818,
+        "p95": 0.9880000000000001,
+        "max": 1.208
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.0,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0,
+      "minimum_pad_midpoint_to_object_m": 0.22745249659381175,
+      "trace_end_s": 12.540000000000001,
+      "max_clock_error_s": 5.956180384458776e-07,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "v5_6_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903101,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 7.516,
+      "terminal_safety_events": [
+        "wrench_limit"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "wrench_limit"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": true,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 9,
+        "mean": 0.8250978502005132,
+        "p95": 1.0260482081910594
+      },
+      "delivery_latency_s": {
+        "count": 9,
+        "mean": 0.8250978502005132,
+        "p95": 1.0260482081910594
+      },
+      "inference_wall_time_s": {
+        "count": 9,
+        "mean": 1.0073086583159037,
+        "p95": 1.2103170874062925
+      },
+      "activation_delay_s": {
+        "count": 8,
+        "mean": 0.837,
+        "p95": 1.0471999999999997,
+        "max": 1.176
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 34.443572998046875,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0007854923605918884,
+      "minimum_pad_midpoint_to_object_m": 0.034813834448571064,
+      "trace_end_s": 9.512,
+      "max_clock_error_s": 4.5179575636211666e-07,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "v5_6_nfe1_k4",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903102,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903102",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 8.004,
+      "terminal_safety_events": [
+        "wrench_limit"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "wrench_limit"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": true,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 10,
+        "mean": 0.8233747714315541,
+        "p95": 1.0066273190313946
+      },
+      "delivery_latency_s": {
+        "count": 10,
+        "mean": 0.8233747714315541,
+        "p95": 1.0066273190313946
+      },
+      "inference_wall_time_s": {
+        "count": 10,
+        "mean": 1.0066525814821943,
+        "p95": 1.1936262327712026
+      },
+      "activation_delay_s": {
+        "count": 9,
+        "mean": 0.8311111111111111,
+        "p95": 1.0271999999999997,
+        "max": 1.168
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.0,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0,
+      "minimum_pad_midpoint_to_object_m": 0.09855551299306216,
+      "trace_end_s": 10.0,
+      "max_clock_error_s": 4.7497451305389404e-07,
+      "effective_settings": {
+        "nfe": 1,
+        "guidance": 1.0,
+        "k_seeds": 4,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "fta1500_nfe5_k1",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903101,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": 0.21498763276682956,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": true,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 0.0,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 10.86,
+      "terminal_safety_events": [
+        "joint_speed"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "joint_speed"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": false,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 12,
+        "mean": 0.9405873898940627,
+        "p95": 1.0941250805684828
+      },
+      "delivery_latency_s": {
+        "count": 12,
+        "mean": 0.9405873898940627,
+        "p95": 1.0941250805684828
+      },
+      "inference_wall_time_s": {
+        "count": 12,
+        "mean": 1.1224767550787267,
+        "p95": 1.275801762595074
+      },
+      "activation_delay_s": {
+        "count": 11,
+        "mean": 0.9476363636363636,
+        "p95": 1.116,
+        "max": 1.296
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 0.0,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": 4.34,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": 0.21498763276682956,
+        "sample_time_s": 4.336,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 0.0,
+      "minimum_pad_midpoint_to_object_m": 0.1641745742249588,
+      "trace_end_s": 12.856,
+      "max_clock_error_s": 6.106272341099839e-07,
+      "effective_settings": {
+        "nfe": 5,
+        "guidance": 1.0,
+        "k_seeds": 1,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    },
+    {
+      "policy_id": "fta1500_nfe5_k1",
+      "condition_id": "start_1787395928",
+      "sampling_seed": 903102,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102",
+      "valid_for_selection": true,
+      "invalid_reasons": [],
+      "clean_place": false,
+      "strict_full_place": false,
+      "furthest_physical_stage": "none",
+      "reach_before_closure": false,
+      "acquired": false,
+      "lifted": false,
+      "carried": false,
+      "released_in_bin": false,
+      "dropped": false,
+      "reach_error_before_first_closing_motion_m": null,
+      "event_times_s": {
+        "reach": null,
+        "closure": 0.0,
+        "acquisition": null,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "final_inside_bin": false,
+      "final_contacts_unloaded": false,
+      "final_bin_supported_robot_unloaded": false,
+      "final_support_forces_n": {
+        "packet_robot_normal_force": 93.83456230163574,
+        "packet_bin_normal_force": 0.0
+      },
+      "actual_stop": true,
+      "stop_reason": "safety_stop",
+      "stop_time_s": 7.0680000000000005,
+      "terminal_safety_events": [
+        "wrench_limit"
+      ],
+      "logged_safety_events_including_nonterminal": [
+        "wrench_limit"
+      ],
+      "safety_stop": true,
+      "wrench_limit_stop": true,
+      "tactile_force_limit_stop": false,
+      "completed_reason": null,
+      "completion_hold_rows": 0,
+      "completion_time_s": null,
+      "ik_rejects": 0,
+      "hold_duration_s": 0.0,
+      "stale_plan_hold_rows": 0,
+      "native_inference_latency_s": {
+        "count": 8,
+        "mean": 0.9509111145162024,
+        "p95": 1.158899244549684
+      },
+      "delivery_latency_s": {
+        "count": 8,
+        "mean": 0.9509111145162024,
+        "p95": 1.158899244549684
+      },
+      "inference_wall_time_s": {
+        "count": 8,
+        "mean": 1.1340888502600137,
+        "p95": 1.3453168179199564
+      },
+      "activation_delay_s": {
+        "count": 7,
+        "mean": 0.9611428571428572,
+        "p95": 1.18,
+        "max": 1.288
+      },
+      "initialization": null,
+      "collision_coverage": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "pad_packet_force_peak_n": 132.87576293945312,
+      "runtime_errors": [],
+      "physical_invalid_reasons": [],
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": true,
+        "initial_measured_closure": 0.42740270495414734,
+        "first_closing_motion_s": null,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": null,
+        "sample_time_s": null,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "initial_actual_closure": 0.42740270495414734,
+      "initial_q": [
+        0.24458560347557068,
+        -1.5064771175384521,
+        0.9279372692108154,
+        0.9001988172531128,
+        1.1858762502670288,
+        -3.203784942626953
+      ],
+      "initial_tcp": [
+        -0.33466099419465156,
+        -0.3006778972342517,
+        0.3539402768575579,
+        -1.0361264611216328,
+        -1.9311151213513227,
+        1.4728755207248276
+      ],
+      "initial_packet_center": [
+        -0.3667149543762207,
+        -0.2596178650856018,
+        0.07000001519918442
+      ],
+      "initial_pad_midpoint_to_object_m": 0.27628289095959163,
+      "max_lift_m": 6.538629531860352e-05,
+      "minimum_pad_midpoint_to_object_m": 0.024132754357653975,
+      "trace_end_s": 9.068,
+      "max_clock_error_s": 4.307068888209642e-07,
+      "effective_settings": {
+        "nfe": 5,
+        "guidance": 1.0,
+        "k_seeds": 1,
+        "parity_fixes": true,
+        "persistent_noise": true,
+        "task_text": "waffles",
+        "drop_video": false,
+        "close_p": 0.5
+      },
+      "server_weights": "EMA"
+    }
+  ],
+  "valid_for_selection_metadata": 8,
+  "all_source_runtime_and_score_checks_pass": true,
+  "initial_state_max_range": {
+    "initial_q": 0.0,
+    "initial_tcp": 0.0,
+    "initial_packet_center": 0.0,
+    "initial_actual_closure": 0.0
+  }
+}

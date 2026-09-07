@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "status": "candidate evidence-defined split; parent freezes campaign before scored outcomes",
+  "source_episode_count": 250,
+  "fully_observed_count": 10,
+  "thin_no_timestamp_count": 240,
+  "discovery_n": 4,
+  "confirmation_n": 6,
+  "split_rule": "Discovery deliberately includes already fitted5928 plus extreme initialY5963/6028 and lowest initialZ6273. All other complete recording starts reserved for confirmation. Choice uses source inputs only, no policy outcomes.",
+  "fixed_scene_recommendation": "Aug22 green packet, canonical5928 pose and camera. Fixed object pose across all cases; transfer recorded arm/gripper/wrist starts, not per-recording packet variations.",
+  "cases": [
+    {
+      "episode": "ep_waffles_1787395928_000",
+      "study_split_candidate": "discovery",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.33538232877569196,
+        -0.29982738757331384,
+        0.3563458840073126
+      ],
+      "closure": 0.4274509847164154,
+      "anchor_offset_s": 0.008002016926184297,
+      "max_sensor_age_s": 0.007814622018486261,
+      "first_250ms_max_joint_speed_rad_s": 0.03262106329202652,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787395963_001",
+      "study_split_candidate": "discovery",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.3495555759785932,
+        -0.27512946790625037,
+        0.35035050920628125
+      ],
+      "closure": 0.3137255012989044,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.003165690926834941,
+      "first_250ms_max_joint_speed_rad_s": 0.023910926654934883,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396028_003",
+      "study_split_candidate": "discovery",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+      "sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.331271794061223,
+        -0.3206862559838003,
+        0.33590352669063406
+      ],
+      "closure": 0.3450980484485626,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.0009235150646418333,
+      "first_250ms_max_joint_speed_rad_s": 0.051124706864356995,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396060_004",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+      "sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.34277963668580624,
+        -0.308841994404968,
+        0.3554547508270639
+      ],
+      "closure": 0.3137255012989044,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.0038614319637417793,
+      "first_250ms_max_joint_speed_rad_s": 0.017736652866005898,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396094_005",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+      "sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.3395998491671627,
+        -0.316407081370372,
+        0.3072359196553298
+      ],
+      "closure": 0.42352941632270813,
+      "anchor_offset_s": 0.009206469869241118,
+      "max_sensor_age_s": 0.003719210857525468,
+      "first_250ms_max_joint_speed_rad_s": 0.07240869104862213,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396128_006",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.34553959891096603,
+        -0.3092751088664797,
+        0.32902270496445724
+      ],
+      "closure": 0.4274509847164154,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.0030803889967501163,
+      "first_250ms_max_joint_speed_rad_s": 0.026820696890354156,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396273_010",
+      "study_split_candidate": "discovery",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.3370493634399271,
+        -0.30213036323570486,
+        0.29697775211803923
+      ],
+      "closure": 0.37254902720451355,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.0018318688962608576,
+      "first_250ms_max_joint_speed_rad_s": 0.02847451902925968,
+      "wrapper_reversed": true
+    },
+    {
+      "episode": "ep_waffles_1787396314_011",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+      "sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.33803408897113024,
+        -0.2840890620556038,
+        0.35711110430632903
+      ],
+      "closure": 0.3333333432674408,
+      "anchor_offset_s": 0.008001978974789381,
+      "max_sensor_age_s": 0.0030902628786861897,
+      "first_250ms_max_joint_speed_rad_s": 0.030104374513030052,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396346_012",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+      "sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505",
+      "session": "20260822_135140_waffles",
+      "tcp_xyz_m": [
+        -0.34006356944709104,
+        -0.2899842235197968,
+        0.34205801605514824
+      ],
+      "closure": 0.3490196168422699,
+      "anchor_offset_s": 0.02364032994955778,
+      "max_sensor_age_s": 0.0010604029521346092,
+      "first_250ms_max_joint_speed_rad_s": 0.012271846644580364,
+      "wrapper_reversed": false
+    },
+    {
+      "episode": "ep_waffles_1787396461_000",
+      "study_split_candidate": "confirmation",
+      "initial_state": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "session": "20260822_140049_waffles",
+      "tcp_xyz_m": [
+        -0.32934843403965874,
+        -0.3036396676083807,
+        0.3246262599854344
+      ],
+      "closure": 0.2549019753932953,
+      "anchor_offset_s": 0.0,
+      "max_sensor_age_s": 0.002096849959343672,
+      "first_250ms_max_joint_speed_rad_s": 0.01056529302150011,
+      "wrapper_reversed": false
+    }
+  ],
+  "all_first_rows": {
+    "n": 250,
+    "tcp_xyz_min_m": [
+      -0.4339407192330543,
+      -0.35221305119153845,
+      0.21603954286078192
+    ],
+    "tcp_xyz_median_m": [
+      -0.36373023978249963,
+      -0.2909070332987933,
+      0.3377392486936135
+    ],
+    "tcp_xyz_max_m": [
+      -0.30761671028078036,
+      -0.1930514833431933,
+      0.39281420761457764
+    ],
+    "closure_min_median_max": [
+      0.0117647061124444,
+      0.23529411852359772,
+      0.5372549295425415
+    ]
+  },
+  "thin_first_rows": {
+    "n": 240,
+    "tcp_xyz_min_m": [
+      -0.4339407192330543,
+      -0.35221305119153845,
+      0.21603954286078192
+    ],
+    "tcp_xyz_median_m": [
+      -0.36532363056859113,
+      -0.29046186716267897,
+      0.3377392486936135
+    ],
+    "tcp_xyz_max_m": [
+      -0.30761671028078036,
+      -0.1930514833431933,
+      0.39281420761457764
+    ],
+    "closure_min_median_max": [
+      0.0117647061124444,
+      0.23137255012989044,
+      0.5372549295425415
+    ]
+  },
+  "complete_first_rows": {
+    "n": 10,
+    "tcp_xyz_min_m": [
+      -0.3495555759785932,
+      -0.3206862559838003,
+      0.29697775211803923
+    ],
+    "tcp_xyz_median_m": [
+      -0.3388000522065665,
+      -0.30288501542204277,
+      0.33896477497484523
+    ],
+    "tcp_xyz_max_m": [
+      -0.32934843403965874,
+      -0.27512946790625037,
+      0.35708817542148297
+    ],
+    "closure_min_median_max": [
+      0.2549019753932953,
+      0.34705883264541626,
+      0.4274509847164154
+    ]
+  }
+}

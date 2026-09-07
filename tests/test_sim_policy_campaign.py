@@ -194,6 +194,140 @@ def audited_runtime():
     return runtime_audit, design, policy, condition, info, server
 
 
+def test_recipe_variant_does_not_inherit_other_candidates_runtime():
+    from tools.sim.analyze_policy_campaign import policy_settings
+    from tools.sim.run_policy_campaign import inference_config
+
+    audit, design, policy, condition, info, server = audited_runtime()
+    original = copy.deepcopy(design["inference_settings"])
+    variant = {
+        **policy,
+        "id": "same_weights_other_recipe",
+        "inference_settings": {"nfe": 1, "k_seeds": 4},
+    }
+    reasons = audit(
+        design, variant, condition, info, server, {"duration_s": 30}, [0, 30], None
+    )
+    assert "policy_effective_nfe_differs_from_campaign" in reasons
+    assert "server_effective_k_seeds_differs_from_campaign" in reasons
+    info["effective"] = inference_config(design, variant)
+    server["effective"] = inference_config(design, variant)
+    assert (
+        audit(
+            design, variant, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+        == []
+    )
+    assert design["inference_settings"] == original
+    assert policy_settings(design, policy) == original
+
+
+def test_condition_start_and_fixed_delivery_must_match_measured_inputs():
+    audit, design, policy, condition, info, server = audited_runtime()
+    condition = {
+        **condition,
+        "initial_state": {"path": "/measured/start.json", "sha256": "measured-start-b"},
+    }
+    design["delivery_latency_s"] = 1.0
+    reasons = audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    )
+    assert "effective_initial_state_hash_differs_from_campaign" in reasons
+    assert "effective_delivery_latency_override_differs_from_campaign" in reasons
+    info["policy_initial_state_provenance"] = {"sha256": "measured-start-b"}
+    info["policy_latency_override_s"] = 1.0
+    assert (
+        audit(
+            design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+        == []
+    )
+
+
+def test_delivery_feedback_profile_rejects_missing_or_historical_veto_state():
+    audit, design, policy, condition, info, server = audited_runtime()
+    design["adapter_profile"] = {"terminal_veto_feedback_source": "current_delivery"}
+    reason = "effective_terminal_veto_feedback_source_differs_from_campaign"
+    for reported in (None, "request_snapshot_historical"):
+        info["terminal_veto_feedback_source"] = reported
+        assert reason in audit(
+            design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+    info["terminal_veto_feedback_source"] = "current_delivery"
+    assert audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    ) == []
+
+
+def test_gripper_wrist_profile_is_explicit_and_audited():
+    audit, design, policy, condition, info, server = audited_runtime()
+    design["adapter_profile"] = {"wrist_model": "gripper_contact_proxy"}
+    assert "effective_wrist_model_differs_from_campaign" in audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    )
+    info["wrist_model"] = "gripper_contact_proxy"
+    assert audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    ) == []
+
+
+def test_campaign_commands_apply_variant_and_start_without_moving_packet(tmp_path):
+    from argparse import Namespace
+
+    from tools.sim.run_policy_campaign import server_command, simulation_command
+
+    _, design, policy, condition, _, _ = audited_runtime()
+    policy = {
+        **policy,
+        "id": "recipe_b",
+        "inference_settings": {"nfe": 1, "k_seeds": 4, "max_play": 6},
+    }
+    condition = {
+        **condition,
+        "initial_state": {"path": "/measured/start-b.json", "sha256": "b"},
+    }
+    design["adapter_profile"] = {
+        "initial_state": {"path": "/measured/start-a.json", "sha256": "a"}
+    }
+    design["delivery_latency_s"] = 1.0
+    args = Namespace(
+        source=tmp_path,
+        live_repo=tmp_path,
+        server_python=tmp_path / "python",
+        port=7799,
+        hardware_config=tmp_path / "hardware.yaml",
+        evidence=tmp_path / "evidence",
+        output=tmp_path / "output",
+    )
+    server = server_command(args, design, policy, tmp_path / "server")
+    command = simulation_command(
+        args, design, policy, condition, 13, tmp_path / "trial", None
+    )
+    assert server[server.index("--nfe") + 1] == "1"
+    assert server[server.index("--k-seeds") + 1] == "4"
+    assert (
+        command[command.index("--policy-initial-state") + 1] == "/measured/start-b.json"
+    )
+    assert command[command.index("--policy-latency") + 1] == "1.0"
+    assert command[command.index("--max-play-steps") + 1] == "6"
+    assert command[command.index("--policy-config") + 1].endswith(
+        "inference_recipe_b.json"
+    )
+    assert (
+        condition_scene(design, condition)["waffle"]
+        == design["nominal_scene"]["waffle"]
+    )
+
+
+def test_unsupported_recipe_override_cannot_silently_change_model_inputs():
+    from tools.sim.analyze_policy_campaign import policy_settings
+
+    _, design, policy, _, _, _ = audited_runtime()
+    policy["inference_settings"] = {"mask_wrist": True}
+    with pytest.raises(ValueError, match="Unsupported"):
+        policy_settings(design, policy)
+
+
 @pytest.mark.parametrize(
     "field,value",
     [
@@ -447,6 +581,7 @@ def test_campaign_passes_frozen_teacher_sensor_and_release_profile(tmp_path):
     )
     design["adapter_profile"] = {
         "tactile_model": "measured_baseline_proxy",
+        "wrist_model": "gripper_contact_proxy",
         "gel_contact_coverage": "manifold_patch",
         "initial_state": {"path": "/fixtures/initial.json"},
         "tactile_baseline": {"path": "/fixtures/baseline.npz"},
@@ -472,6 +607,7 @@ def test_campaign_passes_frozen_teacher_sensor_and_release_profile(tmp_path):
         None,
     )
     assert cmd[cmd.index("--tactile") + 1] == "measured_baseline_proxy"
+    assert cmd[cmd.index("--wrist") + 1] == "gripper_contact_proxy"
     assert cmd[cmd.index("--policy-initial-state") + 1] == "/fixtures/initial.json"
     assert cmd[cmd.index("--placement-release-config") + 1] == str(
         args.output / "runtime/placement_release.json"

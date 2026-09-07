@@ -1,0 +1,105 @@
+{
+  "frames": [
+    {
+      "case_id": "fta1500_nfe1_k4__start_1787395928__seed903101",
+      "event": "first additional closure",
+      "event_time_s": 12.428,
+      "frame_index": 186,
+      "frame_time_s": 12.4,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/sim.mp4",
+      "source_frame_count": 901,
+      "source_video_sha256": "09ba807adfb18b903c0400fd1520f6bbad85c3d4e20883b9590883e9427ee6b8",
+      "jpeg_sha256": "79e893f08d80b496f05b820b36b6dc4f73b7bae78dc3d111a12c519d8b7c2c93",
+      "local_frame": "frames/fta1500_nfe1_k4__start_1787395928__seed903101.jpg"
+    },
+    {
+      "case_id": "fta1500_nfe1_k4__start_1787395928__seed903102",
+      "event": "first safety stop",
+      "event_time_s": 5.38,
+      "frame_index": 80,
+      "frame_time_s": 5.336,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102/sim.mp4",
+      "source_frame_count": 112,
+      "source_video_sha256": "e7c3c4e9023d279aa7b66c2890f6d198c70271f9e219d041460cbf8db3d1ae3c",
+      "jpeg_sha256": "a0fd3d6cd5f5b5c8b673caf830237e6ced0135d6d796cabd347a41009bc540d1",
+      "local_frame": "frames/fta1500_nfe1_k4__start_1787395928__seed903102.jpg"
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__start_1787395928__seed903101",
+      "event": "first additional closure",
+      "event_time_s": 12.548,
+      "frame_index": 188,
+      "frame_time_s": 12.536,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101/sim.mp4",
+      "source_frame_count": 901,
+      "source_video_sha256": "1c10c97b49a9fd0fd47e2e8e0b8d9b3582d45399c63a1e5390137b38b3da3798",
+      "jpeg_sha256": "9134257b7b7cebdc680fbd6b9d67130d0bb31cce6eadf145ed622e68b10ffe4d",
+      "local_frame": "frames/fta3000_nfe1_k4__start_1787395928__seed903101.jpg"
+    },
+    {
+      "case_id": "fta3000_nfe1_k4__start_1787395928__seed903102",
+      "event": "first safety stop",
+      "event_time_s": 5.836,
+      "frame_index": 87,
+      "frame_time_s": 5.8,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102/sim.mp4",
+      "source_frame_count": 119,
+      "source_video_sha256": "a57831a107687f326df45072a0acd6168e6116872a80fe52f8c9bddba3dbfbac",
+      "jpeg_sha256": "b6436b6920643b4b54f44e9bbb972b8b4ada9d556bb547982a3425993064cee3",
+      "local_frame": "frames/fta3000_nfe1_k4__start_1787395928__seed903102.jpg"
+    },
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787395928__seed903101",
+      "event": "first safety stop",
+      "event_time_s": 7.372,
+      "frame_index": 110,
+      "frame_time_s": 7.336,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101/sim.mp4",
+      "source_frame_count": 142,
+      "source_video_sha256": "9424d36e1bbfb054ef2eb91242d85d50bf3b1d17eb00a9865bfbbd16e5d7fef0",
+      "jpeg_sha256": "9ac08a10577b937458c8a92000dd36e07be43f702a4a67e7e837e8d65ec1040f",
+      "local_frame": "frames/v5_6_nfe1_k4__start_1787395928__seed903101.jpg"
+    },
+    {
+      "case_id": "v5_6_nfe1_k4__start_1787395928__seed903102",
+      "event": "first safety stop",
+      "event_time_s": 5.636,
+      "frame_index": 84,
+      "frame_time_s": 5.6000000000000005,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903102/sim.mp4",
+      "source_frame_count": 116,
+      "source_video_sha256": "0d04d1f2ca27d9b08277f8cf4d741ea6acf5ccacee1b179e96af54d6619ccb56",
+      "jpeg_sha256": "214917696da4380786f4cd0d1798fbcd2a975c7fd03e6be7f3fa52e21ef9491f",
+      "local_frame": "frames/v5_6_nfe1_k4__start_1787395928__seed903102.jpg"
+    },
+    {
+      "case_id": "fta1500_nfe5_k1__start_1787395928__seed903101",
+      "event": "first safety stop",
+      "event_time_s": 5.436,
+      "frame_index": 81,
+      "frame_time_s": 5.4,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101/sim.mp4",
+      "source_frame_count": 113,
+      "source_video_sha256": "49cbdb94b89d3b242ed8e6810d95bc405dfa5e002895dd7bfdf663e2a37cf690",
+      "jpeg_sha256": "2d2e8257269325bfcb7c09847d78853e013ecbd82ab1c0214a5ad7bc1e7bbb1c",
+      "local_frame": "frames/fta1500_nfe5_k1__start_1787395928__seed903101.jpg"
+    },
+    {
+      "case_id": "fta1500_nfe5_k1__start_1787395928__seed903102",
+      "event": "first safety stop",
+      "event_time_s": 7.0920000000000005,
+      "frame_index": 106,
+      "frame_time_s": 7.0680000000000005,
+      "source_video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102/sim.mp4",
+      "source_frame_count": 138,
+      "source_video_sha256": "bc77b0349f03cb8d069f6c262c229c82265fa05030ed6534dac0064514e7f3b2",
+      "jpeg_sha256": "fe5527fcf18a7dd41c6e077d2b5241f00bd72d0b425bd1ab23abad78114654d4",
+      "local_frame": "frames/fta1500_nfe5_k1__start_1787395928__seed903102.jpg"
+    }
+  ],
+  "contact_sheet": {
+    "path": "contact_sheet.jpg",
+    "sha256": "847e2908d25b522b32b965a22fcab4e1f4b8d78b79a932f8703b48ab3b5dd565"
+  },
+  "semantics": "Last rendered scene sample at or before the first safety stop; first additional closing command instead for two horizon cases. Labels use independently logged contacts, not image inference. Actors may be occluded. No frame pixels were changed except resizing and text strips."
+}

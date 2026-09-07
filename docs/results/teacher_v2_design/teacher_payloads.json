@@ -1,0 +1,949 @@
+{
+  "inspected_at_utc": "2026-09-06T22:57:09.943019+00:00",
+  "method": "CPU-only teacher payload inspection. No model construction or GPU use.",
+  "checkpoints": [
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "bytes": 393116181,
+      "sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "step": 1500,
+      "configs": {
+        "hardware_shapes": {
+          "field": [
+            288,
+            384
+          ],
+          "field_ch": 8,
+          "keyframe_ds": [
+            144,
+            192
+          ],
+          "n_fingers": 2,
+          "wrench_dim": 6,
+          "wrist_ft_dim": 6,
+          "wrist_window_len": 31,
+          "ur_state_dim": 26,
+          "contact_state_dim": 11,
+          "action_dim": 7,
+          "chunk_horizon": 16,
+          "cpk_shape": [
+            36,
+            48
+          ]
+        },
+        "hardware_hash": "72a4dd674113afd0",
+        "backbone": {
+          "model_channels": 2048,
+          "num_blocks": 28,
+          "num_heads": 16,
+          "patch_spatial": 2,
+          "patch_temporal": 1,
+          "in_channels": 16,
+          "out_channels": 16,
+          "adaln_lora_dim": 256,
+          "use_adaln_lora": true,
+          "crossattn_proj_in_channels": 100352,
+          "crossattn_emb_channels": 1024,
+          "use_crossattn_projection": true,
+          "pos_emb_cls": "rope3d",
+          "pos_emb_learnable": true,
+          "rope_h_extrapolation_ratio": 3.0,
+          "rope_w_extrapolation_ratio": 3.0,
+          "rope_t_extrapolation_ratio": 1.0,
+          "rope_enable_fps_modulation": false,
+          "use_wan_fp32_strategy": true,
+          "timestep_scale": 0.001,
+          "atten_backend": "torch",
+          "action_dim": 7,
+          "num_action_per_chunk": 12,
+          "frames_pix": 13,
+          "res_h": 256,
+          "res_w": 320,
+          "fps": 4.0,
+          "max_img_h": 256,
+          "max_img_w": 256,
+          "lat_ch": 16,
+          "spatial_comp": 8,
+          "temporal_comp": 4,
+          "rf_shift": 5.0,
+          "rf_logit_normal_mean": 0.0,
+          "rf_logit_normal_std": 1.0,
+          "text_emb_seq_len": 512,
+          "text_emb_dim": 100352
+        },
+        "model": {
+          "student": false,
+          "drop_video_at_inference": false,
+          "rope_time_mode": "time_true",
+          "cond_dropout_p": 0.0,
+          "action_t_max_of_two": false,
+          "contact_nll_beta": 0.5,
+          "contact_nll_detach_weight": false,
+          "wrist_region_mse": true,
+          "contact_self_forcing": false,
+          "action_noise_per_strip": true,
+          "mask_wrist": false,
+          "use_action_adaln_intent": true,
+          "hht_dim": 256,
+          "contact_obs_frames": 1,
+          "nfe": 5,
+          "loss": {
+            "action": 1.0,
+            "video": 0.1,
+            "contact": 1.0,
+            "wrist": 0.5,
+            "event": 0.5,
+            "gate_bce": 0.2,
+            "sigma_reg": 0.01
+          },
+          "lora": {
+            "rank": 16,
+            "alpha": 16,
+            "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+            "dropout": 0.0
+          },
+          "acc": {
+            "d_acc": 256,
+            "d_e": 256,
+            "hidden": 512,
+            "react_hidden": 32,
+            "lambda_bias_init": 0.0,
+            "beta_init": 1.0,
+            "self_anticipation": "two_pass",
+            "gt_noise_scale": 0.1,
+            "alpha_entropy_weight": 0.0
+          },
+          "feature_align": false
+        },
+        "train": {
+          "run_name": "teacher_v5_ftA",
+          "seed": 0,
+          "lr": 2e-05,
+          "lr_new_modules": 6e-05,
+          "weight_decay": 0.01,
+          "warmup_steps": 150,
+          "max_steps": 3000,
+          "batch_size": 4,
+          "grad_accum": 2,
+          "grad_clip": 1.0,
+          "ema_decay": 0.995,
+          "log_every": 1,
+          "ckpt_every": 500,
+          "eval_every": 500,
+          "num_workers": 12,
+          "activation_checkpointing": true,
+          "fp32_master": true,
+          "synthetic": false,
+          "tiny": false,
+          "device": "cuda",
+          "out_dir": "",
+          "tactile_pretrain_ckpt": "",
+          "freeze_tactile_steps": 0,
+          "event_band_weight": 0.0,
+          "split": "train",
+          "grasp_frac": 0.3,
+          "photo_aug": 1.0,
+          "commit_band_weight": 1.0
+        },
+        "text_conditioning": {
+          "cache_path": "/workspace/phantom-v5/data/phantom-episodes/tasks/text_embeddings.pt",
+          "active": true,
+          "texts": [
+            "Carton",
+            "Carton_fail",
+            "egg",
+            "egg_fail",
+            "waffles",
+            "waffles_fail",
+            "whiteboard",
+            "whiteboard_fail"
+          ]
+        }
+      },
+      "ema_present": true,
+      "ema_tensor_count": 676,
+      "ema_elements": 27889205,
+      "ema_all_finite": true,
+      "normalizers": {
+        "mean": {
+          "fields": [
+            0.01038514543324709,
+            0.007930981926620007,
+            0.02242104522883892,
+            0.013288863934576511,
+            0.009501653723418713,
+            2.484502147126477e-06,
+            6.114034931670176e-06,
+            -5.660839451593347e-05
+          ],
+          "wrench": [
+            0.271145761013031,
+            0.6758014559745789,
+            -6.206960678100586,
+            -0.024128872901201248,
+            0.02098465897142887,
+            -0.006700299680233002
+          ],
+          "area": [
+            9.578930854797363
+          ],
+          "wrist_ft": [
+            -1.9681373834609985,
+            0.18758738040924072,
+            1.670883059501648,
+            0.11983009427785873,
+            -0.764369785785675,
+            -0.02251334674656391
+          ],
+          "action": [
+            6.4026116888271645e-06,
+            5.091031198389828e-05,
+            -9.892935486277565e-05,
+            -0.0005935337394475937,
+            9.01510939002037e-05,
+            -0.00024000444682314992,
+            0.42186254262924194
+          ],
+          "ur_state": [
+            -0.01392066664993763,
+            -1.4900270700454712,
+            1.4919638633728027,
+            0.5844753980636597,
+            1.414442539215088,
+            -3.0564486980438232,
+            0.0012176143936812878,
+            0.0004053793381899595,
+            0.002035086043179035,
+            0.0004061320796608925,
+            0.002552519552409649,
+            0.002912234514951706,
+            -0.3655286133289337,
+            -0.14117462933063507,
+            0.18723958730697632,
+            -1.6538605690002441,
+            -1.640643835067749,
+            1.0363627672195435,
+            0.00032514031045138836,
+            0.0002276301383972168,
+            -0.0010769631480798125,
+            -0.0009326677536591887,
+            -0.0004679395933635533,
+            -0.0036003636196255684,
+            0.354048490524292,
+            2.3956332206726074
+          ],
+          "cpk_d_disp": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "cpk_d_fz": [
+            0.0
+          ]
+        },
+        "std": {
+          "fields": [
+            0.10787658393383026,
+            0.10990317910909653,
+            0.10198453813791275,
+            0.08478551357984543,
+            0.07901926338672638,
+            4.462549986783415e-05,
+            4.6054272388573736e-05,
+            0.0002808630233630538
+          ],
+          "wrench": [
+            2.2578086853027344,
+            2.920393466949463,
+            9.090954780578613,
+            0.12599050998687744,
+            0.11366553604602814,
+            0.032959431409835815
+          ],
+          "area": [
+            17.078643798828125
+          ],
+          "wrist_ft": [
+            10.981828689575195,
+            11.965420722961426,
+            13.277647018432617,
+            2.307741165161133,
+            3.8162918090820312,
+            2.43320369720459
+          ],
+          "action": [
+            0.002923215739428997,
+            0.007169260177761316,
+            0.006723329424858093,
+            0.017536012455821037,
+            0.01634613424539566,
+            0.015911269932985306,
+            0.27993881702423096
+          ],
+          "ur_state": [
+            0.3513810932636261,
+            0.0961303785443306,
+            0.3049858510494232,
+            0.344158798456192,
+            0.18980297446250916,
+            0.12852653861045837,
+            0.1761963963508606,
+            0.07372879236936569,
+            0.21871386468410492,
+            0.1948678344488144,
+            0.09717889130115509,
+            0.07796541601419449,
+            0.05245520547032356,
+            0.12893660366535187,
+            0.0892486646771431,
+            0.328673779964447,
+            0.31847015023231506,
+            0.28961947560310364,
+            0.02907605841755867,
+            0.06988517194986343,
+            0.06580320000648499,
+            0.08996088057756424,
+            0.12729041278362274,
+            0.17321428656578064,
+            0.19116400182247162,
+            1.0288282632827759
+          ],
+          "cpk_d_disp": [
+            0.05393829196691513,
+            0.054951589554548264,
+            0.050992269068956375
+          ],
+          "cpk_d_fz": [
+            0.0001404315116815269
+          ]
+        }
+      },
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "bytes": 393115861,
+      "sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "step": 3000,
+      "configs": {
+        "hardware_shapes": {
+          "field": [
+            288,
+            384
+          ],
+          "field_ch": 8,
+          "keyframe_ds": [
+            144,
+            192
+          ],
+          "n_fingers": 2,
+          "wrench_dim": 6,
+          "wrist_ft_dim": 6,
+          "wrist_window_len": 31,
+          "ur_state_dim": 26,
+          "contact_state_dim": 11,
+          "action_dim": 7,
+          "chunk_horizon": 16,
+          "cpk_shape": [
+            36,
+            48
+          ]
+        },
+        "hardware_hash": "744c3acab95d0f9d",
+        "backbone": {
+          "model_channels": 2048,
+          "num_blocks": 28,
+          "num_heads": 16,
+          "patch_spatial": 2,
+          "patch_temporal": 1,
+          "in_channels": 16,
+          "out_channels": 16,
+          "adaln_lora_dim": 256,
+          "use_adaln_lora": true,
+          "crossattn_proj_in_channels": 100352,
+          "crossattn_emb_channels": 1024,
+          "use_crossattn_projection": true,
+          "pos_emb_cls": "rope3d",
+          "pos_emb_learnable": true,
+          "rope_h_extrapolation_ratio": 3.0,
+          "rope_w_extrapolation_ratio": 3.0,
+          "rope_t_extrapolation_ratio": 1.0,
+          "rope_enable_fps_modulation": false,
+          "use_wan_fp32_strategy": true,
+          "timestep_scale": 0.001,
+          "atten_backend": "torch",
+          "action_dim": 7,
+          "num_action_per_chunk": 12,
+          "frames_pix": 13,
+          "res_h": 256,
+          "res_w": 320,
+          "fps": 4.0,
+          "max_img_h": 256,
+          "max_img_w": 256,
+          "lat_ch": 16,
+          "spatial_comp": 8,
+          "temporal_comp": 4,
+          "rf_shift": 5.0,
+          "rf_logit_normal_mean": 0.0,
+          "rf_logit_normal_std": 1.0,
+          "text_emb_seq_len": 512,
+          "text_emb_dim": 100352
+        },
+        "model": {
+          "student": false,
+          "drop_video_at_inference": false,
+          "rope_time_mode": "time_true",
+          "cond_dropout_p": 0.1,
+          "action_t_max_of_two": true,
+          "use_action_adaln_intent": true,
+          "hht_dim": 256,
+          "contact_obs_frames": 1,
+          "nfe": 5,
+          "loss": {
+            "action": 1.0,
+            "video": 0.1,
+            "contact": 1.0,
+            "wrist": 0.5,
+            "event": 0.5,
+            "gate_bce": 0.2,
+            "sigma_reg": 0.01
+          },
+          "lora": {
+            "rank": 16,
+            "alpha": 16,
+            "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+            "dropout": 0.0
+          },
+          "acc": {
+            "d_acc": 256,
+            "d_e": 256,
+            "hidden": 512,
+            "react_hidden": 32,
+            "lambda_bias_init": 0.0,
+            "beta_init": 1.0,
+            "self_anticipation": "two_pass",
+            "gt_noise_scale": 0.1,
+            "alpha_entropy_weight": 0.0
+          },
+          "feature_align": false
+        },
+        "train": {
+          "run_name": "teacher_v5_batch0822",
+          "seed": 0,
+          "lr": 2e-05,
+          "lr_new_modules": 6e-05,
+          "weight_decay": 0.01,
+          "warmup_steps": 150,
+          "max_steps": 3000,
+          "batch_size": 4,
+          "grad_accum": 2,
+          "grad_clip": 1.0,
+          "ema_decay": 0.999,
+          "log_every": 1,
+          "ckpt_every": 500,
+          "eval_every": 500,
+          "num_workers": 24,
+          "activation_checkpointing": true,
+          "fp32_master": true,
+          "synthetic": false,
+          "tiny": false,
+          "device": "cuda",
+          "out_dir": "",
+          "tactile_pretrain_ckpt": "",
+          "freeze_tactile_steps": 0
+        },
+        "text_conditioning": {
+          "cache_path": "/workspace/phantom-v5/data/phantom-episodes/tasks/text_embeddings.pt",
+          "active": true,
+          "texts": [
+            "Carton",
+            "Carton_fail",
+            "egg",
+            "egg_fail",
+            "waffles",
+            "waffles_fail",
+            "whiteboard",
+            "whiteboard_fail"
+          ]
+        }
+      },
+      "ema_present": true,
+      "ema_tensor_count": 676,
+      "ema_elements": 27889205,
+      "ema_all_finite": true,
+      "normalizers": {
+        "mean": {
+          "fields": [
+            0.01038514543324709,
+            0.007930981926620007,
+            0.02242104522883892,
+            0.013288863934576511,
+            0.009501653723418713,
+            2.484502147126477e-06,
+            6.114034931670176e-06,
+            -5.660839451593347e-05
+          ],
+          "wrench": [
+            0.271145761013031,
+            0.6758014559745789,
+            -6.206960678100586,
+            -0.024128872901201248,
+            0.02098465897142887,
+            -0.006700299680233002
+          ],
+          "area": [
+            9.578930854797363
+          ],
+          "wrist_ft": [
+            -1.9681373834609985,
+            0.18758738040924072,
+            1.670883059501648,
+            0.11983009427785873,
+            -0.764369785785675,
+            -0.02251334674656391
+          ],
+          "action": [
+            6.4026116888271645e-06,
+            5.091031198389828e-05,
+            -9.892935486277565e-05,
+            -0.0005935337394475937,
+            9.01510939002037e-05,
+            -0.00024000444682314992,
+            0.42186254262924194
+          ],
+          "ur_state": [
+            -0.01392066664993763,
+            -1.4900270700454712,
+            1.4919638633728027,
+            0.5844753980636597,
+            1.414442539215088,
+            -3.0564486980438232,
+            0.0012176143936812878,
+            0.0004053793381899595,
+            0.002035086043179035,
+            0.0004061320796608925,
+            0.002552519552409649,
+            0.002912234514951706,
+            -0.3655286133289337,
+            -0.14117462933063507,
+            0.18723958730697632,
+            -1.6538605690002441,
+            -1.640643835067749,
+            1.0363627672195435,
+            0.00032514031045138836,
+            0.0002276301383972168,
+            -0.0010769631480798125,
+            -0.0009326677536591887,
+            -0.0004679395933635533,
+            -0.0036003636196255684,
+            0.354048490524292,
+            2.3956332206726074
+          ],
+          "cpk_d_disp": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "cpk_d_fz": [
+            0.0
+          ]
+        },
+        "std": {
+          "fields": [
+            0.10787658393383026,
+            0.10990317910909653,
+            0.10198453813791275,
+            0.08478551357984543,
+            0.07901926338672638,
+            4.462549986783415e-05,
+            4.6054272388573736e-05,
+            0.0002808630233630538
+          ],
+          "wrench": [
+            2.2578086853027344,
+            2.920393466949463,
+            9.090954780578613,
+            0.12599050998687744,
+            0.11366553604602814,
+            0.032959431409835815
+          ],
+          "area": [
+            17.078643798828125
+          ],
+          "wrist_ft": [
+            10.981828689575195,
+            11.965420722961426,
+            13.277647018432617,
+            2.307741165161133,
+            3.8162918090820312,
+            2.43320369720459
+          ],
+          "action": [
+            0.002923215739428997,
+            0.007169260177761316,
+            0.006723329424858093,
+            0.017536012455821037,
+            0.01634613424539566,
+            0.015911269932985306,
+            0.27993881702423096
+          ],
+          "ur_state": [
+            0.3513810932636261,
+            0.0961303785443306,
+            0.3049858510494232,
+            0.344158798456192,
+            0.18980297446250916,
+            0.12852653861045837,
+            0.1761963963508606,
+            0.07372879236936569,
+            0.21871386468410492,
+            0.1948678344488144,
+            0.09717889130115509,
+            0.07796541601419449,
+            0.05245520547032356,
+            0.12893660366535187,
+            0.0892486646771431,
+            0.328673779964447,
+            0.31847015023231506,
+            0.28961947560310364,
+            0.02907605841755867,
+            0.06988517194986343,
+            0.06580320000648499,
+            0.08996088057756424,
+            0.12729041278362274,
+            0.17321428656578064,
+            0.19116400182247162,
+            1.0288282632827759
+          ],
+          "cpk_d_disp": [
+            0.05393829196691513,
+            0.054951589554548264,
+            0.050992269068956375
+          ],
+          "cpk_d_fz": [
+            0.0001404315116815269
+          ]
+        }
+      },
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "bytes": 393116181,
+      "sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "step": 3000,
+      "configs": {
+        "hardware_shapes": {
+          "field": [
+            288,
+            384
+          ],
+          "field_ch": 8,
+          "keyframe_ds": [
+            144,
+            192
+          ],
+          "n_fingers": 2,
+          "wrench_dim": 6,
+          "wrist_ft_dim": 6,
+          "wrist_window_len": 31,
+          "ur_state_dim": 26,
+          "contact_state_dim": 11,
+          "action_dim": 7,
+          "chunk_horizon": 16,
+          "cpk_shape": [
+            36,
+            48
+          ]
+        },
+        "hardware_hash": "72a4dd674113afd0",
+        "backbone": {
+          "model_channels": 2048,
+          "num_blocks": 28,
+          "num_heads": 16,
+          "patch_spatial": 2,
+          "patch_temporal": 1,
+          "in_channels": 16,
+          "out_channels": 16,
+          "adaln_lora_dim": 256,
+          "use_adaln_lora": true,
+          "crossattn_proj_in_channels": 100352,
+          "crossattn_emb_channels": 1024,
+          "use_crossattn_projection": true,
+          "pos_emb_cls": "rope3d",
+          "pos_emb_learnable": true,
+          "rope_h_extrapolation_ratio": 3.0,
+          "rope_w_extrapolation_ratio": 3.0,
+          "rope_t_extrapolation_ratio": 1.0,
+          "rope_enable_fps_modulation": false,
+          "use_wan_fp32_strategy": true,
+          "timestep_scale": 0.001,
+          "atten_backend": "torch",
+          "action_dim": 7,
+          "num_action_per_chunk": 12,
+          "frames_pix": 13,
+          "res_h": 256,
+          "res_w": 320,
+          "fps": 4.0,
+          "max_img_h": 256,
+          "max_img_w": 256,
+          "lat_ch": 16,
+          "spatial_comp": 8,
+          "temporal_comp": 4,
+          "rf_shift": 5.0,
+          "rf_logit_normal_mean": 0.0,
+          "rf_logit_normal_std": 1.0,
+          "text_emb_seq_len": 512,
+          "text_emb_dim": 100352
+        },
+        "model": {
+          "student": false,
+          "drop_video_at_inference": false,
+          "rope_time_mode": "time_true",
+          "cond_dropout_p": 0.0,
+          "action_t_max_of_two": false,
+          "contact_nll_beta": 0.5,
+          "contact_nll_detach_weight": false,
+          "wrist_region_mse": true,
+          "contact_self_forcing": false,
+          "action_noise_per_strip": true,
+          "mask_wrist": false,
+          "use_action_adaln_intent": true,
+          "hht_dim": 256,
+          "contact_obs_frames": 1,
+          "nfe": 5,
+          "loss": {
+            "action": 1.0,
+            "video": 0.1,
+            "contact": 1.0,
+            "wrist": 0.5,
+            "event": 0.5,
+            "gate_bce": 0.2,
+            "sigma_reg": 0.01
+          },
+          "lora": {
+            "rank": 16,
+            "alpha": 16,
+            "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+            "dropout": 0.0
+          },
+          "acc": {
+            "d_acc": 256,
+            "d_e": 256,
+            "hidden": 512,
+            "react_hidden": 32,
+            "lambda_bias_init": 0.0,
+            "beta_init": 1.0,
+            "self_anticipation": "two_pass",
+            "gt_noise_scale": 0.1,
+            "alpha_entropy_weight": 0.0
+          },
+          "feature_align": false
+        },
+        "train": {
+          "run_name": "teacher_v5_ftA",
+          "seed": 0,
+          "lr": 2e-05,
+          "lr_new_modules": 6e-05,
+          "weight_decay": 0.01,
+          "warmup_steps": 150,
+          "max_steps": 3000,
+          "batch_size": 4,
+          "grad_accum": 2,
+          "grad_clip": 1.0,
+          "ema_decay": 0.995,
+          "log_every": 1,
+          "ckpt_every": 500,
+          "eval_every": 500,
+          "num_workers": 12,
+          "activation_checkpointing": true,
+          "fp32_master": true,
+          "synthetic": false,
+          "tiny": false,
+          "device": "cuda",
+          "out_dir": "",
+          "tactile_pretrain_ckpt": "",
+          "freeze_tactile_steps": 0,
+          "event_band_weight": 0.0,
+          "split": "train",
+          "grasp_frac": 0.3,
+          "photo_aug": 1.0,
+          "commit_band_weight": 1.0
+        },
+        "text_conditioning": {
+          "cache_path": "/workspace/phantom-v5/data/phantom-episodes/tasks/text_embeddings.pt",
+          "active": true,
+          "texts": [
+            "Carton",
+            "Carton_fail",
+            "egg",
+            "egg_fail",
+            "waffles",
+            "waffles_fail",
+            "whiteboard",
+            "whiteboard_fail"
+          ]
+        }
+      },
+      "ema_present": true,
+      "ema_tensor_count": 676,
+      "ema_elements": 27889205,
+      "ema_all_finite": true,
+      "normalizers": {
+        "mean": {
+          "fields": [
+            0.01038514543324709,
+            0.007930981926620007,
+            0.02242104522883892,
+            0.013288863934576511,
+            0.009501653723418713,
+            2.484502147126477e-06,
+            6.114034931670176e-06,
+            -5.660839451593347e-05
+          ],
+          "wrench": [
+            0.271145761013031,
+            0.6758014559745789,
+            -6.206960678100586,
+            -0.024128872901201248,
+            0.02098465897142887,
+            -0.006700299680233002
+          ],
+          "area": [
+            9.578930854797363
+          ],
+          "wrist_ft": [
+            -1.9681373834609985,
+            0.18758738040924072,
+            1.670883059501648,
+            0.11983009427785873,
+            -0.764369785785675,
+            -0.02251334674656391
+          ],
+          "action": [
+            6.4026116888271645e-06,
+            5.091031198389828e-05,
+            -9.892935486277565e-05,
+            -0.0005935337394475937,
+            9.01510939002037e-05,
+            -0.00024000444682314992,
+            0.42186254262924194
+          ],
+          "ur_state": [
+            -0.01392066664993763,
+            -1.4900270700454712,
+            1.4919638633728027,
+            0.5844753980636597,
+            1.414442539215088,
+            -3.0564486980438232,
+            0.0012176143936812878,
+            0.0004053793381899595,
+            0.002035086043179035,
+            0.0004061320796608925,
+            0.002552519552409649,
+            0.002912234514951706,
+            -0.3655286133289337,
+            -0.14117462933063507,
+            0.18723958730697632,
+            -1.6538605690002441,
+            -1.640643835067749,
+            1.0363627672195435,
+            0.00032514031045138836,
+            0.0002276301383972168,
+            -0.0010769631480798125,
+            -0.0009326677536591887,
+            -0.0004679395933635533,
+            -0.0036003636196255684,
+            0.354048490524292,
+            2.3956332206726074
+          ],
+          "cpk_d_disp": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "cpk_d_fz": [
+            0.0
+          ]
+        },
+        "std": {
+          "fields": [
+            0.10787658393383026,
+            0.10990317910909653,
+            0.10198453813791275,
+            0.08478551357984543,
+            0.07901926338672638,
+            4.462549986783415e-05,
+            4.6054272388573736e-05,
+            0.0002808630233630538
+          ],
+          "wrench": [
+            2.2578086853027344,
+            2.920393466949463,
+            9.090954780578613,
+            0.12599050998687744,
+            0.11366553604602814,
+            0.032959431409835815
+          ],
+          "area": [
+            17.078643798828125
+          ],
+          "wrist_ft": [
+            10.981828689575195,
+            11.965420722961426,
+            13.277647018432617,
+            2.307741165161133,
+            3.8162918090820312,
+            2.43320369720459
+          ],
+          "action": [
+            0.002923215739428997,
+            0.007169260177761316,
+            0.006723329424858093,
+            0.017536012455821037,
+            0.01634613424539566,
+            0.015911269932985306,
+            0.27993881702423096
+          ],
+          "ur_state": [
+            0.3513810932636261,
+            0.0961303785443306,
+            0.3049858510494232,
+            0.344158798456192,
+            0.18980297446250916,
+            0.12852653861045837,
+            0.1761963963508606,
+            0.07372879236936569,
+            0.21871386468410492,
+            0.1948678344488144,
+            0.09717889130115509,
+            0.07796541601419449,
+            0.05245520547032356,
+            0.12893660366535187,
+            0.0892486646771431,
+            0.328673779964447,
+            0.31847015023231506,
+            0.28961947560310364,
+            0.02907605841755867,
+            0.06988517194986343,
+            0.06580320000648499,
+            0.08996088057756424,
+            0.12729041278362274,
+            0.17321428656578064,
+            0.19116400182247162,
+            1.0288282632827759
+          ],
+          "cpk_d_disp": [
+            0.05393829196691513,
+            0.054951589554548264,
+            0.050992269068956375
+          ],
+          "cpk_d_fz": [
+            0.0001404315116815269
+          ]
+        }
+      },
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    }
+  ]
+}

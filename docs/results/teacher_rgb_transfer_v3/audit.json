@@ -1,0 +1,575 @@
+{
+  "status": "passed",
+  "audited_unix_s": 1788745799.481914,
+  "remote_root": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_rgb_transfer_v3",
+  "checks": {
+    "completed_six_calls": true,
+    "exact_six_output_names": true,
+    "results_manifest_sha": true,
+    "ema_teacher": true,
+    "checkpoint_identity": true,
+    "settings": true,
+    "saved_request_loading_identity": true,
+    "six_current_native_source_hashes": true,
+    "checkpoint_current_file_sha": true,
+    "hardware_current_file_sha": true,
+    "client_entrypoint_hash": true,
+    "client_import_hash": true,
+    "source_observation_file_sha": true,
+    "source_observation_metadata_sha": true,
+    "initial_state_source_sha": true,
+    "native_episode_meta_sha": true,
+    "actual_native_rgb_source_hash": true,
+    "actual_native_rgb_timestamp_causal": true,
+    "native_wire_field_contract": true,
+    "rendered_snapshot.npz_file_sha": true,
+    "real_rgb_snapshot.npz_file_sha": true,
+    "all_eight_non_rgb_fields_identical": true,
+    "source_rendered_rgb_identical": true,
+    "real_rgb_hash": true,
+    "real_rgb_differs": true,
+    "all_call_semantics": true,
+    "903101_rgb_swap_metrics": true,
+    "903101_rendered_repeat_control_metrics": true,
+    "903102_rgb_swap_metrics": true,
+    "903102_rendered_repeat_control_metrics": true,
+    "owned_server_exited": true,
+    "owned_orchestrator_exited": true,
+    "native_ownership_acknowledged": true,
+    "owned_port_no_listener": true,
+    "screen_completed_before_calls": true,
+    "confirmation_completed_before_calls": true
+  },
+  "source_checks": {
+    "phantom/inference/policy.py": {
+      "expected": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "current": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "match": true
+    },
+    "phantom/inference/remote.py": {
+      "expected": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "current": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "match": true
+    },
+    "phantom/train/common.py": {
+      "expected": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+      "current": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+      "match": true
+    },
+    "phantom/train/builder.py": {
+      "expected": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "current": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "match": true
+    },
+    "phantom/config/model.py": {
+      "expected": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "current": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "match": true
+    },
+    "phantom/model/rf.py": {
+      "expected": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+      "current": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+      "match": true
+    }
+  },
+  "non_rgb_fields": {
+    "t": {
+      "dtype": "float64",
+      "shape": [],
+      "hashes": {
+        "saved_request": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c",
+        "rendered_snapshot.npz": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c",
+        "real_rgb_snapshot.npz": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "wrist_window": {
+      "dtype": "float32",
+      "shape": [
+        31,
+        6
+      ],
+      "hashes": {
+        "saved_request": "b889ff3311ae85059866930eb504d467f028b4be80ed92cfcc9923e413f30d35",
+        "rendered_snapshot.npz": "b889ff3311ae85059866930eb504d467f028b4be80ed92cfcc9923e413f30d35",
+        "real_rgb_snapshot.npz": "b889ff3311ae85059866930eb504d467f028b4be80ed92cfcc9923e413f30d35"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "ur_state": {
+      "dtype": "float32",
+      "shape": [
+        26
+      ],
+      "hashes": {
+        "saved_request": "25ba4ba67e0ffaefd03a4f2256561f8aeca33e007b72a4393e8abad405a8d2e5",
+        "rendered_snapshot.npz": "25ba4ba67e0ffaefd03a4f2256561f8aeca33e007b72a4393e8abad405a8d2e5",
+        "real_rgb_snapshot.npz": "25ba4ba67e0ffaefd03a4f2256561f8aeca33e007b72a4393e8abad405a8d2e5"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "gel": {
+      "dtype": "uint8",
+      "shape": [
+        2,
+        288,
+        384
+      ],
+      "hashes": {
+        "saved_request": "6f25530330e2e7a50026d3392f85d02e177fdb3112a74c978d3efa71e5886f1f",
+        "rendered_snapshot.npz": "6f25530330e2e7a50026d3392f85d02e177fdb3112a74c978d3efa71e5886f1f",
+        "real_rgb_snapshot.npz": "6f25530330e2e7a50026d3392f85d02e177fdb3112a74c978d3efa71e5886f1f"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "fields": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        144,
+        192,
+        8
+      ],
+      "hashes": {
+        "saved_request": "e9d89bac5aee79a57bc01b406b8769e09eee85a46f6965f89d0e925deb74db50",
+        "rendered_snapshot.npz": "e9d89bac5aee79a57bc01b406b8769e09eee85a46f6965f89d0e925deb74db50",
+        "real_rgb_snapshot.npz": "e9d89bac5aee79a57bc01b406b8769e09eee85a46f6965f89d0e925deb74db50"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "contact_state": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        11
+      ],
+      "hashes": {
+        "saved_request": "7999434c1477b0881813306fcb77798a5aa2e54442be79729d6cc644f3fb4a08",
+        "rendered_snapshot.npz": "7999434c1477b0881813306fcb77798a5aa2e54442be79729d6cc644f3fb4a08",
+        "real_rgb_snapshot.npz": "7999434c1477b0881813306fcb77798a5aa2e54442be79729d6cc644f3fb4a08"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "reactive": {
+      "dtype": "float64",
+      "shape": [],
+      "hashes": {
+        "saved_request": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20",
+        "rendered_snapshot.npz": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20",
+        "real_rgb_snapshot.npz": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20"
+      },
+      "equal": true,
+      "manifest_match": true
+    },
+    "prev_chunk": {
+      "dtype": "float32",
+      "shape": [
+        16,
+        7
+      ],
+      "hashes": {
+        "saved_request": "dd5c6913dbf630cc9e0fcbd99ac088df85919ca067b1849295396e2b521eeea8",
+        "rendered_snapshot.npz": "dd5c6913dbf630cc9e0fcbd99ac088df85919ca067b1849295396e2b521eeea8",
+        "real_rgb_snapshot.npz": "dd5c6913dbf630cc9e0fcbd99ac088df85919ca067b1849295396e2b521eeea8"
+      },
+      "equal": true,
+      "manifest_match": true
+    }
+  },
+  "calls": [
+    {
+      "seed": 903101,
+      "variant": "rendered",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.168164846021682,
+      "action_grid_start_s": 1.428164846021682,
+      "head10_xyz_delta_m": [
+        -0.02002074185293168,
+        0.041357416892424226,
+        -0.029878049390390515
+      ],
+      "head16_xyz_delta_m": [
+        -0.026941653690300882,
+        0.06769134080968797,
+        -0.05462798895314336
+      ],
+      "head10_mean_closure": 0.35305742025375364,
+      "closure_min_max": [
+        0.3342999815940857,
+        0.3895949721336365
+      ],
+      "k_pick": 0
+    },
+    {
+      "seed": 903101,
+      "variant": "real_rgb",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.1453178679803386,
+      "action_grid_start_s": 1.4053178679803386,
+      "head10_xyz_delta_m": [
+        -0.02050904033239931,
+        0.04179832339286804,
+        -0.027772567234933376
+      ],
+      "head16_xyz_delta_m": [
+        -0.027779029915109277,
+        0.06704925559461117,
+        -0.052250827895477414
+      ],
+      "head10_mean_closure": 0.359483414888382,
+      "closure_min_max": [
+        0.34195587038993835,
+        0.3961690664291382
+      ],
+      "k_pick": 0
+    },
+    {
+      "seed": 903101,
+      "variant": "rendered_repeat",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.1391918320441619,
+      "action_grid_start_s": 1.3991918320441619,
+      "head10_xyz_delta_m": [
+        -0.02002074185293168,
+        0.041357416892424226,
+        -0.029878049390390515
+      ],
+      "head16_xyz_delta_m": [
+        -0.026941653690300882,
+        0.06769134080968797,
+        -0.05462798895314336
+      ],
+      "head10_mean_closure": 0.35305742025375364,
+      "closure_min_max": [
+        0.3342999815940857,
+        0.3895949721336365
+      ],
+      "k_pick": 0
+    },
+    {
+      "seed": 903102,
+      "variant": "real_rgb",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.1417981509584934,
+      "action_grid_start_s": 1.4017981509584934,
+      "head10_xyz_delta_m": [
+        -0.0237981213722378,
+        0.07613754132762551,
+        -0.03487894427962601
+      ],
+      "head16_xyz_delta_m": [
+        -0.02914864179911092,
+        0.10811651591211557,
+        -0.0692273962777108
+      ],
+      "head10_mean_closure": 0.3973721623420715,
+      "closure_min_max": [
+        0.38099056482315063,
+        0.40919163823127747
+      ],
+      "k_pick": 0
+    },
+    {
+      "seed": 903102,
+      "variant": "rendered",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.1777636400656775,
+      "action_grid_start_s": 1.4377636400656775,
+      "head10_xyz_delta_m": [
+        -0.022334409528411925,
+        0.07711647031828761,
+        -0.039508136222139
+      ],
+      "head16_xyz_delta_m": [
+        -0.02681871847016737,
+        0.11120396154001355,
+        -0.0726964131463319
+      ],
+      "head10_mean_closure": 0.3992997407913208,
+      "closure_min_max": [
+        0.384522408246994,
+        0.4114103615283966
+      ],
+      "k_pick": 0
+    },
+    {
+      "seed": 903102,
+      "variant": "rendered_repeat",
+      "checks": {
+        "identity": true,
+        "finite_shape": true,
+        "same_tcp": true,
+        "same_request_time": true,
+        "head10_endpoint": true,
+        "full16_endpoint": true,
+        "action_grid_10hz": true
+      },
+      "native_latency_s": 1.1854438899317756,
+      "action_grid_start_s": 1.4454438899317756,
+      "head10_xyz_delta_m": [
+        -0.022334409528411925,
+        0.07711647031828761,
+        -0.039508136222139
+      ],
+      "head16_xyz_delta_m": [
+        -0.02681871847016737,
+        0.11120396154001355,
+        -0.0726964131463319
+      ],
+      "head10_mean_closure": 0.3992997407913208,
+      "closure_min_max": [
+        0.384522408246994,
+        0.4114103615283966
+      ],
+      "k_pick": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "seed": 903101,
+      "rgb_swap": {
+        "xyz_step_rmse_m": 0.00017409519493374333,
+        "rotvec_step_rmse_rad": 0.0007833140365471011,
+        "closure_rmse": 0.007215006176448642,
+        "endpoint_10step_xyz_difference_m": 0.002205875417674123,
+        "endpoint_16step_xyz_difference_m": 0.002600842533085658,
+        "stored_action_values_equal": false,
+        "actions_max_abs_difference": 0.011834502220153809
+      },
+      "rendered_repeat_control": {
+        "xyz_step_rmse_m": 0.0,
+        "rotvec_step_rmse_rad": 0.0,
+        "closure_rmse": 0.0,
+        "endpoint_10step_xyz_difference_m": 0.0,
+        "endpoint_16step_xyz_difference_m": 0.0,
+        "stored_action_values_equal": true,
+        "actions_max_abs_difference": 0.0
+      },
+      "swap_exceeds_repeat": {
+        "xyz_step_rmse_m": true,
+        "closure_rmse": true,
+        "endpoint_10step_xyz_difference_m": true
+      }
+    },
+    {
+      "seed": 903102,
+      "rgb_swap": {
+        "xyz_step_rmse_m": 0.00030980481829863865,
+        "rotvec_step_rmse_rad": 0.0007848819179962711,
+        "closure_rmse": 0.003173407678459096,
+        "endpoint_10step_xyz_difference_m": 0.004952788955477978,
+        "endpoint_16step_xyz_difference_m": 0.005195658621220962,
+        "stored_action_values_equal": false,
+        "actions_max_abs_difference": 0.005790501832962036
+      },
+      "rendered_repeat_control": {
+        "xyz_step_rmse_m": 0.0,
+        "rotvec_step_rmse_rad": 0.0,
+        "closure_rmse": 0.0,
+        "endpoint_10step_xyz_difference_m": 0.0,
+        "endpoint_16step_xyz_difference_m": 0.0,
+        "stored_action_values_equal": true,
+        "actions_max_abs_difference": 0.0
+      },
+      "swap_exceeds_repeat": {
+        "xyz_step_rmse_m": true,
+        "closure_rmse": true,
+        "endpoint_10step_xyz_difference_m": true
+      }
+    }
+  ],
+  "cleanup": {
+    "owned_server": {
+      "pid": 1576780,
+      "exists": false,
+      "command": null
+    },
+    "pid": {
+      "pid": 1576778,
+      "exists": false,
+      "command": null
+    }
+  },
+  "port_listeners": [],
+  "stage_completion": {
+    "screen": {
+      "selection_status": "complete_valid_matched_stage",
+      "available_trials": 32,
+      "controller": {
+        "pid": 1379887,
+        "exists": false,
+        "command": null
+      },
+      "selection_sha_matches_guard": true,
+      "progress_sha_matches_guard": true
+    },
+    "confirmation": {
+      "selection_status": "complete_valid_matched_stage",
+      "available_trials": 24,
+      "controller": {
+        "pid": 1473896,
+        "exists": false,
+        "command": null
+      },
+      "selection_sha_matches_guard": true,
+      "progress_sha_matches_guard": true
+    }
+  },
+  "identity": {
+    "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "weights": "EMA",
+    "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+    "backbone_sha256": "b2e993cea3e242bc72288612488fe91770a1c073c98c3fec6d610411ffc30646",
+    "text_cache_sha256": "bef6ad98d2925799c2768084cb5886c8770627f861924088a8a721316883453b",
+    "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3",
+    "effective": {
+      "nfe": 1,
+      "guidance": 1.0,
+      "k_seeds": 4,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "drop_video": false,
+      "task_text": "waffles",
+      "close_p": 0.5
+    }
+  },
+  "limits": [
+    "One saved request from the halted original study, including its original non-RGB proxy/state limitations.",
+    "Real image includes small arm motion and estimated pose/camera mismatch; not a calibrated optical intervention.",
+    "Only raw RGB changes; teacher predictions can change jointly through video/contact/action heads.",
+    "Paired proposed chunks are not executed, safety-filtered, or scored as physical success.",
+    "Two seeds and repeat controls characterize this input only; no hardware causality or model selection claim."
+  ],
+  "backbone_text_normalizer_verification": "compared saved-request and dedicated-server metadata; no model reload",
+  "small_artifacts": {
+    "orchestration/status.json": {
+      "sha256": "259a1243ca9b771e6c29e861f7cc97dc12a26cf2401472c7fe91452185513a56",
+      "bytes": 140
+    },
+    "launcher.json": {
+      "sha256": "dfc91bbca42a4f31f5a76c360518cb04fa073cc91234fd7fc0d5a3c5c1b80337",
+      "bytes": 529
+    },
+    "server/command.json": {
+      "sha256": "f35fae7b5b6faed00a641075f738ef1f349b6e7f48e45323bb2a5ade5baf22ea",
+      "bytes": 827
+    },
+    "server/server.json": {
+      "sha256": "8519d9071f35fa5e4b0fe23683ae07ddb97983b0b1aa3b0b55480ada13011f75",
+      "bytes": 3631
+    },
+    "orchestration/client_command.json": {
+      "sha256": "0fb86c90ef83b48b7d7a75f43b8489095d73c549ff21babdea3ac13268df4bcd",
+      "bytes": 1007
+    },
+    "execution/manifest.json": {
+      "sha256": "9dbd2885adbdac2bf63e2d4addb9658ee48669c018e0641eb2ecd63b2ad97ebd",
+      "bytes": 13237
+    },
+    "execution/results.json": {
+      "sha256": "96bf00e5443fb27fe1a4de4a75e8330d51afb58d6758c2ca6767427b1927c57f",
+      "bytes": 2144
+    },
+    "execution/dedicated_server_ready.json": {
+      "sha256": "92910efa196da1434983d5895af4bfcf65f1270181dcb3ce994dc9ea3967b07c",
+      "bytes": 3629
+    },
+    "execution/live_server_info.json": {
+      "sha256": "121bb14e62b72d15fc29e59b2fdd9e7da577ba4352ed34b15cd197b573228c30",
+      "bytes": 513
+    },
+    "execution/preconnection_info.json": {
+      "sha256": "70296a7cdee0bbc15356e87db6e7944d9d9b2c1889faab598a9c32c3a22a3843",
+      "bytes": 283
+    },
+    "execution/ownership.json": {
+      "sha256": "2d3020ae817bd121a2c0fb5d1179fe44ee6986b8756ac592d37fe3ce10eab306",
+      "bytes": 276
+    },
+    "execution/completed_study_guard.json": {
+      "sha256": "af8597575a3e154b8ca7558be1059c4d644c2b828d458a094b05c206cfa9b779",
+      "bytes": 411
+    },
+    "execution/seed903101_rendered.json": {
+      "sha256": "93aa989d940327425b35f252251f64c147b8bd11ded9d95369ed689fa3b22d07",
+      "bytes": 6167
+    },
+    "execution/seed903101_real_rgb.json": {
+      "sha256": "2e494ee8dfc0b41602898ee0b630a916041f114a879d8c47da555b1b79b4d6d8",
+      "bytes": 6159
+    },
+    "execution/seed903101_rendered_repeat.json": {
+      "sha256": "32ec23861b161efefd4874626f93be4c86f7525853914065f95a940ce97204fd",
+      "bytes": 6178
+    },
+    "execution/seed903102_real_rgb.json": {
+      "sha256": "219e929bba73f17dffc096dda24b3fb4add338e985b4c418ef46cc208c192717",
+      "bytes": 6155
+    },
+    "execution/seed903102_rendered.json": {
+      "sha256": "066bde6ecaf396568ae4b865c3e5fee92db815af0cd8d7ff0c527c068161f06f",
+      "bytes": 6148
+    },
+    "execution/seed903102_rendered_repeat.json": {
+      "sha256": "8f17110cbc6dec6667f78e7938fa33d8c14b240622885cf9f9ea8b17fddfd0ab",
+      "bytes": 6155
+    }
+  },
+  "audit_helper_sha256": "221cf57540c2cd42100c4b2daf994e2204ccea0e85e2b3737d69f2e34eccbaa4",
+  "endpoint_reconstruction_tolerance_m": 1e-06,
+  "numeric_metric_recomputation_tolerance": 1e-12,
+  "protocol_validation": {
+    "focused_tests_passed": 18,
+    "actual_native_teacher_batch_preprocessing": "CPU, no model load/inference; Python scalar t/reactive, seven NumPy array fields",
+    "preserved_failures": [
+      "teacher_rgb_transfer_v1: self-ownership check, zero replan requests",
+      "teacher_rgb_transfer_v2: first replan failed in preprocessing, zero model proposals"
+    ]
+  }
+}

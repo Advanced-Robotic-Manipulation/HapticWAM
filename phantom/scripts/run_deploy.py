@@ -24,6 +24,8 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
+import json
 import logging
 import select
 import sys
@@ -323,6 +325,10 @@ def build_parser() -> argparse.ArgumentParser:
                          "for the success auto-stop")
     ap.add_argument("--lift-complete-hold", type=float, default=0.4,
                     help="seconds the grasp+height condition must hold")
+    ap.add_argument("--placement-release-config", type=Path, default=None,
+                    help="opt-in JSON TCP-volume policy release/finish controller; "
+                         "requires native load latch, no object-state oracle; "
+                         "controller completion is not task success")
     ap.add_argument("--no-grip-latch", action="store_true",
                     help="disable the aperture latch (commanded closure may "
                          "not decrease once both pads carry load)")
@@ -575,6 +581,9 @@ def persist_stop(recorder, res) -> None:
         doc = {"stopped_reason": res.stopped_reason, "n_replans": res.n_replans,
                "safety_events": res.events, "stop_state": res.stop_state,
                "fatal_reason": res.fatal_reason}
+        if getattr(res, "completed_reason", None) is not None:
+            doc["completed_reason"] = res.completed_reason
+            doc["completed_at_s"] = res.completed_at_s
         (ep / "stop.json").write_text(_json.dumps(doc, indent=1), encoding="utf-8")
         # the runtime already tags `stop:<reason>` (a second, differently
         # spelled copy for a None reason survived relabel's exact-match dedup)
@@ -795,6 +804,18 @@ def main(argv=None) -> int:
     log.info("executor TCP speed cap: %.2f m/s", hw.arm.limits.tcp_speed_m_s)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
+    release_config = None
+    if args.placement_release_config is not None:
+        from phantom.deploy.release_controller import make_release_controller
+        release_spec = json.loads(args.placement_release_config.read_text())
+        release_controller = make_release_controller(release_spec, hw)
+        release_config = release_controller.config
+        deploy_overrides["placement_release"] = release_config.to_dict()
+        deploy_overrides["placement_release_variant"] = release_controller.variant
+        deploy_overrides["placement_release_config_sha256"] = hashlib.sha256(
+            args.placement_release_config.read_bytes()).hexdigest()
+        deploy_overrides["placement_veto_feedback"] = "current measured delivery feedback"
+
     out_root = Path(args.out) if args.out else \
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
     rc = preflight_disk(out_root)
@@ -942,7 +963,8 @@ def main(argv=None) -> int:
                            parity_fixes=args.parity_fixes, veto=veto,
                            base_hw=base_hw, open_aperture=open_aperture,
                            deploy_overrides=deploy_overrides,
-                           max_play_steps=(args.max_play_steps or None)) as rt:
+                           max_play_steps=(args.max_play_steps or None),
+                           release_config=release_config) as rt:
         for i in range(args.episodes):
             # ONE seed per episode, drawn before anything random happens: the
             # sampler noise AND the homing jitter come from it. The jitter used

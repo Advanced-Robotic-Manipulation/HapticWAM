@@ -1,0 +1,46 @@
+{
+  "captured_at_utc": "2026-09-06T23:02:17.929279+00:00",
+  "repo_head": "0259ed3355f2ad3078778e7cc347b100775e06d3",
+  "files": [
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/data/schema.py",
+      "sha256": "5b95795682596cfc7a53c3bcf18a1b8814f99323762bda43e516dd757ca89951",
+      "bytes": 11994
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/data/episode_store.py",
+      "sha256": "6fb45f36729e6d3e54eb4f9208b19fc5025f5ee769857392c2b2864671e4f8be",
+      "bytes": 9362
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/config/model.py",
+      "sha256": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "bytes": 9064
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/tools/rig/MODELS.tsv",
+      "sha256": "8158d26d1ca2553ae36967955583f0aa333d41b7c265e1396f8c76b43b2c92ea",
+      "bytes": 960
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/tools/rig/PICK.sh",
+      "sha256": "9b8b9d320d17ea0f555d25bd0167bd4a117ecc3da9b8b03fba02e5b49c7663df",
+      "bytes": 5163
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/tools/rig/GO_ANY.sh",
+      "sha256": "9a7065403c09a0aa82edcddc5c1cdf06951d75b962aab576caf43e2d28e79169",
+      "bytes": 947
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/data/val_eval/manifests/all.jsonl",
+      "sha256": "e2319f318adda4b541bce800709eb79bc29e6844ceca6e7edb589d0b62337cde",
+      "bytes": 250530
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/data/val124/manifests/all.jsonl",
+      "sha256": "7a553b49e101267fb1b9a3c57c853c101b86a2704fc05df59eae72bea049d625",
+      "bytes": 24037
+    }
+  ]
+}

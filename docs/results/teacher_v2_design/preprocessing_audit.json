@@ -1,0 +1,373 @@
+{
+  "written_at_utc": "2026-09-07T00:21:59.123041+00:00",
+  "status": "PASS for the three named pre-v6 teacher checkpoints; no active-study change indicated",
+  "scope": "Read-only source and saved metadata/NPZ audit during the immutable corrected study. No checkpoint reload, model construction, GPU call, hardware connection, source/runtime/config mutation, or trial rescore.",
+  "study": {
+    "id": "teacher_robustness_v2_delivery",
+    "status_at_audit": "frozen",
+    "frozen_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+    "protocol_path": "configs/sim/teacher_v2_delivery_protocol.json",
+    "protocol_sha256": "5cba45bfb944d621a2b5ffc2850366aba83c60b0c95f013b3593d37fc5ff8b70",
+    "scored_runs_modified": false
+  },
+  "checkpoint_metadata_artifact_sha256": "242280b74216c2be7886d148f46eda1992335cf91e426198996c51cacc7d1500",
+  "checkpoint_metadata_original_inspection_utc": "2026-09-06T22:57:09.943019+00:00",
+  "checkpoints": [
+    {
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "metadata_artifact": "docs/results/teacher_v2_design/teacher_payloads.json",
+      "saved_wrench_baseline_rows_key_present": false,
+      "effective_wrench_baseline_rows": 0,
+      "mask_wrist_resolved": false,
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    },
+    {
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "metadata_artifact": "docs/results/teacher_v2_design/teacher_payloads.json",
+      "saved_wrench_baseline_rows_key_present": false,
+      "effective_wrench_baseline_rows": 0,
+      "mask_wrist_resolved": false,
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    },
+    {
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "metadata_artifact": "docs/results/teacher_v2_design/teacher_payloads.json",
+      "saved_wrench_baseline_rows_key_present": false,
+      "effective_wrench_baseline_rows": 0,
+      "mask_wrist_resolved": false,
+      "normalizers_canonical_json_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48"
+    }
+  ],
+  "actually_read_server_metadata": [
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/servers/00_start_block_1__fta1500_nfe1_k4_1788739416501032073/server.json",
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "weights": "EMA",
+      "system": "teacher",
+      "wrench_baseline_rows": 0,
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "file_sha256": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/servers/01_start_block_1__fta3000_nfe1_k4_1788739645512060747/server.json",
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "weights": "EMA",
+      "system": "teacher",
+      "wrench_baseline_rows": 0,
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "file_sha256": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/servers/02_start_block_1__v5_6_nfe1_k4_1788739875825079273/server.json",
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "weights": "EMA",
+      "system": "teacher",
+      "wrench_baseline_rows": 0,
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "file_sha256": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/servers/03_start_block_1__fta1500_nfe5_k1_1788739976665882789/server.json",
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "weights": "EMA",
+      "system": "teacher",
+      "wrench_baseline_rows": 0,
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "file_sha256": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/servers/04_start_block_2__fta3000_nfe1_k4_1788740075167768886/server.json",
+      "checkpoint_path": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "weights": "EMA",
+      "system": "teacher",
+      "wrench_baseline_rows": 0,
+      "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+      "file_sha256": null
+    }
+  ],
+  "actually_read_observations": [
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903101/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": {
+        "gel": true,
+        "fields_keyframes_after_float32_cast": true,
+        "contact_state_wrench": true
+      }
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe1_k4__start_1787395928__seed903102/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903101/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta1500_nfe5_k1__start_1787395928__seed903102/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903101/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": {
+        "gel": true,
+        "fields_keyframes_after_float32_cast": true,
+        "contact_state_wrench": true
+      }
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395928__seed903102/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903101/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903101/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 3.8613854869140596e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903102/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/fta3000_nfe1_k4__start_1787395963__seed903102/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 3.8613854869140596e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": null
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101/observations/0000.npz",
+      "policy_info_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787395928__seed903101/policy_info.json",
+      "file_sha256": null,
+      "wrench_baseline_rows_policy_info": 0,
+      "wrist_max_abs_error_against_float64_initial_bias": 5.394639472910967e-07,
+      "both_pads_initial_contact_area": 0.0,
+      "exact_measured_baseline_check": {
+        "gel": true,
+        "fields_keyframes_after_float32_cast": true,
+        "contact_state_wrench": true
+      }
+    }
+  ],
+  "uncollected_hash_note": "Server JSON and observation NPZ file hashes were not computed in this audit. Their exact read paths are retained; checkpoint, normalizer, baseline, protocol and local source hashes are recorded where known.",
+  "baseline": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/aug22_5928_no_contact_sensor_baseline.npz",
+    "sha256": "9f8c2f302c1cb52bdb186bbdcc0dc5c9ed2a4533c9e03670eb1ea1585a225885"
+  },
+  "observed_shapes": {
+    "rgb": [
+      480,
+      640,
+      3
+    ],
+    "wrist_window": [
+      31,
+      6
+    ],
+    "gel": [
+      2,
+      288,
+      384
+    ],
+    "fields": [
+      2,
+      144,
+      192,
+      8
+    ],
+    "contact_state": [
+      2,
+      11
+    ]
+  },
+  "observed_dtypes": {
+    "rgb": "uint8",
+    "wrist_window": "float32",
+    "gel": "uint8",
+    "fields": "float32",
+    "contact_state": "float32"
+  },
+  "canonical_initial_normalized_wrist": [
+    0.9328839778900146,
+    1.0829519033432007,
+    -1.5569511651992798,
+    -1.9215341806411743,
+    1.394375205039978,
+    0.47650063037872314
+  ],
+  "conclusions": [
+    "All three saved training configs omit wrench_baseline_rows, resolved as zero and confirmed by current server metadata.",
+    "Tactile baseline rows apply only to per-pad contact_state/cpk_wrench, not the arm wrist input.",
+    "The raw initial wrist bias is correctly preserved before saved global normalization. Safety baselines are a separate guard computation.",
+    "Images and fields use shared native preprocessing: RGB channel order, grayscale gel replication, bilinear resize, /127.5-1 for images, and one saved channel-wise field normalization.",
+    "Current snapshots preserve measured no-contact residuals; this does not establish physical sensing or contact-transfer calibration."
+  ],
+  "future_limitation": "SimulationPolicyAdapter does not implement nonzero checkpoint tactile wrench_baseline_rows. A future v6/new checkpoint requiring it must be rejected or supported and tested before use; it is not one of the active three teachers.",
+  "source_references": [
+    {
+      "path": "phantom/train/common.py",
+      "line": 941,
+      "claim": "Missing wrench_baseline_rows defaults to 0 for pre-v6 checkpoints; applies to tactile wrench, not wrist_ft.",
+      "local_file_sha256": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8"
+    },
+    {
+      "path": "phantom/data/windows.py",
+      "line": 90,
+      "claim": "Per-pad leading-wrench median subtraction returns zeros when rows <=0.",
+      "local_file_sha256": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2"
+    },
+    {
+      "path": "phantom/data/windows.py",
+      "line": 273,
+      "claim": "Training RGB and gray gel use shared bilinear resize and /127.5-1.",
+      "local_file_sha256": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2"
+    },
+    {
+      "path": "phantom/data/windows.py",
+      "line": 309,
+      "claim": "Training linearly resamples raw arm_ft then globally normalizes wrist_ft; no episode tare.",
+      "local_file_sha256": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2"
+    },
+    {
+      "path": "phantom/data/windows.py",
+      "line": 416,
+      "claim": "Training fields are measured keyframes normalized once; contact_state remains raw apart from optional tactile baseline.",
+      "local_file_sha256": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2"
+    },
+    {
+      "path": "phantom/inference/policy.py",
+      "line": 109,
+      "claim": "Native inference performs the same image, wrist, UR and field transforms.",
+      "local_file_sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435"
+    },
+    {
+      "path": "phantom/deploy/planner.py",
+      "line": 138,
+      "claim": "Native tactile baseline disabled for rows <=0.",
+      "local_file_sha256": "3a49e184b94adb6d57b33a25cfae010a45b88da3e982696695617fb632f30500"
+    },
+    {
+      "path": "phantom/deploy/planner.py",
+      "line": 240,
+      "claim": "Native wrist window resampled on newest arm timestamp, then passed raw to policy.",
+      "local_file_sha256": "3a49e184b94adb6d57b33a25cfae010a45b88da3e982696695617fb632f30500"
+    },
+    {
+      "path": "phantom/deploy/planner.py",
+      "line": 294,
+      "claim": "Native teacher fields/gel/contact state assembly.",
+      "local_file_sha256": "3a49e184b94adb6d57b33a25cfae010a45b88da3e982696695617fb632f30500"
+    },
+    {
+      "path": "phantom/deploy/runtime.py",
+      "line": 255,
+      "claim": "Native runtime forwards checkpoint baseline row count to SnapshotBuilder.",
+      "local_file_sha256": "9a4fabac62461e6380def1af1768cd50e6e7c6b5ca3dc829f08ef478cbf5dfaf"
+    },
+    {
+      "path": "phantom/scripts/run_deploy.py",
+      "line": 126,
+      "claim": "Native builder sets wrench_baseline_rows from payload metadata.",
+      "local_file_sha256": "7754680e2eecd403409d2e060b829617db7f42f77eac9e9f735880844e7377d9"
+    },
+    {
+      "path": "phantom/sim/policy_adapter.py",
+      "line": 375,
+      "claim": "Sim wrist interpolation and UR state assembly; teacher mode does not mask wrist.",
+      "local_file_sha256": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+    },
+    {
+      "path": "phantom/sim/policy_adapter.py",
+      "line": 403,
+      "claim": "Sim teacher uses supplied keyframes/gel/raw pad wrench; nonzero baseline-row support is absent.",
+      "local_file_sha256": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+    },
+    {
+      "path": "tools/sim/policy_server.py",
+      "line": 129,
+      "claim": "Dedicated server records checkpoint baseline row count.",
+      "local_file_sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a"
+    },
+    {
+      "path": "tools/sim/policy_server.py",
+      "line": 162,
+      "claim": "Dedicated server loads own saved normalizers and the shared PhantomPolicy.",
+      "local_file_sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a"
+    },
+    {
+      "path": "phantom/data/schema.py",
+      "line": 154,
+      "claim": "NormStats applies (value-mean)/std channel-wise.",
+      "local_file_sha256": "5b95795682596cfc7a53c3bcf18a1b8814f99323762bda43e516dd757ca89951"
+    },
+    {
+      "path": "phantom/model/hht/hht.py",
+      "line": 77,
+      "claim": "HHT retains wrist when mask_wrist is false.",
+      "local_file_sha256": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f"
+    },
+    {
+      "path": "phantom/config/model.py",
+      "line": 125,
+      "claim": "Missing mask_wrist resolves false.",
+      "local_file_sha256": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2"
+    },
+    {
+      "path": "phantom/drivers/real/realsense.py",
+      "line": 73,
+      "claim": "Native camera requests rgb8.",
+      "local_file_sha256": "6cf8fa450980ef9637ecb4a06263129aa5ac54058eb9578748bd726221570b83"
+    },
+    {
+      "path": "phantom/sim/policy_adapter.py",
+      "line": 298,
+      "claim": "Simulator takes RGB or RGBA first three channels without BGR conversion.",
+      "local_file_sha256": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+    },
+    {
+      "path": "tools/sim/run_waffles.py",
+      "line": 1404,
+      "claim": "Isaac RGBA first three channels feed policy; RGB-to-BGR applies only to media writer.",
+      "local_file_sha256": "7a3dd9eb4ef909dbd0e8b0c377ff1d8667885123a7910a2e8bd971816be38da6"
+    }
+  ]
+}

@@ -13,21 +13,27 @@
 from __future__ import annotations
 
 import contextlib
-
 import logging
-import traceback
 import threading
 import time
+import traceback
 from collections import deque
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
 from phantom.data.derived import rotvec_nearest
 from phantom.deploy.governor import SpeedGovernor
+from phantom.deploy.release_controller import (
+    make_release_controller,
+    original_policy_grip,
+)
 from phantom.deploy.safety import SafetyAction, SafetyMonitor
 from phantom.drivers.base import Arm, Gripper
-from phantom.inference.policy import Plan
+
+if TYPE_CHECKING:
+    from phantom.inference.policy import Plan
 
 log = logging.getLogger(__name__)
 
@@ -57,8 +63,15 @@ def is_letgo_reason(name: str | None) -> bool:
 class ChunkExecutor:
     def __init__(self, hw: HardwareConfig, arm: Arm, gripper: Gripper,
                  safety: SafetyMonitor, *, record_action=None, gripper_ring=None,
-                 open_aperture: float = 0.0, max_play_steps: int | None = None):
+                 open_aperture: float = 0.0, max_play_steps: int | None = None,
+                 release_config=None):
         self.hw = hw
+        self.release_controller = make_release_controller(release_config, hw)
+        self._release_lock = threading.RLock()
+        self.completed_reason = None
+        self.completed_at_s = None
+        self._finish_pose = self._finish_grip = None
+        self._last_grip_command = None
         # Chunk-tail cap (run analysis 09-01 P1 #5): steps beyond
         # HEAD_STEPS are never validated by a subsequent replan, and ALL
         # four whips began in that unsupervised tail, 0.08-0.43 s after the
@@ -136,6 +149,8 @@ class ChunkExecutor:
         time it actually is."""
         now = time.perf_counter()
         with self._lock:
+            if getattr(self, "completed_reason", None) is not None or self.stopped_reason is not None:
+                return False
             lead_ok = (plan.action_times[-1]
                        > now + self.hw.control.replan_min_lead_s)
             if not lead_ok:
@@ -191,6 +206,9 @@ class ChunkExecutor:
         `gripper.move` in the whole deploy path is the NEXT episode's homing
         (start_pose.py:208)."""
         self._set_reason(reason)
+        if getattr(self, "release_controller", None) is not None:
+            with self._release_lock:
+                self.release_controller.stop()
         with self._latch_lock():
             self._grip_latch = None
         # order matters: kill the mailbox and the worker's while-condition
@@ -307,10 +325,14 @@ class ChunkExecutor:
                 time.sleep(period)
                 continue
 
+            finished = self.completed_reason is not None
             stale = (t0 - self._swap_t) > (plan.actions.shape[0]
                                            / hw.control.action_rate_hz
                                            + hw.safety.stale_plan_timeout_s)
-            if stale:
+            if finished:
+                target, grip = self._finish_pose.copy(), self._finish_grip
+                stale = False
+            elif stale:
                 if hold_pose is None:
                     hold_pose = self.arm.get_state().tcp_pose.copy()
                 target, grip = hold_pose, None
@@ -364,6 +386,8 @@ class ChunkExecutor:
                         latch = self._grip_latch
                     if latch is not None:
                         g_sent = max(g_sent, latch)
+                    if self.release_controller is not None and self._last_grip_command is not None:
+                        g_sent = self._last_grip_command
                     if g_sent != a[6]:
                         a = np.array(a, copy=True); a[6] = g_sent
                     if self.record_action is not None:
@@ -371,8 +395,9 @@ class ChunkExecutor:
                     # locked: the planner thread reads this deque, and a full
                     # maxlen deque pops-left on append — an unsynchronised
                     # list() over it can raise "mutated during iteration"
-                    with self._lock:
-                        self._grip_hist.append((t0, g_sent))
+                    if self.release_controller is None:
+                        with self._lock:
+                            self._grip_hist.append((t0, g_sent))
 
             verdict = self.safety.check(t0, target)
             if verdict.action == SafetyAction.PROTECTIVE_STOP:
@@ -390,6 +415,12 @@ class ChunkExecutor:
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
+            if self.release_controller is not None:
+                target, grip = self._apply_release_control(t0, target, grip, plan, stale)
+                if self.completed_reason is not None:
+                    # The achieved pose may differ from the target checked
+                    # above. Completion must never undo geometric clamps.
+                    target = self.safety.clamp_target(target)
 
             # Kinematic rate limit on the COMMANDED pose — the model/plan side
             # has no dynamics bound, and replan-boundary jumps otherwise get
@@ -399,7 +430,11 @@ class ChunkExecutor:
             # to the plan whenever the plan itself is feasible.
             target = np.array(target, dtype=np.float64)
             dt_eff = period
-            if self._last_cmd is not None:
+            rate_reference = self._finish_pose if self.completed_reason else self._last_cmd
+            if rate_reference is not None:
+                # Finish targets the achieved pose, not an older ahead-of-arm
+                # setpoint. Its zero motion must not be clipped towards that
+                # old proposal. The same safety and driver IK guards still run.
                 # Rate limit per MEASURED tick, not the nominal 8 ms: the old
                 # per-period cap silently scaled the speed ceiling by
                 # (period / actual dt) — with synchronous gripper I/O in this
@@ -409,15 +444,15 @@ class ChunkExecutor:
                 dt_eff = float(np.clip(dt, period, 2.0 * period))
                 v_lin = hw.arm.limits.tcp_speed_m_s
                 v_rot = hw.arm.limits.joint_speed_rad_s
-                dp = target[:3] - self._last_cmd[:3]
+                dp = target[:3] - rate_reference[:3]
                 n = float(np.linalg.norm(dp))
                 if n > v_lin * dt_eff:
-                    target[:3] = self._last_cmd[:3] + dp * (v_lin * dt_eff / n)
-                rv = rotvec_nearest(self._last_cmd[3:6], target[3:6])
-                dr = rv - self._last_cmd[3:6]
+                    target[:3] = rate_reference[:3] + dp * (v_lin * dt_eff / n)
+                rv = rotvec_nearest(rate_reference[3:6], target[3:6])
+                dr = rv - rate_reference[3:6]
                 rn = float(np.linalg.norm(dr))
                 if rn > v_rot * dt_eff:
-                    target[3:6] = self._last_cmd[3:6] + dr * (v_rot * dt_eff / rn)
+                    target[3:6] = rate_reference[3:6] + dr * (v_rot * dt_eff / rn)
                 else:
                     target[3:6] = rv
             # servoJ's time parameter = the interval the controller is asked
@@ -445,7 +480,8 @@ class ChunkExecutor:
                 with self._lock:
                     self._last_cmd = streamed.copy()
             if grip is not None:
-                grip = self._latched_grip(float(np.clip(grip, 0, 1)))
+                if self.release_controller is None:
+                    grip = self._latched_grip(float(np.clip(grip, 0, 1)))
                 # hand the gripper target to the gripper thread (non-blocking):
                 # a synchronous socket round-trip here throttled the servo loop
                 self._grip_target = grip
@@ -509,8 +545,107 @@ class ChunkExecutor:
 
     def clear_grip_latch(self) -> None:
         """An INTENDED release (veto recovery / end of episode) drops the latch."""
-        with self._latch_lock():
-            self._grip_latch = None
+        with getattr(self, "_release_lock", contextlib.nullcontext()):
+            with self._latch_lock():
+                self._grip_latch = None
+            controller = getattr(self, "release_controller", None)
+            if controller is not None and self.completed_reason is None:
+                controller.reset()
+
+    def _release_feedback(self):
+        """Read measured robot/gripper rings; no object state or driver command."""
+        arm_ring = self.safety.rings.get("arm")
+        times, arm = arm_ring.latest(1) if arm_ring is not None else ([], {})
+        if not len(times):
+            raise RuntimeError("release controller requires measured arm feedback")
+        gt, gr = self.gripper_ring.latest(1) if self.gripper_ring is not None else ([], {})
+        if not len(gt):
+            raise RuntimeError("release controller requires measured gripper feedback")
+        pose = np.asarray(arm["tcp_pose"][-1], dtype=float).copy()
+        grip = float(np.asarray(gr["state"][-1])[0])
+        if pose.shape != (6,) or not np.isfinite(pose).all():
+            raise RuntimeError("invalid measured release TCP")
+        return pose, grip, float(gt[-1])
+
+    def placement_release_opening_mask(self, proposed_grip):
+        values = np.asarray(proposed_grip)
+        controller = self.release_controller
+        if controller is None or self.stopped_reason or self.completed_reason:
+            return np.zeros(values.shape, dtype=bool)
+        with self._release_lock:
+            pose, _, _ = self._release_feedback()
+            return (
+                np.isfinite(values)
+                & (values <= controller.config.open_command_max)
+                & controller.window_active(pose)
+            )
+
+    def _apply_release_control(self, t, target, grip, plan, stale):
+        """Called only AFTER current SafetyMonitor verdict permits a command."""
+        with self._release_lock:
+            controller = self.release_controller
+            measured, measured_grip, grip_t = self._release_feedback()
+            if self.completed_reason is not None:
+                return self._finish_pose.copy(), self._finish_grip
+            # Gripper feedback too old cannot prove completed opening. This
+            # blocks completion without substituting an imagined observation.
+            if t - grip_t > max(0.25, 3 * self._grip_poll_period):
+                measured_grip = float("nan")
+            with self._latch_lock():
+                latch = self._grip_latch
+            controller.note_latch(latch)
+            requested = None if grip is None else float(np.clip(grip, 0, self.hw.gripper.max_close_cmd))
+            # Never wait for socket I/O in the servo loop. A finish transition
+            # waits for a free mailbox lock so an older close cannot be sent
+            # after completion. The worker rechecks the mailbox under this lock.
+            io_free = self._grip_io_lock.acquire(blocking=False)
+            try:
+                suppress = controller.update(
+                    t, tcp=measured,
+                    policy_grip=float("nan") if requested is None else requested,
+                    measured_grip=measured_grip, pad_loads=self.safety.contact_load,
+                    eligible=not stale and requested is not None and original_policy_grip(
+                        plan, self._play_time, self.hw.control.action_rate_hz, self.max_play_steps,
+                    ),
+                    accepted_grip=self._last_grip_command,
+                    finish_permitted=io_free and np.allclose(
+                        self.safety.clamp_target(measured), measured, atol=1e-9, rtol=0,
+                    ),
+                )
+                if suppress:
+                    with self._latch_lock():
+                        self._grip_latch = None
+                elif requested is not None:
+                    requested = self._latched_grip(requested)
+                with self._latch_lock():
+                    controller.note_latch(self._grip_latch)
+                if controller.finished:
+                    self.completed_reason = "placement_release_finished"
+                    self.completed_at_s = float(t)
+                    self._finish_pose = measured.copy()
+                    self._finish_grip = self._last_grip_command
+                    self._grip_target = self._finish_grip
+                    return self._finish_pose.copy(), self._finish_grip
+                return target, requested
+            finally:
+                if io_free:
+                    self._grip_io_lock.release()
+
+    def release_diagnostics(self):
+        if self.release_controller is None:
+            return None
+        with self._release_lock:
+            try:
+                pose, _, _ = self._release_feedback()
+            except (RuntimeError, KeyError, TypeError, ValueError, IndexError):
+                pose = np.full(6, np.nan)
+            return {
+                **self.release_controller.diagnostics(pose),
+                "completed_reason": self.completed_reason,
+                "completed_at_s": self.completed_at_s,
+                "hold_tcp_pose": None if self._finish_pose is None else self._finish_pose.tolist(),
+                "hold_gripper_command": self._finish_grip,
+            }
 
     GRIP_DEADBAND = 0.008  # ~2/255 counts, same as collection (GripperTuning):
                            # re-sending an unchanged target makes the Robotiq
@@ -543,9 +678,19 @@ class ChunkExecutor:
                     # check lands after _halt's release
                     with self._grip_io_lock:
                         if not self._stop.is_set():
+                            if self.release_controller is not None:
+                                # A finish can replace the mailbox while this
+                                # worker was waiting for the I/O lock.
+                                tgt = self._grip_target
+                                if tgt is None:
+                                    continue
                             self.gripper.move(tgt, hw.gripper.default_speed,
                                               hw.gripper.default_force)
                             last_sent = tgt
+                            self._last_grip_command = float(tgt)
+                            if self.release_controller is not None:
+                                with self._latch_lock():
+                                    self._grip_hist.append((time.perf_counter(), float(tgt)))
                 if self.gripper_ring is not None:
                     gs = self.gripper.get_state()
                     self.gripper_ring.push(gs.t_host, state=np.array(
@@ -566,6 +711,12 @@ class ChunkExecutor:
         self._held_ticks = 0
         self.halt_state = {}
         self._grip_target = None
+        self._last_grip_command = None
+        self.completed_reason = self.completed_at_s = None
+        self._finish_pose = self._finish_grip = None
+        if self.release_controller is not None:
+            self._grip_latch = None
+            self.release_controller.reset()
         self._grip_hist.clear()                # executed-gripper history is per-episode
         self._grip_thread = threading.Thread(target=self._grip_worker, daemon=True,
                                              name="gripper")
