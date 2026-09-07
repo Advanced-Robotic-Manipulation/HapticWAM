@@ -329,6 +329,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
+    ap.add_argument("--placement-controller-profile", choices=["minimal_v5"], default=None,
+                    help="explicit native controller-port qualification: historical fd4a032 "
+                         "request-snapshot veto plus policy release/FINISH; requires teacher, "
+                         "--terminal-veto and a measured release JSON with FINISH enabled; "
+                         "default preserves current native behavior")
     ap.add_argument("--no-grip-latch", action="store_true",
                     help="disable the aperture latch (commanded closure may "
                          "not decrease once both pads carry load)")
@@ -815,6 +820,13 @@ def main(argv=None) -> int:
         deploy_overrides["placement_release_config_sha256"] = hashlib.sha256(
             args.placement_release_config.read_bytes()).hexdigest()
         deploy_overrides["placement_veto_feedback"] = "current measured delivery feedback"
+    if args.placement_controller_profile is not None:
+        from phantom.deploy.minimal_v5 import validate_profile
+        profile_meta = validate_profile(
+            args.placement_controller_profile, release_config=release_config,
+            veto=build_veto(args, stats, z_floor), mode=args.system, hw=hw)
+        deploy_overrides["placement_controller_profile"] = profile_meta
+        deploy_overrides["placement_veto_feedback"] = profile_meta["veto_feedback_source"]
 
     out_root = Path(args.out) if args.out else \
         paths.episodes_root() / "deploy" / time.strftime("%Y%m%d")
@@ -964,7 +976,9 @@ def main(argv=None) -> int:
                            base_hw=base_hw, open_aperture=open_aperture,
                            deploy_overrides=deploy_overrides,
                            max_play_steps=(args.max_play_steps or None),
-                           release_config=release_config) as rt:
+                           release_config=release_config,
+                           **({"controller_profile": args.placement_controller_profile}
+                              if args.placement_controller_profile is not None else {})) as rt:
         for i in range(args.episodes):
             # ONE seed per episode, drawn before anything random happens: the
             # sampler noise AND the homing jitter come from it. The jitter used
