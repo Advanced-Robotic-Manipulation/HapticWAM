@@ -207,12 +207,16 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
         reasons.append("effective_delivery_latency_override_differs_from_campaign")
     profile = design.get("adapter_profile", {})
     veto = profile.get("terminal_veto", False)
+    if "terminal_veto_feedback_source" in profile and info.get(
+        "terminal_veto_feedback_source"
+    ) != profile["terminal_veto_feedback_source"]:
+        reasons.append("effective_terminal_veto_feedback_source_differs_from_campaign")
     for field, expected_value in (
         ("planner_stall_watchdog", True),
         ("terminal_veto", veto),
         ("phantom_recovery", bool(veto and veto["implementation"] == "live")),
         ("tactile_model", profile.get("tactile_model", "contact_proxy")),
-        ("wrist_model", "contact_proxy"),
+        ("wrist_model", profile.get("wrist_model", "contact_proxy")),
     ):
         if info.get(field) != expected_value:
             reasons.append(f"effective_{field}_differs_from_campaign")

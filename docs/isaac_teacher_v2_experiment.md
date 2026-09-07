@@ -1,9 +1,10 @@
 # Teacher v2: fixed waffle, varied measured starts
 
-**Frozen at 2026-09-06T23:26:08.508860+00:00.** This teacher-only study keeps the waffle fixed and transfers ten measured arm/gripper/wrist starts. Both measured replay checks and all ten startup checks passed before scoring. The [parent protocol](../configs/sim/teacher_v2_protocol.json) freezes selection and confirmation; the [screen](../configs/sim/teacher_v2_screen.json) pins its parent hash. Physics/material parameters and safety limits remain unchanged.
+**Corrected profile frozen at 2026-09-07T00:02:21.650286+00:00.** The active [parent protocol](../configs/sim/teacher_v2_delivery_protocol.json) and [32-trial screen](../configs/sim/teacher_v2_delivery_screen.json) retain the fixed waffle, ten measured starts, four teacher configurations and reserved confirmation design. They add current-delivery guard feedback and an explicit gripper contact wrench proxy. All 366 simulator tests available at freeze and exact-command physics invariance passed.
 
+The [original v2 protocol](../configs/sim/teacher_v2_protocol.json) and its ten completed trials remain preserved as superseded diagnostics. No confirmation case ran before the correction. The request-versus-delivery mismatch did not rewrite the first two trials' action arrays; it is not their demonstrated failure cause. A separate invariant replay identified a housing/box collision omitted by the pad-only wrist proxy.
 
-The previous teacher study achieved some physical placements but nominal success did not reproduce reliably; later stops, incomplete controller release handling and uncertain tactile contact mapping limited interpretation. V2 declares the controller/mapping changes before scoring: live native terminal veto, `manifold_patch_v2` gel coverage and the existing policy-commanded release controller with `finish_after_release=true`, `finish_observation_s=2`. The controller observes robot feedback, not simulated object truth. Completing its release sequence cannot by itself earn task success.
+The previous teacher study achieved some physical placements but nominal success did not reproduce reliably; later stops, incomplete controller release handling and uncertain tactile contact mapping limited interpretation. V2 declares the controller/mapping changes before scoring: live native terminal veto using current delivery TCP/gripper, explicit `gripper_contact_proxy` wrist feedback, `manifold_patch_v2` gel coverage and the existing policy-commanded release controller with `finish_after_release=true`, `finish_observation_s=2`. The controller observes robot feedback, not simulated object truth. Completing its release sequence cannot by itself earn task success.
 
 ## Conditions and candidates
 
@@ -35,7 +36,7 @@ The maximum horizon is60 simulation seconds, with native measured inference late
 
 Initial settling retains the existing2-second free hold and limits of .02rad position error and .05rad/s joint speed. The [startup audit](results/teacher_v2_design/start_preflight_audit.json) passed all ten starts without exclusions: maximum joint error .003675rad, initial joint speed .029972rad/s, packet displacement 1.4323e−7m and packet-to-robot contact0N. These preflight results establish initialization eligibility, not policy success. No later measured arm state may replace a failed initial state silently. Infrastructure failures, ineligible initial states and executed policy failures stay explicitly distinct; thresholds cannot be relaxed after viewing scored outcomes.
 
-Physical full task requires ordered acquisition, sustained lift, carry and a released packet settled within the bin, using the unchanged [support-verified thresholds](../configs/sim/teacher_v2_protocol.json). Positive packet-to-bin normal force and low packet-to-all-robot force must support the settled placement. Reach and first-additional-closure diagnostics remain separate; all ten starts already have closure greater than .25.
+Physical full task requires ordered acquisition, sustained lift, carry and a released packet settled within the bin, using the unchanged [support-verified thresholds](../configs/sim/teacher_v2_delivery_protocol.json). Positive packet-to-bin normal force and low packet-to-all-robot force must support the settled placement. Reach and first-additional-closure diagnostics remain separate; all ten starts already have closure greater than .25.
 
 The operational **clean placement** criterion additionally requires final oriented-bin containment, final unloaded pads, final robot contact≤.1N, final bin contact>.1N, adapter `completed_reason=placement_release_finished`, and no actual controller stop. A later safety stop preserves an already achieved physical full-task outcome but removes clean-placement status. A controller completion without physical placement earns neither physical full task nor clean placement.
 
@@ -53,23 +54,42 @@ The bootstrap uses10,000 draws and seed20260906, resampling the six recorded sta
 
 ## Run and inspect
 
-The final remote source directory is `/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2`; prepared recording evidence remains `/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000`. The campaign launcher defaults to a plan and requires explicit `--execute` to run. Draft designs are rejected by the frozen-design loader. The parent owns simulator/model execution and final input paths; no hardware launch script is part of this workflow.
+The final remote source directory is `/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery`; prepared recording evidence remains `/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000`. The campaign launcher defaults to a plan and requires explicit `--execute` to run. Draft designs are rejected by the frozen-design loader. The parent owns simulator/model execution and final input paths; no hardware launch script is part of this workflow.
 
-After a frozen screen completes, use the same archived source to recompute raw metrics and selection:
-
-```sh
-python tools/sim/select_teacher_candidate.py \
-  --campaign configs/sim/teacher_v2_screen.json \
-  --runs /path/to/screen/rollouts --out /path/to/screen/selection --stage screen
-```
-
-After generating and freezing the protocol-derived confirmation design:
+On compute3, define paths to the archived source and a **new** output directory. Keep the live virtual-environment Python path as written; resolving its symlink loses the environment. This launches simulator/model processes only:
 
 ```sh
-python tools/sim/select_teacher_candidate.py \
-  --campaign configs/sim/teacher_v2_confirmation.json \
-  --runs /path/to/confirmation/rollouts --out /path/to/confirmation/selection --stage confirmation
+SIM_BASE=/home/physicalai/phantom-icra-2027/sim/waffles
+SIM_SOURCE="$SIM_BASE/source_teacher_v2_delivery"
+SIM_PYTHON=/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python
+SIM_OUTPUT="$SIM_BASE/runs/teacher_robustness_v2_delivery_repeat"
+"$SIM_PYTHON" "$SIM_SOURCE/tools/sim/run_policy_campaign.py" \
+  --campaign "$SIM_SOURCE/configs/sim/teacher_v2_delivery_screen.json" \
+  --source "$SIM_SOURCE" \
+  --live-repo /home/physicalai/phantom-icra-2027/phantom \
+  --evidence "$SIM_BASE/evidence" \
+  --hardware-config "$SIM_BASE/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml" \
+  --robot-usd "$SIM_BASE/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda" \
+  --port 7799 --output "$SIM_OUTPUT/screen" --execute
 ```
+
+The port must be free before launch. Do not run this while the original study is active. After all 32 cases complete, derive selection and the reserved confirmation configuration without modifying the archived source:
+
+```sh
+"$SIM_PYTHON" "$SIM_SOURCE/tools/sim/select_teacher_candidate.py" \
+  --campaign "$SIM_SOURCE/configs/sim/teacher_v2_delivery_screen.json" \
+  --runs "$SIM_OUTPUT/screen/rollouts" \
+  --out "$SIM_OUTPUT/screen/selection" --stage screen
+"$SIM_PYTHON" "$SIM_SOURCE/tools/sim/freeze_teacher_confirmation.py" \
+  --protocol "$SIM_SOURCE/configs/sim/teacher_v2_delivery_protocol.json" \
+  --screen "$SIM_SOURCE/configs/sim/teacher_v2_delivery_screen.json" \
+  --selection "$SIM_OUTPUT/screen/selection/selection.json" \
+  --out "$SIM_OUTPUT/teacher_v2_delivery_confirmation.json"
+```
+
+Run the campaign command again with `--campaign "$SIM_OUTPUT/teacher_v2_delivery_confirmation.json"` and `--output "$SIM_OUTPUT/confirmation"`; all other arguments stay the same. After its 24 cases finish, run the selector with that confirmation configuration, `--runs "$SIM_OUTPUT/confirmation/rollouts"`, `--out "$SIM_OUTPUT/confirmation/selection"` and `--stage confirmation`. Stop on any failed command and preserve partial outputs.
+
+The original execution is stored at `$SIM_BASE/runs/teacher_robustness_v2_delivery`. Its `execution_plan.json` contains the exact five argument arrays, source archive hash and frozen protocol hashes; `study_ledger.jsonl` records subprocess exits. The source archive SHA256 is `5f4a0cf7027d00a1463c53e61e17e73919bc9453a5be1b733554672692be4f07`. Raw observations, measured states, proposed plans, accepted commands and per-trial review videos remain under the stage's `rollouts/` directory.
 
 `selection.json`, `trials.csv` and `report.md` retain all stage outcomes, final support, terminal versus nonterminal safety events, completion reasons, holds/rejects and native/delivery/wall/activation latencies. All representative video choices follow scoring; no outcome is inferred from a selected video.
 

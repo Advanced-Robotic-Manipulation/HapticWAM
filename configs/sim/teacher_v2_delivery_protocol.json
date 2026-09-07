@@ -1,0 +1,692 @@
+{
+  "schema_version": 1,
+  "protocol_id": "teacher_robustness_v2_delivery",
+  "status": "frozen",
+  "frozen_at_utc": "2026-09-07T00:02:21.650286+00:00",
+  "freeze_authorization": "Teacher-only user authorization. Amended before confirmation for validated opt-in veto parity correction and missing distal-gripper wrist contact coverage. All366 simulator tests and exact-command physics invariance passed. Original10executed cases remain preserved and excluded from this corrected primary selection.",
+  "source_directory_compute3": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+  "task_text": "waffles",
+  "scope": "Fixed canonical August green packet; transfer authentic measured arm/gripper/wrist recording starts. Teacher-only conditional simulator study.",
+  "pending_inputs": [],
+  "candidate_order": [
+    "fta1500_nfe1_k4",
+    "fta3000_nfe1_k4",
+    "v5_6_nfe1_k4",
+    "fta1500_nfe5_k1"
+  ],
+  "candidates": [
+    {
+      "id": "fta1500_nfe1_k4",
+      "cohort": "teacher_discovery",
+      "architecture": "teacher",
+      "policy_mode": "teacher",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "inference_settings": {
+        "nfe": 1,
+        "k_seeds": 4
+      },
+      "interpretation": "Conditional teacher comparison with measured-baseline tactile proxy; own checkpoint configuration and EMA."
+    },
+    {
+      "id": "fta3000_nfe1_k4",
+      "cohort": "teacher_discovery",
+      "architecture": "teacher",
+      "policy_mode": "teacher",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "inference_settings": {
+        "nfe": 1,
+        "k_seeds": 4
+      },
+      "interpretation": "Conditional teacher comparison with measured-baseline tactile proxy; own checkpoint configuration and EMA."
+    },
+    {
+      "id": "v5_6_nfe1_k4",
+      "cohort": "teacher_discovery",
+      "architecture": "teacher",
+      "policy_mode": "teacher",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "inference_settings": {
+        "nfe": 1,
+        "k_seeds": 4
+      },
+      "interpretation": "Conditional teacher comparison with measured-baseline tactile proxy; own checkpoint configuration and EMA."
+    },
+    {
+      "id": "fta1500_nfe5_k1",
+      "cohort": "teacher_discovery",
+      "architecture": "teacher",
+      "policy_mode": "teacher",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "inference_settings": {
+        "nfe": 5,
+        "k_seeds": 1
+      },
+      "interpretation": "Conditional teacher comparison with measured-baseline tactile proxy; own checkpoint configuration and EMA."
+    }
+  ],
+  "starts": [
+    {
+      "id": "start_1787395928",
+      "episode": "ep_waffles_1787395928_000",
+      "study_split": "discovery",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+        "sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787395928_000.json"
+    },
+    {
+      "id": "start_1787395963",
+      "episode": "ep_waffles_1787395963_001",
+      "study_split": "discovery",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+        "sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787395963_001.json"
+    },
+    {
+      "id": "start_1787396028",
+      "episode": "ep_waffles_1787396028_003",
+      "study_split": "discovery",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+        "sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396028_003.json"
+    },
+    {
+      "id": "start_1787396060",
+      "episode": "ep_waffles_1787396060_004",
+      "study_split": "confirmation",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+        "sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396060_004.json"
+    },
+    {
+      "id": "start_1787396094",
+      "episode": "ep_waffles_1787396094_005",
+      "study_split": "confirmation",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+        "sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396094_005.json"
+    },
+    {
+      "id": "start_1787396128",
+      "episode": "ep_waffles_1787396128_006",
+      "study_split": "confirmation",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+        "sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396128_006.json"
+    },
+    {
+      "id": "start_1787396273",
+      "episode": "ep_waffles_1787396273_010",
+      "study_split": "discovery",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+        "sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396273_010.json"
+    },
+    {
+      "id": "start_1787396314",
+      "episode": "ep_waffles_1787396314_011",
+      "study_split": "confirmation",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+        "sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396314_011.json"
+    },
+    {
+      "id": "start_1787396346",
+      "episode": "ep_waffles_1787396346_012",
+      "study_split": "confirmation",
+      "session": "20260822_135140_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+        "sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396346_012.json"
+    },
+    {
+      "id": "start_1787396461",
+      "episode": "ep_waffles_1787396461_000",
+      "study_split": "confirmation",
+      "session": "20260822_140049_waffles",
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+        "sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d"
+      },
+      "source_initial_state_local": "configs/sim/initial_states/waffles_aug22_1787396461_000.json"
+    }
+  ],
+  "screen": {
+    "campaign_file": "configs/sim/teacher_v2_delivery_screen.json",
+    "starts": [
+      "start_1787395928",
+      "start_1787395963",
+      "start_1787396028",
+      "start_1787396273"
+    ],
+    "sampling_seeds": [
+      903101,
+      903102
+    ],
+    "candidates": [
+      "fta1500_nfe1_k4",
+      "fta3000_nfe1_k4",
+      "v5_6_nfe1_k4",
+      "fta1500_nfe5_k1"
+    ],
+    "trials": 32,
+    "execution": "Four start blocks; rotate candidate order left by block index; execute both seeds within each candidate block.",
+    "conditions": [
+      {
+        "id": "start_1787395928",
+        "family": "nominal",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+          "sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787395928_000",
+          "session": "20260822_135140_waffles",
+          "source_kind": "native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene for every trial; no per-recording object pose transfer"
+        }
+      },
+      {
+        "id": "start_1787395963",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+          "sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787395963_001",
+          "session": "20260822_135140_waffles",
+          "source_kind": "native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene for every trial; no per-recording object pose transfer"
+        }
+      },
+      {
+        "id": "start_1787396028",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+          "sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396028_003",
+          "session": "20260822_135140_waffles",
+          "source_kind": "native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene for every trial; no per-recording object pose transfer"
+        }
+      },
+      {
+        "id": "start_1787396273",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+          "sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396273_010",
+          "session": "20260822_135140_waffles",
+          "source_kind": "native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene for every trial; no per-recording object pose transfer"
+        }
+      }
+    ]
+  },
+  "confirmation": {
+    "campaign_file": "configs/sim/teacher_v2_delivery_confirmation.json",
+    "starts": [
+      "start_1787396060",
+      "start_1787396094",
+      "start_1787396128",
+      "start_1787396314",
+      "start_1787396346",
+      "start_1787396461"
+    ],
+    "sampling_seeds": [
+      903201,
+      903202
+    ],
+    "candidate_source": "Exactly the two IDs emitted by complete-valid screen selection; preserve deterministic selected order in generated confirmation design.",
+    "trials": 24,
+    "execution": "Six reserved-start blocks; alternate selected candidate order AB/BA; both fresh seeds within candidate block.",
+    "freeze": "Generate numeric confirmation design from this already frozen protocol and hash-linked screen selection; no new cases, thresholds or safety changes.",
+    "conditions": [
+      {
+        "id": "start_1787396060",
+        "family": "nominal",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+          "sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396060_004",
+          "session": "20260822_135140_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      },
+      {
+        "id": "start_1787396094",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+          "sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396094_005",
+          "session": "20260822_135140_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      },
+      {
+        "id": "start_1787396128",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+          "sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396128_006",
+          "session": "20260822_135140_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      },
+      {
+        "id": "start_1787396314",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+          "sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396314_011",
+          "session": "20260822_135140_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      },
+      {
+        "id": "start_1787396346",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+          "sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396346_012",
+          "session": "20260822_135140_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      },
+      {
+        "id": "start_1787396461",
+        "family": "recorded_start",
+        "object_offset_m": [
+          0.0,
+          0.0
+        ],
+        "friction_scale": 1.0,
+        "camera_override": null,
+        "observation_delay_s": 0.0,
+        "inference_delay_add_s": 0.0,
+        "initial_state": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+          "sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d"
+        },
+        "intended_parameters": {
+          "episode": "ep_waffles_1787396461_000",
+          "session": "20260822_140049_waffles",
+          "source_kind": "reserved native teleoperation recording start",
+          "object_pose": "fixed canonical Aug22 scene, unchanged from screen"
+        }
+      }
+    ],
+    "first_condition_family": "nominal (loader convention; one of six reserved starts, not reused discovery nominal)"
+  },
+  "total_scored_trials": 56,
+  "horizon_s": 60.0,
+  "delivery_latency_s": null,
+  "latency_semantics": "Use each call native measured inference latency. No fixed latency override or injected delays. Native, delivery, activation and wall latencies logged separately; GPU shared, not bitwise paired.",
+  "fixed_scene": {
+    "source": "configs/sim/waffles_pick_place.json",
+    "sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+    "packet_center_m": [
+      -0.366715,
+      -0.259618,
+      0.07
+    ],
+    "packet_yaw_rad": 0.44229,
+    "texture": "assets/sim/waffles/packet_green_top.png",
+    "placement_change_by_condition": false,
+    "camera_change_by_condition": false,
+    "friction_change_by_condition": false
+  },
+  "adapter_profile": {
+    "tactile_model": "measured_baseline_proxy",
+    "gel_contact_coverage": "manifold_patch_v2",
+    "terminal_veto": {
+      "implementation": "live",
+      "config": {
+        "z_ref": 0.0415,
+        "z_floor": 0.0315,
+        "z_margin": 0.0615,
+        "open_aperture": 0.232,
+        "p_close": 0.5,
+        "p_none": 0.9,
+        "max_retries": 3
+      },
+      "provenance": "Live native terminal-veto algorithm through audited simulation adapter; retain explicit historical task height/aperture defaults. Unlike v1 this is not the fd4a032 veto implementation."
+    },
+    "placement_release": {
+      "tcp_min_m": [
+        -0.5429275160642127,
+        -0.06853791240695331,
+        0.057999999999999996
+      ],
+      "tcp_max_m": [
+        -0.24020644059509488,
+        0.14193716917871008,
+        0.274
+      ],
+      "open_command_max": 0.45,
+      "opening_hold_s": 0.2,
+      "unloaded_force_max_n": 0.5,
+      "unloaded_hold_s": 0.2,
+      "rearm_close_command_min": 0.5,
+      "finish_after_release": true,
+      "finish_observation_s": 2.0
+    },
+    "record_packet_support": true,
+    "save_policy_observations": true,
+    "initial_state": null,
+    "tactile_baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/aug22_5928_no_contact_sensor_baseline.npz",
+      "sha256": "9f8c2f302c1cb52bdb186bbdcc0dc5c9ed2a4533c9e03670eb1ea1585a225885",
+      "bytes": 992568,
+      "provenance": "Adjacent JSON; separate static no-contact calibration capture from canonical5928, left t+0.305165692s/right t+0.412731332s after first arm. Not causal q0 inputs; one fixed measured sensor baseline for all starts/candidates. Measured residual wrench/depth retained."
+    },
+    "terminal_veto_feedback_source": "current_delivery",
+    "wrist_model": "gripper_contact_proxy"
+  },
+  "initialization_requirements": {
+    "free_hold_s": 2.0,
+    "max_joint_position_error_rad": 0.02,
+    "max_joint_speed_rad_s": 0.05,
+    "preflight_max_packet_displacement_m": 0.002,
+    "preflight_max_packet_robot_force_n": 0.1,
+    "preflight_min_gripper_geometry_clearance_m": 0.002,
+    "preflight_note": "Verified for all10 starts before policy execution; runtime additionally enforces existing joint equilibrium and20mm packet guard. Full robot/environment collision coverage is partial."
+  },
+  "thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  },
+  "selection": {
+    "implementation": "tools/sim/select_teacher_candidate.py",
+    "require_complete_valid_matched_screen": true,
+    "lexicographic_tiers": [
+      {
+        "metric": "clean_place",
+        "direction": "descending"
+      },
+      {
+        "metric": "strict_full_place",
+        "direction": "descending"
+      },
+      {
+        "metric": "lifted",
+        "direction": "descending"
+      },
+      {
+        "metric": "acquired",
+        "direction": "descending"
+      },
+      {
+        "metric": "safety_stop",
+        "direction": "ascending"
+      },
+      {
+        "metric": "candidate_order",
+        "direction": "ascending"
+      }
+    ],
+    "clean_place": "Support-verified physical full-task outcome AND final oriented packet in bin AND pads unloaded AND final packet-to-robot force<=0.1N AND final packet-to-bin force>0.1N AND adapter completed_reason placement_release_finished AND no actual controller stop. Completion alone is not success.",
+    "select_top_n": 2
+  },
+  "confirmation_decision": {
+    "outcome": "clean_place",
+    "minimum_clean_places": 8,
+    "trials_per_candidate": 12,
+    "paired_cluster_bootstrap": {
+      "confidence_level": 0.95,
+      "replicates": 10000,
+      "seed": 20260906,
+      "cluster": "recorded start, keeping both paired seeds/candidates together",
+      "require_difference_lower_bound_above": 0.0
+    },
+    "nonincrease_metrics": [
+      "dropped",
+      "wrench_limit_stop",
+      "tactile_force_limit_stop"
+    ],
+    "force_stop_events": [
+      "wrench_limit",
+      "tactile_fz",
+      "tactile_depth"
+    ],
+    "clear_simulator_winner": "All gates pass for the lexicographically leading confirmed candidate against the other candidate.",
+    "otherwise": "Inconclusive; at most pickup candidate if sustained lifts occurred. No hardware winner or population success claim."
+  },
+  "data_split_limitations": [
+    "All10 complete starts belong to expanded val124; full expanded training manifest unavailable, so no training-unseen claim.",
+    "Nine starts from one August session and one from another same-day session; confirmation does not establish cross-session generalization.",
+    "Only10/250 waffles episodes retain native timestamps+wrist+RGB;240thin mirrors cannot support synchronized restarts.",
+    "One recording reverses wrapper orientation; all trials deliberately keep canonical object pose/appearance while transferring only measured robot/gripper/wrist state.",
+    "5928 already used in simulator reconstruction, hence discovery only.",
+    "Screen choice is selection-biased; only new reserved starts/seeds supply confirmation."
+  ],
+  "outcome_integrity": [
+    "No trajectory replay, object attachments or post-initialization object pose writes.",
+    "Physical full-task scoring independent of planner/adapter flags.",
+    "No threshold/case adjustment after scored outcomes; preserve executed failures and every invalid attempt.",
+    "Only demonstrable infrastructure failure before policy commands can be retried with linked provenance."
+  ],
+  "prior_exclusions": [
+    "All teacher_pick_place_v1 and teacher_debug_v1 trials",
+    "All student trials",
+    "All v2 initialization, controller, replay and mapping preflights"
+  ],
+  "startup_preflight": {
+    "status": "all10passed_no_exclusions",
+    "audit": "docs/results/teacher_v2_design/start_preflight_audit.json",
+    "sha256": "e84488e5a085f22c32d0a908cd64b0b6989b57aa6f6cd13bb3572efa60342c4e",
+    "reported_maximum_joint_error_rad": 0.003675,
+    "reported_initial_joint_speed_rad_s": 0.029972,
+    "reported_maximum_packet_displacement_m": 1.4323e-07,
+    "reported_packet_robot_force_n": 0.0,
+    "status_source": "Parent summarized completed read-only startup audit; exact per-case values in linked audit."
+  },
+  "numerical_preflight": {
+    "source": "runs/teacher_v2_preflights/mechanics_preflight_plan.json",
+    "dt_s": [
+      0.004,
+      0.002,
+      0.001
+    ],
+    "teacher_fixture": "teacher__placement_xm10_yp10mm__seed4242",
+    "scene_rate_peak_packet_robot_force_n": [
+      116.714,
+      136.178,
+      138.819
+    ],
+    "interpretation": "Large backing/edge loads persist at reduced dt; magnitudes timestep sensitive and physically uncalibrated. Retain original .004s studyphysics/materials. Initial diagnostic covered14.664s peak window; corrected explicit-horizon repeat stored separately. No force/depth clipping or safety-limit changes."
+  },
+  "validation": {
+    "simulator_test_count": 366,
+    "simulator_tests_passed": true,
+    "scoped_ruff": "passed",
+    "native_fake_rtde_tests_passed": 12,
+    "native_hardware_executed": false,
+    "measured_replay_invariance": [
+      "Aug22:all21 state/contact arrays bitwise invariant",
+      "Sept4:all19 existing arrays bitwise invariant; support observer adds2"
+    ]
+  },
+  "seed_reservation": {
+    "discovery_seeds": [
+      903101,
+      903102
+    ],
+    "discovery_status": "Reused exact predeclared discovery seeds for implementation correction;10superseded originals preserved, no new outcome-driven selection of starts/seeds.",
+    "confirmation_seeds": [
+      903201,
+      903202
+    ],
+    "confirmation_previously_executed": 0
+  },
+  "amendment": {
+    "supersedes_protocol_sha256": "9226c8c2779116616cb33fe4970fecd1fe0e5204b1ae4fd6ce614be7252b5170",
+    "supersedes_screen_sha256": "8445fae218b18a455162b19664e89973707ddfbd83aca88e46acc8d9345f0c98",
+    "preserved_output_compute3": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2",
+    "reason": "Simulator opt-in veto used request TCP/gripper feedback; native opt-in release bridge uses delivery feedback. Correct parity before model/settings selection. Counterfactual first2cases show no action rewrites, so this defect is not claimed to explain their failures. A later exact-command observer replay confirmed housing/bin load175.196N omitted from pad-only wrist feedback. Corrected primary profile sums external normal contacts on housing+two pads about the measuredTCP, preserving bias and all safety limits; no upstream-arm/self-contact contributions, no force clipping.",
+    "completed_original_trials": 10,
+    "interrupted_trial_directories": 0,
+    "confirmation_trials_previously_executed": 0,
+    "changed_selection_inputs": "None: samecandidate identities, same10startcohort, same32+24grid, discoveryseedsreused for declared implementation correction, fresh confirmationseeds preserved.",
+    "original_outcomes_use": "Retained diagnostic evidence, excluded from corrected primary selection; no replacement or deletion of original failures.",
+    "changed_sensor_inputs": "Explicit gripper_contact_proxy replaces pad-only wrist proxy for every candidate, with physical calibration still unresolved."
+  },
+  "gripper_wrist_preflight": {
+    "run_compute3": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/first_seed903102_gripper_wrist",
+    "all_original_physics_arrays_bitwise_equal": 21,
+    "frame_count": 182,
+    "wrist_samples": 1503,
+    "sample_dt_s": 0.008,
+    "initial_contact_wrench_zero": true,
+    "initial_measured_bias_preserved": true,
+    "first_force_deviation_over_60N_s": 5.096,
+    "contact_force_peak_n": 176.401,
+    "physical_transfer": "Idealized signed external normal contact wrench on housing+2pads about measuredTCP, added to measuredinitialbias. Omit tangential contact, gravity/inertia changes and upstream arm/selfcontacts. Not a calibratedCB3current-based force estimate."
+  },
+  "shared_configuration_sha256": "0b8b0a9e6b72e8b1957aef4831241980ce084d651db60289373a18f0543fbe68"
+}
