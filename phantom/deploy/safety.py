@@ -101,8 +101,10 @@ class SafetyMonitor:
         # (wrench_debounce_ticks / control.action_rate_hz seconds — the ticks
         # are defined at the record-loop rate, while check() runs at the much
         # faster executor tick, so the debounce is time-based here). The
-        # baseline is frozen while over-limit so a real collision is never
-        # absorbed into it.
+        # baseline is frozen while over-limit. Gradually increasing loads can
+        # remain below this deviation threshold and be absorbed; this rolling
+        # guard does not bound absolute contact load. Qualify pose/motion bias
+        # before changing its reference convention on the CB3.
         self._wrench_base: np.ndarray | None = None
         self._wrench_over_since: float | None = None
         self._wrench_last_t: float | None = None
