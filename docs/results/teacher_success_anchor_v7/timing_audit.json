@@ -5706,5 +5706,7 @@
     }
   },
   "durations_definition": "Forward measured executor intervals, no extrapolation of last row. Cap dwell excludes stale, stopped and FINISH rows; it is separate from existing held-command metrics.",
-  "timing_definition": "Client policy-call wall is measured directly. Outer runner additionally includes snapshot/callback/adapter work. Client-minus-native includes remaining policy/client work, not pure network transport."
+  "timing_definition": "Client policy-call wall is measured directly. Outer runner additionally includes snapshot/callback/adapter work. Client-minus-native includes remaining policy/client work, not pure network transport.",
+  "audit_helper_sha256": "401d3cfed36c50233ee70058a4a1b42b73c1a05fd3450bd4be58820cb27759f3",
+  "source_review": "rpc_independent_review.md and source_manifest.json"
 }
