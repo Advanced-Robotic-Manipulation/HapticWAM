@@ -10,7 +10,7 @@ terminal per model you want warm. Everything is also on the hub
 | menu | what it is | inputs | offline val124 (mean / median mm) | expect on the rig |
 |---|---|---|---|---|
 | `v5_6` | teacher (lead until 09-04) | camera + tactile pads | 18.2 / 15.7 | the reference arm of the v5_6 pair |
-| `ftA` | teacher, fine-tuned (all 09-01/09-04 grasps) | camera + tactile pads | 19.6 / 13.7 (waffles 24.4) | the reference arm of the ftA pair |
+| `ftA` | teacher, fine-tuned (ftA_1500: v5_6 + the 09-01 rig grasps; trained before 09-04) | camera + tactile pads | 19.6 / 13.7 (waffles 24.4) | the reference arm of the ftA pair |
 | `stu_ftA_r1` | **student, round 2** — distilled from ftA, teacher at full NFE, trained sigma head | camera + proprio ONLY (no pads) | **22.7 / 16.4** (best student) | the paper's student: should grasp, plausibly less often than ftA; watch for closes on air |
 | `stu_ftA` | student, round 1 — distilled from ftA | no pads | 23.6 / 17.9 | slightly worse than r1; run only if r1 disappoints or time allows |
 | `stu_v5_6` | student, round 1 — distilled from v5_6 | no pads | 27.3 / 18.6 | weaker on waffles (39.9 offline); the v5_6 pair's student |
