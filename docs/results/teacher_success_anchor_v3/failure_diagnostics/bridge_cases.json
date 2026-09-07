@@ -1,0 +1,1600 @@
+{
+  "schema_version": 1,
+  "scope": "Original successful reference plus completed explicitly listed v3 diagnostic groups; no model ranking or score mutations.",
+  "groups": [
+    "corrected_profile_bridge"
+  ],
+  "definitions": {
+    "preclosure_reach": "Last 15Hz pad-midpoint-to-packet OBB distance before frozen absolute closure>=.25 event; metric is geometric proxy, not fingertip clearance.",
+    "stage": "Nearest 15Hz sample to original frozen score event, up to .034s from event; sustained stage gates unchanged.",
+    "stop": "Exact 125Hz execution first safety stop; object evidence nearest 15Hz sample can fall just after stop.",
+    "played_opening": "Delivered gripper ZOH row at recorded play_time, original-policy eligibility from historical terminal-veto diagnostics; stopped rows excluded. Raw proposal tails counted separately.",
+    "nearest_y": "Original carry-to-release trajectory nearest measured transport Y; progress diagnostic, not full state matching or counterfactual.",
+    "limits": "Rendering and inference timing differ. No controlled causal attribution from cross-run deltas; sensor/force magnitudes and geometry remain simulation hypotheses."
+  },
+  "reference": {
+    "label": "original_success",
+    "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242",
+    "score_outcomes": {
+      "reach_before_closure": true,
+      "acquired": true,
+      "lifted": true,
+      "carried": true,
+      "released_in_bin": true,
+      "full_task": true,
+      "dropped": false
+    },
+    "score_events_s": {
+      "reach": 6.336,
+      "closure": 7.468,
+      "acquisition": 8.0,
+      "lift": 12.668000000000001,
+      "carry": 15.336,
+      "release_in_bin": 24.400000000000002,
+      "full_task": 25.2,
+      "first_drop": null
+    },
+    "reach_before_absolute_closure": {
+      "sample_t_s": 7.4,
+      "pad_midpoint_to_packet_obb_m": 0.004093334366673496,
+      "closure": 0.0474105104804039
+    },
+    "additional_closure_diagnostic": {
+      "absolute_threshold_already_exceeded_at_start": false,
+      "initial_measured_closure": 0.07840987294912338,
+      "first_closing_motion_s": 1.484,
+      "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+      "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+      "sample_time_s": 1.468,
+      "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+    },
+    "stage_samples": {
+      "reach": {
+        "scene_t_s": 6.336,
+        "tcp_xyz_rotvec": [
+          -0.36019365847372625,
+          -0.28777095971944466,
+          0.09668087334102819,
+          -1.4561310551164484,
+          -1.9573469005223156,
+          1.34034888610498
+        ],
+        "closure": 0.04741195961833,
+        "packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "packet_orientation_wxyz": [
+          0.9874993562698364,
+          -1.1887384516739985e-06,
+          -1.1328351945394388e-07,
+          0.15762291848659515
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.3099348843097687
+      },
+      "closure": {
+        "scene_t_s": 7.468,
+        "tcp_xyz_rotvec": [
+          -0.3607074706962451,
+          -0.28818900009541654,
+          0.08035150087181885,
+          -1.4682967724382676,
+          -1.9621812991951657,
+          1.3416660439546764
+        ],
+        "closure": 0.2808610796928406,
+        "packet_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "packet_orientation_wxyz": [
+          0.9874993562698364,
+          -1.1730234064089018e-06,
+          -1.1075796635395818e-07,
+          0.15762291848659515
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.30455341935157776
+      },
+      "acquisition": {
+        "scene_t_s": 8.0,
+        "tcp_xyz_rotvec": [
+          -0.3617176838304031,
+          -0.2886064339064008,
+          0.07702481198577933,
+          -1.4692175430309786,
+          -1.9619670442871073,
+          1.343765957878366
+        ],
+        "closure": 0.38012516498565674,
+        "packet_center_m": [
+          -0.3919166028499603,
+          -0.2967192530632019,
+          0.06999967247247696
+        ],
+        "packet_orientation_wxyz": [
+          0.9850670695304871,
+          4.901512511423789e-06,
+          -2.1121581994520966e-07,
+          0.1721714437007904
+        ],
+        "packet_force_per_pad_n": [
+          0.42193230986595154,
+          0.38130125403404236
+        ],
+        "wrist_radius_m": 0.3038746118545532
+      },
+      "lift": {
+        "scene_t_s": 12.668000000000001,
+        "tcp_xyz_rotvec": [
+          -0.3588634078557028,
+          -0.2910960407095462,
+          0.1030095142122436,
+          -1.3862394425198072,
+          -1.924103146920662,
+          1.3986192496173189
+        ],
+        "closure": 0.5552539229393005,
+        "packet_center_m": [
+          -0.38143396377563477,
+          -0.3074108958244324,
+          0.10022123903036118
+        ],
+        "packet_orientation_wxyz": [
+          0.949059784412384,
+          0.048069629818201065,
+          0.03074663132429123,
+          0.3098863661289215
+        ],
+        "packet_force_per_pad_n": [
+          5.017836570739746,
+          5.054780960083008
+        ],
+        "wrist_radius_m": 0.29679107666015625
+      },
+      "carry": {
+        "scene_t_s": 15.336,
+        "tcp_xyz_rotvec": [
+          -0.40003377500904586,
+          -0.26181847605717773,
+          0.3756732000321992,
+          -1.0578974083423645,
+          -1.7114862779535573,
+          1.3071198848596137
+        ],
+        "closure": 0.5545135736465454,
+        "packet_center_m": [
+          -0.42370522022247314,
+          -0.276565283536911,
+          0.3780369460582733
+        ],
+        "packet_orientation_wxyz": [
+          0.933934211730957,
+          0.17871299386024475,
+          0.16064497828483582,
+          0.2646164000034332
+        ],
+        "packet_force_per_pad_n": [
+          5.005514144897461,
+          5.163486480712891
+        ],
+        "wrist_radius_m": 0.44151508808135986
+      },
+      "release_in_bin": {
+        "scene_t_s": 24.400000000000002,
+        "tcp_xyz_rotvec": [
+          -0.3931166761298772,
+          0.09699482099443124,
+          0.11200203001651877,
+          -2.181761303057176,
+          -0.9366828563675443,
+          0.5947337915640276
+        ],
+        "closure": 0.4664989113807678,
+        "packet_center_m": [
+          -0.41936174035072327,
+          0.10441696643829346,
+          0.13625875115394592
+        ],
+        "packet_orientation_wxyz": [
+          0.948474645614624,
+          0.12210768461227417,
+          0.2265951782464981,
+          -0.18477068841457367
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.3426312506198883
+      },
+      "full_task": {
+        "scene_t_s": 25.2,
+        "tcp_xyz_rotvec": [
+          -0.39404313444691563,
+          0.09806109996713488,
+          0.11631366661501688,
+          -2.168643780161315,
+          -0.9239753789791223,
+          0.6041639470099713
+        ],
+        "closure": 0.41281718015670776,
+        "packet_center_m": [
+          -0.4309442639350891,
+          0.10553507506847382,
+          0.07200002670288086
+        ],
+        "packet_orientation_wxyz": [
+          0.9938486218452454,
+          2.923201464000158e-06,
+          -4.515957527928549e-07,
+          -0.1107478216290474
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.3418027460575104
+      },
+      "first_drop": null
+    },
+    "object_max_rise_m": 0.3417630195617676,
+    "first_latch_s": 12.132,
+    "gel_force_peak_per_pad_n": [
+      5.856501170393865,
+      6.403903607173303
+    ],
+    "max_concurrent_weaker_gel_force_n": 5.856501170393865,
+    "last_pre_stop_bilateral_contact": {
+      "scene": {
+        "scene_t_s": 24.336000000000002,
+        "tcp_xyz_rotvec": [
+          -0.39304763951729804,
+          0.0969340519633638,
+          0.11189516266710695,
+          -2.1821954638956256,
+          -0.9374072005286231,
+          0.5942297269922621
+        ],
+        "closure": 0.5558644533157349,
+        "packet_center_m": [
+          -0.4192363917827606,
+          0.10469099134206772,
+          0.13801640272140503
+        ],
+        "packet_orientation_wxyz": [
+          0.9470722079277039,
+          0.12287601828575134,
+          0.22609452903270721,
+          -0.19192951917648315
+        ],
+        "packet_force_per_pad_n": [
+          6.213249683380127,
+          6.261396884918213
+        ],
+        "wrist_radius_m": 0.3426857590675354
+      },
+      "executor_t_s": 24.34,
+      "commanded_closure": 0.6464033722877502,
+      "latch": 0.6464033722877502,
+      "packet_center_rise_m": 0.0680164098739624
+    },
+    "release": {
+      "config": {
+        "tcp_min_m": [
+          -0.5429275160642127,
+          -0.06853791240695331,
+          0.057999999999999996
+        ],
+        "tcp_max_m": [
+          -0.24020644059509488,
+          0.14193716917871008,
+          0.274
+        ],
+        "open_command_max": 0.45,
+        "opening_hold_s": 0.2,
+        "unloaded_force_max_n": 0.5,
+        "unloaded_hold_s": 0.2,
+        "rearm_close_command_min": 0.5
+      },
+      "phase_counts": {
+        "unarmed": 1516,
+        "holding": 1531,
+        "releasing": 115,
+        "waiting_for_close": 761
+      },
+      "at_stop": {
+        "variant": "placement_policy_release_v1",
+        "phase": "waiting_for_close",
+        "window_active": false,
+        "opening_since_s": null,
+        "committed_at_s": 24.38,
+        "unloaded_since_s": 25.1,
+        "suppress_latch": true,
+        "event": "safety_preempted"
+      },
+      "first_window_s": 19.036,
+      "first_eligible_played_opening_s": 23.372,
+      "eligible_played_opening_executor_samples_after_first_latch": 748,
+      "eligible_played_opening_unique_rows_after_first_latch": 59,
+      "eligible_played_opening_inside_window_samples": 432,
+      "raw_post_latch_predicted_opening_rows": 174,
+      "raw_post_latch_opening_rows_played": 69,
+      "raw_post_latch_opening_rows_unplayed": 105,
+      "post_latch_played_raw_openings_including_plans_created_before_latch": 69,
+      "minimum_original_eligible_played_closure": 0.08614075183868408
+    },
+    "stop": {
+      "t_s": 31.38,
+      "safety_events": [
+        "wrist_extension"
+      ],
+      "measured_tcp_xyz_rotvec": [
+        -0.42589415698749933,
+        -0.1861525155871721,
+        0.4122961311084476,
+        -1.1841612290603762,
+        -1.5965928466191153,
+        1.2029474001613727
+      ],
+      "requested_tcp_xyz_rotvec": [
+        -0.4239361159202154,
+        -0.19146548251977175,
+        0.41371842103426126,
+        -1.1728549107972361,
+        -1.6072284444229632,
+        1.2157239704324876
+      ],
+      "tracking_error_m": 0.005838189024101449,
+      "tracking_rotation_error_deg": 0.9540116438945595,
+      "wrist_radius_m": 0.46808553215256576,
+      "wrist_radius_limit_m": 0.468,
+      "release_below_xyz_m": [
+        0.0,
+        0.1176146031802188,
+        0.0
+      ],
+      "release_above_xyz_m": [
+        0.0,
+        0.0,
+        0.13829613110844757
+      ],
+      "prior_sample_t_s": 30.876,
+      "last_half_second_measured_delta_xyz_m": [
+        0.00952292675674049,
+        -0.06178836466694468,
+        0.006508619514666858
+      ],
+      "last_half_second_requested_delta_xyz_m": [
+        0.009474679928999752,
+        -0.05989910053608638,
+        0.003101019177921882
+      ],
+      "last_half_second_orientation_change_deg": 9.423615114200995,
+      "latch": null,
+      "measured_closure": 0.12158549576997757,
+      "commanded_closure": 0.1216612458229065,
+      "scene_sample": {
+        "scene_t_s": 31.400000000000002,
+        "tcp_xyz_rotvec": [
+          -0.42621375751883095,
+          -0.18634839631269604,
+          0.41135601706442865,
+          -1.1855941450596508,
+          -1.5987590790897293,
+          1.2021182720539776
+        ],
+        "closure": 0.12152080237865448,
+        "packet_center_m": [
+          -0.4309442639350891,
+          0.10553507506847382,
+          0.07200001925230026
+        ],
+        "packet_orientation_wxyz": [
+          0.9938486218452454,
+          2.9050434022792615e-06,
+          -4.5143156057747547e-07,
+          -0.1107478141784668
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.46806880831718445
+      },
+      "last_strictly_pre_stop_scene_sample": {
+        "scene_t_s": 31.336000000000002,
+        "tcp_xyz_rotvec": [
+          -0.4266788147812192,
+          -0.18112428336291136,
+          0.41248268571889046,
+          -1.1922077003918137,
+          -1.5845362339590847,
+          1.1927907555121033
+        ],
+        "closure": 0.12137006223201752,
+        "packet_center_m": [
+          -0.4309442639350891,
+          0.10553506761789322,
+          0.07200001925230026
+        ],
+        "packet_orientation_wxyz": [
+          0.9938486218452454,
+          2.9018065106356516e-06,
+          -4.5352970801104675e-07,
+          -0.11074782907962799
+        ],
+        "packet_force_per_pad_n": [
+          0.0,
+          0.0
+        ],
+        "wrist_radius_m": 0.4675391614437103
+      },
+      "packet_center_rise_m": 0.0020000264048576355,
+      "physical_bilateral_and_raised_at_nearest_sample": false,
+      "drop_relative_to_stop_s": null,
+      "gel_last_causal_t_s": 31.38,
+      "gel_last_causal_force_n": [
+        0.0,
+        0.0
+      ]
+    },
+    "maximum_tcp_z_after_lift_before_stop_m": 0.41248268571889046,
+    "input_sha256": {
+      "sim_trace.npz": "c5bc475f200bce5c22590d844bca15163b74d82eed6aa7efb93ce33259d2b182",
+      "execution_trace.jsonl": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+      "planner_trace.json": "0370254ce95558b881f765b00067fb5c20e86feee815dfc9302ab85b1cfca700",
+      "delivered_plans.jsonl": "71e759f6d2747dc90bace8278aa25d1c0be4f56857693ad056e332167bcbea12",
+      "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+      "gel_contact_trace.json": "872de2e7b44ee6376393b147f05290b5a33910261d08221ef6f45b2b0af27d66"
+    },
+    "score_sha256": "4df83c33edd523350851bebcfd3ee12b06a6a6c1aacf3e479b2cdf3659df09c0",
+    "carry_relative_samples": [
+      {
+        "scene_t_s": 15.336,
+        "tcp_xyz_rotvec": [
+          -0.40003377500904586,
+          -0.26181847605717773,
+          0.3756732000321992,
+          -1.0578974083423645,
+          -1.7114862779535573,
+          1.3071198848596137
+        ],
+        "closure": 0.5545135736465454,
+        "packet_center_m": [
+          -0.42370522022247314,
+          -0.276565283536911,
+          0.3780369460582733
+        ],
+        "packet_orientation_wxyz": [
+          0.933934211730957,
+          0.17871299386024475,
+          0.16064497828483582,
+          0.2646164000034332
+        ],
+        "packet_force_per_pad_n": [
+          5.005514144897461,
+          5.163486480712891
+        ],
+        "wrist_radius_m": 0.44151508808135986
+      },
+      {
+        "scene_t_s": 15.868,
+        "tcp_xyz_rotvec": [
+          -0.42108447941742794,
+          -0.21372733878041023,
+          0.4001232510399253,
+          -1.1036254660020117,
+          -1.5880195443102665,
+          1.1639293480605903
+        ],
+        "closure": 0.554668664932251,
+        "packet_center_m": [
+          -0.446714848279953,
+          -0.22466376423835754,
+          0.40276703238487244
+        ],
+        "packet_orientation_wxyz": [
+          0.9431659579277039,
+          0.22330918908119202,
+          0.15769600868225098,
+          0.18895234167575836
+        ],
+        "packet_force_per_pad_n": [
+          4.978126049041748,
+          5.140822410583496
+        ],
+        "wrist_radius_m": 0.4567779004573822
+      },
+      {
+        "scene_t_s": 16.336000000000002,
+        "tcp_xyz_rotvec": [
+          -0.4400195598739515,
+          -0.15577419806667542,
+          0.40796805405246656,
+          -1.2036830647721095,
+          -1.425997997194328,
+          1.006580788610251
+        ],
+        "closure": 0.5555506944656372,
+        "packet_center_m": [
+          -0.46731388568878174,
+          -0.16118767857551575,
+          0.41098305583000183
+        ],
+        "packet_orientation_wxyz": [
+          0.9527491331100464,
+          0.2541621923446655,
+          0.14153817296028137,
+          0.0873941108584404
+        ],
+        "packet_force_per_pad_n": [
+          4.9323344230651855,
+          5.097135066986084
+        ],
+        "wrist_radius_m": 0.462506502866745
+      },
+      {
+        "scene_t_s": 16.868000000000002,
+        "tcp_xyz_rotvec": [
+          -0.45476603968075197,
+          -0.07701631305952773,
+          0.4028189459483432,
+          -1.3473714203160434,
+          -1.251084038248907,
+          0.8460152591419353
+        ],
+        "closure": 0.555637538433075,
+        "packet_center_m": [
+          -0.4825826585292816,
+          -0.07580561935901642,
+          0.4056990444660187
+        ],
+        "packet_orientation_wxyz": [
+          0.9578779935836792,
+          0.26494091749191284,
+          0.10782549530267715,
+          -0.025491097941994667
+        ],
+        "packet_force_per_pad_n": [
+          6.2078351974487305,
+          6.333114147186279
+        ],
+        "wrist_radius_m": 0.46380919218063354
+      },
+      {
+        "scene_t_s": 17.336000000000002,
+        "tcp_xyz_rotvec": [
+          -0.4540791218043412,
+          -0.020317517987554032,
+          0.3883789631140726,
+          -1.4797291623445519,
+          -1.1510067436071536,
+          0.7341331972233889
+        ],
+        "closure": 0.5560726523399353,
+        "packet_center_m": [
+          -0.48145124316215515,
+          -0.014666782692074776,
+          0.3899027109146118
+        ],
+        "packet_orientation_wxyz": [
+          0.9595678448677063,
+          0.25612905621528625,
+          0.06486157327890396,
+          -0.09705989062786102
+        ],
+        "packet_force_per_pad_n": [
+          6.357696533203125,
+          6.536553382873535
+        ],
+        "wrist_radius_m": 0.46572843194007874
+      }
+    ]
+  },
+  "cases": [
+    {
+      "label": "corrected_profile_bridge/teacher__fixed_anchor__seed904301",
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/corrected_profile_bridge/rollouts/teacher__fixed_anchor__seed904301",
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "score_events_s": {
+        "reach": 5.668,
+        "closure": 6.336,
+        "acquisition": 6.6000000000000005,
+        "lift": 10.200000000000001,
+        "carry": 12.668000000000001,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "reach_before_absolute_closure": {
+        "sample_t_s": 6.268,
+        "pad_midpoint_to_packet_obb_m": 0.001408118893329268,
+        "closure": 0.1997593343257904
+      },
+      "additional_closure_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": false,
+        "initial_measured_closure": 0.07840987294912338,
+        "first_closing_motion_s": 1.46,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "sample_time_s": 1.4000000000000001,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "stage_samples": {
+        "reach": {
+          "scene_t_s": 5.668,
+          "tcp_xyz_rotvec": [
+            -0.3670692167294316,
+            -0.2885555190479797,
+            0.09575195350544724,
+            -1.4452364208331705,
+            -1.948873811282592,
+            1.30398151726628
+          ],
+          "closure": 0.15254248678684235,
+          "packet_center_m": [
+            -0.393706738948822,
+            -0.29306915402412415,
+            0.06999999284744263
+          ],
+          "packet_orientation_wxyz": [
+            0.9874993562698364,
+            -1.1749339137168135e-06,
+            -1.1140883060534179e-07,
+            0.15762291848659515
+          ],
+          "packet_force_per_pad_n": [
+            0.0,
+            0.0
+          ],
+          "wrist_radius_m": 0.31771472096443176
+        },
+        "closure": {
+          "scene_t_s": 6.336,
+          "tcp_xyz_rotvec": [
+            -0.36660739198699943,
+            -0.28748207422736893,
+            0.07640011188531062,
+            -1.4578198842946466,
+            -1.9513966888311662,
+            1.307768406857989
+          ],
+          "closure": 0.36253783106803894,
+          "packet_center_m": [
+            -0.39365053176879883,
+            -0.29317641258239746,
+            0.07000014185905457
+          ],
+          "packet_orientation_wxyz": [
+            0.9876194000244141,
+            2.233499981230125e-05,
+            4.523230927588884e-06,
+            0.15686948597431183
+          ],
+          "packet_force_per_pad_n": [
+            0.8992297649383545,
+            0.0
+          ],
+          "wrist_radius_m": 0.30907541513442993
+        },
+        "acquisition": {
+          "scene_t_s": 6.6000000000000005,
+          "tcp_xyz_rotvec": [
+            -0.36680193220423996,
+            -0.28719130927394276,
+            0.07456566588942559,
+            -1.4592664569742988,
+            -1.9528092178179384,
+            1.3094203457866491
+          ],
+          "closure": 0.3700923025608063,
+          "packet_center_m": [
+            -0.39369145035743713,
+            -0.29317301511764526,
+            0.06999952346086502
+          ],
+          "packet_orientation_wxyz": [
+            0.9874430894851685,
+            3.0125953344395384e-05,
+            6.047503120498732e-06,
+            0.15797515213489532
+          ],
+          "packet_force_per_pad_n": [
+            0.35311359167099,
+            0.3204445540904999
+          ],
+          "wrist_radius_m": 0.3082999885082245
+        },
+        "lift": {
+          "scene_t_s": 10.200000000000001,
+          "tcp_xyz_rotvec": [
+            -0.3681368794408361,
+            -0.2938921878506969,
+            0.10337208224220126,
+            -1.391523408361562,
+            -1.9416272251832762,
+            1.3439272419135007
+          ],
+          "closure": 0.555325448513031,
+          "packet_center_m": [
+            -0.3873140513896942,
+            -0.3078019618988037,
+            0.10272394120693207
+          ],
+          "packet_orientation_wxyz": [
+            0.9496970176696777,
+            0.05485657975077629,
+            0.028688617050647736,
+            0.3069906532764435
+          ],
+          "packet_force_per_pad_n": [
+            5.810503005981445,
+            5.825711727142334
+          ],
+          "wrist_radius_m": 0.3142172694206238
+        },
+        "carry": {
+          "scene_t_s": 12.668000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4124495957062777,
+            -0.26301621957375126,
+            0.3743323453769908,
+            -1.0588935709949554,
+            -1.7135235452282103,
+            1.2808605729320595
+          ],
+          "closure": 0.5553163886070251,
+          "packet_center_m": [
+            -0.43179604411125183,
+            -0.2761166989803314,
+            0.3783268928527832
+          ],
+          "packet_orientation_wxyz": [
+            0.9328523874282837,
+            0.17958596348762512,
+            0.167448028922081,
+            0.263621985912323
+          ],
+          "packet_force_per_pad_n": [
+            5.771951198577881,
+            5.861882209777832
+          ],
+          "wrist_radius_m": 0.44953617453575134
+        },
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object_max_rise_m": 0.35054436326026917,
+      "first_latch_s": 9.252,
+      "gel_force_peak_per_pad_n": [
+        4.950930565931816,
+        5.461323523889682
+      ],
+      "max_concurrent_weaker_gel_force_n": 4.950930565931816,
+      "last_pre_stop_bilateral_contact": {
+        "scene": {
+          "scene_t_s": 14.8,
+          "tcp_xyz_rotvec": [
+            -0.46949017427788264,
+            0.01224028998494349,
+            0.383806457073233,
+            -1.5174568129207586,
+            -1.0822195654003348,
+            0.7067404652751055
+          ],
+          "closure": 0.5553075075149536,
+          "packet_center_m": [
+            -0.49232614040374756,
+            0.017365822568535805,
+            0.38756364583969116
+          ],
+          "packet_orientation_wxyz": [
+            0.957461953163147,
+            0.2471887618303299,
+            0.07563019543886185,
+            -0.12823650240898132
+          ],
+          "packet_force_per_pad_n": [
+            5.74794340133667,
+            5.877809524536133
+          ],
+          "wrist_radius_m": 0.46780434250831604
+        },
+        "executor_t_s": 14.796000000000001,
+        "commanded_closure": 0.6394721865653992,
+        "latch": 0.6394721865653992,
+        "packet_center_rise_m": 0.31756365299224854
+      },
+      "release": {
+        "config": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true
+        },
+        "phase_counts": {
+          "unarmed": 1156,
+          "holding": 698
+        },
+        "at_stop": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "holding",
+          "window_active": false,
+          "opening_since_s": null,
+          "committed_at_s": null,
+          "finished_at_s": null,
+          "controller_finished": false,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": null,
+          "suppress_latch": false,
+          "event": "safety_preempted"
+        },
+        "first_window_s": null,
+        "first_eligible_played_opening_s": null,
+        "eligible_played_opening_executor_samples_after_first_latch": 0,
+        "eligible_played_opening_unique_rows_after_first_latch": 0,
+        "eligible_played_opening_inside_window_samples": 0,
+        "raw_post_latch_predicted_opening_rows": 0,
+        "raw_post_latch_opening_rows_played": 0,
+        "raw_post_latch_opening_rows_unplayed": 0,
+        "post_latch_played_raw_openings_including_plans_created_before_latch": 0,
+        "minimum_original_eligible_played_closure": 0.5650278329849243
+      },
+      "stop": {
+        "t_s": 14.828000000000001,
+        "safety_events": [
+          "wrist_extension"
+        ],
+        "measured_tcp_xyz_rotvec": [
+          -0.4691511245440788,
+          0.01536610844293683,
+          0.38259197968992004,
+          -1.525901801645397,
+          -1.0775715290233487,
+          0.7010309114281478
+        ],
+        "requested_tcp_xyz_rotvec": [
+          -0.4670944014864374,
+          0.020582439771839517,
+          0.38439346017872683,
+          -1.5351806109280202,
+          -1.0627255237622615,
+          0.697152948715904
+        ],
+        "tracking_error_m": 0.005889444304879464,
+        "tracking_rotation_error_deg": 0.8681087200454128,
+        "wrist_radius_m": 0.4680567634600624,
+        "wrist_radius_limit_m": 0.468,
+        "release_below_xyz_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "release_above_xyz_m": [
+          0.0,
+          0.0,
+          0.10859197968992002
+        ],
+        "prior_sample_t_s": 14.332,
+        "last_half_second_measured_delta_xyz_m": [
+          0.002225393339983228,
+          0.06184050668416497,
+          -0.018286499239832943
+        ],
+        "last_half_second_requested_delta_xyz_m": [
+          0.0031689297949306083,
+          0.05909547348529866,
+          -0.021079647033581672
+        ],
+        "last_half_second_orientation_change_deg": 10.164750152701943,
+        "latch": 0.6394721865653992,
+        "measured_closure": 0.5553127527236938,
+        "commanded_closure": 0.6394721865653992,
+        "scene_sample": {
+          "scene_t_s": 14.8,
+          "tcp_xyz_rotvec": [
+            -0.46949017427788264,
+            0.01224028998494349,
+            0.383806457073233,
+            -1.5174568129207586,
+            -1.0822195654003348,
+            0.7067404652751055
+          ],
+          "closure": 0.5553075075149536,
+          "packet_center_m": [
+            -0.49232614040374756,
+            0.017365822568535805,
+            0.38756364583969116
+          ],
+          "packet_orientation_wxyz": [
+            0.957461953163147,
+            0.2471887618303299,
+            0.07563019543886185,
+            -0.12823650240898132
+          ],
+          "packet_force_per_pad_n": [
+            5.74794340133667,
+            5.877809524536133
+          ],
+          "wrist_radius_m": 0.46780434250831604
+        },
+        "last_strictly_pre_stop_scene_sample": {
+          "scene_t_s": 14.8,
+          "tcp_xyz_rotvec": [
+            -0.46949017427788264,
+            0.01224028998494349,
+            0.383806457073233,
+            -1.5174568129207586,
+            -1.0822195654003348,
+            0.7067404652751055
+          ],
+          "closure": 0.5553075075149536,
+          "packet_center_m": [
+            -0.49232614040374756,
+            0.017365822568535805,
+            0.38756364583969116
+          ],
+          "packet_orientation_wxyz": [
+            0.957461953163147,
+            0.2471887618303299,
+            0.07563019543886185,
+            -0.12823650240898132
+          ],
+          "packet_force_per_pad_n": [
+            5.74794340133667,
+            5.877809524536133
+          ],
+          "wrist_radius_m": 0.46780434250831604
+        },
+        "packet_center_rise_m": 0.31756365299224854,
+        "physical_bilateral_and_raised_at_nearest_sample": true,
+        "drop_relative_to_stop_s": null,
+        "gel_last_causal_t_s": 14.756,
+        "gel_last_causal_force_n": [
+          4.935209773388987,
+          5.442436189419755
+        ]
+      },
+      "maximum_tcp_z_after_lift_before_stop_m": 0.4150919205113321,
+      "input_sha256": {
+        "sim_trace.npz": "61a037e0d821aa9ec1e68939cf32d99ac384de51abc88c76ee5343dbea994fc6",
+        "execution_trace.jsonl": "1ea3766b5dc82069093832fecb427e4bdc1ab9e9ec2992ca714ba4e4ba6ef87e",
+        "planner_trace.json": "61f15ccf721940796f074a4e5767a1bee5da0428c691630a107088ef9b08ac09",
+        "delivered_plans.jsonl": "db3b76ad9e6dba3d48da07be060578a3bbd9f4f0956b8fa7d264fc2b16f28f36",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "gel_contact_trace.json": "680e51fc16d0d7e9081228d2a8bb83d7a572869fb5b567738f31c3c8f387fbec"
+      },
+      "score_sha256": "aac2b11efd2a191f556c8e502d70c79454a447a682cfc9c869d90f62b7c34333",
+      "carry_relative_samples": [
+        {
+          "scene_t_s": 12.668000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4124495957062777,
+            -0.26301621957375126,
+            0.3743323453769908,
+            -1.0588935709949554,
+            -1.7135235452282103,
+            1.2808605729320595
+          ],
+          "closure": 0.5553163886070251,
+          "packet_center_m": [
+            -0.43179604411125183,
+            -0.2761166989803314,
+            0.3783268928527832
+          ],
+          "packet_orientation_wxyz": [
+            0.9328523874282837,
+            0.17958596348762512,
+            0.167448028922081,
+            0.263621985912323
+          ],
+          "packet_force_per_pad_n": [
+            5.771951198577881,
+            5.861882209777832
+          ],
+          "wrist_radius_m": 0.44953617453575134
+        },
+        {
+          "scene_t_s": 13.136000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4320055335691134,
+            -0.21447602575968294,
+            0.40175881868865976,
+            -1.0816541231481467,
+            -1.5778077256473653,
+            1.1735579291496072
+          ],
+          "closure": 0.5553107261657715,
+          "packet_center_m": [
+            -0.4527168571949005,
+            -0.22494150698184967,
+            0.4065973460674286
+          ],
+          "packet_orientation_wxyz": [
+            0.9392237067222595,
+            0.21895593404769897,
+            0.1801999807357788,
+            0.1935073286294937
+          ],
+          "packet_force_per_pad_n": [
+            5.724843978881836,
+            5.9117350578308105
+          ],
+          "wrist_radius_m": 0.45728573203086853
+        },
+        {
+          "scene_t_s": 13.668000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4559779207964074,
+            -0.14106310020776305,
+            0.4142481771099803,
+            -1.1987278340005967,
+            -1.382444104882333,
+            1.001259832271816
+          ],
+          "closure": 0.5553209185600281,
+          "packet_center_m": [
+            -0.47846707701683044,
+            -0.14620541036128998,
+            0.41969460248947144
+          ],
+          "packet_orientation_wxyz": [
+            0.9503940343856812,
+            0.2525622546672821,
+            0.16562363505363464,
+            0.07438037544488907
+          ],
+          "packet_force_per_pad_n": [
+            5.782645225524902,
+            5.850401401519775
+          ],
+          "wrist_radius_m": 0.46389228105545044
+        },
+        {
+          "scene_t_s": 14.136000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4677777827407479,
+            -0.07438521245194235,
+            0.4078849124185555,
+            -1.3212322046471092,
+            -1.2400850407853388,
+            0.8680979132796919
+          ],
+          "closure": 0.5553107261657715,
+          "packet_center_m": [
+            -0.49088653922080994,
+            -0.0750502422451973,
+            0.4131243824958801
+          ],
+          "packet_orientation_wxyz": [
+            0.9553274512290955,
+            0.26150670647621155,
+            0.13640186190605164,
+            -0.018930373713374138
+          ],
+          "packet_force_per_pad_n": [
+            5.726546287536621,
+            5.903810977935791
+          ],
+          "wrist_radius_m": 0.46455296874046326
+        },
+        {
+          "scene_t_s": 14.668000000000001,
+          "tcp_xyz_rotvec": [
+            -0.4710167592138842,
+            -0.0035563356891803594,
+            0.3889573770298511,
+            -1.4783487313612758,
+            -1.1054553235060725,
+            0.734481068803044
+          ],
+          "closure": 0.555310070514679,
+          "packet_center_m": [
+            -0.49397334456443787,
+            0.000604433414991945,
+            0.3931506872177124
+          ],
+          "packet_orientation_wxyz": [
+            0.9571574926376343,
+            0.2521977126598358,
+            0.08913557976484299,
+            -0.11090891808271408
+          ],
+          "packet_force_per_pad_n": [
+            5.7468390464782715,
+            5.876936912536621
+          ],
+          "wrist_radius_m": 0.46676942706108093
+        }
+      ],
+      "same_stage_delta_from_original": {
+        "reach": {
+          "tcp_delta_xyz_m": [
+            -0.00687555825570535,
+            -0.0007845593285350505,
+            -0.0009289198355809519
+          ],
+          "orientation_difference_deg": 1.969011516159541,
+          "closure_delta": 0.10513052716851234
+        },
+        "closure": {
+          "tcp_delta_xyz_m": [
+            -0.00589992129075434,
+            0.0007069258680476032,
+            -0.0039513889865082225
+          ],
+          "orientation_difference_deg": 1.9143245833897562,
+          "closure_delta": 0.08167675137519836
+        },
+        "acquisition": {
+          "tcp_delta_xyz_m": [
+            -0.005084248373836864,
+            0.0014151246324580202,
+            -0.00245914609635374
+          ],
+          "orientation_difference_deg": 1.8789168434524768,
+          "closure_delta": -0.010032862424850464
+        },
+        "lift": {
+          "tcp_delta_xyz_m": [
+            -0.009273471585133308,
+            -0.0027961471411506733,
+            0.0003625680299576689
+          ],
+          "orientation_difference_deg": 2.410261102794629,
+          "closure_delta": 7.152557373046875e-05
+        },
+        "carry": {
+          "tcp_delta_xyz_m": [
+            -0.01241582069723185,
+            -0.001197743516573535,
+            -0.00134085465520839
+          ],
+          "orientation_difference_deg": 1.25541459676095,
+          "closure_delta": 0.0008028149604797363
+        }
+      },
+      "original_at_nearest_transport_y": {
+        "reference_t_s": 17.684,
+        "reference_pose_xyz_rotvec": [
+          -0.4493610065472561,
+          0.01560110953418381,
+          0.37008081477314125,
+          -1.5818773464273255,
+          -1.0962027416662221,
+          0.6727643021441901
+        ],
+        "y_mismatch_m": 0.00023500109124698076,
+        "case_minus_reference_xyz_m": [
+          -0.01979011799682273,
+          -0.00023500109124698076,
+          0.012511164916778783
+        ],
+        "orientation_difference_deg": 3.4249556774788013,
+        "reference_wrist_radius_m": 0.4634968931752856,
+        "reference_closure": 0.556431233882904
+      }
+    },
+    {
+      "label": "corrected_profile_bridge/teacher__fixed_anchor__seed904302",
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/corrected_profile_bridge/rollouts/teacher__fixed_anchor__seed904302",
+      "score_outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "score_events_s": {
+        "reach": 6.2,
+        "closure": 7.0680000000000005,
+        "acquisition": 7.4,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "reach_before_absolute_closure": {
+        "sample_t_s": 7.0,
+        "pad_midpoint_to_packet_obb_m": 0.0105638655416116,
+        "closure": 0.21523970365524292
+      },
+      "additional_closure_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": false,
+        "initial_measured_closure": 0.07840987294912338,
+        "first_closing_motion_s": 1.508,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+        "sample_time_s": 1.468,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "stage_samples": {
+        "reach": {
+          "scene_t_s": 6.2,
+          "tcp_xyz_rotvec": [
+            -0.35865651723720526,
+            -0.28681115120166656,
+            0.09554789699107248,
+            -1.4867696758007831,
+            -1.924791361570143,
+            1.3156469750983126
+          ],
+          "closure": 0.09065292030572891,
+          "packet_center_m": [
+            -0.393706738948822,
+            -0.29306915402412415,
+            0.06999999284744263
+          ],
+          "packet_orientation_wxyz": [
+            0.9874993562698364,
+            -1.1915251434402307e-06,
+            -1.1222569895608103e-07,
+            0.15762291848659515
+          ],
+          "packet_force_per_pad_n": [
+            0.0,
+            0.0
+          ],
+          "wrist_radius_m": 0.3110538423061371
+        },
+        "closure": {
+          "scene_t_s": 7.0680000000000005,
+          "tcp_xyz_rotvec": [
+            -0.3587528318656621,
+            -0.286839345006542,
+            0.08685154824515318,
+            -1.4924467548043803,
+            -1.9262265396919025,
+            1.3151322457007342
+          ],
+          "closure": 0.29714861512184143,
+          "packet_center_m": [
+            -0.393706738948822,
+            -0.29306915402412415,
+            0.06999999284744263
+          ],
+          "packet_orientation_wxyz": [
+            0.9874993562698364,
+            -1.1841490277220146e-06,
+            -1.1129459664971364e-07,
+            0.15762291848659515
+          ],
+          "packet_force_per_pad_n": [
+            0.0,
+            0.0
+          ],
+          "wrist_radius_m": 0.30783700942993164
+        },
+        "acquisition": {
+          "scene_t_s": 7.4,
+          "tcp_xyz_rotvec": [
+            -0.3591933457561837,
+            -0.28666519402876167,
+            0.08532392028637291,
+            -1.4943682160692062,
+            -1.9277660521766788,
+            1.3152131495109818
+          ],
+          "closure": 0.3991736173629761,
+          "packet_center_m": [
+            -0.3929103910923004,
+            -0.29481568932533264,
+            0.07000010460615158
+          ],
+          "packet_orientation_wxyz": [
+            0.9890478253364563,
+            -4.271194848115556e-05,
+            -3.878742518281797e-06,
+            0.1475953310728073
+          ],
+          "packet_force_per_pad_n": [
+            0.8227287530899048,
+            0.5128998756408691
+          ],
+          "wrist_radius_m": 0.3076137602329254
+        },
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object_max_rise_m": 0.003941699862480164,
+      "first_latch_s": null,
+      "gel_force_peak_per_pad_n": [
+        26.750211097806925,
+        1.7128677050855916
+      ],
+      "max_concurrent_weaker_gel_force_n": 1.3096412708671468,
+      "last_pre_stop_bilateral_contact": {
+        "scene": {
+          "scene_t_s": 10.136000000000001,
+          "tcp_xyz_rotvec": [
+            -0.35563194001707327,
+            -0.2849602401674143,
+            0.09536705570414442,
+            -1.4459280630411573,
+            -1.9115527195887916,
+            1.3424348498124261
+          ],
+          "closure": 0.5462881922721863,
+          "packet_center_m": [
+            -0.38327497243881226,
+            -0.3019114136695862,
+            0.0738617479801178
+          ],
+          "packet_orientation_wxyz": [
+            0.9570872783660889,
+            0.01983673684298992,
+            -0.01771586760878563,
+            0.2885769009590149
+          ],
+          "packet_force_per_pad_n": [
+            0.25069519877433777,
+            0.2652600109577179
+          ],
+          "wrist_radius_m": 0.29913321137428284
+        },
+        "executor_t_s": 10.14,
+        "commanded_closure": 0.5500567555427551,
+        "latch": null,
+        "packet_center_rise_m": 0.003861755132675171
+      },
+      "release": {
+        "config": {
+          "tcp_min_m": [
+            -0.5429275160642127,
+            -0.06853791240695331,
+            0.057999999999999996
+          ],
+          "tcp_max_m": [
+            -0.24020644059509488,
+            0.14193716917871008,
+            0.274
+          ],
+          "open_command_max": 0.45,
+          "opening_hold_s": 0.2,
+          "unloaded_force_max_n": 0.5,
+          "unloaded_hold_s": 0.2,
+          "rearm_close_command_min": 0.5,
+          "finish_after_release": true
+        },
+        "phase_counts": {
+          "unarmed": 2204
+        },
+        "at_stop": {
+          "variant": "placement_policy_release_finish_v2",
+          "phase": "unarmed",
+          "window_active": false,
+          "opening_since_s": null,
+          "committed_at_s": null,
+          "finished_at_s": null,
+          "controller_finished": false,
+          "task_success": "not inferred by this controller",
+          "unloaded_since_s": null,
+          "suppress_latch": false,
+          "event": "safety_preempted"
+        },
+        "first_window_s": null,
+        "first_eligible_played_opening_s": null,
+        "eligible_played_opening_executor_samples_after_first_latch": 0,
+        "eligible_played_opening_unique_rows_after_first_latch": 0,
+        "eligible_played_opening_inside_window_samples": 0,
+        "raw_post_latch_predicted_opening_rows": 0,
+        "raw_post_latch_opening_rows_played": 0,
+        "raw_post_latch_opening_rows_unplayed": 0,
+        "post_latch_played_raw_openings_including_plans_created_before_latch": 0,
+        "minimum_original_eligible_played_closure": null
+      },
+      "stop": {
+        "t_s": 17.628,
+        "safety_events": [
+          "tactile_depth"
+        ],
+        "measured_tcp_xyz_rotvec": [
+          -0.41298481247842456,
+          -0.10339337859988537,
+          0.1629044414090903,
+          -1.5588255752091338,
+          -1.405532312365449,
+          0.7918754409025173
+        ],
+        "requested_tcp_xyz_rotvec": [
+          -0.40951928578452784,
+          -0.10907117899912075,
+          0.15414279669257133,
+          -1.5792240020262125,
+          -1.4236657475112828,
+          0.8026172949827368
+        ],
+        "tracking_error_m": 0.011000623199536146,
+        "tracking_rotation_error_deg": 1.680466944801746,
+        "wrist_radius_m": 0.334584195200045,
+        "wrist_radius_limit_m": 0.468,
+        "release_below_xyz_m": [
+          0.0,
+          0.03485546619293206,
+          0.0
+        ],
+        "release_above_xyz_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "prior_sample_t_s": 17.124,
+        "last_half_second_measured_delta_xyz_m": [
+          0.0033925212890510426,
+          -0.0006169404220305319,
+          -0.01477734695114119
+        ],
+        "last_half_second_requested_delta_xyz_m": [
+          0.00597735202390548,
+          -0.004441022559689645,
+          -0.022059905706782817
+        ],
+        "last_half_second_orientation_change_deg": 1.1823048961980562,
+        "latch": null,
+        "measured_closure": 0.1386021226644516,
+        "commanded_closure": 0.232,
+        "scene_sample": {
+          "scene_t_s": 17.6,
+          "tcp_xyz_rotvec": [
+            -0.41318182659226477,
+            -0.10362661494272611,
+            0.16372570804130843,
+            -1.5572560579898689,
+            -1.4070108743652963,
+            0.7915318185019525
+          ],
+          "closure": 0.1371365636587143,
+          "packet_center_m": [
+            -0.38242560625076294,
+            -0.30151668190956116,
+            0.06999998539686203
+          ],
+          "packet_orientation_wxyz": [
+            0.9586185812950134,
+            -1.5473401617782656e-06,
+            -3.0925215810384543e-07,
+            0.28469350934028625
+          ],
+          "packet_force_per_pad_n": [
+            0.0,
+            0.0
+          ],
+          "wrist_radius_m": 0.3351896405220032
+        },
+        "last_strictly_pre_stop_scene_sample": {
+          "scene_t_s": 17.6,
+          "tcp_xyz_rotvec": [
+            -0.41318182659226477,
+            -0.10362661494272611,
+            0.16372570804130843,
+            -1.5572560579898689,
+            -1.4070108743652963,
+            0.7915318185019525
+          ],
+          "closure": 0.1371365636587143,
+          "packet_center_m": [
+            -0.38242560625076294,
+            -0.30151668190956116,
+            0.06999998539686203
+          ],
+          "packet_orientation_wxyz": [
+            0.9586185812950134,
+            -1.5473401617782656e-06,
+            -3.0925215810384543e-07,
+            0.28469350934028625
+          ],
+          "packet_force_per_pad_n": [
+            0.0,
+            0.0
+          ],
+          "wrist_radius_m": 0.3351896405220032
+        },
+        "packet_center_rise_m": -7.450580596923828e-09,
+        "physical_bilateral_and_raised_at_nearest_sample": false,
+        "drop_relative_to_stop_s": null,
+        "gel_last_causal_t_s": 17.628,
+        "gel_last_causal_force_n": [
+          26.750211097806925,
+          0.0
+        ]
+      },
+      "maximum_tcp_z_after_lift_before_stop_m": 0.36444475772601265,
+      "input_sha256": {
+        "sim_trace.npz": "118db5a007f050f2b3968386fde95fa60ce8391d690c13601068089136194441",
+        "execution_trace.jsonl": "5ec69ad587b1f8923a375ad24335d6748dfa37f3ec5fa01af027d901d04b1603",
+        "planner_trace.json": "bd4441ccdf852593728982be64fcf0f775a3f5fb298a7c3892d6309059ecc527",
+        "delivered_plans.jsonl": "3aebc3d36ee498e6f3790a0552beca9f58fa8c30437e353aa6ce2b8906a2ae9c",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "gel_contact_trace.json": "abea9d7def672c8d2353260ecfd7182f2a29d431dd4482ffe196431b12a22fc8"
+      },
+      "score_sha256": "17629dc626f3d8467302dce5adfee2e8a4c0ba9637bdf559a8b639e65e5a9de8",
+      "carry_relative_samples": [],
+      "same_stage_delta_from_original": {
+        "reach": {
+          "tcp_delta_xyz_m": [
+            0.001537141236520989,
+            0.0009598085177781046,
+            -0.001132976349955711
+          ],
+          "orientation_difference_deg": 2.202836155477653,
+          "closure_delta": 0.04324096068739891
+        },
+        "closure": {
+          "tcp_delta_xyz_m": [
+            0.001954638830583,
+            0.001349655088874524,
+            0.006500047373334331
+          ],
+          "orientation_difference_deg": 2.293383551328296,
+          "closure_delta": 0.016287535429000854
+        },
+        "acquisition": {
+          "tcp_delta_xyz_m": [
+            0.0025243380742193677,
+            0.0019412398776391115,
+            0.008299108300593577
+          ],
+          "orientation_difference_deg": 2.292046136430853,
+          "closure_delta": 0.019048452377319336
+        }
+      },
+      "original_at_nearest_transport_y": {
+        "reference_t_s": 16.692,
+        "reference_pose_xyz_rotvec": [
+          -0.4506190471623357,
+          -0.1036755593052186,
+          0.406035626524727,
+          -1.2929556749589937,
+          -1.3117336820225447,
+          0.8955293733242723
+        ],
+        "y_mismatch_m": 0.00028218070533322925,
+        "case_minus_reference_xyz_m": [
+          0.03763423468391114,
+          0.00028218070533322925,
+          -0.24313118511563672
+        ],
+        "orientation_difference_deg": 15.493214680357829,
+        "reference_wrist_radius_m": 0.4632600195762562,
+        "reference_closure": 0.5559105277061462
+      }
+    }
+  ]
+}

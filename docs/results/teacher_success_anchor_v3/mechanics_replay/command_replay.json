@@ -1,0 +1,8 @@
+{
+  "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242/execution_trace.jsonl",
+  "sha256": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+  "rows": 3923,
+  "first_command_s": 0.004,
+  "last_command_s": 31.38,
+  "semantics": "Causal zero-order hold of recorded articulation targets; no inference, no object pose replay, no new safety decisions; not a policy score"
+}

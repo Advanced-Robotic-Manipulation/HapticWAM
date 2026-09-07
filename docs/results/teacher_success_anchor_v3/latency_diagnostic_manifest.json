@@ -1,0 +1,17 @@
+{
+  "scope": "Read-only completed latency diagnostic analysis; no model-selection eligibility",
+  "files": {
+    "audit_latency_diagnostic.py": {
+      "sha256": "546e078d4936fb7b51f548fcab7014e4bed61e6ca033b35943c1c209a26bf9bd",
+      "bytes": 11195
+    },
+    "latency_diagnostic_audit.json": {
+      "sha256": "3b12e533e0cbe765beeb95a4ae1acdbb2683811dbdee3ee9bce833c020ea8a42",
+      "bytes": 72550
+    },
+    "latency_diagnostic_audit.md": {
+      "sha256": "778269457c1b65c27114ead7bc345d6b74096adce6a9b275cbd8033d87cb29cb",
+      "bytes": 3683
+    }
+  }
+}

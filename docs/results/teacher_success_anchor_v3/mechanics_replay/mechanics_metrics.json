@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "valid_for_scoring": false,
+  "invalid_reasons": [
+    "run_mode_is_not_policy"
+  ],
+  "thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  },
+  "outcomes": {
+    "reach_before_closure": true,
+    "acquired": true,
+    "lifted": true,
+    "carried": true,
+    "released_in_bin": true,
+    "full_task": true,
+    "dropped": false
+  },
+  "event_times_s": {
+    "reach": 6.336,
+    "closure": 7.468,
+    "acquisition": 8.0,
+    "lift": 12.668000000000001,
+    "carry": 15.336,
+    "release_in_bin": 24.400000000000002,
+    "full_task": 25.2,
+    "first_drop": null
+  },
+  "object": {
+    "initial_center_m": [
+      -0.393706738948822,
+      -0.29306915402412415,
+      0.06999999284744263
+    ],
+    "final_center_m": [
+      -0.43094420433044434,
+      0.10553520172834396,
+      0.07199998944997787
+    ],
+    "max_lift_m": 0.3417630195617676,
+    "carry_distance_m": 0.43634908344507667,
+    "final_inside_bin": true,
+    "final_contacts_unloaded": true,
+    "final_speed_m_s": 3.9755827669256715e-06,
+    "final_angular_speed_rad_s": 0.0001508968251741851,
+    "minimum_pad_midpoint_to_object_m": 0.0,
+    "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+    "bilateral_contact_duration_s": 15.596000000000004,
+    "pad_packet_normal_force_peak_n": 9.692132949829102
+  },
+  "placement_support": {
+    "required": true,
+    "telemetry_status": "available",
+    "verified_placement": true,
+    "confirmation_time_s": 25.2,
+    "robot_contact_peak_n": 16.427497625350952,
+    "bin_contact_peak_n": 6.637989521026611,
+    "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+  },
+  "control": {
+    "stop_reason": null,
+    "execution_rows": 0,
+    "execution_clock_valid": null,
+    "ik_rejects": 0,
+    "ik_reject_reasons": {},
+    "hold_duration_s": null,
+    "stale_plan_hold_rows": 0,
+    "replans": 0,
+    "inference_errors": 0,
+    "plans_activated": 0,
+    "effective_latency_s": {
+      "count": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    },
+    "inference_wall_time_s": {
+      "count": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    },
+    "activation_delay_s": {
+      "count": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    },
+    "lift_complete_is_task_success": false
+  },
+  "collisions": {
+    "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+    "reported_count": 0,
+    "pad_environment_force_peak_n": 0.0,
+    "reported_events": []
+  },
+  "trace_sampling": {
+    "rows": 502,
+    "duration_s": 33.372,
+    "maximum_interval_s": 0.06800000000000495,
+    "physics_clock_max_error_s": 1.585084945077142e-06,
+    "event_time_uncertainty_s": 0.06800000000000495
+  },
+  "reach_diagnostic": {
+    "absolute_threshold_already_exceeded_at_start": false,
+    "initial_measured_closure": 0.07840987294912338,
+    "first_closing_motion_s": 1.536,
+    "closing_motion_source": "fallback sampled measured closure > initial closure + 0.02",
+    "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+    "sample_time_s": 1.468,
+    "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+  },
+  "limitations": [
+    "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+    "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+    "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+    "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+    "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+  ]
+}

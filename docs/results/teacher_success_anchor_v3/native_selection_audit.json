@@ -1,0 +1,1146 @@
+{
+  "scope": "Read-only reconstruction from completed original/repeat policy logs; no model calls, no counterfactual controller outputs, no source or run mutation",
+  "latent_dt_s": 1.0,
+  "action_rate_hz": 10,
+  "formulas": {
+    "cpk_offset_requested": "round(previous_active_plan.latency_s / (temporal_comp/fps)); default builder uses4/4=1second",
+    "selection_reference_offset_10hz": "clip(round((request_t + current_native_latency - previous_active_plan.action_times[0])*10),0,15)",
+    "previous_plan_identity": "execution_trace latest row at-or-before request time; each replan precedes execution and is possible only after pending prior plan has activated",
+    "cpk_presence_limit": "previous_veto.cpk_invalidated=True indicates previous package was cleared; requested offset alone does not imply a package was actually supplied"
+  },
+  "summary": {
+    "repeat1": {
+      "completed_plan_count": 21,
+      "unmatched_original_plan_count": 17,
+      "k_pick_differences": [
+        {
+          "replan_id": 10,
+          "original": 1,
+          "repeat": 2,
+          "original_request_t_s": 9.02,
+          "repeat_request_t_s": 9.012
+        },
+        {
+          "replan_id": 13,
+          "original": 3,
+          "repeat": 1,
+          "original_request_t_s": 11.372,
+          "repeat_request_t_s": 11.428
+        },
+        {
+          "replan_id": 18,
+          "original": 1,
+          "repeat": 0,
+          "original_request_t_s": 15.356,
+          "repeat_request_t_s": 15.372
+        }
+      ],
+      "first_k_pick_difference": {
+        "replan_id": 10,
+        "original": 1,
+        "repeat": 2,
+        "original_request_t_s": 9.02,
+        "repeat_request_t_s": 9.012
+      },
+      "cpk_offset_requested_differences": [],
+      "first_cpk_offset_requested_difference": null,
+      "selection_reference_offset_10hz_differences": [],
+      "first_selection_reference_offset_10hz_difference": null
+    },
+    "repeat2": {
+      "completed_plan_count": 19,
+      "unmatched_original_plan_count": 19,
+      "k_pick_differences": [
+        {
+          "replan_id": 11,
+          "original": 3,
+          "repeat": 2,
+          "original_request_t_s": 9.804,
+          "repeat_request_t_s": 9.86
+        },
+        {
+          "replan_id": 16,
+          "original": 0,
+          "repeat": 3,
+          "original_request_t_s": 13.788,
+          "repeat_request_t_s": 14.244
+        },
+        {
+          "replan_id": 18,
+          "original": 1,
+          "repeat": 2,
+          "original_request_t_s": 15.356,
+          "repeat_request_t_s": 16.572
+        }
+      ],
+      "first_k_pick_difference": {
+        "replan_id": 11,
+        "original": 3,
+        "repeat": 2,
+        "original_request_t_s": 9.804,
+        "repeat_request_t_s": 9.86
+      },
+      "cpk_offset_requested_differences": [],
+      "first_cpk_offset_requested_difference": null,
+      "selection_reference_offset_10hz_differences": [
+        {
+          "replan_id": 15,
+          "original": 8,
+          "repeat": 12,
+          "original_request_t_s": 12.972,
+          "repeat_request_t_s": 13.052
+        },
+        {
+          "replan_id": 16,
+          "original": 8,
+          "repeat": 12,
+          "original_request_t_s": 13.788,
+          "repeat_request_t_s": 14.244
+        },
+        {
+          "replan_id": 17,
+          "original": 8,
+          "repeat": 12,
+          "original_request_t_s": 14.572000000000001,
+          "repeat_request_t_s": 15.396
+        },
+        {
+          "replan_id": 18,
+          "original": 8,
+          "repeat": 12,
+          "original_request_t_s": 15.356,
+          "repeat_request_t_s": 16.572
+        }
+      ],
+      "first_selection_reference_offset_10hz_difference": {
+        "replan_id": 15,
+        "original": 8,
+        "repeat": 12,
+        "original_request_t_s": 12.972,
+        "repeat_request_t_s": 13.052
+      }
+    }
+  },
+  "raw": {
+    "trials": {
+      "original": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242",
+        "input_sha256": {
+          "planner_trace.json": "0370254ce95558b881f765b00067fb5c20e86feee815dfc9302ab85b1cfca700",
+          "execution_trace.jsonl": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+          "delivered_plans.jsonl": "71e759f6d2747dc90bace8278aa25d1c0be4f56857693ad056e332167bcbea12"
+        },
+        "rows": [
+          {
+            "id": 0,
+            "request_t_s": 0.26,
+            "latency_s": 1.220687007997185,
+            "k_pick": 0,
+            "previous_active_replan_id": null,
+            "previous_latency_s": null,
+            "cpk_offset_requested": 0,
+            "previous_cpk_invalidated": null,
+            "previous_veto_action": null,
+            "selection_reference_offset_10hz": null
+          },
+          {
+            "id": 1,
+            "request_t_s": 1.492,
+            "latency_s": 0.7992031050380319,
+            "k_pick": 1,
+            "previous_active_replan_id": 0,
+            "previous_latency_s": 1.220687007997185,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 2,
+            "request_t_s": 2.3000000000000003,
+            "latency_s": 0.7702938379952684,
+            "k_pick": 2,
+            "previous_active_replan_id": 1,
+            "previous_latency_s": 0.7992031050380319,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 3,
+            "request_t_s": 3.084,
+            "latency_s": 0.7747791390866041,
+            "k_pick": 2,
+            "previous_active_replan_id": 2,
+            "previous_latency_s": 0.7702938379952684,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 4,
+            "request_t_s": 3.868,
+            "latency_s": 0.7730694729834795,
+            "k_pick": 2,
+            "previous_active_replan_id": 3,
+            "previous_latency_s": 0.7747791390866041,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 5,
+            "request_t_s": 4.652,
+            "latency_s": 0.7707501599797979,
+            "k_pick": 2,
+            "previous_active_replan_id": 4,
+            "previous_latency_s": 0.7730694729834795,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 6,
+            "request_t_s": 5.436,
+            "latency_s": 0.7914603509707376,
+            "k_pick": 2,
+            "previous_active_replan_id": 5,
+            "previous_latency_s": 0.7707501599797979,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 7,
+            "request_t_s": 6.236,
+            "latency_s": 1.1816630699904636,
+            "k_pick": 0,
+            "previous_active_replan_id": 6,
+            "previous_latency_s": 0.7914603509707376,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 8,
+            "request_t_s": 7.428,
+            "latency_s": 0.7995796160539612,
+            "k_pick": 0,
+            "previous_active_replan_id": 7,
+            "previous_latency_s": 1.1816630699904636,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 9,
+            "request_t_s": 8.236,
+            "latency_s": 0.7699277669889852,
+            "k_pick": 0,
+            "previous_active_replan_id": 8,
+            "previous_latency_s": 0.7995796160539612,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 10,
+            "request_t_s": 9.02,
+            "latency_s": 0.7698734129080549,
+            "k_pick": 1,
+            "previous_active_replan_id": 9,
+            "previous_latency_s": 0.7699277669889852,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 11,
+            "request_t_s": 9.804,
+            "latency_s": 0.7701480139512569,
+            "k_pick": 3,
+            "previous_active_replan_id": 10,
+            "previous_latency_s": 0.7698734129080549,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 12,
+            "request_t_s": 10.588000000000001,
+            "latency_s": 0.7696257130010054,
+            "k_pick": 3,
+            "previous_active_replan_id": 11,
+            "previous_latency_s": 0.7701480139512569,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 13,
+            "request_t_s": 11.372,
+            "latency_s": 0.7700671969214454,
+            "k_pick": 3,
+            "previous_active_replan_id": 12,
+            "previous_latency_s": 0.7696257130010054,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 14,
+            "request_t_s": 12.156,
+            "latency_s": 0.800016699009575,
+            "k_pick": 0,
+            "previous_active_replan_id": 13,
+            "previous_latency_s": 0.7700671969214454,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 15,
+            "request_t_s": 12.972,
+            "latency_s": 0.8005285379476845,
+            "k_pick": 0,
+            "previous_active_replan_id": 14,
+            "previous_latency_s": 0.800016699009575,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 16,
+            "request_t_s": 13.788,
+            "latency_s": 0.775544028962031,
+            "k_pick": 0,
+            "previous_active_replan_id": 15,
+            "previous_latency_s": 0.8005285379476845,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 17,
+            "request_t_s": 14.572000000000001,
+            "latency_s": 0.7704229230294004,
+            "k_pick": 0,
+            "previous_active_replan_id": 16,
+            "previous_latency_s": 0.775544028962031,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 18,
+            "request_t_s": 15.356,
+            "latency_s": 0.7707183570601046,
+            "k_pick": 1,
+            "previous_active_replan_id": 17,
+            "previous_latency_s": 0.7704229230294004,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 19,
+            "request_t_s": 16.14,
+            "latency_s": 0.7706152038881555,
+            "k_pick": 1,
+            "previous_active_replan_id": 18,
+            "previous_latency_s": 0.7707183570601046,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 20,
+            "request_t_s": 16.924,
+            "latency_s": 0.7705190629931167,
+            "k_pick": 1,
+            "previous_active_replan_id": 19,
+            "previous_latency_s": 0.7706152038881555,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 21,
+            "request_t_s": 17.708000000000002,
+            "latency_s": 0.7777922711102292,
+            "k_pick": 1,
+            "previous_active_replan_id": 20,
+            "previous_latency_s": 0.7705190629931167,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 22,
+            "request_t_s": 18.5,
+            "latency_s": 0.8025076070334762,
+            "k_pick": 1,
+            "previous_active_replan_id": 21,
+            "previous_latency_s": 0.7777922711102292,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 23,
+            "request_t_s": 19.316,
+            "latency_s": 0.8062995930667967,
+            "k_pick": 1,
+            "previous_active_replan_id": 22,
+            "previous_latency_s": 0.8025076070334762,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 24,
+            "request_t_s": 20.132,
+            "latency_s": 0.7734916439512745,
+            "k_pick": 1,
+            "previous_active_replan_id": 23,
+            "previous_latency_s": 0.8062995930667967,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 25,
+            "request_t_s": 20.916,
+            "latency_s": 0.7701908820308745,
+            "k_pick": 0,
+            "previous_active_replan_id": 24,
+            "previous_latency_s": 0.7734916439512745,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 26,
+            "request_t_s": 21.7,
+            "latency_s": 0.778027074993588,
+            "k_pick": 3,
+            "previous_active_replan_id": 25,
+            "previous_latency_s": 0.7701908820308745,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 27,
+            "request_t_s": 22.492,
+            "latency_s": 0.7715298699913546,
+            "k_pick": 1,
+            "previous_active_replan_id": 26,
+            "previous_latency_s": 0.778027074993588,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 28,
+            "request_t_s": 23.276,
+            "latency_s": 0.7698462079279125,
+            "k_pick": 0,
+            "previous_active_replan_id": 27,
+            "previous_latency_s": 0.7715298699913546,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 29,
+            "request_t_s": 24.060000000000002,
+            "latency_s": 0.7862861210014671,
+            "k_pick": 0,
+            "previous_active_replan_id": 28,
+            "previous_latency_s": 0.7698462079279125,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 30,
+            "request_t_s": 24.86,
+            "latency_s": 0.8029879389796406,
+            "k_pick": 0,
+            "previous_active_replan_id": 29,
+            "previous_latency_s": 0.7862861210014671,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 31,
+            "request_t_s": 25.676000000000002,
+            "latency_s": 1.1959038699278608,
+            "k_pick": 2,
+            "previous_active_replan_id": 30,
+            "previous_latency_s": 0.8029879389796406,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "recovery_open",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 32,
+            "request_t_s": 26.884,
+            "latency_s": 0.7714699179632589,
+            "k_pick": 2,
+            "previous_active_replan_id": 31,
+            "previous_latency_s": 1.1959038699278608,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 33,
+            "request_t_s": 27.668,
+            "latency_s": 0.7722151629859582,
+            "k_pick": 0,
+            "previous_active_replan_id": 32,
+            "previous_latency_s": 0.7714699179632589,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 34,
+            "request_t_s": 28.452,
+            "latency_s": 0.7720184150384739,
+            "k_pick": 1,
+            "previous_active_replan_id": 33,
+            "previous_latency_s": 0.7722151629859582,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 35,
+            "request_t_s": 29.236,
+            "latency_s": 0.7713072050828487,
+            "k_pick": 1,
+            "previous_active_replan_id": 34,
+            "previous_latency_s": 0.7720184150384739,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 36,
+            "request_t_s": 30.02,
+            "latency_s": 0.7758857239969075,
+            "k_pick": 1,
+            "previous_active_replan_id": 35,
+            "previous_latency_s": 0.7713072050828487,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 37,
+            "request_t_s": 30.804000000000002,
+            "latency_s": 0.8024808869231492,
+            "k_pick": 1,
+            "previous_active_replan_id": 36,
+            "previous_latency_s": 0.7758857239969075,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          }
+        ]
+      },
+      "repeat1": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242",
+        "input_sha256": {
+          "planner_trace.json": "e319206ded0bcb75a5140993984e9a2829b455047ceab4c3eac779be0af60a3b",
+          "execution_trace.jsonl": "5b39f6220b971b9c93bc691420b7d8ed5a9f528262ab8765507bc7d1cd26c7ce",
+          "delivered_plans.jsonl": "72d33156b4e3b23fb606bca664b3ea4960682b652311f076d2509f95fe1c4ff1"
+        },
+        "rows": [
+          {
+            "id": 0,
+            "request_t_s": 0.26,
+            "latency_s": 1.1928103090031072,
+            "k_pick": 0,
+            "previous_active_replan_id": null,
+            "previous_latency_s": null,
+            "cpk_offset_requested": 0,
+            "previous_cpk_invalidated": null,
+            "previous_veto_action": null,
+            "selection_reference_offset_10hz": null
+          },
+          {
+            "id": 1,
+            "request_t_s": 1.468,
+            "latency_s": 0.7788483659969643,
+            "k_pick": 1,
+            "previous_active_replan_id": 0,
+            "previous_latency_s": 1.1928103090031072,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 2,
+            "request_t_s": 2.2600000000000002,
+            "latency_s": 0.7671941759763286,
+            "k_pick": 2,
+            "previous_active_replan_id": 1,
+            "previous_latency_s": 0.7788483659969643,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 3,
+            "request_t_s": 3.036,
+            "latency_s": 0.7691448740661144,
+            "k_pick": 2,
+            "previous_active_replan_id": 2,
+            "previous_latency_s": 0.7671941759763286,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 4,
+            "request_t_s": 3.8200000000000003,
+            "latency_s": 0.7843222339870408,
+            "k_pick": 2,
+            "previous_active_replan_id": 3,
+            "previous_latency_s": 0.7691448740661144,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 5,
+            "request_t_s": 4.62,
+            "latency_s": 0.8048655641032383,
+            "k_pick": 2,
+            "previous_active_replan_id": 4,
+            "previous_latency_s": 0.7843222339870408,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 6,
+            "request_t_s": 5.436,
+            "latency_s": 0.7997608130099252,
+            "k_pick": 2,
+            "previous_active_replan_id": 5,
+            "previous_latency_s": 0.8048655641032383,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 7,
+            "request_t_s": 6.244,
+            "latency_s": 1.1764003350399435,
+            "k_pick": 0,
+            "previous_active_replan_id": 6,
+            "previous_latency_s": 0.7997608130099252,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 8,
+            "request_t_s": 7.436,
+            "latency_s": 0.7770585180260241,
+            "k_pick": 0,
+            "previous_active_replan_id": 7,
+            "previous_latency_s": 1.1764003350399435,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 9,
+            "request_t_s": 8.228,
+            "latency_s": 0.7738666780060157,
+            "k_pick": 0,
+            "previous_active_replan_id": 8,
+            "previous_latency_s": 0.7770585180260241,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 10,
+            "request_t_s": 9.012,
+            "latency_s": 0.7729460489936173,
+            "k_pick": 2,
+            "previous_active_replan_id": 9,
+            "previous_latency_s": 0.7738666780060157,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 11,
+            "request_t_s": 9.796,
+            "latency_s": 0.803501351037994,
+            "k_pick": 3,
+            "previous_active_replan_id": 10,
+            "previous_latency_s": 0.7729460489936173,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 12,
+            "request_t_s": 10.612,
+            "latency_s": 0.8065555009525269,
+            "k_pick": 3,
+            "previous_active_replan_id": 11,
+            "previous_latency_s": 0.803501351037994,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 13,
+            "request_t_s": 11.428,
+            "latency_s": 0.7688445240492001,
+            "k_pick": 1,
+            "previous_active_replan_id": 12,
+            "previous_latency_s": 0.8065555009525269,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 14,
+            "request_t_s": 12.212,
+            "latency_s": 0.7952388969715685,
+            "k_pick": 0,
+            "previous_active_replan_id": 13,
+            "previous_latency_s": 0.7688445240492001,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 15,
+            "request_t_s": 13.02,
+            "latency_s": 0.7697185650467873,
+            "k_pick": 0,
+            "previous_active_replan_id": 14,
+            "previous_latency_s": 0.7952388969715685,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 16,
+            "request_t_s": 13.804,
+            "latency_s": 0.7698412979952991,
+            "k_pick": 0,
+            "previous_active_replan_id": 15,
+            "previous_latency_s": 0.7697185650467873,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 17,
+            "request_t_s": 14.588000000000001,
+            "latency_s": 0.7716291790129617,
+            "k_pick": 0,
+            "previous_active_replan_id": 16,
+            "previous_latency_s": 0.7698412979952991,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 18,
+            "request_t_s": 15.372,
+            "latency_s": 0.8017073069931939,
+            "k_pick": 0,
+            "previous_active_replan_id": 17,
+            "previous_latency_s": 0.7716291790129617,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 19,
+            "request_t_s": 16.188,
+            "latency_s": 0.8237049470189959,
+            "k_pick": 1,
+            "previous_active_replan_id": 18,
+            "previous_latency_s": 0.8017073069931939,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 20,
+            "request_t_s": 17.02,
+            "latency_s": 0.7749746909830719,
+            "k_pick": 1,
+            "previous_active_replan_id": 19,
+            "previous_latency_s": 0.8237049470189959,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          }
+        ]
+      },
+      "repeat2": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242",
+        "input_sha256": {
+          "planner_trace.json": "bad45c73b60c0cba7e301aad80ef405114cbcfe4ce6a31203cef41672774000b",
+          "execution_trace.jsonl": "9ec205e32996d402cba847ea91d7510e1197f7a02df33dcb97261c4c7f74da2f",
+          "delivered_plans.jsonl": "baddde143d5794701bf51029e0c0c6b3ae630aaad0c3805c138185284fd516aa"
+        },
+        "rows": [
+          {
+            "id": 0,
+            "request_t_s": 0.26,
+            "latency_s": 1.236436149920337,
+            "k_pick": 0,
+            "previous_active_replan_id": null,
+            "previous_latency_s": null,
+            "cpk_offset_requested": 0,
+            "previous_cpk_invalidated": null,
+            "previous_veto_action": null,
+            "selection_reference_offset_10hz": null
+          },
+          {
+            "id": 1,
+            "request_t_s": 1.508,
+            "latency_s": 0.8069927539909258,
+            "k_pick": 1,
+            "previous_active_replan_id": 0,
+            "previous_latency_s": 1.236436149920337,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 2,
+            "request_t_s": 2.324,
+            "latency_s": 0.7712441679323092,
+            "k_pick": 2,
+            "previous_active_replan_id": 1,
+            "previous_latency_s": 0.8069927539909258,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 3,
+            "request_t_s": 3.108,
+            "latency_s": 0.770339296082966,
+            "k_pick": 2,
+            "previous_active_replan_id": 2,
+            "previous_latency_s": 0.7712441679323092,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 4,
+            "request_t_s": 3.892,
+            "latency_s": 0.7787638350855559,
+            "k_pick": 2,
+            "previous_active_replan_id": 3,
+            "previous_latency_s": 0.770339296082966,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 5,
+            "request_t_s": 4.684,
+            "latency_s": 0.7720428800676018,
+            "k_pick": 2,
+            "previous_active_replan_id": 4,
+            "previous_latency_s": 0.7787638350855559,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 6,
+            "request_t_s": 5.468,
+            "latency_s": 0.7724943809444085,
+            "k_pick": 2,
+            "previous_active_replan_id": 5,
+            "previous_latency_s": 0.7720428800676018,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "none",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 7,
+            "request_t_s": 6.252,
+            "latency_s": 1.195832081953995,
+            "k_pick": 0,
+            "previous_active_replan_id": 6,
+            "previous_latency_s": 0.7724943809444085,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 8,
+            "request_t_s": 7.46,
+            "latency_s": 0.8192145299399272,
+            "k_pick": 0,
+            "previous_active_replan_id": 7,
+            "previous_latency_s": 1.195832081953995,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 9,
+            "request_t_s": 8.292,
+            "latency_s": 0.7723034810042009,
+            "k_pick": 0,
+            "previous_active_replan_id": 8,
+            "previous_latency_s": 0.8192145299399272,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 10,
+            "request_t_s": 9.076,
+            "latency_s": 0.7714594670105726,
+            "k_pick": 1,
+            "previous_active_replan_id": 9,
+            "previous_latency_s": 0.7723034810042009,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 11,
+            "request_t_s": 9.86,
+            "latency_s": 0.7696625450626016,
+            "k_pick": 2,
+            "previous_active_replan_id": 10,
+            "previous_latency_s": 0.7714594670105726,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 12,
+            "request_t_s": 10.644,
+            "latency_s": 0.7827572500100359,
+            "k_pick": 3,
+            "previous_active_replan_id": 11,
+            "previous_latency_s": 0.7696625450626016,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 13,
+            "request_t_s": 11.436,
+            "latency_s": 0.784068614942953,
+            "k_pick": 3,
+            "previous_active_replan_id": 12,
+            "previous_latency_s": 0.7827572500100359,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 14,
+            "request_t_s": 12.236,
+            "latency_s": 0.8075522009748966,
+            "k_pick": 0,
+            "previous_active_replan_id": 13,
+            "previous_latency_s": 0.784068614942953,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": false,
+            "previous_veto_action": "close_allowed",
+            "selection_reference_offset_10hz": 8
+          },
+          {
+            "id": 15,
+            "request_t_s": 13.052,
+            "latency_s": 1.1783619489287958,
+            "k_pick": 0,
+            "previous_active_replan_id": 14,
+            "previous_latency_s": 0.8075522009748966,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 16,
+            "request_t_s": 14.244,
+            "latency_s": 1.140650529996492,
+            "k_pick": 3,
+            "previous_active_replan_id": 15,
+            "previous_latency_s": 1.1783619489287958,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 17,
+            "request_t_s": 15.396,
+            "latency_s": 1.1631010690471157,
+            "k_pick": 0,
+            "previous_active_replan_id": 16,
+            "previous_latency_s": 1.140650529996492,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          },
+          {
+            "id": 18,
+            "request_t_s": 16.572,
+            "latency_s": 1.1421006909804419,
+            "k_pick": 2,
+            "previous_active_replan_id": 17,
+            "previous_latency_s": 1.1631010690471157,
+            "cpk_offset_requested": 1,
+            "previous_cpk_invalidated": true,
+            "previous_veto_action": "close_masked",
+            "selection_reference_offset_10hz": 12
+          }
+        ]
+      }
+    },
+    "source": {
+      "phantom/config/backbone.py": {
+        "sha256": "f554451c2331fbd4431c9d67993b498d1ecbe0d16d98b38a275e56814d93a949",
+        "lines": [
+          [
+            52,
+            "    fps: float = 4.0"
+          ],
+          [
+            67,
+            "    temporal_comp: int = 4"
+          ]
+        ]
+      },
+      "phantom/train/builder.py": {
+        "sha256": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+        "lines": [
+          [
+            49,
+            "    bb = BackboneConfig.tiny() if tiny else BackboneConfig()"
+          ]
+        ]
+      },
+      "phantom/inference/policy.py": {
+        "sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+        "lines": [
+          [
+            102,
+            "        self.latent_dt = pm.bb.temporal_comp / pm.bb.fps"
+          ],
+          [
+            222,
+            "            off = int(np.clip(round((t_exec0 - float(prev_plan.action_times[0])) * rate),"
+          ],
+          [
+            241,
+            "        cpk_step = 0"
+          ],
+          [
+            243,
+            "            cpk_step = int(round(float(prev_plan.latency_s) / self.latent_dt))"
+          ]
+        ]
+      }
+    }
+  },
+  "limits": [
+    "Matching by replan ordinal does not make later observations equivalent.",
+    "Every first-plan K choice is0 but raw output differences already exist at replan0.",
+    "No discrete CPK-offset differences occur in matched rows; this mechanism cannot explain their first divergence.",
+    "Native selection-reference offset is unchanged for every repeat1 row; repeat2 changes only from15, after first K difference11.",
+    "Actions and continuous simulated execution times differ even when selected K and rounded offsets match; no overall failure cause inferred."
+  ]
+}

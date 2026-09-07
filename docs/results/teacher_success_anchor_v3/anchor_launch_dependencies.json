@@ -1,0 +1,123 @@
+{
+  "original_command": [
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/launch_waffles.sh",
+    "--mode",
+    "policy",
+    "--episode",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+    "--output",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242",
+    "--config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/conditions/placement_xm10_ym10mm.json",
+    "--duration",
+    "60.0",
+    "--seed",
+    "4242",
+    "--policy-server",
+    "127.0.0.1:7796",
+    "--policy-mode",
+    "teacher",
+    "--policy-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/inference.json",
+    "--hardware-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+    "--ignore-episode-overrides",
+    "--max-play-steps",
+    "10",
+    "--observation-delay-s",
+    "0.0",
+    "--inference-delay-add-s",
+    "0.0",
+    "--tactile",
+    "measured_baseline_proxy",
+    "--wrist",
+    "contact_proxy",
+    "--skip-stage-export",
+    "--robot-usd",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+    "--policy-initial-state",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+    "--tactile-baseline",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+    "--terminal-veto-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/terminal_veto.json",
+    "--placement-release-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/placement_release.json",
+    "--gel-contact-coverage",
+    "manifold_patch",
+    "--save-policy-observations",
+    "--record-packet-support"
+  ],
+  "launch_dependencies": {
+    "--episode": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+      "exists": true,
+      "sha256": null
+    },
+    "--config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/conditions/placement_xm10_ym10mm.json",
+      "exists": true,
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    "--policy-config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/inference.json",
+      "exists": true,
+      "sha256": "5b242a74f087fdf7d880af030576c75c8fa42ddaf540f0f91f09a5f24793427e"
+    },
+    "--hardware-config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+      "exists": true,
+      "sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    "--robot-usd": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+      "exists": true,
+      "sha256": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637"
+    },
+    "--policy-initial-state": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "exists": true,
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    "--tactile-baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "exists": true,
+      "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    },
+    "--terminal-veto-config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/terminal_veto.json",
+      "exists": true,
+      "sha256": "92d8ee15805b72d97fef31001c42ee762f9f58df4281763a4c8f424871d11fb5"
+    },
+    "--placement-release-config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/runtime/placement_release.json",
+      "exists": true,
+      "sha256": "b285c49b2ff458959808bfa8c22137c8bcb1eb9cc6effc19929382d3391bba45"
+    }
+  },
+  "original_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+  "comparison_current_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+  "checkpoints": {
+    "fta1500": {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "expected_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "actual_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "match": true,
+      "size_bytes": 393116181
+    },
+    "fta3000": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "expected_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "actual_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "match": true,
+      "size_bytes": 393116181
+    },
+    "v5_6": {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "expected_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "actual_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "match": true,
+      "size_bytes": 393115861
+    }
+  }
+}

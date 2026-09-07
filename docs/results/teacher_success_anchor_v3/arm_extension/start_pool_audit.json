@@ -1,0 +1,2682 @@
+{
+  "schema_version": 1,
+  "audited_at_utc": "2026-09-07T08:33:23.110258+00:00",
+  "scope": "CPU-only existing-state/provenance/gate audit; no scene or policy runs",
+  "native_gate": {
+    "max_start_sigma": 2.5,
+    "joint_std_floor_rad": 0.08726646259971647,
+    "task": "waffles",
+    "source_refs": [
+      "phantom/deploy/start_pose.py:161",
+      "phantom/deploy/start_pose.py:64",
+      "phantom/scripts/run_deploy.py:358"
+    ],
+    "stats_file": "configs/start_poses.yaml",
+    "stats_sha256": "13498363d7b3bac018ed41b248c4a933103a52555264e76c30fbc68fc4fbeb4c",
+    "start_pose_source_sha256": "247709265be12293620e354c2e89b392e225f51266aa70eb80633bc51607fee9",
+    "same_episode_count_n_q_n": 250
+  },
+  "selection": {
+    "method": "greedy maximin on native start-gate standardized measured state",
+    "initial_selected": "sept4_anchor",
+    "feature_order": [
+      "tcp_x",
+      "tcp_y",
+      "tcp_z",
+      "tcp_rx_nearest",
+      "tcp_ry_nearest",
+      "tcp_rz_nearest",
+      "gripper",
+      "q1_raw",
+      "q2_raw",
+      "q3_raw",
+      "q4_raw",
+      "q5_raw",
+      "q6_raw"
+    ],
+    "distance": "sqrt(mean((feature_a-feature_b)^2)) over13 components; maximize minimum distance to previously selected starts",
+    "scales": "Native waffles tcp_std/gripper_std and max(q_std,radians(5)); rotvec_nearest relative to waffles mean; no joint wrapping",
+    "tie_break": "lexicographically ascending start id",
+    "outcomes_used": false,
+    "selection_trace": [
+      {
+        "step": 1,
+        "selected_id": "aug22_1787395928_000",
+        "minimum_rms_standardized_distance": 1.2085078653194543,
+        "candidate_distances": {
+          "aug22_1787395928_000": 1.2085078653194543,
+          "aug22_1787395963_001": 0.9425111703435732,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.9538769872138122,
+          "aug22_1787396094_005": 0.9456898704070426,
+          "aug22_1787396128_006": 0.9180823761480259,
+          "aug22_1787396273_010": 1.0945541288441434,
+          "aug22_1787396314_011": 1.006532886565766,
+          "aug22_1787396346_012": 0.9751658527242331,
+          "aug22_1787396461_000": 1.0211200802732774
+        }
+      },
+      {
+        "step": 2,
+        "selected_id": "aug22_1787396273_010",
+        "minimum_rms_standardized_distance": 0.9993720168303108,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.5892250973409744,
+          "aug22_1787396094_005": 0.9456898704070426,
+          "aug22_1787396128_006": 0.7910000284566294,
+          "aug22_1787396273_010": 0.9993720168303108,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.6525074887824901
+        }
+      },
+      {
+        "step": 3,
+        "selected_id": "aug22_1787396128_006",
+        "minimum_rms_standardized_distance": 0.7910000284566294,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.5892250973409744,
+          "aug22_1787396094_005": 0.7306296404465341,
+          "aug22_1787396128_006": 0.7910000284566294,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      },
+      {
+        "step": 4,
+        "selected_id": "aug22_1787395963_001",
+        "minimum_rms_standardized_distance": 0.6237305883822867,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.3651126940866534,
+          "aug22_1787396060_004": 0.48380854969105136,
+          "aug22_1787396094_005": 0.35448590356226034,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      },
+      {
+        "step": 5,
+        "selected_id": "aug22_1787396461_000",
+        "minimum_rms_standardized_distance": 0.539064373267755,
+        "candidate_distances": {
+          "aug22_1787396028_003": 0.3651126940866534,
+          "aug22_1787396060_004": 0.48380854969105136,
+          "aug22_1787396094_005": 0.35448590356226034,
+          "aug22_1787396314_011": 0.42949652161535795,
+          "aug22_1787396346_012": 0.3249185294165066,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      }
+    ]
+  },
+  "available_authentic_starts": 11,
+  "selected_starts": 6,
+  "records": [
+    {
+      "id": "sept4_anchor",
+      "episode": "ep_teacher_waffles_1788535016_005",
+      "role": "anchor_control",
+      "initial_state_file": "docs/results/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "q_rad": [
+        0.23474512994289398,
+        -1.5198147932635706,
+        1.0754203796386719,
+        0.7233453989028931,
+        1.174745798110962,
+        -3.004658285771505
+      ],
+      "tcp_m_rad": [
+        -0.35399662759562023,
+        -0.3030532626417874,
+        0.33813600255248893,
+        -1.222512987419507,
+        -1.8390053895682799,
+        1.6032091101687962
+      ],
+      "gripper": 0.0784313753247261,
+      "wrist_ft_native_n_nm": [
+        -6.679699239150466,
+        -3.7754789060686464,
+        3.5474054977869613,
+        1.3528524004078362,
+        -1.7378262552134158,
+        0.45864556310759486
+      ],
+      "native_start_sigma": [
+        0.41648224551597757,
+        0.5914918152340484,
+        0.13047979898483122,
+        1.0018204052949329,
+        0.11977811156309988,
+        0.9990472764024756,
+        1.0103198991794335,
+        0.43711099094118566,
+        0.10640063158076794,
+        0.30390105376372384,
+        0.24898243004471993,
+        0.11227874350040538,
+        1.4397479912163085
+      ],
+      "worst_sigma": 1.4397479912163085,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.006108818924985826,
+      "selection_feature_signed_standardized": [
+        0.41648224551597757,
+        -0.5914918152340484,
+        0.13047979898483122,
+        -1.0018204052949329,
+        -0.11977811156309988,
+        0.9990472764024756,
+        -1.0103198991794335,
+        0.43711099094118566,
+        0.10640063158076794,
+        -0.30390105376372384,
+        0.24898243004471993,
+        -0.11227874350040538,
+        1.4397479912163085
+      ],
+      "native_state": {
+        "schema_version": 1,
+        "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+        "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+        "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+        "reference_camera_t0_master_s": 5586.389835389913,
+        "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+        "units": {
+          "q": "radians, UR RTDE joint order",
+          "gripper": "normalized position:0 open,1 closed",
+          "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+          "tcp": "xyz metres + rotation vector radians, UR controller base"
+        },
+        "q": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ],
+        "gripper": 0.0784313753247261,
+        "gripper_OBJ": 3,
+        "wrist_ft": [
+          -6.679699239150466,
+          -3.7754789060686464,
+          3.5474054977869613,
+          1.3528524004078362,
+          -1.7378262552134158,
+          0.45864556310759486
+        ],
+        "tcp": [
+          -0.35399662759562023,
+          -0.3030532626417874,
+          0.33813600255248893,
+          -1.222512987419507,
+          -1.8390053895682799,
+          1.6032091101687962
+        ],
+        "samples": {
+          "arm_q": {
+            "native_index": 3,
+            "relative_time_s": -0.006108818924985826,
+            "master_time_s": 5586.383726570988,
+            "values": [
+              0.23474512994289398,
+              -1.5198147932635706,
+              1.0754203796386719,
+              0.7233453989028931,
+              1.174745798110962,
+              -3.004658285771505
+            ]
+          },
+          "gripper": {
+            "native_index": 3,
+            "relative_time_s": -0.0030142919858917594,
+            "master_time_s": 5586.386821097927,
+            "values": [
+              0.0784313753247261,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "native_index": 3,
+            "relative_time_s": -0.006108818924985826,
+            "master_time_s": 5586.383726570988,
+            "values": [
+              -6.679699239150466,
+              -3.7754789060686464,
+              3.5474054977869613,
+              1.3528524004078362,
+              -1.7378262552134158,
+              0.45864556310759486
+            ]
+          },
+          "arm_tcp_pose": {
+            "native_index": 3,
+            "relative_time_s": -0.006108818924985826,
+            "master_time_s": 5586.383726570988,
+            "values": [
+              -0.35399662759562023,
+              -0.3030532626417874,
+              0.33813600255248893,
+              -1.222512987419507,
+              -1.8390053895682799,
+              1.6032091101687962
+            ]
+          }
+        }
+      },
+      "selected": true,
+      "selection_order": 0
+    },
+    {
+      "id": "aug22_1787395928_000",
+      "episode": "ep_waffles_1787395928_000",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "initial_state_sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "q_rad": [
+        0.24457107484340668,
+        -1.5101473967181605,
+        0.9251918792724609,
+        0.8998333215713501,
+        1.1859229803085327,
+        -3.203757349644796
+      ],
+      "tcp_m_rad": [
+        -0.33538232877569196,
+        -0.29982738757331384,
+        0.3563458840073126,
+        -1.0311287816544337,
+        -1.92408416645898,
+        1.47232898332707
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "native_start_sigma": [
+        1.108463614286545,
+        0.48025474390737427,
+        0.8024311441812764,
+        0.6339420371415921,
+        0.9547023205002951,
+        0.3728618099887835,
+        1.2858617415553644,
+        0.5497080254466798,
+        0.21718083576703875,
+        1.4317426481046467,
+        1.248914003237111,
+        0.006627450090773346,
+        0.8417592217727268
+      ],
+      "worst_sigma": 1.4317426481046467,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.007814622018486261,
+      "selection_feature_signed_standardized": [
+        1.108463614286545,
+        -0.48025474390737427,
+        0.8024311441812764,
+        0.6339420371415921,
+        -0.9547023205002951,
+        -0.3728618099887835,
+        1.2858617415553644,
+        0.5497080254466798,
+        0.21718083576703875,
+        -1.4317426481046467,
+        1.248914003237111,
+        0.006627450090773346,
+        -0.8417592217727268
+      ],
+      "native_state": {
+        "q": [
+          0.24457107484340668,
+          -1.5101473967181605,
+          0.9251918792724609,
+          0.8998333215713501,
+          1.1859229803085327,
+          -3.203757349644796
+        ],
+        "gripper": 0.4274509847164154,
+        "wrist_ft": [
+          8.276634214683451,
+          13.145563143133545,
+          -19.0017648369493,
+          -4.314573463569404,
+          4.556972657331247,
+          1.1369097708517957
+        ],
+        "measured_tcp_pose": [
+          -0.33538232877569196,
+          -0.29982738757331384,
+          0.3563458840073126,
+          -1.0311287816544337,
+          -1.92408416645898,
+          1.47232898332707
+        ],
+        "t_master": 5581.74062521616,
+        "source_samples": {
+          "arm_q": {
+            "index": 1,
+            "t_master": 5581.74062521616,
+            "age_s": 0.0,
+            "value": [
+              0.24457107484340668,
+              -1.5101473967181605,
+              0.9251918792724609,
+              0.8998333215713501,
+              1.1859229803085327,
+              -3.203757349644796
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 1,
+            "t_master": 5581.74062521616,
+            "age_s": 0.0,
+            "value": [
+              -0.33538232877569196,
+              -0.29982738757331384,
+              0.3563458840073126,
+              -1.0311287816544337,
+              -1.92408416645898,
+              1.47232898332707
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5581.7328105941415,
+            "age_s": 0.007814622018486261,
+            "value": [
+              0.4274509847164154,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 1,
+            "t_master": 5581.74062521616,
+            "age_s": 0.0,
+            "value": [
+              8.276634214683451,
+              13.145563143133545,
+              -19.0017648369493,
+              -4.314573463569404,
+              4.556972657331247,
+              1.1369097708517957
+            ]
+          },
+          "arm_qd": {
+            "index": 1,
+            "t_master": 5581.74062521616,
+            "age_s": 0.0,
+            "value": [
+              -7.669904152862728e-05,
+              0.0023584954906255007,
+              -0.004122573416680098,
+              -0.0027084348257631063,
+              -0.012559467926621437,
+              -0.0012223910307511687
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.008002016926184297,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.005198478698730469,
+            "max_tcp_displacement_m": 0.0011264560088890378,
+            "wrist_force_norm_min_max_n": [
+              5.7107014705715,
+              38.442374528584224
+            ],
+            "wrist_ft_median": [
+              14.468807247881504,
+              9.095871343298805,
+              -20.41117938520386,
+              -4.146094579587023,
+              5.424508869392792,
+              -0.2779535133946448
+            ],
+            "max_measured_joint_speed_rad_s": 0.03262106329202652
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.005882740020751953,
+            "max_tcp_displacement_m": 0.001247537811834059,
+            "wrist_force_norm_min_max_n": [
+              5.7107014705715,
+              38.442374528584224
+            ],
+            "wrist_ft_median": [
+              1.8602086079887805,
+              -9.63970226315431,
+              5.479124425982685,
+              2.1991937234168013,
+              -1.512875121227369,
+              -1.1776976492914308
+            ],
+            "max_measured_joint_speed_rad_s": 0.03262106329202652
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.041622281074523926,
+            "max_tcp_displacement_m": 0.0019708301524493667,
+            "wrist_force_norm_min_max_n": [
+              4.8152705879505815,
+              38.442374528584224
+            ],
+            "wrist_ft_median": [
+              -2.4436623599388674,
+              -11.554345421922857,
+              5.479124425982685,
+              2.4905075566899937,
+              -1.8646593849856645,
+              -1.3940543302753852
+            ],
+            "max_measured_joint_speed_rad_s": 0.28503280878067017
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787395928_000",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395928_000",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "discovery",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787395928_000",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787395928_000"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": true,
+      "selection_order": 1
+    },
+    {
+      "id": "aug22_1787395963_001",
+      "episode": "ep_waffles_1787395963_001",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "initial_state_sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "q_rad": [
+        0.14518064260482788,
+        -1.5508273283587855,
+        1.0001111030578613,
+        0.8747776746749878,
+        1.1362910270690918,
+        -3.161736075078146
+      ],
+      "tcp_m_rad": [
+        -0.3495555759785932,
+        -0.27512946790625037,
+        0.35035050920628125,
+        -1.136475954428743,
+        -1.8711905948184857,
+        1.4784136435633781
+      ],
+      "gripper": 0.3137255012989044,
+      "wrist_ft_native_n_nm": [
+        16.49100151528894,
+        -8.938782817111958,
+        -13.685593946781536,
+        -2.6627279528074217,
+        4.598197745477487,
+        -4.547888366204026
+      ],
+      "native_start_sigma": [
+        0.5815771011675395,
+        0.37139765840515926,
+        0.5811996017077948,
+        0.2664611489636162,
+        0.43562899723734766,
+        0.30908130436710585,
+        0.5376677717033185,
+        0.5892224328036322,
+        0.2489768430106635,
+        0.8692860130791182,
+        1.1069556638809508,
+        0.5213720524564704,
+        0.3602308852868279
+      ],
+      "worst_sigma": 1.1069556638809508,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.003165690926834941,
+      "selection_feature_signed_standardized": [
+        0.5815771011675395,
+        0.37139765840515926,
+        0.5811996017077948,
+        -0.2664611489636162,
+        -0.43562899723734766,
+        -0.30908130436710585,
+        0.5376677717033185,
+        -0.5892224328036322,
+        -0.2489768430106635,
+        -0.8692860130791182,
+        1.1069556638809508,
+        -0.5213720524564704,
+        -0.3602308852868279
+      ],
+      "native_state": {
+        "q": [
+          0.14518064260482788,
+          -1.5508273283587855,
+          1.0001111030578613,
+          0.8747776746749878,
+          1.1362910270690918,
+          -3.161736075078146
+        ],
+        "gripper": 0.3137255012989044,
+        "wrist_ft": [
+          16.49100151528894,
+          -8.938782817111958,
+          -13.685593946781536,
+          -2.6627279528074217,
+          4.598197745477487,
+          -4.547888366204026
+        ],
+        "measured_tcp_pose": [
+          -0.3495555759785932,
+          -0.27512946790625037,
+          0.35035050920628125,
+          -1.136475954428743,
+          -1.8711905948184857,
+          1.4784136435633781
+        ],
+        "t_master": 5616.130650503095,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 5616.130650503095,
+            "age_s": 0.0,
+            "value": [
+              0.14518064260482788,
+              -1.5508273283587855,
+              1.0001111030578613,
+              0.8747776746749878,
+              1.1362910270690918,
+              -3.161736075078146
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 5616.130650503095,
+            "age_s": 0.0,
+            "value": [
+              -0.3495555759785932,
+              -0.27512946790625037,
+              0.35035050920628125,
+              -1.136475954428743,
+              -1.8711905948184857,
+              1.4784136435633781
+            ]
+          },
+          "gripper": {
+            "index": 1,
+            "t_master": 5616.127484812168,
+            "age_s": 0.003165690926834941,
+            "value": [
+              0.3137255012989044,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 5616.130650503095,
+            "age_s": 0.0,
+            "value": [
+              16.49100151528894,
+              -8.938782817111958,
+              -13.685593946781536,
+              -2.6627279528074217,
+              4.598197745477487,
+              -4.547888366204026
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 5616.130650503095,
+            "age_s": 0.0,
+            "value": [
+              -0.00036432043998502195,
+              0.0025310683995485306,
+              0.0006711166352033615,
+              0.0011025487910956144,
+              0.002205097582191229,
+              -0.0007190534961409867
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0032100677490234375,
+            "max_tcp_displacement_m": 0.0014495863647393027,
+            "wrist_force_norm_min_max_n": [
+              15.500311164494262,
+              25.298462451921154
+            ],
+            "wrist_ft_median": [
+              11.074001472366358,
+              -6.423137540049309,
+              -13.355845222315555,
+              -2.516028050040345,
+              4.048455492507511,
+              -3.2775903755315863
+            ],
+            "max_measured_joint_speed_rad_s": 0.023910926654934883
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.004982948303222656,
+            "max_tcp_displacement_m": 0.001999020427691893,
+            "wrist_force_norm_min_max_n": [
+              15.500311164494262,
+              44.20242392237465
+            ],
+            "wrist_ft_median": [
+              11.776060459871319,
+              5.217527056888035,
+              -16.51277668494198,
+              -3.129209243161883,
+              4.479142683909025,
+              0.014029338982789907
+            ],
+            "max_measured_joint_speed_rad_s": 0.023910926654934883
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.00871896743774414,
+            "max_tcp_displacement_m": 0.0023571692973616983,
+            "wrist_force_norm_min_max_n": [
+              0.9318727325732161,
+              49.06737142264351
+            ],
+            "wrist_ft_median": [
+              11.491738107693111,
+              12.395074430593226,
+              -14.96617177179476,
+              -3.2196842648921993,
+              4.489548480502819,
+              0.8585600192265155
+            ],
+            "max_measured_joint_speed_rad_s": 0.10202889889478683
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787395963_001",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787395963_001",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "discovery",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787395963_001",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787395963_001"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": true,
+      "selection_order": 4
+    },
+    {
+      "id": "aug22_1787396028_003",
+      "episode": "ep_waffles_1787396028_003",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+      "initial_state_sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b",
+      "q_rad": [
+        0.24646683037281036,
+        -1.541903320943014,
+        1.1035356521606445,
+        0.7348610162734985,
+        1.1002368927001953,
+        -3.0855892340289515
+      ],
+      "tcp_m_rad": [
+        -0.331271794061223,
+        -0.3206862559838003,
+        0.33590352669063406,
+        -1.0971474202467968,
+        -1.9389271057965896,
+        1.6164470773148114
+      ],
+      "gripper": 0.3450980484485626,
+      "wrist_ft_native_n_nm": [
+        21.59501696977888,
+        23.49260964397193,
+        -33.74722032894615,
+        -7.81367449562381,
+        8.470540276716235,
+        0.7594182372823203
+      ],
+      "native_start_sigma": [
+        1.2612715962370649,
+        1.1995260684069071,
+        0.04810061589055532,
+        0.06968016883079624,
+        1.1003641393188377,
+        1.1378100347464506,
+        0.7440661082142277,
+        0.5714317836113639,
+        0.1467152507572326,
+        0.09282543422939458,
+        0.314226721096309,
+        0.9049266734021777,
+        0.5123476377876451
+      ],
+      "worst_sigma": 1.2612715962370649,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0009235150646418333,
+      "selection_feature_signed_standardized": [
+        1.2612715962370649,
+        -1.1995260684069071,
+        0.04810061589055532,
+        0.06968016883079624,
+        -1.1003641393188377,
+        1.1378100347464506,
+        0.7440661082142277,
+        0.5714317836113639,
+        -0.1467152507572326,
+        -0.09282543422939458,
+        0.314226721096309,
+        -0.9049266734021777,
+        0.5123476377876451
+      ],
+      "native_state": {
+        "q": [
+          0.24646683037281036,
+          -1.541903320943014,
+          1.1035356521606445,
+          0.7348610162734985,
+          1.1002368927001953,
+          -3.0855892340289515
+        ],
+        "gripper": 0.3450980484485626,
+        "wrist_ft": [
+          21.59501696977888,
+          23.49260964397193,
+          -33.74722032894615,
+          -7.81367449562381,
+          8.470540276716235,
+          0.7594182372823203
+        ],
+        "measured_tcp_pose": [
+          -0.331271794061223,
+          -0.3206862559838003,
+          0.33590352669063406,
+          -1.0971474202467968,
+          -1.9389271057965896,
+          1.6164470773148114
+        ],
+        "t_master": 5681.403629903216,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 5681.403629903216,
+            "age_s": 0.0,
+            "value": [
+              0.24646683037281036,
+              -1.541903320943014,
+              1.1035356521606445,
+              0.7348610162734985,
+              1.1002368927001953,
+              -3.0855892340289515
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 5681.403629903216,
+            "age_s": 0.0,
+            "value": [
+              -0.331271794061223,
+              -0.3206862559838003,
+              0.33590352669063406,
+              -1.0971474202467968,
+              -1.9389271057965896,
+              1.6164470773148114
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5681.402706388151,
+            "age_s": 0.0009235150646418333,
+            "value": [
+              0.3450980484485626,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 5681.403629903216,
+            "age_s": 0.0,
+            "value": [
+              21.59501696977888,
+              23.49260964397193,
+              -33.74722032894615,
+              -7.81367449562381,
+              8.470540276716235,
+              0.7594182372823203
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 5681.403629903216,
+            "age_s": 0.0,
+            "value": [
+              -0.00015339808305725455,
+              0.0027228158432990313,
+              -0.0012463594321161509,
+              -0.00021571606339421123,
+              0.0,
+              -0.011792478151619434
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0016069412231445312,
+            "max_tcp_displacement_m": 0.0005439486358311729,
+            "wrist_force_norm_min_max_n": [
+              16.983014756896864,
+              51.01478866844702
+            ],
+            "wrist_ft_median": [
+              14.836400217857651,
+              12.674886003476836,
+              -26.13901990521242,
+              -6.003998729504077,
+              6.1596328115387085,
+              0.7534553016326524
+            ],
+            "max_measured_joint_speed_rad_s": 0.051124706864356995
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.015689611434936523,
+            "max_tcp_displacement_m": 0.001026317761423063,
+            "wrist_force_norm_min_max_n": [
+              10.747511591921915,
+              51.01478866844702
+            ],
+            "wrist_ft_median": [
+              8.879841336368834,
+              6.288899150135028,
+              -18.27101957176566,
+              -3.5899718208959914,
+              4.303888354546942,
+              -0.394022364552081
+            ],
+            "max_measured_joint_speed_rad_s": 0.09769540280103683
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.0245664119720459,
+            "max_tcp_displacement_m": 0.011351951524672733,
+            "wrist_force_norm_min_max_n": [
+              4.445128880749484,
+              51.01478866844702
+            ],
+            "wrist_ft_median": [
+              7.226029955853839,
+              1.914966529516664,
+              -13.987952085220373,
+              -2.3596940712933896,
+              3.2954420499348838,
+              -0.704752494475813
+            ],
+            "max_measured_joint_speed_rad_s": 0.14218084514141083
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396028_003",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396028_003",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "discovery",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396028_003",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396028_003"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": false,
+      "selection_order": null
+    },
+    {
+      "id": "aug22_1787396060_004",
+      "episode": "ep_waffles_1787396060_004",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+      "initial_state_sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9",
+      "q_rad": [
+        0.20768961310386658,
+        -1.5362733046161097,
+        1.0329737663269043,
+        0.7646476030349731,
+        1.094473958015442,
+        -3.1706131140338343
+      ],
+      "tcp_m_rad": [
+        -0.34277963668580624,
+        -0.308841994404968,
+        0.3554547508270639,
+        -0.9987376773577588,
+        -1.903617597273998,
+        1.5706860066580144
+      ],
+      "gripper": 0.3137255012989044,
+      "wrist_ft_native_n_nm": [
+        6.2553018788381145,
+        -10.769218277040645,
+        0.5807904582908218,
+        -0.15049646765805402,
+        -0.0715928426920059,
+        -2.554842937553769
+      ],
+      "native_start_sigma": [
+        0.83347075517449,
+        0.7911032553437249,
+        0.7695480009986677,
+        0.9107890824123178,
+        0.7538527701079288,
+        0.6581342416982638,
+        0.5376677717033185,
+        0.1270776054569056,
+        0.08220001593296015,
+        0.622569321870087,
+        0.48298925232279405,
+        0.9662344891974268,
+        0.4619542586336618
+      ],
+      "worst_sigma": 0.9662344891974268,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0038614319637417793,
+      "selection_feature_signed_standardized": [
+        0.83347075517449,
+        -0.7911032553437249,
+        0.7695480009986677,
+        0.9107890824123178,
+        -0.7538527701079288,
+        0.6581342416982638,
+        0.5376677717033185,
+        0.1270776054569056,
+        -0.08220001593296015,
+        -0.622569321870087,
+        0.48298925232279405,
+        -0.9662344891974268,
+        -0.4619542586336618
+      ],
+      "native_state": {
+        "q": [
+          0.20768961310386658,
+          -1.5362733046161097,
+          1.0329737663269043,
+          0.7646476030349731,
+          1.094473958015442,
+          -3.1706131140338343
+        ],
+        "gripper": 0.3137255012989044,
+        "wrist_ft": [
+          6.2553018788381145,
+          -10.769218277040645,
+          0.5807904582908218,
+          -0.15049646765805402,
+          -0.0715928426920059,
+          -2.554842937553769
+        ],
+        "measured_tcp_pose": [
+          -0.34277963668580624,
+          -0.308841994404968,
+          0.3554547508270639,
+          -0.9987376773577588,
+          -1.903617597273998,
+          1.5706860066580144
+        ],
+        "t_master": 5713.619656782132,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 5713.619656782132,
+            "age_s": 0.0,
+            "value": [
+              0.20768961310386658,
+              -1.5362733046161097,
+              1.0329737663269043,
+              0.7646476030349731,
+              1.094473958015442,
+              -3.1706131140338343
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 5713.619656782132,
+            "age_s": 0.0,
+            "value": [
+              -0.34277963668580624,
+              -0.308841994404968,
+              0.3554547508270639,
+              -0.9987376773577588,
+              -1.903617597273998,
+              1.5706860066580144
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5713.615795350168,
+            "age_s": 0.0038614319637417793,
+            "value": [
+              0.3137255012989044,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 5713.619656782132,
+            "age_s": 0.0,
+            "value": [
+              6.2553018788381145,
+              -10.769218277040645,
+              0.5807904582908218,
+              -0.15049646765805402,
+              -0.0715928426920059,
+              -2.554842937553769
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 5713.619656782132,
+            "age_s": 0.0,
+            "value": [
+              -0.0008245147182606161,
+              0.003585680155083537,
+              0.00028762139845639467,
+              0.00043143212678842247,
+              0.0017736653098836541,
+              -0.0005033374764025211
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0011496543884277344,
+            "max_tcp_displacement_m": 0.0005072440723644303,
+            "wrist_force_norm_min_max_n": [
+              5.481928564401399,
+              18.006617335083302
+            ],
+            "wrist_ft_median": [
+              6.031640504727898,
+              2.7873283954835273,
+              4.2970581804764585,
+              0.49035208936629227,
+              -1.0830909488444946,
+              -0.1036155621922478
+            ],
+            "max_measured_joint_speed_rad_s": 0.017736652866005898
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.0017366409301757812,
+            "max_tcp_displacement_m": 0.0007055282154085106,
+            "wrist_force_norm_min_max_n": [
+              5.481928564401399,
+              26.48491940085861
+            ],
+            "wrist_ft_median": [
+              6.727256905737877,
+              6.06237236416923,
+              3.882715141483724,
+              0.43105718881485866,
+              -0.8662294102928781,
+              0.4627801504510963
+            ],
+            "max_measured_joint_speed_rad_s": 0.017736652866005898
+          },
+          "1.0": {
+            "arm_samples": 126,
+            "max_joint_change_rad": 0.06390774250030518,
+            "max_tcp_displacement_m": 0.01968890240008072,
+            "wrist_force_norm_min_max_n": [
+              5.481928564401399,
+              26.48491940085861
+            ],
+            "wrist_ft_median": [
+              8.106120982227297,
+              5.5827854031414414,
+              0.9960311959838537,
+              -0.24086862994517833,
+              0.1214882003529377,
+              -0.2346760832388811
+            ],
+            "max_measured_joint_speed_rad_s": 0.35470908880233765
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396060_004",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396060_004",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396060_004",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396060_004"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": false,
+      "selection_order": null
+    },
+    {
+      "id": "aug22_1787396094_005",
+      "episode": "ep_waffles_1787396094_005",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+      "initial_state_sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051",
+      "q_rad": [
+        0.2344927191734314,
+        -1.526773754750387,
+        1.1830620765686035,
+        0.6896277666091919,
+        1.105855941772461,
+        -3.1012068430529993
+      ],
+      "tcp_m_rad": [
+        -0.3395998491671627,
+        -0.316407081370372,
+        0.3072359196553298,
+        -1.135845337105267,
+        -1.9662555560312667,
+        1.5718792678141151
+      ],
+      "gripper": 0.42352941632270813,
+      "wrist_ft_native_n_nm": [
+        5.714173020650874,
+        20.098881414570222,
+        -18.443489824010403,
+        -4.729302768450852,
+        3.236194465902672,
+        3.61447095172795
+      ],
+      "native_start_sigma": [
+        0.951678469622206,
+        1.051968323116276,
+        1.009744662164952,
+        0.261071257309975,
+        1.3685530523186131,
+        0.6706422202737433,
+        1.2600619494915009,
+        0.43421857658241453,
+        0.026656806983035065,
+        0.5042197940585857,
+        0.057947686171058874,
+        0.8451495556121179,
+        0.33338302115497104
+      ],
+      "worst_sigma": 1.3685530523186131,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.003719210857525468,
+      "selection_feature_signed_standardized": [
+        0.951678469622206,
+        -1.051968323116276,
+        -1.009744662164952,
+        -0.261071257309975,
+        -1.3685530523186131,
+        0.6706422202737433,
+        1.2600619494915009,
+        0.43421857658241453,
+        0.026656806983035065,
+        0.5042197940585857,
+        0.057947686171058874,
+        -0.8451495556121179,
+        0.33338302115497104
+      ],
+      "native_state": {
+        "q": [
+          0.2344927191734314,
+          -1.526773754750387,
+          1.1830620765686035,
+          0.6896277666091919,
+          1.105855941772461,
+          -3.1012068430529993
+        ],
+        "gripper": 0.42352941632270813,
+        "wrist_ft": [
+          5.714173020650874,
+          20.098881414570222,
+          -18.443489824010403,
+          -4.729302768450852,
+          3.236194465902672,
+          3.61447095172795
+        ],
+        "measured_tcp_pose": [
+          -0.3395998491671627,
+          -0.316407081370372,
+          0.3072359196553298,
+          -1.135845337105267,
+          -1.9662555560312667,
+          1.5718792678141151
+        ],
+        "t_master": 5747.711474303156,
+        "source_samples": {
+          "arm_q": {
+            "index": 1,
+            "t_master": 5747.711474303156,
+            "age_s": 0.0,
+            "value": [
+              0.2344927191734314,
+              -1.526773754750387,
+              1.1830620765686035,
+              0.6896277666091919,
+              1.105855941772461,
+              -3.1012068430529993
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 1,
+            "t_master": 5747.711474303156,
+            "age_s": 0.0,
+            "value": [
+              -0.3395998491671627,
+              -0.316407081370372,
+              0.3072359196553298,
+              -1.135845337105267,
+              -1.9662555560312667,
+              1.5718792678141151
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5747.707755092299,
+            "age_s": 0.003719210857525468,
+            "value": [
+              0.42352941632270813,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 1,
+            "t_master": 5747.711474303156,
+            "age_s": 0.0,
+            "value": [
+              5.714173020650874,
+              20.098881414570222,
+              -18.443489824010403,
+              -4.729302768450852,
+              3.236194465902672,
+              3.61447095172795
+            ]
+          },
+          "arm_qd": {
+            "index": 1,
+            "t_master": 5747.711474303156,
+            "age_s": 0.0,
+            "value": [
+              0.000690291344653815,
+              0.0044293696992099285,
+              -0.0006711166352033615,
+              -0.003523362334817648,
+              0.006255765445530415,
+              -0.005872270558029413
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.009206469869241118,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.006861686706542969,
+            "max_tcp_displacement_m": 0.00015827241720854169,
+            "wrist_force_norm_min_max_n": [
+              2.2270534311171497,
+              34.646585220851556
+            ],
+            "wrist_ft_median": [
+              4.925965021676529,
+              10.227400652343102,
+              -12.275998160070033,
+              -2.519648461818594,
+              2.2277333714445824,
+              0.46461311104827324
+            ],
+            "max_measured_joint_speed_rad_s": 0.07240869104862213
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.04393935203552246,
+            "max_tcp_displacement_m": 0.0003169871004625369,
+            "wrist_force_norm_min_max_n": [
+              2.2270534311171497,
+              34.646585220851556
+            ],
+            "wrist_ft_median": [
+              -0.9193558845739624,
+              -8.407914681332564,
+              -3.6203210184622145,
+              0.8203945989733756,
+              0.2860131293706234,
+              -1.5811579156979678
+            ],
+            "max_measured_joint_speed_rad_s": 0.20953220129013062
+          },
+          "1.0": {
+            "arm_samples": 126,
+            "max_joint_change_rad": 0.08976757526397705,
+            "max_tcp_displacement_m": 0.04383398801750485,
+            "wrist_force_norm_min_max_n": [
+              2.2270534311171497,
+              34.646585220851556
+            ],
+            "wrist_ft_median": [
+              2.228574226245716,
+              -1.8307400696065024,
+              -7.690873447228293,
+              -0.608552814815029,
+              1.2973969263006189,
+              -0.8626788188498722
+            ],
+            "max_measured_joint_speed_rad_s": 0.41439053416252136
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396094_005",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396094_005",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396094_005",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396094_005"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": false,
+      "selection_order": null
+    },
+    {
+      "id": "aug22_1787396128_006",
+      "episode": "ep_waffles_1787396128_006",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "initial_state_sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "q_rad": [
+        0.21729984879493713,
+        -1.5454734007464808,
+        1.1461524963378906,
+        0.6903711557388306,
+        1.1115949153900146,
+        -3.1324790159808558
+      ],
+      "tcp_m_rad": [
+        -0.34553959891096603,
+        -0.3092751088664797,
+        0.32902270496445724,
+        -1.069263396597869,
+        -1.914371325018002,
+        1.5695785690078452
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        3.6102082811202774,
+        -16.139854317369252,
+        3.531083540240857,
+        1.06825841644843,
+        -0.4876215853629211,
+        -4.315550185506177
+      ],
+      "native_start_sigma": [
+        0.7308699289603716,
+        0.806038236775162,
+        0.2058042448539769,
+        0.30800515728316996,
+        0.859384936388635,
+        0.6465258805853793,
+        1.2858617415553644,
+        0.2372027945017722,
+        0.18762535180994097,
+        0.22712084337755803,
+        0.06215952259960659,
+        0.7840966447870784,
+        0.02496968383891798
+      ],
+      "worst_sigma": 1.2858617415553644,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0030803889967501163,
+      "selection_feature_signed_standardized": [
+        0.7308699289603716,
+        -0.806038236775162,
+        -0.2058042448539769,
+        0.30800515728316996,
+        -0.859384936388635,
+        0.6465258805853793,
+        1.2858617415553644,
+        0.2372027945017722,
+        -0.18762535180994097,
+        0.22712084337755803,
+        0.06215952259960659,
+        -0.7840966447870784,
+        -0.02496968383891798
+      ],
+      "native_state": {
+        "q": [
+          0.21729984879493713,
+          -1.5454734007464808,
+          1.1461524963378906,
+          0.6903711557388306,
+          1.1115949153900146,
+          -3.1324790159808558
+        ],
+        "gripper": 0.4274509847164154,
+        "wrist_ft": [
+          3.6102082811202774,
+          -16.139854317369252,
+          3.531083540240857,
+          1.06825841644843,
+          -0.4876215853629211,
+          -4.315550185506177
+        ],
+        "measured_tcp_pose": [
+          -0.34553959891096603,
+          -0.3092751088664797,
+          0.32902270496445724,
+          -1.069263396597869,
+          -1.914371325018002,
+          1.5695785690078452
+        ],
+        "t_master": 5781.534386103274,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 5781.534386103274,
+            "age_s": 0.0,
+            "value": [
+              0.21729984879493713,
+              -1.5454734007464808,
+              1.1461524963378906,
+              0.6903711557388306,
+              1.1115949153900146,
+              -3.1324790159808558
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 5781.534386103274,
+            "age_s": 0.0,
+            "value": [
+              -0.34553959891096603,
+              -0.3092751088664797,
+              0.32902270496445724,
+              -1.069263396597869,
+              -1.914371325018002,
+              1.5695785690078452
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5781.531305714278,
+            "age_s": 0.0030803889967501163,
+            "value": [
+              0.4274509847164154,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 5781.534386103274,
+            "age_s": 0.0,
+            "value": [
+              3.6102082811202774,
+              -16.139854317369252,
+              3.531083540240857,
+              1.06825841644843,
+              -0.4876215853629211,
+              -4.315550185506177
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 5781.534386103274,
+            "age_s": 0.0,
+            "value": [
+              -0.0004985437844879925,
+              -0.0011696603614836931,
+              0.0019893813878297806,
+              0.005249090492725372,
+              -0.0009587380336597562,
+              -0.0023009711876511574
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0012235641479492188,
+            "max_tcp_displacement_m": 0.00039754269315170056,
+            "wrist_force_norm_min_max_n": [
+              8.36530869490699,
+              29.97222132003383
+            ],
+            "wrist_ft_median": [
+              0.07332728520913487,
+              -18.124090629676587,
+              6.715604421993784,
+              2.075290874482948,
+              -1.6707452274875187,
+              -4.147265197412129
+            ],
+            "max_measured_joint_speed_rad_s": 0.026820696890354156
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.0036466121673583984,
+            "max_tcp_displacement_m": 0.0004372418595498624,
+            "wrist_force_norm_min_max_n": [
+              8.36530869490699,
+              54.49261559114716
+            ],
+            "wrist_ft_median": [
+              5.124427689119314,
+              -6.467773299985725,
+              -13.918109562470976,
+              -2.7099337270752457,
+              3.2689564217772524,
+              -2.350162733115708
+            ],
+            "max_measured_joint_speed_rad_s": 0.07624363899230957
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.030432701110839844,
+            "max_tcp_displacement_m": 0.0065546584190368145,
+            "wrist_force_norm_min_max_n": [
+              7.6305346629843,
+              54.53336814729895
+            ],
+            "wrist_ft_median": [
+              11.125049997691677,
+              5.547055583134037,
+              -18.19595878258377,
+              -3.5842708882787653,
+              4.876070430977438,
+              -0.7160152405216588
+            ],
+            "max_measured_joint_speed_rad_s": 0.2407630831003189
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396128_006",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396128_006",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396128_006",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396128_006"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": true,
+      "selection_order": 3
+    },
+    {
+      "id": "aug22_1787396273_010",
+      "episode": "ep_waffles_1787396273_010",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "initial_state_sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "q_rad": [
+        0.3042255640029907,
+        -1.5296967665301722,
+        1.175276756286621,
+        0.7342854738235474,
+        1.2763934135437012,
+        -3.1310036818133753
+      ],
+      "tcp_m_rad": [
+        -0.3370493634399271,
+        -0.30213036323570486,
+        0.29697775211803923,
+        -1.1624367861118623,
+        -1.9447234218056493,
+        1.4297003194997182
+      ],
+      "gripper": 0.37254902720451355,
+      "wrist_ft_native_n_nm": [
+        -2.1097366286896255,
+        -18.10817328457381,
+        13.528334591648038,
+        4.1344895392337895,
+        -3.3642810417039106,
+        -4.023871174036208
+      ],
+      "native_start_sigma": [
+        1.0464920654302208,
+        0.5596676977829266,
+        1.3882748295926488,
+        0.4883485992466867,
+        1.1572465339121618,
+        0.8197031498981322,
+        0.9246646526612733,
+        1.2332981170172972,
+        0.006838440706707466,
+        0.4457714435932522,
+        0.31096585735720883,
+        0.9690788674861824,
+        0.008063599605302419
+      ],
+      "worst_sigma": 1.3882748295926488,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0018318688962608576,
+      "selection_feature_signed_standardized": [
+        1.0464920654302208,
+        -0.5596676977829266,
+        -1.3882748295926488,
+        -0.4883485992466867,
+        -1.1572465339121618,
+        -0.8197031498981322,
+        0.9246646526612733,
+        1.2332981170172972,
+        -0.006838440706707466,
+        0.4457714435932522,
+        0.31096585735720883,
+        0.9690788674861824,
+        -0.008063599605302419
+      ],
+      "native_state": {
+        "q": [
+          0.3042255640029907,
+          -1.5296967665301722,
+          1.175276756286621,
+          0.7342854738235474,
+          1.2763934135437012,
+          -3.1310036818133753
+        ],
+        "gripper": 0.37254902720451355,
+        "wrist_ft": [
+          -2.1097366286896255,
+          -18.10817328457381,
+          13.528334591648038,
+          4.1344895392337895,
+          -3.3642810417039106,
+          -4.023871174036208
+        ],
+        "measured_tcp_pose": [
+          -0.3370493634399271,
+          -0.30213036323570486,
+          0.29697775211803923,
+          -1.1624367861118623,
+          -1.9447234218056493,
+          1.4297003194997182
+        ],
+        "t_master": 5926.013616300188,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 5926.013616300188,
+            "age_s": 0.0,
+            "value": [
+              0.3042255640029907,
+              -1.5296967665301722,
+              1.175276756286621,
+              0.7342854738235474,
+              1.2763934135437012,
+              -3.1310036818133753
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 5926.013616300188,
+            "age_s": 0.0,
+            "value": [
+              -0.3370493634399271,
+              -0.30213036323570486,
+              0.29697775211803923,
+              -1.1624367861118623,
+              -1.9447234218056493,
+              1.4297003194997182
+            ]
+          },
+          "gripper": {
+            "index": 1,
+            "t_master": 5926.011784431292,
+            "age_s": 0.0018318688962608576,
+            "value": [
+              0.37254902720451355,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 5926.013616300188,
+            "age_s": 0.0,
+            "value": [
+              -2.1097366286896255,
+              -18.10817328457381,
+              13.528334591648038,
+              4.1344895392337895,
+              -3.3642810417039106,
+              -4.023871174036208
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 5926.013616300188,
+            "age_s": 0.0,
+            "value": [
+              -0.00026844663079828024,
+              0.004659466911107302,
+              0.0005033374764025211,
+              0.0,
+              -0.0004793690168298781,
+              -4.793690095539205e-05
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0007433891296386719,
+            "max_tcp_displacement_m": 0.00022137198054791868,
+            "wrist_force_norm_min_max_n": [
+              7.105234127467213,
+              40.6666675858903
+            ],
+            "wrist_ft_median": [
+              -2.7473561745722765,
+              -14.98584522658331,
+              9.753347818292559,
+              3.1361273966159575,
+              -3.108087941582939,
+              -2.7629380130747196
+            ],
+            "max_measured_joint_speed_rad_s": 0.02847451902925968
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.01566600799560547,
+            "max_tcp_displacement_m": 0.0003387059235446783,
+            "wrist_force_norm_min_max_n": [
+              7.105234127467213,
+              46.37484314176876
+            ],
+            "wrist_ft_median": [
+              -1.256531241837504,
+              -2.7837009218229416,
+              -0.24706300422215755,
+              0.3831860181039639,
+              0.08186580235487705,
+              -0.46273019266813625
+            ],
+            "max_measured_joint_speed_rad_s": 0.10042780637741089
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.05171632766723633,
+            "max_tcp_displacement_m": 0.013511107485264805,
+            "wrist_force_norm_min_max_n": [
+              1.5607640942212813,
+              46.37484314176876
+            ],
+            "wrist_ft_median": [
+              -0.8306722886561,
+              -3.842598850521137,
+              4.083128749909742,
+              1.2399607595659872,
+              -0.9816410088601817,
+              -0.6297929727236482
+            ],
+            "max_measured_joint_speed_rad_s": 0.19522303342819214
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396273_010",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396273_010",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "discovery",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396273_010",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396273_010"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": true,
+      "selection_order": 2
+    },
+    {
+      "id": "aug22_1787396314_011",
+      "episode": "ep_waffles_1787396314_011",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+      "initial_state_sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488",
+      "q_rad": [
+        0.1815100759267807,
+        -1.5060985724078577,
+        0.8773550987243652,
+        0.9838899374008179,
+        1.1499178409576416,
+        -3.13219124475588
+      ],
+      "tcp_m_rad": [
+        -0.33803408897113024,
+        -0.2840890620556038,
+        0.35711110430632903,
+        -1.1751308452449378,
+        -1.9065604901095898,
+        1.4866785492827805
+      ],
+      "gripper": 0.3333333432674408,
+      "wrist_ft_native_n_nm": [
+        0.023460826673879043,
+        -4.5193032926776,
+        -1.0209374822241535,
+        0.25845479697702345,
+        0.18701448584199348,
+        -1.1290901927088768
+      ],
+      "native_start_sigma": [
+        1.0098851683594714,
+        0.06244613601366154,
+        0.8306680555840967,
+        0.5968448311533152,
+        0.7827329745788995,
+        0.22244707250754173,
+        0.6666667320226367,
+        0.17291779251366518,
+        0.2635769447611014,
+        1.7908776372044641,
+        1.7251554526958521,
+        0.3764059472591321,
+        0.021672068507635825
+      ],
+      "worst_sigma": 1.7908776372044641,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0030902628786861897,
+      "selection_feature_signed_standardized": [
+        1.0098851683594714,
+        0.06244613601366154,
+        0.8306680555840967,
+        -0.5968448311533152,
+        -0.7827329745788995,
+        -0.22244707250754173,
+        0.6666667320226367,
+        -0.17291779251366518,
+        0.2635769447611014,
+        -1.7908776372044641,
+        1.7251554526958521,
+        -0.3764059472591321,
+        -0.021672068507635825
+      ],
+      "native_state": {
+        "q": [
+          0.1815100759267807,
+          -1.5060985724078577,
+          0.8773550987243652,
+          0.9838899374008179,
+          1.1499178409576416,
+          -3.13219124475588
+        ],
+        "gripper": 0.3333333432674408,
+        "wrist_ft": [
+          0.023460826673879043,
+          -4.5193032926776,
+          -1.0209374822241535,
+          0.25845479697702345,
+          0.18701448584199348,
+          -1.1290901927088768
+        ],
+        "measured_tcp_pose": [
+          -0.33803408897113024,
+          -0.2840890620556038,
+          0.35711110430632903,
+          -1.1751308452449378,
+          -1.9065604901095898,
+          1.4866785492827805
+        ],
+        "t_master": 5967.210536212195,
+        "source_samples": {
+          "arm_q": {
+            "index": 1,
+            "t_master": 5967.210536212195,
+            "age_s": 0.0,
+            "value": [
+              0.1815100759267807,
+              -1.5060985724078577,
+              0.8773550987243652,
+              0.9838899374008179,
+              1.1499178409576416,
+              -3.13219124475588
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 1,
+            "t_master": 5967.210536212195,
+            "age_s": 0.0,
+            "value": [
+              -0.33803408897113024,
+              -0.2840890620556038,
+              0.35711110430632903,
+              -1.1751308452449378,
+              -1.9065604901095898,
+              1.4866785492827805
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 5967.207445949316,
+            "age_s": 0.0030902628786861897,
+            "value": [
+              0.3333333432674408,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 1,
+            "t_master": 5967.210536212195,
+            "age_s": 0.0,
+            "value": [
+              0.023460826673879043,
+              -4.5193032926776,
+              -1.0209374822241535,
+              0.25845479697702345,
+              0.18701448584199348,
+              -1.1290901927088768
+            ]
+          },
+          "arm_qd": {
+            "index": 1,
+            "t_master": 5967.210536212195,
+            "age_s": 0.0,
+            "value": [
+              -0.0033747577108442783,
+              -0.0026077674701809883,
+              0.0029241510201245546,
+              0.0003115898580290377,
+              -0.00011984225420746952,
+              -4.793690095539205e-05
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.008001978974789381,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.002216339111328125,
+            "max_tcp_displacement_m": 0.0008279562874548094,
+            "wrist_force_norm_min_max_n": [
+              4.6332457310405,
+              37.30822040912094
+            ],
+            "wrist_ft_median": [
+              -4.29893946095462,
+              -14.31590219342801,
+              10.958452780634888,
+              2.659643597992627,
+              -2.556646789388517,
+              -2.143966223717751
+            ],
+            "max_measured_joint_speed_rad_s": 0.030104374513030052
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.011132001876831055,
+            "max_tcp_displacement_m": 0.0013834820305378198,
+            "wrist_force_norm_min_max_n": [
+              4.6332457310405,
+              37.30822040912094
+            ],
+            "wrist_ft_median": [
+              -1.527341104071508,
+              -10.478827868823027,
+              -4.001487990502802,
+              0.6140953181673983,
+              0.18701448584199348,
+              -1.734276715542524
+            ],
+            "max_measured_joint_speed_rad_s": 0.10704310238361359
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.054340362548828125,
+            "max_tcp_displacement_m": 0.011192431835260407,
+            "wrist_force_norm_min_max_n": [
+              4.531135977950968,
+              37.30822040912094
+            ],
+            "wrist_ft_median": [
+              0.08116082757124385,
+              -4.5193032926776,
+              -2.8435875948441107,
+              0.1670622588270815,
+              0.3263210406536115,
+              -1.137518970208194
+            ],
+            "max_measured_joint_speed_rad_s": 0.35667452216148376
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396314_011",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396314_011",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396314_011",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396314_011"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": false,
+      "selection_order": null
+    },
+    {
+      "id": "aug22_1787396346_012",
+      "episode": "ep_waffles_1787396346_012",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+      "initial_state_sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505",
+      "q_rad": [
+        0.196615070104599,
+        -1.5250847975360315,
+        0.9849758148193359,
+        0.8925610780715942,
+        1.1517064571380615,
+        -3.171572987233297
+      ],
+      "tcp_m_rad": [
+        -0.34006356944709104,
+        -0.2899842235197968,
+        0.34205801605514824,
+        -1.1175080894164415,
+        -1.9281465235853064,
+        1.473909761241727
+      ],
+      "gripper": 0.3490196168422699,
+      "wrist_ft_native_n_nm": [
+        -12.75955798329799,
+        -33.0366617990817,
+        25.608178455533047,
+        7.395988850368821,
+        -7.521410605958727,
+        -4.948582631080905
+      ],
+      "native_start_sigma": [
+        0.9344397975059102,
+        0.14083529378609705,
+        0.27520354447041445,
+        0.10434264458497076,
+        0.9945684355770988,
+        0.35629181088336603,
+        0.7698659002780913,
+        0.0001726906780687018,
+        0.0460108310151832,
+        0.9829143031581377,
+        1.207711490490619,
+        0.3573781155525372,
+        0.4729535952730503
+      ],
+      "worst_sigma": 1.207711490490619,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.0010604029521346092,
+      "selection_feature_signed_standardized": [
+        0.9344397975059102,
+        -0.14083529378609705,
+        0.27520354447041445,
+        -0.10434264458497076,
+        -0.9945684355770988,
+        -0.35629181088336603,
+        0.7698659002780913,
+        0.0001726906780687018,
+        0.0460108310151832,
+        -0.9829143031581377,
+        1.207711490490619,
+        -0.3573781155525372,
+        -0.4729535952730503
+      ],
+      "native_state": {
+        "q": [
+          0.196615070104599,
+          -1.5250847975360315,
+          0.9849758148193359,
+          0.8925610780715942,
+          1.1517064571380615,
+          -3.171572987233297
+        ],
+        "gripper": 0.3490196168422699,
+        "wrist_ft": [
+          -12.75955798329799,
+          -33.0366617990817,
+          25.608178455533047,
+          7.395988850368821,
+          -7.521410605958727,
+          -4.948582631080905
+        ],
+        "measured_tcp_pose": [
+          -0.34006356944709104,
+          -0.2899842235197968,
+          0.34205801605514824,
+          -1.1175080894164415,
+          -1.9281465235853064,
+          1.473909761241727
+        ],
+        "t_master": 5999.26177090616,
+        "source_samples": {
+          "arm_q": {
+            "index": 3,
+            "t_master": 5999.26177090616,
+            "age_s": 0.0,
+            "value": [
+              0.196615070104599,
+              -1.5250847975360315,
+              0.9849758148193359,
+              0.8925610780715942,
+              1.1517064571380615,
+              -3.171572987233297
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 3,
+            "t_master": 5999.26177090616,
+            "age_s": 0.0,
+            "value": [
+              -0.34006356944709104,
+              -0.2899842235197968,
+              0.34205801605514824,
+              -1.1175080894164415,
+              -1.9281465235853064,
+              1.473909761241727
+            ]
+          },
+          "gripper": {
+            "index": 1,
+            "t_master": 5999.2607105032075,
+            "age_s": 0.0010604029521346092,
+            "value": [
+              0.3490196168422699,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 3,
+            "t_master": 5999.26177090616,
+            "age_s": 0.0,
+            "value": [
+              -12.75955798329799,
+              -33.0366617990817,
+              25.608178455533047,
+              7.395988850368821,
+              -7.521410605958727,
+              -4.948582631080905
+            ]
+          },
+          "arm_qd": {
+            "index": 3,
+            "t_master": 5999.26177090616,
+            "age_s": 0.0,
+            "value": [
+              -0.0010546118719503284,
+              -0.0073439329862594604,
+              0.002612561220303178,
+              -0.001390170189552009,
+              -0.0006471481756307185,
+              0.0010066749528050423
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.02364032994955778,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0005636215209960938,
+            "max_tcp_displacement_m": 0.00025830973255712506,
+            "wrist_force_norm_min_max_n": [
+              5.877534821936494,
+              46.500414185707406
+            ],
+            "wrist_ft_median": [
+              -7.133219449482995,
+              -29.02694003320748,
+              11.393126775146525,
+              5.01079273267663,
+              -3.8600753588413492,
+              -4.895197743957308
+            ],
+            "max_measured_joint_speed_rad_s": 0.012271846644580364
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.0031065940856933594,
+            "max_tcp_displacement_m": 0.0007629207136308833,
+            "wrist_force_norm_min_max_n": [
+              5.877534821936494,
+              46.500414185707406
+            ],
+            "wrist_ft_median": [
+              2.20636008646995,
+              -11.062955262618097,
+              -2.35028655560572,
+              0.4699288257418196,
+              0.7008046222996664,
+              -1.9700046920945267
+            ],
+            "max_measured_joint_speed_rad_s": 0.06186257302761078
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.06403398513793945,
+            "max_tcp_displacement_m": 0.027482802098189416,
+            "wrist_force_norm_min_max_n": [
+              2.786490633408935,
+              46.500414185707406
+            ],
+            "wrist_ft_median": [
+              2.2428440815794275,
+              -5.616966205401956,
+              1.528570158624097,
+              0.6607869024383062,
+              -0.1953840026034117,
+              -1.5520130935840304
+            ],
+            "max_measured_joint_speed_rad_s": 0.276044636964798
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396346_012",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396346_012",
+          "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396346_012",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_135140_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396346_012"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": false,
+      "selection_order": null
+    },
+    {
+      "id": "aug22_1787396461_000",
+      "episode": "ep_waffles_1787396461_000",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "initial_state_sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "q_rad": [
+        0.30573704838752747,
+        -1.5146878401385706,
+        1.0304789543151855,
+        0.8531790971755981,
+        1.263884425163269,
+        -3.1646154562579554
+      ],
+      "tcp_m_rad": [
+        -0.32934843403965874,
+        -0.3036396676083807,
+        0.3246262599854344,
+        -1.1088251740594433,
+        -1.9557082618900303,
+        1.4303413354594965
+      ],
+      "gripper": 0.2549019753932953,
+      "wrist_ft_native_n_nm": [
+        2.9477290963111633,
+        -12.182910597202357,
+        6.899319620873847,
+        2.423999587375755,
+        -1.341440360221059,
+        -2.8718301664341728
+      ],
+      "native_start_sigma": [
+        1.3327719687859212,
+        0.6117126761510584,
+        0.36803468688434077,
+        0.030129692815754727,
+        1.2650467310110927,
+        0.8129839050367247,
+        0.15067089074536366,
+        1.2506184522240742,
+        0.16515118674554963,
+        0.6412991417778854,
+        0.9845841199750603,
+        0.8360045230135003,
+        0.39322616312932546
+      ],
+      "worst_sigma": 1.3327719687859212,
+      "eligible": true,
+      "causal_samples": true,
+      "q_tcp_same_timestamp": true,
+      "max_sensor_age_s": 0.002096849959343672,
+      "selection_feature_signed_standardized": [
+        1.3327719687859212,
+        -0.6117126761510584,
+        -0.36803468688434077,
+        -0.030129692815754727,
+        -1.2650467310110927,
+        -0.8129839050367247,
+        0.15067089074536366,
+        1.2506184522240742,
+        0.16515118674554963,
+        -0.6412991417778854,
+        0.9845841199750603,
+        0.8360045230135003,
+        -0.39322616312932546
+      ],
+      "native_state": {
+        "q": [
+          0.30573704838752747,
+          -1.5146878401385706,
+          1.0304789543151855,
+          0.8531790971755981,
+          1.263884425163269,
+          -3.1646154562579554
+        ],
+        "gripper": 0.2549019753932953,
+        "wrist_ft": [
+          2.9477290963111633,
+          -12.182910597202357,
+          6.899319620873847,
+          2.423999587375755,
+          -1.341440360221059,
+          -2.8718301664341728
+        ],
+        "measured_tcp_pose": [
+          -0.32934843403965874,
+          -0.3036396676083807,
+          0.3246262599854344,
+          -1.1088251740594433,
+          -1.9557082618900303,
+          1.4303413354594965
+        ],
+        "t_master": 6114.58297238918,
+        "source_samples": {
+          "arm_q": {
+            "index": 0,
+            "t_master": 6114.58297238918,
+            "age_s": 0.0,
+            "value": [
+              0.30573704838752747,
+              -1.5146878401385706,
+              1.0304789543151855,
+              0.8531790971755981,
+              1.263884425163269,
+              -3.1646154562579554
+            ]
+          },
+          "arm_tcp_pose": {
+            "index": 0,
+            "t_master": 6114.58297238918,
+            "age_s": 0.0,
+            "value": [
+              -0.32934843403965874,
+              -0.3036396676083807,
+              0.3246262599854344,
+              -1.1088251740594433,
+              -1.9557082618900303,
+              1.4303413354594965
+            ]
+          },
+          "gripper": {
+            "index": 0,
+            "t_master": 6114.580875539221,
+            "age_s": 0.002096849959343672,
+            "value": [
+              0.2549019753932953,
+              3.0
+            ]
+          },
+          "arm_ft": {
+            "index": 0,
+            "t_master": 6114.58297238918,
+            "age_s": 0.0,
+            "value": [
+              2.9477290963111633,
+              -12.182910597202357,
+              6.899319620873847,
+              2.423999587375755,
+              -1.341440360221059,
+              -2.8718301664341728
+            ]
+          },
+          "arm_qd": {
+            "index": 0,
+            "t_master": 6114.58297238918,
+            "age_s": 0.0,
+            "value": [
+              -0.0016298546688631177,
+              -0.004486893769353628,
+              0.0004074636672157794,
+              -0.0023489082232117653,
+              0.0001917476038215682,
+              -0.0004793690168298781
+            ]
+          }
+        },
+        "offset_from_first_arm_sample_s": 0.0,
+        "tcp_same_timestamp_as_q": true,
+        "start_diagnostics": {
+          "0.25": {
+            "arm_samples": 32,
+            "max_joint_change_rad": 0.0005161762237548828,
+            "max_tcp_displacement_m": 0.00027475447518333977,
+            "wrist_force_norm_min_max_n": [
+              7.514892446370483,
+              22.899545982687137
+            ],
+            "wrist_ft_median": [
+              -2.8335972515463848,
+              -12.182910597202357,
+              1.4557514306179493,
+              1.9710674428257293,
+              -1.261686351837277,
+              -2.1938697856200307
+            ],
+            "max_measured_joint_speed_rad_s": 0.01056529302150011
+          },
+          "0.5": {
+            "arm_samples": 63,
+            "max_joint_change_rad": 0.001041412353515625,
+            "max_tcp_displacement_m": 0.0006763943673158404,
+            "wrist_force_norm_min_max_n": [
+              6.552676098805912,
+              22.899545982687137
+            ],
+            "wrist_ft_median": [
+              -3.287081294220581,
+              -11.109052241537654,
+              0.3482744772046331,
+              1.790725974747388,
+              -1.1841593073183208,
+              -1.799256706981835
+            ],
+            "max_measured_joint_speed_rad_s": 0.023680828511714935
+          },
+          "1.0": {
+            "arm_samples": 125,
+            "max_joint_change_rad": 0.031076431274414062,
+            "max_tcp_displacement_m": 0.010548682570359513,
+            "wrist_force_norm_min_max_n": [
+              4.439953265173932,
+              32.864540323404036
+            ],
+            "wrist_ft_median": [
+              -2.138840286893871,
+              -9.516301787418747,
+              0.3346800887067779,
+              1.4202302836956495,
+              -0.7735273375970174,
+              -1.5559319627701726
+            ],
+            "max_measured_joint_speed_rad_s": 0.2093883901834488
+          }
+        },
+        "provenance": {
+          "source_kind": "native teleoperation recording start; not deployment, replay fit time, or later trajectory phase",
+          "episode": "ep_waffles_1787396461_000",
+          "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_waffles_1787396461_000",
+          "meta_sha256": "441b55765ed104d8a4aac6e960f9ccb6ca01c5f2c918785e7b466bf19161c1e5",
+          "clock": "MasterClock t_master in stored ts; metadata calibration offset NOT reapplied",
+          "state_selection": "First arm_q timestamp at or after all q/TCP/gripper/wrist streams begin; each other sample is causal latest at or before this anchor. q/TCP timestamp equality verified.",
+          "study_split_candidate": "confirmation",
+          "dataset_manifest": {
+            "episode": "ep_waffles_1787396461_000",
+            "task": "waffles",
+            "success": true,
+            "failure_demo": false,
+            "split": "val",
+            "session": "20260822_140049_waffles",
+            "path": "tasks/waffles/ep_waffles_1787396461_000"
+          },
+          "training_membership": "Present in expanded val124. Complete expanded training manifest absent; no claim of training-unseen status.",
+          "fixed_object_transfer": "Only recorded robot/gripper/wrist state transferred into canonical Aug22 packet pose; per-recording packet jitter/180-degree wrapper reversal is not reproduced.",
+          "raw_wrist_caveat": "Exact measured arm_ft, including unknown gravity/tare/calibration bias; not a calibrated zero-contact wrench.",
+          "same_session_caveat": "Nine starts from 135140 collection session and one from 140049; confirmation is simulator-study holdout within Aug22, not session-generalization."
+        }
+      },
+      "selected": true,
+      "selection_order": 5
+    }
+  ]
+}

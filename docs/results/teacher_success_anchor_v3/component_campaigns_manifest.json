@@ -1,0 +1,46 @@
+{
+  "components": [
+    {
+      "variant": "baseline",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/baseline.json",
+      "campaign_sha256": "309f39dc4a7916f5f8b1efd9c4ca09744000aaf5370ab9452bfb478cb0b44a9d",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1"
+    },
+    {
+      "variant": "finish_only",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/finish_only.json",
+      "campaign_sha256": "b696d772a0bc324d0871ba53447bd7e51cdec8994de58082e3b0e639bf799c70",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_finish_v3"
+    },
+    {
+      "variant": "gel_v2_only",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/gel_v2_only.json",
+      "campaign_sha256": "8706d2be0896a9b913c22f58a9bcdf2878e47327ec413b7a52a6035f48aa1149",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_gel_v3"
+    },
+    {
+      "variant": "wrist_distal_only",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/wrist_distal_only.json",
+      "campaign_sha256": "e314420e2c59ed497cc67a312602def01a40ac39f6fa6a6546f86a6223a17365",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_wrist_v3"
+    },
+    {
+      "variant": "live_veto_only",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/live_veto_only.json",
+      "campaign_sha256": "cc5468ad904f04595d6b4861b88816ff0aa2ab8645e97e91e84f834c4eedfde9",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1"
+    },
+    {
+      "variant": "delivery_feedback_only",
+      "campaign": "docs/results/teacher_success_anchor_v3/component_campaigns/delivery_feedback_only.json",
+      "campaign_sha256": "9afc9725f9fa3d800aa60d89aaf87660891f2d639b9f3e174d6df6165865e839",
+      "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_feedback_v3"
+    }
+  ],
+  "policy": "teacher ftA1500 EMA NFE1/K4",
+  "seeds": [
+    904301,
+    904302
+  ],
+  "scope": "diagnostic only; original baseline source always used for model screen"
+}

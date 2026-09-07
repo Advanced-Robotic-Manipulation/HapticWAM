@@ -1,0 +1,83 @@
+{
+  "scope": "CPU campaign metadata only; source-overlay changes require separate hash/code audit. No outcomes used.",
+  "rows": [
+    {
+      "variant": "baseline",
+      "sha256": "309f39dc4a7916f5f8b1efd9c4ca09744000aaf5370ab9452bfb478cb0b44a9d",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": []
+    },
+    {
+      "variant": "delivery_feedback_only",
+      "sha256": "9afc9725f9fa3d800aa60d89aaf87660891f2d639b9f3e174d6df6165865e839",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": []
+    },
+    {
+      "variant": "finish_only",
+      "sha256": "b696d772a0bc324d0871ba53447bd7e51cdec8994de58082e3b0e639bf799c70",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": [
+        {
+          "path": "placement_release.finish_after_release",
+          "baseline": null,
+          "variant": true
+        }
+      ]
+    },
+    {
+      "variant": "gel_v2_only",
+      "sha256": "8706d2be0896a9b913c22f58a9bcdf2878e47327ec413b7a52a6035f48aa1149",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": [
+        {
+          "path": "gel_contact_coverage",
+          "baseline": "manifold_patch",
+          "variant": "manifold_patch_v2"
+        }
+      ]
+    },
+    {
+      "variant": "live_veto_only",
+      "sha256": "cc5468ad904f04595d6b4861b88816ff0aa2ab8645e97e91e84f834c4eedfde9",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": [
+        {
+          "path": "terminal_veto.implementation",
+          "baseline": "fd4a032",
+          "variant": "live"
+        }
+      ]
+    },
+    {
+      "variant": "wrist_distal_only",
+      "sha256": "e314420e2c59ed497cc67a312602def01a40ac39f6fa6a6546f86a6223a17365",
+      "effective_scene_equals_exact_anchor": true,
+      "sampling_seeds_match": true,
+      "thresholds_match": true,
+      "inference_settings_match": true,
+      "adapter_profile_differences": [
+        {
+          "path": "wrist_model",
+          "baseline": null,
+          "variant": "gripper_contact_proxy"
+        }
+      ]
+    }
+  ]
+}

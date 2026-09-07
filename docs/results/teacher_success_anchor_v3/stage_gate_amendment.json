@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_fresh_screen_outcomes",
+  "amendment_id": "anchor_mechanics_gate_v1",
+  "created_at_utc": "2026-09-07T08:10:53.387029+00:00",
+  "protocol_sha256": "2e02af9dd1a5bf7b9059d1a71d1a8aec1f95618f491a35e50c455c70bf765cd9",
+  "authority": "Parent accepted this separate stage gate before any fresh screen/confirmation outcomes; all four historical-seed controls remain excluded and retained.",
+  "reason": "Historical seed4242 repeats did not reproduce placement; source/input equality does not guarantee bitwise rendered RGB or native inference/delivery timing. Do not rank models before reviewing the first divergence and confirming task mechanics.",
+  "execution_gate": {
+    "source_inputs_match_anchor": true,
+    "all_four_historical_controls_preserved": true,
+    "first_divergence_review_complete": true,
+    "timing_variance_documented": true,
+    "mechanics_integrity_passed": true,
+    "fresh_screen_not_used_to_approve_gate": true,
+    "physical_reproduction": "Strict support-verified physical placement from a command replay OR a valid policy reproduction. Command replay is a mechanics gate only; never a policy win.",
+    "evidence": "Hash-linked historical control ledger, divergence review, raw mechanics run and strict mechanics metrics; verify historical source/input hashes before every comparison launch."
+  },
+  "no_success_hunting": "A new stochastic policy win is not required to open the mechanics gate. Preserve failed repeats; no automatic retry-until-success, no exclusions from selection based on policy performance.",
+  "unchanged": [
+    "64-trial maximum core design",
+    "24 prospective screen and24 reserved confirmation rows",
+    "all seeds, candidates, recipes and ranking/winner rules",
+    "exact legacy-v1 comparison profile and physical-placement primary",
+    "one-component diagnostics excluded from selection"
+  ],
+  "current_status_at_amendment": "Execution gate pending. This amendment is a protocol rule, not a passed gate audit."
+}

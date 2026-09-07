@@ -1,0 +1,1100 @@
+{
+  "schema_version": 1,
+  "scope": "Read-only completed combined bridge versus successful gel-only trials; profiles and live timing differ; no causal attribution or new policy score.",
+  "hardware_guard": {
+    "wrist_extension_stop_m": 0.468,
+    "ur_dh_a2_a3_d4_m": [
+      0.24365,
+      0.21325,
+      0.11235
+    ],
+    "reach_clamp_m": null,
+    "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+  },
+  "cases": [
+    {
+      "seed": 904301,
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/corrected_profile_bridge/rollouts/teacher__fixed_anchor__seed904301",
+      "profile_differences_from_gel_only": {
+        "wrist_model": {
+          "bridge": "gripper_contact_proxy",
+          "gel_only": "contact_proxy"
+        },
+        "wrist_sampling_rate_hz": {
+          "bridge": 125.0,
+          "gel_only": null
+        },
+        "terminal_veto": {
+          "bridge": {
+            "implementation": "live",
+            "config": {
+              "z_ref": 0.0415,
+              "z_floor": 0.0315,
+              "z_margin": 0.0615,
+              "open_aperture": 0.232,
+              "p_close": 0.5,
+              "p_none": 0.9,
+              "max_retries": 3
+            },
+            "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+          },
+          "gel_only": {
+            "implementation": "fd4a032",
+            "config": {
+              "z_ref": 0.0415,
+              "z_floor": 0.0315,
+              "z_margin": 0.0615,
+              "open_aperture": 0.232,
+              "p_close": 0.5,
+              "p_none": 0.9,
+              "max_retries": 3
+            },
+            "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+          }
+        },
+        "terminal_veto_feedback_source": {
+          "bridge": "current_delivery",
+          "gel_only": null
+        },
+        "placement_release": {
+          "bridge": {
+            "tcp_min_m": [
+              -0.5429275160642127,
+              -0.06853791240695331,
+              0.057999999999999996
+            ],
+            "tcp_max_m": [
+              -0.24020644059509488,
+              0.14193716917871008,
+              0.274
+            ],
+            "open_command_max": 0.45,
+            "opening_hold_s": 0.2,
+            "unloaded_force_max_n": 0.5,
+            "unloaded_hold_s": 0.2,
+            "rearm_close_command_min": 0.5,
+            "finish_after_release": true
+          },
+          "gel_only": {
+            "tcp_min_m": [
+              -0.5429275160642127,
+              -0.06853791240695331,
+              0.057999999999999996
+            ],
+            "tcp_max_m": [
+              -0.24020644059509488,
+              0.14193716917871008,
+              0.274
+            ],
+            "open_command_max": 0.45,
+            "opening_hold_s": 0.2,
+            "unloaded_force_max_n": 0.5,
+            "unloaded_hold_s": 0.2,
+            "rearm_close_command_min": 0.5
+          }
+        }
+      },
+      "first_observation_comparison_to_gel_only": {
+        "t": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "rgb": {
+          "bitwise_equal": false,
+          "rms_delta": 1.550766009755788
+        },
+        "wrist_window": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "ur_state": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "gel": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "fields": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "contact_state": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "reactive": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "prev_chunk": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        }
+      },
+      "scene_config_bytes_equal": true,
+      "initialization_equal": false,
+      "initialization_differences": {
+        "packet_support_contacts": {
+          "bridge": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "gel_only": null
+        }
+      },
+      "first_plan_capture_and_activation_s": {
+        "bridge": [
+          0.26,
+          1.46
+        ],
+        "gel_only": [
+          0.26,
+          1.46
+        ]
+      },
+      "delivered_plan_count": 17,
+      "veto_actions": {
+        "none": 6,
+        "close_allowed": 11
+      },
+      "rewritten_plan_count": 0,
+      "rewrites": [],
+      "first_stop": {
+        "t": 14.828000000000001,
+        "measured_tcp": [
+          -0.4691511245440788,
+          0.01536610844293683,
+          0.38259197968992004,
+          -1.525901801645397,
+          -1.0775715290233487,
+          0.7010309114281478
+        ],
+        "requested_tcp": [
+          -0.4670944014864374,
+          0.020582439771839517,
+          0.38439346017872683,
+          -1.5351806109280202,
+          -1.0627255237622615,
+          0.697152948715904
+        ],
+        "measured_gripper": [
+          0.5553127527236938,
+          2
+        ],
+        "gripper_command": 0.6394721865653992,
+        "measured_wrist_ft": [
+          -6.717376359052301,
+          -3.9127690564152653,
+          3.533911137894964,
+          1.2815735854784893,
+          -1.7205848580783576,
+          0.4706374744871464
+        ],
+        "target_q": [
+          -0.06463568657636642,
+          -1.0707727670669556,
+          0.21092325448989868,
+          1.1186004877090454,
+          1.9517714977264404,
+          -3.159867525100708
+        ],
+        "active_replan_id": 16,
+        "diagnostics": {
+          "safety_events": [
+            "wrist_extension"
+          ],
+          "completed_reason": null,
+          "completed_at_s": null,
+          "completion_hold": false,
+          "stale_plan_hold": false,
+          "plan_activated": false,
+          "play_time_s": 0.3984233850171804,
+          "ik_rejects": 0,
+          "ik_rejects_total": 0,
+          "placement_release": {
+            "variant": "placement_policy_release_finish_v2",
+            "phase": "holding",
+            "window_active": false,
+            "opening_since_s": null,
+            "committed_at_s": null,
+            "finished_at_s": null,
+            "controller_finished": false,
+            "task_success": "not inferred by this controller",
+            "unloaded_since_s": null,
+            "suppress_latch": false,
+            "event": "safety_preempted"
+          },
+          "grip_latch": 0.6394721865653992
+        }
+      },
+      "stop_wrist_normal_wrench_world": [
+        -0.03767711990183509,
+        -0.13729015034661884,
+        -0.01349435989199721,
+        -0.07127881492934676,
+        0.01724139713505829,
+        0.011991911379551516
+      ],
+      "stop_contacts": [
+        {
+          "actor": "left_pad",
+          "filter": "/World/Waffle",
+          "normal_force_n": 5.745505972299725,
+          "points_world_m": [
+            [
+              -0.466287761926651,
+              0.019948206841945648,
+              0.40017399191856384
+            ],
+            [
+              -0.42983555793762207,
+              0.011750558391213417,
+              0.3923783600330353
+            ],
+            [
+              -0.4661669433116913,
+              0.031109679490327835,
+              0.3797319233417511
+            ],
+            [
+              -0.47303614020347595,
+              0.032255884259939194,
+              0.38192829489707947
+            ]
+          ],
+          "signed_separation_m": [
+            -0.00022912397980690002,
+            -0.00020209699869155884,
+            -1.3901852071285248e-05,
+            -2.6664696633815765e-05
+          ]
+        },
+        {
+          "actor": "right_pad",
+          "filter": "/World/Waffle",
+          "normal_force_n": 5.878111755009741,
+          "points_world_m": [
+            [
+              -0.4738704264163971,
+              0.008590705692768097,
+              0.3673909306526184
+            ],
+            [
+              -0.4374055862426758,
+              -0.010918059386312962,
+              0.38022714853286743
+            ],
+            [
+              -0.4736233353614807,
+              -0.0027732597663998604,
+              0.3879728615283966
+            ],
+            [
+              -0.45540377497673035,
+              0.0015346221625804901,
+              0.36873915791511536
+            ]
+          ],
+          "signed_separation_m": [
+            -0.00039179599843919277,
+            -0.00020142858556937426,
+            -0.0001745315094012767,
+            -0.00034967190003953874
+          ]
+        }
+      ],
+      "contact_pair_summary": {
+        "left_pad -> /World/Waffle": {
+          "first_over_point1N_s": 6.34,
+          "maximum_normal_force_n": 5.828915484016761
+        },
+        "right_pad -> /World/Waffle": {
+          "first_over_point1N_s": 6.34,
+          "maximum_normal_force_n": 5.92420157045126
+        },
+        "right_pad -> /World/Mat/Base": {
+          "first_over_point1N_s": 7.0360000000000005,
+          "maximum_normal_force_n": 53.70726250112057
+        }
+      },
+      "last_gel_t_s": 14.756,
+      "last_gel_per_filter": [
+        [
+          {
+            "filter_path": "/World/Waffle",
+            "normal_force_magnitude_n": 5.750953882932663,
+            "gel_compression_n": 4.935209773388987,
+            "ignored_normal_force_n": 0.815742542525196,
+            "coverage": {
+              "method": "manifold_patch_v2",
+              "fallback_reason": null,
+              "eligible_contact_count": 4,
+              "loaded_contact_count": 4,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [
+                [
+                  -0.012385119683221887,
+                  0.009735685204672233
+                ],
+                [
+                  0.00602429867286942,
+                  -0.023697605653842414
+                ],
+                [
+                  0.008863302868265416,
+                  0.019274855092089465
+                ],
+                [
+                  0.004639350577071198,
+                  0.025231534582015408
+                ]
+              ],
+              "support_area_m2": 0.0005264391509917801,
+              "overlap_area_m2": 0.0004517665279354028,
+              "overlap_fraction": 0.8581552627389157,
+              "overlap_centroid_yz_m": [
+                0.00022861113365187717,
+                0.003079214637244352
+              ],
+              "single_convex_body_declared": true,
+              "minimum_pairwise_normal_agreement": 1.0,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            }
+          }
+        ],
+        [
+          {
+            "filter_path": "/World/Waffle",
+            "normal_force_magnitude_n": 5.87327653169632,
+            "gel_compression_n": 5.442436189419755,
+            "ignored_normal_force_n": 0.4306153343387248,
+            "coverage": {
+              "method": "manifold_patch_v2",
+              "fallback_reason": null,
+              "eligible_contact_count": 4,
+              "loaded_contact_count": 4,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [
+                [
+                  -0.012413367592220103,
+                  0.00927722346540619
+                ],
+                [
+                  0.005877675626021064,
+                  -0.023940570719946715
+                ],
+                [
+                  0.012704712149854712,
+                  -0.00018359236939716553
+                ],
+                [
+                  0.008876090612415496,
+                  0.01925771698396616
+                ]
+              ],
+              "support_area_m2": 0.0005567127436252829,
+              "overlap_area_m2": 0.0005158958260268889,
+              "overlap_fraction": 0.9266822646584368,
+              "overlap_centroid_yz_m": [
+                0.002154480825686945,
+                0.0013206017461887978
+              ],
+              "single_convex_body_declared": true,
+              "minimum_pairwise_normal_agreement": 1.0,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            }
+          }
+        ]
+      ],
+      "first_accepted_command_above_measured_wrist_limit": {
+        "t_s": 14.764000000000001,
+        "target_q": [
+          -0.06289909442903971,
+          -1.079661336847584,
+          0.21316156637596223,
+          1.1142055788312097,
+          1.9517665356918168,
+          -3.161237830449878
+        ],
+        "target_radius_m": 0.46800446786765854,
+        "measured_radius_m": 0.4674975252668074,
+        "lead_before_measured_stop_s": 0.06400000000000006
+      },
+      "stage_matched_gel_comparisons": {
+        "acquisition": {
+          "bridge_t_s": 6.604,
+          "gel_t_s": 6.732,
+          "bridge_minus_gel_xyz_m": [
+            0.0006063313119466507,
+            0.0017129889963437561,
+            -0.006171126832419174
+          ],
+          "orientation_difference_deg": 0.6978193147775226,
+          "bridge_wrist_ft": [
+            -6.687157311591285,
+            -3.752755261148242,
+            3.5473972424500353,
+            1.3554153284084451,
+            -1.7369920001874803,
+            0.4395733292484978
+          ],
+          "gel_wrist_ft": [
+            -6.783506211654128,
+            -3.4450064367388125,
+            3.5479445770736433,
+            1.3379553310973757,
+            -1.7424891131226508,
+            0.4254971612295062
+          ],
+          "bridge_grip_command": 0.37475669384002686,
+          "gel_grip_command": 0.40350890159606934
+        },
+        "lift": {
+          "bridge_t_s": 10.204,
+          "gel_t_s": 9.868,
+          "bridge_minus_gel_xyz_m": [
+            -0.004109722957289397,
+            -0.00379224409453105,
+            -0.0007857928535400516
+          ],
+          "orientation_difference_deg": 1.7381558481977513,
+          "bridge_wrist_ft": [
+            -6.668018255075998,
+            -3.796822877582075,
+            3.5978645005130026,
+            1.29267459000146,
+            -1.781491509573651,
+            0.45684238956014056
+          ],
+          "gel_wrist_ft": [
+            -6.658860740081252,
+            -3.8009989923570986,
+            3.5722576544260605,
+            1.352698858220057,
+            -1.738315093960168,
+            0.4582762713469194
+          ],
+          "bridge_grip_command": 0.6394721865653992,
+          "gel_grip_command": 0.6174572706222534
+        },
+        "carry": {
+          "bridge_t_s": 12.668000000000001,
+          "gel_t_s": 12.396,
+          "bridge_minus_gel_xyz_m": [
+            -0.006095980774607379,
+            0.001382482983241673,
+            0.0018581309931524626
+          ],
+          "orientation_difference_deg": 2.87107770150924,
+          "bridge_wrist_ft": [
+            -6.622332365771163,
+            -3.8625704774927296,
+            3.5568644734432735,
+            1.2918751520326948,
+            -1.7782424365988676,
+            0.4711235594287402
+          ],
+          "gel_wrist_ft": [
+            -6.620733675376357,
+            -3.876340932283246,
+            3.5285127327417953,
+            1.3524920505752827,
+            -1.7378670396048634,
+            0.45740773492317627
+          ],
+          "bridge_grip_command": 0.6394721865653992,
+          "gel_grip_command": 0.621906578540802
+        }
+      },
+      "gel_at_nearest_transport_y": {
+        "t_s": 14.764000000000001,
+        "measured_tcp": [
+          -0.45505248717478497,
+          0.015348701044686039,
+          0.3567445361285419,
+          -1.623374413050278,
+          -1.029799470672906,
+          0.6410243973990044
+        ],
+        "y_mismatch_m": 1.7407398250790518e-05,
+        "wrist_radius_m": 0.4652748130447539
+      },
+      "input_sha256": {
+        "sim_trace.npz": "61a037e0d821aa9ec1e68939cf32d99ac384de51abc88c76ee5343dbea994fc6",
+        "execution_trace.jsonl": "1ea3766b5dc82069093832fecb427e4bdc1ab9e9ec2992ca714ba4e4ba6ef87e",
+        "planner_trace.json": "61f15ccf721940796f074a4e5767a1bee5da0428c691630a107088ef9b08ac09",
+        "delivered_plans.jsonl": "db3b76ad9e6dba3d48da07be060578a3bbd9f4f0956b8fa7d264fc2b16f28f36",
+        "wrist_contact_trace.jsonl": "56ee1a8e30b3b4ca6b2aea2fab996193023b7e276ec309927b32bff1aa9322fc",
+        "gel_contact_trace.json": "680e51fc16d0d7e9081228d2a8bb83d7a572869fb5b567738f31c3c8f387fbec",
+        "policy_info.json": "c0066d8bddc27ff5f8f77b77fe172adc5120543a921cb979b4cbc70c25cd7665",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "initialization.json": "efb80468e706f3db932c62bdd7ac58315154aa4158b09b7a7a60fdc63f81ef44",
+        "observations/0000.npz": "43a2a5e984aff5b0f423c6fc01fe9ef0b97ab873bd222361194f2251532ae265"
+      },
+      "gel_reference_input_sha256": {
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "initialization.json": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+        "observations/0000.npz": "6c4cd3f0309f2b58b88765bc829973efbc20bbcfbf8f7139273b2e73fc49e203",
+        "execution_trace.jsonl": "39fe3d21e858d4e8d7508e490df7e206bf46c825eed21753365b37e380f4e271",
+        "planner_trace.json": "824398ae6b270d41f7b5502c1e1061aa986f593cdfb03ca0c791dfbc0b863da5",
+        "policy_info.json": "61943cfd0b6b08c911b09098bf2e43dbffee212c186b53744ece66e5ac79a37f"
+      },
+      "source_sha256": {
+        "phantom/deploy/safety.py": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+        "phantom/sim/policy_adapter.py": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6",
+        "phantom/sim/kinematics.py": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+        "tools/sim/run_waffles.py": "7a3dd9eb4ef909dbd0e8b0c377ff1d8667885123a7910a2e8bd971816be38da6"
+      }
+    },
+    {
+      "seed": 904302,
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/corrected_profile_bridge/rollouts/teacher__fixed_anchor__seed904302",
+      "profile_differences_from_gel_only": {
+        "wrist_model": {
+          "bridge": "gripper_contact_proxy",
+          "gel_only": "contact_proxy"
+        },
+        "wrist_sampling_rate_hz": {
+          "bridge": 125.0,
+          "gel_only": null
+        },
+        "terminal_veto": {
+          "bridge": {
+            "implementation": "live",
+            "config": {
+              "z_ref": 0.0415,
+              "z_floor": 0.0315,
+              "z_margin": 0.0615,
+              "open_aperture": 0.232,
+              "p_close": 0.5,
+              "p_none": 0.9,
+              "max_retries": 3
+            },
+            "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+          },
+          "gel_only": {
+            "implementation": "fd4a032",
+            "config": {
+              "z_ref": 0.0415,
+              "z_floor": 0.0315,
+              "z_margin": 0.0615,
+              "open_aperture": 0.232,
+              "p_close": 0.5,
+              "p_none": 0.9,
+              "max_retries": 3
+            },
+            "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+          }
+        },
+        "terminal_veto_feedback_source": {
+          "bridge": "current_delivery",
+          "gel_only": null
+        },
+        "placement_release": {
+          "bridge": {
+            "tcp_min_m": [
+              -0.5429275160642127,
+              -0.06853791240695331,
+              0.057999999999999996
+            ],
+            "tcp_max_m": [
+              -0.24020644059509488,
+              0.14193716917871008,
+              0.274
+            ],
+            "open_command_max": 0.45,
+            "opening_hold_s": 0.2,
+            "unloaded_force_max_n": 0.5,
+            "unloaded_hold_s": 0.2,
+            "rearm_close_command_min": 0.5,
+            "finish_after_release": true
+          },
+          "gel_only": {
+            "tcp_min_m": [
+              -0.5429275160642127,
+              -0.06853791240695331,
+              0.057999999999999996
+            ],
+            "tcp_max_m": [
+              -0.24020644059509488,
+              0.14193716917871008,
+              0.274
+            ],
+            "open_command_max": 0.45,
+            "opening_hold_s": 0.2,
+            "unloaded_force_max_n": 0.5,
+            "unloaded_hold_s": 0.2,
+            "rearm_close_command_min": 0.5
+          }
+        }
+      },
+      "first_observation_comparison_to_gel_only": {
+        "t": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "rgb": {
+          "bitwise_equal": false,
+          "rms_delta": 0.9929744527876279
+        },
+        "wrist_window": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "ur_state": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "gel": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "fields": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "contact_state": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "reactive": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        },
+        "prev_chunk": {
+          "bitwise_equal": true,
+          "rms_delta": 0.0
+        }
+      },
+      "scene_config_bytes_equal": true,
+      "initialization_equal": false,
+      "initialization_differences": {
+        "packet_support_contacts": {
+          "bridge": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "gel_only": null
+        }
+      },
+      "first_plan_capture_and_activation_s": {
+        "bridge": [
+          0.26,
+          1.508
+        ],
+        "gel_only": [
+          0.26,
+          1.436
+        ]
+      },
+      "delivered_plan_count": 20,
+      "veto_actions": {
+        "none": 11,
+        "close_allowed": 7,
+        "recovery_tactile": 1,
+        "close_masked": 1
+      },
+      "rewritten_plan_count": 2,
+      "rewrites": [
+        {
+          "replan_id": 13,
+          "capture_t_s": 11.116,
+          "delivery_t_s": 11.892,
+          "veto": {
+            "p_contact": 0.2874,
+            "retries": 1,
+            "pad_load": {
+              "left": 0.0,
+              "right": 0.0
+            },
+            "action": "recovery_tactile",
+            "feedback_source": "current_delivery",
+            "feedback_arm_t_s": 11.892,
+            "feedback_gripper_t_s": 11.892,
+            "feedback_tcp_pose": [
+              -0.35459831492140653,
+              -0.28978512087356895,
+              0.23744991551794664,
+              -1.190779160335669,
+              -1.8884764031382353,
+              1.3665366806270554
+            ],
+            "feedback_gripper": 0.5762003660202026,
+            "snapshot_t_s": 11.116,
+            "applied_at_s": 11.892,
+            "replan_index": 13,
+            "cpk_invalidated": true,
+            "stop_reason": null,
+            "implementation": "live",
+            "native_source_sha256": "c8aadbd9359ea7cfb26a9551592e3e9c61d592026a616668ed001146b4496191"
+          },
+          "changed_channels": [
+            2,
+            6
+          ],
+          "max_absolute_delta_per_channel": [
+            0.0,
+            0.0,
+            0.01865357905626297,
+            0.0,
+            0.0,
+            0.0,
+            0.34896647930145264
+          ],
+          "original_closure_min_max": [
+            0.5527312755584717,
+            0.5809664726257324
+          ]
+        },
+        {
+          "replan_id": 14,
+          "capture_t_s": 11.9,
+          "delivery_t_s": 13.06,
+          "veto": {
+            "p_contact": 0.0058,
+            "retries": 1,
+            "action": "close_masked",
+            "feedback_source": "current_delivery",
+            "feedback_arm_t_s": 13.06,
+            "feedback_gripper_t_s": 13.06,
+            "feedback_tcp_pose": [
+              -0.3941403034962401,
+              -0.23327003504180327,
+              0.24516337787129,
+              -1.0341866745741084,
+              -1.754232311342569,
+              1.224713809151231
+            ],
+            "feedback_gripper": 0.23193034529685974,
+            "snapshot_t_s": 11.9,
+            "applied_at_s": 13.06,
+            "replan_index": 14,
+            "cpk_invalidated": true,
+            "stop_reason": null,
+            "implementation": "live",
+            "native_source_sha256": "c8aadbd9359ea7cfb26a9551592e3e9c61d592026a616668ed001146b4496191"
+          },
+          "changed_channels": [
+            6
+          ],
+          "max_absolute_delta_per_channel": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.31603899598121643
+          ],
+          "original_closure_min_max": [
+            0.5209428668022156,
+            0.5479693412780762
+          ]
+        }
+      ],
+      "first_stop": {
+        "t": 17.628,
+        "measured_tcp": [
+          -0.41298481247842456,
+          -0.10339337859988537,
+          0.1629044414090903,
+          -1.5588255752091338,
+          -1.405532312365449,
+          0.7918754409025173
+        ],
+        "requested_tcp": [
+          -0.40951928578452784,
+          -0.10907117899912075,
+          0.15414279669257133,
+          -1.5792240020262125,
+          -1.4236657475112828,
+          0.8026172949827368
+        ],
+        "measured_gripper": [
+          0.1386021226644516,
+          2
+        ],
+        "gripper_command": 0.232,
+        "measured_wrist_ft": [
+          -7.319122354645133,
+          59.5439162820235,
+          32.681282392479744,
+          0.22964896575321747,
+          -2.3607227173514973,
+          1.78779324735962
+        ],
+        "target_q": [
+          0.20259568095207214,
+          -1.4186819791793823,
+          1.6239101886749268,
+          0.2625429332256317,
+          1.938593864440918,
+          -3.063523769378662
+        ],
+        "active_replan_id": 19,
+        "diagnostics": {
+          "safety_events": [
+            "tactile_depth"
+          ],
+          "completed_reason": null,
+          "completed_at_s": null,
+          "completion_hold": false,
+          "stale_plan_hold": false,
+          "plan_activated": false,
+          "play_time_s": 0.20284268962364047,
+          "ik_rejects": 0,
+          "ik_rejects_total": 0,
+          "placement_release": {
+            "variant": "placement_policy_release_finish_v2",
+            "phase": "unarmed",
+            "window_active": false,
+            "opening_since_s": null,
+            "committed_at_s": null,
+            "finished_at_s": null,
+            "controller_finished": false,
+            "task_success": "not inferred by this controller",
+            "unloaded_since_s": null,
+            "suppress_latch": false,
+            "event": "safety_preempted"
+          },
+          "grip_latch": null
+        }
+      },
+      "stop_wrist_normal_wrench_world": [
+        -0.6394231154946668,
+        63.31939518809215,
+        29.133876894692783,
+        -1.1232034346546187,
+        -0.6228964621380814,
+        1.3291476842520251
+      ],
+      "stop_contacts": [
+        {
+          "actor": "left_pad",
+          "filter": "/World/Bin/Front",
+          "normal_force_n": 69.70320781692863,
+          "points_world_m": [
+            [
+              -0.3756583631038666,
+              -0.0770401582121849,
+              0.19045011699199677
+            ],
+            [
+              -0.41537439823150635,
+              -0.07677897810935974,
+              0.18901076912879944
+            ],
+            [
+              -0.37589696049690247,
+              -0.07830236852169037,
+              0.1931881606578827
+            ],
+            [
+              -0.4084758162498474,
+              -0.07857389003038406,
+              0.19306324422359467
+            ]
+          ],
+          "signed_separation_m": [
+            -0.0005528790643438697,
+            -0.00026536808582022786,
+            -0.0019423463381826878,
+            -0.0022412342950701714
+          ]
+        }
+      ],
+      "contact_pair_summary": {
+        "left_pad -> /World/Waffle": {
+          "first_over_point1N_s": 7.140000000000001,
+          "maximum_normal_force_n": 4.855496226809919
+        },
+        "right_pad -> /World/Waffle": {
+          "first_over_point1N_s": 7.396,
+          "maximum_normal_force_n": 3.8898843340575695
+        },
+        "left_pad -> /World/Bin/Front": {
+          "first_over_point1N_s": 16.86,
+          "maximum_normal_force_n": 74.15356393903494
+        }
+      },
+      "last_gel_t_s": 17.628,
+      "last_gel_per_filter": [
+        [
+          {
+            "filter_path": "/World/Bin/Front",
+            "normal_force_magnitude_n": 69.70320320129395,
+            "gel_compression_n": 26.750211097806925,
+            "ignored_normal_force_n": 42.9529914855957,
+            "coverage": {
+              "method": "point_fallback",
+              "fallback_reason": "single_convex_contact_body_not_declared",
+              "eligible_contact_count": 4,
+              "loaded_contact_count": 4,
+              "zero_impulse_geometric_count": 0,
+              "shared_filter_contact_count": 0,
+              "support_polygon_yz_m": [
+                [
+                  -0.01290898904572566,
+                  0.0023281814331211556
+                ],
+                [
+                  0.002058179396305296,
+                  -0.02661063382086114
+                ],
+                [
+                  0.004845790242616383,
+                  -0.025437513148886835
+                ],
+                [
+                  -0.012141879185428563,
+                  0.010491896212429361
+                ]
+              ],
+              "support_area_m2": 0.00013223637107655548,
+              "overlap_area_m2": null,
+              "overlap_fraction": null,
+              "overlap_centroid_yz_m": null,
+              "single_convex_body_declared": false,
+              "minimum_pairwise_normal_agreement": 1.0000000000000002,
+              "support_max_separation_m": 0.002,
+              "separation_status": "available",
+              "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+            }
+          }
+        ],
+        []
+      ],
+      "first_accepted_command_above_measured_wrist_limit": null,
+      "stage_matched_gel_comparisons": {
+        "acquisition": {
+          "bridge_t_s": 7.404,
+          "gel_t_s": 8.468,
+          "bridge_minus_gel_xyz_m": [
+            -0.000692218295467284,
+            0.0003628986637799203,
+            0.0035223105342234023
+          ],
+          "orientation_difference_deg": 0.5633718939404678,
+          "bridge_wrist_ft": [
+            -6.752790089080253,
+            -3.539272606628213,
+            3.5473716483015925,
+            1.3531887788369028,
+            -1.7377236103747737,
+            0.43391559679812536
+          ],
+          "gel_wrist_ft": [
+            -6.71972936095375,
+            -3.643674678239667,
+            3.5476678843599743,
+            1.342102577743199,
+            -1.7411664840734549,
+            0.4283611737123162
+          ],
+          "bridge_grip_command": 0.4066985845565796,
+          "gel_grip_command": 0.43207961320877075
+        }
+      },
+      "gel_at_nearest_transport_y": {
+        "t_s": 14.892,
+        "measured_tcp": [
+          -0.4598322704511444,
+          -0.10277370536499345,
+          0.40041707595504133,
+          -1.3249774096299611,
+          -1.3492778017726696,
+          0.971607309878683
+        ],
+        "y_mismatch_m": 0.0006196732348919265,
+        "wrist_radius_m": 0.4636340142029542
+      },
+      "input_sha256": {
+        "sim_trace.npz": "118db5a007f050f2b3968386fde95fa60ce8391d690c13601068089136194441",
+        "execution_trace.jsonl": "5ec69ad587b1f8923a375ad24335d6748dfa37f3ec5fa01af027d901d04b1603",
+        "planner_trace.json": "bd4441ccdf852593728982be64fcf0f775a3f5fb298a7c3892d6309059ecc527",
+        "delivered_plans.jsonl": "3aebc3d36ee498e6f3790a0552beca9f58fa8c30437e353aa6ce2b8906a2ae9c",
+        "wrist_contact_trace.jsonl": "31db36d2457bfd99865a078b7d7f3f903013c364e1ab49bf0d0afefbbc40021b",
+        "gel_contact_trace.json": "abea9d7def672c8d2353260ecfd7182f2a29d431dd4482ffe196431b12a22fc8",
+        "policy_info.json": "bfea11ac1558ea99ab5714f5dec00c81ca6534939e93e4794a2613983e9d4174",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "initialization.json": "efb80468e706f3db932c62bdd7ac58315154aa4158b09b7a7a60fdc63f81ef44",
+        "observations/0000.npz": "f6456c61986ba4ee67e6281c1606300868044deeeef0169bbf898415c7155d1f"
+      },
+      "gel_reference_input_sha256": {
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "initialization.json": "be140c85a42b283d9ce14b60aea10ed33f19eea59e828faaf181c7c5c5b572ec",
+        "observations/0000.npz": "787bd61a7fe636b186a13ecef95d42dd6d9ac849104cd0e88c8b1913d2b4c81f",
+        "execution_trace.jsonl": "2f8475c5b6cc8477ebe1977f092ec51fb72beefc998d73ad4c69370265b3343f",
+        "planner_trace.json": "b611a047813d55d091acd9646565994861b21810759a474514c3ea85edd6f299",
+        "policy_info.json": "6d19a1ba56afdf6fad9b601d332355e9a37b7ef9c8e44e7ca75918e3e82a8045"
+      },
+      "source_sha256": {
+        "phantom/deploy/safety.py": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+        "phantom/sim/policy_adapter.py": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6",
+        "phantom/sim/kinematics.py": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+        "tools/sim/run_waffles.py": "7a3dd9eb4ef909dbd0e8b0c377ff1d8667885123a7910a2e8bd971816be38da6"
+      }
+    }
+  ]
+}

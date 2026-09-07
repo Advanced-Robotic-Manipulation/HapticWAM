@@ -1,0 +1,897 @@
+{
+  "schema_version": 1,
+  "method": "Reconstruct populated per-filter buffers from saved local coordinates/normals/forces/separations, identity pad transform; evaluate preserved v1 branch and v2 branch on identical inputs. No physics or closed-loop rerun.",
+  "limits": [
+    "Same-contact differences establish a mapper mechanism, not the cause of unmatched live policy outcomes.",
+    "All positive/zero separations are actual saved API data; speculative geometry is not measured gel indentation.",
+    "Uniform patch pressure and declared convex packet support remain uncalibrated assumptions.",
+    "Baseline already latched and retained its packet at the reach guard; do not describe its failure as missing latch.",
+    "No threshold changes, invented load, pressure-area inflation, or hardware sensor calibration."
+  ],
+  "mapper_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery/tools/sim/gel_contact.py",
+  "mapper_source_sha256": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e",
+  "legacy_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/gel_contact.py",
+  "legacy_source_sha256": "99791534245d6509a58c651d049a8fa80c981e19a53e7e462af581c23a66f300",
+  "cases": [
+    {
+      "seed": 904301,
+      "matched_seed_live_startup_confounds": {
+        "observation0": {
+          "t": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "rgb": {
+            "bitwise_equal": false,
+            "rms_delta": 0.923333944419172,
+            "maximum_absolute_delta": 27.0
+          },
+          "wrist_window": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "ur_state": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "gel": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "fields": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "contact_state": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "reactive": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "prev_chunk": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          }
+        },
+        "initialization_equal": true,
+        "scene_config_bytes_equal": true,
+        "first_activation_baseline_s": 1.452,
+        "first_activation_v2_s": 1.46,
+        "first_native_latency_baseline_s": 1.1865614409325644,
+        "first_native_latency_v2_s": 1.1929003860568628,
+        "first_action_translation_max_row_delta_m": 1.4926882856966475e-05,
+        "first_action_closure_max_delta": 0.0008000433444976807,
+        "observation_sha256": {
+          "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/baseline/rollouts/teacher__fixed_anchor__seed904301/observations/0000.npz": "033535ccf6367cb7dbc022cc7ba7498a2075828f38a75cd9896bf8c1facf4667",
+          "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/gel_v2_only/rollouts/teacher__fixed_anchor__seed904301/observations/0000.npz": "6c4cd3f0309f2b58b88765bc829973efbc20bbcfbf8f7139273b2e73fc49e203"
+        }
+      },
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/gel_v2_only/rollouts/teacher__fixed_anchor__seed904301",
+      "stop_t_s": 54.156,
+      "samples_before_stop": 434,
+      "first_simultaneous_2point5N_v1_on_same_contacts_s": 9.252,
+      "first_simultaneous_2point5N_v2_s": 8.252,
+      "v1_bilateral_threshold_samples": 111,
+      "v2_bilateral_threshold_samples": 115,
+      "v2_threshold_but_v1_below_samples": 4,
+      "maximum_v2_reconstruction_error_n": 0.0,
+      "maximum_legacy_branch_vs_frozen_v1_error_n": 0.0,
+      "maximum_force_partition_residual_n": 9.719059324703183e-16,
+      "routes": [
+        {
+          "side": "left",
+          "method": "point_fallback",
+          "fallback": "no_positive_eligible_load",
+          "samples": 5
+        },
+        {
+          "side": "left",
+          "method": "point_fallback",
+          "fallback": "fewer_than_three_noncollinear_geometric_points",
+          "samples": 2
+        },
+        {
+          "side": "right",
+          "method": "point_fallback",
+          "fallback": "no_positive_eligible_load",
+          "samples": 5
+        },
+        {
+          "side": "left",
+          "method": "manifold_patch_v2",
+          "fallback": null,
+          "samples": 129
+        },
+        {
+          "side": "right",
+          "method": "point_fallback",
+          "fallback": "fewer_than_three_noncollinear_geometric_points",
+          "samples": 5
+        },
+        {
+          "side": "right",
+          "method": "manifold_patch_v2",
+          "fallback": null,
+          "samples": 123
+        }
+      ],
+      "first_actual_latch_s": 8.252,
+      "examples": [
+        {
+          "t_s": 8.252,
+          "pads": [
+            {
+              "side": "left",
+              "packet_total_normal_n": 3.766494035720825,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 2.9434826355602657,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 1,
+                "zero_impulse_geometric_count": 3,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.010422727733424422,
+                    0.015549669362861004
+                  ],
+                  [
+                    0.009208063357465296,
+                    -0.019394381270131822
+                  ],
+                  [
+                    0.00919288564483171,
+                    0.019445620017114255
+                  ],
+                  [
+                    0.004975529236131158,
+                    0.025406969673018774
+                  ]
+                ],
+                "support_area_m2": 0.0004476478615017869,
+                "overlap_area_m2": 0.0003519318640605736,
+                "overlap_fraction": 0.7861801525866751,
+                "overlap_centroid_yz_m": [
+                  0.0024638290251018753,
+                  0.004891079477888832
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0000000000000002,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                3.766494035720825,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "points_pad_m": [
+                [
+                  -0.00599966875346226,
+                  -0.010422727733424422,
+                  0.015549669362861004
+                ],
+                [
+                  -0.005999340550761616,
+                  0.009208063357465296,
+                  -0.019394381270131822
+                ],
+                [
+                  -0.005999742224742399,
+                  0.00919288564483171,
+                  0.019445620017114255
+                ],
+                [
+                  -0.005999799783393191,
+                  0.004975529236131158,
+                  0.025406969673018774
+                ]
+              ],
+              "separation_m": [
+                -0.0005249942769296467,
+                0.001226692576892674,
+                0.0016319993883371353,
+                0.001239483361132443
+              ]
+            },
+            {
+              "side": "right",
+              "packet_total_normal_n": 3.555467367172241,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 3.025495783311499,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 2,
+                "zero_impulse_geometric_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.004974282126930006,
+                    0.025406914618924057
+                  ],
+                  [
+                    0.007338201235437105,
+                    -0.022065614980646873
+                  ],
+                  [
+                    0.012010178552593119,
+                    -0.010523988636442404
+                  ],
+                  [
+                    0.012010687418151937,
+                    0.010523594700794864
+                  ]
+                ],
+                "support_area_m2": 0.0003606983997021724,
+                "overlap_area_m2": 0.00030877487328642483,
+                "overlap_fraction": 0.8560472503936234,
+                "overlap_centroid_yz_m": [
+                  0.005854240936813242,
+                  0.002951873286965806
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0000000000000002,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                3.0108413696289062,
+                0.0,
+                0.0,
+                0.544625997543335
+              ],
+              "points_pad_m": [
+                [
+                  0.006002038022074862,
+                  0.012010687418151937,
+                  0.010523594700794864
+                ],
+                [
+                  0.0060023748870799715,
+                  0.007338201235437105,
+                  -0.022065614980646873
+                ],
+                [
+                  0.0060018898967693236,
+                  -0.004974282126930006,
+                  0.025406914618924057
+                ],
+                [
+                  0.006002232790236949,
+                  0.012010178552593119,
+                  -0.010523988636442404
+                ]
+              ],
+              "separation_m": [
+                -0.0002973943774122745,
+                0.0005481492844410241,
+                0.0013790370430797338,
+                -7.679784903302789e-05
+              ]
+            }
+          ]
+        },
+        {
+          "t_s": 8.628,
+          "pads": [
+            {
+              "side": "left",
+              "packet_total_normal_n": 4.24470329284668,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 3.336835414213351,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 1,
+                "zero_impulse_geometric_count": 3,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.01040704314259707,
+                    0.015594732463991696
+                  ],
+                  [
+                    0.009062510786136076,
+                    -0.019627148578108534
+                  ],
+                  [
+                    0.009195572807120887,
+                    0.019448398043633575
+                  ],
+                  [
+                    0.004978451260899213,
+                    0.02540990189931097
+                  ]
+                ],
+                "support_area_m2": 0.00044929130181726513,
+                "overlap_area_m2": 0.00035319574168257294,
+                "overlap_fraction": 0.7861174704562254,
+                "overlap_centroid_yz_m": [
+                  0.0024243336840436653,
+                  0.004829902546057522
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 0.9999999999999999,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                4.24470329284668,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "points_pad_m": [
+                [
+                  -0.006002072329648543,
+                  -0.01040704314259707,
+                  0.015594732463991696
+                ],
+                [
+                  -0.006002128160324997,
+                  0.009062510786136076,
+                  -0.019627148578108534
+                ],
+                [
+                  -0.006002591384137645,
+                  0.009195572807120887,
+                  0.019448398043633575
+                ],
+                [
+                  -0.0060025477064002035,
+                  0.004978451260899213,
+                  0.02540990189931097
+                ]
+              ],
+              "separation_m": [
+                -0.0005756216123700142,
+                0.0009630722925066948,
+                0.0014553433284163475,
+                0.0011016232892870903
+              ]
+            },
+            {
+              "side": "right",
+              "packet_total_normal_n": 3.0456741005182266,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 2.761360129688768,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 2,
+                "zero_impulse_geometric_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.009189915278793986,
+                    0.019449228916367595
+                  ],
+                  [
+                    0.007386514530830486,
+                    -0.02199513822344851
+                  ],
+                  [
+                    0.01201106010965134,
+                    -0.0105213201890788
+                  ],
+                  [
+                    0.012012365550666412,
+                    0.010526266665634453
+                  ]
+                ],
+                "support_area_m2": 0.0004140623998977927,
+                "overlap_area_m2": 0.0003774487004116988,
+                "overlap_fraction": 0.9115744402410564,
+                "overlap_centroid_yz_m": [
+                  0.004182935999534945,
+                  0.0022646072495862064
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                2.8611574172973633,
+                0.0,
+                0.0,
+                0.18451668322086334
+              ],
+              "points_pad_m": [
+                [
+                  0.0059984241364759204,
+                  0.012012365550666412,
+                  0.010526266665634453
+                ],
+                [
+                  0.005998930168575833,
+                  0.007386514530830486,
+                  -0.02199513822344851
+                ],
+                [
+                  0.005998833512238039,
+                  -0.009189915278793986,
+                  0.019449228916367595
+                ],
+                [
+                  0.0059986763480918024,
+                  0.01201106010965134,
+                  -0.0105213201890788
+                ]
+              ],
+              "separation_m": [
+                -0.0002783708623610437,
+                0.0005769743584096432,
+                0.001749902032315731,
+                -2.6148920369450934e-05
+              ]
+            }
+          ]
+        }
+      ],
+      "input_sha256": {
+        "gel_contact_trace.json": "5650f14c8a133983f8a38a3f82c0b0693893e0ee7bf5c4a92e4c9682c40e5a54",
+        "execution_trace.jsonl": "39fe3d21e858d4e8d7508e490df7e206bf46c825eed21753365b37e380f4e271",
+        "sim_trace.npz": "fb5c0adb44d3a98021bd8a6a6e070d9d12bd8eb8a2eded55cf7f4325871f410c"
+      }
+    },
+    {
+      "seed": 904302,
+      "matched_seed_live_startup_confounds": {
+        "observation0": {
+          "t": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "rgb": {
+            "bitwise_equal": false,
+            "rms_delta": 1.0042169117789133,
+            "maximum_absolute_delta": 38.0
+          },
+          "wrist_window": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "ur_state": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "gel": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "fields": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "contact_state": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "reactive": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          },
+          "prev_chunk": {
+            "bitwise_equal": true,
+            "rms_delta": 0.0,
+            "maximum_absolute_delta": 0.0
+          }
+        },
+        "initialization_equal": true,
+        "scene_config_bytes_equal": true,
+        "first_activation_baseline_s": 1.468,
+        "first_activation_v2_s": 1.436,
+        "first_native_latency_baseline_s": 1.2024417310021818,
+        "first_native_latency_v2_s": 1.170135057065636,
+        "first_action_translation_max_row_delta_m": 2.237154135291218e-05,
+        "first_action_closure_max_delta": 0.0004957616329193115,
+        "observation_sha256": {
+          "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/baseline/rollouts/teacher__fixed_anchor__seed904302/observations/0000.npz": "c728e482d8e1ed776e9c890a51fb8a82f3aea27e75a4f6836e39b7fd7330397c",
+          "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/gel_v2_only/rollouts/teacher__fixed_anchor__seed904302/observations/0000.npz": "787bd61a7fe636b186a13ecef95d42dd6d9ac849104cd0e88c8b1913d2b4c81f"
+        }
+      },
+      "folder": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/components/gel_v2_only/rollouts/teacher__fixed_anchor__seed904302",
+      "stop_t_s": 27.900000000000002,
+      "samples_before_stop": 224,
+      "first_simultaneous_2point5N_v1_on_same_contacts_s": 11.252,
+      "first_simultaneous_2point5N_v2_s": 11.252,
+      "v1_bilateral_threshold_samples": 72,
+      "v2_bilateral_threshold_samples": 81,
+      "v2_threshold_but_v1_below_samples": 9,
+      "maximum_v2_reconstruction_error_n": 0.0,
+      "maximum_legacy_branch_vs_frozen_v1_error_n": 0.0,
+      "maximum_force_partition_residual_n": 9.12539087263159e-16,
+      "routes": [
+        {
+          "side": "left",
+          "method": "point_fallback",
+          "fallback": "no_positive_eligible_load",
+          "samples": 5
+        },
+        {
+          "side": "left",
+          "method": "manifold_patch_v2",
+          "fallback": null,
+          "samples": 107
+        },
+        {
+          "side": "right",
+          "method": "point_fallback",
+          "fallback": "fewer_than_three_noncollinear_geometric_points",
+          "samples": 1
+        },
+        {
+          "side": "right",
+          "method": "point_fallback",
+          "fallback": "no_positive_eligible_load",
+          "samples": 10
+        },
+        {
+          "side": "right",
+          "method": "manifold_patch_v2",
+          "fallback": null,
+          "samples": 101
+        }
+      ],
+      "first_actual_latch_s": 11.252,
+      "examples": [
+        {
+          "t_s": 17.5,
+          "pads": [
+            {
+              "side": "left",
+              "packet_total_normal_n": 4.227064430713654,
+              "v1_gel_n": 1.2224722549495148,
+              "v2_gel_n": 3.1518064013612337,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 3,
+                "zero_impulse_geometric_count": 1,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.009472196864373632,
+                    0.0193128161150648
+                  ],
+                  [
+                    0.010626197160899036,
+                    -0.014165325360411237
+                  ],
+                  [
+                    0.011715094392273221,
+                    0.010374031049290916
+                  ],
+                  [
+                    0.004671164834037933,
+                    0.0252529495773518
+                  ]
+                ],
+                "support_area_m2": 0.0003909678589557109,
+                "overlap_area_m2": 0.00029152365667528134,
+                "overlap_fraction": 0.7456460933999829,
+                "overlap_centroid_yz_m": [
+                  0.0044485624991275835,
+                  0.006210529179880737
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                2.187422275543213,
+                0.0,
+                0.9820649027824402,
+                1.0575772523880005
+              ],
+              "points_pad_m": [
+                [
+                  -0.005944983192629084,
+                  0.004671164834037933,
+                  0.0252529495773518
+                ],
+                [
+                  -0.005950807256518575,
+                  0.010626197160899036,
+                  -0.014165325360411237
+                ],
+                [
+                  -0.005945901232196573,
+                  0.011715094392273221,
+                  0.010374031049290916
+                ],
+                [
+                  -0.005949897966820949,
+                  -0.009472196864373632,
+                  0.0193128161150648
+                ]
+              ],
+              "separation_m": [
+                -0.0001340510934824124,
+                9.726399002829567e-05,
+                -5.229716043686494e-05,
+                -8.178131247404963e-05
+              ]
+            },
+            {
+              "side": "right",
+              "packet_total_normal_n": 3.6562767550349236,
+              "v1_gel_n": 2.7185014855423266,
+              "v2_gel_n": 2.7185014855423266,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 4,
+                "zero_impulse_geometric_count": 0,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.009362814244501883,
+                    0.01946246014875466
+                  ],
+                  [
+                    0.010698848399990059,
+                    -0.013952708012767536
+                  ],
+                  [
+                    0.01172232611637665,
+                    0.010379120896307922
+                  ],
+                  [
+                    -0.0002976703108546655,
+                    0.027348559722214158
+                  ]
+                ],
+                "support_area_m2": 0.000385478958613916,
+                "overlap_area_m2": 0.00028660991723492615,
+                "overlap_fraction": 0.7435163731517339,
+                "overlap_centroid_yz_m": [
+                  0.004523836397549887,
+                  0.006281890504392653
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0000000000000002,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                2.2187461853027344,
+                0.5074812173843384,
+                0.8803521990776062,
+                0.0496971532702446
+              ],
+              "points_pad_m": [
+                [
+                  0.006047958861602782,
+                  0.010698848399990059,
+                  -0.013952708012767536
+                ],
+                [
+                  0.0060527929655332345,
+                  -0.0002976703108546655,
+                  0.027348559722214158
+                ],
+                [
+                  0.006052822011224246,
+                  0.01172232611637665,
+                  0.010379120896307922
+                ],
+                [
+                  0.006048873168007689,
+                  -0.009362814244501883,
+                  0.01946246014875466
+                ]
+              ],
+              "separation_m": [
+                -0.0003921268507838249,
+                -0.00015651993453502655,
+                -0.00024434644728899,
+                -0.00021487753838300705
+              ]
+            }
+          ]
+        },
+        {
+          "t_s": 18.132,
+          "pads": [
+            {
+              "side": "left",
+              "packet_total_normal_n": 4.045166194438934,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 3.435408910598685,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 2,
+                "zero_impulse_geometric_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.012571965874617315,
+                    0.006762340773220107
+                  ],
+                  [
+                    0.011446353351514954,
+                    -0.01174856872321407
+                  ],
+                  [
+                    0.011789954748788684,
+                    0.010411774916920727
+                  ],
+                  [
+                    -0.0002264601011274777,
+                    0.027383719285290202
+                  ]
+                ],
+                "support_area_m2": 0.0004979684291212823,
+                "overlap_area_m2": 0.00042334185550772557,
+                "overlap_fraction": 0.8501379419871191,
+                "overlap_centroid_yz_m": [
+                  0.0019121097343843575,
+                  0.005718759496386408
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                3.4763221740722656,
+                0.0,
+                0.0,
+                0.5688440203666687
+              ],
+              "points_pad_m": [
+                [
+                  -0.005954847231774441,
+                  0.011446353351514954,
+                  -0.01174856872321407
+                ],
+                [
+                  -0.005950683478134315,
+                  -0.0002264601011274777,
+                  0.027383719285290202
+                ],
+                [
+                  -0.005956449810636664,
+                  -0.012571965874617315,
+                  0.006762340773220107
+                ],
+                [
+                  -0.005951160268615309,
+                  0.011789954748788684,
+                  0.010411774916920727
+                ]
+              ],
+              "separation_m": [
+                -0.00034684580168686807,
+                0.000657514960039407,
+                0.0009343059500679374,
+                -8.112362411338836e-05
+              ]
+            },
+            {
+              "side": "right",
+              "packet_total_normal_n": 5.372508525848389,
+              "v1_gel_n": 0.0,
+              "v2_gel_n": 4.614726084531609,
+              "coverage": {
+                "method": "manifold_patch_v2",
+                "fallback_reason": null,
+                "eligible_contact_count": 4,
+                "loaded_contact_count": 2,
+                "zero_impulse_geometric_count": 2,
+                "shared_filter_contact_count": 0,
+                "support_polygon_yz_m": [
+                  [
+                    -0.012519626908203964,
+                    0.0072685318573862965
+                  ],
+                  [
+                    0.011588187131076703,
+                    -0.011311331016876992
+                  ],
+                  [
+                    0.008974106426486073,
+                    0.019336985424881308
+                  ],
+                  [
+                    -0.009410671502228624,
+                    0.01933048163522201
+                  ]
+                ],
+                "support_area_m2": 0.00045601535021109227,
+                "overlap_area_m2": 0.00039209888483685354,
+                "overlap_fraction": 0.8598370310458816,
+                "overlap_centroid_yz_m": [
+                  0.0013937597029489626,
+                  0.00610864449992939
+                ],
+                "single_convex_body_declared": true,
+                "minimum_pairwise_normal_agreement": 1.0,
+                "support_max_separation_m": 0.002,
+                "separation_status": "available",
+                "contiguity_evidence": "declared single convex contacting body plus coherent inner-face normals; tensor API exposes no patch or collider IDs; uniform pressure remains assumed"
+              },
+              "point_force_n": [
+                3.583341121673584,
+                0.0,
+                1.7891674041748047,
+                0.0
+              ],
+              "points_pad_m": [
+                [
+                  0.00604235177609668,
+                  -0.009410671502228624,
+                  0.01933048163522201
+                ],
+                [
+                  0.006041373429445459,
+                  0.011588187131076703,
+                  -0.011311331016876992
+                ],
+                [
+                  0.006039781145111632,
+                  -0.012519626908203964,
+                  0.0072685318573862965
+                ],
+                [
+                  0.006045902012313266,
+                  0.008974106426486073,
+                  0.019336985424881308
+                ]
+              ],
+              "separation_m": [
+                -0.00041210322524420917,
+                0.0008911253535188735,
+                -0.00039479980478063226,
+                0.0003889921063091606
+              ]
+            }
+          ]
+        }
+      ],
+      "input_sha256": {
+        "gel_contact_trace.json": "ea07eccde6d7edcace3586b6a47dcf36c29f9f4be85db63bf4fe6f7f172d5820",
+        "execution_trace.jsonl": "2f8475c5b6cc8477ebe1977f092ec51fb72beefc998d73ad4c69370265b3343f",
+        "sim_trace.npz": "63cc49224ea468c24cd208bb87672d4b3c8a2661b5a13282df7042d761de27b3"
+      }
+    }
+  ]
+}

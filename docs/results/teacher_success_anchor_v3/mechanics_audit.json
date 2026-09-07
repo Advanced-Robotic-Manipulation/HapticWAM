@@ -1,0 +1,215 @@
+{
+  "scope": "Independent read-only CPU audit. Recorded-command mechanics reproduction only, not fresh policy success. All comparisons at exact shared simulation timestamps.",
+  "original_rows": 502,
+  "replay_rows": 502,
+  "shared_time_rows": 501,
+  "original_last_s": 33.376,
+  "replay_last_s": 33.372,
+  "unmatched_original_times_s": [
+    33.376
+  ],
+  "unmatched_replay_times_s": [
+    33.372
+  ],
+  "arrays": {
+    "frame_t": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "gripper": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "packet_bin_normal_force": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "packet_robot_normal_force": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_contact_count": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_contact_uv": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_force": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_force_local": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_orientation_wxyz": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_packet_force": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_packet_normal_force": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "pad_position": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "physics_t": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "q": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "qd": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "t": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "target_q": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "tcp": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "tcp_nominal_fk": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "waffle_orientation_wxyz": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    },
+    "waffle_position": {
+      "shared_rows": 501,
+      "bitwise_equal": true,
+      "equal_values_with_nan": true,
+      "max_abs_delta": 0.0
+    }
+  },
+  "all_shared_arrays_bitwise_equal": true,
+  "command_alignment": {
+    "source_rows": 3923,
+    "all_physics_ticks_checked": 8344,
+    "ticks_with_recorded_command": 8343,
+    "method": "Independent integer-nanosecond causal eligibility, then exact q/finger comparison with recorded reader; sampled target_q matches cast source target exactly. Before0.004s no command; after31.38s final targets held.",
+    "sampled_target_q_max_delta_after_dtype_cast": 0.0
+  },
+  "physics_configuration_equal": true,
+  "initialization_equal": true,
+  "score": {
+    "valid_for_policy_scoring": false,
+    "invalid_reasons": [
+      "run_mode_is_not_policy"
+    ],
+    "outcomes": {
+      "reach_before_closure": true,
+      "acquired": true,
+      "lifted": true,
+      "carried": true,
+      "released_in_bin": true,
+      "full_task": true,
+      "dropped": false
+    },
+    "event_times_s": {
+      "reach": 6.336,
+      "closure": 7.468,
+      "acquisition": 8.0,
+      "lift": 12.668000000000001,
+      "carry": 15.336,
+      "release_in_bin": 24.400000000000002,
+      "full_task": 25.2,
+      "first_drop": null
+    },
+    "placement_support": {
+      "required": true,
+      "telemetry_status": "available",
+      "verified_placement": true,
+      "confirmation_time_s": 25.2,
+      "robot_contact_peak_n": 16.427497625350952,
+      "bin_contact_peak_n": 6.637989521026611,
+      "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+    }
+  },
+  "support_paths_identical": true,
+  "robot_body_count": 13,
+  "bin_body_count": 5,
+  "settled_support_window_s": [
+    25.2,
+    27.2
+  ],
+  "settled_support_force_n": {
+    "packet_robot_normal_force": {
+      "min": 0.0,
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "packet_bin_normal_force": {
+      "min": 0.3426717482507229,
+      "max": 0.34398665092885494,
+      "mean": 0.34309691214753735
+    }
+  },
+  "packet_mg_n": 0.34335000000000004,
+  "input_sha256": {
+    "original_trace": "c5bc475f200bce5c22590d844bca15163b74d82eed6aa7efb93ce33259d2b182",
+    "replayed_trace": "daabe50fd5b66c85b5104a9e1ea34f8ea506fe2e80218db7a940fee7611ec9fd",
+    "original_execution": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+    "replay_run": "e5fb6ba39c021105e5cac3628220c4851b34128d5d48e6e3cbfcf25690d9e470",
+    "replay_config": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+    "command_reader_source": "81178cd4e416f4c4d8d8651f79548c664b8fdfe05a34e872c0cbbab854e10690",
+    "scorer_source": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+  }
+}

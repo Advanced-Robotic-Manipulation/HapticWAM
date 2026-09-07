@@ -1,0 +1,1059 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "captured_utc": "2026-09-07T08:23:21.503975+00:00",
+  "protocol_sha256": "2e02af9dd1a5bf7b9059d1a71d1a8aec1f95618f491a35e50c455c70bf765cd9",
+  "amendment_sha256": "c61f7d1b2d310686cb0e53aeb1101aba8864f09a388aff289e1534e5b0938312",
+  "mechanics_reproduction_kind": "command_replay",
+  "checks": {
+    "all_four_historical_controls_preserved": true,
+    "source_inputs_match_anchor": true,
+    "first_divergence_review_complete": true,
+    "timing_variance_documented": true,
+    "mechanics_integrity_passed": true,
+    "fresh_screen_not_used_to_approve_gate": true
+  },
+  "source_input_checks": [
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/pads/pad_elliptical_12x26x55mm.json",
+      "expected_sha256": "1251d5657381cd64d971c53ef82b1db33e963c10b20e67b4fd7731ab8a73c910",
+      "actual_sha256": "1251d5657381cd64d971c53ef82b1db33e963c10b20e67b4fd7731ab8a73c910"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/pads/pad_elliptical_12x26x55mm.stl",
+      "expected_sha256": "94fb43781819f64bc217028ad1a88982f34a7cb03eafea9a57e42869569edbc9",
+      "actual_sha256": "94fb43781819f64bc217028ad1a88982f34a7cb03eafea9a57e42869569edbc9"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/LICENSE",
+      "expected_sha256": "bfe9a4de3ec95dac1d2bf02df4d774ecfd6d492df1fa33476c3af5576bd08435",
+      "actual_sha256": "bfe9a4de3ec95dac1d2bf02df4d774ecfd6d492df1fa33476c3af5576bd08435"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/PROVENANCE.json",
+      "expected_sha256": "9be1ab1e142fd4ccbf9bb4222e6aceb7aa2abb3e29c2242fc7cf9652b1f1801c",
+      "actual_sha256": "9be1ab1e142fd4ccbf9bb4222e6aceb7aa2abb3e29c2242fc7cf9652b1f1801c"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_base_link.stl",
+      "expected_sha256": "d8844d7d09e05423b6edb56b354eef561ad6cf4787d8b7f980232cd4346f46bf",
+      "actual_sha256": "d8844d7d09e05423b6edb56b354eef561ad6cf4787d8b7f980232cd4346f46bf"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_finger.dae",
+      "expected_sha256": "807aff52c5a12ca5429cfb2eb19cc88dfaf0083bac6b69e24d49f6beb29aa2c8",
+      "actual_sha256": "807aff52c5a12ca5429cfb2eb19cc88dfaf0083bac6b69e24d49f6beb29aa2c8"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_knuckle.dae",
+      "expected_sha256": "a8e6bb0b3b5ef6ea1323aa698a16dc1ec1a878ed2c2bcd43547750a18e72d9b4",
+      "actual_sha256": "a8e6bb0b3b5ef6ea1323aa698a16dc1ec1a878ed2c2bcd43547750a18e72d9b4"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_finger.dae",
+      "expected_sha256": "5e45e7773260cc4b04bbae626af94bfdd49c38b3c69fc248cf0708e5fa65a39f",
+      "actual_sha256": "5e45e7773260cc4b04bbae626af94bfdd49c38b3c69fc248cf0708e5fa65a39f"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_knuckle.dae",
+      "expected_sha256": "8c7ce8ee42044149f9a956d55f33f06e6b75e5e35080ee4bf1e8cb381535aeb7",
+      "actual_sha256": "8c7ce8ee42044149f9a956d55f33f06e6b75e5e35080ee4bf1e8cb381535aeb7"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/collision/robotiq_arg2f_base_link.stl",
+      "expected_sha256": "111e37f13a664989dd54226f80f521b32ea0b71c975282a16696b14be7cc9249",
+      "actual_sha256": "111e37f13a664989dd54226f80f521b32ea0b71c975282a16696b14be7cc9249"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_base_link.dae",
+      "expected_sha256": "d03d6e7395b0aa11ae7954b2f04a0a650448547d5d4f367238098ccd848b3eb5",
+      "actual_sha256": "d03d6e7395b0aa11ae7954b2f04a0a650448547d5d4f367238098ccd848b3eb5"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_finger.dae",
+      "expected_sha256": "3172e8fe000fda75b9b29b48cd8cad4011d184a6df23eb2c3adb6c1f5a4eae93",
+      "actual_sha256": "3172e8fe000fda75b9b29b48cd8cad4011d184a6df23eb2c3adb6c1f5a4eae93"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_knuckle.dae",
+      "expected_sha256": "19b12510eec739a1a4655ff633ce3f02ad3c2eda2cb8f451df900ddfa76c8f14",
+      "actual_sha256": "19b12510eec739a1a4655ff633ce3f02ad3c2eda2cb8f451df900ddfa76c8f14"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_finger.dae",
+      "expected_sha256": "32d842e51e0ddd25b3354af212131befa191c183cf4cdb61f82ecbe5c5276323",
+      "actual_sha256": "32d842e51e0ddd25b3354af212131befa191c183cf4cdb61f82ecbe5c5276323"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_knuckle.dae",
+      "expected_sha256": "f1cc5198c9f3b06979af07d2944034b32acbb6130df5396dc2c7253cb656f587",
+      "actual_sha256": "f1cc5198c9f3b06979af07d2944034b32acbb6130df5396dc2c7253cb656f587"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_pad.dae",
+      "expected_sha256": "0f1d5b8403fed489fb40b389e3d9ec27882db324d77d20cc84cf8bb8901fee80",
+      "actual_sha256": "0f1d5b8403fed489fb40b389e3d9ec27882db324d77d20cc84cf8bb8901fee80"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/meshes/visual/robotiq_gripper_coupling.stl",
+      "expected_sha256": "4281e83002a25c20dc07c68b8d77da30a13e9a8401f157f6848ed8287d7cce44",
+      "actual_sha256": "4281e83002a25c20dc07c68b8d77da30a13e9a8401f157f6848ed8287d7cce44"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/robotiq/robotiq_2f85.urdf",
+      "expected_sha256": "7993b6e349d9eddab0bcb293288c28200567b63c6d02f26e43cf200cc138224a",
+      "actual_sha256": "7993b6e349d9eddab0bcb293288c28200567b63c6d02f26e43cf200cc138224a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/LICENSE",
+      "expected_sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8",
+      "actual_sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/PROVENANCE.json",
+      "expected_sha256": "8bc925024dda6bb1a2a2e5016fb5b26aa146bbf13a2f244e04e0a7b03f00e883",
+      "actual_sha256": "8bc925024dda6bb1a2a2e5016fb5b26aa146bbf13a2f244e04e0a7b03f00e883"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/config/default_kinematics.yaml",
+      "expected_sha256": "62ccae1768678cfddaee8e2a1b621365d7ac8a58b4a7607aed680ed572c8a423",
+      "actual_sha256": "62ccae1768678cfddaee8e2a1b621365d7ac8a58b4a7607aed680ed572c8a423"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/config/joint_limits.yaml",
+      "expected_sha256": "3ca03a6b107fab1d20a18a4e3a967ed0f14de228208a95c4735a6c966ea18534",
+      "actual_sha256": "3ca03a6b107fab1d20a18a4e3a967ed0f14de228208a95c4735a6c966ea18534"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/config/physical_parameters.yaml",
+      "expected_sha256": "019c14da684526f8ff7f1ca37dcab62edb370859db4e18f6805ec3d5e29a1ceb",
+      "actual_sha256": "019c14da684526f8ff7f1ca37dcab62edb370859db4e18f6805ec3d5e29a1ceb"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/config/visual_parameters.yaml",
+      "expected_sha256": "e51a4e2d59909a963ceee34c47c8fdf71810db5edbac90aed66705f4f7222deb",
+      "actual_sha256": "e51a4e2d59909a963ceee34c47c8fdf71810db5edbac90aed66705f4f7222deb"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/base.stl",
+      "expected_sha256": "a4632b7941b0a090c0817255d01a1b3e759b47291487c5742d621395a0a8df2e",
+      "actual_sha256": "a4632b7941b0a090c0817255d01a1b3e759b47291487c5742d621395a0a8df2e"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/forearm.stl",
+      "expected_sha256": "08a578aa50bba584f236591b25dfdf0a03a060f05946a7d1c450d800cae5cbb8",
+      "actual_sha256": "08a578aa50bba584f236591b25dfdf0a03a060f05946a7d1c450d800cae5cbb8"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/shoulder.stl",
+      "expected_sha256": "c6a66fc64afa98f694307014cb5ec9cd73a3c4a03730cdbee700a835292ce3d0",
+      "actual_sha256": "c6a66fc64afa98f694307014cb5ec9cd73a3c4a03730cdbee700a835292ce3d0"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/upperarm.stl",
+      "expected_sha256": "81ccc4d6ee7cac170ace494dc88cf2930f78a1d7edf3c38a96e6b1b90c540c60",
+      "actual_sha256": "81ccc4d6ee7cac170ace494dc88cf2930f78a1d7edf3c38a96e6b1b90c540c60"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/wrist1.stl",
+      "expected_sha256": "fec8baaeffb31e3de92e62a5b5ce4dba1e3d36cf253ff2a0346c32a6c2b7ef6d",
+      "actual_sha256": "fec8baaeffb31e3de92e62a5b5ce4dba1e3d36cf253ff2a0346c32a6c2b7ef6d"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/wrist2.stl",
+      "expected_sha256": "efb209b3659d4864d17bbdacb1820f9be45aa7b6418c42fda447d6ff7a1da220",
+      "actual_sha256": "efb209b3659d4864d17bbdacb1820f9be45aa7b6418c42fda447d6ff7a1da220"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/collision/wrist3.stl",
+      "expected_sha256": "27ad47ace7b5318c2259de92f340e13e25a119f91fb42e5c40d608850db06883",
+      "actual_sha256": "27ad47ace7b5318c2259de92f340e13e25a119f91fb42e5c40d608850db06883"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/base.dae",
+      "expected_sha256": "cebc07433aa6be5d38efa7fd7f8bef5b886add457631caa194fa3d4de7b8d764",
+      "actual_sha256": "cebc07433aa6be5d38efa7fd7f8bef5b886add457631caa194fa3d4de7b8d764"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/forearm.dae",
+      "expected_sha256": "c059ae9d135dff9c2b6319d6d07c44f4470b84d61398a85a15262c9cde893393",
+      "actual_sha256": "c059ae9d135dff9c2b6319d6d07c44f4470b84d61398a85a15262c9cde893393"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/shoulder.dae",
+      "expected_sha256": "53bfe7808ad7bfe7260818022fdf18bf2c3640fa9cc7cb3b571d527ef0d53e5a",
+      "actual_sha256": "53bfe7808ad7bfe7260818022fdf18bf2c3640fa9cc7cb3b571d527ef0d53e5a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/upperarm.dae",
+      "expected_sha256": "6b8c8a4d68ce0a964abd7c3f493728b3d0d10921ee378c857bcf15b8dd2f9869",
+      "actual_sha256": "6b8c8a4d68ce0a964abd7c3f493728b3d0d10921ee378c857bcf15b8dd2f9869"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/wrist1.dae",
+      "expected_sha256": "0a9302c733b031d7b33aa3c0a8ea0d8c3180bc98c819fb6e7f0e0803a851d9c5",
+      "actual_sha256": "0a9302c733b031d7b33aa3c0a8ea0d8c3180bc98c819fb6e7f0e0803a851d9c5"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/wrist2.dae",
+      "expected_sha256": "ff6a157c9dc6174082b7a595bbf8024051ceace6c34911b405b48ebf76b4523e",
+      "actual_sha256": "ff6a157c9dc6174082b7a595bbf8024051ceace6c34911b405b48ebf76b4523e"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/meshes/visual/wrist3.dae",
+      "expected_sha256": "24f68bc002b640779d3632716e07867288f08c01cbd5f3351ce67b94290e44ce",
+      "actual_sha256": "24f68bc002b640779d3632716e07867288f08c01cbd5f3351ce67b94290e44ce"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/ur3/ur3_cb3.urdf",
+      "expected_sha256": "0d8cec58f04bce10b8829f2c95c51fae04464950cb48c316b6913d2b90a72fe0",
+      "actual_sha256": "0d8cec58f04bce10b8829f2c95c51fae04464950cb48c316b6913d2b90a72fe0"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/waffles/packet_green_top.png",
+      "expected_sha256": "ea10307a458e060f5f0c6cfa56ae365a228be604b544fb00b1df5cd7de38492d",
+      "actual_sha256": "ea10307a458e060f5f0c6cfa56ae365a228be604b544fb00b1df5cd7de38492d"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/waffles/packet_green_top.provenance.json",
+      "expected_sha256": "752ad9e6afddd821638003634d832424132217192d7c969997737129c3aa45ae",
+      "actual_sha256": "752ad9e6afddd821638003634d832424132217192d7c969997737129c3aa45ae"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/waffles/packet_top.png",
+      "expected_sha256": "79b297a0c6116726d9ef63391ea01f9ed695677ad3f8e63ff78a753d9260ab61",
+      "actual_sha256": "79b297a0c6116726d9ef63391ea01f9ed695677ad3f8e63ff78a753d9260ab61"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/assets/sim/waffles/packet_top.provenance.json",
+      "expected_sha256": "1247d22772e9db43a9afd109f24c7aa3223462b27da9791de0ce2aeaa71965bc",
+      "actual_sha256": "1247d22772e9db43a9afd109f24c7aa3223462b27da9791de0ce2aeaa71965bc"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/hardware.nuc.yaml",
+      "expected_sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524",
+      "actual_sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/policy_campaign.json",
+      "expected_sha256": "a43bd24f73aaaaf5fd3dd1e1b02bca1f7fa4df311f34f1170a301da7b7d97c48",
+      "actual_sha256": "a43bd24f73aaaaf5fd3dd1e1b02bca1f7fa4df311f34f1170a301da7b7d97c48"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/teacher_pick_place_campaign.json",
+      "expected_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+      "actual_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/waffles.json",
+      "expected_sha256": "f7a1b2b11b1e8e3fa17044a07a3968b0d88e6f89372576bd62ed9dfe2569ddc2",
+      "actual_sha256": "f7a1b2b11b1e8e3fa17044a07a3968b0d88e6f89372576bd62ed9dfe2569ddc2"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/waffles_camera_estimate.json",
+      "expected_sha256": "45ef55afdc104a5d99d672d591d3e4cd917cc23eb7dc24e8036d60a1a87a1d08",
+      "actual_sha256": "45ef55afdc104a5d99d672d591d3e4cd917cc23eb7dc24e8036d60a1a87a1d08"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/waffles_evidence.json",
+      "expected_sha256": "5221a483728a66f7cf9af1a399b11f3929ca4ca82114a52bbc49016499c052c6",
+      "actual_sha256": "5221a483728a66f7cf9af1a399b11f3929ca4ca82114a52bbc49016499c052c6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/waffles_pick_place.json",
+      "expected_sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+      "actual_sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/configs/sim/waffles_reconstruction_v1.json",
+      "expected_sha256": "cd8abdc3c7a0ceb42bc1f8810a152bbc9cf1224da6ea89631981b86955f46391",
+      "actual_sha256": "cd8abdc3c7a0ceb42bc1f8810a152bbc9cf1224da6ea89631981b86955f46391"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/config/hardware.py",
+      "expected_sha256": "4349a9f49be83421b8901bc46fb3897161829684af818c517726f6ccf50abc77",
+      "actual_sha256": "4349a9f49be83421b8901bc46fb3897161829684af818c517726f6ccf50abc77"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/data/derived.py",
+      "expected_sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494",
+      "actual_sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/deploy/executor.py",
+      "expected_sha256": "0684178fffbe549bb5b4dca002500f3188f633d8d414cd78fdb6875d86d15d49",
+      "actual_sha256": "0684178fffbe549bb5b4dca002500f3188f633d8d414cd78fdb6875d86d15d49"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/deploy/governor.py",
+      "expected_sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a",
+      "actual_sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/deploy/planner.py",
+      "expected_sha256": "23c2958e99aaa8e7103f473b2dca4491b3a23b3634a84f15cc1ecdef9b0844c3",
+      "actual_sha256": "23c2958e99aaa8e7103f473b2dca4491b3a23b3634a84f15cc1ecdef9b0844c3"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/deploy/safety.py",
+      "expected_sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+      "actual_sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/__init__.py",
+      "expected_sha256": "04efb0df76e72e006c318878d8f9818418d45d557d62fb371ed0ea19e5e2492b",
+      "actual_sha256": "04efb0df76e72e006c318878d8f9818418d45d557d62fb371ed0ea19e5e2492b"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/contact_probe.py",
+      "expected_sha256": "0f8a051a2388dc6d677ffb59272ecb56e468c46169e140073e2df4174bfa2d09",
+      "actual_sha256": "0f8a051a2388dc6d677ffb59272ecb56e468c46169e140073e2df4174bfa2d09"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/gripper_visual.py",
+      "expected_sha256": "0fda4d4a08678537c4428fceb933de67a44528cc847a6d1837abdd568be053d7",
+      "actual_sha256": "0fda4d4a08678537c4428fceb933de67a44528cc847a6d1837abdd568be053d7"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/kinematics.py",
+      "expected_sha256": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+      "actual_sha256": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/policy_adapter.py",
+      "expected_sha256": "3ff10500ccab0ebd747207f95bdf3049ae001fe3d98a3ba59489b809d208ef7d",
+      "actual_sha256": "3ff10500ccab0ebd747207f95bdf3049ae001fe3d98a3ba59489b809d208ef7d"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/policy_metrics.py",
+      "expected_sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f",
+      "actual_sha256": "b8460fc530acd6f11ea166f3fbff0ddc2ee74f4c73d956752abab0435975969f"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/release_controller.py",
+      "expected_sha256": "16c8853989c1c9bc7a99cc949de8757e29f79ca7022fd6494f23ce6f2194d3b8",
+      "actual_sha256": "16c8853989c1c9bc7a99cc949de8757e29f79ca7022fd6494f23ce6f2194d3b8"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/remote_policy.py",
+      "expected_sha256": "2e4f3d5cc09db1db2e2ab97e478266304d9645670f0afb0a4b14ce6c45c06f02",
+      "actual_sha256": "2e4f3d5cc09db1db2e2ab97e478266304d9645670f0afb0a4b14ce6c45c06f02"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/scene.py",
+      "expected_sha256": "a117795df712150f35dfb0a27ede410f08c97070e592d03d595a8cf109e24d80",
+      "actual_sha256": "a117795df712150f35dfb0a27ede410f08c97070e592d03d595a8cf109e24d80"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/phantom/sim/tactile_proxy.py",
+      "expected_sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+      "actual_sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/analyze_pick_place_evidence.py",
+      "expected_sha256": "f133e8a9aec01b07fbacb01a6de27153e8732f2aad47342779b24bda80c45430",
+      "actual_sha256": "f133e8a9aec01b07fbacb01a6de27153e8732f2aad47342779b24bda80c45430"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/analyze_policy_campaign.py",
+      "expected_sha256": "4e24cb06efb987493e4818dd673949b1097abb02c526176357bf5496d5ee3e9c",
+      "actual_sha256": "4e24cb06efb987493e4818dd673949b1097abb02c526176357bf5496d5ee3e9c"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/audit_policy_checkpoints.py",
+      "expected_sha256": "c375f1001733e469667a46783333004f912d15f18b50616ed068b610da9a8ec8",
+      "actual_sha256": "c375f1001733e469667a46783333004f912d15f18b50616ed068b610da9a8ec8"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/compare_replay.py",
+      "expected_sha256": "dd5ad2f128105a552f1590531d698cf5c50f92dcacdd5a897f0069545a519269",
+      "actual_sha256": "dd5ad2f128105a552f1590531d698cf5c50f92dcacdd5a897f0069545a519269"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/deployment_filters.py",
+      "expected_sha256": "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675",
+      "actual_sha256": "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/diagnose_contact_geometry.py",
+      "expected_sha256": "dab618be92c9c9feef65385688c4b1906c8f38ce45ff70dd6be30df4a1981f84",
+      "actual_sha256": "dab618be92c9c9feef65385688c4b1906c8f38ce45ff70dd6be30df4a1981f84"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/evaluate_pick_place.py",
+      "expected_sha256": "7b42f67350a6d2a5f73f094f61d756faa0b223294a1fc5e788879cb589b595e9",
+      "actual_sha256": "7b42f67350a6d2a5f73f094f61d756faa0b223294a1fc5e788879cb589b595e9"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/fit_camera_landmarks.py",
+      "expected_sha256": "c439e5abc25a7194782a2c46b6b90af0467a75c7b71001bb6037d3b2368de1e6",
+      "actual_sha256": "c439e5abc25a7194782a2c46b6b90af0467a75c7b71001bb6037d3b2368de1e6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/gel_contact.py",
+      "expected_sha256": "99791534245d6509a58c651d049a8fa80c981e19a53e7e462af581c23a66f300",
+      "actual_sha256": "99791534245d6509a58c651d049a8fa80c981e19a53e7e462af581c23a66f300"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/launch_waffles.sh",
+      "expected_sha256": "c72ddaee3dbee06bc6790198c3870e827b770ad5254b45278aef5992fff2fcde",
+      "actual_sha256": "c72ddaee3dbee06bc6790198c3870e827b770ad5254b45278aef5992fff2fcde"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_pad_collision.py",
+      "expected_sha256": "5399bf8d524d814910b5417e49797cb51f402f346fb4be0bbb81aa297a341510",
+      "actual_sha256": "5399bf8d524d814910b5417e49797cb51f402f346fb4be0bbb81aa297a341510"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/make_policy_video.py",
+      "expected_sha256": "9bc7fd4d8f6c68e410f5da5f8ffd1cfea1ded1db2d623ab40e2f7b6315c86883",
+      "actual_sha256": "9bc7fd4d8f6c68e410f5da5f8ffd1cfea1ded1db2d623ab40e2f7b6315c86883"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/object_support.py",
+      "expected_sha256": "cffb7694ee30e44ba23e2686b8c74e7c18a368b8a9d13eae8419d4d271afe20a",
+      "actual_sha256": "cffb7694ee30e44ba23e2686b8c74e7c18a368b8a9d13eae8419d4d271afe20a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/policy_server.py",
+      "expected_sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a",
+      "actual_sha256": "94231eb87d1c4c5f97b20d6d419e8973dac7bfe277614a761f378e7cd0ca387a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/prepare_waffles.py",
+      "expected_sha256": "8121ed77bbf8dfa9f6a1bf20134318c36f7bd4da72a0468e80561ea695189209",
+      "actual_sha256": "8121ed77bbf8dfa9f6a1bf20134318c36f7bd4da72a0468e80561ea695189209"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/refine_camera_static.py",
+      "expected_sha256": "2dc7fd78f4aa305ba926ad4a365deb62de61a46c551e89dcababc3e067b5bb21",
+      "actual_sha256": "2dc7fd78f4aa305ba926ad4a365deb62de61a46c551e89dcababc3e067b5bb21"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/refine_gripper_centroids.py",
+      "expected_sha256": "45d63535fba5cb4fc39a966a8f5a76e1dd495de42431f990ad78aef1bbde9dc6",
+      "actual_sha256": "45d63535fba5cb4fc39a966a8f5a76e1dd495de42431f990ad78aef1bbde9dc6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/run_campaign.py",
+      "expected_sha256": "f44c3fcb71c73fff9664551839ead2155e2d716d4abb57b8d12471d56029e9a6",
+      "actual_sha256": "f44c3fcb71c73fff9664551839ead2155e2d716d4abb57b8d12471d56029e9a6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/run_policy_campaign.py",
+      "expected_sha256": "d3058248d4438ab743f9a58a164eddaadce410d3e10081673111d1ef796c3a5c",
+      "actual_sha256": "d3058248d4438ab743f9a58a164eddaadce410d3e10081673111d1ef796c3a5c"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/run_teacher_pick.py",
+      "expected_sha256": "5e7977ec37a7d5a8e951e9b4c21eb7c5a1038232a584d26a5a8d5e65858378fd",
+      "actual_sha256": "5e7977ec37a7d5a8e951e9b4c21eb7c5a1038232a584d26a5a8d5e65858378fd"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/run_waffles.py",
+      "expected_sha256": "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6",
+      "actual_sha256": "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/tactile_panels.py",
+      "expected_sha256": "f59d1c8b76be5f356a887c5e60adee8f0d9eca92b345644d79b2711798764a37",
+      "actual_sha256": "f59d1c8b76be5f356a887c5e60adee8f0d9eca92b345644d79b2711798764a37"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1/tools/sim/view_waffles.sh",
+      "expected_sha256": "a5e99bea0def162a83299ac769cf0ce9852d98dd41b8c091d10b5156e1b2685e",
+      "actual_sha256": "a5e99bea0def162a83299ac769cf0ce9852d98dd41b8c091d10b5156e1b2685e"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/deploy/safety.py",
+      "expected_sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc",
+      "actual_sha256": "777bd0ae4a517bd4524abce30e1501c93457dc2e75d8c8791472ef82efc452bc"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/deploy/governor.py",
+      "expected_sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a",
+      "actual_sha256": "04d90e653b2559926b8196095e33a567e3d48b822bb6e57d38c0f6f123611f7a"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/deploy/executor.py",
+      "expected_sha256": "3de47ff62b26d7d60b5a2e3dd8ae057611949100d42427a126acc232c8b10df0",
+      "actual_sha256": "3de47ff62b26d7d60b5a2e3dd8ae057611949100d42427a126acc232c8b10df0"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/deploy/planner.py",
+      "expected_sha256": "c8aadbd9359ea7cfb26a9551592e3e9c61d592026a616668ed001146b4496191",
+      "actual_sha256": "c8aadbd9359ea7cfb26a9551592e3e9c61d592026a616668ed001146b4496191"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/data/derived.py",
+      "expected_sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494",
+      "actual_sha256": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/config/hardware.py",
+      "expected_sha256": "aba922446ebbef60209273475a5ed8867edebb21148d1130653bf6261a51ee63",
+      "actual_sha256": "aba922446ebbef60209273475a5ed8867edebb21148d1130653bf6261a51ee63"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/configs/hardware.nuc.yaml",
+      "expected_sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524",
+      "actual_sha256": "2867897e49b3bf3fddb7ece6dd69e6f38be38f17dc0fb26a8887a7e804c55524"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000/replay.npz",
+      "expected_sha256": "8827c4d8836368a200894584be25af526c09dc880fa8a1d04e2be53cc3ad38cd",
+      "actual_sha256": "8827c4d8836368a200894584be25af526c09dc880fa8a1d04e2be53cc3ad38cd"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000/manifest.json",
+      "expected_sha256": "2aee4ab7b2d673e19c6e5cde10e7a96557ca447b90e4e8dd0b56930dfd5d8227",
+      "actual_sha256": "2aee4ab7b2d673e19c6e5cde10e7a96557ca447b90e4e8dd0b56930dfd5d8227"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/__init__.py",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/policy.py",
+      "expected_sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "actual_sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/inference/remote.py",
+      "expected_sha256": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "actual_sha256": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/__init__.py",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/acc.py",
+      "expected_sha256": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254",
+      "actual_sha256": "e817811f0bb9d90d10117f1f87986acbaa20651645a9511555b03c9729aa9254"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/ace/__init__.py",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/ace/heads.py",
+      "expected_sha256": "ca68b625a71cfdbd2fc16538e7988bc1609090423226be19e0b8f8afd4b02ab1",
+      "actual_sha256": "ca68b625a71cfdbd2fc16538e7988bc1609090423226be19e0b8f8afd4b02ab1"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/ace/losses.py",
+      "expected_sha256": "8841bb196d5ad24195f9f81bc50515b8f07cd3e137c20809b63f6a2b8e88a6f5",
+      "actual_sha256": "8841bb196d5ad24195f9f81bc50515b8f07cd3e137c20809b63f6a2b8e88a6f5"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/ace/packing.py",
+      "expected_sha256": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c",
+      "actual_sha256": "efa6f304f9608204f37f482a9b28b60d59f1d3e2953b788041791cfc9c93df2c"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/attention_bias.py",
+      "expected_sha256": "7e2fcce654ba077e521662081ad9045bbb82d8a5a374a0f4d8120bb7aa6ac740",
+      "actual_sha256": "7e2fcce654ba077e521662081ad9045bbb82d8a5a374a0f4d8120bb7aa6ac740"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/hht/__init__.py",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/hht/encoders.py",
+      "expected_sha256": "cc0e36b7cd257c51c4504bdd1d93ce292bbafbe55c71527722dd7e9ba1c6db8e",
+      "actual_sha256": "cc0e36b7cd257c51c4504bdd1d93ce292bbafbe55c71527722dd7e9ba1c6db8e"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/hht/hht.py",
+      "expected_sha256": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f",
+      "actual_sha256": "b475785fb7b8715c788468fa5dfc4badd952975447cf40c082713f85ba3a740f"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/hht/tactile_encoder.py",
+      "expected_sha256": "8f7dc892e14c49876d08cb2094ec4f912d18cb5c425d82ee8a4f956dfb2f826b",
+      "actual_sha256": "8f7dc892e14c49876d08cb2094ec4f912d18cb5c425d82ee8a4f956dfb2f826b"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/phantom_dit.py",
+      "expected_sha256": "5640d756ee48818f38a9f32f7bee71c0191e2e7d4587981a0fd03370efded877",
+      "actual_sha256": "5640d756ee48818f38a9f32f7bee71c0191e2e7d4587981a0fd03370efded877"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/rf.py",
+      "expected_sha256": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+      "actual_sha256": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/phantom/phantom/model/sequence.py",
+      "expected_sha256": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0",
+      "actual_sha256": "4aedd86a75c42cc3b82d968acb85f9659e1c0e5ea978b404c99808750bbc73d0"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+      "expected_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3",
+      "actual_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+      "expected_sha256": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637",
+      "actual_sha256": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "expected_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "actual_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "expected_sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce",
+      "actual_sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    }
+  ],
+  "controls": [
+    {
+      "case_id": "teacher__anchor_repeat1__seed4242",
+      "sampling_seed": 4242,
+      "status": "completed",
+      "campaign_sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a",
+      "stop_reason": "safety_stop",
+      "duration_s": 19.04,
+      "run": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242/run.json",
+        "sha256": "cb260eb39d65537a7758e621542358fe83aea8ae0f114552cec6aa19282831f7"
+      },
+      "case": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242/case.json",
+        "sha256": "e52343ace976f241b55d35d61f2ee79a3a841207ee5f05ac912c2ce21801311e"
+      },
+      "run_status": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242/run_status.json",
+        "sha256": "f847f0dc463c8e6b97e7215bdda5e1434802f98d640ab38adcd48ff824787f7d"
+      },
+      "sim_trace": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242/sim_trace.npz",
+        "sha256": "06faee1be5ea3440f25f888d2f8b58d201b1e31d9851ad7fc959ab60b5fa5e53"
+      }
+    },
+    {
+      "case_id": "teacher__anchor_repeat1__seed4243",
+      "sampling_seed": 4243,
+      "status": "completed",
+      "campaign_sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a",
+      "stop_reason": "safety_stop",
+      "duration_s": 17.152,
+      "run": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4243/run.json",
+        "sha256": "80f574797e613717b170f54211230db331e27e590a665123dcb2aaca215d6681"
+      },
+      "case": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4243/case.json",
+        "sha256": "384719e00e54e6a91fe2924470c59d66ef065321fb32d82bfb05e1806d9ad2c7"
+      },
+      "run_status": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4243/run_status.json",
+        "sha256": "11ceca4c86c1a5e29ea9f862be914f5968a30156cfa1d383851c659bfabac66c"
+      },
+      "sim_trace": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4243/sim_trace.npz",
+        "sha256": "d24e1f5101fb747c0ef435f1873775fa68279e94a8a03cf55b5bb81b0c2f7776"
+      }
+    },
+    {
+      "case_id": "teacher__anchor_repeat2__seed4242",
+      "sampling_seed": 4242,
+      "status": "completed",
+      "campaign_sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a",
+      "stop_reason": "safety_stop",
+      "duration_s": 18.888,
+      "run": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242/run.json",
+        "sha256": "f183b27b5e9246054251e155b76087be3895cd07e225b33ad6e1cf0a3f7bf0f9"
+      },
+      "case": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242/case.json",
+        "sha256": "5346310f0a2026df93a7b340d5150ab849ef94acd053433d817be11edd9bf24e"
+      },
+      "run_status": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242/run_status.json",
+        "sha256": "67db0d1d4149861284a641dadecb8631b830471ba60eb8d435bdb673ba497403"
+      },
+      "sim_trace": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242/sim_trace.npz",
+        "sha256": "22886f00e1dfc171d1a102d07c8ff33f470a9f2aadc1528d82bf8d1dbb3ce9cf"
+      }
+    },
+    {
+      "case_id": "teacher__anchor_repeat2__seed4243",
+      "sampling_seed": 4243,
+      "status": "completed",
+      "campaign_sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a",
+      "stop_reason": "safety_stop",
+      "duration_s": 20.528,
+      "run": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4243/run.json",
+        "sha256": "fb9400741bee20d8b04f73b4ab5bf9130f2dcad9233387dbee060aba003a70b0"
+      },
+      "case": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4243/case.json",
+        "sha256": "7a7b443e0cc158db90a241656b45c98e7aad8e1788872d79b4b0dadbbd5b1aae"
+      },
+      "run_status": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4243/run_status.json",
+        "sha256": "f8f9e76689e298d05f342c485adc62d9b24f32be2311398139e8026bd4905bde"
+      },
+      "sim_trace": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4243/sim_trace.npz",
+        "sha256": "f1f1efb880993b582c6fee07207f443c292d1104a4d8df140b342cef08dcf847"
+      }
+    }
+  ],
+  "mechanics_metrics": {
+    "schema_version": 1,
+    "valid_for_scoring": false,
+    "invalid_reasons": [
+      "run_mode_is_not_policy"
+    ],
+    "thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    },
+    "outcomes": {
+      "reach_before_closure": true,
+      "acquired": true,
+      "lifted": true,
+      "carried": true,
+      "released_in_bin": true,
+      "full_task": true,
+      "dropped": false
+    },
+    "event_times_s": {
+      "reach": 6.336,
+      "closure": 7.468,
+      "acquisition": 8.0,
+      "lift": 12.668000000000001,
+      "carry": 15.336,
+      "release_in_bin": 24.400000000000002,
+      "full_task": 25.2,
+      "first_drop": null
+    },
+    "object": {
+      "initial_center_m": [
+        -0.393706738948822,
+        -0.29306915402412415,
+        0.06999999284744263
+      ],
+      "final_center_m": [
+        -0.43094420433044434,
+        0.10553520172834396,
+        0.07199998944997787
+      ],
+      "max_lift_m": 0.3417630195617676,
+      "carry_distance_m": 0.43634908344507667,
+      "final_inside_bin": true,
+      "final_contacts_unloaded": true,
+      "final_speed_m_s": 3.9755827669256715e-06,
+      "final_angular_speed_rad_s": 0.0001508968251741851,
+      "minimum_pad_midpoint_to_object_m": 0.0,
+      "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+      "bilateral_contact_duration_s": 15.596000000000004,
+      "pad_packet_normal_force_peak_n": 9.692132949829102
+    },
+    "placement_support": {
+      "required": true,
+      "telemetry_status": "available",
+      "verified_placement": true,
+      "confirmation_time_s": 25.2,
+      "robot_contact_peak_n": 16.427497625350952,
+      "bin_contact_peak_n": 6.637989521026611,
+      "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+    },
+    "control": {
+      "stop_reason": null,
+      "execution_rows": 0,
+      "execution_clock_valid": null,
+      "ik_rejects": 0,
+      "ik_reject_reasons": {},
+      "hold_duration_s": null,
+      "stale_plan_hold_rows": 0,
+      "replans": 0,
+      "inference_errors": 0,
+      "plans_activated": 0,
+      "effective_latency_s": {
+        "count": 0,
+        "mean": null,
+        "p95": null,
+        "max": null
+      },
+      "inference_wall_time_s": {
+        "count": 0,
+        "mean": null,
+        "p95": null,
+        "max": null
+      },
+      "activation_delay_s": {
+        "count": 0,
+        "mean": null,
+        "p95": null,
+        "max": null
+      },
+      "lift_complete_is_task_success": false
+    },
+    "collisions": {
+      "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+      "reported_count": 0,
+      "pad_environment_force_peak_n": 0.0,
+      "reported_events": []
+    },
+    "trace_sampling": {
+      "rows": 502,
+      "duration_s": 33.372,
+      "maximum_interval_s": 0.06800000000000495,
+      "physics_clock_max_error_s": 1.585084945077142e-06,
+      "event_time_uncertainty_s": 0.06800000000000495
+    },
+    "reach_diagnostic": {
+      "absolute_threshold_already_exceeded_at_start": false,
+      "initial_measured_closure": 0.07840987294912338,
+      "first_closing_motion_s": 1.536,
+      "closing_motion_source": "fallback sampled measured closure > initial closure + 0.02",
+      "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+      "sample_time_s": 1.468,
+      "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+    },
+    "limitations": [
+      "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+      "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+      "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+      "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+      "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+    ]
+  },
+  "mechanics_run_metadata": {
+    "mode": "command_replay",
+    "command_replay": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242/execution_trace.jsonl",
+      "sha256": "c0eb541f2574130b4cef64ca781e1be62e1fb798e0265cfbee8c17d93c50a70d",
+      "rows": 3923,
+      "first_command_s": 0.004,
+      "last_command_s": 31.38,
+      "semantics": "Causal zero-order hold of recorded articulation targets; no inference, no object pose replay, no new safety decisions; not a policy score"
+    },
+    "episode": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+    "frames": 502,
+    "duration_s": 33.372,
+    "wall_time_s": 33.30032862897497,
+    "events": [],
+    "robot_usd": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+    "joint_state_source": "actual PhysX articulation joints and tool0 rigid body pose; independent nominal FK also logged",
+    "object_dynamics": {
+      "rigid_body_dynamic": true,
+      "kinematic": false,
+      "attachments": [],
+      "pose_writes_after_initialization": 0,
+      "initialization": "configured table pose before settling; contact_probe alone subsequently uses its documented one-time synthetic starting pose before t=0"
+    },
+    "tactile_model": null,
+    "wrist_model": null,
+    "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
+    "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
+    "control_rate_hz": null,
+    "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
+    "policy_stop_reason": null,
+    "post_stop_observation_s": null,
+    "record_packet_support": true,
+    "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller",
+    "packet_support_filter_paths": {
+      "packet": "/World/Waffle",
+      "bin": [
+        "/World/Bin/Bottom",
+        "/World/Bin/Left",
+        "/World/Bin/Right",
+        "/World/Bin/Front",
+        "/World/Bin/Back"
+      ],
+      "robot": [
+        "/World/Robot/Geometry/world/base_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+        "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+      ]
+    },
+    "camera_intrinsics_px": [
+      [
+        742.8932495117188,
+        0.0,
+        320.0
+      ],
+      [
+        0.0,
+        742.8931884765625,
+        240.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "trace_comparison": {
+    "t": {
+      "equal": false,
+      "max_abs": 0.003999999999997783
+    },
+    "q": {
+      "equal": true,
+      "max_abs": 0.0
+    },
+    "tcp": {
+      "equal": true,
+      "max_abs": 0.0
+    },
+    "gripper": {
+      "equal": true,
+      "max_abs": 0.0
+    },
+    "waffle_position": {
+      "equal": false,
+      "max_abs": 1.341104507446289e-07
+    },
+    "waffle_orientation_wxyz": {
+      "equal": false,
+      "max_abs": 2.682411150090047e-06
+    },
+    "packet_robot_normal_force": {
+      "equal": true,
+      "max_abs": 0.0
+    },
+    "packet_bin_normal_force": {
+      "equal": false,
+      "max_abs": 0.0013081561774015427
+    }
+  },
+  "physics_clock_max_error_s": 1.585084945077142e-06,
+  "all_preterminal_frame_times_equal": true,
+  "terminal_frame_time_delta_s": -0.003999999999997783,
+  "same_input_native_proposals": {
+    "historical": {
+      "actions_bitwise_equal": true,
+      "action_abs_max": 0.0,
+      "original_k_pick": 0,
+      "new_k_pick": 0,
+      "original_source_sha256": "0370254ce95558b881f765b00067fb5c20e86feee815dfc9302ab85b1cfca700"
+    },
+    "repeat1": {
+      "actions_bitwise_equal": true,
+      "action_abs_max": 0.0,
+      "original_k_pick": 0,
+      "new_k_pick": 0,
+      "original_source_sha256": "e319206ded0bcb75a5140993984e9a2829b455047ceab4c3eac779be0af60a3b"
+    },
+    "repeat2": {
+      "actions_bitwise_equal": true,
+      "action_abs_max": 0.0,
+      "original_k_pick": 0,
+      "new_k_pick": 0,
+      "original_source_sha256": "bad45c73b60c0cba7e301aad80ef405114cbcfe4ce6a31203cef41672774000b"
+    }
+  },
+  "historical_input_repeat": {
+    "xyz_step_rmse_m": 0.0,
+    "rotvec_step_rmse_rad": 0.0,
+    "closure_rmse": 0.0,
+    "endpoint_10step_xyz_difference_m": 0.0,
+    "endpoint_16step_xyz_difference_m": 0.0,
+    "k_pick_a": 0,
+    "k_pick_b": 0
+  },
+  "evidence": {
+    "historical_controls": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/progress.json",
+      "sha256": "4e9edab2037328d5e004798e22c1e1dd396e591b38723699105fd12b87019a61"
+    },
+    "first_divergence_review": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/gate_evidence/reproduction_first_divergence.json",
+      "sha256": "7af9528fc0eacfec624fa5dcd1add4ebe57e42e80116a8350a04b226eba0d80e"
+    },
+    "mechanics_metrics": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/mechanics_metrics.json",
+      "sha256": "4312bbbbc81fdb4e78d0a122ce78a40f8bcfcd104910cb5bb08d23df1c42d344"
+    },
+    "mechanics_run": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/run.json",
+      "sha256": "e5fb6ba39c021105e5cac3628220c4851b34128d5d48e6e3cbfcf25690d9e470"
+    },
+    "mechanics_trace": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/sim_trace.npz",
+      "sha256": "daabe50fd5b66c85b5104a9e1ea34f8ea506fe2e80218db7a940fee7611ec9fd"
+    },
+    "mechanics_effective_config": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/effective_config.json",
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    "accepted_command_provenance": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/command_replay.json",
+      "sha256": "1d172065f4e201bd41d2d97562518619a7bdc56e9788c0a3e250caf161b4e30c"
+    },
+    "mechanics_trace_comparison": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/accepted_command_replay/trace_comparison.json",
+      "sha256": "86bde8872a5f5ed60f68e858410b3f580a35761a0d04a64234ce6b86eb2c2252"
+    },
+    "same_input_proposal_comparison": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/input_diagnostic_v2/historical_output_comparison.json",
+      "sha256": "9d6f4d8df17d5c39f43d802955940b37c377bc799233b55fb06ae1b00250a8a1"
+    },
+    "input_diagnostic_manifest": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/input_diagnostic_v2/manifest.json",
+      "sha256": "cdb9b2f67cecded966d6c42e12ca6c83495ad2cee8e26b9b494192bad4b29e4e"
+    },
+    "historical_input_repeat": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/input_diagnostic_v2/comparisons.json",
+      "sha256": "fcdf88a251bfcf7309a9eeeed01b9941bd468b9921d919e42ecff0ea601c7a55"
+    },
+    "command_replay_source_overlay": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_commands_v3/anchor_diagnostic_overlay.json",
+      "sha256": "68819aec4e3d0460271e2b1d4051eece0d91b6941bc845d12b81f248e71ed729"
+    }
+  },
+  "interpretation": [
+    "Physical placement at25.2s was reproduced from exact historical accepted commands. This is a mechanics diagnostic and earns no policy success.",
+    "All four newly executed historical-seed policy controls failed and remain preserved/excluded. Opening this gate does not require a stochastic lucky win.",
+    "Identical saved requests reproduce original first16x7 proposals bitwise, and the repeated historical input returns the identical output. Rendered repeat inputs differ slightly and produce small corresponding first-plan differences.",
+    "Source/input/model/preprocessing identity and mechanics are established; native timing, RGB render variation and downstream closed-loop amplification remain known repeatability limitations. The audit does not prove a unique causal explanation.",
+    "Only the terminal diagnostic frame is4ms earlier; prior timestamps and physical event times agree. No score threshold changed."
+  ],
+  "source_report_helper_sha256": "ae95f4077b2638af6cd7c527a0ea9e1547939a1fcd2c05049d3b993b620cdc4c"
+}

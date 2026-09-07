@@ -1,0 +1,490 @@
+{
+  "schema_version": 1,
+  "campaign_id": "teacher_success_anchor_v3_reproduction",
+  "campaign_sha256": "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a",
+  "status": "complete",
+  "analysis_plan": {
+    "primary_outcome": "full_task",
+    "diagnostic_outcomes": [
+      "reach_before_closure",
+      "acquired",
+      "lifted",
+      "carried",
+      "released_in_bin",
+      "dropped"
+    ],
+    "primary_comparison": null,
+    "exploratory_comparisons": [],
+    "secondary_comparisons": [],
+    "weighting": "Uniform over the existing20 conditions and2seeds. Nominal and each stress family are separately reported; no claim of IID lab success probability.",
+    "confidence_level": 0.95,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260906,
+    "paired_interval_method": "Percentile bootstrap of20 matched configuration clusters; retain both seed outcomes and all paired policies within each sampled cluster.",
+    "interval_interpretation": "Descriptive scenario-resampling intervals for this fixed sensitivity suite, not population-level hardware/generalization bounds. Two seeds provide limited sampling uncertainty. Degenerate bootstrap intervals do not establish equivalence.",
+    "missing_trials": "Report scheduled-denominator success bounds and all missing/invalid cases. Paired inference requires complete condition\u00d7seed matches; incomplete contrasts are explicitly partial.",
+    "safety_stop": "Preserve observed physical task outcome; report safety stops separately, including after achieved placement.",
+    "early_failure": "Do not discard or replace an executed policy failure. Retry only demonstrable infrastructure failure before any policy command, with explicit linked attempt metadata.",
+    "freeze_policy": "Do not tune thresholds, cases or comparisons after observing policy outcomes. Any amendment creates a new campaign id/hash.",
+    "reproduction_note": "Descriptive repeated historical-seed controls only. No winner selection from these four cells."
+  },
+  "thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  },
+  "policies": {
+    "teacher": {
+      "scheduled": 4,
+      "present": 4,
+      "valid_scored": 4,
+      "invalid": 0,
+      "missing": 0,
+      "outcomes": {
+        "reach_before_closure": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 3,
+          "observed_false": 1,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.75,
+          "scheduled_denominator_rate_bounds": [
+            0.75,
+            0.75
+          ]
+        },
+        "acquired": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 4,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "lifted": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 3,
+          "observed_false": 1,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.75,
+          "scheduled_denominator_rate_bounds": [
+            0.75,
+            0.75
+          ]
+        },
+        "carried": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 2,
+          "observed_false": 2,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.5,
+          "scheduled_denominator_rate_bounds": [
+            0.5,
+            0.5
+          ]
+        },
+        "released_in_bin": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 0,
+          "observed_false": 4,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.0,
+          "scheduled_denominator_rate_bounds": [
+            0.0,
+            0.0
+          ]
+        },
+        "full_task": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 0,
+          "observed_false": 4,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.0,
+          "scheduled_denominator_rate_bounds": [
+            0.0,
+            0.0
+          ]
+        },
+        "dropped": {
+          "scheduled": 4,
+          "valid_scored": 4,
+          "observed_true": 2,
+          "observed_false": 2,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.5,
+          "scheduled_denominator_rate_bounds": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "families": {
+        "nominal": {
+          "reach_before_closure": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 1,
+            "observed_false": 1,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.5,
+            "scheduled_denominator_rate_bounds": [
+              0.5,
+              0.5
+            ]
+          },
+          "acquired": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "lifted": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 1,
+            "observed_false": 1,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.5,
+            "scheduled_denominator_rate_bounds": [
+              0.5,
+              0.5
+            ]
+          },
+          "carried": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 1,
+            "observed_false": 1,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.5,
+            "scheduled_denominator_rate_bounds": [
+              0.5,
+              0.5
+            ]
+          },
+          "released_in_bin": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          },
+          "full_task": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          },
+          "dropped": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "repeat": {
+          "reach_before_closure": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "acquired": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "lifted": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "carried": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 1,
+            "observed_false": 1,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.5,
+            "scheduled_denominator_rate_bounds": [
+              0.5,
+              0.5
+            ]
+          },
+          "released_in_bin": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          },
+          "full_task": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          },
+          "dropped": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "sampling_seeds": {
+        "4242": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 0,
+          "observed_false": 2,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.0,
+          "scheduled_denominator_rate_bounds": [
+            0.0,
+            0.0
+          ]
+        },
+        "4243": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 0,
+          "observed_false": 2,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.0,
+          "scheduled_denominator_rate_bounds": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "control": {
+        "stop_count": 4,
+        "ik_rejects": {
+          "count": 4,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "hold_duration_s": {
+          "count": 4,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "effective_latency_mean_s": {
+          "count": 4,
+          "mean": 0.8591383331076288,
+          "median": 0.8532156578186068,
+          "p95": 0.9028964871455787,
+          "max": 0.9071251512566385
+        },
+        "replans": {
+          "count": 4,
+          "mean": 19.75,
+          "median": 20.0,
+          "p95": 21.85,
+          "max": 22.0
+        },
+        "inference_error_count": 0
+      },
+      "collisions": {
+        "observability": "Partial pad/environment forces and reported events; no whole-robot collision-free certification.",
+        "reported_count": 0,
+        "pad_environment_force_peak_n": {
+          "count": 4,
+          "mean": 9.325695753097534,
+          "median": 2.438964366912842,
+          "p95": 28.292815446853627,
+          "max": 32.42485427856445
+        }
+      },
+      "seed_disagreement": {
+        "complete_conditions": 2,
+        "disagreements": 0,
+        "fraction": 0.0
+      },
+      "scenario_success_interval": {
+        "mean": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ],
+        "confidence_level": 0.95,
+        "complete_configurations": 2,
+        "method": "Bootstrap configuration clusters, retaining both sampling seeds; descriptive sensitivity-suite uncertainty, not a hardware/population confidence bound",
+        "degenerate_interval": true
+      }
+    }
+  },
+  "paired_comparisons": [],
+  "limitations": [
+    "This fixed perturbation suite does not estimate a natural deployment distribution.",
+    "Only two sampling seeds per configuration are planned; scenario-resampling intervals do not establish policy equivalence.",
+    "Teacher tactile inputs are uncalibrated proxies; teacher contrasts are exploratory.",
+    "Physical task completion and safety termination are reported separately.",
+    "Missing/invalid trials remain in scheduled-denominator bounds and are listed explicitly."
+  ],
+  "trials": [
+    {
+      "policy_id": "teacher",
+      "condition_id": "anchor_repeat1",
+      "sampling_seed": 4242,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242",
+      "case_sha256": "e52343ace976f241b55d35d61f2ee79a3a841207ee5f05ac912c2ce21801311e",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "cb260eb39d65537a7758e621542358fe83aea8ae0f114552cec6aa19282831f7",
+        "sim_trace.npz": "06faee1be5ea3440f25f888d2f8b58d201b1e31d9851ad7fc959ab60b5fa5e53",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "5b39f6220b971b9c93bc691420b7d8ed5a9f528262ab8765507bc7d1cd26c7ce",
+        "planner_trace.json": "e319206ded0bcb75a5140993984e9a2829b455047ceab4c3eac779be0af60a3b",
+        "policy_info.json": "2c4ea9d55ca40923cccb0ae855f8d6cc46c93ebfb5fa0697a11a0bebe5623d46",
+        "server_ready.json": "c50bdc9c73db433798650c1c0315551bbb85109540a8c9b7ea5fb9c83995e53d"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/analysis/trials/teacher__anchor_repeat1__seed4242.json"
+    },
+    {
+      "policy_id": "teacher",
+      "condition_id": "anchor_repeat1",
+      "sampling_seed": 4243,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4243",
+      "case_sha256": "384719e00e54e6a91fe2924470c59d66ef065321fb32d82bfb05e1806d9ad2c7",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "80f574797e613717b170f54211230db331e27e590a665123dcb2aaca215d6681",
+        "sim_trace.npz": "d24e1f5101fb747c0ef435f1873775fa68279e94a8a03cf55b5bb81b0c2f7776",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "4d6a98c636236b1d48c0ffaa25598526ade7fbb5a01ce29877e2aa5f251c177d",
+        "planner_trace.json": "83ebfb04c23e5b41009228f9d0d8b8b093eeb4f1ec7d1c025c4075263432c897",
+        "policy_info.json": "4b9f6a74903b8ca50dd5cc441203843fa661cd8ffb84d2ef14f18b5cf9bd99c2",
+        "server_ready.json": "c50bdc9c73db433798650c1c0315551bbb85109540a8c9b7ea5fb9c83995e53d"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/analysis/trials/teacher__anchor_repeat1__seed4243.json"
+    },
+    {
+      "policy_id": "teacher",
+      "condition_id": "anchor_repeat2",
+      "sampling_seed": 4242,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242",
+      "case_sha256": "5346310f0a2026df93a7b340d5150ab849ef94acd053433d817be11edd9bf24e",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "f183b27b5e9246054251e155b76087be3895cd07e225b33ad6e1cf0a3f7bf0f9",
+        "sim_trace.npz": "22886f00e1dfc171d1a102d07c8ff33f470a9f2aadc1528d82bf8d1dbb3ce9cf",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "9ec205e32996d402cba847ea91d7510e1197f7a02df33dcb97261c4c7f74da2f",
+        "planner_trace.json": "bad45c73b60c0cba7e301aad80ef405114cbcfe4ce6a31203cef41672774000b",
+        "policy_info.json": "90917254775327c5377726f97a8f4ae03cc308676fb9438c89d0f00ca1095b26",
+        "server_ready.json": "c8a85e5a0887654e5f16f22302502b5f6854eb759750a0b78ea3ac19fdf51a67"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/analysis/trials/teacher__anchor_repeat2__seed4242.json"
+    },
+    {
+      "policy_id": "teacher",
+      "condition_id": "anchor_repeat2",
+      "sampling_seed": 4243,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4243",
+      "case_sha256": "7a7b443e0cc158db90a241656b45c98e7aad8e1788872d79b4b0dadbbd5b1aae",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "fb9400741bee20d8b04f73b4ab5bf9130f2dcad9233387dbee060aba003a70b0",
+        "sim_trace.npz": "f1f1efb880993b582c6fee07207f443c292d1104a4d8df140b342cef08dcf847",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "3aa00b71ce5b204160cb403742b6f7e5575a56ecfdfc9db1b41764f555e5df58",
+        "planner_trace.json": "099553b63955829f4126beb32e434c19d9de78df2088b3fce94e7c57762cd4f9",
+        "policy_info.json": "a2e14a888b54a1e5add556dd5ab0298f9825ed95a5424fae26382a2197cce02c",
+        "server_ready.json": "c8a85e5a0887654e5f16f22302502b5f6854eb759750a0b78ea3ac19fdf51a67"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/analysis/trials/teacher__anchor_repeat2__seed4243.json"
+    }
+  ],
+  "missing_trial_keys": []
+}

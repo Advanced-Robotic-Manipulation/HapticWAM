@@ -1,0 +1,137 @@
+{
+  "policy_initial_state": {
+    "schema_version": 1,
+    "source_episode": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535016_005",
+    "source_meta_sha256": "843127ab0171c86243b307e90fa2348e1b40c36af8da1741ad6ef174ab132504",
+    "prepared_replay_sha256": "e61f355c7ead0de03abcc85c8086ef204dffa92666d76896681eac7601f6a3be",
+    "reference_camera_t0_master_s": 5586.389835389913,
+    "selection": "Last native measured sample at or before reference camera start t=0 for each stream; independent sample times preserved. This file contains one initial state only, no recorded trajectory.",
+    "units": {
+      "q": "radians, UR RTDE joint order",
+      "gripper": "normalized position:0 open,1 closed",
+      "wrist_ft": "recorded UR wrench units N/Nm; sensor calibration/noise uncertain",
+      "tcp": "xyz metres + rotation vector radians, UR controller base"
+    },
+    "q": [
+      0.23474512994289398,
+      -1.5198147932635706,
+      1.0754203796386719,
+      0.7233453989028931,
+      1.174745798110962,
+      -3.004658285771505
+    ],
+    "gripper": 0.0784313753247261,
+    "gripper_OBJ": 3,
+    "wrist_ft": [
+      -6.679699239150466,
+      -3.7754789060686464,
+      3.5474054977869613,
+      1.3528524004078362,
+      -1.7378262552134158,
+      0.45864556310759486
+    ],
+    "tcp": [
+      -0.35399662759562023,
+      -0.3030532626417874,
+      0.33813600255248893,
+      -1.222512987419507,
+      -1.8390053895682799,
+      1.6032091101687962
+    ],
+    "samples": {
+      "arm_q": {
+        "native_index": 3,
+        "relative_time_s": -0.006108818924985826,
+        "master_time_s": 5586.383726570988,
+        "values": [
+          0.23474512994289398,
+          -1.5198147932635706,
+          1.0754203796386719,
+          0.7233453989028931,
+          1.174745798110962,
+          -3.004658285771505
+        ]
+      },
+      "gripper": {
+        "native_index": 3,
+        "relative_time_s": -0.0030142919858917594,
+        "master_time_s": 5586.386821097927,
+        "values": [
+          0.0784313753247261,
+          3.0
+        ]
+      },
+      "arm_ft": {
+        "native_index": 3,
+        "relative_time_s": -0.006108818924985826,
+        "master_time_s": 5586.383726570988,
+        "values": [
+          -6.679699239150466,
+          -3.7754789060686464,
+          3.5474054977869613,
+          1.3528524004078362,
+          -1.7378262552134158,
+          0.45864556310759486
+        ]
+      },
+      "arm_tcp_pose": {
+        "native_index": 3,
+        "relative_time_s": -0.006108818924985826,
+        "master_time_s": 5586.383726570988,
+        "values": [
+          -0.35399662759562023,
+          -0.3030532626417874,
+          0.33813600255248893,
+          -1.222512987419507,
+          -1.8390053895682799,
+          1.6032091101687962
+        ]
+      }
+    }
+  },
+  "policy_initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+  "configured_packet_center_m": [
+    -0.3937067184864266,
+    -0.2930692769792478,
+    0.07000000000000008
+  ],
+  "settled_packet_center_m": [
+    -0.393706738948822,
+    -0.29306915402412415,
+    0.06999999284744263
+  ],
+  "settling_displacement_m": 1.2485123601417956e-07,
+  "packet_velocity_m_s": [
+    -2.341555227758363e-05,
+    -8.967499161371961e-05,
+    0.00023604962916579098
+  ],
+  "configured_robot_q": [
+    0.23474512994289398,
+    -1.5198147932635706,
+    1.0754203796386719,
+    0.7233453989028931,
+    1.174745798110962,
+    -3.004658285771505
+  ],
+  "settled_robot_q": [
+    0.23475541174411774,
+    -1.5160894393920898,
+    1.0783542394638062,
+    0.7237048745155334,
+    1.1747539043426514,
+    -3.004678964614868
+  ],
+  "settled_robot_qd": [
+    -0.0066641164012253284,
+    -0.017554694786667824,
+    -0.0294484943151474,
+    -0.004574921913444996,
+    -0.001079935347661376,
+    0.0003212571609765291
+  ],
+  "policy_robot_settling_s": 2.0,
+  "robot_initial_max_joint_error_rad": 0.0037253538714807632,
+  "robot_initial_max_joint_speed_rad_s": 0.0294484943151474,
+  "method": "Assign measured initial robot pose, reset packet pose and velocities once, then settle before t=0; no packet state writes during driven replay."
+}

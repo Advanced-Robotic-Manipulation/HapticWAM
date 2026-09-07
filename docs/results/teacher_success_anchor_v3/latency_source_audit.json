@@ -1,0 +1,46 @@
+{
+  "prepared_utc": "2026-09-07T08:18:47.461606+00:00",
+  "prepared_not_launched": true,
+  "base_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+  "prepared_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_latency_v3",
+  "all_original_source_files_unchanged": true,
+  "base_file_count": 4350,
+  "prepared_file_count": 4351,
+  "differences": {
+    "tools/sim/anchor_inference_timing.py": {
+      "base": null,
+      "prepared": "cb40aeaf02c364a6c2719312a728c11a69f2a7b36ad713c629a16a553eb3512b"
+    },
+    "tools/sim/run_waffles.py": {
+      "base": "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6",
+      "prepared": "2ad2431b5f15ad122f44eb73301dfe7a3e64c667e1e4db428d89a815299220c3"
+    }
+  },
+  "original_input_checks": {
+    "--config": true,
+    "--policy-config": true,
+    "--hardware-config": true,
+    "--robot-usd": true,
+    "--policy-initial-state": true,
+    "--tactile-baseline": true,
+    "--terminal-veto-config": true,
+    "--placement-release-config": true
+  },
+  "overlay": {
+    "variant": "frozen_v1_latency_schedule",
+    "base_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+    "base_runner_sha256": "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6",
+    "output_sha256": {
+      "tools/sim/run_waffles.py": "2ad2431b5f15ad122f44eb73301dfe7a3e64c667e1e4db428d89a815299220c3",
+      "tools/sim/anchor_inference_timing.py": "cb40aeaf02c364a6c2719312a728c11a69f2a7b36ad713c629a16a553eb3512b"
+    },
+    "scope": "Simulated per-replan delay/action-grid diagnostic; native K-seed selection still uses measured compute latency; live inputs/physics/safety remain active",
+    "unchanged": "v1 model configuration, adapter, veto, release controller, safety implementation, geometry, initialization, physics timestep, renderer settings; no FINISH overlay",
+    "required_matching": "Reuse original effective config, robot USD, measured initial state, prepared episode and explicit actual recorded horizon; compare initialization and sampled drive/physics traces before inference about causes",
+    "assembly": "Copy emitted modules only onto a NEW copy of frozen base source; never merge these independent overlays or edit the original",
+    "dry_run": false
+  },
+  "preparation_helper_sha256": "967c32cdb02fcc0435421bb4bee26b58ae9e5639636786d3f0b0e92ebd0c89b5",
+  "overlay_helper_sha256": "add94fa80c425c65d7c15cfd9f5a0e02329039535ffab201e5d3e1d8d2f4cba1",
+  "plan_sha256": "a2fdb8d0dd19907830e3103223412b807b81936e5c2ae06282e74525cb93bb07"
+}

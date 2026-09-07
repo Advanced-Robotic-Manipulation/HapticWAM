@@ -1,0 +1,429 @@
+{
+  "status": "pass",
+  "videos": 14,
+  "unique_trials": 12,
+  "comparisons": 2,
+  "score_input_files_verified": 84,
+  "total_video_bytes": 25529685,
+  "manifest_sha256": "68e3be2594188eb5fed7544694b73f336245bdf14690f2dd0b8bc6619fcd28dd",
+  "presentation_helper_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "decoding": "Every MP4 was decoded fully in the rendering pass; this final audit rechecks hashes/bytes without redundant decoding.",
+  "entries": [
+    {
+      "name": "baseline/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 252,
+      "sha256": "385d40d89fb456f94970f521eeda45ffd44bcf4b61994028081f02e39c71d9e0",
+      "bytes": 999413,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "baseline",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 16.733333333333334,
+            "scene_frame": 250,
+            "scene_age_s": 0.0653333343333351,
+            "state_row": 250,
+            "state_age_s": 0.0653333343333351,
+            "frozen": false,
+            "runtime_tactile_row": 118,
+            "runtime_tactile_age_s": 1.9773333343333341,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "baseline/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 266,
+      "sha256": "f1ff0cdd292f4a46f6b02dbe5bd35ac2f95ca4f44e4cecc557bccb34a106b492",
+      "bytes": 1066627,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "baseline",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 17.666666666666668,
+            "scene_frame": 264,
+            "scene_age_s": 0.06666666766666651,
+            "state_row": 264,
+            "state_age_s": 0.06666666766666651,
+            "frozen": false,
+            "runtime_tactile_row": 125,
+            "runtime_tactile_age_s": 2.038666667666668,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "delivery_feedback_only/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 528,
+      "sha256": "6a7e95297be5fd77b1d83ecddd8c020b30cbaa56bd767887fd419a3df2bbeb2c",
+      "bytes": 2044999,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "delivery_feedback_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 35.13333333333333,
+            "scene_frame": 526,
+            "scene_age_s": 0.06533333433333155,
+            "state_row": 526,
+            "state_age_s": 0.06533333433333155,
+            "frozen": false,
+            "runtime_tactile_row": 265,
+            "runtime_tactile_age_s": 2.0013333343333315,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "delivery_feedback_only/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 249,
+      "sha256": "04a3fc643c70bac6bc29146c8da43b349ecf582fccde237d192400c16ab602d3",
+      "bytes": 853417,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "delivery_feedback_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 16.533333333333335,
+            "scene_frame": 247,
+            "scene_age_s": 0.0653333343333351,
+            "state_row": 247,
+            "state_age_s": 0.0653333343333351,
+            "frozen": false,
+            "runtime_tactile_row": 116,
+            "runtime_tactile_age_s": 2.033333334333335,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "finish_only/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 271,
+      "sha256": "f2d485d7b4435eb224f0ed19999f9f05feb390cdee851870fa17a9e9d774f998",
+      "bytes": 1057173,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "finish_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 18.0,
+            "scene_frame": 270,
+            "scene_age_s": 1.000000082740371e-09,
+            "state_row": 270,
+            "state_age_s": 1.000000082740371e-09,
+            "frozen": false,
+            "runtime_tactile_row": 128,
+            "runtime_tactile_age_s": 1.9960000009999987,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "finish_only/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 266,
+      "sha256": "81c17f3bef56ce6a68572a211691579056c513c67ac5b1c6e034d56fa5b48dec",
+      "bytes": 1007020,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "finish_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 17.666666666666668,
+            "scene_frame": 264,
+            "scene_age_s": 0.06666666766666651,
+            "state_row": 264,
+            "state_age_s": 0.06666666766666651,
+            "frozen": false,
+            "runtime_tactile_row": 125,
+            "runtime_tactile_age_s": 2.038666667666668,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "gel_v2_only/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 843,
+      "sha256": "b7692de98bc2801694ed2eadc6d0f688823bfa8dd4b23a3c054837018d7ec7ff",
+      "bytes": 2964526,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "gel_v2_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 56.13333333333333,
+            "scene_frame": 841,
+            "scene_age_s": 0.06533333433333155,
+            "state_row": 841,
+            "state_age_s": 0.06533333433333155,
+            "frozen": false,
+            "runtime_tactile_row": 433,
+            "runtime_tactile_age_s": 2.0013333343333315,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "gel_v2_only/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 449,
+      "sha256": "50a27dac7bc535a07cbada5126b31fbe1bb7d515b0fb1e13c5535d1436f04e62",
+      "bytes": 1668742,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "gel_v2_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 29.866666666666667,
+            "scene_frame": 447,
+            "scene_age_s": 0.06666666766666651,
+            "state_row": 447,
+            "state_age_s": 0.06666666766666651,
+            "frozen": false,
+            "runtime_tactile_row": 223,
+            "runtime_tactile_age_s": 1.990666667666666,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "live_veto_only/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 260,
+      "sha256": "f66d9496addaa7af95d41161a4a611955ca5626e340fe0350d3b117d4d970216",
+      "bytes": 996151,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "live_veto_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 17.266666666666666,
+            "scene_frame": 258,
+            "scene_age_s": 0.06666666766666651,
+            "state_row": 258,
+            "state_age_s": 0.06666666766666651,
+            "frozen": false,
+            "runtime_tactile_row": 122,
+            "runtime_tactile_age_s": 2.014666667666665,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "live_veto_only/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 389,
+      "sha256": "72c7645604f8d1e3f5eb1e491fae54bdccef07aed8b68a2d655fca0d96202741",
+      "bytes": 1360202,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "live_veto_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 25.866666666666667,
+            "scene_frame": 387,
+            "scene_age_s": 0.06666666766666651,
+            "state_row": 387,
+            "state_age_s": 0.06666666766666651,
+            "frozen": false,
+            "runtime_tactile_row": 191,
+            "runtime_tactile_age_s": 1.990666667666666,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "wrist_distal_only/teacher__fixed_anchor__seed904301",
+      "decoded_frames": 255,
+      "sha256": "6f9ae9481c218909820dbbf7a5cc43751038a71fe41b385662875af7d757785f",
+      "bytes": 1020860,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "wrist_distal_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 16.933333333333334,
+            "scene_frame": 253,
+            "scene_age_s": 0.06533333433333155,
+            "state_row": 253,
+            "state_age_s": 0.06533333433333155,
+            "frozen": false,
+            "runtime_tactile_row": 119,
+            "runtime_tactile_age_s": 2.057333334333334,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "wrist_distal_only/teacher__fixed_anchor__seed904302",
+      "decoded_frames": 267,
+      "sha256": "0d14ee4c167c98988f2d8b21054bae7053604c696de470420ed285505483972b",
+      "bytes": 1064674,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "wrist_distal_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 17.733333333333334,
+            "scene_frame": 265,
+            "scene_age_s": 0.0653333343333351,
+            "state_row": 265,
+            "state_age_s": 0.0653333343333351,
+            "frozen": false,
+            "runtime_tactile_row": 126,
+            "runtime_tactile_age_s": 1.9773333343333341,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop"
+          },
+          "first_frozen_frame_t_s": null
+        }
+      ]
+    },
+    {
+      "name": "baseline_vs_gel_v2_seed904301",
+      "decoded_frames": 901,
+      "sha256": "182a61eef7d935fd792e1261a59fd4dc47146000214d41ce54c3c5fb146079a3",
+      "bytes": 4428405,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "baseline",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 60.0,
+            "scene_frame": 252,
+            "scene_age_s": 43.22400000099999,
+            "state_row": 252,
+            "state_age_s": 43.22400000099999,
+            "frozen": true,
+            "runtime_tactile_row": 118,
+            "runtime_tactile_age_s": 45.244000000999996,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop | FRAME FROZEN at 16.78s"
+          },
+          "first_frozen_frame_t_s": 16.8
+        },
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "gel_v2_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 60.0,
+            "scene_frame": 843,
+            "scene_age_s": 3.8480000009999955,
+            "state_row": 843,
+            "state_age_s": 3.8480000009999955,
+            "frozen": true,
+            "runtime_tactile_row": 433,
+            "runtime_tactile_age_s": 5.868000000999999,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop | FRAME FROZEN at 56.15s"
+          },
+          "first_frozen_frame_t_s": 56.2
+        }
+      ]
+    },
+    {
+      "name": "gel_v2_both_seeds",
+      "decoded_frames": 901,
+      "sha256": "cfca28adaa8fc3db741999d9375eb69d1be68c2d25793dc37845d0abc4b3e4ff",
+      "bytes": 4997476,
+      "mappings": [
+        {
+          "case_id": "teacher__fixed_anchor__seed904301",
+          "variant": "gel_v2_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 60.0,
+            "scene_frame": 843,
+            "scene_age_s": 3.8480000009999955,
+            "state_row": 843,
+            "state_age_s": 3.8480000009999955,
+            "frozen": true,
+            "runtime_tactile_row": 433,
+            "runtime_tactile_age_s": 5.868000000999999,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop | FRAME FROZEN at 56.15s"
+          },
+          "first_frozen_frame_t_s": 56.2
+        },
+        {
+          "case_id": "teacher__fixed_anchor__seed904302",
+          "variant": "gel_v2_only",
+          "causal_ages_verified": true,
+          "last_frame_mapping": {
+            "t": 60.0,
+            "scene_frame": 449,
+            "scene_age_s": 30.104000000999996,
+            "state_row": 449,
+            "state_age_s": 30.104000000999996,
+            "frozen": true,
+            "runtime_tactile_row": 223,
+            "runtime_tactile_age_s": 32.124000001,
+            "controller_completed": false,
+            "controller_completed_reason": null,
+            "display_status": "STOP: safety_stop | FRAME FROZEN at 29.90s"
+          },
+          "first_frozen_frame_t_s": 29.933333333333334
+        }
+      ]
+    }
+  ]
+}

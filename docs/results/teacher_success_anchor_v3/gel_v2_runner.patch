@@ -1,0 +1,11 @@
+--- frozen_v1/tools/sim/run_waffles.py
++++ gel_v2/tools/sim/run_waffles.py
+@@ -104,7 +104,7 @@
+     )
+     p.add_argument(
+         "--gel-contact-coverage",
+-        choices=["point", "manifold_patch"],
++        choices=["point", "manifold_patch", "manifold_patch_v2"],
+         default="point",
+         help="Explicit contact-area estimate for the tactile proxy; physics colliders and force limits are unchanged",
+     )

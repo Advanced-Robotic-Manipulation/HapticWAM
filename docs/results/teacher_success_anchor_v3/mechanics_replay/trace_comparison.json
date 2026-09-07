@@ -1,0 +1,34 @@
+{
+  "t": {
+    "equal": false,
+    "max_abs": 0.003999999999997783
+  },
+  "q": {
+    "equal": true,
+    "max_abs": 0.0
+  },
+  "tcp": {
+    "equal": true,
+    "max_abs": 0.0
+  },
+  "gripper": {
+    "equal": true,
+    "max_abs": 0.0
+  },
+  "waffle_position": {
+    "equal": false,
+    "max_abs": 1.341104507446289e-07
+  },
+  "waffle_orientation_wxyz": {
+    "equal": false,
+    "max_abs": 2.682411150090047e-06
+  },
+  "packet_robot_normal_force": {
+    "equal": true,
+    "max_abs": 0.0
+  },
+  "packet_bin_normal_force": {
+    "equal": false,
+    "max_abs": 0.0013081561774015427
+  }
+}

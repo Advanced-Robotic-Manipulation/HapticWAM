@@ -1,0 +1,7 @@
+{
+  "preconnection_probe": "info only; idle",
+  "native_configure_acknowledged": true,
+  "owner_connection_id": 2,
+  "busy_after_attach": true,
+  "semantics": "busy means this connection owns the server after successful configure({}); competing claims are refused natively"
+}

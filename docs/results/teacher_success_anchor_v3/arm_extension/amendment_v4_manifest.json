@@ -1,0 +1,20 @@
+{
+  "scope": "New amendment only; original freeze untouched",
+  "parent_protocol_sha256": "29d921b476807e68e129472d4090f47920af52ce60b6dc999d00f7fef820fe36",
+  "original_manifest_sha256": "7d97e0ca68e72ff2d2d05d8c76198dcca36b518b55b890350b7165c0ad77b365",
+  "original_files_match": {
+    "start_pool_audit.json": true,
+    "protocol.json": true,
+    "README.md": true
+  },
+  "files": {
+    "amendment_v4.json": {
+      "sha256": "b5ec31942e1cd9fd466d912e5ef25f202cc8aaa5b00e30b01881d360ab0a11d8",
+      "bytes": 38299
+    },
+    "amendment_v4.md": {
+      "sha256": "6c81897623a85c15833d2e133cea945924bfe85d23f66d2d9d28c1844b3ef55f",
+      "bytes": 1818
+    }
+  }
+}

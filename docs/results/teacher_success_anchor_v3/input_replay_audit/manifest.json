@@ -1,0 +1,153 @@
+{
+  "scope": "Four reset first-plan calls; no controller, physics or success score",
+  "seed": 4242,
+  "inputs": {
+    "historical": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/campaign/rollouts/teacher__placement_xm10_ym10mm__seed4242/observations/0000.npz",
+      "sha256": "5962b49621146804debf4e6848d23e103063fc000ab3df35beb980f6df076866",
+      "arrays": {
+        "t": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c",
+        "rgb": "404a4e1c62d41a6499794514bc6dbbee36a0ea49526bfb7f75f453e5a5fbba8a",
+        "wrist_window": "707ebd50ed95afb1b0436b9e460e57bb6e63f7ec920b1199246a9023f00f7811",
+        "ur_state": "1e3d45078b9a90119a9cb5e77814161d39faace1bed888690121a15049a4e9c1",
+        "gel": "7182a4e5606940212ba309eef06a1b661e76222cf4fc76d258c841a3d21222e1",
+        "fields": "86ab74d415d15d1b45a351595483d6ccb06866be90ba9ea1ada5550661e4a26f",
+        "contact_state": "188552b79f2f6131a043fbb770a316de593c13662fa2b41a86f42f47b268a349",
+        "reactive": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20",
+        "prev_chunk": "4cac66bc069b23e3348e45da3d155319367685df64623d8d5505794cf45d91e7"
+      }
+    },
+    "repeat1": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat1__seed4242/observations/0000.npz",
+      "sha256": "53a33a2cbc258b6ca0dfabf3b58e05093937837a1939e1cc84d518ba18ce1076",
+      "arrays": {
+        "t": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c",
+        "rgb": "0e40220e1e81410259e95f223048ab4a7ff403f0559eac7cba2eccdb90af6c74",
+        "wrist_window": "707ebd50ed95afb1b0436b9e460e57bb6e63f7ec920b1199246a9023f00f7811",
+        "ur_state": "1e3d45078b9a90119a9cb5e77814161d39faace1bed888690121a15049a4e9c1",
+        "gel": "7182a4e5606940212ba309eef06a1b661e76222cf4fc76d258c841a3d21222e1",
+        "fields": "86ab74d415d15d1b45a351595483d6ccb06866be90ba9ea1ada5550661e4a26f",
+        "contact_state": "188552b79f2f6131a043fbb770a316de593c13662fa2b41a86f42f47b268a349",
+        "reactive": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20",
+        "prev_chunk": "4cac66bc069b23e3348e45da3d155319367685df64623d8d5505794cf45d91e7"
+      }
+    },
+    "repeat2": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v3/reproduction/rollouts/teacher__anchor_repeat2__seed4242/observations/0000.npz",
+      "sha256": "681619d7b270e43b7b77c43a529b8eb444e182a72c24784dc5ed54f708d9266e",
+      "arrays": {
+        "t": "7d6f063e3740572cd048abe4651fb7a546eed78e0132f8146e31f96e560f495c",
+        "rgb": "70260a687085f57b55432943daeb2323d1e6e26db892dfd18ef753a580179863",
+        "wrist_window": "707ebd50ed95afb1b0436b9e460e57bb6e63f7ec920b1199246a9023f00f7811",
+        "ur_state": "1e3d45078b9a90119a9cb5e77814161d39faace1bed888690121a15049a4e9c1",
+        "gel": "7182a4e5606940212ba309eef06a1b661e76222cf4fc76d258c841a3d21222e1",
+        "fields": "86ab74d415d15d1b45a351595483d6ccb06866be90ba9ea1ada5550661e4a26f",
+        "contact_state": "188552b79f2f6131a043fbb770a316de593c13662fa2b41a86f42f47b268a349",
+        "reactive": "d3dd48304dacdeefcd1279264541d1ab9355d6cb00a6435600ba8910fe788f20",
+        "prev_chunk": "4cac66bc069b23e3348e45da3d155319367685df64623d8d5505794cf45d91e7"
+      }
+    }
+  },
+  "server_ready": {
+    "schema_version": 1,
+    "dedicated_simulation_server": true,
+    "pid": 2177196,
+    "port": 7799,
+    "repo": "/home/physicalai/phantom-icra-2027/phantom",
+    "status": "ready",
+    "started_unix_s": 1788768311.0914843,
+    "hardware_connections": "none; only configuration/model modules imported",
+    "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+    "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "checkpoint_size_bytes": 393116181,
+    "system": "teacher",
+    "saved_model_config": {
+      "student": false,
+      "drop_video_at_inference": false,
+      "rope_time_mode": "time_true",
+      "cond_dropout_p": 0.0,
+      "action_t_max_of_two": false,
+      "contact_nll_beta": 0.5,
+      "contact_nll_detach_weight": false,
+      "wrist_region_mse": true,
+      "contact_self_forcing": false,
+      "action_noise_per_strip": true,
+      "mask_wrist": false,
+      "use_action_adaln_intent": true,
+      "hht_dim": 256,
+      "contact_obs_frames": 1,
+      "nfe": 5,
+      "loss": {
+        "action": 1.0,
+        "video": 0.1,
+        "contact": 1.0,
+        "wrist": 0.5,
+        "event": 0.5,
+        "gate_bce": 0.2,
+        "sigma_reg": 0.01
+      },
+      "lora": {
+        "rank": 16,
+        "alpha": 16,
+        "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+        "dropout": 0.0
+      },
+      "acc": {
+        "d_acc": 256,
+        "d_e": 256,
+        "hidden": 512,
+        "react_hidden": 32,
+        "lambda_bias_init": 0.0,
+        "beta_init": 1.0,
+        "self_anticipation": "two_pass",
+        "gt_noise_scale": 0.1,
+        "alpha_entropy_weight": 0.0
+      },
+      "feature_align": false
+    },
+    "hardware_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+    "hardware_sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3",
+    "hardware_config_hash": "debf88a276b49db4",
+    "weights": "EMA",
+    "dtype": "torch.bfloat16",
+    "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+    "backbone_checkpoint": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt",
+    "backbone_sha256": "b2e993cea3e242bc72288612488fe91770a1c073c98c3fec6d610411ffc30646",
+    "text_cache": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v3_790eps/text_embeddings.pt",
+    "text_cache_sha256": "bef6ad98d2925799c2768084cb5886c8770627f861924088a8a721316883453b",
+    "wrench_baseline_rows": 0,
+    "inference_source_sha256": {
+      "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "phantom/inference/remote.py": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+      "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+    },
+    "loaded_task_cache_keys": [
+      "Carton",
+      "Carton_fail",
+      "egg",
+      "egg_fail",
+      "waffles",
+      "waffles_fail",
+      "whiteboard",
+      "whiteboard_fail"
+    ],
+    "effective": {
+      "nfe": 1,
+      "guidance": 1.0,
+      "k_seeds": 4,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "drop_video": false,
+      "task_text": "waffles",
+      "close_p": 0.5
+    },
+    "synthetic_warmup_latency_s": 1.391637395019643,
+    "warmed": true,
+    "ready_unix_s": 1788768361.6549704
+  },
+  "driver_sha256": "c00ee22dfa5d7ed75d33ac5839e0fd0cbad92071aa73e135dea9802f1fb588e8",
+  "helper_sha256": "2aee711780e3e2dbecec9c928e46efcdf8486b9d5e05a24ae42a1b03bc32b5a0"
+}

@@ -1,0 +1,30 @@
+{
+  "scope": "Planning-only extension freeze; no experiments run",
+  "files": {
+    "start_pool_audit.json": {
+      "sha256": "1f8e2a98ce6271ad590ff404cc5d00eae3d74948602b5cd267a3e9a9a2479658",
+      "bytes": 93379
+    },
+    "protocol.json": {
+      "sha256": "35168ac7315593d8a2fdb0d2f85157863cba17fe8f5506b057ca6a82936e1ee5",
+      "bytes": 37468
+    },
+    "README.md": {
+      "sha256": "d68d54e72b952c892b5f2fe59274982c8127490849eda6331bb8a42f76ff7271",
+      "bytes": 4443
+    }
+  },
+  "validated": {
+    "planned_cases": 12,
+    "unique_starts": 6,
+    "anchor_controls": 2,
+    "new_seeds": [
+      904601,
+      904602
+    ],
+    "all_11_input_file_hashes_match": true,
+    "all_selected_native_gate_pass": true,
+    "raw_recordings_unchanged": true,
+    "gpu_or_hardware_actions": false
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "campaign_sha256": "7822b6d87e5030d910f820767de37401a68fb418ce05ca2801fe8e75b7f67db9",
+  "executing": false,
+  "checkpoint_blocks": [
+    {
+      "id": "screen_block1__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904401
+        ]
+      ]
+    },
+    {
+      "id": "screen_block1__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904401
+        ]
+      ]
+    },
+    {
+      "id": "screen_block1__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904401
+        ]
+      ]
+    },
+    {
+      "id": "screen_block1__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904401
+        ]
+      ]
+    },
+    {
+      "id": "screen_block2__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904402
+        ]
+      ]
+    },
+    {
+      "id": "screen_block2__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904402
+        ]
+      ]
+    },
+    {
+      "id": "screen_block2__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904402
+        ]
+      ]
+    },
+    {
+      "id": "screen_block2__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904402
+        ]
+      ]
+    },
+    {
+      "id": "screen_block3__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904403
+        ]
+      ]
+    },
+    {
+      "id": "screen_block3__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904403
+        ]
+      ]
+    },
+    {
+      "id": "screen_block3__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904403
+        ]
+      ]
+    },
+    {
+      "id": "screen_block3__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904403
+        ]
+      ]
+    },
+    {
+      "id": "screen_block4__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904404
+        ]
+      ]
+    },
+    {
+      "id": "screen_block4__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904404
+        ]
+      ]
+    },
+    {
+      "id": "screen_block4__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904404
+        ]
+      ]
+    },
+    {
+      "id": "screen_block4__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904404
+        ]
+      ]
+    },
+    {
+      "id": "screen_block5__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904405
+        ]
+      ]
+    },
+    {
+      "id": "screen_block5__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904405
+        ]
+      ]
+    },
+    {
+      "id": "screen_block5__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904405
+        ]
+      ]
+    },
+    {
+      "id": "screen_block5__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904405
+        ]
+      ]
+    },
+    {
+      "id": "screen_block6__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904406
+        ]
+      ]
+    },
+    {
+      "id": "screen_block6__fta1500_nfe5_k4",
+      "policy_id": "fta1500_nfe5_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904406
+        ]
+      ]
+    },
+    {
+      "id": "screen_block6__v5_6_nfe1_k4",
+      "policy_id": "v5_6_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904406
+        ]
+      ]
+    },
+    {
+      "id": "screen_block6__fta3000_nfe1_k4",
+      "policy_id": "fta3000_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904406
+        ]
+      ]
+    }
+  ],
+  "planned_trials": 24,
+  "policy_server_transport": "127.0.0.1:7792",
+  "server_python": "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+  "effective_inference_by_policy": {
+    "fta1500_nfe1_k4": {
+      "use_ema": true,
+      "nfe": 1,
+      "guidance": 1.0,
+      "persistent_noise": true,
+      "parity": true,
+      "k_seeds": 4,
+      "max_play": 10,
+      "task_text": "waffles",
+      "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+      "drop_video": false,
+      "close_p": 0.5
+    },
+    "fta3000_nfe1_k4": {
+      "use_ema": true,
+      "nfe": 1,
+      "guidance": 1.0,
+      "persistent_noise": true,
+      "parity": true,
+      "k_seeds": 4,
+      "max_play": 10,
+      "task_text": "waffles",
+      "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+      "drop_video": false,
+      "close_p": 0.5
+    },
+    "v5_6_nfe1_k4": {
+      "use_ema": true,
+      "nfe": 1,
+      "guidance": 1.0,
+      "persistent_noise": true,
+      "parity": true,
+      "k_seeds": 4,
+      "max_play": 10,
+      "task_text": "waffles",
+      "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+      "drop_video": false,
+      "close_p": 0.5
+    },
+    "fta1500_nfe5_k4": {
+      "use_ema": true,
+      "nfe": 5,
+      "guidance": 1.0,
+      "persistent_noise": true,
+      "parity": true,
+      "k_seeds": 4,
+      "max_play": 10,
+      "task_text": "waffles",
+      "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+      "drop_video": false,
+      "close_p": 0.5
+    }
+  },
+  "initial_state_by_condition": {
+    "successful_anchor": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    }
+  },
+  "delivery_latency_override_s": null
+}

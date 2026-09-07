@@ -1,0 +1,1026 @@
+{
+  "schema_version": 1,
+  "extension_id": "teacher_success_anchor_v3_arm_start_extension_v1",
+  "status": "preregistered_conditional_not_run",
+  "frozen_at_utc": "2026-09-07T08:33:23.110258+00:00",
+  "parent_protocol": {
+    "path": "docs/results/teacher_success_anchor_v3/protocol.json",
+    "sha256": "2e02af9dd1a5bf7b9059d1a71d1a8aec1f95618f491a35e50c455c70bf765cd9",
+    "id": "teacher_success_anchor_v3"
+  },
+  "purpose": "Measure initialization sensitivity of the eventual fixed-anchor teacher winner at one unchanged scene/object/tactile baseline; never select a different model or controller from these outcomes",
+  "execution_authorized_now": false,
+  "eligibility_to_execute": {
+    "source": "Completed reserved confirmation output from tools/sim/select_teacher_anchor.py",
+    "required_status": "complete_valid_matched_stage",
+    "required_field": "clear_simulator_winner must be non-null",
+    "winner": "pending; bind only the exact returned candidate id/checkpoint/EMA/inference recipe and confirmed controller/source",
+    "required_existing_confirmation_gates": {
+      "status": "frozen",
+      "minimum_physical_full_tasks": 8,
+      "denominator": 12,
+      "paired_difference": "Leader minus runner-up strict physical placement rate",
+      "confidence_level": 0.95,
+      "bootstrap_replicates": 10000,
+      "bootstrap_seed": 20260907,
+      "bootstrap_unit": "Resample12 paired seed rows, preserving candidate pairing.",
+      "require_positive_two_sided_95pct_lower_bound": true,
+      "require_no_increase_in_drops": true,
+      "require_no_increase_in_pre_placement_wrench_or_tactile_force_depth_stops": true,
+      "otherwise": "conditional ranked leader / pickup candidate / inconclusive as supported; no forced winner, no threshold changes, no adaptive extra seeds to reach significance.",
+      "require_exact_two_sided_discordant_pair_p_le_0_05": true,
+      "small_sample_guard": {
+        "method": "Exact two-sided discordant-pair binomial test (McNemar exact), p=min(1,2*BinomialCDF(min(n10,n01);n10+n01,.5)); no discordance p=1",
+        "alpha": 0.05,
+        "rationale": "Small paired binary samples can give overconfident percentile-bootstrap intervals with few one-direction discordant pairs; exact conditional test is frozen alongside the descriptive interval.",
+        "status": "accepted_pre_outcome_guard"
+      },
+      "winner_label": "Clear physical-placement winner at this fixed simulator anchor only; normal-finish and arm-start robustness remain separate claims."
+    },
+    "if_not_met": "Remain not_run. No ranked-runner substitution, seed top-ups, threshold revision, controller change or successful-cell search."
+  },
+  "planned_counts": {
+    "starts_including_anchor_control": 6,
+    "authentic_aug22_variable_starts": 5,
+    "anchor_control_starts": 1,
+    "fresh_seeds_per_start": 2,
+    "winner_policies": 1,
+    "total_if_enabled": 12,
+    "varied_start_trials": 10,
+    "anchor_control_trials": 2
+  },
+  "seeds": [
+    904601,
+    904602
+  ],
+  "seed_disjoint_from_parent_protocol": true,
+  "selection_rule": {
+    "method": "greedy maximin on native start-gate standardized measured state",
+    "initial_selected": "sept4_anchor",
+    "feature_order": [
+      "tcp_x",
+      "tcp_y",
+      "tcp_z",
+      "tcp_rx_nearest",
+      "tcp_ry_nearest",
+      "tcp_rz_nearest",
+      "gripper",
+      "q1_raw",
+      "q2_raw",
+      "q3_raw",
+      "q4_raw",
+      "q5_raw",
+      "q6_raw"
+    ],
+    "distance": "sqrt(mean((feature_a-feature_b)^2)) over13 components; maximize minimum distance to previously selected starts",
+    "scales": "Native waffles tcp_std/gripper_std and max(q_std,radians(5)); rotvec_nearest relative to waffles mean; no joint wrapping",
+    "tie_break": "lexicographically ascending start id",
+    "outcomes_used": false,
+    "selection_trace": [
+      {
+        "step": 1,
+        "selected_id": "aug22_1787395928_000",
+        "minimum_rms_standardized_distance": 1.2085078653194543,
+        "candidate_distances": {
+          "aug22_1787395928_000": 1.2085078653194543,
+          "aug22_1787395963_001": 0.9425111703435732,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.9538769872138122,
+          "aug22_1787396094_005": 0.9456898704070426,
+          "aug22_1787396128_006": 0.9180823761480259,
+          "aug22_1787396273_010": 1.0945541288441434,
+          "aug22_1787396314_011": 1.006532886565766,
+          "aug22_1787396346_012": 0.9751658527242331,
+          "aug22_1787396461_000": 1.0211200802732774
+        }
+      },
+      {
+        "step": 2,
+        "selected_id": "aug22_1787396273_010",
+        "minimum_rms_standardized_distance": 0.9993720168303108,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.5892250973409744,
+          "aug22_1787396094_005": 0.9456898704070426,
+          "aug22_1787396128_006": 0.7910000284566294,
+          "aug22_1787396273_010": 0.9993720168303108,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.6525074887824901
+        }
+      },
+      {
+        "step": 3,
+        "selected_id": "aug22_1787396128_006",
+        "minimum_rms_standardized_distance": 0.7910000284566294,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.780346592147117,
+          "aug22_1787396060_004": 0.5892250973409744,
+          "aug22_1787396094_005": 0.7306296404465341,
+          "aug22_1787396128_006": 0.7910000284566294,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      },
+      {
+        "step": 4,
+        "selected_id": "aug22_1787395963_001",
+        "minimum_rms_standardized_distance": 0.6237305883822867,
+        "candidate_distances": {
+          "aug22_1787395963_001": 0.6237305883822867,
+          "aug22_1787396028_003": 0.3651126940866534,
+          "aug22_1787396060_004": 0.48380854969105136,
+          "aug22_1787396094_005": 0.35448590356226034,
+          "aug22_1787396314_011": 0.551561291325077,
+          "aug22_1787396346_012": 0.39609527527533683,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      },
+      {
+        "step": 5,
+        "selected_id": "aug22_1787396461_000",
+        "minimum_rms_standardized_distance": 0.539064373267755,
+        "candidate_distances": {
+          "aug22_1787396028_003": 0.3651126940866534,
+          "aug22_1787396060_004": 0.48380854969105136,
+          "aug22_1787396094_005": 0.35448590356226034,
+          "aug22_1787396314_011": 0.42949652161535795,
+          "aug22_1787396346_012": 0.3249185294165066,
+          "aug22_1787396461_000": 0.539064373267755
+        }
+      }
+    ]
+  },
+  "selected_starts": [
+    {
+      "id": "sept4_anchor",
+      "episode": "ep_teacher_waffles_1788535016_005",
+      "role": "anchor_control",
+      "initial_state_file": "docs/results/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "q_rad": [
+        0.23474512994289398,
+        -1.5198147932635706,
+        1.0754203796386719,
+        0.7233453989028931,
+        1.174745798110962,
+        -3.004658285771505
+      ],
+      "tcp_m_rad": [
+        -0.35399662759562023,
+        -0.3030532626417874,
+        0.33813600255248893,
+        -1.222512987419507,
+        -1.8390053895682799,
+        1.6032091101687962
+      ],
+      "gripper": 0.0784313753247261,
+      "wrist_ft_native_n_nm": [
+        -6.679699239150466,
+        -3.7754789060686464,
+        3.5474054977869613,
+        1.3528524004078362,
+        -1.7378262552134158,
+        0.45864556310759486
+      ],
+      "worst_sigma": 1.4397479912163085,
+      "max_sensor_age_s": 0.006108818924985826
+    },
+    {
+      "id": "aug22_1787395928_000",
+      "episode": "ep_waffles_1787395928_000",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "initial_state_sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "q_rad": [
+        0.24457107484340668,
+        -1.5101473967181605,
+        0.9251918792724609,
+        0.8998333215713501,
+        1.1859229803085327,
+        -3.203757349644796
+      ],
+      "tcp_m_rad": [
+        -0.33538232877569196,
+        -0.29982738757331384,
+        0.3563458840073126,
+        -1.0311287816544337,
+        -1.92408416645898,
+        1.47232898332707
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "worst_sigma": 1.4317426481046467,
+      "max_sensor_age_s": 0.007814622018486261
+    },
+    {
+      "id": "aug22_1787396273_010",
+      "episode": "ep_waffles_1787396273_010",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "initial_state_sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "q_rad": [
+        0.3042255640029907,
+        -1.5296967665301722,
+        1.175276756286621,
+        0.7342854738235474,
+        1.2763934135437012,
+        -3.1310036818133753
+      ],
+      "tcp_m_rad": [
+        -0.3370493634399271,
+        -0.30213036323570486,
+        0.29697775211803923,
+        -1.1624367861118623,
+        -1.9447234218056493,
+        1.4297003194997182
+      ],
+      "gripper": 0.37254902720451355,
+      "wrist_ft_native_n_nm": [
+        -2.1097366286896255,
+        -18.10817328457381,
+        13.528334591648038,
+        4.1344895392337895,
+        -3.3642810417039106,
+        -4.023871174036208
+      ],
+      "worst_sigma": 1.3882748295926488,
+      "max_sensor_age_s": 0.0018318688962608576
+    },
+    {
+      "id": "aug22_1787396128_006",
+      "episode": "ep_waffles_1787396128_006",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "initial_state_sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "q_rad": [
+        0.21729984879493713,
+        -1.5454734007464808,
+        1.1461524963378906,
+        0.6903711557388306,
+        1.1115949153900146,
+        -3.1324790159808558
+      ],
+      "tcp_m_rad": [
+        -0.34553959891096603,
+        -0.3092751088664797,
+        0.32902270496445724,
+        -1.069263396597869,
+        -1.914371325018002,
+        1.5695785690078452
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        3.6102082811202774,
+        -16.139854317369252,
+        3.531083540240857,
+        1.06825841644843,
+        -0.4876215853629211,
+        -4.315550185506177
+      ],
+      "worst_sigma": 1.2858617415553644,
+      "max_sensor_age_s": 0.0030803889967501163
+    },
+    {
+      "id": "aug22_1787395963_001",
+      "episode": "ep_waffles_1787395963_001",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "initial_state_sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "q_rad": [
+        0.14518064260482788,
+        -1.5508273283587855,
+        1.0001111030578613,
+        0.8747776746749878,
+        1.1362910270690918,
+        -3.161736075078146
+      ],
+      "tcp_m_rad": [
+        -0.3495555759785932,
+        -0.27512946790625037,
+        0.35035050920628125,
+        -1.136475954428743,
+        -1.8711905948184857,
+        1.4784136435633781
+      ],
+      "gripper": 0.3137255012989044,
+      "wrist_ft_native_n_nm": [
+        16.49100151528894,
+        -8.938782817111958,
+        -13.685593946781536,
+        -2.6627279528074217,
+        4.598197745477487,
+        -4.547888366204026
+      ],
+      "worst_sigma": 1.1069556638809508,
+      "max_sensor_age_s": 0.003165690926834941
+    },
+    {
+      "id": "aug22_1787396461_000",
+      "episode": "ep_waffles_1787396461_000",
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "initial_state_sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "q_rad": [
+        0.30573704838752747,
+        -1.5146878401385706,
+        1.0304789543151855,
+        0.8531790971755981,
+        1.263884425163269,
+        -3.1646154562579554
+      ],
+      "tcp_m_rad": [
+        -0.32934843403965874,
+        -0.3036396676083807,
+        0.3246262599854344,
+        -1.1088251740594433,
+        -1.9557082618900303,
+        1.4303413354594965
+      ],
+      "gripper": 0.2549019753932953,
+      "wrist_ft_native_n_nm": [
+        2.9477290963111633,
+        -12.182910597202357,
+        6.899319620873847,
+        2.423999587375755,
+        -1.341440360221059,
+        -2.8718301664341728
+      ],
+      "worst_sigma": 1.3327719687859212,
+      "max_sensor_age_s": 0.002096849959343672
+    }
+  ],
+  "fixed_inputs": {
+    "fixed_scene": {
+      "schema_version": 1,
+      "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+      "physics": {
+        "dt": 0.004,
+        "render_hz": 15,
+        "solver_position_iterations": 16,
+        "solver_velocity_iterations": 4,
+        "joint_stiffness": 3500,
+        "joint_damping": 180,
+        "finger_stiffness": 1800,
+        "finger_damping": 25,
+        "finger_force_N": 15,
+        "forearm_collision_approximation": "convexDecomposition"
+      },
+      "table": {
+        "center": [
+          -0.23,
+          0.0,
+          0.027999999999999997
+        ],
+        "size": [
+          1.7,
+          0.9,
+          0.05
+        ],
+        "hole_pitch": 0.04,
+        "hole_radius": 0.0055,
+        "top_z": 0.053,
+        "friction": 0.55
+      },
+      "mat": {
+        "center": [
+          -0.345,
+          -0.245,
+          0.05449999999999999
+        ],
+        "size": [
+          0.33,
+          0.38,
+          0.003
+        ],
+        "grid_pitch": 0.05,
+        "friction": 0.7
+      },
+      "bin": {
+        "center": [
+          -0.3915669783296538,
+          0.0366996283858784,
+          0.05399999999999999
+        ],
+        "size": [
+          0.3267210754691179,
+          0.2344750815856634,
+          0.14
+        ],
+        "wall": 0.004,
+        "friction": 0.4
+      },
+      "waffle": {
+        "center": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "size": [
+          0.15449525360329625,
+          0.027214019144296827,
+          0.028
+        ],
+        "yaw": 0.31656601407527596,
+        "mass": 0.035,
+        "static_friction": 0.65,
+        "dynamic_friction": 0.5,
+        "restitution": 0.015
+      },
+      "gripper": {
+        "stroke": 0.07,
+        "pad_touch_command": 0.9,
+        "pad_size": [
+          0.012,
+          0.026,
+          0.055
+        ],
+        "pad_center_z": 0.16556,
+        "pad_friction": 1.0,
+        "housing_size": [
+          0.065,
+          0.048,
+          0.07
+        ],
+        "compliant_stiffness": 12000,
+        "compliant_damping": 30,
+        "yaw": -0.377,
+        "geometry_source": "Rounded pad/backing contact hulls and70mm effective custom-pad aperture fitted against measured grasp; nominal bare Robotiqstroke remains85mm. Contact/material parameters are uncalibrated estimates.",
+        "contact_shape": "ellipse"
+      },
+      "camera": {
+        "resolution": [
+          640,
+          480
+        ],
+        "fx": 742.893223660066,
+        "fy": 742.893223660066,
+        "cx": 320.0,
+        "cy": 240.0,
+        "position": [
+          -0.32484269191527715,
+          -0.4753704304569985,
+          1.0424263097960098
+        ],
+        "target": [
+          -0.37168218390632835,
+          -0.058827533207274685,
+          0.13451768182685875
+        ],
+        "world_from_cv": [
+          [
+            0.9980094660544067,
+            0.04222756985451613,
+            -0.04683949199105121,
+            -0.32484269191527715
+          ],
+          [
+            0.05793770782169203,
+            -0.9072680071308444,
+            0.4165428972497238,
+            -0.4753704304569985
+          ],
+          [
+            -0.024906378262726937,
+            -0.4184275272744465,
+            -0.9079086279691511,
+            1.0424263097960098
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "source": "artifacts/isaac_waffles/evidence/camera_refinement_frozen_physics.json; balancedC, September4 fitting only, no hardware optical calibration."
+      },
+      "lighting": {
+        "dome_intensity": 650,
+        "key_intensity": 1800,
+        "key_position": [
+          -0.1,
+          -0.5,
+          1.8
+        ]
+      },
+      "uncertainty": {
+        "geometry": "Table, bin, mat, packet and custom pad sizes are visual estimates; no ruler or calibrated extrinsics recovered.",
+        "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+        "camera": "Camera fit is episode-specific; do not pool sessions with changed camera mounting."
+      },
+      "calibration": {
+        "revision": "recorded_pick_place_v2",
+        "episode_role": "August22 complete pick-place fit",
+        "physical_fit": "Two fixed fit episodes; table plane, rounded contact hulls, effective aperture and per-episode initial packet pose estimated from images/contact events. No object attachment or pose replay.",
+        "hardware_bare_gripper_stroke_m": 0.085,
+        "table_plane_shift_from_v1_m": 0.075,
+        "validation": "Recorded-motion reproduction; does not establish calibrated force/tactile transfer or policy success."
+      }
+    },
+    "initial_state": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    "tactile_baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    },
+    "runtime_hardware": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+      "sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    "prepared_episode": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+    "robot_usd": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+      "exists": true,
+      "sha256": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637"
+    },
+    "thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    },
+    "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+    "inference_action_horizon": 16,
+    "max_play_steps": 10,
+    "control_rate_hz": 125,
+    "nominal_horizon_s": 60,
+    "observation_delay_s": 0,
+    "inference_delay_add_s": 0,
+    "latency_mode": "native measured inference and actual delivery; no latency override",
+    "original_adapter_profile": {
+      "tactile_model": "measured_baseline_proxy",
+      "gel_contact_coverage": "manifold_patch",
+      "terminal_veto": {
+        "implementation": "fd4a032",
+        "config": {
+          "z_ref": 0.0415,
+          "z_floor": 0.0315,
+          "z_margin": 0.0615,
+          "open_aperture": 0.232,
+          "p_close": 0.5,
+          "p_none": 0.9,
+          "max_retries": 3
+        },
+        "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+      },
+      "placement_release": {
+        "tcp_min_m": [
+          -0.5429275160642127,
+          -0.06853791240695331,
+          0.057999999999999996
+        ],
+        "tcp_max_m": [
+          -0.24020644059509488,
+          0.14193716917871008,
+          0.274
+        ],
+        "open_command_max": 0.45,
+        "opening_hold_s": 0.2,
+        "unloaded_force_max_n": 0.5,
+        "unloaded_hold_s": 0.2,
+        "rearm_close_command_min": 0.5
+      },
+      "record_packet_support": true,
+      "save_policy_observations": true,
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      }
+    },
+    "fixed_waffle_policy": "No object offsets or appearance changes after anchor freeze; varied arm starts only in a separate later study."
+  },
+  "sole_changed_input_bundle": {
+    "q": "Exact native raw joint vector from the selected single measured state; no jitter, IK-branch switch, wrapping or scripted approach",
+    "gripper": "Exact recorded normalized aperture/closure; not forced to shared anchor aperture",
+    "wrist": "Exact recorded raw wrist_ft as that start's initial bias; retain winner's wrist model and native safety preprocessing",
+    "tactile": "Same Sept4 no-contact baseline NPZ and same winner coverage/model for every start; no per-recording tactile replacement",
+    "scene": "Exact successful anchor scene/object/camera/lighting/materials; retain anchor packet position, yaw and texture even when the measured robot start comes from Aug22",
+    "effect_scope": "This varies the measured robot/gripper/wrist initialization bundle, not joint pose alone. RGB naturally changes with robot pose and rendering."
+  },
+  "frozen_common_tactile_baseline": {
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+    "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+  },
+  "staging_before_any_policy": {
+    "actions": "Use ordinary simulator initialization and settling only; never launch real hardware",
+    "keep_existing_runtime_guards": true,
+    "joint_error_max_rad": 0.02,
+    "joint_speed_max_rad_s": 0.05,
+    "packet_settling_displacement_max_m": 0.02,
+    "native_start_gate_after_settling_max_sigma": 2.5,
+    "source_hash_and_state_fields_must_match": true,
+    "geometry_validation": "Each configured start must pass the exact fixed-scene initialization; previous Aug22 canonical-scene preflights are context, not this extension's validation",
+    "failure_handling": "Preserve failed attempt. Do not adjust measured starts or replace a start. Report scheduled-denominator missing/invalid outcomes; stop for an actual infrastructure/source mismatch rather than search for a passing start."
+  },
+  "cases": [
+    {
+      "case_id": "sept4_anchor__seed904601",
+      "start_id": "sept4_anchor",
+      "seed": 904601,
+      "role": "anchor_control",
+      "initial_state_file": "docs/results/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "q_rad": [
+        0.23474512994289398,
+        -1.5198147932635706,
+        1.0754203796386719,
+        0.7233453989028931,
+        1.174745798110962,
+        -3.004658285771505
+      ],
+      "gripper": 0.0784313753247261,
+      "wrist_ft_native_n_nm": [
+        -6.679699239150466,
+        -3.7754789060686464,
+        3.5474054977869613,
+        1.3528524004078362,
+        -1.7378262552134158,
+        0.45864556310759486
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "sept4_anchor__seed904602",
+      "start_id": "sept4_anchor",
+      "seed": 904602,
+      "role": "anchor_control",
+      "initial_state_file": "docs/results/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "initial_state_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+      "q_rad": [
+        0.23474512994289398,
+        -1.5198147932635706,
+        1.0754203796386719,
+        0.7233453989028931,
+        1.174745798110962,
+        -3.004658285771505
+      ],
+      "gripper": 0.0784313753247261,
+      "wrist_ft_native_n_nm": [
+        -6.679699239150466,
+        -3.7754789060686464,
+        3.5474054977869613,
+        1.3528524004078362,
+        -1.7378262552134158,
+        0.45864556310759486
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787395928_000__seed904601",
+      "start_id": "aug22_1787395928_000",
+      "seed": 904601,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "initial_state_sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "q_rad": [
+        0.24457107484340668,
+        -1.5101473967181605,
+        0.9251918792724609,
+        0.8998333215713501,
+        1.1859229803085327,
+        -3.203757349644796
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787395928_000__seed904602",
+      "start_id": "aug22_1787395928_000",
+      "seed": 904602,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "initial_state_sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "q_rad": [
+        0.24457107484340668,
+        -1.5101473967181605,
+        0.9251918792724609,
+        0.8998333215713501,
+        1.1859229803085327,
+        -3.203757349644796
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        8.276634214683451,
+        13.145563143133545,
+        -19.0017648369493,
+        -4.314573463569404,
+        4.556972657331247,
+        1.1369097708517957
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396273_010__seed904601",
+      "start_id": "aug22_1787396273_010",
+      "seed": 904601,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "initial_state_sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "q_rad": [
+        0.3042255640029907,
+        -1.5296967665301722,
+        1.175276756286621,
+        0.7342854738235474,
+        1.2763934135437012,
+        -3.1310036818133753
+      ],
+      "gripper": 0.37254902720451355,
+      "wrist_ft_native_n_nm": [
+        -2.1097366286896255,
+        -18.10817328457381,
+        13.528334591648038,
+        4.1344895392337895,
+        -3.3642810417039106,
+        -4.023871174036208
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396273_010__seed904602",
+      "start_id": "aug22_1787396273_010",
+      "seed": 904602,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "initial_state_sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "q_rad": [
+        0.3042255640029907,
+        -1.5296967665301722,
+        1.175276756286621,
+        0.7342854738235474,
+        1.2763934135437012,
+        -3.1310036818133753
+      ],
+      "gripper": 0.37254902720451355,
+      "wrist_ft_native_n_nm": [
+        -2.1097366286896255,
+        -18.10817328457381,
+        13.528334591648038,
+        4.1344895392337895,
+        -3.3642810417039106,
+        -4.023871174036208
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396128_006__seed904601",
+      "start_id": "aug22_1787396128_006",
+      "seed": 904601,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "initial_state_sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "q_rad": [
+        0.21729984879493713,
+        -1.5454734007464808,
+        1.1461524963378906,
+        0.6903711557388306,
+        1.1115949153900146,
+        -3.1324790159808558
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        3.6102082811202774,
+        -16.139854317369252,
+        3.531083540240857,
+        1.06825841644843,
+        -0.4876215853629211,
+        -4.315550185506177
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396128_006__seed904602",
+      "start_id": "aug22_1787396128_006",
+      "seed": 904602,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "initial_state_sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "q_rad": [
+        0.21729984879493713,
+        -1.5454734007464808,
+        1.1461524963378906,
+        0.6903711557388306,
+        1.1115949153900146,
+        -3.1324790159808558
+      ],
+      "gripper": 0.4274509847164154,
+      "wrist_ft_native_n_nm": [
+        3.6102082811202774,
+        -16.139854317369252,
+        3.531083540240857,
+        1.06825841644843,
+        -0.4876215853629211,
+        -4.315550185506177
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787395963_001__seed904601",
+      "start_id": "aug22_1787395963_001",
+      "seed": 904601,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "initial_state_sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "q_rad": [
+        0.14518064260482788,
+        -1.5508273283587855,
+        1.0001111030578613,
+        0.8747776746749878,
+        1.1362910270690918,
+        -3.161736075078146
+      ],
+      "gripper": 0.3137255012989044,
+      "wrist_ft_native_n_nm": [
+        16.49100151528894,
+        -8.938782817111958,
+        -13.685593946781536,
+        -2.6627279528074217,
+        4.598197745477487,
+        -4.547888366204026
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787395963_001__seed904602",
+      "start_id": "aug22_1787395963_001",
+      "seed": 904602,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "initial_state_sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "q_rad": [
+        0.14518064260482788,
+        -1.5508273283587855,
+        1.0001111030578613,
+        0.8747776746749878,
+        1.1362910270690918,
+        -3.161736075078146
+      ],
+      "gripper": 0.3137255012989044,
+      "wrist_ft_native_n_nm": [
+        16.49100151528894,
+        -8.938782817111958,
+        -13.685593946781536,
+        -2.6627279528074217,
+        4.598197745477487,
+        -4.547888366204026
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396461_000__seed904601",
+      "start_id": "aug22_1787396461_000",
+      "seed": 904601,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "initial_state_sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "q_rad": [
+        0.30573704838752747,
+        -1.5146878401385706,
+        1.0304789543151855,
+        0.8531790971755981,
+        1.263884425163269,
+        -3.1646154562579554
+      ],
+      "gripper": 0.2549019753932953,
+      "wrist_ft_native_n_nm": [
+        2.9477290963111633,
+        -12.182910597202357,
+        6.899319620873847,
+        2.423999587375755,
+        -1.341440360221059,
+        -2.8718301664341728
+      ],
+      "declared_horizon_s": 60
+    },
+    {
+      "case_id": "aug22_1787396461_000__seed904602",
+      "start_id": "aug22_1787396461_000",
+      "seed": 904602,
+      "role": "candidate_measured_start",
+      "initial_state_file": "configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "initial_state_sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "q_rad": [
+        0.30573704838752747,
+        -1.5146878401385706,
+        1.0304789543151855,
+        0.8531790971755981,
+        1.263884425163269,
+        -3.1646154562579554
+      ],
+      "gripper": 0.2549019753932953,
+      "wrist_ft_native_n_nm": [
+        2.9477290963111633,
+        -12.182910597202357,
+        6.899319620873847,
+        2.423999587375755,
+        -1.341440360221059,
+        -2.8718301664341728
+      ],
+      "declared_horizon_s": 60
+    }
+  ],
+  "execution_order": [
+    "sept4_anchor__seed904601",
+    "aug22_1787395928_000__seed904601",
+    "aug22_1787396273_010__seed904601",
+    "aug22_1787396128_006__seed904601",
+    "aug22_1787395963_001__seed904601",
+    "aug22_1787396461_000__seed904601",
+    "aug22_1787396461_000__seed904602",
+    "aug22_1787395963_001__seed904602",
+    "aug22_1787396128_006__seed904602",
+    "aug22_1787396273_010__seed904602",
+    "aug22_1787395928_000__seed904602",
+    "sept4_anchor__seed904602"
+  ],
+  "horizon_and_completion": {
+    "declared_horizon_s": 60,
+    "normal_finish": "Inherit the confirmed controller exactly; do not add FINISH after model selection",
+    "termination": "Unchanged safety stops and post-stop observation; no object scorer input to controller and no early success cutoff"
+  },
+  "analysis": {
+    "primary": "Frozen strict physical full_task using parent thresholds",
+    "per_start": "Show both seeds and all stage times/stops, plus2/2,1/2,0/2 or missing status for each start",
+    "aggregate": "Report10 varied-start episodes separately from2 anchor-control episodes; optionally also12total clearly labeled",
+    "secondary": [
+      "final bin support and robot unloading",
+      "acquisition/lift/carry/release",
+      "drop",
+      "pre/post-placement safety stops",
+      "normal controller FINISH if supported by inherited profile",
+      "initialization mismatch",
+      "native inference latency and held commands"
+    ],
+    "statistics": "Descriptive fixed-suite counts. If reporting a95% interval for varied-start mean, resample the five measured-start clusters retaining both seeds; show degeneracy/small-cluster limitation. No hardware-success or IID episode probability claim.",
+    "missing": "Preserve all12 scheduled keys. Report valid denominator and worst/best scheduled-denominator bounds; never silently discard invalid starts or stopped episodes.",
+    "reranking": "Never rerank, reselect, or tune baseline/winner using extension outcomes; findings motivate a separately preregistered later study only."
+  },
+  "limitations": [
+    "Five selected Aug22 starts are from previously audited recordings and some were used in older v2 simulations; only sampling seeds are fresh. This is not unseen-recording or unseen-session validation.",
+    "All starts satisfy the native success-dataset start distribution gate, which does not establish physical clearance/calibration or performance.",
+    "Own measured gripper/wrist variation is confounded with arm pose by design and must be described as a full initial-state sensitivity test.",
+    "Shared Sept4 baseline plus Aug22 raw wrist bias is an explicit cross-session sensor approximation, not a fully synchronized recorded sensor bundle.",
+    "Frozen rigid packet, contact/gel mapping, wrist model, camera and native latency remain uncalibrated.",
+    "Controller completion and physical placement are separately reported."
+  ],
+  "selected_spread": {
+    "tcp_xyz_peak_to_peak_m": [
+      0.024648193555961484,
+      0.03414564096022932,
+      0.05936813188927337
+    ],
+    "raw_joint_peak_to_peak_rad": [
+      0.16055640578269958,
+      0.040679931640625,
+      0.25008487701416016,
+      0.20946216583251953,
+      0.16479849815368652,
+      0.19909906387329102
+    ],
+    "closure_min_max": [
+      0.0784313753247261,
+      0.4274509847164154
+    ],
+    "worst_native_gate_sigma": 1.4397479912163085
+  }
+}

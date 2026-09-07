@@ -254,9 +254,12 @@ def test_delivery_feedback_profile_rejects_missing_or_historical_veto_state():
             design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
         )
     info["terminal_veto_feedback_source"] = "current_delivery"
-    assert audit(
-        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
-    ) == []
+    assert (
+        audit(
+            design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+        == []
+    )
 
 
 def test_gripper_wrist_profile_is_explicit_and_audited():
@@ -266,9 +269,12 @@ def test_gripper_wrist_profile_is_explicit_and_audited():
         design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
     )
     info["wrist_model"] = "gripper_contact_proxy"
-    assert audit(
-        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
-    ) == []
+    assert (
+        audit(
+            design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+        == []
+    )
 
 
 def test_campaign_commands_apply_variant_and_start_without_moving_packet(tmp_path):
@@ -553,6 +559,17 @@ def test_frozen_source_inventory_covers_watchdog_assets_and_episode(
     assert "assets/sim/waffles/packet_top.png" in result["source_sha256"]
     assert all("__pycache__" not in p for p in result["source_sha256"])
     assert set(result["episode_sha256"]) == {"replay.npz", "manifest.json"}
+    assert (
+        "tools/sim/run_policy_campaign.py"
+        in result["external_controller_source_sha256"]
+    )
+    assert (
+        "tools/sim/analyze_policy_campaign.py"
+        in result["external_controller_source_sha256"]
+    )
+    assert (
+        "phantom/sim/policy_metrics.py" in result["external_controller_source_sha256"]
+    )
 
 
 def test_teacher_only_analysis_does_not_invent_policy_comparison():

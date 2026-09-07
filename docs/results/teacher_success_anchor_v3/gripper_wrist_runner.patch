@@ -1,0 +1,168 @@
+--- frozen_v1/tools/sim/run_waffles.py
++++ gripper_wrist/tools/sim/run_waffles.py
+@@ -110,7 +110,7 @@
+     )
+     p.add_argument(
+         "--wrist",
+-        choices=["contact_proxy", "zero_ablation"],
++        choices=["contact_proxy", "zero_ablation", "gripper_contact_proxy"],
+         default="contact_proxy",
+         help="Uncalibrated contact wrench plus recorded initial bias, or explicit zero ablation",
+     )
+@@ -510,6 +510,13 @@
+             ],
+             rigid_prim_cls=RigidPrim,
+         )
++    gripper_wrist = None
++    if args.wrist == "gripper_contact_proxy":
++        from tools.sim.gripper_wrist import GripperContactWrist
++
++        gripper_wrist = GripperContactWrist(
++            str(housing.GetPath()), paths["pad_paths"], rigid_prim_cls=RigidPrim
++        )
+     gel_views = None
+     if args.mode == "policy" and args.tactile == "measured_baseline_proxy":
+         from tools.sim.gel_contact import GelContactViews
+@@ -569,6 +576,8 @@
+         gel_views.initialize()
+     if support_views is not None:
+         support_views.initialize()
++    if gripper_wrist is not None:
++        gripper_wrist.initialize()
+     tool_body.initialize()
+     camera.initialize()
+     if args.gui:
+@@ -794,6 +803,10 @@
+     measured_sensor_proxy = None
+     next_control = 0.0
+     wrist_bias = np.zeros(6)
++    wrist_contact_file = None
++    wrist_value = None
++    wrist_sample_t = None
++    next_wrist_t = 0.0
+     stop_after_step = False
+     terminal_until = None
+ 
+@@ -808,12 +821,23 @@
+     def wrist_proxy(tcp, forces):
+         if args.wrist == "zero_ablation":
+             return np.zeros(6)
++        if gripper_wrist is not None:
++            if wrist_value is None:
++                raise RuntimeError("Gripper wrist input has not been sampled")
++            return wrist_value.copy()
+         value = wrist_bias.copy()
+         for pad, force in zip(pads, forces):
+             position = np.asarray(pad.get_world_poses()[0]).reshape(-1, 3)[0]
+             value[:3] += force
+             value[3:] += np.cross(position - tcp[:3], force)
+         return value
++
++    def sample_gripper_wrist(t, tcp):
++        nonlocal wrist_value, wrist_sample_t, next_wrist_t
++        wrist_value, record = gripper_wrist.sample(tcp, wrist_bias, dt)
++        wrist_sample_t = float(t)
++        wrist_contact_file.write(json.dumps({"t": t, **record}) + "\n")
++        next_wrist_t = t + control_dt
+ 
+     def tactile_proxy(t, forces):
+         if measured_sensor_proxy is not None:
+@@ -894,6 +918,19 @@
+     physics_origin = world.current_time
+     start = time.monotonic()
+     try:
++        if gripper_wrist is not None:
++            from phantom.config.hardware import load_hardware
++
++            wrist_hw = load_hardware(args.hardware_config, quiet=True)
++            control_dt = 1 / wrist_hw.control.executor_rate_hz
++            if dt > control_dt + 1e-9:
++                raise ValueError("Physics dt exceeds wrist sample/control period")
++            if "native_arm_ft" in data:
++                ft_idx = int(np.argmin(np.abs(data["native_arm_ft_t"])))
++                wrist_bias = np.asarray(data["native_arm_ft"][ft_idx], dtype=float)
++            if initial_state is not None:
++                wrist_bias = initial_wrist.copy()
++            wrist_contact_file = (args.output / "wrist_contact_trace.jsonl").open("w")
+         if args.mode == "policy":
+             audit = PolicyAudit(args.output)
+             from phantom.config.hardware import load_hardware
+@@ -997,6 +1034,10 @@
+                         if args.policy_config
+                         else "prepared episode manifest.meta.text",
+                         "wrist_model": args.wrist,
++                        "wrist_proxy_metadata": gripper_wrist.metadata()
++                        if gripper_wrist is not None else None,
++                        "wrist_sampling_rate_hz": 1 / control_dt
++                        if gripper_wrist is not None else None,
+                         "initial_recorded_wrist_bias": wrist_bias.tolist(),
+                         "observation_warmup_s": hw.wrist_ft.window_s,
+                         "control_rate_hz": hw.control.executor_rate_hz,
+@@ -1056,6 +1097,12 @@
+             qactual = robot.get_joint_positions()[ids]
+             qd = robot.get_joint_velocities()[ids]
+             tcp = tcp_measured(qactual)
++            if (
++                gripper_wrist is not None
++                and (wrist_value is None or args.mode != "policy" or stop_after_step)
++                and t + 1e-9 >= next_wrist_t
++            ):
++                sample_gripper_wrist(t, tcp)
+             if args.mode in ("replay", "dynamics"):
+                 desired[ids] = interp("q", t)
+                 desired[fingers] = gap(interp("gripper", t)[0])
+@@ -1081,6 +1128,9 @@
+                 )
+                 twist = measured_tcp_twist(previous_tcp, tcp, dt)
+                 forces = measured_pad_forces()
++                if gripper_wrist is not None:
++                    sample_gripper_wrist(t, tcp)
++                measured_wrist = wrist_proxy(tcp, forces)
+                 target_closure = float(
+                     np.clip(
+                         (1 - desired[fingers].mean() / (cfg["gripper"]["stroke"] / 2))
+@@ -1123,7 +1173,7 @@
+                     tcp_pose=tcp,
+                     tcp_speed=twist,
+                     gripper_state=[closure, obj],
+-                    wrist_ft=wrist_proxy(tcp, forces),
++                    wrist_ft=measured_wrist,
+                     tactile=tactile_sample,
+                 )
+                 if t + 1e-9 >= policy_ready_t and adapter.ready_for_replan(t):
+@@ -1155,7 +1205,9 @@
+                     "measured_qd": np.array(qd, copy=True),
+                     "measured_tcp": np.array(tcp, copy=True),
+                     "measured_gripper": [closure, obj],
+-                    "measured_wrist_ft": wrist_proxy(tcp, forces),
++                    "measured_wrist_ft": measured_wrist,
++                    "wrist_capture_t": wrist_sample_t
++                    if gripper_wrist is not None else t,
+                     "tactile_capture_t": policy_tactile_trace[-1][0],
+                     "requested_tcp": command.tcp_pose,
+                     "gripper_command": command.gripper,
+@@ -1407,6 +1459,8 @@
+             str(args.output / "sim_last.png"), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+         )
+     finally:
++        if wrist_contact_file is not None:
++            wrist_contact_file.close()
+         writer.release()
+         # Preserve measured states even when a policy or transport call fails.
+         # FAILED.txt and the planner audit retain the failure; partial traces
+@@ -1457,7 +1511,14 @@
+             "initialization": "configured table pose before settling; contact_probe alone subsequently uses its documented one-time synthetic starting pose before t=0",
+         },
+         "tactile_model": args.tactile if args.mode == "policy" else None,
+-        "wrist_model": args.wrist if args.mode == "policy" else None,
++        "wrist_model": args.wrist
++        if args.mode == "policy" or gripper_wrist is not None else None,
++        "wrist_proxy_metadata": gripper_wrist.metadata()
++        if gripper_wrist is not None else None,
++        "wrist_sampling_rate_hz": 1 / control_dt
++        if gripper_wrist is not None else None,
++        "initial_recorded_wrist_bias": wrist_bias.tolist()
++        if gripper_wrist is not None else None,
+         "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
+         "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
+         "control_rate_hz": hw.control.executor_rate_hz if hw else None,
