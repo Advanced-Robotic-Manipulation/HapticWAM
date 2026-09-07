@@ -1,0 +1,11 @@
+{
+  "pid": 2446729,
+  "at_utc": "2026-09-07T10:20:30.783432+00:00",
+  "command": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v6/launch_after_v5.py",
+    "--execute"
+  ],
+  "script_sha256": "668db24493118a151ae3a48e2ecb5d9cc73abb3afc3df2d78132893f2fc4b1a0",
+  "condition": "v5 complete-valid24confirmation+study_complete+free7799+506filepins; then exactly2frozenlimiterdevelopmentcells"
+}

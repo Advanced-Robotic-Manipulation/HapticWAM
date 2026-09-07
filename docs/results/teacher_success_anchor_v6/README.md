@@ -11,3 +11,5 @@ Report both outcomes, including failures. Inspect acquisition, sustained lift, c
 The v5 screen and confirmation finish first; they use their original immutable source and configuration. No hardware control is authorized by this simulator experiment.
 
 Compact runtime and driver tar archives are available on compute3 under `runs/teacher_success_anchor_v6/reproduction_archives/`. [The archive manifest](reproduction_archives_manifest.json) includes archive hashes and every file hash; both archives were reopened and verified. Checkpoints, recordings and Isaac remain external hash-pinned dependencies.
+
+The reviewed [one-shot launcher](launch_after_v5.py) is waiting as PID2446729 (started10:20:30 UTC); [its launch record](handoff_launcher.json) pins the exact script. It requires v5 `study_complete`, a complete valid24-case confirmation selection, no remaining owned server or port7799 listener, and506 verified files before starting the two diagnostic cells. It refuses existing outputs and performs no retry or process killing.
