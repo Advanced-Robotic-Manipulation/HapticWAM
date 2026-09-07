@@ -244,6 +244,33 @@ def test_condition_start_and_fixed_delivery_must_match_measured_inputs():
     )
 
 
+def test_delivery_feedback_profile_rejects_missing_or_historical_veto_state():
+    audit, design, policy, condition, info, server = audited_runtime()
+    design["adapter_profile"] = {"terminal_veto_feedback_source": "current_delivery"}
+    reason = "effective_terminal_veto_feedback_source_differs_from_campaign"
+    for reported in (None, "request_snapshot_historical"):
+        info["terminal_veto_feedback_source"] = reported
+        assert reason in audit(
+            design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+        )
+    info["terminal_veto_feedback_source"] = "current_delivery"
+    assert audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    ) == []
+
+
+def test_gripper_wrist_profile_is_explicit_and_audited():
+    audit, design, policy, condition, info, server = audited_runtime()
+    design["adapter_profile"] = {"wrist_model": "gripper_contact_proxy"}
+    assert "effective_wrist_model_differs_from_campaign" in audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    )
+    info["wrist_model"] = "gripper_contact_proxy"
+    assert audit(
+        design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None
+    ) == []
+
+
 def test_campaign_commands_apply_variant_and_start_without_moving_packet(tmp_path):
     from argparse import Namespace
 
@@ -554,6 +581,7 @@ def test_campaign_passes_frozen_teacher_sensor_and_release_profile(tmp_path):
     )
     design["adapter_profile"] = {
         "tactile_model": "measured_baseline_proxy",
+        "wrist_model": "gripper_contact_proxy",
         "gel_contact_coverage": "manifold_patch",
         "initial_state": {"path": "/fixtures/initial.json"},
         "tactile_baseline": {"path": "/fixtures/baseline.npz"},
@@ -579,6 +607,7 @@ def test_campaign_passes_frozen_teacher_sensor_and_release_profile(tmp_path):
         None,
     )
     assert cmd[cmd.index("--tactile") + 1] == "measured_baseline_proxy"
+    assert cmd[cmd.index("--wrist") + 1] == "gripper_contact_proxy"
     assert cmd[cmd.index("--policy-initial-state") + 1] == "/fixtures/initial.json"
     assert cmd[cmd.index("--placement-release-config") + 1] == str(
         args.output / "runtime/placement_release.json"

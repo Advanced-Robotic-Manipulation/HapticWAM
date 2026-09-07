@@ -155,7 +155,7 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         "--tactile",
         profile.get("tactile_model", "contact_proxy"),
         "--wrist",
-        "contact_proxy",
+        profile.get("wrist_model", "contact_proxy"),
         "--skip-stage-export",
     ]
     if robot_usd:
