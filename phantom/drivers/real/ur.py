@@ -16,16 +16,17 @@ from __future__ import annotations
 
 import logging
 import math
-import threading
 import sys
+import threading
 import time
 
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
+from phantom.data.derived import rotvec_nearest
+from phantom.drivers import servo_limiter
 from phantom.drivers.base import Arm, ArmState, ServoResult
 from phantom.drivers.real import rig_lease
-from phantom.data.derived import rotvec_nearest
 
 log = logging.getLogger(__name__)
 
@@ -366,94 +367,30 @@ class URArm(Arm):
             return ctrl.getInverseKinematics(pose, list(qref))
         return ctrl.getInverseKinematics(pose)
 
-    def _limit_violation(self, q, qref, dt: float) -> str | None:
-        """Why the IK solution `q` must not be streamed as-is: the elbow would
-        fold under elbow_min_rad (reach boundary) or a joint would have to
-        move faster than servo_joint_speed_max_rad_s in this tick."""
+    def _servo_limits(self) -> servo_limiter.ServoLimits:
         sf = getattr(getattr(self, "hw", None), "safety", None)
-        if sf is None:                    # bare test doubles built via __new__
-            return None
-        emin = getattr(sf, "elbow_min_rad", None)
-        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None)
-        if emin is None and vmax is None:
-            # limiter DISABLED: never engage, not even for an empty IK
-            # solution — that tick must behave exactly as before the
-            # limiter existed (review 09-05, finding 1)
-            return None
-        if not q:
-            return "no_solution"
-        if emin is not None and abs(float(q[2])) < float(emin):
-            return "elbow"
-        if self._speed_violation(q, qref, dt):
-            return "joint_speed"
-        return None
+        return servo_limiter.ServoLimits(
+            elbow_min_rad=getattr(sf, "elbow_min_rad", None),
+            joint_speed_max_rad_s=getattr(sf, "servo_joint_speed_max_rad_s", None),
+            branch_tolerance_rad=self.IK_BRANCH_TOL_RAD,
+            bisection_iterations=self.LIMITER_BISECT,
+            shoulder_height_m=float(getattr(sf, "ur_dh_d1_m", 0.1519)),
+        )
+
+    def _limit_violation(self, q, qref, dt: float) -> str | None:
+        return servo_limiter.limit_violation(q, qref, dt, self._servo_limits())
 
     def _speed_violation(self, q, qref, dt: float) -> bool:
-        sf = getattr(getattr(self, "hw", None), "safety", None)
-        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None) if sf is not None else None
-        if vmax is None or qref is None or dt <= 0 or not q:
-            return False
-        return max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax)
+        return servo_limiter.speed_violation(q, qref, dt, self._servo_limits())
 
     def _feasible(self, q, qref, dt: float) -> bool:
-        if not self._ik_valid(q):
-            return False
-        if qref is not None and max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
-            return False
-        viol = self._limit_violation(q, qref, dt)
-        if viol == "elbow" and qref is not None:
-            # review 09-05 item 2: when the ANCHOR itself already sits below
-            # elbow_min_rad (the 0.468 m stop allows parking there), no
-            # micro-step inside the region is "feasible" and the arm can
-            # never leave — accept any step that moves the elbow OUT.
-            sf = getattr(getattr(self, "hw", None), "safety", None)
-            emin = float(getattr(sf, "elbow_min_rad", 0.0) or 0.0)
-            if (abs(float(qref[2])) < emin
-                    and abs(float(q[2])) > abs(float(qref[2])) + 1e-6
-                    # the escape may never buy elbow progress with a joint
-                    # whip: the speed rule still applies (verify 09-05 #2)
-                    and not self._speed_violation(q, qref, dt)):
-                return True
-        return viol is None
+        return servo_limiter.feasible(q, qref, dt, self._servo_limits())
 
     def _limited_step(self, ctrl, prev: np.ndarray, target: np.ndarray, qref, dt: float):
-        """Largest feasible fraction of the step prev -> target (bisection),
-        then, if that is < 1/2, the same for the step with its radial
-        (shoulder -> TCP) component removed — a slide along the reach sphere
-        instead of a stop. Candidates are compared by ACHIEVED displacement
-        (review 09-05 item 4: a large fraction of a near-zero tangential step
-        used to beat a small fraction of the real step and stall the arm).
-        Returns (pose, q, fraction, mode) or None (hold)."""
-        best = None
-        best_disp = -1.0
-        cands = [("step", target)]
-        sf = getattr(getattr(self, "hw", None), "safety", None)
-        sh = np.array([0.0, 0.0, float(getattr(sf, "ur_dh_d1_m", 0.1519))])
-        r = prev[:3] - sh
-        rn = float(np.linalg.norm(r))
-        if rn > 1e-6:
-            d = target[:3] - prev[:3]
-            tang = target.copy()
-            tang[:3] = prev[:3] + d - r * (float(np.dot(d, r)) / (rn * rn))
-            cands.append(("slide", tang))
-        for mode, tgt in cands:
-            lo, hi, found = 0.0, 1.0, None
-            for _ in range(self.LIMITER_BISECT):
-                mid = 0.5 * (lo + hi)
-                pm = prev + mid * (tgt - prev)
-                qm = self._solve_ik(ctrl, pm, qref)
-                if self._feasible(qm, qref, dt):
-                    found = (pm, list(qm), mid, mode)
-                    lo = mid
-                else:
-                    hi = mid
-            if found is not None:
-                disp = float(np.linalg.norm(found[0][:3] - prev[:3]))
-                if disp > best_disp:
-                    best, best_disp = found, disp
-            if best is not None and best[3] == "step" and best[2] >= 0.5:
-                break
-        return best
+        return servo_limiter.limited_step(
+            lambda pose, seed: self._solve_ik(ctrl, pose, seed),
+            prev, target, qref, dt, self._servo_limits(),
+        )
 
     @staticmethod
     def _ik_valid(q) -> bool:

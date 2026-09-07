@@ -1,0 +1,21 @@
+{
+  "status": "local_opt_in_implementation_CPU_validated_not_simulator_tested",
+  "frozen_running_v5_unchanged": true,
+  "files_sha256": {
+    "phantom/drivers/servo_limiter.py": "41c0c6beebd805dda4d9bf7c66e507491eb1121cdb5cf70a701ce845b37e027f",
+    "phantom/drivers/real/ur.py": "8f56d2cb61068808306cff835d818816762207d2f248966158ffed1e462af313",
+    "tools/sim/run_waffles.py": "91a578e060f1596cecee03aff271bad1ebe5da33b6a399134829826050e43a5f",
+    "tests/test_shared_servo_limiter.py": "30c63672d96a5dbcab276be1cc95cd67cf813937a2d1222be750e0f05aea1171",
+    "tests/fixtures/servo_limiter_native_v1.json": "906b66179ef3da6bf8bccd7259357c9265f67b049c438ebacf377750b4c4b05b",
+    "docs/results/teacher_success_anchor_v5/audit_existing_wrist_limiter.py": "57945b6172af8589cf6fdbfb88fa4e3b1d585d00d510d3bd67ce54c56c281325",
+    "docs/results/teacher_success_anchor_v5/capture_native_servo_fixture.py": "34c53cd33008a757db9713a8fcc21d1db0b4ab90ec18eb80ce63645267a9b2f3",
+    "docs/results/teacher_success_anchor_v5/existing_native_trace_check.json": "0c22396a87d8e21fc87dd34fb8e72f8338f46abebfd65cbe5df3340cb1930cf3",
+    "docs/results/teacher_success_anchor_v5/prospective_servo_limiter.md": "0f621780767dbd9cd5bc534c622d202ed8d286f02897d4eaa14e4f64abecda4f"
+  },
+  "tests": {
+    "sim_environment": "76 passed; one torch-dependent test excluded here",
+    "review_environment": "the excluded torch-dependent native executor test passed separately",
+    "gpu_simulator_runs": 0
+  },
+  "lint": "new helper, runtime hook, new tests and reproducible audit scripts pass Ruff; pre-existing native-driver style findings outside the extraction remain unchanged"
+}

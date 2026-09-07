@@ -68,6 +68,87 @@ def adapter_input(design, condition, field):
     return design.get("adapter_profile", {}).get(field)
 
 
+def servo_reach_limiter_metadata(design):
+    """Frozen opt-in contract; absent/false preserves historical campaigns.
+
+    Constants intentionally belong to the analyzer's versioned contract rather
+    than being imported from the runtime helper it is checking.
+    """
+    enabled = design.get("adapter_profile", {}).get("servo_reach_limiter", False)
+    if not isinstance(enabled, bool):
+        raise TypeError("adapter_profile.servo_reach_limiter must be boolean")
+    if not enabled:
+        return None
+    safety = (
+        design.get("runtime_hardware", {}).get("effective_model", {}).get("safety", {})
+    )
+    for field, value in (
+        ("elbow_min_rad", 0.40),
+        ("servo_joint_speed_max_rad_s", 1.0),
+        ("wrist_extension_stop_m", 0.468),
+        ("ur_dh_d1_m", 0.1519),
+    ):
+        actual = safety.get(field)
+        if isinstance(actual, bool) or actual != value:
+            raise ValueError(
+                f"Servo limiter requires declared hardware {field}={value}"
+            )
+    return {
+        "elbow_min_rad": 0.40,
+        "joint_speed_max_rad_s": 1.0,
+        "branch_tolerance_rad": 0.35,
+        "bisection_iterations": 3,
+        "shoulder_height_m": 0.1519,
+        "algorithm": "shared_native_bisection_slide_v1",
+        "measured_wrist_extension_stop_m": 0.468,
+        "consecutive_reject_limit": 25,
+        "tracking_guarantee": False,
+    }
+
+
+def servo_reach_limiter_audit(design, info, run):
+    try:
+        expected = servo_reach_limiter_metadata(design)
+    except (TypeError, ValueError):
+        return ["servo_reach_limiter_campaign_contract_invalid"]
+    reported = info.get("servo_reach_limiter")
+    if expected is None:
+        if any(
+            value is not None and value is not False
+            for value in (reported, run.get("servo_reach_limiter"))
+        ):
+            return ["undeclared_servo_reach_limiter"]
+        return []
+    if not isinstance(reported, dict):
+        return ["missing_or_invalid_servo_reach_limiter_metadata"]
+    numeric_fields = (
+        "elbow_min_rad",
+        "joint_speed_max_rad_s",
+        "branch_tolerance_rad",
+        "shoulder_height_m",
+        "measured_wrist_extension_stop_m",
+    )
+    if (
+        reported != expected
+        or reported.get("tracking_guarantee") is not False
+        or any(isinstance(reported.get(field), bool) for field in numeric_fields)
+        or type(reported.get("bisection_iterations")) is not int
+        or type(reported.get("consecutive_reject_limit")) is not int
+    ):
+        return ["effective_servo_reach_limiter_differs_from_campaign"]
+    # A supplied run-level copy must agree too. Historical scorers required only
+    # policy_info; do not invent a missing-file requirement for old recordings.
+    if "servo_reach_limiter" in run:
+        run_copy = run["servo_reach_limiter"]
+        if (
+            not isinstance(run_copy, dict)
+            or {k: v for k, v in run_copy.items() if k != "final_consecutive_rejects"}
+            != expected
+        ):
+            return ["run_servo_reach_limiter_differs_from_campaign"]
+    return []
+
+
 def load_design(path):
     design = json.loads(Path(path).read_text())
     if design.get("status") != "frozen":
@@ -91,6 +172,7 @@ def load_design(path):
     latency = design.get("delivery_latency_s")
     if latency is not None and (not np.isfinite(latency) or latency < 0):
         raise ValueError("delivery_latency_s must be finite and nonnegative")
+    servo_reach_limiter_metadata(design)
     return design, fingerprint(path)
 
 
@@ -164,6 +246,7 @@ def read_rows(path):
 def runtime_audit(design, policy, condition, info, server, run, times, stop):
     """Reject recipe drift and incomplete time coverage before outcome scoring."""
     reasons = []
+    reasons.extend(servo_reach_limiter_audit(design, info, run))
     settings = policy_settings(design, policy)
     expected = {
         "nfe": settings["nfe"],
@@ -207,9 +290,11 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
         reasons.append("effective_delivery_latency_override_differs_from_campaign")
     profile = design.get("adapter_profile", {})
     veto = profile.get("terminal_veto", False)
-    if "terminal_veto_feedback_source" in profile and info.get(
-        "terminal_veto_feedback_source"
-    ) != profile["terminal_veto_feedback_source"]:
+    if (
+        "terminal_veto_feedback_source" in profile
+        and info.get("terminal_veto_feedback_source")
+        != profile["terminal_veto_feedback_source"]
+    ):
         reasons.append("effective_terminal_veto_feedback_source_differs_from_campaign")
     for field, expected_value in (
         ("planner_stall_watchdog", True),
@@ -220,7 +305,12 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     ):
         if info.get(field) != expected_value:
             reasons.append(f"effective_{field}_differs_from_campaign")
-    if profile or condition.get("initial_state"):
+    # Adding only the new default-off declaration must not activate older
+    # optional-profile checks that historically did not apply to that design.
+    legacy_profile = {
+        key: value for key, value in profile.items() if key != "servo_reach_limiter"
+    }
+    if legacy_profile or condition.get("initial_state"):
         for field in (
             "placement_release",
             "gel_contact_coverage",

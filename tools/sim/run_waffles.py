@@ -95,6 +95,11 @@ def arguments():
     )
     p.add_argument("--ignore-episode-overrides", action="store_true")
     p.add_argument("--max-play-steps", type=int, default=10)
+    p.add_argument(
+        "--servo-reach-limiter",
+        action="store_true",
+        help="Separate policy diagnostic: existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety thresholds stay unchanged",
+    )
     p.add_argument("--observation-delay-s", type=float, default=0.0)
     p.add_argument("--inference-delay-add-s", type=float, default=0.0)
     p.add_argument(
@@ -178,6 +183,29 @@ def measured_tcp_twist(previous, current, dt):
         Rotation.from_rotvec(current[3:]) * Rotation.from_rotvec(previous[3:]).inv()
     ).as_rotvec() / dt
     return np.r_[(current[:3] - previous[:3]) / dt, angular]
+
+
+def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejects):
+    """Report the accepted joint target, or a bounded ordinary controller stop.
+
+    CPU-testable feedback boundary. A stall preserves grip and enters the same
+    stopped-tick handling/observation tail as other controller stops.
+    """
+    from phantom.sim.kinematics import forward_pose
+
+    if selection.accepted:
+        achieved = forward_pose(selection.q)
+        adapter.report_execution(
+            t, accepted=True, tcp_pose=achieved, gripper_command=gripper_command
+        )
+        return achieved, 0
+    rejects += 1
+    if rejects >= 25:
+        adapter.request_stop("servo_limiter_stall")
+    adapter.report_execution(
+        t, accepted=False, gripper_command=gripper_command, reason=selection.reason
+    )
+    return None, rejects
 
 
 def apply_episode_overrides(hw, overrides):
@@ -366,6 +394,8 @@ class PolicyAudit:
 
 def main():
     args = arguments()
+    if args.servo_reach_limiter and args.mode != "policy":
+        raise ValueError("--servo-reach-limiter is only supported in policy mode")
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
@@ -850,6 +880,8 @@ def run(app, args, cfg, data, duration):
         )
     pending_execution = None
     hw = None
+    servo_reach_limits = None
+    servo_limiter_rejects = 0
     policy_ready_t = None
     next_tactile_t = 0.0
     tactile_sample = None
@@ -1018,6 +1050,22 @@ def run(app, args, cfg, data, duration):
                 else manifest.get("meta", {}).get("deploy_overrides", {})
             )
             hw = apply_episode_overrides(hw, overrides)
+            if args.servo_reach_limiter:
+                from phantom.drivers.servo_limiter import ServoLimits
+
+                # Historical opt-in native values. Keep the measured stop and
+                # all other hardware fields unchanged; no task geometry enters.
+                hw = hw.model_copy(
+                    update={
+                        "safety": hw.safety.model_copy(
+                            update={
+                                "elbow_min_rad": 0.40,
+                                "servo_joint_speed_max_rad_s": 1.0,
+                            }
+                        )
+                    }
+                )
+                servo_reach_limits = ServoLimits(0.40, 1.0)
             control_dt = 1 / hw.control.executor_rate_hz
             if dt > control_dt + 1e-9:
                 raise ValueError(
@@ -1129,6 +1177,19 @@ def run(app, args, cfg, data, duration):
                         "hardware_effective": hw.model_dump(mode="json"),
                         "max_play_steps": args.max_play_steps,
                         "planner_stall_watchdog": True,
+                        **(
+                            {
+                                "servo_reach_limiter": {
+                                    **asdict(servo_reach_limits),
+                                    "algorithm": "shared_native_bisection_slide_v1",
+                                    "measured_wrist_extension_stop_m": hw.safety.wrist_extension_stop_m,
+                                    "consecutive_reject_limit": 25,
+                                    "tracking_guarantee": False,
+                                }
+                            }
+                            if servo_reach_limits is not None
+                            else {}
+                        ),
                         "terminal_veto": terminal_veto_spec or False,
                         "terminal_veto_feedback_source": terminal_veto.feedback_source(
                             adapter
@@ -1316,6 +1377,52 @@ def run(app, args, cfg, data, duration):
                     # stop so the fixed settling criterion can be evaluated.
                     # The common trial horizon still bounds the observation.
                     terminal_until = min(t + 2.0, duration)
+                elif servo_reach_limits is not None:
+                    from phantom.drivers.servo_limiter import select_servo_step
+
+                    def nominal_servo_ik(pose, seed):
+                        result = inverse_kinematics(
+                            pose, seed, max_joint_delta_rad=0.35
+                        )
+                        # Return a converged off-branch solution so the shared
+                        # selector explicitly rejects it before any shortening.
+                        return (
+                            result.q.tolist()
+                            if result.success or result.reason == "branch_guard"
+                            else []
+                        )
+
+                    selection = select_servo_step(
+                        command.tcp_pose,
+                        forward_pose(desired[ids]),
+                        desired[ids].tolist(),
+                        control_dt,
+                        nominal_servo_ik,
+                        servo_reach_limits,
+                    )
+                    pending_execution.update(
+                        ik_success=selection.accepted,
+                        ik_reason=selection.reason,
+                        servo_reach_limiter={
+                            "mode": selection.mode,
+                            "violation": selection.violation,
+                            "fraction": selection.fraction,
+                            "ik_calls": selection.ik_calls,
+                        },
+                    )
+                    if selection.accepted:
+                        desired[ids] = selection.q
+                    else:
+                        events.append(
+                            {"t": t, "event": "ik_rejected", "reason": selection.reason}
+                        )
+                    achieved, servo_limiter_rejects = report_servo_limiter_execution(
+                        adapter, t, selection, command.gripper, servo_limiter_rejects
+                    )
+                    pending_execution["accepted_tcp"] = achieved
+                    pending_execution["servo_reach_limiter"]["consecutive_rejects"] = (
+                        servo_limiter_rejects
+                    )
                 else:
                     ik = inverse_kinematics(
                         command.tcp_pose, desired[ids], max_joint_delta_rad=0.35
@@ -1629,6 +1736,20 @@ def run(app, args, cfg, data, duration):
         "policy_stop_reason": adapter.stopped_reason if adapter else None,
         "policy_completed_reason": getattr(adapter, "completed_reason", None),
         "policy_completion_is_task_success": False,
+        **(
+            {
+                "servo_reach_limiter": {
+                    **asdict(servo_reach_limits),
+                    "algorithm": "shared_native_bisection_slide_v1",
+                    "measured_wrist_extension_stop_m": hw.safety.wrist_extension_stop_m,
+                    "consecutive_reject_limit": 25,
+                    "final_consecutive_rejects": servo_limiter_rejects,
+                    "tracking_guarantee": False,
+                }
+            }
+            if servo_reach_limits is not None
+            else {}
+        ),
         "post_stop_observation_s": 2.0 if adapter else None,
         "record_packet_support": args.record_packet_support,
         "record_gel_contacts": args.record_gel_contacts,
