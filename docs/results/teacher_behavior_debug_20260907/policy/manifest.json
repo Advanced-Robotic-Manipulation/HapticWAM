@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "files": {
+    "README.md": {
+      "sha256": "b30842aa71f366584c6f64e51c9274b55d0add1b3342bef00af526eaed8ca210",
+      "bytes": 11758
+    },
+    "audit.json": {
+      "sha256": "60222d274b0ccf99d852c760b4dc55531803c2e110f3d21dcca703866fc63733",
+      "bytes": 2189885
+    },
+    "audit_policy.py": {
+      "sha256": "74c0d190596a2d4d25f7d5f62aab955ebb962c86a7f51a5de1867d60755b8b16",
+      "bytes": 19069
+    },
+    "audit_selector.py": {
+      "sha256": "c99feeb4bd138a559caa2b2c7e77efd5d555d162dd30dbf30f7d056668b234c6",
+      "bytes": 3946
+    },
+    "selector_cpu_checks.json": {
+      "sha256": "7c861c093c730acf6186e980690255cd8f069e39dde604cb2a3614c668cd90e0",
+      "bytes": 1789
+    },
+    "source_provenance.json": {
+      "sha256": "70b947c058b2df921d7987dace6093580ee04d2e1237055f15e6b49cb011c9bf",
+      "bytes": 2996
+    }
+  },
+  "verification": {
+    "json_parsing": "passed",
+    "cases": 16,
+    "proposals": 552,
+    "deliveries": 537,
+    "native_source_matches_saved_server_hashes": true,
+    "translation_rows": 39264,
+    "translation_max_error_m": 1.2310699809033251e-08,
+    "gripper_max_error": 0,
+    "selector_cpu_checks_passed": 3,
+    "source_or_run_mutations": "none"
+  }
+}

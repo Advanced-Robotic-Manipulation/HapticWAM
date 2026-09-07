@@ -1,0 +1,60 @@
+{
+  "policy_source": "phantom/inference/policy.py",
+  "policy_sha256": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+  "selected_method_lines": [
+    196,
+    234
+  ],
+  "cpu_only_checks": {
+    "low_contact_descent_prefilter": {
+      "passed": true,
+      "diagnostics": {
+        "k_seeds": 4,
+        "head_dz_mm": [
+          9.0,
+          27.0,
+          4.5,
+          -9.0
+        ],
+        "head_dz_spread_mm": 36.0,
+        "k_rejected": 3,
+        "k_pick": 1
+      }
+    },
+    "expired_reference_still_selects_last_row_match": {
+      "passed": true,
+      "last_reference_time_s": 1.5,
+      "new_grid_start_s": 5.0,
+      "picked": 1,
+      "diagnostics": {
+        "k_seeds": 2,
+        "head_dz_mm": [
+          -0.0,
+          -0.0
+        ],
+        "head_dz_spread_mm": 0.0,
+        "k_rejected": 0,
+        "k_pick": 1
+      },
+      "interpretation": "Reproduces a source behavior on synthetic values; cohort occurrence checked separately, not asserted."
+    },
+    "metres_and_radians_have_unweighted_numerical_l2": {
+      "passed": true,
+      "picked": 0,
+      "diagnostics": {
+        "k_seeds": 2,
+        "head_dz_mm": [
+          -0.0,
+          -0.0
+        ],
+        "head_dz_spread_mm": 0.0,
+        "k_rejected": 0,
+        "k_pick": 0
+      },
+      "candidate0_increment": "20mm translation, zero rotation per step",
+      "candidate1_increment": "zero translation, .03rad rotation per step",
+      "interpretation": "Documents implicit unit weighting; does not establish which physical trajectory is preferable."
+    }
+  },
+  "unidentifiable_from_saved_cohort": "All nonselected candidate XYZ/rotation/gripper arrays and candidate feasibility scores are absent; only selected actions and per-K nine-step descent are saved."
+}

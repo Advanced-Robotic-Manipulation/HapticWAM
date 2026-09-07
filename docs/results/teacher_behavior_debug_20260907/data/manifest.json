@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "scope": "CPU evidence only; source recordings and all scored studies unchanged",
+  "validation": "All three helpers parse; Ruff passes; all JSON valid;10full/240excluded coverage,checkpoint identity,source hash agreement and orderedphase checks pass",
+  "files": {
+    "README.md": {
+      "sha256": "7c3d2041aa980d5d4f52251e4e9caf0f2d104672311c3af30a9fcc6ef1c34111",
+      "bytes": 12745
+    },
+    "audit_demonstrations.py": {
+      "sha256": "ae79deedbd76bca9f1dc3d5c43290604974ece55ce01bad3298d78767cabf4d1",
+      "bytes": 12190
+    },
+    "audit_training_windows.py": {
+      "sha256": "6c5f512f12d6c7b59ddd02067d7ba4efa0d5c17d8df02b2380676c5db271f639",
+      "bytes": 3447
+    },
+    "demonstration_audit.json": {
+      "sha256": "302885ff097c07c9f529107387c13759f65f52aa3db54b2e7d61eddbd8cf85ab",
+      "bytes": 1154006
+    },
+    "demonstrations.csv": {
+      "sha256": "81312255b890d1a5f2a347f14ab6d51ac9acad9cac73998a270a068c43ef4b40",
+      "bytes": 6683
+    },
+    "source_contracts.json": {
+      "sha256": "bdccc9d07c975f0c4b3bd5b9fcebe378a88b5af57298c7d9e9bac3a0e93e5362",
+      "bytes": 1218
+    },
+    "summarize_audit.py": {
+      "sha256": "7e064dfe34e1cc9a5fb3eea3666195cb2d4ecb2b260a5bb329a9f2f9732eebfa",
+      "bytes": 5443
+    },
+    "summary.json": {
+      "sha256": "ca5b5c51090fbf7eef06a193e1ee212329c56beed5c57702b6caba584a16d10a",
+      "bytes": 38494
+    },
+    "training_window_audit.json": {
+      "sha256": "2963a4e4f531199d3818174adbcfd9fab11668d08047141d1289f922036539cf",
+      "bytes": 7500
+    }
+  }
+}

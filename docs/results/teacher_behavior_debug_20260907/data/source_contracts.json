@@ -1,0 +1,16 @@
+{
+  "scope": "Current live source contract, not recovered training checkout",
+  "files": {
+    "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+    "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+    "phantom/config/hardware.py": "aba922446ebbef60209273475a5ed8867edebb21148d1130653bf6261a51ee63",
+    "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+    "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+    "phantom/data/windows.py": "a5481deb6f4492d2aecc2abd8dd98edc6b10d2dd8f1b426133fc5119f454e3d2",
+    "phantom/data/derived.py": "90338e8e9bc821a78eb86cf27b588d4bd0db5ca910e5fe98692d991a2df29494",
+    "phantom/data/schema.py": "5b95795682596cfc7a53c3bcf18a1b8814f99323762bda43e516dd757ca89951",
+    "phantom/deploy/executor.py": "3de47ff62b26d7d60b5a2e3dd8ae057611949100d42427a126acc232c8b10df0",
+    "docs/project_review_20260905_remote.md": "23b41d83cfbdc24b5bbfb3f39f995add57e4d050718a83334d918365cdea3549",
+    "docs/review_20260905/provenance.json": "a4e3f638436fa17f7651c340b641a2858960e7ebdc97240fd27010bd3f81db43"
+  }
+}

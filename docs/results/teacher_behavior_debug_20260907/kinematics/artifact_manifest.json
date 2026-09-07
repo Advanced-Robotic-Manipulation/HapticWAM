@@ -1,0 +1,44 @@
+{
+  "scope": "CPU diagnostic artifacts; no frozen raw or score mutations",
+  "files": {
+    "README.md": {
+      "sha256": "57cb41bc603c0656b059ecabc522282038722b35e5521807245acc404f2b1508",
+      "bytes": 9635
+    },
+    "audit_kinematics.py": {
+      "sha256": "b9adf8edc85aeb51f9c7a7fb066ce9bebded91e1ade8604f0586fd9dec0cdde9",
+      "bytes": 19016
+    },
+    "critical_turns.json": {
+      "sha256": "181363a87fa7809ccd329f2bcb1e41e7a934043191ff26be5b9ea6709cb2d8e3",
+      "bytes": 30701
+    },
+    "critical_turns.py": {
+      "sha256": "7df4f779d20be3eb29dd928cffde268b7a2c419c0797eafaa9bcb624743381bd",
+      "bytes": 3560
+    },
+    "kinematics_audit.json": {
+      "sha256": "882a3603dc980d5c375f207d8e4cc4ae9f26a07096ee812bdf76c187cd02468c",
+      "bytes": 425577
+    },
+    "plot_samples.json": {
+      "sha256": "0d8680c183dda5adeb1fe5f6834a73634fb63161554577eb56c14208f3d3e626",
+      "bytes": 517959
+    },
+    "trajectory_comparison.pdf": {
+      "sha256": "ce64815509654452a92e14da59de844af34b638457609932ce722280ac846a90",
+      "bytes": 78435
+    },
+    "trajectory_comparison.png": {
+      "sha256": "1351c126f381256f613c427cd3033e2b8787d4600d9176896861f80c80f6431d",
+      "bytes": 442833
+    }
+  },
+  "validation": {
+    "cases": 14,
+    "nominal_ik_paths_complete_inside_radius": 28,
+    "readme_links_resolve": true,
+    "helpers_compile": true,
+    "ruff": "passed"
+  }
+}
