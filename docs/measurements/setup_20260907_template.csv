@@ -1,6 +1,8 @@
 quantity,simulation_estimate,unit,measured_value,uncertainty,coordinate_datum,method_or_instrument,notes
 table_top_z,53,mm,,,UR controller base origin,,Verify origin relative to mounting plate
 mounting_plate_thickness,,mm,,,physical mounting surface,,
+table_hole_pitch,40,mm,,,table plane,,Measure across several intervals and divide
+mat_grid_pitch,50,mm,,,mat plane,,Measure across several intervals and divide
 TCP_offset_tool_z,180,mm,,,tool flange,,Read active TCP configuration and independently check geometry
 pad_active_face_left_position_x,,mm,,,tool flange,,
 pad_active_face_left_position_y,,mm,,,tool flange,,
