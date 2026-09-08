@@ -36,7 +36,19 @@ case $p in
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
-read -p "episodes [3]: " EPS; EPS=${EPS:-3}
+read -p "episodes [1]: " EPS; EPS=${EPS:-1}
+# Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
+# (sampler noise + start jitter both come from it). The last cell used is
+# remembered per day, so the second arm of a cell just presses Enter; type
+# the next number when the placement changes. (09-07: 43 episodes, 43 seeds,
+# 0 pairs — the operator was left to type --seed by hand.)
+CELLF=$BASE/.pick_cell_$(date +%Y%m%d); LAST=$(cat "$CELLF" 2>/dev/null || echo 0)
+read -p "cell number [last used: ${LAST:-none}; Enter = same cell, i.e. the OTHER arm]: " CELL
+CELL=${CELL:-$LAST}
+[[ "$CELL" =~ ^[0-9]+$ ]] && [ "$CELL" -ge 1 ] || { echo "cell must be a positive integer (start at 1)"; exit 1; }
+echo "$CELL" > "$CELLF"
+SEED=$((100 + CELL))
+EXTRA="$EXTRA --seed $SEED"
 read -p "append flags (Enter for none): " MORE
 [ -n "$MORE" ] && EXTRA="$EXTRA $MORE"
 
@@ -81,9 +93,9 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
 fi
 
 echo
-echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | nfe=$NFE | extra: [$EXTRA]"
-echo ">> reminders: PAIR the arms: same --seed <cell#> on BOTH arms of a cell (the append-flags prompt), new number per cell;"
-echo ">>            never reuse one seed across cells; interleave arms within each grid cell;"
+echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | CELL $CELL (seed $SEED) | nfe=$NFE | extra: [$EXTRA]"
+echo ">> reminders: both arms of cell $CELL share seed $SEED (same placement!); type the next cell number when the placement changes;"
+echo ">>            a censored end (control_lost / servo_hold_timeout / servo_branch_fault) = re-run this cell, same number;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
 echo ">>            during an episode: type  x  + Enter to end it cleanly (motion stops, gripper stays);"
 echo ">>            a bare Enter is IGNORED (stray newlines ended 5 episodes on 09-04)."
