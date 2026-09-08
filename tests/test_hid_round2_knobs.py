@@ -111,3 +111,26 @@ def test_teacher_nfe_knob_selects_the_sampling_steps(pair_and_batch, monkeypatch
         # (the ACC two-pass path issues its own sample() later in the step)
         got.append(seen[0])
     assert got == [max(1, teacher.rf.mc.nfe // 2), teacher.rf.mc.nfe, 3]
+
+
+def test_distill_cli_accepts_ckpt_and_eval_cadence():
+    """`--ckpt-every/--eval-every` reach HIDConfig through apply_overrides and
+    are clipped to --max-steps (the v6 rental runner selects the best student
+    from 500-step checkpoints; before 2026-09-08 distill_hid rejected the flags)."""
+    import argparse
+    from phantom.train import distill_hid as DH
+    from phantom.train.train_teacher import apply_overrides
+    ap = argparse.ArgumentParser()
+    DH.add_common_args(ap)
+    ap.add_argument("--ckpt-every", type=int, default=None)
+    ap.add_argument("--eval-every", type=int, default=None)
+    args = ap.parse_args(["--max-steps", "2000", "--ckpt-every", "500", "--eval-every", "500"])
+    cfg = apply_overrides(HIDConfig(), args)
+    assert cfg.ckpt_every == 500 and cfg.eval_every == 500
+    args = ap.parse_args(["--max-steps", "300", "--ckpt-every", "500"])
+    assert apply_overrides(HIDConfig(), args).ckpt_every == 300
+    # the real parser exposes both flags
+    import subprocess, sys
+    out = subprocess.run([sys.executable, "-m", "phantom.train.distill_hid", "--help"],
+                         capture_output=True, text=True).stdout
+    assert "--ckpt-every" in out and "--eval-every" in out

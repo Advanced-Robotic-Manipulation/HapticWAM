@@ -197,6 +197,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     add_common_args(ap)
     ap.add_argument("--teacher-ckpt", default="")
+    ap.add_argument("--ckpt-every", type=int, default=None,
+                    help="checkpoint cadence (default 1000; clipped to --max-steps)")
+    ap.add_argument("--eval-every", type=int, default=None,
+                    help="val cadence (default 1000; clipped to --max-steps)")
     ap.add_argument("--dagger-round", type=int, default=0)
     ap.add_argument("--extra-data", nargs="*", default=[],
                     help="additional episode roots (DAgger rollouts)")
