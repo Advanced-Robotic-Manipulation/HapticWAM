@@ -1,5 +1,11 @@
 # Rig session — how to run inference on compute3 (Session 6: teachers vs sensor-free students)
 
+> **8 September teacher-only update:** For the fixed ftA1500 inference requested
+> for the next lab session, use [the current main quickstart](rig_teacher_fixed_inference.md)
+> and [teacher handoff](isaac_lab_handoff_20260907.md). They explicitly enable the
+> bounded hold and minimal_v5 release. The multi-model session recipes below
+> remain separate; their menu defaults do not select that controller candidate.
+
 ## 🎯 SESSION 6 (2026-09-07): teachers vs SENSOR-FREE students — read this first
 
 Seven models are on the box and on the `./PICK.sh` / `./SERVE.sh` menu. Ports follow

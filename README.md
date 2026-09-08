@@ -19,7 +19,7 @@ untouched. An 8×H100 cloud run is a possible later upgrade, not an
 assumption. Sensor SDK facts (verified from the vendor package):
 [docs/sensor_sdk.md](docs/sensor_sdk.md).
 
-The [Isaac Sim waffles environment and experiment handoff](docs/isaac_sim.md) provides measured-motion replay, policy rollouts, published pick-to-box results and the 7 September lab protocol.
+The [Isaac Sim waffles environment](docs/isaac_sim.md) provides measured-motion replay, policy rollouts, calibrated D435 geometry and published pick-to-box results. Use the [fixed teacher inference handoff](docs/rig_teacher_fixed_inference.md) for the current main-based lab commands.
 
 ## Two files you configure, nothing else
 
