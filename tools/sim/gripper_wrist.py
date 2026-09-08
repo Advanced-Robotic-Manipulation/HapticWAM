@@ -1,4 +1,4 @@
-"""Explicit idealized wrist input from three gripper bodies' external contacts.
+"""Explicit idealized wrist input from declared gripper bodies' external contacts.
 
 The reused contact reader exposes signed PhysX normal impulses and exact world
 contact points. This wrapper, unlike its diagnostic-only reader, supplies a
@@ -16,7 +16,7 @@ from tools.sim.robot_environment_contacts import (
 )
 
 
-def gripper_actor_paths(housing_path, pad_paths):
+def gripper_actor_paths(housing_path, pad_paths, *, additional_actor_paths=()):
     paths, _ = _validate_paths([housing_path, *pad_paths], ENVIRONMENT_PATHS)
     if len(paths) != 3 or {p.rsplit("/", 1)[-1] for p in paths} != {
         "gripper_housing",
@@ -26,10 +26,16 @@ def gripper_actor_paths(housing_path, pad_paths):
         raise ValueError("wrist proxy requires exactly housing, left_pad and right_pad")
     if not paths[0].endswith("/gripper_housing"):
         raise ValueError("first wrist actor must be gripper_housing")
-    return paths
+    additional = list(additional_actor_paths)
+    if any(not p.startswith(housing_path + "/") for p in additional):
+        raise ValueError("additional wrist actors must belong to the mounted gripper")
+    complete, _ = _validate_paths([*paths, *additional], ENVIRONMENT_PATHS)
+    return complete
 
 
-def aggregate_gripper_wrench(report, actor_paths, tcp_pose, recorded_bias):
+def aggregate_gripper_wrench(
+    report, actor_paths, tcp_pose, recorded_bias, *, additional_actor_paths=()
+):
     """Sum signed F and (world contact point - measured TCP) cross F once.
 
     Proximal actors in a larger diagnostic report are deliberately excluded.
@@ -37,7 +43,9 @@ def aggregate_gripper_wrench(report, actor_paths, tcp_pose, recorded_bias):
     Forces and moments stay in world/base axes, matching the old proxy's axis
     convention. The recorded six-channel baseline is added unchanged.
     """
-    actors = gripper_actor_paths(actor_paths[0], actor_paths[1:])
+    actors = gripper_actor_paths(
+        actor_paths[0], actor_paths[1:], additional_actor_paths=additional_actor_paths
+    )
     tcp = np.asarray(tcp_pose, dtype=float)
     bias = np.asarray(recorded_bias, dtype=float)
     if (
@@ -108,8 +116,12 @@ def aggregate_gripper_wrench(report, actor_paths, tcp_pose, recorded_bias):
 class GripperContactWrist:
     """Construct before World.reset; initialize after reset; sample control-rate."""
 
-    def __init__(self, housing_path, pad_paths, *, rigid_prim_cls=None):
-        self.actor_paths = gripper_actor_paths(housing_path, pad_paths)
+    def __init__(
+        self, housing_path, pad_paths, *, rigid_prim_cls=None, additional_actor_paths=()
+    ):
+        self.actor_paths = gripper_actor_paths(
+            housing_path, pad_paths, additional_actor_paths=additional_actor_paths
+        )
         self.reader = RobotEnvironmentContactViews(
             self.actor_paths, rigid_prim_cls=rigid_prim_cls
         )
@@ -120,7 +132,8 @@ class GripperContactWrist:
     def sample(self, tcp_pose, recorded_bias, physics_dt):
         report = self.reader.get_all(physics_dt)
         value, record = aggregate_gripper_wrench(
-            report, self.actor_paths, tcp_pose, recorded_bias
+            report, self.actor_paths[:3], tcp_pose, recorded_bias,
+            additional_actor_paths=self.actor_paths[3:]
         )
         record.update(physics_dt_s=float(physics_dt), api_dt_argument=1.0)
         return value, record

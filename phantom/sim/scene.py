@@ -1,8 +1,9 @@
 """Build the evidence-based waffles bench in USD/PhysX (import inside Isaac).
 
 Official UR3 geometry is imported from the pinned, locally vendored URDF.
-The custom tactile gripper uses two driven sliding pads: its contact geometry
-and compliance are explicit approximations, not a Robotiq linkage calibration.
+Historical scenes retain their estimated sliding pads. The opt-in W2L model
+uses supplier sensor CAD attached to a shared articulated finger mechanism.
+Mounted registration and contact compliance remain explicitly qualified.
 """
 
 from __future__ import annotations
@@ -68,6 +69,15 @@ def gripper_urdf(source: Path, destination: Path, cfg: dict) -> Path:
     root.find("joint[@name='base_joint']/origin").set("rpy", f"0 0 {math.pi}")
     for mesh in root.findall(".//mesh"):
         mesh.set("filename", str((source.parent / mesh.get("filename")).resolve()))
+
+    from phantom.sim.gripper_articulation import is_articulated, append_gripper_urdf
+
+    if is_articulated(cfg):
+        append_gripper_urdf(root, Path(__file__).resolve().parents[2], cfg)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        ET.indent(tree, space="  ")
+        tree.write(destination, encoding="utf-8", xml_declaration=True)
+        return destination
 
     def link(name, mass, size, color, xyz=(0, 0, 0), mesh_path=None):
         l = ET.SubElement(root, "link", name=name)
@@ -568,6 +578,10 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     joint_paths = {}
     pad_paths = []
     tool_path = None
+    housing_path = None
+    from phantom.sim.gripper_articulation import is_articulated, configure_gripper_physics
+
+    articulated = is_articulated(cfg)
     for prim in Usd.PrimRange(robot):
         name = prim.GetName()
         if prim.IsA(UsdShade.Material):
@@ -595,7 +609,7 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
                 ma = UsdPhysics.MassAPI.Apply(prim)
                 ma.CreateMassAttr(0.00001)
                 ma.CreateDiagonalInertiaAttr(Gf.Vec3f(0.0000001))
-        if name in ("left_finger_joint", "right_finger_joint"):
+        if not articulated and name in ("left_finger_joint", "right_finger_joint"):
             drive = UsdPhysics.DriveAPI.Apply(prim, "linear")
             drive.CreateStiffnessAttr(cfg["physics"]["finger_stiffness"])
             drive.CreateDampingAttr(cfg["physics"]["finger_damping"])
@@ -605,11 +619,17 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             joint_paths[name] = str(prim.GetPath())
         if name == "tool0" and prim.IsA(UsdGeom.Xform):
             tool_path = str(prim.GetPath())
+        if name == "gripper_housing" and prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            housing_path = str(prim.GetPath())
         if name in ("left_pad", "right_pad") and prim.HasAPI(UsdPhysics.RigidBodyAPI):
             pad_paths.append(str(prim.GetPath()))
             for child in Usd.PrimRange(prim):
                 if child.HasAPI(UsdPhysics.CollisionAPI):
                     collider(child, pad_phys)
+            if articulated:
+                # CAD sensor/adapter bodies already exist in the articulated
+                # URDF. Never add the old backing, shell or hidden linkage.
+                continue
             # Tactile electronics backing, sensor cap, linkage and visible screws.
             base = str(prim.GetPath())
             sgn = 1 if name == "left_pad" else -1
@@ -652,6 +672,23 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
                 [0.003, 0.015, 0.028],
                 yellow,
             )
+    pad_paths.sort(key=lambda p: (0 if p.rsplit("/", 1)[-1] == "left_pad" else 1))
+    if len(pad_paths) != 2 or housing_path is None:
+        raise RuntimeError("Expected gripper housing and two named pad rigid bodies")
+    gripper_body_paths = [
+        str(p.GetPath()) for p in Usd.PrimRange(stage.GetPrimAtPath(housing_path))
+        if p.HasAPI(UsdPhysics.RigidBodyAPI)
+    ]
+    articulation_report = None
+    if articulated:
+        for p in Usd.PrimRange(stage.GetPrimAtPath(housing_path)):
+            if not p.HasAPI(UsdPhysics.CollisionAPI):
+                continue
+            gel_body = any(str(p.GetPath()).startswith(pad + "/") for pad in pad_paths)
+            collider(p, pad_phys if gel_body else table_phys)
+            if p.IsA(UsdGeom.Mesh):
+                UsdPhysics.MeshCollisionAPI.Apply(p).CreateApproximationAttr("convexHull")
+        articulation_report = configure_gripper_physics(stage, joint_paths, cfg)
     # Estimated cable coil on bench, native curve geometry.
     curve = UsdGeom.BasisCurves.Define(stage, "/World/CableCoil")
     pts = []
@@ -682,6 +719,9 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
         "robot_path": "/World/Robot",
         "tool_path": tool_path,
         "pad_paths": pad_paths,
+        "gripper_housing_path": housing_path,
+        "gripper_body_paths": gripper_body_paths,
+        "gripper_articulation": articulation_report,
         "joint_paths": joint_paths,
         "waffle_path": "/World/Waffle",
     }

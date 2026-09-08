@@ -443,6 +443,13 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
+    from phantom.sim.gripper_articulation import is_articulated
+
+    if is_articulated(cfg) and args.mode == "command_replay":
+        raise ValueError(
+            "Legacy command traces contain prismatic jaw metres; use measured "
+            "replay, dynamics, contact_probe or policy for the articulated W2L gripper"
+        )
     if args.render_hz is not None:
         if args.render_hz <= 0:
             raise ValueError("render-hz must be positive")
@@ -514,6 +521,12 @@ def run(app, args, cfg, data, duration):
         inverse_kinematics,
     )
     from phantom.sim.scene import build_scene, import_robot
+    from phantom.sim.gripper_articulation import (
+        is_articulated, finger_joint_names, joint_targets,
+        closure_from_joint_positions, finger_drive_type,
+    )
+
+    articulated_gripper = is_articulated(cfg)
 
     dt = cfg["physics"]["dt"]
     fps = cfg["physics"]["render_hz"]
@@ -527,21 +540,21 @@ def run(app, args, cfg, data, duration):
     paths = build_scene(stage, REPO, args.output, cfg, robot_usd)
     from phantom.sim.gripper_visual import build as build_gripper_visual
 
-    gripper_visual = build_gripper_visual(
-        stage,
-        paths["tool_path"],
-        REPO / "assets/sim/robotiq",
-        yaw_rad=-np.pi / 2 + cfg["gripper"].get("yaw", 0),
-        pad_touch_command=cfg["gripper"]["pad_touch_command"],
-    )
-    housing = stage.GetPrimAtPath(paths["tool_path"] + "/gripper_housing")
-    for child in housing.GetChildren():
-        if child.GetName().lower() in ("visual", "visuals") or (
-            child.IsA(UsdGeom.Gprim) and not child.HasAPI(UsdPhysics.CollisionAPI)
-        ):
-            UsdGeom.Imageable(child).MakeInvisible()
-    for path in paths["pad_paths"]:
-        UsdGeom.Imageable(stage.GetPrimAtPath(path + "/Linkage")).MakeInvisible()
+    gripper_visual = None
+    housing = stage.GetPrimAtPath(paths["gripper_housing_path"])
+    if not articulated_gripper:
+        gripper_visual = build_gripper_visual(
+            stage, paths["tool_path"], REPO / "assets/sim/robotiq",
+            yaw_rad=-np.pi / 2 + cfg["gripper"].get("yaw", 0),
+            pad_touch_command=cfg["gripper"]["pad_touch_command"],
+        )
+        for child in housing.GetChildren():
+            if child.GetName().lower() in ("visual", "visuals") or (
+                child.IsA(UsdGeom.Gprim) and not child.HasAPI(UsdPhysics.CollisionAPI)
+            ):
+                UsdGeom.Imageable(child).MakeInvisible()
+        for path in paths["pad_paths"]:
+            UsdGeom.Imageable(stage.GetPrimAtPath(path + "/Linkage")).MakeInvisible()
     roots = [
         str(p.GetPath())
         for p in stage.Traverse()
@@ -617,13 +630,17 @@ def run(app, args, cfg, data, duration):
         from tools.sim.gripper_wrist import GripperContactWrist
 
         gripper_wrist = GripperContactWrist(
-            str(housing.GetPath()), paths["pad_paths"], rigid_prim_cls=RigidPrim
+            str(housing.GetPath()), paths["pad_paths"], rigid_prim_cls=RigidPrim,
+            additional_actor_paths=[
+                p for p in paths["gripper_body_paths"]
+                if p not in [str(housing.GetPath()), *paths["pad_paths"]]
+            ] if articulated_gripper else (),
         )
     gel_views = None
     if args.record_gel_contacts or (
         args.mode == "policy" and args.tactile == "measured_baseline_proxy"
     ):
-        from tools.sim.gel_contact import GelContactViews
+        from tools.sim.gel_contact import GelContactViews, GelSurfaceGeometry
 
         environment_paths = [
             paths["waffle_path"],
@@ -646,6 +663,8 @@ def run(app, args, cfg, data, duration):
             environment_paths,
             rigid_prim_cls=RigidPrim,
             coverage=args.gel_contact_coverage,
+            geometry=GelSurfaceGeometry(**cfg["gripper"]["gel_geometry"])
+            if articulated_gripper else None,
         )
     cam = cfg["camera"]
     camera = Camera(
@@ -707,9 +726,8 @@ def run(app, args, cfg, data, duration):
 
     names = list(robot.dof_names)
     ids = np.array([names.index(n) for n in JOINT_NAMES])
-    fingers = np.array(
-        [names.index(n) for n in ["left_finger_joint", "right_finger_joint"]]
-    )
+    finger_names = finger_joint_names(cfg)
+    fingers = np.array([names.index(n) for n in finger_names])
     print(
         "PHANTOM_SCENE",
         json.dumps(
@@ -743,7 +761,8 @@ def run(app, args, cfg, data, duration):
             raise ValueError(
                 "Initial state requires finite q[6], wrist_ft[6], gripper in [0,1]"
             )
-    gripper_visual.update(g0)
+    if gripper_visual is not None:
+        gripper_visual.update(g0)
     recorded_commands = None
     if args.mode == "command_replay":
         from phantom.sim.command_replay import RecordedDriveCommands
@@ -759,16 +778,15 @@ def run(app, args, cfg, data, duration):
             json.dumps(recorded_commands.metadata, indent=2) + "\n"
         )
 
-    def gap(closure):
-        return (
-            cfg["gripper"]["stroke"]
-            * 0.5
-            * (1 - np.clip(closure / cfg["gripper"]["pad_touch_command"], 0, 1))
-        )
+    def finger_target(closure):
+        return joint_targets(closure, cfg)
+
+    def finger_closure(values):
+        return closure_from_joint_positions(values, cfg)
 
     qfull = np.zeros(len(names))
     qfull[ids] = q0
-    qfull[fingers] = gap(g0)
+    qfull[fingers] = finger_target(g0)
     robot.set_joint_positions(qfull)
     robot.set_joint_velocities(np.zeros_like(qfull))
     robot.apply_action(ArticulationAction(joint_positions=qfull))
@@ -776,10 +794,13 @@ def run(app, args, cfg, data, duration):
         UsdPhysics.DriveAPI(
             stage.GetPrimAtPath(paths["joint_paths"][name]), "angular"
         ).GetTargetPositionAttr().Set(float(np.degrees(qfull[index])))
-    for name in ("left_finger_joint", "right_finger_joint"):
-        UsdPhysics.DriveAPI(
-            stage.GetPrimAtPath(paths["joint_paths"][name]), "linear"
-        ).GetTargetPositionAttr().Set(float(gap(g0)))
+    for name, index in zip(finger_names, fingers):
+        drive = UsdPhysics.DriveAPI(
+            stage.GetPrimAtPath(paths["joint_paths"][name]), finger_drive_type(cfg)
+        )
+        target = drive.GetTargetPositionAttr()
+        if target.IsValid():
+            target.Set(float(np.degrees(qfull[index]) if articulated_gripper else qfull[index]))
 
     # World.reset() initializes physics at the imported articulation's default
     # pose before measured q0 is assigned. Clear any packet impulse from that
@@ -916,7 +937,10 @@ def run(app, args, cfg, data, duration):
         raise RuntimeError("Could not create sim.mp4")
     adapter = policy = audit = probe = None
     if args.mode == "contact_probe":
-        from phantom.sim.contact_probe import initialize as initialize_probe
+        if articulated_gripper:
+            from phantom.sim.gripper_probe import initialize as initialize_probe
+        else:
+            from phantom.sim.contact_probe import initialize as initialize_probe
 
         tool_position, tool_orientation = tool_body.get_world_pose()
         probe = initialize_probe(
@@ -1306,7 +1330,7 @@ def run(app, args, cfg, data, duration):
                     desired[ids], desired[fingers] = targets
             elif args.mode in ("replay", "dynamics"):
                 desired[ids] = interp("q", t)
-                desired[fingers] = gap(interp("gripper", t)[0])
+                desired[fingers] = finger_target(interp("gripper", t)[0])
                 if args.mode == "replay":
                     robot.set_joint_positions(desired)
                     robot.set_joint_velocities(np.zeros_like(desired))
@@ -1315,31 +1339,13 @@ def run(app, args, cfg, data, duration):
                 desired[fingers] = finger_gap
             elif not stop_after_step and rgb is not None and t + 1e-9 >= next_control:
                 next_control = t + control_dt
-                closure = float(
-                    np.clip(
-                        (
-                            1
-                            - robot.get_joint_positions()[fingers].mean()
-                            / (cfg["gripper"]["stroke"] / 2)
-                        )
-                        * cfg["gripper"]["pad_touch_command"],
-                        0,
-                        1,
-                    )
-                )
+                closure = finger_closure(robot.get_joint_positions()[fingers])
                 twist = measured_tcp_twist(previous_tcp, tcp, dt)
                 forces = measured_pad_forces()
                 if gripper_wrist is not None:
                     sample_gripper_wrist(t, tcp)
                 measured_wrist = wrist_proxy(tcp, forces)
-                target_closure = float(
-                    np.clip(
-                        (1 - desired[fingers].mean() / (cfg["gripper"]["stroke"] / 2))
-                        * cfg["gripper"]["pad_touch_command"],
-                        0,
-                        1,
-                    )
-                )
+                target_closure = finger_closure(desired[fingers])
                 obj = measured_gripper_status(
                     closure, target_closure, max(np.linalg.norm(f) for f in forces)
                 )
@@ -1424,7 +1430,7 @@ def run(app, args, cfg, data, duration):
                 }
                 # The gripper worker executes independently of arm IK, including
                 # the safety layer's release command on a stopped episode.
-                desired[fingers] = gap(command.gripper)
+                desired[fingers] = finger_target(command.gripper)
                 if command.stopped:
                     desired[ids] = qactual
                     adapter.report_execution(
@@ -1568,19 +1574,8 @@ def run(app, args, cfg, data, duration):
                     policy_gel_contact_diagnostics.append(
                         {"t": t, **gel_views.get_all(dt)}
                     )
-                visual_closure = float(
-                    np.clip(
-                        (
-                            1
-                            - robot.get_joint_positions()[fingers].mean()
-                            / (cfg["gripper"]["stroke"] / 2)
-                        )
-                        * cfg["gripper"]["pad_touch_command"],
-                        0,
-                        1,
-                    )
-                )
-                gripper_visual.update(visual_closure)
+                if gripper_visual is not None:
+                    gripper_visual.update(finger_closure(robot.get_joint_positions()[fingers]))
                 world.render()
                 rgba = camera.get_rgba()
                 if rgba is None or rgba.size == 0:
@@ -1666,22 +1661,10 @@ def run(app, args, cfg, data, duration):
                 trace["tcp"].append(tcp_measured(actual[ids]))
                 trace["tcp_nominal_fk"].append(forward_pose(actual[ids]))
                 trace["target_q"].append(desired[ids].copy())
-                measured_closure = float(
-                    np.clip(
-                        (1 - actual[fingers].mean() / (cfg["gripper"]["stroke"] / 2))
-                        * cfg["gripper"]["pad_touch_command"],
-                        0,
-                        1,
-                    )
-                )
-                target_closure = float(
-                    np.clip(
-                        (1 - desired[fingers].mean() / (cfg["gripper"]["stroke"] / 2))
-                        * cfg["gripper"]["pad_touch_command"],
-                        0,
-                        1,
-                    )
-                )
+                measured_closure = finger_closure(actual[fingers])
+                target_closure = finger_closure(desired[fingers])
+                trace.setdefault("finger_q", []).append(actual[fingers].copy())
+                trace.setdefault("target_finger_q", []).append(desired[fingers].copy())
                 status = measured_gripper_status(
                     measured_closure,
                     target_closure,
@@ -1807,7 +1790,19 @@ def run(app, args, cfg, data, duration):
         if gripper_wrist is not None
         else None,
         "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
-        "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
+        "gripper_model": cfg["gripper"].get("model", "legacy_sliding_pad_proxy"),
+        "gripper_articulation": paths["gripper_articulation"],
+        "finger_joint_names": list(finger_names),
+        "finger_joint_units": "radians" if articulated_gripper else "metres",
+        "gripper_feedback_source": "measured master joint angle" if articulated_gripper else "mean of two measured sliders",
+        "gel_geometry": cfg["gripper"].get("gel_geometry") if articulated_gripper else None,
+        "contact_trace_source": (
+            "PhysX contacts between separate supplier wear-layer rigid bodies and packet; "
+            "hard sensor housings/adapters/linkage are separate actors. Active optical-area "
+            "contact is further filtered by gel_contact_trace.json. UV uses local pad Y/Z."
+            if articulated_gripper else
+            "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force."
+        ),
         "control_rate_hz": hw.control.executor_rate_hz if hw else None,
         "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
         "policy_stop_reason": adapter.stopped_reason if adapter else None,

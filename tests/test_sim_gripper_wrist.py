@@ -78,6 +78,22 @@ def test_actor_whitelist_cannot_replace_a_pad_with_a_proximal_body():
         gripper_actor_paths(BASE, [ACTORS[1], ACTORS[1]])
 
 
+def test_articulated_sensor_housing_load_is_included_once_with_its_lever_arm():
+    housing = BASE + "/right_outer_knuckle/right_sensor_body"
+    raw = report()
+    raw["per_actor"].append(actor(housing, 4, [1, 2, 5], [1, 0, 0]))
+    value, rec = aggregate_gripper_wrench(
+        raw, ACTORS, [1, 2, 3, 0, 0, 0], np.zeros(6),
+        additional_actor_paths=[housing],
+    )
+    np.testing.assert_array_equal(value, [4, -3, 0, 3, 8, -2])
+    assert len(rec["per_actor"]) == 4
+    with pytest.raises(ValueError, match="mounted gripper"):
+        gripper_actor_paths(BASE, ACTORS[1:], additional_actor_paths=["/World/Robot/upper_arm"])
+    with pytest.raises(ValueError, match="unique"):
+        gripper_actor_paths(BASE, ACTORS[1:], additional_actor_paths=[ACTORS[1]])
+
+
 class StubView:
     def __init__(self, **kwargs):
         self.prim_paths = [kwargs["prim_paths_expr"]]
