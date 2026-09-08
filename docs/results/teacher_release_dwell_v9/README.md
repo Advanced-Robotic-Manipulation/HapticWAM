@@ -1,6 +1,6 @@
 # Teacher release-dwell diagnostic
 
-**Prospective diagnostic, declared 2026-09-08 before execution.** The controller code and ftA1500 weights are unchanged from the completed V8 bounded-hold experiment. This follow-up changes only the opening-intent dwell in the existing release gate, from 0.200 to 0.100 seconds. Outcomes are pending.
+**Launched 2026-09-08 at 06:37:40 UTC after declaration and CPU preflight; outcomes pending.** The controller code and ftA1500 weights are unchanged from the completed V8 bounded-hold experiment. This follow-up changes only the opening-intent dwell in the existing release gate, from 0.200 to 0.100 seconds. The final frozen binding SHA256 is `26b1689eae3f8c8acf1d97938a61cb5257a81599a2a0f26bb539b49bc4efb418`; all 5,106 pinned files passed the final check. The owned supervisor records both campaign and final launcher exit codes.
 
 ## Reason for the intervention
 
@@ -10,7 +10,7 @@ The 0.100-second treatment tests whether admitting the longer observed opening b
 
 ## Frozen comparison
 
-Four new development trials: seeds 904301 and 904302 under each of the 0.200-second control and 0.100-second treatment. These are reused development seeds, not held-out model confirmation. The intended order is control/904301, treatment/904301, treatment/904302, control/904302 to balance condition order across the two seeds. The frozen launch plan records the actual predeclared order.
+Four new development trials: seeds 904301 and 904302 under each of the 0.200-second control and 0.100-second treatment. These are reused development seeds, not held-out model confirmation. The frozen execution order is **control/904301, control/904302, treatment/904301, treatment/904302**. The unchanged driver requires at least two distinct seeds and complete seed-grid coverage per campaign, so the originally preferred ABBA arrangement was rejected in CPU preflight before any simulation. This AABB amendment was declared before launch and preserves the existing driver. Condition order and changing shared-compute latency remain explicit comparison limitations.
 
 Both settings use the same teacher checkpoint `teacher_v5_ftA/teacher_001500.pt`, SHA256 `67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e`; EMA, NFE1, K4, guidance 1, persistent noise/parity and maximum ten played steps. Keep the identical measured arm/gripper start, fixed waffle/box/camera, frozen V8 runtime/driver/inference trees, full-client `rpc_wall` delivery timing, tactile mapping, minimal_v5 veto and release/FINISH behavior.
 
