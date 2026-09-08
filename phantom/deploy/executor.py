@@ -542,6 +542,7 @@ class ChunkExecutor:
         # — a check-then-use on the bare attribute raced into `grip > None`
         # (ultrareview 09-05)
         latched_now = released = False
+        released_from = 0.0
         with self._latch_lock():
             latch = self._grip_latch
             if latch is None:
@@ -573,6 +574,7 @@ class ChunkExecutor:
                     if (z is not None and z < z_rel and lifted
                             and now - self._release_req_since
                             >= float(getattr(sf, "grip_latch_release_s", 0.5) or 0.0)):
+                        released_from = latch
                         self._grip_latch = latch = None
                         self._latch_rearm_blocked = True   # until both pads unload
                         self._release_req_since = None
@@ -584,7 +586,7 @@ class ChunkExecutor:
                      grip, {k: round(v, 1) for k, v in loads.items()})
         if released:
             log.info("aperture latch RELEASED for placement: policy asks %.2f, "
-                     "latched %.2f, z=%.3f (carry peak %.3f)", grip, latch or 0.0,
+                     "latched %.2f, z=%.3f (carry peak %.3f)", grip, released_from,
                      z if z is not None else float("nan"), self._latch_z_max)
         return grip if latch is None else latch
 
