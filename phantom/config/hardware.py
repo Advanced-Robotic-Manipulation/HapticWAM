@@ -620,6 +620,12 @@ class HardwareConfig(_Frozen):
             data["safety"].pop("wrench_baseline_mode", None)
         if self.safety.servo_constraint_hold_s is None:
             data["safety"].pop("servo_constraint_hold_s", None)
+        # same for the 09-08 latch placement-release fields: a config that
+        # never set them keeps the hash it had before they existed
+        for name, default in (("grip_latch_release_drop", 0.15), ("grip_latch_release_s", 0.5),
+                              ("grip_latch_release_z_m", 0.16), ("grip_latch_release_lift_m", 0.08)):
+            if getattr(self.safety, name) == default:
+                data["safety"].pop(name, None)
         return yaml.safe_dump(data, sort_keys=True)
 
     def config_hash(self) -> str:
