@@ -232,16 +232,73 @@ def test_halt_snapshots_arm_state_before_teardown():
     assert ex.halt_state["tcp_pose"][:3] == pytest.approx([0.1, 0.2, 0.3])
 
 
-def test_sustained_limiter_hold_ends_the_episode_not_the_budget():
-    """Verify 09-05 #3: with the limiter ON, an unreachable target for 25
-    ticks must raise (executor crash net), not freeze silently."""
+def test_sustained_limiter_hold_ends_the_episode_not_the_budget(monkeypatch):
+    """Verify 09-05 #3 + rig 09-07: with the limiter ON, an unreachable
+    target is a HOLD that survives well past 25 ticks (a replan is ~0.85 s =
+    100+ ticks) and ends the episode only after HOLD_BUDGET_S of continuous
+    holding — never a silent freeze."""
     a = _arm(LIMITS)
     prime(a, pose_at_reach(0.40))
     a._ctrl.mode = "empty"
-    with pytest.raises(RuntimeError):
-        for _ in range(URArm.IK_REJECT_LIMIT + 1):
-            a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    clock = [1000.0]
+    monkeypatch.setattr("phantom.drivers.real.ur.time.monotonic", lambda: clock[0])
+    for _ in range(URArm.IK_REJECT_LIMIT * 4):        # 100 ticks, 0.8 s: still holding
+        clock[0] += 0.008
+        r = a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+        assert r.sent is False
     assert a._ik_rejects_total >= URArm.IK_REJECT_LIMIT
+    clock[0] += URArm.HOLD_BUDGET_S
+    with pytest.raises(RuntimeError, match="held for"):
+        a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+
+
+def test_no_solution_hold_outlives_a_replan_then_times_out(monkeypatch):
+    """Rig 09-07 regression: 12/43 episodes died as 'servo cannot stream'
+    after 25 no-solution ticks (0.2 s) while the arm stood at the reach
+    boundary — shorter than one replan, so the planner never got to fix the
+    target. ik_invalid must hold through several replans, then time out."""
+    a = _arm()
+    prime(a, pose_at_reach(0.40))
+    a._ctrl.mode = "empty"
+    clock = [50.0]
+    monkeypatch.setattr("phantom.drivers.real.ur.time.monotonic", lambda: clock[0])
+    for _ in range(300):                               # 2.4 s of holding
+        clock[0] += 0.008
+        r = a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+        assert r.sent is False and r.reason == "ik_invalid"
+    assert a._last_cmd_pose is not None and a._ik_rejects == 300
+    clock[0] += URArm.HOLD_BUDGET_S
+    with pytest.raises(RuntimeError, match="held for"):
+        a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+
+
+def test_a_sent_tick_resets_the_hold_budget(monkeypatch):
+    a = _arm()
+    prime(a, pose_at_reach(0.40))
+    clock = [50.0]
+    monkeypatch.setattr("phantom.drivers.real.ur.time.monotonic", lambda: clock[0])
+    a._ctrl.mode = "empty"
+    for _ in range(100):
+        clock[0] += 0.008
+        a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    a._ctrl.mode = "ok"
+    clock[0] += 0.008
+    assert a.servo_l(pose_at_reach(0.40), 0.008, 0.1, 300).sent is True
+    assert a._hold_since is None and a._ik_rejects == 0
+    a._ctrl.mode = "empty"
+    clock[0] += URArm.HOLD_BUDGET_S - 0.5              # a fresh hold, budget restarted
+    r = a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    assert r.sent is False
+
+
+def test_branch_rejects_still_abort_after_25_ticks():
+    """A branch flip is a fault, not a hold: the 25-tick net stays."""
+    a = _arm()
+    prime(a, pose_at_reach(0.40))
+    a._ctrl.flip = True
+    with pytest.raises(RuntimeError, match="cannot stream"):
+        for _ in range(URArm.IK_REJECT_LIMIT):
+            a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
 
 
 def test_elbow_escape_never_streams_a_joint_whip():

@@ -50,7 +50,15 @@ class URArm(Arm):
     # arc to it (wrists 3.4-6.9 rad/s, four episodes). Seed every solve with
     # the previous solution and reject any solution that jumps a branch.
     IK_BRANCH_TOL_RAD = 0.35          # >> one 8 ms tick of motion, << any flip
-    IK_REJECT_LIMIT = 25              # consecutive rejects (~0.2 s) -> give up
+    IK_REJECT_LIMIT = 25              # consecutive ik_branch rejects (~0.2 s) -> give up
+    # A target with NO solution (or a limiter hold) is a HOLD, not a fault: the
+    # arm keeps its last setpoint while the planner gets several replans
+    # (0.8-1.1 s each) to move the target back inside reach. Rig 09-07: the
+    # 25-tick counter (0.2 s, shorter than one replan) was applied to
+    # ik_invalid too and ended 12 of 43 episodes as "servo cannot stream"
+    # while the arm stood still at the reach boundary; before issue #7 those
+    # ticks were a silent unbounded hold. Bounded now by elapsed time.
+    HOLD_BUDGET_S = 4.0
     # Reach / joint-speed limiter (rig 2026-09-04, see SafetyConfig.elbow_min_rad)
     LIMITER_BISECT = 3                # step fractions down to 1/8
     LIMITER_LOG_PERIOD_S = 1.0
@@ -63,7 +71,9 @@ class URArm(Arm):
         self._seq = 0
         self._want_control = False
         self._last_qsol: list[float] | None = None
-        self._ik_rejects = 0
+        self._ik_rejects = 0              # consecutive rejected ticks (any reason)
+        self._branch_rejects = 0          # consecutive ik_branch rejects
+        self._hold_since: float | None = None   # start of the current hold streak
         self._ik_dev_max = 0.0            # max per-tick |q_ik - q_seed| seen
         self._ik_rejects_total = 0
         self._last_cmd_pose: np.ndarray | None = None   # last pose actually streamed
@@ -470,13 +480,26 @@ class URArm(Arm):
         anything doubtful."""
         self._ik_rejects += 1
         self._ik_rejects_total += 1
+        now = time.monotonic()
         if self._ik_rejects == 1:
+            self._hold_since = now
             log.warning("servo hold (%s): %s", why, detail)
-        if self._ik_rejects >= self.IK_REJECT_LIMIT:
+        if why == "ik_branch":
+            # a solution on another branch: streaming it would whip the arm;
+            # a sustained run means the seed is lost — give up fast
+            self._branch_rejects += 1
+            if self._branch_rejects >= self.IK_REJECT_LIMIT:
+                raise RuntimeError(
+                    f"servo cannot stream ({self._branch_rejects} consecutive "
+                    f"ticks rejected, last: {why}) — the target is at/beyond a "
+                    "kinematic boundary")
+        else:
+            self._branch_rejects = 0
+        held_s = now - (self._hold_since if self._hold_since is not None else now)
+        if held_s >= self.HOLD_BUDGET_S:
             raise RuntimeError(
-                f"servo cannot stream ({self._ik_rejects} consecutive "
-                f"ticks rejected, last: {why}) — the target is at/beyond a "
-                "kinematic boundary")
+                f"servo held for {held_s:.1f} s ({self._ik_rejects} ticks, last: "
+                f"{why}) — the target stayed beyond reach across several replans")
         return ServoResult(False, getattr(self, "_last_cmd_pose", None), why)
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float,
@@ -550,6 +573,8 @@ class URArm(Arm):
             if ok is not False:
                 self._last_cmd_pose = np.asarray(tcp_pose, dtype=float).copy()
                 self._ik_rejects = 0          # the streak ends only on a SENT tick
+                self._branch_rejects = 0
+                self._hold_since = None
         if ok is False:
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
@@ -646,6 +671,8 @@ class URArm(Arm):
         self._limiter_hits = 0
         self._limiter_holds = 0
         self._ik_rejects = 0
+        self._branch_rejects = 0
+        self._hold_since = None
         self._ik_dev_max = 0.0
         self._ik_rejects_total = 0
         with self._ctrl_lock:
