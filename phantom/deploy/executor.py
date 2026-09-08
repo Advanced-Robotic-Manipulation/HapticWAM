@@ -64,6 +64,7 @@ class ChunkExecutor:
     def __init__(self, hw: HardwareConfig, arm: Arm, gripper: Gripper,
                  safety: SafetyMonitor, *, record_action=None, gripper_ring=None,
                  open_aperture: float = 0.0, max_play_steps: int | None = None,
+                 grip_play_steps: int | None = None,
                  release_config=None):
         self.hw = hw
         self.release_controller = make_release_controller(release_config, hw)
@@ -79,6 +80,13 @@ class ChunkExecutor:
         # Playback holds at the cap point until the next plan lands.
         # None = uncapped (legacy behaviour, and every pre-09-01 test).
         self.max_play_steps = max_play_steps
+        # The GRIPPER channel plays at most this many steps of a chunk even
+        # when the pose plays further (rig 09-08 seed 115: with 16 played
+        # steps and no latch armed, every chunk tail commanded an opening and
+        # the fingers flapped 0.56/0.24/0.56 once per replan while lifting).
+        # Chunk tails are never validated by a replan; a stale tail opening is
+        # a dropped object, a stale tail pose is at worst a few cm.
+        self.grip_play_steps = grip_play_steps
         # aperture the gripper is commanded to on a "let go" stop (the task's
         # demo START aperture; 0.0 = fully open when the task is unknown)
         self.open_aperture = float(open_aperture)
@@ -307,7 +315,10 @@ class ChunkExecutor:
         cum = np.cumsum(plan.actions[:, :6], axis=0)
         prev = cum[k - 1] if k > 0 else np.zeros(6)
         target = plan.t0_pose + prev + frac * (cum[k] - prev)
-        grip = plan.actions[min(k, H - 1), 6]
+        kg = k
+        if getattr(self, "grip_play_steps", None):
+            kg = min(kg, int(self.grip_play_steps) - 1)
+        grip = plan.actions[min(kg, H - 1), 6]
         return target, float(grip)
 
     def _run(self) -> None:

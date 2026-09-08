@@ -104,3 +104,25 @@ def test_no_measured_z_means_no_release(monkeypatch):
     _tick(ex, clock, 0.64, 0.07)
     for _ in range(200):
         assert _tick(ex, clock, 0.20, 0.10) == 0.64
+
+
+def test_gripper_channel_is_capped_while_the_pose_plays_the_tail(monkeypatch):
+    """09-08 seed 115: 16 played steps executed each chunk tail's opening
+    once per replan. The pose may play to 16; the gripper stops at
+    grip_play_steps."""
+    from phantom.inference.policy import Plan
+    hw = load_hardware("configs/hardware.nuc.mock.yaml")
+    ex = ChunkExecutor(hw, arm=_StubArm(set()), gripper=None, safety=_Safety(),
+                       max_play_steps=16, grip_play_steps=10)
+    H = 16
+    acts = np.zeros((H, 7)); acts[:, 2] = 0.01                 # rise 1 cm per step
+    acts[:, 6] = 0.6; acts[12:, 6] = 0.1                       # tail says OPEN
+    plan = Plan.__new__(Plan); plan.actions = acts; plan.t0_pose = np.zeros(6)
+    rate = hw.control.action_rate_hz
+    tgt9, g9 = ex._pose_at(plan, 9.0 / rate)
+    tgt15, g15 = ex._pose_at(plan, 15.5 / rate)
+    assert g9 == 0.6 and g15 == 0.6                            # tail opening never reaches the fingers
+    assert tgt15[2] > tgt9[2] > 0                              # pose keeps playing into the tail
+    ex2 = ChunkExecutor(hw, arm=_StubArm(set()), gripper=None, safety=_Safety(),
+                        max_play_steps=16, grip_play_steps=None)
+    assert ex2._pose_at(plan, 15.5 / rate)[1] == 0.1          # uncapped: tail opening plays

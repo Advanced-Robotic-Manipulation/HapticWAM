@@ -309,6 +309,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "paired trials")
     ap.add_argument("--no-label-prompt", dest="label_prompt", action="store_false",
                     default=True, help="skip the post-episode success/notes prompt")
+    ap.add_argument("--grip-play-steps", type=int, default=10,
+                    help="cap GRIPPER playback at this many steps of a chunk even "
+                         "when --max-play-steps plays the pose further (09-08: "
+                         "16 played steps flapped the fingers once per replan "
+                         "whenever the latch was not armed). 0 = same as pose.")
     ap.add_argument("--max-play-steps", type=int, default=10,
                     help="cap chunk playback at this many action steps and "
                          "hold until the next plan (steps beyond HEAD_STEPS=9 "
@@ -970,6 +975,7 @@ def main(argv=None) -> int:
             "tactile_fz_limit_N", "stale_plan_timeout_s")
         if hasattr(hw.safety, k)}
     deploy_overrides["max_play_steps"] = int(getattr(args, "max_play_steps", 0) or 0)
+    deploy_overrides["grip_play_steps"] = int(getattr(args, "grip_play_steps", 0) or 0)
     deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
@@ -1028,6 +1034,7 @@ def main(argv=None) -> int:
                            base_hw=base_hw, open_aperture=open_aperture,
                            deploy_overrides=deploy_overrides,
                            max_play_steps=(args.max_play_steps or None),
+                           grip_play_steps=(getattr(args, 'grip_play_steps', 0) or None),
                            release_config=release_config,
                            **({"controller_profile": args.placement_controller_profile}
                               if args.placement_controller_profile is not None else {})) as rt:

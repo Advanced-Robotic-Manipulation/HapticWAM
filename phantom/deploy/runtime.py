@@ -172,6 +172,7 @@ class DeploymentRuntime:
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
                  max_play_steps: int | None = None, release_config=None,
+                 grip_play_steps: int | None = None,
                  controller_profile: str | None = None):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
@@ -195,6 +196,7 @@ class DeploymentRuntime:
         # the aperture a "let go" stop reopens to (task demo start aperture)
         self.open_aperture = float(open_aperture)
         self.max_play_steps = max_play_steps
+        self.grip_play_steps = grip_play_steps
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
         self.release_config = None if controller is None else controller.config
@@ -263,6 +265,7 @@ class DeploymentRuntime:
                                  gripper_ring=self.session.rings["gripper"],
                                  open_aperture=self.open_aperture,
                                  max_play_steps=self.max_play_steps,
+                                 grip_play_steps=self.grip_play_steps,
                                  release_config=self.release_config)
         snapshots = SnapshotBuilder(hw, self.session, self.mode,
                                     parity_fixes=self.parity_fixes,

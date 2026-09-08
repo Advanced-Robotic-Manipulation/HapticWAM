@@ -40,5 +40,5 @@ def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset,
     assert "STALE_COPY" not in result.stdout
     assert f"TRACKED|{system}|runs/model.pt|" in command
     assert ("--servo-reach-profile bounded_v1" in command) is fixed
-    assert "--max-play-steps 12" in command and "--seed 101" in command
+    assert "--max-play-steps 16 --grip-play-steps 10" in command and "--seed 101" in command
     assert command.endswith("|waffles 1 1 1.0")

@@ -23,7 +23,7 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
-echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-play-steps 12 + max-episode-s 150 + max-replans 200"
+echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + pose plays 16 / gripper 10 + max-episode-s 150 + max-replans 200"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
 echo "  4) CUSTOM  type your own nfe + flags"
@@ -34,7 +34,7 @@ echo "  5) BOUNDED REACH (teacher-only trials, sim evidence only): LEVERS + elbo
 DEFAULT_PRESET=1
 read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
 case $p in
-  1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 12 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # play 12 (1.2 s): teacher replan p95 1.26 s starved the 1.0 s window on 09-07
+  1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # pose plays the whole chunk (09-08: the turn to the box lives in the tail); gripper capped at the validated head (tail openings flapped the fingers)
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
   4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
