@@ -1,0 +1,111 @@
+{
+  "all_four_remote_and_local_hashes_match": true,
+  "videos": [
+    {
+      "setting": "control_dwell200",
+      "seed": 904301,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "sha256": "2cd305157e7ca4376b663234d5255df58744b40c0345395d0f581480006d7f12",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "source_png_sha256": "ab0327aa5c8ad9abdc87bfff358859aa669f452d6e2c1dec0bb790139c421082",
+          "jpeg": "control_dwell200_904301_frame_final.jpg",
+          "jpeg_sha256": "fdb761a7870d736f30fe4e0d4777a07007e2cbd7e45e5702837e6f3ee53ed761",
+          "simulation_time_s": 59.93333333333333
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904301/frame_22.00s.png",
+          "source_png_sha256": "3a48ec3a4ac84f9d9c0bff995c36df1bf732aa5f0401f164b3c4be06921fab15",
+          "jpeg": "control_dwell200_904301_frame_22.00s.jpg",
+          "jpeg_sha256": "860efcbae84b9909e858a048a0632f3f96ebfb78be7d1fa08d1038b03f111c23",
+          "simulation_time_s": 22.0
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904301/frame_30.00s.png",
+          "source_png_sha256": "77b17f645490bfe5df1a9a6047e15cc863b3b5746a93d203a9f3ce8bd7ea9125",
+          "jpeg": "control_dwell200_904301_frame_30.00s.jpg",
+          "jpeg_sha256": "504fb50ddda4ee70b80edd2929364a19104358eb1e162c0d0487e1a585b67132",
+          "simulation_time_s": 30.0
+        }
+      ]
+    },
+    {
+      "setting": "control_dwell200",
+      "seed": 904302,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "sha256": "cb821a1391c19412332c2e96271c804a023cc5c6fa1521d12dd73759aec986de",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "source_png_sha256": "5b10b77af1ba92ca52c44639d5aaf0c539f2f70108376a723dcbb799c86d3e5f",
+          "jpeg": "control_dwell200_904302_frame_final.jpg",
+          "jpeg_sha256": "0272c41e0c88a44a490311086d3e8e97f600d573487786e0de85f27c340f48c7",
+          "simulation_time_s": 59.93333333333333
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904302/frame_22.00s.png",
+          "source_png_sha256": "b23eff0345f5648848f41817ab46c847770c2e95935f01e09fa87de1125e2a00",
+          "jpeg": "control_dwell200_904302_frame_22.00s.jpg",
+          "jpeg_sha256": "1e2c6ff34b46b1caff23f86418c9e84317ff859eadd186da84bdad79efde2a81",
+          "simulation_time_s": 22.0
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/control_dwell200/fta1500_nfe1_k4__successful_anchor__seed904302/frame_30.00s.png",
+          "source_png_sha256": "8486c55f9d762ecba397a1b81d135c7cf8fe93178a3346f102b853437c3dc22a",
+          "jpeg": "control_dwell200_904302_frame_30.00s.jpg",
+          "jpeg_sha256": "5e3d76e5c5f1fbc0b504c0032c4a6f92b310feacf1a99819fe9946c050906103",
+          "simulation_time_s": 30.0
+        }
+      ]
+    },
+    {
+      "setting": "treatment_dwell100",
+      "seed": 904301,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "sha256": "b1c48cb3b9b015f3680132c92debdbb200ca1bd8be677c7ea975f3d171e391c7",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "source_png_sha256": "440fbaeaa521b59038e61de8eecfc14ff812ae66cc225a5f1f59120e87716c75",
+          "jpeg": "treatment_dwell100_904301_frame_final.jpg",
+          "jpeg_sha256": "509c38b9b63208e44e6986587df351104877f360cf25a8365bf0c4f1b3a65f81",
+          "simulation_time_s": 59.93333333333333
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904301/frame_30.00s.png",
+          "source_png_sha256": "a5b120e1f2ca1872fcb93a893288e5dac9c92b8fd59b4b627ffbb334b1e55fb5",
+          "jpeg": "treatment_dwell100_904301_frame_30.00s.jpg",
+          "jpeg_sha256": "62707cd137f6e930ddfd188243c79fd664b170d6560fdbb13b568e726097cc5f",
+          "simulation_time_s": 30.0
+        }
+      ]
+    },
+    {
+      "setting": "treatment_dwell100",
+      "seed": 904302,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "sha256": "31cfd03f2f65efc15805936759bebcb13b5e85eff3b657eff7009c7e0475f7f6",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "source_png_sha256": "30c3145fb40918c9293dd71350d6077b8290ab537d0c87c24487f357b69c9e2d",
+          "jpeg": "treatment_dwell100_904302_frame_final.jpg",
+          "jpeg_sha256": "b2e400b616b9404cc946c5159c3fbf5377bca4379bab7178034444b4061b21f3",
+          "simulation_time_s": 35.06666666666667
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_release_dwell_v9/video_reviews/treatment_dwell100/fta1500_nfe1_k4__successful_anchor__seed904302/frame_12.00s.png",
+          "source_png_sha256": "302e08be66237885398de47fd33dce4b5c3fcfb0435f300f5ab3570986b40459",
+          "jpeg": "treatment_dwell100_904302_frame_12.00s.jpg",
+          "jpeg_sha256": "31d480fb2c5482af155abe8c20fdda105c0ff8a44b3024eb785c1fb49c858890",
+          "simulation_time_s": 12.0
+        }
+      ]
+    }
+  ]
+}
