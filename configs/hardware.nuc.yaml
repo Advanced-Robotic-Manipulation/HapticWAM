@@ -271,7 +271,18 @@ safety:
     - 0.3
     z:
     - 0.03
-    - 0.8
+    # 09-08 cell 3 (ftA and stu_ftA_r1): both carries climbed to 0.43-0.44 m and
+    # died at the 0.468 m wrist stop before turning to the box. The plans
+    # asked for lift AND +y in the same chunk; replan latency + the governor
+    # play only each chunk's middle, so the lift executes every round and the
+    # turn never does. Demo carry peaks are 0.30-0.36 m (kinematics audit,
+    # ten complete demos); box rim ~0.25 m. A CLAMP at 0.40 saturates the lift
+    # so the sideways component executes. Raise back to 0.8 for teleop.
+    - 0.40
+  # TCP radius clamp (see clamp_target): demos p95 0.605 m, tail 0.636; the
+  # 09-08 wrist-stop poses sat at 0.66. Keeps the wrist below its 0.468 stop
+  # without ending the episode.
+  reach_clamp_m: 0.60
   governor:
     sigma_lo: 0.1
     sigma_hi: 1.0
