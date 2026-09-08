@@ -331,6 +331,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
+    ap.add_argument("--servo-reach-profile", choices=["bounded_v1"], default=None,
+                    help="opt-in UR3 command limiter: 0.40 rad minimum elbow, "
+                         "1.0 rad/s joint command cap, 2.5 s verified constraint "
+                         "hold budget; preserves measured safety stops and "
+                         "does not enable placement/release")
     ap.add_argument("--placement-controller-profile", choices=["minimal_v5"], default=None,
                     help="explicit native controller-port qualification: historical fd4a032 "
                          "request-snapshot veto plus policy release/FINISH; requires teacher, "
@@ -787,6 +792,18 @@ def main(argv=None) -> int:
     # meta.deploy_overrides, so the envelope stays auditable.
     base_hw = hw
     deploy_overrides: dict = {}
+    from phantom.deploy.reach_profile import PROFILE_LIMITS, apply_reach_profile
+    try:
+        hw = apply_reach_profile(hw, args.servo_reach_profile)
+    except ValueError as error:
+        log.error("servo reach profile rejected before driver construction: %s", error)
+        return 2
+    if args.servo_reach_profile is not None:
+        limits = {name: getattr(hw.safety, name) for name in PROFILE_LIMITS}
+        deploy_overrides["servo_reach_profile"] = {
+            "id": args.servo_reach_profile, "effective_limits": limits}
+        log.info("servo reach profile %s: %s (measured safety stops preserved)",
+                 args.servo_reach_profile, limits)
     from phantom.deploy.safety import apply_wrench_baseline_mode
     hw = apply_wrench_baseline_mode(hw, args.wrench_baseline_mode)
     if args.wrench_baseline_mode is not None:
@@ -947,7 +964,8 @@ def main(argv=None) -> int:
             "wrist_extension_stop_m", "joint_speed_stop_rad_s", "reach_clamp_m",
             "lift_complete_z_m", "lift_complete_fz_n", "lift_complete_hold_s",
             "lift_complete_window_s", "grip_latch_fz_n", "elbow_min_rad",
-            "servo_joint_speed_max_rad_s", "wrench_limit_N", "wrench_limit_Nm",
+            "servo_joint_speed_max_rad_s", "servo_constraint_hold_s",
+            "wrench_limit_N", "wrench_limit_Nm",
             "wrench_baseline_mode", "wrench_baseline_tau_s", "wrench_debounce_ticks",
             "tactile_fz_limit_N", "stale_plan_timeout_s")
         if hasattr(hw.safety, k)}
@@ -972,6 +990,8 @@ def main(argv=None) -> int:
                   f"r{args.veto_max_retries}" if args.terminal_veto else "veto:off"),
                  f"kseeds:{max(1, args.k_seeds)}"]
     veto = build_veto(args, stats, z_floor)
+    if args.servo_reach_profile is not None:
+        cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile}")
     if veto is not None:
         log.info("terminal veto ON: p_close=%.2f p_none=%.2f max_retries=%d "
                  "z_floor=%s open_aperture=%.2f", veto.p_close, veto.p_none,

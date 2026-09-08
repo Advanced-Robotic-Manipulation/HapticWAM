@@ -3,7 +3,7 @@
 # The model menu is the curated list in ~/phantom-icra-2027/MODELS.tsv
 # (label<TAB>ckpt<TAB>note) — keep ONLY builds worth running on the rig in there.
 set -e
-BASE=~/phantom-icra-2027
+BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}
 TSV=$BASE/MODELS.tsv
 [ -f "$TSV" ] || { echo "no $TSV — create it (label<TAB>ckpt<TAB>note per line)"; exit 1; }
 
@@ -23,16 +23,20 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
-echo "  1) LEVERS  (recommended): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-play-steps 12 + max-episode-s 150 + max-replans 200"
+echo "  1) LEVERS  (legacy controller): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-play-steps 12 + max-episode-s 150 + max-replans 200"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
 echo "  4) CUSTOM  type your own nfe + flags"
-read -p "preset [1]: " p; p=${p:-1}
+echo "  5) BOUNDED REACH (teacher recommended): LEVERS + elbow >=0.40 rad, command joint speed <=1.0 rad/s, verified hold <=2.5 s"
+DEFAULT_PRESET=1
+[ "$SYSTEM" = teacher ] && DEFAULT_PRESET=5
+read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
 case $p in
   1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 12 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # play 12 (1.2 s): teacher replan p95 1.26 s starved the 1.0 s window on 09-07
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
   4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
+  5) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 12 --max-episode-s 150 --max-replans 200 --servo-reach-profile bounded_v1"; PRESET=BOUNDED_REACH;;
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
@@ -94,6 +98,10 @@ fi
 
 echo
 echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | CELL $CELL (seed $SEED) | nfe=$NFE | extra: [$EXTRA]"
+if [ "$PRESET" = BOUNDED_REACH ]; then
+  echo ">> reach fix: require the 'servo reach profile bounded_v1' effective-settings line at startup."
+  echo ">> This enables the apex limiter. It does not configure a box release volume or qualify full placement."
+fi
 echo ">> reminders: both arms of cell $CELL share seed $SEED (same placement!); type the next cell number when the placement changes;"
 echo ">>            a censored end (control_lost / servo_hold_timeout / servo_branch_fault) = re-run this cell, same number;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
@@ -101,4 +109,8 @@ echo ">>            during an episode: press Enter TWICE (within 1.5 s) or type 
 echo ">>            (motion stops, gripper stays). A single Enter is ignored (stray newlines, 09-04)."
 echo ">>            DO NOT use the robot E-stop to end an episode: it kills the control script (pendant reset)."
 read -p "Enter to launch (Ctrl-C to abort) "
-CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0
+# Use the launcher from this same checkout; parent-directory copies can lag
+# behind a git pull and previously left the fixed controller disabled.
+LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
+[ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
+CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0

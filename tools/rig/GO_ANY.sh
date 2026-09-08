@@ -3,7 +3,8 @@
 set -e
 TASK=${1:?task}; EPS=${2:-3}; NFE=${3:-5}; G=${4:-1.0}
 CKPT=${CKPT:-runs/teacher_v4_790eps/DEMO.pt}
-cd ~/phantom-icra-2027/phantom
+BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}
+cd "$BASE/phantom"
 ping -c 1 -W 2 192.168.88.56 >/dev/null && echo "arm: OK" || { echo "arm NOT reachable"; exit 1; }
 .venv/bin/python -c "
 import pyrealsense2 as rs
