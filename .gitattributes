@@ -6,6 +6,8 @@ docs/results/**/*.log -text -whitespace
 # Frozen patches need their context-line prefixes; renderer fixtures keep byte hashes.
 docs/results/**/*.patch -text -whitespace
 docs/results/**/*.usda -text -whitespace
+# Matplotlib SVG exports are retained byte-for-byte against their evidence hashes.
+docs/results/teacher_scene_v10_20260908/evidence/analysis/plots/*.svg -text -whitespace linguist-generated=true
 # Keep generated evidence identifiable in GitHub review; reports remain visible.
 docs/results/**/*.json linguist-generated=true
 docs/results/**/*.jsonl linguist-generated=true
