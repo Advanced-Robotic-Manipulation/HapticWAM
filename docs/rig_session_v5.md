@@ -1,5 +1,32 @@
 # Rig session — how to run inference on compute3 (Session 6: teachers vs sensor-free students)
 
+> **STATE AFTER 09-08 (read this first).** Box code = `main` (b205be2 or later). What changed on
+> 09-08, all verified and on the box:
+> - **Seeds are automatic**: PICK asks for a *cell number*; seed = 100 + cell, the same for both arms
+>   of a cell (Enter at the cell prompt = the other arm, same placement). Never type `--seed`.
+> - **LEVERS preset** = nfe 1, k-seeds 4, veto, parity, pose plays the whole 16-step chunk, gripper
+>   plays only the first 10 steps (chunk-tail openings flapped the fingers), 150 s, 200 replans.
+>   Nothing to append. Preset 5 (Ilya's joint limiter) is for teacher-only trials, never in a pair.
+> - **Clamps, not stops**: z ceiling 0.40 m and TCP reach clamp 0.60 m (rig yaml). Carries used to
+>   climb to 0.44 m and die at the 0.468 m wrist stop before turning to the box; now the lift saturates
+>   and the turn executes (seed 110 carried to the box).
+> - **Placement release of the aperture latch**: the fingers open when the policy asks to open by
+>   0.15 for 0.5 s, below 0.16 m, after a carry above 0.24 m. Before 09-08 the latch never released
+>   (seed 110 asked to open for 5 s in the box and could not).
+> - **Tactile depth limit 1.5** (was 0.6; the right pad reports ~10x the left's depth; 0.6 ended
+>   grasps at the moment of closing).
+> - **Stop an episode: Enter TWICE within 1.5 s** (or `x` + Enter). Never the robot E-stop — both
+>   09-08 `control_lost` records were E-stop presses.
+> - **Wrench guard 45 N / 100 ms**; driver faults name themselves (`control_lost`,
+>   `servo_hold_timeout`, `servo_branch_fault` = censored, re-run the cell).
+>
+> **09-08 result**: 18 episodes, 0 successes, but the first carry to the box (student, seed 110,
+> released blocked by the old latch). Every cell from 4 on was run with ONE arm — no pairs. Tomorrow:
+> pairs only. Teacher first on odd cells, student first on even cells, same placement, label every
+> episode (`s`/`f`/`c`, `d` for damage) with where it ended: approach / grasp / carry / release.
+> Order: ftA (2) vs stu_ftA_r1 (7) x 10 cells (6 waffles, 4 Carton); then stu_ftA_r1 vs ctl_ftA (5)
+> x 8; then v5_6 (1) vs stu_v5_6 (4) if time. Warm servers with `./SERVE.sh` (or ask Claude).
+
 > **8 September teacher-only update:** For the fixed ftA1500 inference requested
 > for the next lab session, use [the current main quickstart](rig_teacher_fixed_inference.md)
 > and [teacher handoff](isaac_lab_handoff_20260907.md). They explicitly enable the
