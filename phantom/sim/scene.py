@@ -14,6 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
+from phantom.sim.geometry import bin_geometry, mount_plate_geometry
+
 
 def elliptical_prism_mesh(size, segments=48):
     """Convex pad proxy: flat contact faces on X, rounded perimeter in YZ.
@@ -213,6 +215,74 @@ def set_forearm_collision_approximation(stage, robot_path, approximation="convex
     return changed
 
 
+def build_bin_primitives(box, b: dict, blue, bin_phys):
+    """Author bin primitives using the same cavity definition as task scoring.
+
+    ``box`` is the scene's USD cube writer; accepting it here keeps metre-level
+    physical/visual bounds independently testable without an Isaac runtime.
+    Historical scenes keep the original decorative rims and authoring order.
+    """
+    geometry = bin_geometry(b)
+    if geometry.model == "rectangular_envelope":
+        # No decorative extension beyond the measured outer envelope. These
+        # solid proxy sides are not a claim of measured plastic wall thickness.
+        for part in geometry.collision_boxes():
+            box(f"/World/Bin/{part.name}", part.center, part.size, blue, True, bin_phys)
+        return
+    bx, by, bz = b["center"]
+    bsx, bsy, bsz = b["size"]
+    wall = b["wall"]
+    box(
+        "/World/Bin/Bottom",
+        [bx, by, bz + wall / 2],
+        [bsx, bsy, wall],
+        blue,
+        True,
+        bin_phys,
+    )
+    for side, sign in (("Left", -1), ("Right", 1)):
+        box(
+            f"/World/Bin/{side}",
+            [bx + sign * (bsx - wall) / 2, by, bz + bsz / 2],
+            [wall, bsy, bsz],
+            blue,
+            True,
+            bin_phys,
+        )
+        box(
+            f"/World/Bin/{side}Rim",
+            [bx + sign * bsx / 2, by, bz + bsz],
+            [0.011, bsy + 0.015, 0.01],
+            blue,
+        )
+    for side, sign in (("Front", -1), ("Back", 1)):
+        box(
+            f"/World/Bin/{side}",
+            [bx, by + sign * (bsy - wall) / 2, bz + bsz / 2],
+            [bsx, wall, bsz],
+            blue,
+            True,
+            bin_phys,
+        )
+        box(
+            f"/World/Bin/{side}Rim",
+            [bx, by + sign * bsy / 2, bz + bsz],
+            [bsx + 0.015, 0.011, 0.01],
+            blue,
+        )
+        for i in range(10):
+            box(
+                f"/World/Bin/{side}Rib_{i}",
+                [
+                    bx - bsx / 2 + 0.015 + i * (bsx - 0.03) / 9,
+                    by + sign * (bsy + 0.004) / 2,
+                    bz + bsz * 0.42,
+                ],
+                [0.005, 0.009, bsz * 0.8],
+                blue,
+            )
+
+
 def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
@@ -380,10 +450,16 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             box(f"/World/Bench/Leg_{i}_{j}", [xx, yy, -0.43], [0.05, 0.05, 0.74], dark)
     # Table panel seam and robot mounting plate/fasteners.
     box("/World/Bench/Seam", [cx, 0, tab["top_z"] + 0.0002], [sx, 0.001, 0.0002], black)
+    mount = mount_plate_geometry(cfg.get("robot_mount", {}))
+    if mount.yaw:
+        # Rotate the plate and its fasteners together about the fixed UR origin.
+        UsdGeom.Xform.Define(stage, "/World/Mount").AddRotateZOp().Set(
+            math.degrees(mount.yaw)
+        )
     box(
         "/World/Mount/Plate",
-        [0, 0, -0.011],
-        [0.16, 0.16, 0.022],
+        mount.center,
+        mount.size,
         steel,
         True,
         table_phys,
@@ -412,59 +488,7 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             [msx, 0.00065, 0.0001],
             grid,
         )
-    b = cfg["bin"]
-    bx, by, bz = b["center"]
-    bsx, bsy, bsz = b["size"]
-    wall = b["wall"]
-    box(
-        "/World/Bin/Bottom",
-        [bx, by, bz + wall / 2],
-        [bsx, bsy, wall],
-        blue,
-        True,
-        bin_phys,
-    )
-    for side, sign in (("Left", -1), ("Right", 1)):
-        box(
-            f"/World/Bin/{side}",
-            [bx + sign * (bsx - wall) / 2, by, bz + bsz / 2],
-            [wall, bsy, bsz],
-            blue,
-            True,
-            bin_phys,
-        )
-        box(
-            f"/World/Bin/{side}Rim",
-            [bx + sign * bsx / 2, by, bz + bsz],
-            [0.011, bsy + 0.015, 0.01],
-            blue,
-        )
-    for side, sign in (("Front", -1), ("Back", 1)):
-        box(
-            f"/World/Bin/{side}",
-            [bx, by + sign * (bsy - wall) / 2, bz + bsz / 2],
-            [bsx, wall, bsz],
-            blue,
-            True,
-            bin_phys,
-        )
-        box(
-            f"/World/Bin/{side}Rim",
-            [bx, by + sign * bsy / 2, bz + bsz],
-            [bsx + 0.015, 0.011, 0.01],
-            blue,
-        )
-        for i in range(10):
-            box(
-                f"/World/Bin/{side}Rib_{i}",
-                [
-                    bx - bsx / 2 + 0.015 + i * (bsx - 0.03) / 9,
-                    by + sign * (bsy + 0.004) / 2,
-                    bz + bsz * 0.42,
-                ],
-                [0.005, 0.009, bsz * 0.8],
-                blue,
-            )
+    build_bin_primitives(box, cfg["bin"], blue, bin_phys)
 
     # Packet geometry has separate rendering and collision meshes.
     obj = UsdGeom.Xform.Define(stage, "/World/Waffle")

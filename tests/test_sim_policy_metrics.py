@@ -147,6 +147,67 @@ def test_bin_containment_uses_all_rotated_corners_not_object_center(successful_t
     assert not result["outcomes"]["released_in_bin"]
 
 
+def test_explicit_bin_geometry_preserves_equivalent_legacy_scoring(successful_trial):
+    trace, config, run = successful_trial
+    baseline = evaluate_policy_trace(trace, config, run=run)
+    config["bin"] = {
+        "geometry_model": "rectangular_envelope",
+        "center": [0, 0.3, 0.02],
+        "outer_size": [0.3, 0.2, 0.15],
+        "opening_size": [0.29, 0.19],
+        "floor_thickness": 0.005,
+    }
+    assert evaluate_policy_trace(trace, config, run=run) == baseline
+
+
+@pytest.mark.parametrize("final_x,inside", [(0.13, True), (0.16, False)])
+def test_measured_opening_not_outside_envelope_determines_placement(
+    successful_trial, final_x, inside
+):
+    trace, config, run = successful_trial
+    config["bin"] = {
+        "geometry_model": "rectangular_envelope",
+        "center": [0, 0.3, 0.02],
+        "outer_size": [0.4, 0.3, 0.19],
+        "opening_size": [0.36, 0.26],
+        "floor_thickness": 0.005,
+    }
+    trace["waffle_position"][:, 0] = np.interp(
+        trace["t"], [0, 3, 4, 8], [0, 0, final_x, final_x]
+    )
+    result = evaluate_policy_trace(trace, config, run=run)
+    assert result["valid_for_scoring"]
+    assert result["object"]["final_inside_bin"] == inside
+    assert result["outcomes"]["full_task"] == inside
+    assert result["outcomes"]["lifted"]
+
+
+@pytest.mark.parametrize(
+    "floor,final_z,inside",
+    [
+        (0.005, 0.035, True),
+        (0.020, 0.035, False),
+        (0.005, 0.2, True),
+        (0.005, 0.205, False),
+    ],
+)
+def test_measured_floor_and_rim_height_independently_bound_all_packet_corners(
+    successful_trial, floor, final_z, inside
+):
+    trace, config, run = successful_trial
+    config["bin"] = {
+        "geometry_model": "rectangular_envelope",
+        "center": [0, 0.3, 0.02],
+        "outer_size": [0.4, 0.3, 0.19],
+        "opening_size": [0.36, 0.26],
+        "floor_thickness": floor,
+    }
+    trace["waffle_position"][trace["t"] >= 6, 2] = final_z
+    result = evaluate_policy_trace(trace, config, run=run)
+    assert result["valid_for_scoring"]
+    assert result["object"]["final_inside_bin"] == inside
+
+
 def test_release_above_bin_without_settling_is_not_complete_placement(successful_trial):
     trace, config, run = successful_trial
     trace["waffle_position"][trace["t"] >= 5, 2] = 0.25

@@ -9,10 +9,12 @@ import numpy as np
 import pytest
 
 from phantom.sim.scene import (
+    build_bin_primitives,
     elliptical_prism_mesh,
     gripper_urdf,
     set_forearm_collision_approximation,
 )
+from phantom.sim.geometry import bin_geometry, mount_plate_geometry
 
 
 def _signed_volume_and_inertia(vertices, faces, mass=1.0):
@@ -257,3 +259,168 @@ def test_forearm_cooking_override_preserves_other_colliders_and_contact_pairs(
         assert not stage.GetPrimAtPath(f"/Robot/{link}/visual").HasAPI(
             UsdPhysics.MeshCollisionAPI
         )
+
+
+def _authored_bin(config):
+    primitives = []
+
+    def capture(path, center, size, material, collision=False, physics=None):
+        primitives.append(
+            {
+                "name": path.removeprefix("/World/Bin/"),
+                "center": np.asarray(center),
+                "size": np.asarray(size),
+                "collision": collision,
+                "physics": physics,
+            }
+        )
+        assert material == "blue"
+
+    build_bin_primitives(capture, config, "blue", "bin_physics")
+    return primitives
+
+
+def test_legacy_bin_preserves_colliders_decorations_and_authoring_order():
+    config = {"center": [0, 0.3, 0.02], "size": [0.3, 0.2, 0.15], "wall": 0.005}
+    parts = _authored_bin(config)
+    assert [part["name"] for part in parts] == [
+        "Bottom",
+        "Left",
+        "LeftRim",
+        "Right",
+        "RightRim",
+        "Front",
+        "FrontRim",
+        *[f"FrontRib_{i}" for i in range(10)],
+        "Back",
+        "BackRim",
+        *[f"BackRib_{i}" for i in range(10)],
+    ]
+    colliders = {part["name"]: part for part in parts if part["collision"]}
+    expected = {
+        "Bottom": ([0, 0.3, 0.0225], [0.3, 0.2, 0.005]),
+        "Left": ([-0.1475, 0.3, 0.095], [0.005, 0.2, 0.15]),
+        "Right": ([0.1475, 0.3, 0.095], [0.005, 0.2, 0.15]),
+        "Front": ([0, 0.2025, 0.095], [0.3, 0.005, 0.15]),
+        "Back": ([0, 0.3975, 0.095], [0.3, 0.005, 0.15]),
+    }
+    assert set(colliders) == set(expected)
+    for name, (center, size) in expected.items():
+        np.testing.assert_allclose(colliders[name]["center"], center)
+        np.testing.assert_allclose(colliders[name]["size"], size)
+        assert colliders[name]["physics"] == "bin_physics"
+    for part in parts:
+        if not part["collision"]:
+            assert part["physics"] is None
+    np.testing.assert_allclose(parts[2]["center"], [-0.15, 0.3, 0.17])
+    np.testing.assert_allclose(parts[2]["size"], [0.011, 0.215, 0.01])
+    lower, upper = bin_geometry(config).interior_bounds
+    np.testing.assert_array_equal(
+        lower[:2], np.array([0, 0.3]) - np.array([0.3, 0.2]) / 2 + 0.005
+    )
+    np.testing.assert_array_equal(
+        upper[:2], np.array([0, 0.3]) + np.array([0.3, 0.2]) / 2 - 0.005
+    )
+
+
+def _measured_bin():
+    return {
+        "geometry_model": "rectangular_envelope",
+        "center": [0.1, -0.2, 0.03],
+        "outer_size": [0.4, 0.3, 0.19],
+        "opening_size": [0.36, 0.26],
+        "floor_thickness": 0.004,  # estimate, independent of rim-envelope width
+    }
+
+
+@pytest.mark.parametrize("floor", [0.004, 0.008])
+def test_measured_bin_keeps_outer_envelope_opening_and_floor_independent(floor):
+    config = _measured_bin()
+    config["floor_thickness"] = floor
+    parts = _authored_bin(config)
+    assert len(parts) == 5 and all(part["collision"] for part in parts)
+    assert all(part["physics"] == "bin_physics" for part in parts)
+    minimum = np.array([part["center"] - part["size"] / 2 for part in parts])
+    maximum = np.array([part["center"] + part["size"] / 2 for part in parts])
+    np.testing.assert_allclose(minimum.min(axis=0), [-0.1, -0.35, 0.03])
+    np.testing.assert_allclose(maximum.max(axis=0), [0.3, -0.05, 0.22])
+
+    # Independent cavity points reach every opening boundary above the floor.
+    # None may be strictly inside a collider; wall/floor surfaces may touch.
+    cavity_points = np.array(
+        [
+            [x, y, z]
+            for x in [-0.08, 0.1, 0.28]
+            for y in [-0.33, -0.2, -0.07]
+            for z in [0.03 + floor, 0.1, 0.22]
+        ]
+    )
+    penetration = (
+        (cavity_points[:, None] > minimum[None] + 1e-12)
+        & (cavity_points[:, None] < maximum[None] - 1e-12)
+    ).all(axis=2)
+    assert not penetration.any()
+    for i in range(len(parts)):
+        for j in range(i):
+            overlap = np.minimum(maximum[i], maximum[j]) - np.maximum(
+                minimum[i], minimum[j]
+            )
+            assert not (overlap > 1e-12).all()
+    # Full material volume is outer envelope minus independent interior void.
+    actual_volume = sum(np.prod(part["size"]) for part in parts)
+    assert actual_volume == pytest.approx(
+        0.4 * 0.3 * 0.19 - 0.36 * 0.26 * (0.19 - floor)
+    )
+    lower, upper = bin_geometry(config).interior_bounds
+    np.testing.assert_allclose(lower, [-0.08, -0.33, 0.03 + floor])
+    np.testing.assert_allclose(upper, [0.28, -0.07, 0.22])
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"geometry_model": "unknown"},
+        {"geometry_model": "legacy"},
+        {"wall": 0.02},
+        {"size": [0.4, 0.3, 0.19]},
+        {"floor_thickness": 0.0},
+        {"floor_thickness": 0.19},
+        {"floor_thickness": float("nan")},
+        {"opening_size": [0.4, 0.26]},
+        {"opening_size": [0.36, 0.4]},
+        {"opening_size": [0.36, 0]},
+        {"opening_size": [0.36, 0.26, 0.19]},
+        {"outer_size": [0.4, 0.3, float("inf")]},
+        {"center": [0, float("nan"), 0]},
+    ],
+)
+def test_measured_bin_rejects_ambiguous_or_nonphysical_geometry_before_authoring(
+    changes,
+):
+    config = _measured_bin()
+    config.update(changes)
+    authored = []
+    with pytest.raises(ValueError):
+        build_bin_primitives(
+            lambda *args: authored.append(args), config, "blue", "physics"
+        )
+    assert not authored
+
+
+@pytest.mark.parametrize("size,yaw", [(None, 0), ([0.15, 0.20, 0.0125], np.pi / 2)])
+def test_mount_plate_top_stays_on_robot_origin_plane_for_every_thickness(size, yaw):
+    config = {} if size is None else {"size": size, "yaw": yaw}
+    mount = mount_plate_geometry(config)
+    np.testing.assert_array_equal(
+        mount.size, [0.16, 0.16, 0.022] if size is None else size
+    )
+    np.testing.assert_array_equal(mount.center[:2], [0, 0])
+    assert mount.center[2] + mount.size[2] / 2 == 0
+    assert mount.center[2] - mount.size[2] / 2 == -mount.size[2]
+    assert mount.yaw == yaw
+
+
+@pytest.mark.parametrize("config", [{"size": [0.15, 0.2, 0]}, {"yaw": float("nan")}])
+def test_mount_plate_rejects_nonphysical_dimensions_and_rotation(config):
+    with pytest.raises(ValueError):
+        mount_plate_geometry(config)
