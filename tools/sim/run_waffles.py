@@ -668,9 +668,9 @@ def run(app, args, cfg, data, duration):
         camera.set_world_pose(
             position=pos, orientation=orient[[3, 0, 1, 2]], camera_axes="usd"
         )
-    camera.set_focal_length(24.0)
-    camera.set_horizontal_aperture(cam["resolution"][0] * 24 / cam["fx"])
-    camera.set_vertical_aperture(cam["resolution"][1] * 24 / cam["fy"])
+    from phantom.sim.camera import configure_camera_intrinsics, validate_camera_intrinsics
+
+    configure_camera_intrinsics(camera, cam)
     camera.set_clipping_range(0.02, 10)
     camera.set_focus_distance(1.0)
     world.reset()
@@ -686,6 +686,10 @@ def run(app, args, cfg, data, duration):
         gripper_wrist.initialize()
     tool_body.initialize()
     camera.initialize()
+    camera_projection_report = validate_camera_intrinsics(camera, cam)
+    (args.output / "camera_projection.json").write_text(
+        json.dumps(camera_projection_report, indent=2) + "\n"
+    )
     if args.gui:
         from omni.kit.viewport.utility import get_active_viewport
 
@@ -1843,7 +1847,8 @@ def run(app, args, cfg, data, duration):
         }
         if support_views is not None
         else None,
-        "camera_intrinsics_px": camera.get_intrinsics_matrix().tolist(),
+        "camera_intrinsics_px": camera_projection_report["intrinsics_px"],
+        "camera_projection": camera_projection_report,
     }
     if robot_environment_views is not None:
         report["robot_environment_contact_diagnostic"] = {
