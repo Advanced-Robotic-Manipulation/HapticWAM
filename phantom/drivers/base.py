@@ -49,6 +49,30 @@ class TactileFrame:
             axis=-1, dtype=np.float32)
 
 
+class ServoFault(RuntimeError):
+    """A servo stream the driver cannot continue. `stop_reason` names the
+    class in stop.json (rig 09-07: every driver raise collapsed into
+    `executor_crash`, so a 0.2 s reach-boundary hold and a UR protective stop
+    were indistinguishable in the episode record)."""
+    stop_reason = "executor_crash"
+
+
+class ServoHoldTimeout(ServoFault):
+    """The target stayed beyond reach for HOLD_BUDGET_S (arm stationary)."""
+    stop_reason = "servo_hold_timeout"
+
+
+class ServoBranchFault(ServoFault):
+    """25 consecutive off-branch IK solutions — the seed is lost."""
+    stop_reason = "servo_branch_fault"
+
+
+class ControlLost(ServoFault):
+    """servoJ rejected: the controller dropped the script (protective stop,
+    e-stop, popup). `diag` = URArm._diagnose_control_loss snapshot."""
+    stop_reason = "control_lost"
+
+
 class ServoResult:
     """Outcome of one servo tick — the executor anchors its rate limit,
     its recorded action and every replan on `pose`, never on the proposal."""

@@ -23,7 +23,8 @@ import time
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
-from phantom.drivers.base import Arm, ArmState, ServoResult
+from phantom.drivers.base import (Arm, ArmState, ControlLost, ServoBranchFault,
+                                  ServoHoldTimeout, ServoResult)
 from phantom.drivers.real import rig_lease
 from phantom.data.derived import rotvec_nearest
 
@@ -111,6 +112,12 @@ class URArm(Arm):
         destroyed (use-after-free), fully stops the control script, and frees the
         process-wide controller slot."""
         old, self._ctrl = self._ctrl, None
+        # a hold/branch streak belongs to the script being torn down: a
+        # rebuilt script starts clean (a 60 s pendant pause must not become a
+        # 60 s "hold" on the first rejected tick after reconnect)
+        self._ik_rejects = 0
+        self._branch_rejects = 0
+        self._hold_since = None
         # A servo session belongs to ONE control script. Tearing that script
         # down (or rebuilding it in reconnect_control) ends the session by
         # definition, so the guard flag must clear here — leaving it True
@@ -368,7 +375,7 @@ class URArm(Arm):
             # longer running on the robot (a protective stop kills it) — the
             # arm just stops following while everything else keeps working
             diag = self._diagnose_control_loss(list(np.asarray(q, dtype=float)), None)
-            raise RuntimeError("servoJ rejected — the RTDE control script is not "
+            raise ControlLost("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
                                f"and restart the session); robot: {diag.get('summary', 'n/a')}")
 
@@ -491,15 +498,16 @@ class URArm(Arm):
             # a sustained run means the seed is lost — give up fast
             self._branch_rejects += 1
             if self._branch_rejects >= self.IK_REJECT_LIMIT:
-                raise RuntimeError(
+                raise ServoBranchFault(
                     f"servo cannot stream ({self._branch_rejects} consecutive "
                     f"ticks rejected, last: {why}) — the target is at/beyond a "
                     "kinematic boundary")
-        else:
-            self._branch_rejects = 0
-        held_s = now - (self._hold_since if self._hold_since is not None else now)
+        # (a no-solution tick between two off-branch ticks does not forgive
+        # the branch streak; only a SENT tick does)
+        since = getattr(self, "_hold_since", None)
+        held_s = now - (since if since is not None else now)
         if held_s >= self.HOLD_BUDGET_S:
-            raise RuntimeError(
+            raise ServoHoldTimeout(
                 f"servo held for {held_s:.1f} s ({self._ik_rejects} ticks, last: "
                 f"{why}) — the target stayed beyond reach across several replans")
         return ServoResult(False, getattr(self, "_last_cmd_pose", None), why)
@@ -579,7 +587,7 @@ class URArm(Arm):
                 self._hold_since = None
         if ok is False:
             diag = self._diagnose_control_loss(q, tcp_pose)
-            raise RuntimeError("servoJ rejected — the RTDE control script is not "
+            raise ControlLost("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
                                f"and restart the session); robot: {diag.get('summary', 'n/a')}")
         return ServoResult(True, tcp_pose, "sent")

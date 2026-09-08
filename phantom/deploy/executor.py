@@ -499,11 +499,14 @@ class ChunkExecutor:
         for 30+ cycles."""
         try:
             self._run()
-        except Exception:
+        except Exception as e:
             log.exception("executor thread crashed")
             self.crash_text = traceback.format_exc()[-3000:]
-            self._halt("executor_crash")
-            self._set_reason("executor_crash")
+            # typed driver faults name themselves (servo_hold_timeout /
+            # servo_branch_fault / control_lost); anything else is a crash
+            reason = str(getattr(e, "stop_reason", None) or "executor_crash")
+            self._halt(reason)
+            self._set_reason(reason)
 
     crash_text: str | None = None  # traceback of an executor_crash (stop.json)
     def _latched_grip(self, grip: float) -> float:

@@ -383,3 +383,26 @@ def test_control_loss_is_diagnosed_and_kept_for_stop_json(monkeypatch):
     assert d["safety_status_names"] == ["protective_stopped", "violation"]
     assert d["tcp_force"][:2] == [3.0, 4.0] and "|F|=5.0N" in d["summary"]
     assert "q_cmd_minus_actual_max_rad" in d and "dashboard_error" in d
+
+
+def test_typed_driver_faults_name_their_stop_reason():
+    """Rig 09-07: a hold timeout, a branch fault and a UR protective stop all
+    landed as `executor_crash` in stop.json. The executor's crash net must keep
+    the fault's own name, and run_deploy must still treat all of them as
+    'control script suspect' for the stage-0 reconnect."""
+    from phantom.deploy.executor import ChunkExecutor
+    from phantom.drivers.base import ControlLost, ServoBranchFault, ServoHoldTimeout
+    from phantom.scripts.run_deploy import _CONTROL_DEAD_REASONS
+    for exc, want in ((ServoHoldTimeout("x"), "servo_hold_timeout"),
+                      (ServoBranchFault("x"), "servo_branch_fault"),
+                      (ControlLost("x"), "control_lost"),
+                      (RuntimeError("x"), "executor_crash")):
+        ex = ChunkExecutor.__new__(ChunkExecutor)
+        seen = []
+        ex._run = lambda e=exc: (_ for _ in ()).throw(e)
+        ex._halt = lambda r: seen.append(("halt", r))
+        ex._set_reason = lambda r: seen.append(("reason", r))
+        ex._run_guarded()
+        assert seen == [("halt", want), ("reason", want)], (exc, seen)
+        assert want in _CONTROL_DEAD_REASONS
+        assert ex.crash_text

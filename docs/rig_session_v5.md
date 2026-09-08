@@ -185,8 +185,13 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   releases; `--no-grip-latch` disables); a close on air that lifts >30 mm with both pads
   quiet for 1 s triggers `recovery_tactile` (open + re-descend) instead of a phantom carry.
 
-  Known labeling quirks to watch for in logs: a sustained IK-reject hold surfaces as
-  `executor_crash` (the crash net wins over motion_stall); a wrist_extension stop
+  Known labeling quirks to watch for in logs: since 09-08 a driver fault names itself
+  in stop.json — `servo_hold_timeout` (target beyond reach for 4 s; before 09-08 this
+  fired after 0.2 s as `executor_crash` and ended 12/43 episodes on 09-07),
+  `servo_branch_fault` (25 off-branch IK ticks), `control_lost` (UR dropped the
+  script: protective stop / e-stop / popup; `stop_state.control_loss` now records
+  the safety bits, force and commanded-vs-actual joints at the trip). All three are
+  CENSORED episodes for the A/B, re-run with the same seed. A wrist_extension stop
   during a confirmed hold prints a NOTE to label the episode a SUCCESS.
 
 ## Session-5 A/B protocol (from the 09-01 run analysis — do it THIS way)

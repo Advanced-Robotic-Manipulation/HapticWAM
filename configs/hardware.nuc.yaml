@@ -244,10 +244,17 @@ safety:
   # normal teleop deviation (accel spikes ~20-30 N, rejected by the debounce)
   # and catches a sudden sustained crash. If it false-trips in the field, set
   # both to 500 to disable (one line). Retune toward ~40/8 with the FT-300S.
-  wrench_limit_N: 60.0
-  wrench_limit_Nm: 15.0
+  # Rig 09-07 forensics: 12 of 15 UR protective stops were collisions with the
+  # gripper body/forearm (wrist force ramped 8-160 N over the last 0.5 s, two
+  # episodes damaged the object) and this guard never fired — the UR tripped
+  # 56-312 ms after force onset, inside our 300 ms debounce, and 6 of the 12
+  # never reached 60 N of deviation. 45 N / 100 ms trips first in most of those
+  # cases; a false trip costs a censored episode (re-run same seed), a miss
+  # costs a protective stop + a pendant reset + possibly the object.
+  wrench_limit_N: 45.0
+  wrench_limit_Nm: 12.0
   wrench_baseline_tau_s: 2.0     # rolling-baseline time constant (tracks pose/bias drift out)
-  wrench_debounce_ticks: 3       # consecutive over-limit checks (~300 ms @ 10 Hz) to trip
+  wrench_debounce_ticks: 1       # over-limit checks to trip: 1 = ~100 ms @ 10 Hz (was 3 = 300 ms until 09-08)
   tactile_fz_limit_N: 5.0
   tactile_depth_limit: 0.6
   # Sized 2026-07-17 to cover: parked TCP (-0.29,-0.12,0.25), the teleop base

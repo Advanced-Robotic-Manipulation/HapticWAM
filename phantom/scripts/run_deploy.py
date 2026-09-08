@@ -158,7 +158,9 @@ def _finish_policy(pm, norm, args, payload):
 # the arm; any other caller asking "is the control script suspect?" should
 # still get True.
 _CONTROL_DEAD_REASONS = ("protective_stop", "executor_crash", "motion_stall",
-                         "servo_stop_failed", "safety_stop", "worker_died")
+                         "servo_stop_failed", "safety_stop", "worker_died",
+                         # typed driver faults (phantom.drivers.base.ServoFault)
+                         "control_lost", "servo_hold_timeout", "servo_branch_fault")
 _RECONNECT_TRIES = 3
 _SCRIPT_START_TIMEOUT_S = 5.0
 
