@@ -23,13 +23,15 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
-echo "  1) LEVERS  (legacy controller): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-play-steps 12 + max-episode-s 150 + max-replans 200"
+echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + max-play-steps 12 + max-episode-s 150 + max-replans 200"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
 echo "  4) CUSTOM  type your own nfe + flags"
-echo "  5) BOUNDED REACH (teacher recommended): LEVERS + elbow >=0.40 rad, command joint speed <=1.0 rad/s, verified hold <=2.5 s"
+echo "  5) BOUNDED REACH (teacher-only trials, sim evidence only): LEVERS + elbow >=0.40 rad, command joint speed <=1.0 rad/s, verified hold <=2.5 s"
+# The default preset must NOT depend on the model: a paired cell runs both
+# arms under the SAME controller or the pair measures the controller, not the
+# model. BOUNDED REACH (5) is an explicit choice for teacher-only trials.
 DEFAULT_PRESET=1
-[ "$SYSTEM" = teacher ] && DEFAULT_PRESET=5
 read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
 case $p in
   1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 12 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # play 12 (1.2 s): teacher replan p95 1.26 s starved the 1.0 s window on 09-07

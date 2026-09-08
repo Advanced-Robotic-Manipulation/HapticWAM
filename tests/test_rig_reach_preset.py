@@ -10,8 +10,10 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.parametrize("system,preset,fixed", [
-    ("teacher", "", True), ("teacher", "1", False),
-    ("student", "", False), ("teacher", "5", True),
+    # the default preset is the SAME for both systems (paired cells run one
+    # controller on both arms); BOUNDED REACH is an explicit choice
+    ("teacher", "", False), ("teacher", "1", False),
+    ("student", "", False), ("teacher", "5", True), ("student", "5", True),
 ])
 def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset, fixed):
     base = tmp_path / "rig"
