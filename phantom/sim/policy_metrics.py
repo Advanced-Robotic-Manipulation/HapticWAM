@@ -349,9 +349,10 @@ def evaluate_policy_trace(
     world_corners = np.einsum("nij,kj->nki", rotation, corners) + position[:, None]
     tol = limits["bin_tolerance_m"]
     lower, upper = geometry.interior_bounds
+    bin_corners = geometry.to_interior_frame(world_corners)
     over_bin = (
-        (world_corners[:, :, :2] >= lower[:2] - tol)
-        & (world_corners[:, :, :2] <= upper[:2] + tol)
+        (bin_corners[:, :, :2] >= lower[:2] - tol)
+        & (bin_corners[:, :, :2] <= upper[:2] + tol)
     ).all(axis=(1, 2))
     inside_bin = (
         over_bin

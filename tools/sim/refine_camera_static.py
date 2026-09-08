@@ -83,6 +83,7 @@ def main():
         ]
     )
     binpix = np.array([[194, 92], [430, 92], [439, 249], [178, 249]])
+    binpts = geometry.from_interior_frame(binpts)
     robotpts = np.array(pts)
     robotpix = np.array(pix)
     robotsig = np.array(sig)

@@ -103,6 +103,7 @@ def main():
     variants={'r2_fitted_optics':cfg['camera'],'rgb_fov_only':prior,'rgb_robot_pose_fit':fitted}
     b=bin_geometry(cfg['bin'])
     corners=np.array([b.center+[x*b.outer_size[0]/2,y*b.outer_size[1]/2,b.outer_size[2]] for x,y in [(-1,1),(1,1),(1,-1),(-1,-1)]])
+    corners=b.from_interior_frame(corners)
     box_pixels=np.array(annotation['box_outer_rim_corners_px'])
     report={
         'status':'provisional_RGB_mode_prior_and_image_registration_not_factory_calibration',

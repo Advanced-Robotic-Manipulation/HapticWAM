@@ -1,7 +1,8 @@
 """Bin geometry shared by scene construction and object-state scoring.
 
-All lengths are metres in the axis-aligned scene frame. ``bin.center`` is the
-XY centre at the *underside* of the bottom, not the volume centre.
+All lengths are metres; optional bin yaw rotates its cavity about the UR Z axis.
+``bin.center`` is the XY centre at the *underside* of the bottom, not the volume
+centre. Cavity bounds and primitive boxes are expressed before that rotation.
 
 Legacy configurations use ``size`` and a shared side/bottom ``wall`` dimension.
 The opt-in ``rectangular_envelope`` model instead requires ``outer_size``
@@ -18,6 +19,39 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+
+
+def table_hole_centers(config: dict) -> np.ndarray:
+    """Visual lattice on the table, optionally registered to an observed hole.
+
+    The default retains historical half-cell placement. A registered origin is
+    one hole center in UR XY; yaw rotates the lattice, not the table collider.
+    """
+    center = np.asarray(config["center"], float)[:2]
+    size = _dimensions(config["size"], 3, "table.size")[:2]
+    pitch = float(config["hole_pitch"])
+    if not np.isfinite(pitch) or pitch <= 0:
+        raise ValueError("table.hole_pitch must be finite and positive")
+    if "grid_origin_xy" not in config and "grid_yaw" not in config:
+        return np.array([
+            [center[0] - size[0] / 2 + (i + .5) * pitch,
+             center[1] - size[1] / 2 + (j + .5) * pitch]
+            for i in range(int(size[0] / pitch))
+            for j in range(int(size[1] / pitch))
+        ])
+    origin = np.asarray(config["grid_origin_xy"], float)
+    yaw = float(config.get("grid_yaw", 0))
+    if origin.shape != (2,) or not np.isfinite(origin).all() or not np.isfinite(yaw):
+        raise ValueError("Registered table grid needs finite XY origin and yaw")
+    rotation = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
+    corners = center + np.array([[-1,-1], [-1,1], [1,-1], [1,1]]) * size / 2
+    bounds = (corners - origin) @ rotation / pitch
+    lo, hi = np.floor(bounds.min(0)).astype(int), np.ceil(bounds.max(0)).astype(int)
+    ij = np.array([[i,j] for i in range(lo[0],hi[0]+1) for j in range(lo[1],hi[1]+1)])
+    xy = (ij * pitch) @ rotation.T + origin
+    radius = float(config["hole_radius"])
+    keep = (np.abs(xy-center) <= size/2-radius).all(axis=1)
+    return xy[keep]
 
 
 @dataclass(frozen=True)
@@ -59,10 +93,33 @@ class BinGeometry:
     opening_size: np.ndarray
     floor_thickness: float
     legacy_wall: float | None = None
+    yaw: float = 0.0
+
+    def to_interior_frame(self, world_points) -> np.ndarray:
+        """Undo box yaw about its center; bounds retain the historical datum."""
+        points = np.asarray(world_points, dtype=float)
+        if not self.yaw:
+            return points
+        result = points.copy()
+        c, s = np.cos(self.yaw), np.sin(self.yaw)
+        rotation = np.array([[c, -s], [s, c]])
+        result[..., :2] = (points[..., :2] - self.center[:2]) @ rotation + self.center[:2]
+        return result
+
+    def from_interior_frame(self, aligned_points) -> np.ndarray:
+        """Rotate canonical box points into the UR world frame."""
+        points = np.asarray(aligned_points, dtype=float)
+        if not self.yaw:
+            return points
+        result = points.copy()
+        c, s = np.cos(self.yaw), np.sin(self.yaw)
+        rotation = np.array([[c, -s], [s, c]])
+        result[..., :2] = (points[..., :2] - self.center[:2]) @ rotation.T + self.center[:2]
+        return result
 
     @property
     def interior_bounds(self) -> tuple[np.ndarray, np.ndarray]:
-        """Bounds of the open cavity, including floor surface and rim height."""
+        """Bounds before yaw; transform world points with to_interior_frame."""
         if self.model == "legacy":
             # Preserve historical floating-point operation order for scoring.
             lower_xy = self.center[:2] - self.outer_size[:2] / 2 + self.legacy_wall
@@ -124,6 +181,9 @@ def bin_geometry(config: dict) -> BinGeometry:
     center = np.asarray(config["center"], dtype=float)
     if center.shape != (3,) or not np.isfinite(center).all():
         raise ValueError("bin.center must contain three finite coordinates")
+    yaw = float(config.get("yaw", 0.0))
+    if not np.isfinite(yaw):
+        raise ValueError("bin.yaw must be finite radians")
     model = config.get("geometry_model", "legacy")
     if model == "legacy":
         if any(
@@ -138,7 +198,7 @@ def bin_geometry(config: dict) -> BinGeometry:
             raise ValueError(
                 "bin.wall must be positive and less than half every bin dimension"
             )
-        return BinGeometry(model, center, size, size[:2] - 2 * wall, wall, wall)
+        return BinGeometry(model, center, size, size[:2] - 2 * wall, wall, wall, yaw)
     if model != "rectangular_envelope":
         raise ValueError(f"Unsupported bin.geometry_model: {model!r}")
     if "size" in config or "wall" in config:
@@ -154,4 +214,4 @@ def bin_geometry(config: dict) -> BinGeometry:
         raise ValueError(
             "bin.floor_thickness must be positive and less than outside height"
         )
-    return BinGeometry(model, center, size, opening, floor)
+    return BinGeometry(model, center, size, opening, floor, yaw=yaw)

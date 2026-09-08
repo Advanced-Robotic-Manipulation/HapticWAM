@@ -431,11 +431,13 @@ def evaluate_arrays(trace, run, cfg, real, timeline, tracks=None, pose_fit=None)
                 trace["waffle_orientation_wxyz"][final],
                 cfg["waffle"]["size"],
             )
-            lower, upper = bin_geometry(cfg["bin"]).interior_bounds
+            geometry = bin_geometry(cfg["bin"])
+            lower, upper = geometry.interior_bounds
+            bin_corners = geometry.to_interior_frame(corners)
             low, high = lower[:2], upper[:2]
             inside_xy = np.all(
-                (corners[:, :, :2] >= low - 0.005)
-                & (corners[:, :, :2] <= high + 0.005),
+                (bin_corners[:, :, :2] >= low - 0.005)
+                & (bin_corners[:, :, :2] <= high + 0.005),
                 axis=(1, 2),
             )
             inside_z = (corners[:, :, 2].min(1) >= lower[2] - 0.005) & (

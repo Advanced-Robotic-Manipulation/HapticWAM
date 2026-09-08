@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from phantom.sim.geometry import bin_geometry, mount_plate_geometry
+from phantom.sim.geometry import bin_geometry, mount_plate_geometry, table_hole_centers
 
 
 def elliptical_prism_mesh(size, segments=48):
@@ -414,31 +414,27 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     box("/World/Bench/Slab", tab["center"], tab["size"], steel, True, table_phys)
     # Recessed interiors and rim geometry preserve the optical breadboard pattern
     # while the underlying table uses a continuous collision surface.
-    pitch = tab["hole_pitch"]
     cx, cy, _ = tab["center"]
     sx, sy, _ = tab["size"]
     points = []
     counts = []
     indices = []
-    for i in range(int(sx / pitch)):
-        for j in range(int(sy / pitch)):
-            x = cx - sx / 2 + (i + 0.5) * pitch
-            y = cy - sy / 2 + (j + 0.5) * pitch
-            start = len(points)
-            points.extend(
-                [(x, y, tab["top_z"] + 0.0001)]
-                + [
-                    (
-                        x + tab["hole_radius"] * math.cos(k * math.tau / 16),
-                        y + tab["hole_radius"] * math.sin(k * math.tau / 16),
-                        tab["top_z"] + 0.00012,
-                    )
-                    for k in range(16)
-                ]
-            )
-            for k in range(16):
-                counts.append(3)
-                indices.extend([start, start + 1 + k, start + 1 + (k + 1) % 16])
+    for x, y in table_hole_centers(tab):
+        start = len(points)
+        points.extend(
+            [(x, y, tab["top_z"] + 0.0001)]
+            + [
+                (
+                    x + tab["hole_radius"] * math.cos(k * math.tau / 16),
+                    y + tab["hole_radius"] * math.sin(k * math.tau / 16),
+                    tab["top_z"] + 0.00012,
+                )
+                for k in range(16)
+            ]
+        )
+        for k in range(16):
+            counts.append(3)
+            indices.extend([start, start + 1 + k, start + 1 + (k + 1) % 16])
     holes = UsdGeom.Mesh.Define(stage, "/World/Bench/Perforations")
     holes.CreatePointsAttr(points)
     holes.CreateFaceVertexCountsAttr(counts)
@@ -471,24 +467,51 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
                 f"/World/Mount/Socket_{i}_{j}", [x, y, 0.0031], 0.0028, 0.0001, black
             )
     m = cfg["mat"]
-    box("/World/Mat/Base", m["center"], m["size"], dark, True, mat_phys)
-    mx, my, mz = m["center"]
+    local_mat = m.get("frame_model") == "local_planar"
+    if m.get("frame_model") not in (None, "local_planar"):
+        raise ValueError("Unsupported mat.frame_model")
+    if not local_mat and ("yaw" in m or "grid_origin_xy" in m):
+        raise ValueError("Mat yaw/grid phase require frame_model='local_planar'")
+    mat_center = m["center"]
+    if local_mat:
+        mat_frame = UsdGeom.Xform.Define(stage, "/World/Mat")
+        mat_frame.AddTranslateOp().Set(Gf.Vec3d(*map(float, mat_center)))
+        mat_frame.AddRotateZOp().Set(math.degrees(float(m.get("yaw", 0))))
+        mat_center = [0., 0., 0.]
+    box("/World/Mat/Base", mat_center, m["size"], dark, True, mat_phys)
+    mx, my, mz = mat_center
     msx, msy, msz = m["size"]
-    for i, x in enumerate(np.arange(-msx / 2, msx / 2 + 0.00001, m["grid_pitch"])):
+    grid_start = m.get("grid_origin_xy", [-msx / 2, -msy / 2])
+    def grid_positions(axis, extent):
+        if not local_mat:
+            return np.arange(-extent/2, extent/2+.00001, m["grid_pitch"])
+        phase = float(grid_start[axis])
+        first = math.ceil((-extent/2-phase)/m["grid_pitch"])
+        last = math.floor((extent/2-phase)/m["grid_pitch"])
+        return phase + np.arange(first,last+1)*m["grid_pitch"]
+    for i, x in enumerate(grid_positions(0, msx)):
         box(
             f"/World/Mat/X_{i}",
             [mx + x, my, mz + msz / 2 + 0.00005],
             [0.00065, msy, 0.0001],
             grid,
         )
-    for i, y in enumerate(np.arange(-msy / 2, msy / 2 + 0.00001, m["grid_pitch"])):
+    for i, y in enumerate(grid_positions(1, msy)):
         box(
             f"/World/Mat/Y_{i}",
             [mx, my + y, mz + msz / 2 + 0.00005],
             [msx, 0.00065, 0.0001],
             grid,
         )
-    build_bin_primitives(box, cfg["bin"], blue, bin_phys)
+    b = cfg["bin"]
+    if bin_geometry(b).yaw:
+        # Rotate all physical and visual pieces together; containment scoring
+        # uses the same configured yaw in BinGeometry.to_interior_frame.
+        bin_frame = UsdGeom.Xform.Define(stage, "/World/Bin")
+        bin_frame.AddTranslateOp().Set(Gf.Vec3d(*map(float, b["center"])))
+        bin_frame.AddRotateZOp().Set(math.degrees(float(b["yaw"])))
+        b = {**b, "center": [0., 0., 0.]}
+    build_bin_primitives(box, b, blue, bin_phys)
 
     # Packet geometry has separate rendering and collision meshes.
     obj = UsdGeom.Xform.Define(stage, "/World/Waffle")
