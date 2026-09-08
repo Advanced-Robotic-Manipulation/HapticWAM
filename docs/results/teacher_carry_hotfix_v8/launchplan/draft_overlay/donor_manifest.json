@@ -1,0 +1,16 @@
+{
+  "status": "final_code_pending_campaignfreeze",
+  "donor_commit": "84c71a4",
+  "base_commit": "6d56392",
+  "files": {
+    "hold_only.patch": "5abbef3f8b4a439db0a94ce805f1bc275bd10fe50b650cd6c467234bc32ebceb",
+    "phantom/deploy/executor.py": "473a031c92f468513aaa619dd432525211b6c5b4271e388f37afabc5b992a8f0",
+    "phantom/deploy/runtime.py": "9739a2585dd7492de5951cfedc3c637508b7a5b24ab1976d50be70f3cd940146",
+    "phantom/config/hardware.py": "51c1744564709b95e370c58c9cc75926ee2ce53cfd200c284bbe5ccde61074c1",
+    "phantom/drivers/servo_limiter.py": "f7a5dbc3ebb3938cad9fac0c8985d748ed88ca35789113090893898e9be042d4",
+    "phantom/drivers/servo_hold.py": "a1ea1fcb902a681da57ed47cfd631a3952280be45b2d24acc1e7f9d51304f06f",
+    "phantom/drivers/real/ur.py": "6c9289711b5cd07ef3f0fbcd35668474ac936836159f455dcdf527a3bc1b3b8b",
+    "tools/sim/run_policy_campaign.py": "abedc66cacd3f3d58f74934cfd39e65bcf29fa20a9813d7b8d0c41ad3d7820bd",
+    "tools/sim/analyze_policy_campaign.py": "585ef3df950c95d4e8e0c439794d67a21e935237ee6c045c520952f13d625740"
+  }
+}

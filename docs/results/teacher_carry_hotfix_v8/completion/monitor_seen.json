@@ -1,0 +1,8 @@
+[
+  "plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301",
+  "plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302",
+  "legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301",
+  "legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302",
+  "bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301",
+  "bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302"
+]

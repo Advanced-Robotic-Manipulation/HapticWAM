@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "recovered_at_utc": "2026-09-08",
+  "method": "read-only SSH copies, bytes preserved",
+  "files": [
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/bindings.frozen.json",
+      "local": "launchplan/bindings.frozen.json",
+      "bytes": 6761,
+      "sha256": "a877c8f81c6c6af795a500a3f23e730f86796ea1552026179dc33ea4a65b8b2e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/launch_paired.py",
+      "local": "launchplan/launch_paired.py",
+      "bytes": 11354,
+      "sha256": "61391d5fae85214f08b2664a4ad18787a3cd5601b589e29e29186e7dead4f2ab"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/freeze_reviewed.py",
+      "local": "launchplan/freeze_reviewed.py",
+      "bytes": 2673,
+      "sha256": "860f44ed1d3ba02a1f5f38f8f8e266f1da32d9df3eb4c34133cb233e1015d3c8"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/launcher_record.json",
+      "local": "launchplan/launcher_record.json",
+      "bytes": 678,
+      "sha256": "bfc923aed17e95f5dd44bf21d95e8986717aad29b982c6a24347e8f7b7a42fd7"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/draft_patch_check.json",
+      "local": "launchplan/draft_patch_check.json",
+      "bytes": 742,
+      "sha256": "f3eef123c3b5a27b3d9847b858d0de27cd366b65e6a6ed30849d05862e609625"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/draft_overlay/hold_only.patch",
+      "local": "launchplan/draft_overlay/hold_only.patch",
+      "bytes": 9826,
+      "sha256": "5abbef3f8b4a439db0a94ce805f1bc275bd10fe50b650cd6c467234bc32ebceb"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/draft_overlay/donor_manifest.json",
+      "local": "launchplan/draft_overlay/donor_manifest.json",
+      "bytes": 1057,
+      "sha256": "baf7a7a0897de5f01cfe498ba257c5dbbe51b7bf7733c21a1569dcbd1ea281d9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/campaigns/plain_k4.json",
+      "local": "launchplan/campaigns/plain_k4.json",
+      "bytes": 19455,
+      "sha256": "b275224dae164cf4857530e5a2b90333258dcf65ff3d75b7389ade8b1652cffb"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/hardware/plain_k4.yaml",
+      "local": "launchplan/hardware/plain_k4.yaml",
+      "bytes": 3871,
+      "sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/campaigns/legacy_limiter.json",
+      "local": "launchplan/campaigns/legacy_limiter.json",
+      "bytes": 19470,
+      "sha256": "7f7e18829e8f23f125ad2ccc92ca07bb141e0548ad997ae1bf32adcd20f7b58c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/hardware/legacy_limiter.yaml",
+      "local": "launchplan/hardware/legacy_limiter.yaml",
+      "bytes": 3786,
+      "sha256": "395244612c17c78cfbe92a90531ffc2e2dc2ef7211845615c5c203f47fb9f092"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/campaigns/bounded_hold.json",
+      "local": "launchplan/campaigns/bounded_hold.json",
+      "bytes": 19462,
+      "sha256": "46186e54194ae80f58e4f6ec9e7d99b88d4dc62742b0a1df12d6dc1de4c45864"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/hardware/bounded_hold.yaml",
+      "local": "launchplan/hardware/bounded_hold.yaml",
+      "bytes": 3817,
+      "sha256": "f20207a6d47f45ddc2ed7c40906a74edf11fa607ebfad21093813a2b8bae2209"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/runtime_manifest.json",
+      "local": "preflight/runtime_manifest.json",
+      "bytes": 802211,
+      "sha256": "b0df98e21d54dcc0a23faa17e18c092abbfe7a665b29d6c4b3a520d13a644e7f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/driver_manifest.json",
+      "local": "preflight/driver_manifest.json",
+      "bytes": 39748,
+      "sha256": "188ad60b4ec01a9fee3255712ff9fe1fc65015cc6fd40d9ccefdedce1153977b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/inference_manifest.json",
+      "local": "preflight/inference_manifest.json",
+      "bytes": 41620,
+      "sha256": "9e07ca182bece6f5bbf7fdecee62c3b5b8732373b2ce1305e71a04c5a46ca57c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_assembled_tests.json",
+      "local": "preflight/cpu_assembled_tests.json",
+      "bytes": 1395,
+      "sha256": "391cab20e53a1142f1a320aaedd1982bdb16d563d35659023bc66daeee2da3e3"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_assembled_tests.log",
+      "local": "preflight/cpu_assembled_tests.log",
+      "bytes": 180,
+      "sha256": "b62e4b2c2716e1c929325d949ebb84a2fe637d3b7622d4a7ab27be19f832b38c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_frozen_plan.json",
+      "local": "preflight/cpu_frozen_plan.json",
+      "bytes": 63117,
+      "sha256": "a7b36cb358bb25daa56ce2dd62a1ffd70c4dc3e972bf84eda5c35cb745734231"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_draft_preflight.json",
+      "local": "preflight/cpu_draft_preflight.json",
+      "bytes": 59510,
+      "sha256": "890aa3efe443067b0c5f3f64aeada459585f5064e15dbbff7e55cb484ff3cc2c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/inference_paths_preflight.json",
+      "local": "preflight/inference_paths_preflight.json",
+      "bytes": 1036,
+      "sha256": "782810506fe1d2d311d0ed897423be2f4a94108aec424ae6b6e87f9bf28d37ab"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/completion_audit.json",
+      "local": "completion/completion_audit.json",
+      "bytes": 29315,
+      "sha256": "0873acd4d41eb5f8a145337ff4a5465225cfee1ec1f7cf579fe7b882646bd3c2"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/monitor_latest.json",
+      "local": "completion/monitor_latest.json",
+      "bytes": 3118,
+      "sha256": "8218044575446ff2cb2d7bca1b1ed0d3a28ce916c308525c83db986392b0a74d"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/monitor_seen.json",
+      "local": "completion/monitor_seen.json",
+      "bytes": 389,
+      "sha256": "71a18b305ab8b3d3101dd88c685af2eb81f9c05b7b4aade8b7d1b81aac6adf14"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/monitor_readonly.py",
+      "local": "completion/monitor_readonly.py",
+      "bytes": 2255,
+      "sha256": "07c013aa3a736392dd1ce8fafd5a790fe774728d6a9af87d12ed90c0da45db85"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/audit_completed.py",
+      "local": "completion/audit_completed.py",
+      "bytes": 7842,
+      "sha256": "8e9d02f0b80ba2a7a186645cb5c6e883c8a517161a6c531a4b906cdeeffc210b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/bounded_seed904301_hold_audit.json",
+      "local": "completion/bounded_seed904301_hold_audit.json",
+      "bytes": 2634,
+      "sha256": "4cbb4bf7bfd950564ef18c30737a6791330a327332025845a372a88bcdf8191d"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/complete.json",
+      "local": "completion/paired/complete.json",
+      "bytes": 143,
+      "sha256": "23454a2df8a010175e7f4b0cb0f85791e27988e957b4d8bb2366e15805dddc52"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/launch_plan.json",
+      "local": "completion/paired/launch_plan.json",
+      "bytes": 63117,
+      "sha256": "a7b36cb358bb25daa56ce2dd62a1ffd70c4dc3e972bf84eda5c35cb745734231"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4_launch.json",
+      "local": "completion/paired/plain_k4_launch.json",
+      "bytes": 1168,
+      "sha256": "68a5c70d5902c5e927a15a4f53554889ea757a7391c57c6bbc9cd29cb1e5581f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4_completed.json",
+      "local": "completion/paired/plain_k4_completed.json",
+      "bytes": 230,
+      "sha256": "f10450dbddc2fd8edf56bfbf179838e696979ed5597b2b0dbac8e9d6b37525df"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4.log",
+      "local": "completion/paired/plain_k4.log",
+      "bytes": 638,
+      "sha256": "17752c88566ee7940821ef7c53fbefdf10ec1ac92674d6ff7dfd4d8d04d5be20"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/campaign_snapshot.json",
+      "local": "completion/paired/plain_k4/campaign_snapshot.json",
+      "bytes": 19455,
+      "sha256": "b275224dae164cf4857530e5a2b90333258dcf65ff3d75b7389ade8b1652cffb"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/frozen_inputs.json",
+      "local": "completion/paired/plain_k4/frozen_inputs.json",
+      "bytes": 18304,
+      "sha256": "64e1ba0a1af45afa4ca9069dfc85a409979fece48f0bee2925b7a70ce342841d"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/plan.json",
+      "local": "completion/paired/plain_k4/plan.json",
+      "bytes": 1392,
+      "sha256": "a8f5dd5db85a03fe995f3e8e06877ed86722e8ca16ea096b702cef4fb5ed647f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/progress.json",
+      "local": "completion/paired/plain_k4/progress.json",
+      "bytes": 5408,
+      "sha256": "b8279412a55ea1a9ce7ab725b12e2cb2113deee30ec89d08208664ecb3f70c42"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/analysis/summary.json",
+      "local": "completion/paired/plain_k4/analysis/summary.json",
+      "bytes": 12786,
+      "sha256": "a287ac83cde6f83fd662b1c7627ceb64cae409998764ad2f1e246e39d3a54328"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "local": "completion/paired/plain_k4/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "bytes": 8596,
+      "sha256": "ba374cbbb9c915d06ce674863303496d4c3dc9602976e5ceb73a110497a4d862"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "local": "completion/paired/plain_k4/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "bytes": 8598,
+      "sha256": "474880765fcc20ff1c3f667a216eee0a04e1a32bed228db4abbb1d5fc8059f47"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter_launch.json",
+      "local": "completion/paired/legacy_limiter_launch.json",
+      "bytes": 1186,
+      "sha256": "fa4ff98e8663993263d9e5dac2872c4481f55b121a4e1bd77e3cfc6a0ae033df"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter_completed.json",
+      "local": "completion/paired/legacy_limiter_completed.json",
+      "bytes": 230,
+      "sha256": "e1c3f4eb5dee74d83df2bf310d0c8f6825113fd2b4f49cc491d92d9e2f780805"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter.log",
+      "local": "completion/paired/legacy_limiter.log",
+      "bytes": 654,
+      "sha256": "b2ed2ccc71469fdd3c808153fbcf71c9eedca5e46fc97eaaef07ae23c85d41ba"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/campaign_snapshot.json",
+      "local": "completion/paired/legacy_limiter/campaign_snapshot.json",
+      "bytes": 19470,
+      "sha256": "7f7e18829e8f23f125ad2ccc92ca07bb141e0548ad997ae1bf32adcd20f7b58c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/frozen_inputs.json",
+      "local": "completion/paired/legacy_limiter/frozen_inputs.json",
+      "bytes": 18418,
+      "sha256": "84d2816e6eeadb828af6d46107f15cfa6b612527dc6929e98c197cb5e4f90d2a"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/plan.json",
+      "local": "completion/paired/legacy_limiter/plan.json",
+      "bytes": 1398,
+      "sha256": "b3cb680c938d814984c8eac829b1fd06ab35a7f6569dd07b524da996a734b5ce"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/progress.json",
+      "local": "completion/paired/legacy_limiter/progress.json",
+      "bytes": 5545,
+      "sha256": "28ecbd249696f3c6ff1f9f4554ade3ad76da57c47a53d17b22c4b05426c18698"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/analysis/summary.json",
+      "local": "completion/paired/legacy_limiter/analysis/summary.json",
+      "bytes": 12880,
+      "sha256": "05212d99c5aa056fffed95e6a0a7b6ed06c1764d65ef3bf56b13cad3cb19475b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "local": "completion/paired/legacy_limiter/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "bytes": 8709,
+      "sha256": "8e7442c3faa90b54a976d4441d8109adaa6b7a4e21ae8ad2de669d426aece7fa"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "local": "completion/paired/legacy_limiter/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "bytes": 8630,
+      "sha256": "81a07f8519525afa270b695c22ad18b1c4e1f1fe88853d3861e0bec00f200661"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold_launch.json",
+      "local": "completion/paired/bounded_hold_launch.json",
+      "bytes": 1180,
+      "sha256": "b0e636d3f1bb0f2ecea25dc96b9934c966a066b9b34f4f73f6b05c7cfa041c2f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold_completed.json",
+      "local": "completion/paired/bounded_hold_completed.json",
+      "bytes": 230,
+      "sha256": "c6531730e196888491888c597eb4dd02eefe058735c40434f22e962de4ecac7c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold.log",
+      "local": "completion/paired/bounded_hold.log",
+      "bytes": 631,
+      "sha256": "7bb5302ed4b38f34809728e58343cedfa7746628a34a3d352e842df28cbc3d6a"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/campaign_snapshot.json",
+      "local": "completion/paired/bounded_hold/campaign_snapshot.json",
+      "bytes": 19462,
+      "sha256": "46186e54194ae80f58e4f6ec9e7d99b88d4dc62742b0a1df12d6dc1de4c45864"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/frozen_inputs.json",
+      "local": "completion/paired/bounded_hold/frozen_inputs.json",
+      "bytes": 18521,
+      "sha256": "4ac58f5eebd8d19934563a26aa01761c6080ad133e459fca5c6dab228329ce8b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/plan.json",
+      "local": "completion/paired/bounded_hold/plan.json",
+      "bytes": 1396,
+      "sha256": "94cedaa4f6b0e639d0d9254ea91fb261c43b345c774b943f0d3c736921581b40"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/progress.json",
+      "local": "completion/paired/bounded_hold/progress.json",
+      "bytes": 5622,
+      "sha256": "b849005399158105d392e8ef437d3003b045c92ad4538397faec9693df712b73"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/analysis/summary.json",
+      "local": "completion/paired/bounded_hold/analysis/summary.json",
+      "bytes": 12802,
+      "sha256": "839bfd454c817ec6e20de5f12f02784497fc37765f7a9aa412b50af72f21ad58"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "local": "completion/paired/bounded_hold/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "bytes": 8601,
+      "sha256": "45c4f796e64c86ae93da8552cf2d23a6929f16bdf9c17964f6d267fc3761a0c2"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "local": "completion/paired/bounded_hold/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "bytes": 8689,
+      "sha256": "bffa93bc49d9efeae3dbe8026e683da2946e2d038200c21b9cefd1771529dfdb"
+    }
+  ]
+}

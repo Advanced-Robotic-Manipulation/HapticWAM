@@ -1,0 +1,129 @@
+{
+  "all_six_remote_and_local_hashes_match": true,
+  "videos": [
+    {
+      "setting": "plain_k4",
+      "seed": 904301,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "sha256": "1eb63087721a46f8393f46a14cc3508acb4d3c2c0a110d06f8817d1908c4d686",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "source_png_sha256": "6299830c3cd5cda40f76ae4f63272c9d30c44ba889f35abfcd66c975e17563af",
+          "jpeg": "plain_k4_904301_frame_final.jpg",
+          "jpeg_sha256": "ee91c6861936d1345ba224a28c0211101e936fac397725fc26d3a0ee8e7406ed",
+          "simulation_time_s": 17.6
+        }
+      ]
+    },
+    {
+      "setting": "plain_k4",
+      "seed": 904302,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "sha256": "5d8f156d725108a53c5f935209548830d68643b20adb40e6c9c4e0d2bbd17e3d",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "source_png_sha256": "619ed710121fcb6d39230321d6611b90d05e0a5dc2464c9654314afc412389bb",
+          "jpeg": "plain_k4_904302_frame_final.jpg",
+          "jpeg_sha256": "2646c2b389de7193004405e7a963df7a45c7bd62bd0f73076b07f16e97aeec62",
+          "simulation_time_s": 17.666666666666668
+        }
+      ]
+    },
+    {
+      "setting": "legacy_limiter",
+      "seed": 904301,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "sha256": "3595895d5c8ccb295132678655b15c00f350bcc3fcfa98bbe0c0881c2afa9c35",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "source_png_sha256": "0439df5a555abaa738ed1cd770d057fd26e7b4bf9a2cf7959cdb58631f1e0fdd",
+          "jpeg": "legacy_limiter_904301_frame_final.jpg",
+          "jpeg_sha256": "97aa2f8ae8b27fa1955306c7833b00180b484fe650e890c8d11aeef680ec9f36",
+          "simulation_time_s": 17.066666666666666
+        }
+      ]
+    },
+    {
+      "setting": "legacy_limiter",
+      "seed": 904302,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "sha256": "3b1033cda6a897c782d0d148084ee5e9fda148b5f9cd011790cdab8755674049",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "source_png_sha256": "c4bc3e5e8b32a27526b961c7f0e92ca4792292a83fa61fd83cfca5261ddc3aa3",
+          "jpeg": "legacy_limiter_904302_frame_final.jpg",
+          "jpeg_sha256": "7e5411d22eb90f0bf329b85206b5d0d9ffff288deb8f1fec416e6c02f43b51a7",
+          "simulation_time_s": 17.333333333333332
+        }
+      ]
+    },
+    {
+      "setting": "bounded_hold",
+      "seed": 904301,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "sha256": "3e5eac9cab5bbe4670cdd4775f6d58f8ec8896c92af31693ff66025d395bab19",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "source_png_sha256": "ec612b3151d6b9695d9399b2619b1b9ecd24359112b1b89e58917b710d38292c",
+          "jpeg": "bounded_hold_904301_frame_final.jpg",
+          "jpeg_sha256": "3b89cc9525025989fe26813407ff13bdf7681c28ec67ba5f1155d419914b21f4",
+          "simulation_time_s": 59.93333333333333
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_12.00s.png",
+          "source_png_sha256": "d98db66da4de58e6b0576d738371b33d730b3d4899a2fe46bef78c0a2a290aca",
+          "jpeg": "bounded_hold_904301_frame_12.00s.jpg",
+          "jpeg_sha256": "bca725211dde7c2f314a5fbfc703fdabf1ec7b201d2ea2eef3646f986169e1c2",
+          "simulation_time_s": 12.0
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_22.00s.png",
+          "source_png_sha256": "ee665e9d88c0fff436c05450079b0fe6614d5806238227fb529fac31585f3d07",
+          "jpeg": "bounded_hold_904301_frame_22.00s.jpg",
+          "jpeg_sha256": "c84a5c21945771d372edbce5e15385f1630f90c9d75203e9f369bb1bed58d970",
+          "simulation_time_s": 22.0
+        }
+      ]
+    },
+    {
+      "setting": "bounded_hold",
+      "seed": 904302,
+      "local_video": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "sha256": "49ba34087678d57367bcccd742b581da01ce099112ee2f815f224f6f47bb43c7",
+      "identical_to_decoded_remote": true,
+      "snapshots": [
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "source_png_sha256": "b7b14c2c80d8b642807b68250dd0e9da19d210c33fc91cad76c5196d0577c0ed",
+          "jpeg": "bounded_hold_904302_frame_final.jpg",
+          "jpeg_sha256": "a9c0928299dc4106d8a11184401910da55f2474e3f743a3f1c81f6988aaa81e8",
+          "simulation_time_s": 44.46666666666667
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_12.00s.png",
+          "source_png_sha256": "aef03e07d5427c6b6ffab3ce0b25ba0e043787037a53227d2eae17634dbb8d08",
+          "jpeg": "bounded_hold_904302_frame_12.00s.jpg",
+          "jpeg_sha256": "5195f0e5eb05d202a9a9273ff903b613aa40ee1e627f2f73b6c6b83500e04c1a",
+          "simulation_time_s": 12.0
+        },
+        {
+          "source_png": "/home/agent/skoltech/research/artifacts/isaac_waffles/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_22.00s.png",
+          "source_png_sha256": "643b4a5dc641e8180ad4c97af6c92bd935649ce308e9397f4aed56f3b133640e",
+          "jpeg": "bounded_hold_904302_frame_22.00s.jpg",
+          "jpeg_sha256": "dae00142d625241171def16ddf55ec6f7344b9dc7168387da82652d7d6d5e9e2",
+          "simulation_time_s": 22.0
+        }
+      ]
+    }
+  ]
+}

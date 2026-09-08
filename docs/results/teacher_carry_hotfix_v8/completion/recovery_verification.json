@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "at_utc": "2026-09-08T06:20:10.455356+00:00",
+  "verified_pinned_files": 5098,
+  "binding_sha256": "a877c8f81c6c6af795a500a3f23e730f86796ea1552026179dc33ea4a65b8b2e",
+  "owned_port_7799_free": true,
+  "live_repo_head": "0259ed3355f2ad3078778e7cc347b100775e06d3",
+  "live_repo_status": [
+    "?? configs/hardware.nuc.nosafety.yaml",
+    "?? logs/",
+    "?? logs_deploy_smoke.log",
+    "?? logs_deploy_smoke_fixed.log",
+    "?? logs_smoke_pn.log",
+    "?? phantom/scripts/direct_tactile_feed.py",
+    "?? phantom/scripts/raw_monitor.py",
+    "?? rig_replay_ablation.py",
+    "?? tests/test_ur_servo_limiter.py.ilya-0904.orig"
+  ],
+  "scope": "Read-only recovery-day verification; original post-run verification remains completion_audit.json. No process ownership inferred from stale PIDs."
+}

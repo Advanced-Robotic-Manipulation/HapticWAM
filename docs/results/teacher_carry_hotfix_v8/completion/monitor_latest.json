@@ -1,0 +1,100 @@
+{
+  "launcher_alive": false,
+  "completed": [
+    "plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301",
+    "plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302",
+    "legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301",
+    "legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302",
+    "bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301",
+    "bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302"
+  ],
+  "new": [
+    {
+      "case": "bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302",
+      "status": "scored",
+      "valid": true,
+      "invalid_reasons": [],
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "events": {
+        "reach": 5.736,
+        "closure": 7.0680000000000005,
+        "acquisition": 7.5360000000000005,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.37527647614479065,
+          -0.30305400490760803,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.031681470572948456,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 5.0057084289058076e-06,
+        "final_angular_speed_rad_s": 6.083373583314532e-06,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 3.7320000000000055,
+        "pad_packet_normal_force_peak_n": 8.2401762008667
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 5311,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 46,
+        "inference_errors": 0,
+        "plans_activated": 45,
+        "effective_latency_s": {
+          "count": 46,
+          "mean": 0.9132128101115561,
+          "p95": 1.1799834053381346,
+          "max": 1.2992456019856036
+        },
+        "inference_wall_time_s": {
+          "count": 46,
+          "mean": 1.111118572607191,
+          "p95": 1.3854147093370557,
+          "max": 1.4968607609625906
+        },
+        "activation_delay_s": {
+          "count": 45,
+          "mean": 0.9146666666666663,
+          "p95": 1.1903999999999997,
+          "max": 1.3199999999999985
+        },
+        "lift_complete_is_task_success": false
+      },
+      "run_stop_reason": null,
+      "run_safety_events": null,
+      "duration_s": 44.480000000000004
+    }
+  ],
+  "status": {
+    "plain_k4": "all_trials_completed",
+    "legacy_limiter": "all_trials_completed",
+    "bounded_hold": "all_trials_completed"
+  },
+  "errors": []
+}

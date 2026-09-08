@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_135140_waffles/ep_waffles_1787395928_000",
+  "split": "fit",
+  "meta_sha256": "70a3174c86cb28391fb6f520ef6f218403a10929f5fa75c8b886a54065edfd10",
+  "meta": {
+    "task": "waffles",
+    "text": "waffles",
+    "operator": "k",
+    "tags": [
+      "full",
+      "batch_20260822"
+    ],
+    "policy": "teleop",
+    "dagger_round": -1,
+    "success": true,
+    "notes": "",
+    "driver_modes": {
+      "drivers": "real"
+    },
+    "clock_calibration": {
+      "offset": -1811125.3655858438,
+      "n_samples": 200,
+      "spread_s": 0.000504916964415903
+    },
+    "config_hash": "b2504b6d5ff0c29d",
+    "hardware_shapes": {
+      "field": [
+        288,
+        384
+      ],
+      "field_ch": 8,
+      "keyframe_ds": [
+        144,
+        192
+      ],
+      "n_fingers": 2,
+      "wrench_dim": 6,
+      "wrist_ft_dim": 6,
+      "wrist_window_len": 31,
+      "ur_state_dim": 26,
+      "contact_state_dim": 11,
+      "action_dim": 7,
+      "chunk_horizon": 16,
+      "cpk_shape": [
+        36,
+        48
+      ]
+    },
+    "status": "finalized"
+  },
+  "planner_trace_sha256": null,
+  "t0_master_s": 5581.754654878285,
+  "fps": 15.0,
+  "frames": 297,
+  "duration_s": 19.733333333333576,
+  "resolution_wh": [
+    640,
+    480
+  ],
+  "streams": {
+    "actions": {
+      "samples": 187,
+      "first_master_s": 5581.771650902228,
+      "last_master_s": 5600.628317736089,
+      "median_hz": 9.958797569289192,
+      "max_gap_s": 0.1131422130856663
+    },
+    "actions_abs": {
+      "samples": 188,
+      "first_master_s": 5581.734633045271,
+      "last_master_s": 5600.628317736089,
+      "median_hz": 9.959919993521712,
+      "max_gap_s": 0.1131422130856663
+    },
+    "arm_ft": {
+      "samples": 2482,
+      "first_master_s": 5581.732623199234,
+      "last_master_s": 5601.582711007213,
+      "median_hz": 124.99279491808893,
+      "max_gap_s": 0.015921799931675196
+    },
+    "arm_q": {
+      "samples": 2477,
+      "first_master_s": 5581.732623199234,
+      "last_master_s": 5601.5427081771195,
+      "median_hz": 124.99282038101012,
+      "max_gap_s": 0.015921799931675196
+    },
+    "arm_qd": {
+      "samples": 2479,
+      "first_master_s": 5581.732623199234,
+      "last_master_s": 5601.5587077131495,
+      "median_hz": 124.99282038101012,
+      "max_gap_s": 0.015921799931675196
+    },
+    "arm_tcp_pose": {
+      "samples": 2480,
+      "first_master_s": 5581.732623199234,
+      "last_master_s": 5601.566809375305,
+      "median_hz": 124.99279491808893,
+      "max_gap_s": 0.015921799931675196
+    },
+    "arm_tcp_speed": {
+      "samples": 2482,
+      "first_master_s": 5581.732623199234,
+      "last_master_s": 5601.582711007213,
+      "median_hz": 124.99279491808893,
+      "max_gap_s": 0.015921799931675196
+    },
+    "camera_scene_color": {
+      "samples": 298,
+      "first_master_s": 5581.754654878285,
+      "last_master_s": 5601.5677417411935,
+      "median_hz": 14.980579687833245,
+      "max_gap_s": 0.07446912000887096
+    },
+    "gripper": {
+      "samples": 1853,
+      "first_master_s": 5581.7328105941415,
+      "last_master_s": 5601.589080586098,
+      "median_hz": 98.21086781612901,
+      "max_gap_s": 0.03301010001450777
+    },
+    "tactile_left_area": {
+      "samples": 115,
+      "first_master_s": 5581.762473327108,
+      "last_master_s": 5601.00762906624,
+      "median_hz": 6.092992606724208,
+      "max_gap_s": 0.24347877013497055
+    },
+    "tactile_left_wrench": {
+      "samples": 115,
+      "first_master_s": 5581.762473327108,
+      "last_master_s": 5601.00762906624,
+      "median_hz": 6.092992606724208,
+      "max_gap_s": 0.24347877013497055
+    },
+    "tactile_right_area": {
+      "samples": 113,
+      "first_master_s": 5581.8269845373,
+      "last_master_s": 5601.056210954208,
+      "median_hz": 5.910447522691643,
+      "max_gap_s": 0.23423273209482431
+    },
+    "tactile_right_wrench": {
+      "samples": 113,
+      "first_master_s": 5581.8269845373,
+      "last_master_s": 5601.056210954208,
+      "median_hz": 5.910447522691643,
+      "max_gap_s": 0.23423273209482431
+    }
+  },
+  "samples": [
+    {
+      "file": "frame_00000.png",
+      "grid_index": 0,
+      "source_index": 0,
+      "t": 0.0,
+      "camera_t": 0.0,
+      "q": [
+        0.2445439677732159,
+        -1.510141528881098,
+        0.9251828922620371,
+        0.8997433451396138,
+        1.1857244188188614,
+        -3.203697200264774
+      ],
+      "tcp": [
+        -0.33537599941066115,
+        -0.2998645136565928,
+        0.3563713293837047,
+        -1.0310296482523877,
+        -1.9240993542533753,
+        1.4725597086845152
+      ]
+    },
+    {
+      "file": "frame_00037.png",
+      "grid_index": 37,
+      "source_index": 37,
+      "t": 2.4666666666662422,
+      "camera_t": 2.469794277800247,
+      "q": [
+        0.3236976247479656,
+        -1.5243897806845468,
+        1.2463298009524668,
+        0.7495461158515064,
+        1.3870327223810188,
+        -3.168383145156404
+      ],
+      "tcp": [
+        -0.3360884302440307,
+        -0.2805820693165387,
+        0.26093404498830725,
+        -1.2191624880835017,
+        -1.9711488503423846,
+        1.2645531487259856
+      ]
+    },
+    {
+      "file": "frame_00074.png",
+      "grid_index": 74,
+      "source_index": 74,
+      "t": 4.933333333333394,
+      "camera_t": 4.9331513058859855,
+      "q": [
+        0.3254839781565549,
+        -1.5279293150792994,
+        1.879251613829969,
+        0.2137034484601501,
+        1.4624525183191117,
+        -3.1439791071075387
+      ],
+      "tcp": [
+        -0.3206232456654314,
+        -0.25563824048244294,
+        0.11025459058524185,
+        -1.3334578092449798,
+        -1.9844369109705517,
+        1.1410386011885
+      ]
+    },
+    {
+      "file": "frame_00111.png",
+      "grid_index": 111,
+      "source_index": 111,
+      "t": 7.399999999999636,
+      "camera_t": 7.404790398897603,
+      "q": [
+        0.32610991099867576,
+        -1.4814811404662462,
+        2.0081856078535503,
+        0.03740600231585923,
+        1.4810390740790482,
+        -3.1329345976756997
+      ],
+      "tcp": [
+        -0.3181383770257696,
+        -0.25011481347099035,
+        0.07558012818710673,
+        -1.350557178063331,
+        -1.9666045014765714,
+        1.1312428179345586
+      ]
+    },
+    {
+      "file": "frame_00148.png",
+      "grid_index": 148,
+      "source_index": 148,
+      "t": 9.866666666666788,
+      "camera_t": 9.87050038180314,
+      "q": [
+        -0.008112112108561885,
+        -1.5589154047454457,
+        1.1287967431857555,
+        0.811944679898573,
+        1.747266724193266,
+        -3.200001687141083
+      ],
+      "tcp": [
+        -0.40539659516114046,
+        -0.06253102316138616,
+        0.30944622184842774,
+        -1.4874231853095004,
+        -1.3892118444827188,
+        0.8060626071109409
+      ]
+    },
+    {
+      "file": "frame_00185.png",
+      "grid_index": 185,
+      "source_index": 185,
+      "t": 12.33333333333303,
+      "camera_t": 12.33918628282845,
+      "q": [
+        -0.4207134240127865,
+        -1.6177558580144078,
+        1.7461795001377656,
+        0.56066704234714,
+        1.6727668432906582,
+        -3.0495312849627894
+      ],
+      "tcp": [
+        -0.35181637447889497,
+        0.06470352488294191,
+        0.1365244426802896,
+        -2.024164425099602,
+        -1.1183676814423242,
+        0.536709657963512
+      ]
+    },
+    {
+      "file": "frame_00222.png",
+      "grid_index": 222,
+      "source_index": 222,
+      "t": 14.800000000000182,
+      "camera_t": 14.80784273892641,
+      "q": [
+        -0.4571173092511853,
+        -1.6299570242511194,
+        1.584097634111289,
+        0.6364748728528599,
+        1.630248197091524,
+        -3.0334548969968163
+      ],
+      "tcp": [
+        -0.373227159853228,
+        0.07752987241900992,
+        0.1878303960764418,
+        -1.9712020505422083,
+        -1.0411393999063727,
+        0.6249083233451478
+      ]
+    },
+    {
+      "file": "frame_00259.png",
+      "grid_index": 259,
+      "source_index": 259,
+      "t": 17.266666666666424,
+      "camera_t": 17.277676434023306,
+      "q": [
+        0.18455313752378366,
+        -1.5201142469989222,
+        0.9746379852294922,
+        0.9466601610183716,
+        1.5272655180900288,
+        -3.037682371713715
+      ],
+      "tcp": [
+        -0.3739320042433393,
+        -0.19357046661891125,
+        0.32513951064718843,
+        -1.4659264374961434,
+        -1.6310273660951276,
+        1.1874428218347488
+      ]
+    },
+    {
+      "file": "frame_00296.png",
+      "grid_index": 296,
+      "source_index": 296,
+      "t": 19.733333333333576,
+      "camera_t": 19.74726856686175,
+      "q": [
+        0.2021533986054583,
+        -1.5356466043174481,
+        0.9758615273762598,
+        0.9413553806351342,
+        1.2565972519932096,
+        -3.101270716105803
+      ],
+      "tcp": [
+        -0.3429168062155076,
+        -0.2668189360940092,
+        0.33654172583664416,
+        -1.2676369438073551,
+        -1.8612936994570992,
+        1.4083381124895522
+      ]
+    }
+  ],
+  "synchronization": {
+    "timestamps": "Zarr ts already in MasterClock domain; no second clock-offset application",
+    "grid": "intersection of measured q, qd, TCP, gripper and RGB timestamp support",
+    "arm": "linear interpolation of measured q/qd/xyz; SO(3) SLERP of measured TCP orientation",
+    "gripper": "previous recorded feedback sample; position closed fraction and categorical object state",
+    "rgb": "nearest recorded frame with explicit signed timestamp residual",
+    "camera_snap_abs_max_s": 0.017340965677249187
+  },
+  "warnings": [
+    "Recorded actions are not replay truth; proposals and rederived arrays are retained only for audit.",
+    "Rule-derived success labels are not independent operator/lab outcome validation.",
+    "Frames use recorded RGB; camera calibration and object dimensions need separate estimation.",
+    "Held-out here means excluded from scene fitting, not excluded from policy training."
+  ],
+  "source_meta_unchanged": true,
+  "source_zarr_open_mode": "r"
+}

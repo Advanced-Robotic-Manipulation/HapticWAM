@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "scope": "CPUload_paths only; no model/GPU construction",
+  "same_as_live": true,
+  "effective_paths": {
+    "cosmos_repo": "/home/physicalai/phantom-icra-2027/phantom/cosmos-predict2.5",
+    "cosmos_weights_root": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b",
+    "cosmos_checkpoint": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt",
+    "cosmos_empty_text_embedding": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/robot/action-cond/cr1_empty_string_text_embeddings.pt",
+    "cosmos_tokenizer": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/tokenizer.pth",
+    "data_root": "/home/physicalai/phantom-icra-2027/data",
+    "runs_root": "/home/physicalai/phantom-icra-2027/runs",
+    "cosmos_text_embedding_cache": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v3_790eps/text_embeddings.pt"
+  },
+  "local_paths_sha256": "12ee9de125ec9ada4f58ba4fb9aba485deca1fb66196106d81f1174382c09f14"
+}

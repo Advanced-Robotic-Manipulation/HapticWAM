@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "recovered_at_utc": "2026-09-08",
+  "method": "read-only SSH copies, bytes preserved",
+  "files": [
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/config/hardware.py",
+      "local": "preflight/runtime_delta/phantom/config/hardware.py",
+      "bytes": 29531,
+      "sha256": "34a3fa781edd9461028bd2e39e916cf9e61f321bb5f069e06c09bf87c417c68e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/deploy/executor.py",
+      "local": "preflight/runtime_delta/phantom/deploy/executor.py",
+      "bytes": 41252,
+      "sha256": "473a031c92f468513aaa619dd432525211b6c5b4271e388f37afabc5b992a8f0"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/deploy/runtime.py",
+      "local": "preflight/runtime_delta/phantom/deploy/runtime.py",
+      "bytes": 19004,
+      "sha256": "9739a2585dd7492de5951cfedc3c637508b7a5b24ab1976d50be70f3cd940146"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/drivers/real/ur.py",
+      "local": "preflight/runtime_delta/phantom/drivers/real/ur.py",
+      "bytes": 33790,
+      "sha256": "0554c0cbcf04e55ae43c7c7e80cb92ae64086ba3ae560c2913d06f0981a9fbcf"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/drivers/servo_hold.py",
+      "local": "preflight/runtime_delta/phantom/drivers/servo_hold.py",
+      "bytes": 6279,
+      "sha256": "a1ea1fcb902a681da57ed47cfd631a3952280be45b2d24acc1e7f9d51304f06f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/drivers/servo_limiter.py",
+      "local": "preflight/runtime_delta/phantom/drivers/servo_limiter.py",
+      "bytes": 7450,
+      "sha256": "f7a5dbc3ebb3938cad9fac0c8985d748ed88ca35789113090893898e9be042d4"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/sim/policy_adapter.py",
+      "local": "preflight/runtime_delta/phantom/sim/policy_adapter.py",
+      "bytes": 42092,
+      "sha256": "cf1a4cff56386c0456485e429cfd233b134af907ea34a9d718ad924cef7e08ed"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/tools/sim/analyze_policy_campaign.py",
+      "local": "preflight/runtime_delta/tools/sim/analyze_policy_campaign.py",
+      "bytes": 35814,
+      "sha256": "585ef3df950c95d4e8e0c439794d67a21e935237ee6c045c520952f13d625740"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/tools/sim/run_policy_campaign.py",
+      "local": "preflight/runtime_delta/tools/sim/run_policy_campaign.py",
+      "bytes": 30074,
+      "sha256": "abedc66cacd3f3d58f74934cfd39e65bcf29fa20a9813d7b8d0c41ad3d7820bd"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/tools/sim/run_waffles.py",
+      "local": "preflight/runtime_delta/tools/sim/run_waffles.py",
+      "bytes": 73172,
+      "sha256": "a609240ff8419682e9fb17254981ea4ee82b3fb7c9d1e826ae47384eea63b4d1"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/drivers/base.py",
+      "local": "preflight/runtime_delta/phantom/drivers/base.py",
+      "bytes": 12666,
+      "sha256": "2e7ff4e68caca496b862b9e5d455903c3839a9d13e52b790162cb726862d7299"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/drivers/real/rig_lease.py",
+      "local": "preflight/runtime_delta/phantom/drivers/real/rig_lease.py",
+      "bytes": 4267,
+      "sha256": "9512bc4cdd57dc5a92180a9084f1b3f0152fd38722f3422cfa1abb118b28fbd1"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8/phantom/deploy/release_controller.py",
+      "local": "preflight/runtime_delta/phantom/deploy/release_controller.py",
+      "bytes": 9685,
+      "sha256": "3405da4cf01617d42ff0348e8ad6d2e20b69801572b853588fb5fb8c1f867e26"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/configs/hardware.yaml",
+      "local": "preflight/cpu_suite/configs/hardware.yaml",
+      "bytes": 10912,
+      "sha256": "c291039e24087295897a1eae3de085cf6184784514e303746482443a9ec91172"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/test_sim_policy_adapter.py",
+      "local": "preflight/cpu_suite/tests/test_sim_policy_adapter.py",
+      "bytes": 17820,
+      "sha256": "148af19451e25c3d45f2e3ec69abc60a2bfba03c1b529e6ca209ed73eb8eb623"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/test_servo_constraint_hold_integration.py",
+      "local": "preflight/cpu_suite/tests/test_servo_constraint_hold_integration.py",
+      "bytes": 10096,
+      "sha256": "63828c798dd12d1608ddd67062b9b04f95af628f2dca639cab1f9e12ceb34cb3"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/test_ur_servo_limiter.py",
+      "local": "preflight/cpu_suite/tests/test_ur_servo_limiter.py",
+      "bytes": 6152,
+      "sha256": "31f3457fd0884099e2d8803bdd34254cd9ad5699ecf145e6dfbd9948fa337163"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/phantom_test_utils.py",
+      "local": "preflight/cpu_suite/tests/phantom_test_utils.py",
+      "bytes": 1706,
+      "sha256": "5cfa82cf86e6a77a44d21782680511b73e4fe74b7075a8fed577687be4828f14"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/conftest.py",
+      "local": "preflight/cpu_suite/tests/conftest.py",
+      "bytes": 777,
+      "sha256": "0dd690aba21018532d9036c1735c428eccee307ff2b1da39a6c536eae76ea3a6"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/test_shared_servo_limiter.py",
+      "local": "preflight/cpu_suite/tests/test_shared_servo_limiter.py",
+      "bytes": 7306,
+      "sha256": "30c63672d96a5dbcab276be1cc95cd67cf813937a2d1222be750e0f05aea1171"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/test_servo_hold.py",
+      "local": "preflight/cpu_suite/tests/test_servo_hold.py",
+      "bytes": 7964,
+      "sha256": "08b313fc7191484871d786a399fc52945831968c1cce164f3d86c6b52b1da0bd"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_suite/tests/fixtures/servo_limiter_native_v1.json",
+      "local": "preflight/cpu_suite/tests/fixtures/servo_limiter_native_v1.json",
+      "bytes": 14169,
+      "sha256": "906b66179ef3da6bf8bccd7259357c9265f67b049c438ebacf377750b4c4b05b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "local": "launchplan/inputs/sept4_policy_initial_state.json",
+      "bytes": 2637,
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000/manifest.json",
+      "local": "launchplan/inputs/prepared_episode_manifest.json",
+      "bytes": 10083,
+      "sha256": "2aee4ab7b2d673e19c6e5cde10e7a96557ca447b90e4e8dd0b56930dfd5d8227"
+    }
+  ]
+}

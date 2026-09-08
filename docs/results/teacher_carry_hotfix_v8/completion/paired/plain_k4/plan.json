@@ -1,0 +1,46 @@
+{
+  "campaign_sha256": "b275224dae164cf4857530e5a2b90333258dcf65ff3d75b7389ade8b1652cffb",
+  "executing": true,
+  "checkpoint_blocks": [
+    {
+      "id": "plain_k4__fta1500_nfe1_k4",
+      "policy_id": "fta1500_nfe1_k4",
+      "trials": [
+        [
+          "successful_anchor",
+          904301
+        ],
+        [
+          "successful_anchor",
+          904302
+        ]
+      ]
+    }
+  ],
+  "planned_trials": 2,
+  "policy_server_transport": "127.0.0.1:7799",
+  "server_python": "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+  "effective_inference_by_policy": {
+    "fta1500_nfe1_k4": {
+      "use_ema": true,
+      "nfe": 1,
+      "guidance": 1.0,
+      "persistent_noise": true,
+      "parity": true,
+      "k_seeds": 4,
+      "max_play": 10,
+      "task_text": "waffles",
+      "latency": "Complete measured synchronous policy.replan client RPC wall time determines delivery; native Plan latency/action grid/CPK token unchanged; no injected delay.",
+      "drop_video": false,
+      "close_p": 0.5
+    }
+  },
+  "initial_state_by_condition": {
+    "successful_anchor": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    }
+  },
+  "delivery_latency_override_s": null,
+  "policy_delivery_clock": "rpc_wall"
+}

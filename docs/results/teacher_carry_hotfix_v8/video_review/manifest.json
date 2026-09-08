@@ -1,0 +1,839 @@
+{
+  "schema_version": 1,
+  "campaign": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8",
+  "renderer_sha256": "e4e51ecb40ac12ff4dc2664c65a33a9a5a1560d5080bf44fb1a22fef95bef054",
+  "runtime_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8",
+  "new_trials_started": 0,
+  "videos": [
+    {
+      "setting": "plain_k4",
+      "seed": 904301,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "video_sha256": "1eb63087721a46f8393f46a14cc3508acb4d3c2c0a110d06f8817d1908c4d686",
+      "bytes": 1063058,
+      "metadata_sha256": "6e98d67571a3464959ce4dfad238edb33b19699256a51ed2064e9404d8f6fde4",
+      "authoritative_score_sha256": "ba374cbbb9c915d06ce674863303496d4c3dc9602976e5ceb73a110497a4d862",
+      "input_sha256": {
+        "sim.mp4": "8c6b6137e473e502216c40335ce829d5e864a1c4dbc842a8bdd4768cfcdc848f",
+        "policy_tactile.npz": "aa017f0930edadeedc956e30b948808714e59bb6d66d169e7537dc4514eaa291",
+        "sim_trace.npz": "e366722d5ba527e89a15144595d26295d5b89ae7cf407c5e45af75cec019a64b"
+      },
+      "fps": 15,
+      "decoded_frames": 265,
+      "horizon_s": 17.616,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.49578404426574707,
+          -0.03272494301199913,
+          0.41640618443489075
+        ],
+        "max_lift_m": 0.36620765924453735,
+        "carry_distance_m": 0.2992417771796479,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 3.7252902984623244e-06,
+        "final_angular_speed_rad_s": 1.070008174802859e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 8.348,
+        "pad_packet_normal_force_peak_n": 7.001421928405762
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 13.75377082824707,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "154ec2c5fada380fe0473fd438833f1118d44a2c92a8874f1ba6633851cc884a"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "595ddeb683bd9bce10ddd76e2bdd45291b122d473daf8ba390e9d883ea1614a5"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "85b92f318669a6710a86db48733b55c351f4ed77e093b10fbe2ce77c078aae28"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "frame": 264,
+          "t_s": 17.6,
+          "sha256": "6299830c3cd5cda40f76ae4f63272c9d30c44ba889f35abfcd66c975e17563af"
+        }
+      ]
+    },
+    {
+      "setting": "plain_k4",
+      "seed": 904302,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/plain_k4/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "video_sha256": "5d8f156d725108a53c5f935209548830d68643b20adb40e6c9c4e0d2bbd17e3d",
+      "bytes": 997428,
+      "metadata_sha256": "717d013395adcd55927e17463fe0d947835c600a41869561d74588a2f96d429f",
+      "authoritative_score_sha256": "474880765fcc20ff1c3f667a216eee0a04e1a32bed228db4abbb1d5fc8059f47",
+      "input_sha256": {
+        "sim.mp4": "cd7b29325609c61bd2ad68d1c7dea1f08a19d0b60938478601049ff1d363ff74",
+        "policy_tactile.npz": "22096f3515b098af39ee239cc40747d55277c3e0c5ea3a8a3f33d4f3daa0a04c",
+        "sim_trace.npz": "ccd39c772af92842da57eecc9b9e34f1aea05f7d55cb79048717e708f68793ac"
+      },
+      "fps": 15,
+      "decoded_frames": 266,
+      "horizon_s": 17.672,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.379831463098526,
+          -0.3058861494064331,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.02560323476791382,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 5.587935447691005e-06,
+        "final_angular_speed_rad_s": 9.185692672382185e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0016479392246681272,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 2.532,
+        "pad_packet_normal_force_peak_n": 10.434335708618164
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 20.465487211942673,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "455e34a7b783521fb1a88e31b56cb239068b37a5b472b861a48002aece09720d"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "0412acf844c2757b9af3fc10eb4e57e2f7bb68c902e6c5a2c7335ae699835ef7"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "1700b692d5aeb324eeed2fa851daa755cc5d4197fdaf1df1292016cbbce48ce9"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/plain_k4/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "frame": 265,
+          "t_s": 17.666666666666668,
+          "sha256": "619ed710121fcb6d39230321d6611b90d05e0a5dc2464c9654314afc412389bb"
+        }
+      ]
+    },
+    {
+      "setting": "legacy_limiter",
+      "seed": 904301,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "video_sha256": "3595895d5c8ccb295132678655b15c00f350bcc3fcfa98bbe0c0881c2afa9c35",
+      "bytes": 945581,
+      "metadata_sha256": "a9601df57b465e3dfca792a66bd2b13b9c4e35f7515b8c2b7c2adb7f5781b5b6",
+      "authoritative_score_sha256": "8e7442c3faa90b54a976d4441d8109adaa6b7a4e21ae8ad2de669d426aece7fa",
+      "input_sha256": {
+        "sim.mp4": "df89d6dfbbf1b23ccac67f6ef3b934b988443ed0fbd1a583d72f3ff2951bced1",
+        "policy_tactile.npz": "59ba33dab757fad9fce867e2aa4de1c4eccdfae5ac54b6627578fba908402e36",
+        "sim_trace.npz": "5745f8b1c55e72e7be049ca9c96f3a97891dd35b209ddcce4717d1f42eee1622"
+      },
+      "fps": 15,
+      "decoded_frames": 257,
+      "horizon_s": 17.104,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.4339613616466522,
+          -0.27069470286369324,
+          0.4011459946632385
+        ],
+        "max_lift_m": 0.33525100350379944,
+        "carry_distance_m": 0.0671109358747959,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 2.6178671752152938e-06,
+        "final_angular_speed_rad_s": 2.8389076722137587e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216805176634,
+        "bilateral_contact_duration_s": 7.767999999999999,
+        "pad_packet_normal_force_peak_n": 6.701201915740967
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 12.819490194320679,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "5b5495ca651feb72ec6a316f8455437bcbaaadf18b5088f2b41ad77538ea19a1"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "9d3ecc6d6187c8e6aeced646c921458c8932df2340c5a2ff1462b67db0fd6182"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "004579afc5566610717a415f88b9764de0696e48e9555467f8be4056309ea009"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "frame": 256,
+          "t_s": 17.066666666666666,
+          "sha256": "0439df5a555abaa738ed1cd770d057fd26e7b4bf9a2cf7959cdb58631f1e0fdd"
+        }
+      ]
+    },
+    {
+      "setting": "legacy_limiter",
+      "seed": 904302,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "video_sha256": "3b1033cda6a897c782d0d148084ee5e9fda148b5f9cd011790cdab8755674049",
+      "bytes": 984818,
+      "metadata_sha256": "1707bce935533c96ed44156ed4eec626284a507780a14e679aa9875d77c6231c",
+      "authoritative_score_sha256": "81a07f8519525afa270b695c22ad18b1c4e1f1fe88853d3861e0bec00f200661",
+      "input_sha256": {
+        "sim.mp4": "6d6e586ff17ee1149e7220096227d9fb8d0a07e918ace7284de6044f93f6b6af",
+        "policy_tactile.npz": "ff3329e10aa3122b71ef09ff4fb7af3dc785ffba68b14a52e702884c184ca13a",
+        "sim_trace.npz": "6b009af4e834ec380e8ea9f22a8fbee8c9ba653c043a2e7f09e1523e5d35a153"
+      },
+      "fps": 15,
+      "decoded_frames": 261,
+      "horizon_s": 17.36,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.3672892451286316,
+          -0.29723602533340454,
+          0.07000000029802322
+        ],
+        "max_lift_m": 0.040967151522636414,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 0.0,
+        "final_angular_speed_rad_s": 0.0,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+        "bilateral_contact_duration_s": 3.200000000000001,
+        "pad_packet_normal_force_peak_n": 5.05366325378418
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 8.765966415405273,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "92eba9f840bb7aa824030b5ac70b320039936c2af05d71c9ae0ac436bbc735d5"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "bae2b0187b88f8be8fb902afc6f87678eb73bf1ec5557e84a2c2ca3e24ade655"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "9c814a4e3e2f8b79093bbff2f67a776df133d55e3789d0b99735ab162e905bbb"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/legacy_limiter/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "frame": 260,
+          "t_s": 17.333333333333332,
+          "sha256": "c4bc3e5e8b32a27526b961c7f0e92ca4792292a83fa61fd83cfca5261ddc3aa3"
+        }
+      ]
+    },
+    {
+      "setting": "bounded_hold",
+      "seed": 904301,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "video_sha256": "3e5eac9cab5bbe4670cdd4775f6d58f8ec8896c92af31693ff66025d395bab19",
+      "bytes": 2877479,
+      "metadata_sha256": "9bde2cdd2c7c5658863e3742f5c1557ca35ee0d8a9f4fc0f6cdf2ab726feca9e",
+      "authoritative_score_sha256": "45c4f796e64c86ae93da8552cf2d23a6929f16bdf9c17964f6d267fc3761a0c2",
+      "input_sha256": {
+        "sim.mp4": "d4a6eba784c36345459c94403b58925d243747b24c62625afa1c31ab278ed967",
+        "policy_tactile.npz": "03e0a7532a48c4749b0d6512be3bdf9322dc5a9e22d27bf87b19205408f42640",
+        "sim_trace.npz": "d619f8fa50d65046ea2128d5c3cbe71109d8b497acc1117439cccbe5851316a8"
+      },
+      "fps": 15,
+      "decoded_frames": 900,
+      "horizon_s": 59.996,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.4507022500038147,
+          0.10140498727560043,
+          0.15898823738098145
+        ],
+        "max_lift_m": 0.3423258364200592,
+        "carry_distance_m": 0.4137669010795756,
+        "final_inside_bin": true,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 0.004195571572663364,
+        "final_angular_speed_rad_s": 0.012493594857113353,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+        "bilateral_contact_duration_s": 52.86000000000001,
+        "pad_packet_normal_force_peak_n": 6.473577499389648
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 12.891675889492035,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "693ace86c510ed60377201da9f017d2c7b9f3517eb9d29ae61b0008275ab5fad"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "d98db66da4de58e6b0576d738371b33d730b3d4899a2fe46bef78c0a2a290aca"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "2c895c852b8f875ff58b4264f72585331749ce3faebae592e77f4b465b440f88"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_22.00s.png",
+          "frame": 330,
+          "t_s": 22.0,
+          "sha256": "ee665e9d88c0fff436c05450079b0fe6614d5806238227fb529fac31585f3d07"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_30.00s.png",
+          "frame": 450,
+          "t_s": 30.0,
+          "sha256": "e2ab53cfcb36fb1bf02e84fd8ae9d558d1d6fa1860278c0736b54b7778dc0563"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_45.00s.png",
+          "frame": 675,
+          "t_s": 45.0,
+          "sha256": "0fa8b2a73076061a133db1e982e74431bf93791555bdd41a19e0e3c7b030a1e3"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904301/frame_final.png",
+          "frame": 899,
+          "t_s": 59.93333333333333,
+          "sha256": "ec612b3151d6b9695d9399b2619b1b9ecd24359112b1b89e58917b710d38292c"
+        }
+      ]
+    },
+    {
+      "setting": "bounded_hold",
+      "seed": 904302,
+      "run": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/bounded_hold/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302",
+      "video": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/policy_review.mp4",
+      "video_sha256": "49ba34087678d57367bcccd742b581da01ce099112ee2f815f224f6f47bb43c7",
+      "bytes": 2373394,
+      "metadata_sha256": "d6c01a58c1df0a39c43e3075a24e485d6ff627d12bcc3941583b63627cac8ae6",
+      "authoritative_score_sha256": "bffa93bc49d9efeae3dbe8026e683da2946e2d038200c21b9cefd1771529dfdb",
+      "input_sha256": {
+        "sim.mp4": "90b49df4a4f378fca567ff9b638c210af1140293fb49701041395be3607d1f5e",
+        "policy_tactile.npz": "1e3f850a073d533291b7de2e3aef56ed7fff7757be2f1b5d38a8c21efbb69f0c",
+        "sim_trace.npz": "fc7c3c794139235200e6092fc3d1bea5c93c82845fe995023b38ef49db7b35ad"
+      },
+      "fps": 15,
+      "decoded_frames": 668,
+      "horizon_s": 44.480000000000004,
+      "ffmpeg_full_decode": "passed",
+      "opencv_full_decode": "passed",
+      "metric_equality_to_frozen_score": true,
+      "causal_scene_and_tactile_alignment": true,
+      "tactile_mapping": {
+        "actual_input_proxy": true,
+        "calibrated": false,
+        "normalization_transfer_validated": false,
+        "source": "policy_tactile.npz gel: saved pixels supplied at runtime",
+        "field_hw": [
+          72,
+          96
+        ],
+        "infer_hw": [
+          288,
+          384
+        ],
+        "model": "measured_baseline_proxy",
+        "formula": null,
+        "note": "Stored native grayscale pixels selected causally and resized only for display. These are simulated policy inputs, not real tactile footage or calibrated sensor predictions.",
+        "native_pixel_shape": [
+          288,
+          384
+        ],
+        "native_pixel_dtype": "uint8",
+        "display_force_source": "gel_normal_force: normal force used to deform gel proxy",
+        "model_description": "Static measured no-contact baseline plus physics-driven deformation; uncalibrated",
+        "baseline_provenance": {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+          "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+        },
+        "proxy_parameters": {
+          "active_size_mm": [
+            36.0,
+            27.0
+          ],
+          "patch_sigma_mm": [
+            3.0,
+            3.0
+          ],
+          "depth_mm_per_n": [
+            0.04032048,
+            0.04958851
+          ],
+          "normal_radial_displacement_gain": 0.25,
+          "area_mm2_per_n_two_thirds": 1.0,
+          "torque_nm_to_sdk": 100.0
+        }
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.37527647614479065,
+          -0.30305400490760803,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.031681470572948456,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 5.0057084289058076e-06,
+        "final_angular_speed_rad_s": 6.083373583314532e-06,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 3.7320000000000055,
+        "pad_packet_normal_force_peak_n": 8.2401762008667
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 15.303162574768066,
+        "bin_contact_peak_n": 0.0,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "snapshots": [
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_08.00s.png",
+          "frame": 120,
+          "t_s": 8.0,
+          "sha256": "536eeb095181637300be4b54173e5dac8a4f706327202657e457f4fd580a8088"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_12.00s.png",
+          "frame": 180,
+          "t_s": 12.0,
+          "sha256": "aef03e07d5427c6b6ffab3ce0b25ba0e043787037a53227d2eae17634dbb8d08"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_15.00s.png",
+          "frame": 225,
+          "t_s": 15.0,
+          "sha256": "eaf59da082cdc0926137cda5b2accddb12e0911111597407d6139a9af63ba58f"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_22.00s.png",
+          "frame": 330,
+          "t_s": 22.0,
+          "sha256": "643b4a5dc641e8180ad4c97af6c92bd935649ce308e9397f4aed56f3b133640e"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_30.00s.png",
+          "frame": 450,
+          "t_s": 30.0,
+          "sha256": "d9f92dd62ff8fd62254bfce19c5cc8280140c9f67fc51335a3d433f872cafc9b"
+        },
+        {
+          "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/video_reviews/bounded_hold/fta1500_nfe1_k4__successful_anchor__seed904302/frame_final.png",
+          "frame": 667,
+          "t_s": 44.46666666666667,
+          "sha256": "b7b14c2c80d8b642807b68250dd0e9da19d210c33fc91cad76c5196d0577c0ed"
+        }
+      ]
+    }
+  ],
+  "updated_at_utc": "2026-09-08T06:20:27.502280+00:00",
+  "status": "six_videos_rendered_and_fully_decoded"
+}

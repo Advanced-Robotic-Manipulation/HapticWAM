@@ -1,0 +1,26 @@
+{
+  "pid": 3657426,
+  "command": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_driver_v8/tools/sim/run_policy_campaign.py",
+    "--campaign",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/campaigns/legacy_limiter.json",
+    "--source",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8",
+    "--live-repo",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_inference_v8",
+    "--server-python",
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "--evidence",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/evidence",
+    "--hardware-config",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/hardware/legacy_limiter.yaml",
+    "--robot-usd",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+    "--output",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/paired/legacy_limiter",
+    "--port",
+    "7799",
+    "--execute"
+  ]
+}

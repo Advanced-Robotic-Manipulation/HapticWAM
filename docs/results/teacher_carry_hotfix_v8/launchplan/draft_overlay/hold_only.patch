@@ -1,0 +1,185 @@
+diff --git a/phantom/sim/policy_adapter.py b/phantom/sim/policy_adapter.py
+index b921140..9037f4f 100644
+--- a/phantom/sim/policy_adapter.py
++++ b/phantom/sim/policy_adapter.py
+@@ -889,6 +889,8 @@ class SimulationPolicyAdapter:
+         tcp_pose=None,
+         gripper_command: float | None = None,
+         reason: str = "ik_rejected",
++        held: bool = False,
++        controller_stop: bool = False,
+     ) -> None:
+         """Confirm accepted setpoints after the simulator's IK/drive stage.
+ 
+@@ -899,6 +901,10 @@ class SimulationPolicyAdapter:
+         retained. Only explicitly supplied gripper commands enter history,
+         whether or not arm IK succeeded. Omit if no gripper command was sent.
+         """
++        if held and (not accepted or tcp_pose is None):
++            raise ValueError("a streamed hold requires an explicit accepted pose")
++        if controller_stop and (accepted or self.stopped_reason != reason):
++            raise ValueError("controller-stop feedback requires the matching requested stop")
+         cmd = self._awaiting_feedback
+         if cmd is None or not np.isclose(t, cmd.t, rtol=0, atol=1e-9):
+             raise ValueError(
+@@ -919,8 +925,9 @@ class SimulationPolicyAdapter:
+                 )
+         if accepted:
+             self._last_cmd = accepted_pose
+-            self.ik_rejects = 0
+-        else:
++            if not held:
++                self.ik_rejects = 0
++        elif not controller_stop:
+             self.ik_rejects += 1
+             self.ik_rejects_total += 1
+             if self.ik_rejects >= self.ik_reject_limit:
+diff --git a/tools/sim/run_waffles.py b/tools/sim/run_waffles.py
+index a2eac8a..3940b38 100755
+--- a/tools/sim/run_waffles.py
++++ b/tools/sim/run_waffles.py
+@@ -101,6 +101,10 @@ def arguments():
+         help="Separate policy diagnostic: existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety thresholds stay unchanged",
+     )
+     p.add_argument("--observation-delay-s", type=float, default=0.0)
++    p.add_argument(
++        "--servo-constraint-hold-s", type=float, default=None,
++        help="Opt-in verified stationary servo hold deadline; requires --servo-reach-limiter",
++    )
+     p.add_argument("--inference-delay-add-s", type=float, default=0.0)
+     p.add_argument(
+         "--policy-mode",
+@@ -164,6 +168,11 @@ def arguments():
+     p.add_argument("--object-offset", type=float, nargs=2, default=[0, 0])
+     p.add_argument("--save-stage-only", action="store_true")
+     args = p.parse_args()
++    if args.servo_constraint_hold_s is not None:
++        if (not args.servo_reach_limiter or args.mode != "policy"
++                or not np.isfinite(args.servo_constraint_hold_s)
++                or args.servo_constraint_hold_s <= 0):
++            p.error("servo-constraint-hold-s must be finite, positive and used with policy servo-reach-limiter")
+     if args.policy_delivery_clock == "rpc_wall":
+         if args.policy_latency is not None:
+             p.error("rpc_wall cannot be combined with --policy-latency")
+@@ -197,7 +206,9 @@ def measured_tcp_twist(previous, current, dt):
+     return np.r_[(current[:3] - previous[:3]) / dt, angular]
+ 
+ 
+-def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejects):
++def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejects,
++                                   *, hold_budget=None, qref=None, limits=None, dt=None,
++                                   telemetry=None):
+     """Report the accepted joint target, or a bounded ordinary controller stop.
+ 
+     CPU-testable feedback boundary. A stall preserves grip and enters the same
+@@ -205,6 +216,25 @@ def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejec
+     """
+     from phantom.sim.kinematics import forward_pose
+ 
++    if hold_budget is not None:
++        from phantom.drivers.servo_hold import verified_constraint_hold
++
++        held = verified_constraint_hold(selection, qref, dt, limits)
++        if selection.accepted or held:
++            sent_q = qref if held else selection.q
++            state = hold_budget.check(t, sent_q, held=held)
++            if telemetry is not None:
++                telemetry.update(state, held=held)
++            if state["timed_out"]:
++                adapter.request_stop("servo_constraint_hold_timeout")
++                adapter.report_execution(t, accepted=False, gripper_command=gripper_command,
++                                         reason="servo_constraint_hold_timeout", controller_stop=True)
++                return None, rejects
++            achieved = forward_pose(sent_q)
++            adapter.report_execution(t, accepted=True, tcp_pose=achieved,
++                                     gripper_command=gripper_command, held=held)
++            return achieved, rejects if held else 0
++
+     if selection.accepted:
+         achieved = forward_pose(selection.q)
+         adapter.report_execution(
+@@ -896,6 +926,7 @@ def run(app, args, cfg, data, duration):
+     hw = None
+     servo_reach_limits = None
+     servo_limiter_rejects = 0
++    servo_hold_budget = None
+     policy_ready_t = None
+     next_tactile_t = 0.0
+     tactile_sample = None
+@@ -1080,6 +1111,13 @@ def run(app, args, cfg, data, duration):
+                     }
+                 )
+                 servo_reach_limits = ServoLimits(0.40, 1.0)
++                if args.servo_constraint_hold_s is not None:
++                    from phantom.drivers.servo_hold import ConstraintHoldBudget
++
++                    servo_hold_budget = ConstraintHoldBudget(args.servo_constraint_hold_s)
++                    hw = hw.model_copy(update={"safety": hw.safety.model_copy(
++                        update={"servo_constraint_hold_s": args.servo_constraint_hold_s}
++                    )})
+             control_dt = 1 / hw.control.executor_rate_hz
+             if dt > control_dt + 1e-9:
+                 raise ValueError(
+@@ -1200,6 +1238,9 @@ def run(app, args, cfg, data, duration):
+                                     "measured_wrist_extension_stop_m": hw.safety.wrist_extension_stop_m,
+                                     "consecutive_reject_limit": 25,
+                                     "tracking_guarantee": False,
++                                    **({"constraint_hold_s": args.servo_constraint_hold_s,
++                                        "constraint_hold_progress_rad": 0.001}
++                                       if servo_hold_budget is not None else {}),
+                                 }
+                             }
+                             if servo_reach_limits is not None
+@@ -1421,6 +1462,7 @@ def run(app, args, cfg, data, duration):
+                         nominal_servo_ik,
+                         servo_reach_limits,
+                     )
++                    held_qref = desired[ids].copy()
+                     pending_execution.update(
+                         ik_success=selection.accepted,
+                         ik_reason=selection.reason,
+@@ -1429,17 +1471,27 @@ def run(app, args, cfg, data, duration):
+                             "violation": selection.violation,
+                             "fraction": selection.fraction,
+                             "ik_calls": selection.ik_calls,
++                            "all_ik_valid": selection.all_ik_valid,
++                            "all_ik_on_branch": selection.all_ik_on_branch,
+                         },
+                     )
+-                    if selection.accepted:
+-                        desired[ids] = selection.q
+-                    else:
+-                        events.append(
+-                            {"t": t, "event": "ik_rejected", "reason": selection.reason}
+-                        )
++                    hold_telemetry = {}
+                     achieved, servo_limiter_rejects = report_servo_limiter_execution(
+-                        adapter, t, selection, command.gripper, servo_limiter_rejects
++                        adapter, t, selection, command.gripper, servo_limiter_rejects,
++                        hold_budget=servo_hold_budget, qref=held_qref,
++                        limits=servo_reach_limits, dt=control_dt, telemetry=hold_telemetry,
+                     )
++                    if achieved is not None and selection.accepted:
++                        desired[ids] = selection.q
++                    if hold_telemetry:
++                        pending_execution["servo_reach_limiter"]["constraint_hold"] = hold_telemetry
++                        if hold_telemetry.get("held") and achieved is not None:
++                            pending_execution.update(ik_success=True, ik_reason="constraint_hold")
++                    if hold_telemetry.get("timed_out"):
++                        pending_execution.update(ik_success=None, ik_reason="servo_constraint_hold_timeout")
++                        events.append({"t": t, "event": "controller_stop", "reason": "servo_constraint_hold_timeout"})
++                    elif achieved is None:
++                        events.append({"t": t, "event": "ik_rejected", "reason": selection.reason})
+                     pending_execution["accepted_tcp"] = achieved
+                     pending_execution["servo_reach_limiter"]["consecutive_rejects"] = (
+                         servo_limiter_rejects
+@@ -1767,6 +1819,9 @@ def run(app, args, cfg, data, duration):
+                     "consecutive_reject_limit": 25,
+                     "final_consecutive_rejects": servo_limiter_rejects,
+                     "tracking_guarantee": False,
++                    **({"constraint_hold_s": args.servo_constraint_hold_s,
++                        "constraint_hold_progress_rad": 0.001}
++                       if servo_hold_budget is not None else {}),
+                 }
+             }
+             if servo_reach_limits is not None

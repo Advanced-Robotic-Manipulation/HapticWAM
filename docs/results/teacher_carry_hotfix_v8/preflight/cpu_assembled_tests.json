@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "tests": 100,
+  "log": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/cpu_assembled_tests.log",
+  "log_sha256": "b62e4b2c2716e1c929325d949ebb84a2fe637d3b7622d4a7ab27be19f832b38c",
+  "test_fixture_sha256": {
+    "configs/hardware.yaml": "c291039e24087295897a1eae3de085cf6184784514e303746482443a9ec91172",
+    "tests/conftest.py": "0dd690aba21018532d9036c1735c428eccee307ff2b1da39a6c536eae76ea3a6",
+    "tests/fixtures/servo_limiter_native_v1.json": "906b66179ef3da6bf8bccd7259357c9265f67b049c438ebacf377750b4c4b05b",
+    "tests/phantom_test_utils.py": "5cfa82cf86e6a77a44d21782680511b73e4fe74b7075a8fed577687be4828f14",
+    "tests/test_servo_constraint_hold_integration.py": "63828c798dd12d1608ddd67062b9b04f95af628f2dca639cab1f9e12ceb34cb3",
+    "tests/test_servo_hold.py": "08b313fc7191484871d786a399fc52945831968c1cce164f3d86c6b52b1da0bd",
+    "tests/test_shared_servo_limiter.py": "30c63672d96a5dbcab276be1cc95cd67cf813937a2d1222be750e0f05aea1171",
+    "tests/test_sim_policy_adapter.py": "148af19451e25c3d45f2e3ec69abc60a2bfba03c1b529e6ca209ed73eb8eb623",
+    "tests/test_ur_servo_limiter.py": "31f3457fd0884099e2d8803bdd34254cd9ad5699ecf145e6dfbd9948fa337163"
+  },
+  "runtime_manifest_sha256": "b0df98e21d54dcc0a23faa17e18c092abbfe7a665b29d6c4b3a520d13a644e7f",
+  "execution": "CPU mocks only; no model/Isaac/hardware construction"
+}

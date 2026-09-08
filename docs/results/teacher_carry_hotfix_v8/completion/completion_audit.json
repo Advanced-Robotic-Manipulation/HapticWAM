@@ -1,0 +1,939 @@
+{
+  "status": "passed",
+  "at_utc": "2026-09-07T21:37:50.701411+00:00",
+  "binding_sha256": "a877c8f81c6c6af795a500a3f23e730f86796ea1552026179dc33ea4a65b8b2e",
+  "verified_pinned_files": 5098,
+  "planned": 6,
+  "valid": 6,
+  "trials": [
+    {
+      "condition": "plain_k4",
+      "seed": 904301,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "ba374cbbb9c915d06ce674863303496d4c3dc9602976e5ceb73a110497a4d862",
+      "duration_s": 17.616,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.4,
+        "closure": 6.736,
+        "acquisition": 8.336,
+        "lift": 11.4,
+        "carry": 13.868,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.49578404426574707,
+          -0.03272494301199913,
+          0.41640618443489075
+        ],
+        "max_lift_m": 0.36620765924453735,
+        "carry_distance_m": 0.2992417771796479,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 3.7252902984623244e-06,
+        "final_angular_speed_rad_s": 1.070008174802859e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 8.348,
+        "pad_packet_normal_force_peak_n": 7.001421928405762
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 1953,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 19,
+        "inference_errors": 0,
+        "plans_activated": 18,
+        "effective_latency_s": {
+          "count": 19,
+          "mean": 0.8303609398365217,
+          "p95": 1.1930379916448146,
+          "max": 1.1969868110027164
+        },
+        "inference_wall_time_s": {
+          "count": 19,
+          "mean": 1.0076319711822037,
+          "p95": 1.4136347023770213,
+          "max": 1.417993918992579
+        },
+        "activation_delay_s": {
+          "count": 18,
+          "mean": 0.84,
+          "p95": 1.2012,
+          "max": 1.2080000000000002
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": 15.620000000000001,
+      "first_stop_reason": "safety_stop",
+      "first_stop_events": [
+        "wrist_extension"
+      ],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [],
+        "accepted_held_rows": 0,
+        "accepted_held_duration_s": 0,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.8303609398365217,
+        "full_client_rpc": 0.8335925822121728,
+        "effective_delivery": 0.8335925822121728
+      }
+    },
+    {
+      "condition": "plain_k4",
+      "seed": 904302,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "474880765fcc20ff1c3f667a216eee0a04e1a32bed228db4abbb1d5fc8059f47",
+      "duration_s": 17.672,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 6.336,
+        "closure": 7.468,
+        "acquisition": 8.536,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.379831463098526,
+          -0.3058861494064331,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.02560323476791382,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 5.587935447691005e-06,
+        "final_angular_speed_rad_s": 9.185692672382185e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0016479392246681272,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 2.532,
+        "pad_packet_normal_force_peak_n": 10.434335708618164
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 1960,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 18,
+        "inference_errors": 0,
+        "plans_activated": 17,
+        "effective_latency_s": {
+          "count": 18,
+          "mean": 0.8981352216279548,
+          "p95": 1.195491825521458,
+          "max": 1.2021137529518455
+        },
+        "inference_wall_time_s": {
+          "count": 18,
+          "mean": 1.0875325903503432,
+          "p95": 1.3820929303299636,
+          "max": 1.3965818560682237
+        },
+        "activation_delay_s": {
+          "count": 17,
+          "mean": 0.8889411764705882,
+          "p95": 1.2016,
+          "max": 1.2080000000000002
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": 15.676,
+      "first_stop_reason": "safety_stop",
+      "first_stop_events": [
+        "wrist_extension"
+      ],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [],
+        "accepted_held_rows": 0,
+        "accepted_held_duration_s": 0,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.8981352216279548,
+        "full_client_rpc": 0.9016952834143821,
+        "effective_delivery": 0.9016952834143821
+      }
+    },
+    {
+      "condition": "legacy_limiter",
+      "seed": 904301,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "8e7442c3faa90b54a976d4441d8109adaa6b7a4e21ae8ad2de669d426aece7fa",
+      "duration_s": 17.104,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 6.2,
+        "closure": 8.068,
+        "acquisition": 8.336,
+        "lift": 11.936,
+        "carry": 14.8,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.4339613616466522,
+          -0.27069470286369324,
+          0.4011459946632385
+        ],
+        "max_lift_m": 0.33525100350379944,
+        "carry_distance_m": 0.0671109358747959,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 2.6178671752152938e-06,
+        "final_angular_speed_rad_s": 2.8389076722137587e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216805176634,
+        "bilateral_contact_duration_s": 7.767999999999999,
+        "pad_packet_normal_force_peak_n": 6.701201915740967
+      },
+      "control": {
+        "stop_reason": "servo_limiter_stall",
+        "execution_rows": 1889,
+        "execution_clock_valid": true,
+        "ik_rejects": 25,
+        "ik_reject_reasons": {
+          "limiter_hold": 25
+        },
+        "hold_duration_s": 0.20000000000000107,
+        "stale_plan_hold_rows": 0,
+        "replans": 17,
+        "inference_errors": 0,
+        "plans_activated": 16,
+        "effective_latency_s": {
+          "count": 17,
+          "mean": 0.869299797615146,
+          "p95": 1.2095259830821303,
+          "max": 1.3633572079706937
+        },
+        "inference_wall_time_s": {
+          "count": 17,
+          "mean": 1.0534720545470275,
+          "p95": 1.4185592538211493,
+          "max": 1.5751431009266526
+        },
+        "activation_delay_s": {
+          "count": 16,
+          "mean": 0.881,
+          "p95": 1.2260000000000002,
+          "max": 1.3760000000000001
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": 15.108,
+      "first_stop_reason": "servo_limiter_stall",
+      "first_stop_events": [],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [],
+        "accepted_held_rows": 0,
+        "accepted_held_duration_s": 0,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.869299797615146,
+        "full_client_rpc": 0.8726652721627889,
+        "effective_delivery": 0.8726652721627889
+      }
+    },
+    {
+      "condition": "legacy_limiter",
+      "seed": 904302,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "81a07f8519525afa270b695c22ad18b1c4e1f1fe88853d3861e0bec00f200661",
+      "duration_s": 17.36,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 6.336,
+        "closure": 7.5360000000000005,
+        "acquisition": 7.868,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.3672892451286316,
+          -0.29723602533340454,
+          0.07000000029802322
+        ],
+        "max_lift_m": 0.040967151522636414,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 0.0,
+        "final_angular_speed_rad_s": 0.0,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+        "bilateral_contact_duration_s": 3.200000000000001,
+        "pad_packet_normal_force_peak_n": 5.05366325378418
+      },
+      "control": {
+        "stop_reason": "servo_limiter_stall",
+        "execution_rows": 1921,
+        "execution_clock_valid": true,
+        "ik_rejects": 25,
+        "ik_reject_reasons": {
+          "limiter_hold": 25
+        },
+        "hold_duration_s": 0.20000000000000107,
+        "stale_plan_hold_rows": 0,
+        "replans": 17,
+        "inference_errors": 0,
+        "plans_activated": 16,
+        "effective_latency_s": {
+          "count": 17,
+          "mean": 0.883987333981649,
+          "p95": 1.1818713002838195,
+          "max": 1.213431493844837
+        },
+        "inference_wall_time_s": {
+          "count": 17,
+          "mean": 1.0756169547984267,
+          "p95": 1.3744057487696408,
+          "max": 1.4258399121463299
+        },
+        "activation_delay_s": {
+          "count": 16,
+          "mean": 0.8735,
+          "p95": 1.1939999999999995,
+          "max": 1.224
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": 15.364,
+      "first_stop_reason": "servo_limiter_stall",
+      "first_stop_events": [],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [],
+        "accepted_held_rows": 0,
+        "accepted_held_duration_s": 0,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.883987333981649,
+        "full_client_rpc": 0.8876320944742903,
+        "effective_delivery": 0.8876320944742903
+      }
+    },
+    {
+      "condition": "bounded_hold",
+      "seed": 904301,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "45c4f796e64c86ae93da8552cf2d23a6929f16bdf9c17964f6d267fc3761a0c2",
+      "duration_s": 59.996,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.668,
+        "closure": 6.4,
+        "acquisition": 6.468,
+        "lift": 10.268,
+        "carry": 12.736,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.4507022500038147,
+          0.10140498727560043,
+          0.15898823738098145
+        ],
+        "max_lift_m": 0.3423258364200592,
+        "carry_distance_m": 0.4137669010795756,
+        "final_inside_bin": true,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 0.004195571572663364,
+        "final_angular_speed_rad_s": 0.012493594857113353,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216657465706,
+        "bilateral_contact_duration_s": 52.86000000000001,
+        "pad_packet_normal_force_peak_n": 6.473577499389648
+      },
+      "control": {
+        "stop_reason": null,
+        "execution_rows": 7500,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 74,
+        "inference_errors": 0,
+        "plans_activated": 73,
+        "effective_latency_s": {
+          "count": 74,
+          "mean": 0.798689304234309,
+          "p95": 0.8217895371955819,
+          "max": 1.221116130007431
+        },
+        "inference_wall_time_s": {
+          "count": 74,
+          "mean": 0.9503937309444253,
+          "p95": 1.0139905273914338,
+          "max": 1.4397563918028027
+        },
+        "activation_delay_s": {
+          "count": 73,
+          "mean": 0.8048219178082191,
+          "p95": 0.8272000000000002,
+          "max": 1.232
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": null,
+      "first_stop_reason": null,
+      "first_stop_events": [],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [
+          {
+            "onset_s": 12.956,
+            "last_s": 12.964,
+            "maximum_elapsed_s": 0.008000000000000895,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 12.972,
+            "clear_progress_rad": 0.007772529973804065
+          },
+          {
+            "onset_s": 12.98,
+            "last_s": 14.244,
+            "maximum_elapsed_s": 1.2639999999999993,
+            "held_rows": 158,
+            "timed_out": false,
+            "activated_plans": [
+              {
+                "t": 13.644,
+                "id": 15
+              }
+            ],
+            "clear_s": 14.252,
+            "clear_progress_rad": 0.006514203722352452
+          },
+          {
+            "onset_s": 14.26,
+            "last_s": 14.268,
+            "maximum_elapsed_s": 0.008000000000000895,
+            "held_rows": 2,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.276,
+            "clear_progress_rad": 0.0057692351373355155
+          },
+          {
+            "onset_s": 14.316,
+            "last_s": 14.316,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.324,
+            "clear_progress_rad": 0.005726658053945011
+          },
+          {
+            "onset_s": 14.372,
+            "last_s": 14.372,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.38,
+            "clear_progress_rad": 0.004964545973064727
+          },
+          {
+            "onset_s": 14.388,
+            "last_s": 14.396,
+            "maximum_elapsed_s": 0.008000000000000895,
+            "held_rows": 2,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.404,
+            "clear_progress_rad": 0.005651720149854267
+          },
+          {
+            "onset_s": 14.412,
+            "last_s": 14.428,
+            "maximum_elapsed_s": 0.016000000000000014,
+            "held_rows": 2,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.436,
+            "clear_progress_rad": 0.006320670142754947
+          },
+          {
+            "onset_s": 14.452,
+            "last_s": 14.452,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [
+              {
+                "t": 14.452,
+                "id": 16
+              }
+            ],
+            "clear_s": 14.46,
+            "clear_progress_rad": 0.0020955687328663153
+          },
+          {
+            "onset_s": 14.484,
+            "last_s": 14.484,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 14.492,
+            "clear_progress_rad": 0.0034477908143890623
+          }
+        ],
+        "accepted_held_rows": 169,
+        "accepted_held_duration_s": 1.352000000000002,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.798689304234309,
+        "full_client_rpc": 0.8015296996029949,
+        "effective_delivery": 0.8015296996029949
+      }
+    },
+    {
+      "condition": "bounded_hold",
+      "seed": 904302,
+      "valid_for_scoring": true,
+      "primary_score_sha256": "bffa93bc49d9efeae3dbe8026e683da2946e2d038200c21b9cefd1771529dfdb",
+      "duration_s": 44.480000000000004,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.736,
+        "closure": 7.0680000000000005,
+        "acquisition": 7.5360000000000005,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.37527647614479065,
+          -0.30305400490760803,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.031681470572948456,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 5.0057084289058076e-06,
+        "final_angular_speed_rad_s": 6.083373583314532e-06,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 3.7320000000000055,
+        "pad_packet_normal_force_peak_n": 8.2401762008667
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 5311,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 46,
+        "inference_errors": 0,
+        "plans_activated": 45,
+        "effective_latency_s": {
+          "count": 46,
+          "mean": 0.9132128101115561,
+          "p95": 1.1799834053381346,
+          "max": 1.2992456019856036
+        },
+        "inference_wall_time_s": {
+          "count": 46,
+          "mean": 1.111118572607191,
+          "p95": 1.3854147093370557,
+          "max": 1.4968607609625906
+        },
+        "activation_delay_s": {
+          "count": 45,
+          "mean": 0.9146666666666663,
+          "p95": 1.1903999999999997,
+          "max": 1.3199999999999985
+        },
+        "lift_complete_is_task_success": false
+      },
+      "first_stop_t": 42.484,
+      "first_stop_reason": "safety_stop",
+      "first_stop_events": [
+        "hitbox_exit_top"
+      ],
+      "completion_reason": null,
+      "completion_t": null,
+      "hold_audit": {
+        "episodes": [
+          {
+            "onset_s": 13.452,
+            "last_s": 15.156,
+            "maximum_elapsed_s": 1.7040000000000006,
+            "held_rows": 213,
+            "timed_out": false,
+            "activated_plans": [
+              {
+                "t": 13.532,
+                "id": 14
+              },
+              {
+                "t": 14.86,
+                "id": 15
+              }
+            ],
+            "clear_s": 15.164,
+            "clear_progress_rad": 0.0011294993428221378
+          },
+          {
+            "onset_s": 15.172,
+            "last_s": 15.228,
+            "maximum_elapsed_s": 0.05599999999999916,
+            "held_rows": 8,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 15.236,
+            "clear_progress_rad": 0.0010683807298699222
+          },
+          {
+            "onset_s": 27.172,
+            "last_s": 27.172,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 27.18,
+            "clear_progress_rad": 0.006518337533740315
+          },
+          {
+            "onset_s": 27.196,
+            "last_s": 27.196,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 27.204,
+            "clear_progress_rad": 0.0035691355590909968
+          },
+          {
+            "onset_s": 41.812,
+            "last_s": 41.828,
+            "maximum_elapsed_s": 0.016000000000005343,
+            "held_rows": 2,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.836,
+            "clear_progress_rad": 0.003895566399011896
+          },
+          {
+            "onset_s": 41.844,
+            "last_s": 41.852000000000004,
+            "maximum_elapsed_s": 0.008000000000002672,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.86,
+            "clear_progress_rad": 0.004522977293647923
+          },
+          {
+            "onset_s": 41.884,
+            "last_s": 41.884,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.892,
+            "clear_progress_rad": 0.002310832785197281
+          },
+          {
+            "onset_s": 41.9,
+            "last_s": 41.9,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.908,
+            "clear_progress_rad": 0.0022024763241472733
+          },
+          {
+            "onset_s": 41.916000000000004,
+            "last_s": 41.916000000000004,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.924,
+            "clear_progress_rad": 0.002147490616584591
+          },
+          {
+            "onset_s": 41.948,
+            "last_s": 41.948,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.956,
+            "clear_progress_rad": 0.0020546834503070155
+          },
+          {
+            "onset_s": 41.980000000000004,
+            "last_s": 41.980000000000004,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 41.988,
+            "clear_progress_rad": 0.004212528482635314
+          },
+          {
+            "onset_s": 42.012,
+            "last_s": 42.012,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.02,
+            "clear_progress_rad": 0.00421874610845796
+          },
+          {
+            "onset_s": 42.036,
+            "last_s": 42.036,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.044000000000004,
+            "clear_progress_rad": 0.006572791072551043
+          },
+          {
+            "onset_s": 42.076,
+            "last_s": 42.084,
+            "maximum_elapsed_s": 0.008000000000002672,
+            "held_rows": 2,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.092,
+            "clear_progress_rad": 0.007160866096000307
+          },
+          {
+            "onset_s": 42.108000000000004,
+            "last_s": 42.108000000000004,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.116,
+            "clear_progress_rad": 0.007664368140581468
+          },
+          {
+            "onset_s": 42.132,
+            "last_s": 42.132,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.14,
+            "clear_progress_rad": 0.006968556665988723
+          },
+          {
+            "onset_s": 42.156,
+            "last_s": 42.156,
+            "maximum_elapsed_s": 0,
+            "held_rows": 1,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.164,
+            "clear_progress_rad": 0.006907236687774487
+          },
+          {
+            "onset_s": 42.18,
+            "last_s": 42.476,
+            "maximum_elapsed_s": 0.2959999999999994,
+            "held_rows": 38,
+            "timed_out": false,
+            "activated_plans": [],
+            "clear_s": 42.484,
+            "clear_progress_rad": null
+          }
+        ],
+        "accepted_held_rows": 276,
+        "accepted_held_duration_s": 2.2080000000000055,
+        "notes": "Accepted verified holds differ from rejected/stale hold_duration_s in primary metrics; duration uses left-held execution intervals."
+      },
+      "latency_means_s": {
+        "native": 0.9132128101115561,
+        "full_client_rpc": 0.9171355336843787,
+        "effective_delivery": 0.9171355336843787
+      }
+    }
+  ],
+  "processes": [
+    {
+      "role": "plain_k4_controller",
+      "pid": 3649640,
+      "present": false,
+      "exit_code": 0,
+      "exit_code_evidence": "launcher complete marker is only reached after process.wait()==0 for this block"
+    },
+    {
+      "role": "plain_k4_server",
+      "pid": 3649691,
+      "present": false,
+      "recorded_status": "stopped"
+    },
+    {
+      "role": "legacy_limiter_controller",
+      "pid": 3657426,
+      "present": false,
+      "exit_code": 0,
+      "exit_code_evidence": "launcher complete marker is only reached after process.wait()==0 for this block"
+    },
+    {
+      "role": "legacy_limiter_server",
+      "pid": 3657458,
+      "present": false,
+      "recorded_status": "stopped"
+    },
+    {
+      "role": "bounded_hold_controller",
+      "pid": 3664337,
+      "present": false,
+      "exit_code": 0,
+      "exit_code_evidence": "launcher complete marker is only reached after process.wait()==0 for this block"
+    },
+    {
+      "role": "bounded_hold_server",
+      "pid": 3664369,
+      "present": false,
+      "recorded_status": "stopped"
+    },
+    {
+      "role": "launcher",
+      "pid": 3649515,
+      "present": false,
+      "exit_code": null,
+      "completion_marker": {
+        "status": "six_valid_trials_completed",
+        "trials": 6,
+        "interpretation": "two development seeds; no reliable-winner or hardware claim"
+      }
+    }
+  ],
+  "notes": [
+    "Six development cases, not a reliable-winner comparison.",
+    "Plain, legacy limiter, bounded hold use sequential blocks and actual shared-GPU timing.",
+    "Detached launcher OS wait status is unavailable after reap; complete marker and each child controller completion are verified."
+  ],
+  "owned_port_7799_free": true
+}

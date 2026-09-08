@@ -1,0 +1,61 @@
+{
+  "at_utc": "2026-09-08T06:24:01.254060+00:00",
+  "status": "passed",
+  "scope": "Existing successful videos and metadata compared to committed previous-study audit hashes; no rescoring or media writes.",
+  "files": [
+    {
+      "study": "teacher_pick_place_v1",
+      "case": "teacher__placement_xm10_ym10mm__seed4242",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.mp4",
+      "expected_sha256": "f26b6861ac82da82bc394f7bad135a037ceb4a6f519dcbeea96100e2e7cb9d5a",
+      "source": "teacher_pick_place_v1/video_manifest.json",
+      "actual_sha256": "f26b6861ac82da82bc394f7bad135a037ceb4a6f519dcbeea96100e2e7cb9d5a",
+      "matches": true
+    },
+    {
+      "study": "teacher_pick_place_v1",
+      "case": "teacher__placement_xm10_ym10mm__seed4242",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/video_reviews/teacher__placement_xm10_ym10mm__seed4242/policy_review.json",
+      "expected_sha256": "51ee6cd71e5481f19fd3f9e2eb786d5360af7c1f3189ccb8f269a59ed9f7cb78",
+      "source": "teacher_pick_place_v1/video_manifest.json",
+      "actual_sha256": "51ee6cd71e5481f19fd3f9e2eb786d5360af7c1f3189ccb8f269a59ed9f7cb78",
+      "matches": true
+    },
+    {
+      "study": "teacher_success_anchor_v5",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904510",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904510/policy_review.mp4",
+      "expected_sha256": "762017cc904af7cb49c1043b9e779666b1cccb92b3dbe932ec7720c3d002c9bf",
+      "source": "teacher_success_anchor_v5/confirmation_video_manifest.json",
+      "actual_sha256": "762017cc904af7cb49c1043b9e779666b1cccb92b3dbe932ec7720c3d002c9bf",
+      "matches": true
+    },
+    {
+      "study": "teacher_success_anchor_v5",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904510",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v5/video_reviews/confirmation/fta1500_nfe1_k4__successful_anchor__seed904510/policy_review.json",
+      "expected_sha256": "c3c59126b9abf8207bbd9444f71aad62c73a8371befb19105e70e7e58ab866aa",
+      "source": "teacher_success_anchor_v5/confirmation_video_manifest.json",
+      "actual_sha256": "c3c59126b9abf8207bbd9444f71aad62c73a8371befb19105e70e7e58ab866aa",
+      "matches": true
+    },
+    {
+      "study": "teacher_success_anchor_v7",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904301",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v7/video_reviews/diagnostic/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.mp4",
+      "expected_sha256": "00e464ed62e16b0328034a40cc66bc497c512ce38aae69456ff20a7550829d35",
+      "source": "teacher_success_anchor_v7/diagnostic_video_manifest.json",
+      "actual_sha256": "00e464ed62e16b0328034a40cc66bc497c512ce38aae69456ff20a7550829d35",
+      "matches": true
+    },
+    {
+      "study": "teacher_success_anchor_v7",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904301",
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_success_anchor_v7/video_reviews/diagnostic/fta1500_nfe1_k4__successful_anchor__seed904301/policy_review.json",
+      "expected_sha256": "c2b37368046bc5fbffe64c28528cbbf204c0ca8e58495eb319a8e921d881ba48",
+      "source": "teacher_success_anchor_v7/diagnostic_video_manifest.json",
+      "actual_sha256": "c2b37368046bc5fbffe64c28528cbbf204c0ca8e58495eb319a8e921d881ba48",
+      "matches": true
+    }
+  ]
+}
