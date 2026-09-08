@@ -303,6 +303,13 @@ class ChunkExecutor:
             return [(ts, g) for ts, g in self._grip_hist if ts > t]
 
     # ------------------------------------------------------------------
+    def _grip_play_limit(self) -> int | None:
+        """Gripper playback cannot outlive either its own cap or the pose cap."""
+        limits = [int(limit) for limit in (
+            self.max_play_steps, getattr(self, "grip_play_steps", None),
+        ) if limit]
+        return min(limits) if limits else None
+
     def _pose_at(self, plan: Plan, play_time: float) -> tuple[np.ndarray, float]:
         """Pose target from cumulative deltas at governed playback time."""
         rate = self.hw.control.action_rate_hz
@@ -316,8 +323,9 @@ class ChunkExecutor:
         prev = cum[k - 1] if k > 0 else np.zeros(6)
         target = plan.t0_pose + prev + frac * (cum[k] - prev)
         kg = k
-        if getattr(self, "grip_play_steps", None):
-            kg = min(kg, int(self.grip_play_steps) - 1)
+        grip_limit = self._grip_play_limit()
+        if grip_limit is not None:
+            kg = min(kg, grip_limit - 1)
         grip = plan.actions[min(kg, H - 1), 6]
         return target, float(grip)
 
@@ -393,7 +401,14 @@ class ChunkExecutor:
                     # latch floors the gripper channel (verification 09-04:
                     # recording the raw proposal wrote "open mid-carry" into
                     # STREAM_ACTIONS and confused the veto's close detector)
-                    g_sent = float(np.clip(a[6], 0.0, 1.0))
+                    # Pose rows can keep playing after gripper playback has
+                    # stopped. Their history must retain the held gripper
+                    # input, not a never-played opening/close from that tail.
+                    kg = self._last_action_k
+                    grip_limit = self._grip_play_limit()
+                    if grip_limit is not None:
+                        kg = min(kg, grip_limit - 1)
+                    g_sent = float(np.clip(plan.actions[kg, 6], 0.0, 1.0))
                     with self._lock:
                         latch = self._grip_latch
                     if latch is not None:
@@ -546,6 +561,11 @@ class ChunkExecutor:
         loaded = len(loads) >= 2 and all(v > thr for v in loads.values())
         unloaded = len(loads) >= 2 and all(v <= thr for v in loads.values())
         drop = float(getattr(sf, "grip_latch_release_drop", 0.0) or 0.0)
+        if getattr(self, "release_controller", None) is not None:
+            # The explicit controller owns release permission (volume,
+            # provenance and dwell). The legacy low-Z heuristic must not
+            # open the latch when that controller has denied permission.
+            drop = 0.0
         z = self._measured_z() if drop > 0 else None
         now = time.perf_counter()
         # one locked read-modify-write: the planner thread clears the latch
@@ -684,7 +704,7 @@ class ChunkExecutor:
                     policy_grip=float("nan") if requested is None else requested,
                     measured_grip=measured_grip, pad_loads=self.safety.contact_load,
                     eligible=not stale and requested is not None and original_policy_grip(
-                        plan, self._play_time, self.hw.control.action_rate_hz, self.max_play_steps,
+                        plan, self._play_time, self.hw.control.action_rate_hz, self._grip_play_limit(),
                     ),
                     accepted_grip=self._last_grip_command,
                     finish_permitted=io_free and np.allclose(
