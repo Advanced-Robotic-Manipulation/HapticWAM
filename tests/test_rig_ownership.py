@@ -175,3 +175,38 @@ def test_disk_preflight_aborts_when_nearly_full(tmp_path, monkeypatch):
     assert rd.preflight_disk(tmp_path / "episodes" / "deploy") == 4
     monkeypatch.setattr(shutil, "disk_usage", lambda p: DU(1e12, 0, 1e12))
     assert rd.preflight_disk(tmp_path / "episodes" / "deploy") == 0
+
+
+def test_double_enter_stops_but_a_single_or_slow_enter_does_not():
+    """09-08: operators hit the robot E-stop because Enter was dead. Two bare
+    Enters within DOUBLE_ENTER_S stop; one, or two far apart, do not."""
+    from phantom.scripts.run_deploy import DOUBLE_ENTER_S, operator_stop_requested
+    assert not operator_stop_requested("\n")                                   # single
+    assert not operator_stop_requested("\n", last_enter_t=None, now=10.0)
+    assert operator_stop_requested("\n", last_enter_t=10.0, now=10.0 + DOUBLE_ENTER_S - 0.1)
+    assert not operator_stop_requested("\n", last_enter_t=10.0, now=10.0 + DOUBLE_ENTER_S + 0.1)
+    assert operator_stop_requested("x\n", last_enter_t=None, now=None)
+    assert not operator_stop_requested("s\n", last_enter_t=10.0, now=10.5)      # a label is not a stop
+
+
+def test_make_operator_stop_double_enter_end_to_end(monkeypatch):
+    import io, select as _select
+    from phantom.scripts import run_deploy as RD
+    lines = []
+    class FakeStdin(io.StringIO):
+        def isatty(self): return True
+        def readline(self): return lines.pop(0) if lines else ""
+    fake = FakeStdin()
+    monkeypatch.setattr(RD.sys, "stdin", fake)
+    monkeypatch.setattr(_select, "select", lambda r, w, x, t=0: ([fake] if lines else [], [], []))
+    clock = [100.0]
+    monkeypatch.setattr(RD.time, "monotonic", lambda: clock[0])
+    check = RD.make_operator_stop()
+    lines.append("\n"); assert check() is False           # first Enter: armed
+    clock[0] += 0.5
+    lines.append("\n"); assert check() is True            # second within 1.5 s: stop
+    check2 = RD.make_operator_stop()
+    lines.append("\n"); assert check2() is False
+    clock[0] += 5.0
+    lines.append("\n"); assert check2() is False          # too slow: re-armed only
+    lines.append("x\n"); assert check2() is True

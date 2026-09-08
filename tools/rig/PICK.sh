@@ -97,7 +97,8 @@ echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | CELL $CELL (se
 echo ">> reminders: both arms of cell $CELL share seed $SEED (same placement!); type the next cell number when the placement changes;"
 echo ">>            a censored end (control_lost / servo_hold_timeout / servo_branch_fault) = re-run this cell, same number;"
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
-echo ">>            during an episode: type  x  + Enter to end it cleanly (motion stops, gripper stays);"
-echo ">>            a bare Enter is IGNORED (stray newlines ended 5 episodes on 09-04)."
+echo ">>            during an episode: press Enter TWICE (within 1.5 s) or type  x  + Enter to end it cleanly"
+echo ">>            (motion stops, gripper stays). A single Enter is ignored (stray newlines, 09-04)."
+echo ">>            DO NOT use the robot E-stop to end an episode: it kills the control script (pendant reset)."
 read -p "Enter to launch (Ctrl-C to abort) "
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec "$BASE/GO_ANY.sh" "$TASK" "$EPS" "$NFE" 1.0

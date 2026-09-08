@@ -45,7 +45,7 @@ pads) — the MODEL just never sees them.
    real deploy path (`tools/replay_rig.py`) to confirm the arm follows a known-good plan.
 
 ### Operator rules that changed since Session 5
-- **A bare Enter no longer stops an episode.** Type `x` + Enter to end a carry cleanly
+- **Press Enter TWICE (within 1.5 s), or `x` + Enter, to end an episode.** A single Enter is ignored. Never the robot E-stop (09-08: both control_lost episodes were E-stop presses). Type it to end a carry cleanly
   (gripper stays closed); stray newlines (wireless receiver) ended 5 episodes on 09-04.
 - **Label every episode** at the prompt: `s` (grasped and carried), `f`, `c`. Unlabeled
   episodes are excluded from the A/B — the 09-04 set had to be rule-labelled after the

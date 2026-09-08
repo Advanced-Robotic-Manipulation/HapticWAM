@@ -646,29 +646,49 @@ def make_operator_stop():
     while select.select([sys.stdin], [], [], 0)[0]:
         sys.stdin.readline()          # drain buffered lines
     fired = {"v": False}
+    last_enter = {"t": None}
     def check() -> bool:
         if fired["v"]:
             return True
         if select.select([sys.stdin], [], [], 0)[0]:
             line = sys.stdin.readline()
-            if operator_stop_requested(line):
+            now = time.monotonic()
+            if operator_stop_requested(line, last_enter_t=last_enter["t"], now=now):
                 fired["v"] = True
                 log.info("operator stop requested — ending the episode cleanly")
                 return True
-            log.warning("ignored input %r during the episode — type %s + Enter "
-                        "to stop", line.strip(), "/".join(STOP_WORDS))
+            if line.strip() == "":
+                last_enter["t"] = now
+                log.warning("Enter pressed — press Enter AGAIN within %.1f s (or type "
+                            "%s + Enter) to stop", DOUBLE_ENTER_S, "/".join(STOP_WORDS))
+            else:
+                log.warning("ignored input %r during the episode — Enter twice or "
+                            "%s + Enter to stop", line.strip(), "/".join(STOP_WORDS))
         return False
     return check
 
 
-# A bare Enter no longer stops an episode: on 09-04, 5 of the first 10
+# A SINGLE bare Enter does not stop an episode: on 09-04, 5 of the first 10
 # episodes ended 1-7 s in from stray newlines (a wireless receiver next to
-# the USB hub + primary-selection paste). A letter is required (issue #4).
+# the USB hub + primary-selection paste). A letter stops (issue #4) — and so
+# does a DOUBLE Enter within DOUBLE_ENTER_S: on 09-08 the operators, used to
+# Enter, found it dead and hit the robot E-stop instead (stop.json:
+# safety bits robot_estop/emergency_stopped on both control_lost episodes),
+# which kills the control script and costs a pendant reset every time.
 STOP_WORDS = ("x", "stop")
+DOUBLE_ENTER_S = 1.5
 
 
-def operator_stop_requested(line: str) -> bool:
-    return line.strip().lower() in STOP_WORDS
+def operator_stop_requested(line: str, *, last_enter_t: float | None = None,
+                            now: float | None = None) -> bool:
+    """True for `x`/`stop`, or for a bare Enter that follows another bare
+    Enter within DOUBLE_ENTER_S (last_enter_t = when the previous one came)."""
+    txt = line.strip().lower()
+    if txt in STOP_WORDS:
+        return True
+    if txt == "" and last_enter_t is not None and now is not None:
+        return 0.0 <= now - last_enter_t <= DOUBLE_ENTER_S
+    return False
 
 VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
                   "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
