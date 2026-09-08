@@ -265,6 +265,43 @@ def servo_reach_limiter_audit(design, info, run):
     return []
 
 
+def shared_server_hardware(design):
+    """Validate the narrowly declared inference-only shared-server exception.
+
+    A server may use the legacy hold deadline while a simulator client uses
+    the 2.5 s deadline. Every other effective hardware field must match. The
+    actual server hashes remain independently pinned and are never rewritten
+    to impersonate the client's controller configuration.
+    """
+    declared = design.get("shared_server_hardware")
+    if declared is None:
+        return design["runtime_hardware"]
+    from phantom.config.hardware import HardwareConfig
+
+    models = []
+    for label, spec in (("server", declared), ("client", design["runtime_hardware"])):
+        if not isinstance(spec, dict) or not isinstance(spec.get("effective_model"), dict):
+            raise ValueError(f"Shared {label} hardware needs its full effective model")
+        sha = spec.get("sha256", "")
+        if not isinstance(sha, str) or len(sha) != 64 or any(c not in "0123456789abcdef" for c in sha):
+            raise ValueError(f"Shared {label} hardware needs a SHA256 fingerprint")
+        hw = HardwareConfig.model_validate(spec["effective_model"])
+        model = hw.model_dump(mode="json")
+        if model != spec["effective_model"] or hw.config_hash() != spec.get("config_hash"):
+            raise ValueError(f"Shared {label} hardware effective model/config hash disagrees")
+        models.append(model)
+    server, client = models
+    if server["safety"]["servo_constraint_hold_s"] is not None:
+        raise ValueError("Shared inference server must use the legacy None hold deadline")
+    if client["safety"]["servo_constraint_hold_s"] not in (None, 2.5):
+        raise ValueError("Shared inference clients allow only None or 2.5 s hold deadlines")
+    server["safety"].pop("servo_constraint_hold_s")
+    client["safety"].pop("servo_constraint_hold_s")
+    if server != client:
+        raise ValueError("Shared server/client hardware differs beyond the hold deadline")
+    return declared
+
+
 def load_design(path):
     design = json.loads(Path(path).read_text())
     if design.get("status") != "frozen":
@@ -290,6 +327,8 @@ def load_design(path):
         raise ValueError("delivery_latency_s must be finite and nonnegative")
     servo_reach_limiter_metadata(design)
     policy_delivery_clock(design)
+    if design.get("shared_server_hardware") is not None:
+        shared_server_hardware(design)
     return design, fingerprint(path)
 
 
@@ -401,11 +440,16 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     hardware = design["runtime_hardware"]
     if info.get("hardware_effective") != hardware["effective_model"]:
         reasons.append("effective_hardware_differs_from_frozen_model")
-    if (
-        server.get("hardware_sha256") != hardware["sha256"]
-        or server.get("hardware_config_hash") != hardware["config_hash"]
-    ):
-        reasons.append("server_hardware_differs_from_frozen_configuration")
+    try:
+        server_hardware = shared_server_hardware(design)
+    except (KeyError, TypeError, ValueError):
+        reasons.append("shared_server_hardware_contract_invalid")
+    else:
+        if (
+            server.get("hardware_sha256") != server_hardware["sha256"]
+            or server.get("hardware_config_hash") != server_hardware["config_hash"]
+        ):
+            reasons.append("server_hardware_differs_from_frozen_configuration")
     for field in ("observation_delay_s", "inference_delay_add_s"):
         if info.get(field) != condition[field]:
             reasons.append(f"effective_{field}_differs_from_condition")
