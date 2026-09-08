@@ -1,0 +1,21 @@
+{
+  "at_utc": "2026-09-08T06:34:01.037517+00:00",
+  "scope": "CPU/read-only resource checks; no model, Isaac or hardware launch",
+  "dedicated_port_7799_free": true,
+  "output_root_absent": true,
+  "gpu_query_fields": [
+    "name",
+    "memory.total_MiB",
+    "memory.used_MiB",
+    "utilization.gpu_percent"
+  ],
+  "gpu": "NVIDIA GeForce RTX 5090, 32607, 3112, 0",
+  "gpu_process_fields": [
+    "pid",
+    "process_name",
+    "used_memory_MiB"
+  ],
+  "gpu_processes": "3229, /usr/bin/python3, 2418",
+  "disk_free_bytes": 75062648832,
+  "disk_total_bytes": 1966736678912
+}

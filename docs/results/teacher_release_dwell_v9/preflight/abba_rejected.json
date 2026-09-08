@@ -1,0 +1,10 @@
+{
+  "status": "rejected_before_execution",
+  "command": "launch_abba.py --bindings bindings.preflight.json (without --execute)",
+  "exit_code": 1,
+  "error": "ValueError: At least two distinct matched sampling seeds are required",
+  "source": "frozen V8 driver tools/sim/analyze_policy_campaign.py:279 load_design",
+  "constraint": "blocks() also requires exact coverage of the full frozen condition \u00d7 seed grid; use two two-trial campaigns without source edits.",
+  "model_or_sim_launched": false,
+  "recording_note": "Written from captured CPU-preflight command result; original stdout file was empty."
+}

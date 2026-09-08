@@ -1,0 +1,19 @@
+{
+  "tcp_min_m": [
+    -0.5429275160642127,
+    -0.06853791240695331,
+    0.057999999999999996
+  ],
+  "tcp_max_m": [
+    -0.24020644059509488,
+    0.14193716917871008,
+    0.274
+  ],
+  "open_command_max": 0.45,
+  "opening_hold_s": 0.1,
+  "unloaded_force_max_n": 0.5,
+  "unloaded_hold_s": 0.2,
+  "rearm_close_command_min": 0.5,
+  "finish_after_release": true,
+  "finish_observation_s": 2.0
+}

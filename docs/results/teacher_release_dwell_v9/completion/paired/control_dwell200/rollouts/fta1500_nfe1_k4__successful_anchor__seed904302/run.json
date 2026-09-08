@@ -1,0 +1,355 @@
+{
+  "mode": "policy",
+  "episode": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+  "frames": 901,
+  "duration_s": 59.996,
+  "wall_time_s": 112.91151935397647,
+  "events": [
+    {
+      "event": "planner_stall_watchdog",
+      "t": 0.26,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": null,
+      "measured_displacement_m": null,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 1.668,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.0004612325313022694,
+      "measured_displacement_m": 5.308681977283467e-05,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 2.452,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.04610411161349618,
+      "measured_displacement_m": 0.04365013958518736,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 3.244,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.046687084377173366,
+      "measured_displacement_m": 0.046674850845198367,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 4.0360000000000005,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.04919768018058879,
+      "measured_displacement_m": 0.04933444446197442,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 4.82,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.0458635359474658,
+      "measured_displacement_m": 0.04602190916572584,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 5.66,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.04367888290746479,
+      "measured_displacement_m": 0.04398616396894614,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 6.444,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.01656574525715315,
+      "measured_displacement_m": 0.01787778831680416,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 7.596,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.010894721171859207,
+      "measured_displacement_m": 0.01130668884343101,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 8.38,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.0035578780400075945,
+      "measured_displacement_m": 0.0036775589094446655,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 9.164,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.004129407746987578,
+      "measured_displacement_m": 0.0034388585875671234,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 9.948,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.003949261201811505,
+      "measured_displacement_m": 0.0025730586748251307,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 10.732000000000001,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.009463378185190144,
+      "measured_displacement_m": 0.008857257731990028,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 11.532,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.053230390946044835,
+      "measured_displacement_m": 0.04984909500036873,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 12.34,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.061453255566124666,
+      "measured_displacement_m": 0.06096889663472087,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 13.124,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.10340779568009127,
+      "measured_displacement_m": 0.10026808420676922,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 13.908,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.13546614477641597,
+      "measured_displacement_m": 0.13312750641780488,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 14.708,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.058533407454064094,
+      "measured_displacement_m": 0.06922868833936807,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 15.492,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.008257060864794802,
+      "measured_displacement_m": 0.00581524092865574,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 16.276,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.05326403740314426,
+      "measured_displacement_m": 0.052152476310868445,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 17.076,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.07701298596109055,
+      "measured_displacement_m": 0.07501399863871656,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 17.86,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.05885783006955921,
+      "measured_displacement_m": 0.059957581883225954,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 18.66,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.06918502350065704,
+      "measured_displacement_m": 0.06884893698437697,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 19.468,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.059146371208613956,
+      "measured_displacement_m": 0.059547593502603705,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 20.252,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.04806262951130543,
+      "measured_displacement_m": 0.04857525229460075,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 21.06,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.031582143738157376,
+      "measured_displacement_m": 0.032464242792887066,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 21.852,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.018787771785855868,
+      "measured_displacement_m": 0.01938001159968872,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 22.636,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.006911163174739677,
+      "measured_displacement_m": 0.003954383487630305,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 23.428,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.0017504914411255949,
+      "measured_displacement_m": 0.003334763936778998,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    },
+    {
+      "event": "planner_stall_watchdog",
+      "t": 24.212,
+      "stop_reason": null,
+      "strikes": 0,
+      "commanded_displacement_m": 0.013699270267158108,
+      "measured_displacement_m": 0.008059028779660462,
+      "source": "PlannerLoop: command>5mm and actual<20% for two consecutive replan intervals"
+    }
+  ],
+  "robot_usd": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+  "joint_state_source": "actual PhysX articulation joints and tool0 rigid body pose; independent nominal FK also logged",
+  "object_dynamics": {
+    "rigid_body_dynamic": true,
+    "kinematic": false,
+    "attachments": [],
+    "pose_writes_after_initialization": 0,
+    "initialization": "configured table pose before settling; contact_probe alone subsequently uses its documented one-time synthetic starting pose before t=0"
+  },
+  "tactile_model": "measured_baseline_proxy",
+  "wrist_model": "contact_proxy",
+  "gripper_OBJ_model": "estimated from physical closure/target/contact; unvalidated",
+  "contact_trace_source": "PhysX contacts filtered between each pad rigid body (including backing/linkage colliders) and packet; UV is force-weighted world contact centroid transformed to pad Y/Z and normalized/clipped by pad dimensions; NaN indicates no contact force.",
+  "control_rate_hz": 125.0,
+  "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
+  "policy_stop_reason": null,
+  "policy_delivery_clock": "rpc_wall",
+  "servo_reach_limiter": {
+    "elbow_min_rad": 0.4,
+    "joint_speed_max_rad_s": 1.0,
+    "branch_tolerance_rad": 0.35,
+    "bisection_iterations": 3,
+    "shoulder_height_m": 0.1519,
+    "algorithm": "shared_native_bisection_slide_v1",
+    "measured_wrist_extension_stop_m": 0.468,
+    "consecutive_reject_limit": 25,
+    "final_consecutive_rejects": 0,
+    "tracking_guarantee": false,
+    "constraint_hold_s": 2.5,
+    "constraint_hold_progress_rad": 0.001
+  },
+  "post_stop_observation_s": 2.0,
+  "record_packet_support": true,
+  "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller",
+  "packet_support_filter_paths": {
+    "packet": "/World/Waffle",
+    "bin": [
+      "/World/Bin/Bottom",
+      "/World/Bin/Left",
+      "/World/Bin/Right",
+      "/World/Bin/Front",
+      "/World/Bin/Back"
+    ],
+    "robot": [
+      "/World/Robot/Geometry/world/base_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+      "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+    ]
+  },
+  "camera_intrinsics_px": [
+    [
+      742.8932495117188,
+      0.0,
+      320.0
+    ],
+    [
+      0.0,
+      742.8931884765625,
+      240.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}

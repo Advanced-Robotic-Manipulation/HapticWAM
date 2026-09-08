@@ -2,6 +2,8 @@
 
 **Recommend ftA1500 EMA, NFE 1, K 4, guidance 1 as the next attended lab candidate. There is no validated reliable winner.** The completed v5 reserved confirmation produced the following results at one fixed simulator start and fixed waffle pose:
 
+**September 8 update:** the completed [V9 controller diagnostic](results/teacher_release_dwell_v9/README.md) now supplies two full-horizon, supported pick-and-place successes with the bounded-hold fix and the original0.200s release dwell. The same configuration scored0/2 in V8, so repeatability and native transfer remain unqualified. Keep the model recommendation; qualify the new hold behavior as the controller candidate below. The0.100s release-dwell trial showed no demonstrated benefit and is not promoted.
+
 | Candidate | Acquired | Sustained lift | Retained carry | Strict physical placement | Clean FINISH | Drops | Safety stops |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | ftA1500 / NFE1 / K4 |12/12|7/12|6/12|1/12|1/12|1/12|11/12|
@@ -22,6 +24,19 @@ The successful seed 904510 physically released and settled in the box at 24.268 
 | Execution | 125 Hz native control, 10 Hz action grid, maximum 10 played steps; existing governor, aperture latch and safety guards |
 | Native opt-in | `--placement-controller-profile minimal_v5`, `--terminal-veto`, explicit `--placement-release-config` |
 | Reference simulator source | `/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_anchor_minimal_v5` |
+
+The new hold implementation is in [PR15](https://github.com/Advanced-Robotic-Manipulation/phantom/pull/15), branch `fix/teacher-carry-hold-20260907`, with code commits `84c71a4` and `bce8617`. V9 uses the pinned `source_teacher_carry_hotfix_v8` runtime with the same minimal_v5 semantics, not the older V5 archive alone. See its [exact frozen comparison](results/teacher_release_dwell_v9/README.md).
+
+For an attended qualification of this controller candidate, start from the operator's actual reviewed hardware configuration and add these three optional safety-controller settings to a separate reviewed file:
+
+```yaml
+safety:
+  elbow_min_rad: 0.40
+  servo_joint_speed_max_rad_s: 1.0
+  servo_constraint_hold_s: 2.5
+```
+
+This is a **fragment**, not a replacement for the full hardware configuration or its measured safety bounds. The native run's `--hardware` argument must point to that reviewed full file when qualifying the hold candidate. Retain `opening_hold_s: 0.2` in the measured release JSON. Before a scored attempt, verify the native driver streams the stationary setpoint during a verified hold, reports the actual anchor, accepts a fresh plan within the finite budget and stops correctly on deadline or measured safety preemption. CPU parity and simulator success do not establish those physical behaviors. Do not copy the campaign YAML, estimated release volume or simulated tactile baseline onto the rig.
 
 The [full model settings table](results/teacher_success_anchor_v5/model_settings_table.md) retains all four tested recipes and checkpoint identities. The NFE5 comparator in v5 was **NFE5/K4**, not the older NFE5/K1 experiment. No student configuration belongs to this handoff.
 
@@ -102,7 +117,7 @@ For every attempt retain full checkpoint/source/config/release hashes, seed, ach
 
 ## Follow-ups remain separate
 
-The completed V6 limiter diagnostic is not promoted: both cases lifted/carried but stopped after25 constraint holds before release. [Exact hold/timing audit](results/teacher_success_anchor_v6/diagnostic_results/recommendation.md). The subsequent [V8 controller hotfix](results/teacher_carry_hotfix_v8/README.md) permits a bounded, verified stationary hold while fresh teacher plans arrive. It demonstrates recovery and carry into the box in one case, but no release; the other case fails sustained lift and stops at the upper workspace boundary. All six V8 development cases fail strict placement. The opt-in2.5s hold remains a diagnostic setting, not part of this recommended native invocation. It does not establish that a reach limiter prevents low-height contact or rolling-baseline absorption, and no hardware action was performed.
+The legacy V6 limiter is not promoted: both cases lifted/carried but stopped after25 constraint holds before release. [Exact hold/timing audit](results/teacher_success_anchor_v6/diagnostic_results/recommendation.md). The [V8 controller hotfix](results/teacher_carry_hotfix_v8/README.md) permits a bounded, verified stationary hold while fresh teacher plans arrive, but all six V8 cases still fail strict placement. The subsequent [V9 diagnostic](results/teacher_release_dwell_v9/README.md) scores2/2 with the bounded hold and original0.200s release dwell, and1/2 with0.100s. The latter failed pickup occurs before the release setting can act. The2.5s hold is now the working simulator controller candidate for attended native qualification above; it is not silently enabled by the existing invocation fragment or in the live rig checkout. It does not establish that a reach limiter prevents low-height contact, rolling-baseline absorption or measured joint-speed overshoot. No hardware action was performed.
 
 The completed [V7 full-client timing diagnostic](results/teacher_success_anchor_v7/README.md) supports retaining K4. On two reused development seeds, K4 lifted/carried2/2 and placed1/2; K1 acquired2/2 but lifted0/2 despite mean full-client duration0.279s versus0.848s. Both had one wrist-extension stop and no drop. These counts are not pooled into V5 confirmation and do not validate hardware transfer. V7 preserves native action/CPK clocks and changes only the declared simulated delivery timing; actual native deployment uses its own real request timing.
 

@@ -1,0 +1,139 @@
+{
+  "status": "complete",
+  "planned": 4,
+  "valid": 4,
+  "order": "AABB",
+  "rows": [
+    {
+      "block": "control_dwell200",
+      "sampling_seed": 904301,
+      "opening_hold_s": 0.2,
+      "valid_for_scoring": true,
+      "duration_s": 59.996,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "stage_times_s": {
+        "reach": 5.8,
+        "closure": 6.136,
+        "acquisition": 6.736,
+        "lift": 10.068,
+        "carry": 12.4,
+        "release_in_bin": 24.0,
+        "full_task": 24.668,
+        "first_drop": null
+      },
+      "controller_events": {
+        "opening_since_s": 23.748,
+        "committed_at_s": 23.948,
+        "finished_at_s": 24.804000000000002
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json"
+    },
+    {
+      "block": "control_dwell200",
+      "sampling_seed": 904302,
+      "opening_hold_s": 0.2,
+      "valid_for_scoring": true,
+      "duration_s": 59.996,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "stage_times_s": {
+        "reach": 6.0680000000000005,
+        "closure": 7.668,
+        "acquisition": 8.0,
+        "lift": 11.200000000000001,
+        "carry": 13.668000000000001,
+        "release_in_bin": 23.668,
+        "full_task": 24.336000000000002,
+        "first_drop": null
+      },
+      "controller_events": {
+        "opening_since_s": 23.42,
+        "committed_at_s": 23.62,
+        "finished_at_s": 24.916
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json"
+    },
+    {
+      "block": "treatment_dwell100",
+      "sampling_seed": 904301,
+      "opening_hold_s": 0.1,
+      "valid_for_scoring": true,
+      "duration_s": 59.996,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "stage_times_s": {
+        "reach": 5.5360000000000005,
+        "closure": 6.2,
+        "acquisition": 6.668,
+        "lift": 10.068,
+        "carry": 12.536,
+        "release_in_bin": 25.268,
+        "full_task": 25.936,
+        "first_drop": null
+      },
+      "controller_events": {
+        "opening_since_s": 25.1,
+        "committed_at_s": 25.204,
+        "finished_at_s": 26.044
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json"
+    },
+    {
+      "block": "treatment_dwell100",
+      "sampling_seed": 904302,
+      "opening_hold_s": 0.1,
+      "valid_for_scoring": true,
+      "duration_s": 35.108000000000004,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stage_times_s": {
+        "reach": 5.936,
+        "closure": 7.468,
+        "acquisition": 8.468,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "controller_events": {
+        "first_stop_s": 33.108000000000004,
+        "stop_reason": "safety_stop",
+        "safety_events": [
+          "joint_speed"
+        ]
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json"
+    }
+  ],
+  "interpretation": "Two reused development seeds; compare physical outcomes and timing, not a reliable winner study."
+}

@@ -1,0 +1,382 @@
+{
+  "status": "passed",
+  "at_utc": "2026-09-08T06:48:50.346815+00:00",
+  "planned": 4,
+  "valid": 4,
+  "all_trials_complete": true,
+  "owned_processes_stopped": true,
+  "dedicated_port_free": true,
+  "binding_sha256": "26b1689eae3f8c8acf1d97938a61cb5257a81599a2a0f26bb539b49bc4efb418",
+  "verified_pinned_files": 5106,
+  "launcher_exit_code": 0,
+  "processes": [
+    {
+      "role": "launcher",
+      "pid": 534953,
+      "proc_state": null,
+      "running": false,
+      "exit_code": 0
+    },
+    {
+      "role": "supervisor",
+      "pid": 534952,
+      "proc_state": null,
+      "running": false
+    },
+    {
+      "role": "control_dwell200_controller",
+      "pid": 535010,
+      "proc_state": null,
+      "running": false,
+      "exit_code": 0
+    },
+    {
+      "role": "control_dwell200_server",
+      "pid": 535042,
+      "proc_state": null,
+      "running": false,
+      "recorded_status": "stopped"
+    },
+    {
+      "role": "treatment_dwell100_controller",
+      "pid": 545707,
+      "proc_state": null,
+      "running": false,
+      "exit_code": 0
+    },
+    {
+      "role": "treatment_dwell100_server",
+      "pid": 545739,
+      "proc_state": null,
+      "running": false,
+      "recorded_status": "stopped"
+    }
+  ],
+  "trials": [
+    {
+      "block": "control_dwell200",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904301",
+      "valid_for_scoring": true,
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "score_sha256": "1b7cbd94bae108f50eff3051fe560a73f2daff10a3cb7271ac068cb9d4e2c0a4",
+      "opening_hold_s": 0.2,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.8,
+        "closure": 6.136,
+        "acquisition": 6.736,
+        "lift": 10.068,
+        "carry": 12.4,
+        "release_in_bin": 24.0,
+        "full_task": 24.668,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.3888777792453766,
+          0.022826651111245155,
+          0.07199999690055847
+        ],
+        "max_lift_m": 0.33216941356658936,
+        "carry_distance_m": 0.3269384182815296,
+        "final_inside_bin": true,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 1.4534468341270066e-06,
+        "final_angular_speed_rad_s": 3.054637086693794e-05,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216654046537,
+        "bilateral_contact_duration_s": 16.592,
+        "pad_packet_normal_force_peak_n": 8.01786994934082
+      },
+      "control": {
+        "stop_reason": null,
+        "execution_rows": 7500,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 31,
+        "inference_errors": 0,
+        "plans_activated": 30,
+        "effective_latency_s": {
+          "count": 31,
+          "mean": 0.792597514892658,
+          "p95": 0.7948969244025648,
+          "max": 1.4043249320238829
+        },
+        "inference_wall_time_s": {
+          "count": 31,
+          "mean": 0.9619126605440772,
+          "p95": 0.9971553819486871,
+          "max": 1.6024864891078323
+        },
+        "activation_delay_s": {
+          "count": 30,
+          "mean": 0.8015999999999999,
+          "p95": 0.8087999999999986,
+          "max": 1.416
+        },
+        "lift_complete_is_task_success": false
+      }
+    },
+    {
+      "block": "control_dwell200",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904302",
+      "valid_for_scoring": true,
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "score_sha256": "c386643e67bbc50c958780ff4f6b9430c23cbde2df2759da2cadc4d6a23132de",
+      "opening_hold_s": 0.2,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 6.0680000000000005,
+        "closure": 7.668,
+        "acquisition": 8.0,
+        "lift": 11.200000000000001,
+        "carry": 13.668000000000001,
+        "release_in_bin": 23.668,
+        "full_task": 24.336000000000002,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.41362911462783813,
+          0.045485347509384155,
+          0.07200001925230026
+        ],
+        "max_lift_m": 0.3636304438114166,
+        "carry_distance_m": 0.3611379494056278,
+        "final_inside_bin": true,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 2.559960897774438e-07,
+        "final_angular_speed_rad_s": 3.5122373759077044e-06,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.2526216805176634,
+        "bilateral_contact_duration_s": 14.999999999999998,
+        "pad_packet_normal_force_peak_n": 4.265086650848389
+      },
+      "control": {
+        "stop_reason": null,
+        "execution_rows": 7500,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 30,
+        "inference_errors": 0,
+        "plans_activated": 29,
+        "effective_latency_s": {
+          "count": 30,
+          "mean": 0.8102471902112787,
+          "p95": 0.9918521311716167,
+          "max": 1.3898531689774245
+        },
+        "inference_wall_time_s": {
+          "count": 30,
+          "mean": 0.9718373225846638,
+          "p95": 1.1839943034457965,
+          "max": 1.5797621980309486
+        },
+        "activation_delay_s": {
+          "count": 29,
+          "mean": 0.817931034482759,
+          "p95": 1.0191999999999994,
+          "max": 1.4000000000000001
+        },
+        "lift_complete_is_task_success": false
+      }
+    },
+    {
+      "block": "treatment_dwell100",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904301",
+      "valid_for_scoring": true,
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "score_sha256": "07a4de7b50f467b5eb849584d482f1aab2eb1fe41b467e25d33ad9cb439b15b6",
+      "opening_hold_s": 0.1,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": true,
+        "full_task": true,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.5360000000000005,
+        "closure": 6.2,
+        "acquisition": 6.668,
+        "lift": 10.068,
+        "carry": 12.536,
+        "release_in_bin": 25.268,
+        "full_task": 25.936,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.3807032108306885,
+          0.0396302305161953,
+          0.07200000435113907
+        ],
+        "max_lift_m": 0.32087618112564087,
+        "carry_distance_m": 0.35030153712505235,
+        "final_inside_bin": true,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 1.3883337238801675e-07,
+        "final_angular_speed_rad_s": 0.0,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 17.528000000000002,
+        "pad_packet_normal_force_peak_n": 5.201554298400879
+      },
+      "control": {
+        "stop_reason": null,
+        "execution_rows": 7500,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 33,
+        "inference_errors": 0,
+        "plans_activated": 32,
+        "effective_latency_s": {
+          "count": 33,
+          "mean": 0.78670275423704,
+          "p95": 0.7907177283428609,
+          "max": 1.1760287049692124
+        },
+        "inference_wall_time_s": {
+          "count": 33,
+          "mean": 0.9503358240366321,
+          "p95": 0.9954676765017211,
+          "max": 1.3854040768928826
+        },
+        "activation_delay_s": {
+          "count": 32,
+          "mean": 0.79325,
+          "p95": 0.7991999999999998,
+          "max": 1.184
+        },
+        "lift_complete_is_task_success": false
+      }
+    },
+    {
+      "block": "treatment_dwell100",
+      "case": "fta1500_nfe1_k4__successful_anchor__seed904302",
+      "valid_for_scoring": true,
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "score_sha256": "5e71e79f9ed5443942a6ca6cce4f18bdc6fad8af106a441fa2e5f429e4bd8e91",
+      "opening_hold_s": 0.1,
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 5.936,
+        "closure": 7.468,
+        "acquisition": 8.468,
+        "lift": null,
+        "carry": null,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.393706738948822,
+          -0.29306915402412415,
+          0.06999999284744263
+        ],
+        "final_center_m": [
+          -0.37023109197616577,
+          -0.3011934161186218,
+          0.06999999284744263
+        ],
+        "max_lift_m": 0.031065136194229126,
+        "carry_distance_m": 0.0,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": true,
+        "final_speed_m_s": 0.0,
+        "final_angular_speed_rad_s": 0.0,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.25262168085999975,
+        "bilateral_contact_duration_s": 2.732000000000001,
+        "pad_packet_normal_force_peak_n": 3.2322795391082764
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 4139,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 38,
+        "inference_errors": 0,
+        "plans_activated": 37,
+        "effective_latency_s": {
+          "count": 38,
+          "mean": 0.8666828411116608,
+          "p95": 1.1839582661399617,
+          "max": 1.1980151811148971
+        },
+        "inference_wall_time_s": {
+          "count": 38,
+          "mean": 1.0645106076385433,
+          "p95": 1.3753739892039447,
+          "max": 1.4203477129340172
+        },
+        "activation_delay_s": {
+          "count": 37,
+          "mean": 0.8756756756756756,
+          "p95": 1.1951999999999998,
+          "max": 1.208
+        },
+        "lift_complete_is_task_success": false
+      }
+    }
+  ],
+  "notes": [
+    "Existing authoritative scores read, never rescored.",
+    "AABB setting blocks with actual shared-GPU timing; two reused development seeds.",
+    "No winner or hardware-validation claim."
+  ]
+}

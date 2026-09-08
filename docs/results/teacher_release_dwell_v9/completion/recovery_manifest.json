@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "method": "read-only SSH byte-preserving copies",
+  "files": [
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/completion_audit.json",
+      "local": "completion/completion_audit.json",
+      "bytes": 12059,
+      "sha256": "313e62aca8371ed764bd228eeedbf18e095618948c4bc9e068552dd5b3b500fa"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/completion_audit.log",
+      "local": "completion/completion_audit.log",
+      "bytes": 12059,
+      "sha256": "313e62aca8371ed764bd228eeedbf18e095618948c4bc9e068552dd5b3b500fa"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/launcher_completed.json",
+      "local": "completion/launcher_completed.json",
+      "bytes": 114,
+      "sha256": "8e9b5ffd41b73e2fd31f7a56e3d7c48cc9b440ad0a273a237592bb1b472f4ccb"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/launcher.log",
+      "local": "completion/launcher.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/supervisor.log",
+      "local": "completion/supervisor.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/complete.json",
+      "local": "completion/paired/complete.json",
+      "bytes": 151,
+      "sha256": "aa102148d90941e645c7978947ddd8ab00a8b2aebaae05bdca408bc562e80695"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/launch_plan.json",
+      "local": "completion/paired/launch_plan.json",
+      "bytes": 42676,
+      "sha256": "08326f142d0c4ba2736c8a11c7d8661135802d58c64ca87fe0e1b4883fd53240"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200_launch.json",
+      "local": "completion/paired/control_dwell200_launch.json",
+      "bytes": 1245,
+      "sha256": "8f440b6d36772f99d0be42c8bb8177fd6c37ce6d38a7f8af26a81714aabbf686"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200_completed.json",
+      "local": "completion/paired/control_dwell200_completed.json",
+      "bytes": 435,
+      "sha256": "f68dafe09dc3b1b0834bb1ca8581e4c9d067b290e2f74ad890408f1a5babc6ce"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200.log",
+      "local": "completion/paired/control_dwell200.log",
+      "bytes": 622,
+      "sha256": "3fee0492f1ed51dc5c9140158841fa060aa546e123e665b70a22080008c7ec42"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/campaign_snapshot.json",
+      "local": "completion/paired/control_dwell200/campaign_snapshot.json",
+      "bytes": 19675,
+      "sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/frozen_inputs.json",
+      "local": "completion/paired/control_dwell200/frozen_inputs.json",
+      "bytes": 18521,
+      "sha256": "a45c9d7f8515e7bacad4544f437acfcfa71493eab440fdc2b1c8b263db2d1d5a"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/plan.json",
+      "local": "completion/paired/control_dwell200/plan.json",
+      "bytes": 1400,
+      "sha256": "014848dd7a600dc8d95fdf481b21df6a82c3943ada104b89c4aaeff47fb8ecde"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/progress.json",
+      "local": "completion/paired/control_dwell200/progress.json",
+      "bytes": 5674,
+      "sha256": "6f6be849af3b6e23f4812bb2a94305d20162aaa76a8e17230924b01359355d0b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/summary.json",
+      "local": "completion/paired/control_dwell200/analysis/summary.json",
+      "bytes": 12741,
+      "sha256": "bca9ca0ad8717c21b59c7b7dbb2dff2f83071ccf6777bf7c3c0abb42a221a1b9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/runtime/placement_release.json",
+      "local": "completion/paired/control_dwell200/runtime/placement_release.json",
+      "bytes": 391,
+      "sha256": "dd203ed5c74da06d952b78d71172e4eea63096eed4a0997cb4c23217037d297a"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/runtime/inference_fta1500_nfe1_k4.json",
+      "local": "completion/paired/control_dwell200/runtime/inference_fta1500_nfe1_k4.json",
+      "bytes": 169,
+      "sha256": "5b242a74f087fdf7d880af030576c75c8fa42ddaf540f0f91f09a5f24793427e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/servers/00_control_dwell200__fta1500_nfe1_k4_1788849462612711738/server.json",
+      "local": "completion/paired/control_dwell200/servers/00_control_dwell200__fta1500_nfe1_k4_1788849462612711738/server.json",
+      "bytes": 3673,
+      "sha256": "a36d2347f61ffd3bceb088c32c907d2804e2d65bc93caec1a29cfeffb4b1b5f5"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "local": "completion/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "bytes": 8613,
+      "sha256": "1b7cbd94bae108f50eff3051fe560a73f2daff10a3cb7271ac068cb9d4e2c0a4"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run.json",
+      "bytes": 14346,
+      "sha256": "ec38df11cd12a3cbf655b6b25c8f5c851dc5ec299faf3962f33c240a3cbde268"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run_status.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run_status.json",
+      "bytes": 2439,
+      "sha256": "17cd7ee8cb0e7b44f5ec7d94ffe95adf8d62f90c7d6b447f91bc800ef16ce990"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/effective_config.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/effective_config.json",
+      "bytes": 4147,
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/policy_info.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/policy_info.json",
+      "bytes": 10139,
+      "sha256": "3e028d05e59cbf91087963ac782528a9bebd09818f12a0a707e9af788cf2164b"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/case.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/case.json",
+      "bytes": 2578,
+      "sha256": "484bb6784d3299754f771087291779dbbbc7b845b23e80e86ac48d356fa945ee"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/server_ready.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/server_ready.json",
+      "bytes": 3671,
+      "sha256": "27c8351ba82598ef061dd647c0f0fbde8a3f67fb8622d3024eb5723de3d35e07"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "local": "completion/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "bytes": 8729,
+      "sha256": "c386643e67bbc50c958780ff4f6b9430c23cbde2df2759da2cadc4d6a23132de"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run.json",
+      "bytes": 13946,
+      "sha256": "33ba96e1f2b8491fcd5a9687f977dd6ab3f02118927e0c8861be014e3a01c3a3"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run_status.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run_status.json",
+      "bytes": 2439,
+      "sha256": "634514d825b29b640dc8c282caa14c6afd69eab64b89d4f28540906164d2c5c3"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/effective_config.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/effective_config.json",
+      "bytes": 4147,
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/policy_info.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/policy_info.json",
+      "bytes": 10139,
+      "sha256": "54b467282cf223877b89f7ad98f390f8d19bd1894220b2418b39052cca8bd610"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/case.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/case.json",
+      "bytes": 2578,
+      "sha256": "34ded8c30bdc91ff0a38d1470b2ab77a4187fc9b68df0b7a4338fe1b78aa19dd"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/server_ready.json",
+      "local": "completion/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/server_ready.json",
+      "bytes": 3671,
+      "sha256": "27c8351ba82598ef061dd647c0f0fbde8a3f67fb8622d3024eb5723de3d35e07"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100_launch.json",
+      "local": "completion/paired/treatment_dwell100_launch.json",
+      "bytes": 1249,
+      "sha256": "e54f0790b05b8fbc53254a5c29e4ebab06db289ff3f82029875c90053db69565"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100_completed.json",
+      "local": "completion/paired/treatment_dwell100_completed.json",
+      "bytes": 435,
+      "sha256": "4f077de30e31c031e1ccefe687b99fc31fd91e1e97b01353ef6e5a042583a66f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100.log",
+      "local": "completion/paired/treatment_dwell100.log",
+      "bytes": 629,
+      "sha256": "aacd2bd8f09547634358c8fe8d76aba5ec76c81d301445caf00ca4454b10c71c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/campaign_snapshot.json",
+      "local": "completion/paired/treatment_dwell100/campaign_snapshot.json",
+      "bytes": 19679,
+      "sha256": "a11a7d833bb8922feb8fa34424d202411734c2a6a7127f94e187447475ba669f"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/frozen_inputs.json",
+      "local": "completion/paired/treatment_dwell100/frozen_inputs.json",
+      "bytes": 18521,
+      "sha256": "c17a2ddf15418fbb6bc2d35c69223f8573d3d1b71288eec81e6f5d3f35ef690e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/plan.json",
+      "local": "completion/paired/treatment_dwell100/plan.json",
+      "bytes": 1402,
+      "sha256": "e604f8700eb4ea28598b25084e87519d6d4a9b2f7f057fe0891c14b6694e23dc"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/progress.json",
+      "local": "completion/paired/treatment_dwell100/progress.json",
+      "bytes": 5692,
+      "sha256": "591ea7612a542d976643c3c93cda483eeb5d1b5317c5813e1759df6a365bb3a5"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/summary.json",
+      "local": "completion/paired/treatment_dwell100/analysis/summary.json",
+      "bytes": 12747,
+      "sha256": "37c0c23891f38969442173869704112c8505f4cdd58c1aae23c711ae2d39fc92"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/runtime/placement_release.json",
+      "local": "completion/paired/treatment_dwell100/runtime/placement_release.json",
+      "bytes": 391,
+      "sha256": "03a402580b790f2eade098fd28cbba704efe223f8917a3d59f29c8286db9cb9e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/runtime/inference_fta1500_nfe1_k4.json",
+      "local": "completion/paired/treatment_dwell100/runtime/inference_fta1500_nfe1_k4.json",
+      "bytes": 169,
+      "sha256": "5b242a74f087fdf7d880af030576c75c8fa42ddaf540f0f91f09a5f24793427e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/servers/00_treatment_dwell100__fta1500_nfe1_k4_1788849771221561048/server.json",
+      "local": "completion/paired/treatment_dwell100/servers/00_treatment_dwell100__fta1500_nfe1_k4_1788849771221561048/server.json",
+      "bytes": 3674,
+      "sha256": "236900fbec8882b5d94442b76f0a4cde1c22797802c41c733cc6e48c52faf117"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "local": "completion/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json",
+      "bytes": 8648,
+      "sha256": "07a4de7b50f467b5eb849584d482f1aab2eb1fe41b467e25d33ad9cb439b15b6"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run.json",
+      "bytes": 14942,
+      "sha256": "3c3013c39825395dcacf420c6903eb0599a6684977e2c062f624b109e3dd3d35"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run_status.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/run_status.json",
+      "bytes": 2447,
+      "sha256": "fb1d0352097204659a851f097fe7fce9fb48316ce38624f29f8356514c83ca2c"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/effective_config.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/effective_config.json",
+      "bytes": 4147,
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/policy_info.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/policy_info.json",
+      "bytes": 10141,
+      "sha256": "a7ca9d273b794bedc06b62f935f6315d9addcd70cda86f34d4eaee4440e883ce"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/case.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/case.json",
+      "bytes": 2584,
+      "sha256": "d040e99b371e63efadb6a670bcb96f94649c542e54c8f1fb9188055a498072c4"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/server_ready.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301/server_ready.json",
+      "bytes": 3672,
+      "sha256": "bab44ee832bbcdaab2e95511ee28564eaabe11956b06a5532d3413e6cf28cb23"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "local": "completion/paired/treatment_dwell100/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json",
+      "bytes": 8640,
+      "sha256": "5e71e79f9ed5443942a6ca6cce4f18bdc6fad8af106a441fa2e5f429e4bd8e91"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run.json",
+      "bytes": 16679,
+      "sha256": "2e13b7deea45cf93442d04da1f0d20a96adc53f2fd1fcfa4b538db47c5f297cc"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run_status.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/run_status.json",
+      "bytes": 2448,
+      "sha256": "06db7d467d48b347f6d2a084e1942ae077cdde7ee6bab972af68d5000c3b92d2"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/effective_config.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/effective_config.json",
+      "bytes": 4147,
+      "sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/policy_info.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/policy_info.json",
+      "bytes": 10141,
+      "sha256": "c9e1f7b31628b751ae1513497c8cb05bd0e74ea15796cadcbd17cda6c8e55cc6"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/case.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/case.json",
+      "bytes": 2605,
+      "sha256": "153997df688fcc5305baac99a4145c4f7c74ee3d6fca512ff95d8c7e64a2f23e"
+    },
+    {
+      "remote": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/server_ready.json",
+      "local": "completion/paired/treatment_dwell100/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302/server_ready.json",
+      "bytes": 3672,
+      "sha256": "bab44ee832bbcdaab2e95511ee28564eaabe11956b06a5532d3413e6cf28cb23"
+    }
+  ]
+}

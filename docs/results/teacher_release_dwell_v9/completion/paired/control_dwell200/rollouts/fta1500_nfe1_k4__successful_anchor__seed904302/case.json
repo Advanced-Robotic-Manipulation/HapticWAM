@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "campaign_sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f",
+  "policy_id": "fta1500_nfe1_k4",
+  "condition_id": "successful_anchor",
+  "sampling_seed": 904302,
+  "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+  "attempt": 1,
+  "phase": "control_dwell200__fta1500_nfe1_k4",
+  "server_metadata": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/servers/00_control_dwell200__fta1500_nfe1_k4_1788849462612711738/server.json",
+  "server_ready_sha256": "27c8351ba82598ef061dd647c0f0fbde8a3f67fb8622d3024eb5723de3d35e07",
+  "intended_parameters": {
+    "id": "successful_anchor",
+    "family": "nominal",
+    "object_offset_m": [
+      0.0,
+      0.0
+    ],
+    "friction_scale": 1.0,
+    "camera_override": null,
+    "observation_delay_s": 0.0,
+    "inference_delay_add_s": 0.0,
+    "intended": "Exact already-offset historical physical cell; apply no further placement shift."
+  },
+  "intended_scene_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+  "effective_parameters": {
+    "scene_sha256": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+    "policy_info_sha256": "54b467282cf223877b89f7ad98f390f8d19bd1894220b2418b39052cca8bd610",
+    "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+    "observation_delay_s": 0.0,
+    "inference_delay_add_s": 0.0,
+    "max_play_steps": 10,
+    "policy_latency_override_s": null,
+    "policy_delivery_clock": "rpc_wall",
+    "policy_initial_state_provenance": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    "duration_s": 59.996,
+    "stop_reason": null,
+    "completed_reason": null
+  },
+  "scoring_thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  }
+}

@@ -1,0 +1,18 @@
+Waiting for owned policy server pid=535042
+Waiting for owned policy server pid=535042
+Starting fta1500_nfe1_k4__successful_anchor__seed904301
+Completed fta1500_nfe1_k4__successful_anchor__seed904301; duration=59.996s stop=None
+Starting fta1500_nfe1_k4__successful_anchor__seed904302
+Completed fta1500_nfe1_k4__successful_anchor__seed904302; duration=59.996s stop=None
+{
+  "status": "complete",
+  "campaign_sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f",
+  "policies": {
+    "fta1500_nfe1_k4": {
+      "scheduled": 2,
+      "valid_scored": 2,
+      "invalid": 0,
+      "missing": 0
+    }
+  }
+}

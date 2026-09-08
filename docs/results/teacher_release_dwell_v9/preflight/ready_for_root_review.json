@@ -1,0 +1,45 @@
+{
+  "status": "cpu_preflight_passed_execution_not_authorized",
+  "verified_files": 5104,
+  "planned_trials": 4,
+  "order": "AABB",
+  "reviewed_binding_sha256": "3fd489436d612e357af1fe9eaf25e83faaec9c190c977012bd408eef85d63f38",
+  "launcher_sha256": "f04b00bd7d96e2d0a2a811fe50cc624b54bddae0b955057f5dc6a6640081e30c",
+  "supervisor_sha256": "e1977b91184c64e37204b98f44941363514ed4236e5e7881d8d158867de4082f",
+  "campaigns": [
+    {
+      "id": "control_dwell200",
+      "sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f"
+    },
+    {
+      "id": "treatment_dwell100",
+      "sha256": "a11a7d833bb8922feb8fa34424d202411734c2a6a7127f94e187447475ba669f"
+    }
+  ],
+  "unchanged_source_inventories": [
+    {
+      "manifest": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/runtime_manifest.json",
+      "sha256": "b0df98e21d54dcc0a23faa17e18c092abbfe7a665b29d6c4b3a520d13a644e7f",
+      "root": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_v8",
+      "files_key": [
+        "output_sha256"
+      ]
+    },
+    {
+      "manifest": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/driver_manifest.json",
+      "sha256": "188ad60b4ec01a9fee3255712ff9fe1fc65015cc6fd40d9ccefdedce1153977b",
+      "root": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_driver_v8",
+      "files_key": [
+        "sha256"
+      ]
+    },
+    {
+      "manifest": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_carry_hotfix_v8/inference_manifest.json",
+      "sha256": "9e07ca182bece6f5bbf7fdecee62c3b5b8732373b2ce1305e71a04c5a46ca57c",
+      "root": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_carry_hotfix_inference_v8",
+      "files_key": [
+        "sha256"
+      ]
+    }
+  ]
+}

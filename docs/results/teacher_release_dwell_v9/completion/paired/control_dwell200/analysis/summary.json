@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "campaign_id": "teacher_release_dwell_v9_control_dwell200",
+  "campaign_sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f",
+  "status": "complete",
+  "analysis_plan": {
+    "primary_outcome": "full_task",
+    "diagnostic_outcomes": [
+      "reach_before_closure",
+      "acquired",
+      "lifted",
+      "carried",
+      "released_in_bin",
+      "dropped"
+    ],
+    "primary_comparison": null,
+    "exploratory_comparisons": [],
+    "secondary_comparisons": [],
+    "weighting": "Two matched reused sampling seeds; one arm start and one object pose.",
+    "confidence_level": 0.95,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260907,
+    "paired_interval_method": "Descriptive paired outcomes only; no inferential winner from two seeds.",
+    "interval_interpretation": "Not a model selection or robustness experiment.",
+    "missing_trials": "Report scheduled-denominator success bounds and all missing/invalid cases. Paired inference requires complete condition\u00d7seed matches; incomplete contrasts are explicitly partial.",
+    "safety_stop": "Preserve observed physical task outcome; report safety stops separately, including after achieved placement.",
+    "early_failure": "Keep every executed failure; this diagnostic performs no retry or replacement.",
+    "freeze_policy": "Do not tune thresholds, cases or comparisons after observing policy outcomes. Any amendment creates a new campaign id/hash.",
+    "reproduction_note": "Four development cells, two release dwell settings, AABB order; physical stages scored independently of FINISH."
+  },
+  "thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  },
+  "policies": {
+    "fta1500_nfe1_k4": {
+      "scheduled": 2,
+      "present": 2,
+      "valid_scored": 2,
+      "invalid": 0,
+      "missing": 0,
+      "outcomes": {
+        "reach_before_closure": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "acquired": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "lifted": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "carried": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "released_in_bin": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "full_task": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 2,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "dropped": {
+          "scheduled": 2,
+          "valid_scored": 2,
+          "observed_true": 0,
+          "observed_false": 2,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 0.0,
+          "scheduled_denominator_rate_bounds": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "families": {
+        "nominal": {
+          "reach_before_closure": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "acquired": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "lifted": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "carried": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "released_in_bin": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "full_task": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 2,
+            "observed_false": 0,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 1.0,
+            "scheduled_denominator_rate_bounds": [
+              1.0,
+              1.0
+            ]
+          },
+          "dropped": {
+            "scheduled": 2,
+            "valid_scored": 2,
+            "observed_true": 0,
+            "observed_false": 2,
+            "missing_or_invalid": 0,
+            "rate_among_valid_only": 0.0,
+            "scheduled_denominator_rate_bounds": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "sampling_seeds": {
+        "904301": {
+          "scheduled": 1,
+          "valid_scored": 1,
+          "observed_true": 1,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        },
+        "904302": {
+          "scheduled": 1,
+          "valid_scored": 1,
+          "observed_true": 1,
+          "observed_false": 0,
+          "missing_or_invalid": 0,
+          "rate_among_valid_only": 1.0,
+          "scheduled_denominator_rate_bounds": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "control": {
+        "stop_count": 0,
+        "ik_rejects": {
+          "count": 2,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "hold_duration_s": {
+          "count": 2,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "effective_latency_mean_s": {
+          "count": 2,
+          "mean": 0.8014223525519684,
+          "median": 0.8014223525519684,
+          "p95": 0.8093647064453476,
+          "max": 0.8102471902112787
+        },
+        "replans": {
+          "count": 2,
+          "mean": 30.5,
+          "median": 30.5,
+          "p95": 30.95,
+          "max": 31.0
+        },
+        "inference_error_count": 0
+      },
+      "collisions": {
+        "observability": "Partial pad/environment forces and reported events; no whole-robot collision-free certification.",
+        "reported_count": 0,
+        "pad_environment_force_peak_n": {
+          "count": 2,
+          "mean": 11.119463920593262,
+          "median": 11.119463920593262,
+          "p95": 21.126981449127197,
+          "max": 22.238927841186523
+        }
+      },
+      "seed_disagreement": {
+        "complete_conditions": 1,
+        "disagreements": 0,
+        "fraction": 0.0
+      },
+      "scenario_success_interval": {
+        "mean": 1.0,
+        "interval": [
+          1.0,
+          1.0
+        ],
+        "confidence_level": 0.95,
+        "complete_configurations": 1,
+        "method": "Bootstrap configuration clusters, retaining both sampling seeds; descriptive sensitivity-suite uncertainty, not a hardware/population confidence bound",
+        "degenerate_interval": true
+      }
+    }
+  },
+  "paired_comparisons": [],
+  "limitations": [
+    "This fixed perturbation suite does not estimate a natural deployment distribution.",
+    "Only two sampling seeds per configuration are planned; scenario-resampling intervals do not establish policy equivalence.",
+    "Teacher tactile inputs are uncalibrated proxies; teacher contrasts are exploratory.",
+    "Physical task completion and safety termination are reported separately.",
+    "Missing/invalid trials remain in scheduled-denominator bounds and are listed explicitly."
+  ],
+  "trials": [
+    {
+      "policy_id": "fta1500_nfe1_k4",
+      "condition_id": "successful_anchor",
+      "sampling_seed": 904301,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904301",
+      "case_sha256": "484bb6784d3299754f771087291779dbbbc7b845b23e80e86ac48d356fa945ee",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "ec38df11cd12a3cbf655b6b25c8f5c851dc5ec299faf3962f33c240a3cbde268",
+        "sim_trace.npz": "907d97a5e3800761e3f71119e460d9315aa9d6147f544b8f0c48fd47e2bdc6ef",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "1d329ffe3cd287a54c7d53bdde07a05ad5142efefba419de2889616b68e3be21",
+        "planner_trace.json": "8dfe9ed62b0c1851bc7f1c81e93174a6af84eda43a7aa1d7a967136749b60890",
+        "policy_info.json": "3e028d05e59cbf91087963ac782528a9bebd09818f12a0a707e9af788cf2164b",
+        "server_ready.json": "27c8351ba82598ef061dd647c0f0fbde8a3f67fb8622d3024eb5723de3d35e07"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904301.json"
+    },
+    {
+      "policy_id": "fta1500_nfe1_k4",
+      "condition_id": "successful_anchor",
+      "sampling_seed": 904302,
+      "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/rollouts/fta1500_nfe1_k4__successful_anchor__seed904302",
+      "case_sha256": "34ded8c30bdc91ff0a38d1470b2ab77a4187fc9b68df0b7a4338fe1b78aa19dd",
+      "status": "scored",
+      "input_sha256": {
+        "run.json": "33ba96e1f2b8491fcd5a9687f977dd6ab3f02118927e0c8861be014e3a01c3a3",
+        "sim_trace.npz": "a7145d7f06a9f7a30dd342f5dc86d60dad72b81406093cd43c70c543f3f514ea",
+        "effective_config.json": "2aae7d4d1e2d2f95131aa1ad50a7907c54c86726a6c39e2756167cc709f69cb9",
+        "execution_trace.jsonl": "a72be91eb6d535ac58e23b0271855f9475e151a158100aae1c68e351cd5bd496",
+        "planner_trace.json": "b9199e4efe465b1adafc6227ec3be9e587106dfa75abbfa00926ebdc820e4e85",
+        "policy_info.json": "54b467282cf223877b89f7ad98f390f8d19bd1894220b2418b39052cca8bd610",
+        "server_ready.json": "27c8351ba82598ef061dd647c0f0fbde8a3f67fb8622d3024eb5723de3d35e07"
+      },
+      "score_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/paired/control_dwell200/analysis/trials/fta1500_nfe1_k4__successful_anchor__seed904302.json"
+    }
+  ],
+  "missing_trial_keys": []
+}

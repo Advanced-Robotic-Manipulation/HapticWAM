@@ -1,0 +1,17 @@
+{
+  "status": "launched",
+  "pid": 534953,
+  "supervisor_pid": 534952,
+  "command": [
+    "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/launch_dwell.py",
+    "--bindings",
+    "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_release_dwell_v9/bindings.frozen.json",
+    "--execute"
+  ],
+  "started_at_utc": "2026-09-08T06:37:40.292007+00:00",
+  "binding_sha256": "26b1689eae3f8c8acf1d97938a61cb5257a81599a2a0f26bb539b49bc4efb418",
+  "planned_trials": 4,
+  "order": "AABB",
+  "root_authorized": true
+}

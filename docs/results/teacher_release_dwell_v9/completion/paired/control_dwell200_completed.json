@@ -1,0 +1,11 @@
+{
+  "status": "complete_valid",
+  "trial_count": 2,
+  "campaign_sha256": "8e29dadde731d829df7db7be145dff260876f46b99fcf4ca130bd712125cde4f",
+  "summary_sha256": "bca9ca0ad8717c21b59c7b7dbb2dff2f83071ccf6777bf7c3c0abb42a221a1b9",
+  "primary_score_sha256": [
+    "1b7cbd94bae108f50eff3051fe560a73f2daff10a3cb7271ac068cb9d4e2c0a4",
+    "c386643e67bbc50c958780ff4f6b9430c23cbde2df2759da2cadc4d6a23132de"
+  ],
+  "controller_exit_code": 0
+}

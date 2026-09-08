@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "checks": [
+    "actual frozen dwell-only designs accepted",
+    "changed opening threshold rejected",
+    "changed physical mass rejected",
+    "incomplete campaign rejected before raw reads",
+    "wrong block denominator rejected"
+  ]
+}
