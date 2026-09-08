@@ -256,7 +256,10 @@ safety:
   wrench_baseline_tau_s: 2.0     # rolling-baseline time constant (tracks pose/bias drift out)
   wrench_debounce_ticks: 1       # over-limit checks to trip: 1 = ~100 ms @ 10 Hz (was 3 = 300 ms until 09-08)
   tactile_fz_limit_N: 5.0
-  tactile_depth_limit: 0.6
+  # 09-08: the right pad reports ~10x the depth of the left for the same
+  # finger press (1.65 at 11 N vs 0.14 at 39 N); 0.6 ended 3 of 7 grasps
+  # today and 6 episodes on 09-07 at the moment of closing (depth 0.62).
+  tactile_depth_limit: 1.5
   # Sized 2026-07-17 to cover: parked TCP (-0.29,-0.12,0.25), the teleop base
   # pose TCP (-0.474,-0.112,0.295, FK-verified), AND the joint-space engage
   # arc (its TCP transit peaked above z=0.55 and froze teleop at the old

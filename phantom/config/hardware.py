@@ -413,6 +413,22 @@ class SafetyConfig(_Frozen):
     # the commanded closure can no longer decrease until an intended release
     # (episode end or a veto recovery). 0 disables.
     grip_latch_fz_n: float = Field(default=2.5, ge=0)
+    # PLACEMENT RELEASE of the latch (rig 09-08 seed 110: the student carried
+    # the packet to the box, lowered to z 0.10 and commanded the fingers from
+    # 0.64 down to 0.35 for five seconds — the latch never let go, because
+    # its only clears were lost-object recovery and episode end). The latch
+    # clears when the policy asks to open by >= grip_latch_release_drop below
+    # the latched closure for >= grip_latch_release_s continuously, the TCP
+    # is below grip_latch_release_z_m (placement height), and the TCP has
+    # been above grip_latch_release_z_m + grip_latch_release_lift_m since the
+    # latch armed (a carry happened; never at the grasp site). The 09-04
+    # mid-carry drops were commanded high, so they stay blocked. After a
+    # release the latch re-arms only once both pads have unloaded.
+    # release_drop 0 disables the release (latch behaves as before).
+    grip_latch_release_drop: float = Field(default=0.15, ge=0)
+    grip_latch_release_s: float = Field(default=0.5, ge=0)
+    grip_latch_release_z_m: float = Field(default=0.16)
+    grip_latch_release_lift_m: float = Field(default=0.08, ge=0)
     ur_dh_a2_a3_d4_m: tuple[float, float, float] = (0.24365, 0.21325, 0.11235)
     ur_dh_d1_m: float = 0.1519            # shoulder height above the base frame
     # Servo-level LIMITER (rig 2026-09-04) — the answer to "the arm stops at

@@ -527,31 +527,83 @@ class ChunkExecutor:
         tolerant) the commanded closure is floored at its value at that
         moment; it can still close further, never open, until an intended
         release clears the latch."""
-        thr = float(getattr(self.hw.safety, "grip_latch_fz_n", 0.0) or 0.0)
+        sf = self.hw.safety
+        thr = float(getattr(sf, "grip_latch_fz_n", 0.0) or 0.0)
         if thr <= 0:
             return grip
         loads = getattr(self.safety, "contact_load", None) or {}
+        loaded = len(loads) >= 2 and all(v > thr for v in loads.values())
+        unloaded = len(loads) >= 2 and all(v <= thr for v in loads.values())
+        drop = float(getattr(sf, "grip_latch_release_drop", 0.0) or 0.0)
+        z = self._measured_z() if drop > 0 else None
+        now = time.perf_counter()
         # one locked read-modify-write: the planner thread clears the latch
         # (veto recovery / halt) at replan cadence while this runs at 125 Hz
         # — a check-then-use on the bare attribute raced into `grip > None`
         # (ultrareview 09-05)
-        latched_now = False
+        latched_now = released = False
         with self._latch_lock():
             latch = self._grip_latch
             if latch is None:
-                if len(loads) >= 2 and all(v > thr for v in loads.values()):
+                if unloaded:
+                    self._latch_rearm_blocked = False
+                if loaded and not self._latch_rearm_blocked:
                     self._grip_latch = grip
+                    self._latch_z_max = z if z is not None else -np.inf
+                    self._release_req_since = None
                     latched_now = True
-            # RUNNING MAX since contact (09-04 analysis): contact registers
-            # at ~0.58 and the fingers then close a further ~0.05 into the
-            # object; latching at the contact value would under-grip on the
-            # way back.
-            elif grip > latch:
-                self._grip_latch = latch = grip
+            else:
+                if z is not None and z > self._latch_z_max:
+                    self._latch_z_max = z
+                # RUNNING MAX since contact (09-04 analysis): contact registers
+                # at ~0.58 and the fingers then close a further ~0.05 into the
+                # object; latching at the contact value would under-grip on the
+                # way back.
+                if grip > latch:
+                    self._grip_latch = latch = grip
+                    self._release_req_since = None
+                elif drop > 0 and grip <= latch - drop:
+                    # PLACEMENT RELEASE (rig 09-08): a sustained open request,
+                    # low, after a carry — see SafetyConfig.grip_latch_release_*
+                    if self._release_req_since is None:
+                        self._release_req_since = now
+                    z_rel = float(getattr(sf, "grip_latch_release_z_m", 0.16))
+                    lifted = self._latch_z_max >= z_rel + float(
+                        getattr(sf, "grip_latch_release_lift_m", 0.08) or 0.0)
+                    if (z is not None and z < z_rel and lifted
+                            and now - self._release_req_since
+                            >= float(getattr(sf, "grip_latch_release_s", 0.5) or 0.0)):
+                        self._grip_latch = latch = None
+                        self._latch_rearm_blocked = True   # until both pads unload
+                        self._release_req_since = None
+                        released = True
+                else:
+                    self._release_req_since = None
         if latched_now:                    # log OUTSIDE the lock (a slow handler must not stall last_cmd)
             log.info("aperture latched at %.2f (both pads loaded: %s)",
                      grip, {k: round(v, 1) for k, v in loads.items()})
+        if released:
+            log.info("aperture latch RELEASED for placement: policy asks %.2f, "
+                     "latched %.2f, z=%.3f (carry peak %.3f)", grip, latch or 0.0,
+                     z if z is not None else float("nan"), self._latch_z_max)
         return grip if latch is None else latch
+
+    _latch_rearm_blocked = False
+    _latch_z_max = -np.inf
+    _release_req_since: float | None = None
+
+    def _measured_z(self) -> float | None:
+        """Latest measured TCP z from the arm ring (never raises, None if
+        unavailable — the placement release then stays closed)."""
+        try:
+            ring = self.safety.rings.get("arm")
+            times, arm = ring.latest(1) if ring is not None else ([], {})
+            if not len(times):
+                return None
+            pose = np.asarray(arm["tcp_pose"][-1], dtype=float).reshape(-1)
+            return float(pose[2]) if pose.shape[0] >= 3 and np.isfinite(pose[2]) else None
+        except Exception:
+            return None
 
     def _latch_lock(self):
         """The executor lock, or a no-op for bare test doubles built via __new__."""
