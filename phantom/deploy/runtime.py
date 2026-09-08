@@ -155,6 +155,9 @@ class DeploymentRuntime:
             last = getattr(arm_drv, "limiter_last", None) or {}
             if last or live["hits"]:
                 out["servo_limiter"] = last if last else live
+            loss = getattr(arm_drv, "control_loss_last", None)
+            if loss:
+                out["control_loss"] = loss
             return out
         except Exception:
             return {}

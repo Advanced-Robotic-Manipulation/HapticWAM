@@ -78,6 +78,7 @@ class URArm(Arm):
         self._ik_rejects_total = 0
         self._last_cmd_pose: np.ndarray | None = None   # last pose actually streamed
         self._lease = None                # rig_lease file object (control sessions)
+        self.control_loss_last: dict = {}  # why the controller dropped the stream (stop.json)
         self._limiter_hits = 0
         self._limiter_holds = 0
         self._limiter_log_t = 0.0
@@ -366,9 +367,10 @@ class URArm(Arm):
             # ur_rtde returns False SILENTLY when the control script is no
             # longer running on the robot (a protective stop kills it) — the
             # arm just stops following while everything else keeps working
+            diag = self._diagnose_control_loss(list(np.asarray(q, dtype=float)), None)
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
-                               "and restart the session)")
+                               f"and restart the session); robot: {diag.get('summary', 'n/a')}")
 
     def _solve_ik(self, ctrl, pose, qref):
         pose = list(np.asarray(pose, dtype=float))
@@ -576,10 +578,74 @@ class URArm(Arm):
                 self._branch_rejects = 0
                 self._hold_since = None
         if ok is False:
+            diag = self._diagnose_control_loss(q, tcp_pose)
             raise RuntimeError("servoJ rejected — the RTDE control script is not "
                                "running (clear the pendant popup / protective stop "
-                               "and restart the session)")
+                               f"and restart the session); robot: {diag.get('summary', 'n/a')}")
         return ServoResult(True, tcp_pose, "sent")
+
+    _SAFETY_BITS = ("normal", "reduced", "protective_stopped", "recovery",
+                    "safeguard_stop", "system_estop", "robot_estop",
+                    "emergency_stopped", "violation", "fault", "stopped_due_to_safety")
+
+    def _diagnose_control_loss(self, q_cmd, pose_cmd) -> dict:
+        """Snapshot WHY the controller dropped the servo stream (rig 09-07: 15
+        of 43 episodes ended as 'servoJ rejected' with nothing on our side —
+        no guard, no IK event — and stop.json carried no robot-side cause).
+        Reads the safety status bits, modes, measured state and the force at
+        the trip, plus the last commanded joint target vs the measured one.
+        Never raises; kept in `control_loss_last` for stop.json."""
+        d: dict = {"t": time.time()}
+        r = self._recv
+        try:
+            if r is not None:
+                d["protective_stop"] = bool(r.isProtectiveStopped())
+                d["robot_mode"] = int(r.getRobotMode())
+                d["safety_mode"] = int(r.getSafetyMode())
+                try:
+                    d["safety_status_bits"] = int(r.getSafetyStatusBits())
+                except Exception:
+                    pass
+                q_act = np.asarray(r.getActualQ(), dtype=float)
+                d["q_actual"] = np.round(q_act, 4).tolist()
+                d["qd_actual"] = np.round(np.asarray(r.getActualQd(), dtype=float), 4).tolist()
+                d["tcp_actual"] = np.round(np.asarray(r.getActualTCPPose(), dtype=float), 4).tolist()
+                d["tcp_force"] = np.round(np.asarray(r.getActualTCPForce(), dtype=float), 2).tolist()
+                if q_cmd is not None and len(q_cmd) == 6:
+                    qc = np.asarray(q_cmd, dtype=float)
+                    d["q_cmd"] = np.round(qc, 4).tolist()
+                    d["q_cmd_minus_actual_max_rad"] = float(np.max(np.abs(qc - q_act)))
+                if pose_cmd is not None:
+                    d["tcp_cmd"] = np.round(np.asarray(pose_cmd, dtype=float), 4).tolist()
+        except Exception as e:
+            d["read_error"] = repr(e)
+        try:
+            import dashboard_client
+            db = dashboard_client.DashboardClient(self.hw.arm.ip)
+            db.connect()
+            try:
+                d["dashboard_safety"] = str(db.safetystatus()).strip()
+                d["dashboard_robotmode"] = str(db.robotmode()).strip()
+                d["dashboard_program"] = str(db.programState()).strip()
+            finally:
+                db.disconnect()
+        except Exception as e:
+            d["dashboard_error"] = repr(e)
+        bits = d.get("safety_status_bits")
+        names = [n for i, n in enumerate(self._SAFETY_BITS)
+                 if bits is not None and bits & (1 << i)]
+        d["safety_status_names"] = names
+        f = d.get("tcp_force")
+        parts = [f"safety={d.get('dashboard_safety', d.get('safety_mode'))}",
+                 f"bits={names or bits}", f"mode={d.get('robot_mode')}"]
+        if f:
+            parts.append(f"|F|={float(np.linalg.norm(f[:3])):.1f}N")
+        if "q_cmd_minus_actual_max_rad" in d:
+            parts.append(f"dq_cmd={d['q_cmd_minus_actual_max_rad']:.3f}rad")
+        d["summary"] = " ".join(parts)
+        self.control_loss_last = d
+        log.error("servo control lost: %s", d["summary"])
+        return d
 
     def _limiter_enabled(self) -> bool:
         sf = getattr(getattr(self, "hw", None), "safety", None)

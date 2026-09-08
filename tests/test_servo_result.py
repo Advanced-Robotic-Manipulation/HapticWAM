@@ -3,6 +3,7 @@ Real URArm + fake RTDE responses; real ChunkExecutor + a stub arm."""
 from __future__ import annotations
 
 import math
+import sys
 import threading
 import time
 import numpy as np
@@ -351,3 +352,34 @@ def test_grip_latch_reads_and_clears_are_serialized_by_the_executor_lock():
     time.sleep(0.2); assert got == [], "_latched_grip bypassed the executor lock"
     ex._lock.release(); time.sleep(0.2)
     assert got == [0.9] and ex._grip_latch == 0.9
+
+
+def test_control_loss_is_diagnosed_and_kept_for_stop_json(monkeypatch):
+    """Rig 09-07: 15 episodes ended as 'servoJ rejected' with no robot-side
+    cause recorded. The driver must snapshot safety bits, modes, force and
+    the commanded-vs-actual joint gap into `control_loss_last` (runtime folds
+    it into stop_state) and name the cause in the exception."""
+    a = _arm()
+    prime(a, pose_at_reach(0.40))
+
+    class DeadCtrl(_Ctrl):
+        def servoJ(self, q, v, a_, t, lookahead, gain):
+            return False
+
+    class Recv(FakeRecv):
+        def isProtectiveStopped(self): return True
+        def getRobotMode(self): return 7
+        def getSafetyMode(self): return 3
+        def getSafetyStatusBits(self): return (1 << 2) | (1 << 8)   # protective_stopped + violation
+        def getActualQd(self): return [0.0, 0.0, 0.29, 0.0, 0.0, 0.0]
+        def getActualTCPForce(self): return [3.0, 4.0, 0.0, 0.0, 0.0, 0.0]
+
+    a._ctrl = DeadCtrl(); a._recv = Recv(pose_at_reach(0.40))
+    monkeypatch.setitem(sys.modules, "dashboard_client", None)   # import fails -> dashboard_error
+    with pytest.raises(RuntimeError, match="protective_stopped.*violation"):
+        a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    d = a.control_loss_last
+    assert d["protective_stop"] is True and d["safety_mode"] == 3
+    assert d["safety_status_names"] == ["protective_stopped", "violation"]
+    assert d["tcp_force"][:2] == [3.0, 4.0] and "|F|=5.0N" in d["summary"]
+    assert "q_cmd_minus_actual_max_rad" in d and "dashboard_error" in d
