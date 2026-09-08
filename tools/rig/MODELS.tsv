@@ -6,3 +6,4 @@ stu_v5_6	runs/student_v5_6/student_001200.pt	SENSOR-FREE student distilled from 
 ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: same inputs as stu_ftA, NO distillation (ablation only)	student
 ctl_v5_6	runs/control_v5_6/teacher_001200.pt	CONTROL: same inputs as stu_v5_6, NO distillation (val 37.7mm; ablation only)	student
 stu_ftA_r1	runs/student_ftA_r1/student_001200.pt	SENSOR-FREE student round 2 from ftA (val 22.7mm - best student; teacher full NFE + trained sigma head)	student
+v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6: clean retrain on all 1115 eps + wrench-baseline fix (val124 20.0/nfe1; waffles 20.1 vs v5_6 27.0, Carton 38.6 vs 20.5); teacher-only cells first, its student stu_v6 lands 09-09 ~afternoon
