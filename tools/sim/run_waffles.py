@@ -95,7 +95,16 @@ def arguments():
     )
     p.add_argument("--ignore-episode-overrides", action="store_true")
     p.add_argument("--max-play-steps", type=int, default=10)
+    p.add_argument(
+        "--servo-reach-limiter",
+        action="store_true",
+        help="Separate policy diagnostic: existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety thresholds stay unchanged",
+    )
     p.add_argument("--observation-delay-s", type=float, default=0.0)
+    p.add_argument(
+        "--servo-constraint-hold-s", type=float, default=None,
+        help="Opt-in verified stationary servo hold deadline; requires --servo-reach-limiter",
+    )
     p.add_argument("--inference-delay-add-s", type=float, default=0.0)
     p.add_argument(
         "--policy-mode",
@@ -135,6 +144,12 @@ def arguments():
         default=None,
         help="Override measured inference latency on sim clock",
     )
+    p.add_argument(
+        "--policy-delivery-clock",
+        choices=["native", "rpc_wall"],
+        default="native",
+        help="Native inference duration (default), or measured full client policy call for delivery only; native action/CPK clocks stay unchanged",
+    )
     p.add_argument("--seed", type=int, default=4242)
     p.add_argument(
         "--probe-start-time",
@@ -152,7 +167,18 @@ def arguments():
     p.add_argument("--friction-scale", type=float, default=1)
     p.add_argument("--object-offset", type=float, nargs=2, default=[0, 0])
     p.add_argument("--save-stage-only", action="store_true")
-    return p.parse_args()
+    args = p.parse_args()
+    if args.servo_constraint_hold_s is not None:
+        if (not args.servo_reach_limiter or args.mode != "policy"
+                or not np.isfinite(args.servo_constraint_hold_s)
+                or args.servo_constraint_hold_s <= 0):
+            p.error("servo-constraint-hold-s must be finite, positive and used with policy servo-reach-limiter")
+    if args.policy_delivery_clock == "rpc_wall":
+        if args.policy_latency is not None:
+            p.error("rpc_wall cannot be combined with --policy-latency")
+        if args.mode != "policy":
+            p.error("rpc_wall requires --mode policy")
+    return args
 
 
 def measured_gripper_status(closure, target, contact_force_n):
@@ -178,6 +204,50 @@ def measured_tcp_twist(previous, current, dt):
         Rotation.from_rotvec(current[3:]) * Rotation.from_rotvec(previous[3:]).inv()
     ).as_rotvec() / dt
     return np.r_[(current[:3] - previous[:3]) / dt, angular]
+
+
+def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejects,
+                                   *, hold_budget=None, qref=None, limits=None, dt=None,
+                                   telemetry=None):
+    """Report the accepted joint target, or a bounded ordinary controller stop.
+
+    CPU-testable feedback boundary. A stall preserves grip and enters the same
+    stopped-tick handling/observation tail as other controller stops.
+    """
+    from phantom.sim.kinematics import forward_pose
+
+    if hold_budget is not None:
+        from phantom.drivers.servo_hold import verified_constraint_hold
+
+        held = verified_constraint_hold(selection, qref, dt, limits)
+        if selection.accepted or held:
+            sent_q = qref if held else selection.q
+            state = hold_budget.check(t, sent_q, held=held)
+            if telemetry is not None:
+                telemetry.update(state, held=held)
+            if state["timed_out"]:
+                adapter.request_stop("servo_constraint_hold_timeout")
+                adapter.report_execution(t, accepted=False, gripper_command=gripper_command,
+                                         reason="servo_constraint_hold_timeout", controller_stop=True)
+                return None, rejects
+            achieved = forward_pose(sent_q)
+            adapter.report_execution(t, accepted=True, tcp_pose=achieved,
+                                     gripper_command=gripper_command, held=held)
+            return achieved, rejects if held else 0
+
+    if selection.accepted:
+        achieved = forward_pose(selection.q)
+        adapter.report_execution(
+            t, accepted=True, tcp_pose=achieved, gripper_command=gripper_command
+        )
+        return achieved, 0
+    rejects += 1
+    if rejects >= 25:
+        adapter.request_stop("servo_limiter_stall")
+    adapter.report_execution(
+        t, accepted=False, gripper_command=gripper_command, reason=selection.reason
+    )
+    return None, rejects
 
 
 def apply_episode_overrides(hw, overrides):
@@ -322,6 +392,8 @@ class PolicyAudit:
                 "error_type": type(error).__name__,
             }
         )
+        if getattr(error, "infrastructure_invalid", False):
+            self.plans[index]["error_category"] = "instrumentation_or_input_invalid"
         self._save_plans()
 
     def executed(self, row):
@@ -366,6 +438,8 @@ class PolicyAudit:
 
 def main():
     args = arguments()
+    if args.servo_reach_limiter and args.mode != "policy":
+        raise ValueError("--servo-reach-limiter is only supported in policy mode")
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
@@ -594,9 +668,9 @@ def run(app, args, cfg, data, duration):
         camera.set_world_pose(
             position=pos, orientation=orient[[3, 0, 1, 2]], camera_axes="usd"
         )
-    camera.set_focal_length(24.0)
-    camera.set_horizontal_aperture(cam["resolution"][0] * 24 / cam["fx"])
-    camera.set_vertical_aperture(cam["resolution"][1] * 24 / cam["fy"])
+    from phantom.sim.camera import configure_camera_intrinsics, validate_camera_intrinsics
+
+    configure_camera_intrinsics(camera, cam)
     camera.set_clipping_range(0.02, 10)
     camera.set_focus_distance(1.0)
     world.reset()
@@ -612,6 +686,10 @@ def run(app, args, cfg, data, duration):
         gripper_wrist.initialize()
     tool_body.initialize()
     camera.initialize()
+    camera_projection_report = validate_camera_intrinsics(camera, cam)
+    (args.output / "camera_projection.json").write_text(
+        json.dumps(camera_projection_report, indent=2) + "\n"
+    )
     if args.gui:
         from omni.kit.viewport.utility import get_active_viewport
 
@@ -850,6 +928,9 @@ def run(app, args, cfg, data, duration):
         )
     pending_execution = None
     hw = None
+    servo_reach_limits = None
+    servo_limiter_rejects = 0
+    servo_hold_budget = None
     policy_ready_t = None
     next_tactile_t = 0.0
     tactile_sample = None
@@ -1018,6 +1099,29 @@ def run(app, args, cfg, data, duration):
                 else manifest.get("meta", {}).get("deploy_overrides", {})
             )
             hw = apply_episode_overrides(hw, overrides)
+            if args.servo_reach_limiter:
+                from phantom.drivers.servo_limiter import ServoLimits
+
+                # Historical opt-in native values. Keep the measured stop and
+                # all other hardware fields unchanged; no task geometry enters.
+                hw = hw.model_copy(
+                    update={
+                        "safety": hw.safety.model_copy(
+                            update={
+                                "elbow_min_rad": 0.40,
+                                "servo_joint_speed_max_rad_s": 1.0,
+                            }
+                        )
+                    }
+                )
+                servo_reach_limits = ServoLimits(0.40, 1.0)
+                if args.servo_constraint_hold_s is not None:
+                    from phantom.drivers.servo_hold import ConstraintHoldBudget
+
+                    servo_hold_budget = ConstraintHoldBudget(args.servo_constraint_hold_s)
+                    hw = hw.model_copy(update={"safety": hw.safety.model_copy(
+                        update={"servo_constraint_hold_s": args.servo_constraint_hold_s}
+                    )})
             control_dt = 1 / hw.control.executor_rate_hz
             if dt > control_dt + 1e-9:
                 raise ValueError(
@@ -1079,6 +1183,7 @@ def run(app, args, cfg, data, duration):
                 else None,
                 delivered_plan_callback=audit.delivered,
                 release_config=release_config,
+                policy_delivery_clock=args.policy_delivery_clock,
             )
             adapter.reset(seed=args.seed)
             if "native_arm_ft" in data:
@@ -1129,6 +1234,22 @@ def run(app, args, cfg, data, duration):
                         "hardware_effective": hw.model_dump(mode="json"),
                         "max_play_steps": args.max_play_steps,
                         "planner_stall_watchdog": True,
+                        **(
+                            {
+                                "servo_reach_limiter": {
+                                    **asdict(servo_reach_limits),
+                                    "algorithm": "shared_native_bisection_slide_v1",
+                                    "measured_wrist_extension_stop_m": hw.safety.wrist_extension_stop_m,
+                                    "consecutive_reject_limit": 25,
+                                    "tracking_guarantee": False,
+                                    **({"constraint_hold_s": args.servo_constraint_hold_s,
+                                        "constraint_hold_progress_rad": 0.001}
+                                       if servo_hold_budget is not None else {}),
+                                }
+                            }
+                            if servo_reach_limits is not None
+                            else {}
+                        ),
                         "terminal_veto": terminal_veto_spec or False,
                         "terminal_veto_feedback_source": terminal_veto.feedback_source(
                             adapter
@@ -1147,8 +1268,14 @@ def run(app, args, cfg, data, duration):
                         if args.policy_initial_state
                         else None,
                         "policy_latency_override_s": args.policy_latency,
+                        "policy_delivery_clock": args.policy_delivery_clock,
+                        "policy_call_wall_measurement": "Complete synchronous policy.replan client call; excludes observation callbacks and runner audit bookkeeping"
+                        if args.policy_delivery_clock == "rpc_wall"
+                        else None,
                         "inference_delivery_clock": "explicit fixed latency plus response delay; native compute and RPC times logged separately"
                         if args.policy_latency is not None
+                        else "measured complete client policy call plus configured response delay; native Plan.latency_s and action grid preserved"
+                        if args.policy_delivery_clock == "rpc_wall"
                         else "native inference latency plus explicitly configured response delay; RPC overhead is separately logged",
                         "phantom_recovery": bool(
                             terminal_veto and terminal_veto.implementation == "live"
@@ -1316,6 +1443,63 @@ def run(app, args, cfg, data, duration):
                     # stop so the fixed settling criterion can be evaluated.
                     # The common trial horizon still bounds the observation.
                     terminal_until = min(t + 2.0, duration)
+                elif servo_reach_limits is not None:
+                    from phantom.drivers.servo_limiter import select_servo_step
+
+                    def nominal_servo_ik(pose, seed):
+                        result = inverse_kinematics(
+                            pose, seed, max_joint_delta_rad=0.35
+                        )
+                        # Return a converged off-branch solution so the shared
+                        # selector explicitly rejects it before any shortening.
+                        return (
+                            result.q.tolist()
+                            if result.success or result.reason == "branch_guard"
+                            else []
+                        )
+
+                    selection = select_servo_step(
+                        command.tcp_pose,
+                        forward_pose(desired[ids]),
+                        desired[ids].tolist(),
+                        control_dt,
+                        nominal_servo_ik,
+                        servo_reach_limits,
+                    )
+                    held_qref = desired[ids].copy()
+                    pending_execution.update(
+                        ik_success=selection.accepted,
+                        ik_reason=selection.reason,
+                        servo_reach_limiter={
+                            "mode": selection.mode,
+                            "violation": selection.violation,
+                            "fraction": selection.fraction,
+                            "ik_calls": selection.ik_calls,
+                            "all_ik_valid": selection.all_ik_valid,
+                            "all_ik_on_branch": selection.all_ik_on_branch,
+                        },
+                    )
+                    hold_telemetry = {}
+                    achieved, servo_limiter_rejects = report_servo_limiter_execution(
+                        adapter, t, selection, command.gripper, servo_limiter_rejects,
+                        hold_budget=servo_hold_budget, qref=held_qref,
+                        limits=servo_reach_limits, dt=control_dt, telemetry=hold_telemetry,
+                    )
+                    if achieved is not None and selection.accepted:
+                        desired[ids] = selection.q
+                    if hold_telemetry:
+                        pending_execution["servo_reach_limiter"]["constraint_hold"] = hold_telemetry
+                        if hold_telemetry.get("held") and achieved is not None:
+                            pending_execution.update(ik_success=True, ik_reason="constraint_hold")
+                    if hold_telemetry.get("timed_out"):
+                        pending_execution.update(ik_success=None, ik_reason="servo_constraint_hold_timeout")
+                        events.append({"t": t, "event": "controller_stop", "reason": "servo_constraint_hold_timeout"})
+                    elif achieved is None:
+                        events.append({"t": t, "event": "ik_rejected", "reason": selection.reason})
+                    pending_execution["accepted_tcp"] = achieved
+                    pending_execution["servo_reach_limiter"]["consecutive_rejects"] = (
+                        servo_limiter_rejects
+                    )
                 else:
                     ik = inverse_kinematics(
                         command.tcp_pose, desired[ids], max_joint_delta_rad=0.35
@@ -1628,7 +1812,25 @@ def run(app, args, cfg, data, duration):
         "validation_status": "reconstruction prototype; dynamics and tactile transfer unvalidated",
         "policy_stop_reason": adapter.stopped_reason if adapter else None,
         "policy_completed_reason": getattr(adapter, "completed_reason", None),
+        "policy_delivery_clock": args.policy_delivery_clock if adapter else None,
         "policy_completion_is_task_success": False,
+        **(
+            {
+                "servo_reach_limiter": {
+                    **asdict(servo_reach_limits),
+                    "algorithm": "shared_native_bisection_slide_v1",
+                    "measured_wrist_extension_stop_m": hw.safety.wrist_extension_stop_m,
+                    "consecutive_reject_limit": 25,
+                    "final_consecutive_rejects": servo_limiter_rejects,
+                    "tracking_guarantee": False,
+                    **({"constraint_hold_s": args.servo_constraint_hold_s,
+                        "constraint_hold_progress_rad": 0.001}
+                       if servo_hold_budget is not None else {}),
+                }
+            }
+            if servo_reach_limits is not None
+            else {}
+        ),
         "post_stop_observation_s": 2.0 if adapter else None,
         "record_packet_support": args.record_packet_support,
         "record_gel_contacts": args.record_gel_contacts,
@@ -1645,7 +1847,8 @@ def run(app, args, cfg, data, duration):
         }
         if support_views is not None
         else None,
-        "camera_intrinsics_px": camera.get_intrinsics_matrix().tolist(),
+        "camera_intrinsics_px": camera_projection_report["intrinsics_px"],
+        "camera_projection": camera_projection_report,
     }
     if robot_environment_views is not None:
         report["robot_environment_contact_diagnostic"] = {

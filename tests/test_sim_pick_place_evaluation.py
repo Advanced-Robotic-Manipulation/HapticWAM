@@ -118,3 +118,22 @@ def test_image_proxy_excludes_explicit_occlusion_and_reports_coverage():
     assert result["rmse_px"] == 0
     assert result["coverage_fraction"] == 1
     assert result["excluded_nonvisible_frames"] == 1
+
+
+def test_measured_box_uses_opening_and_independent_floor_for_containment():
+    trial = complete_trial()
+    trial[2]['bin'] = {
+        'geometry_model': 'rectangular_envelope',
+        'center': [0, 0, 0],
+        'outer_size': [.400, .300, .190],
+        'opening_size': [.360, .260],
+        'floor_thickness': .004,
+    }
+    result = evaluate_arrays(*trial)
+    # Bottom at10mm is inside above a4mm floor. Treating the20mm
+    # outer/opening separation as floor thickness would reject this state.
+    assert result['gates']['final_oriented_bin_containment']['pass'] is True
+    trial[0]['waffle_position'][trial[0]['t'] >= 7.5, 0] = .09
+    result = evaluate_arrays(*trial)
+    # Right edge190mm fits outer envelope200mm but exceeds opening180mm.
+    assert result['gates']['final_oriented_bin_containment']['pass'] is False

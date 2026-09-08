@@ -68,6 +68,203 @@ def adapter_input(design, condition, field):
     return design.get("adapter_profile", {}).get(field)
 
 
+def policy_delivery_clock(design):
+    """Explicit opt-in; missing declarations retain all historical timing."""
+    mode = design.get("adapter_profile", {}).get("policy_delivery_clock", "native")
+    if mode not in ("native", "rpc_wall"):
+        raise ValueError(
+            "adapter_profile.policy_delivery_clock must be native or rpc_wall"
+        )
+    if mode == "rpc_wall" and design.get("delivery_latency_s") is not None:
+        raise ValueError("rpc_wall cannot be combined with delivery_latency_s")
+    return mode
+
+
+def policy_delivery_timing_audit(design, condition, planner):
+    """Verify delivery instrumentation without changing physical outcome rules."""
+    expected = policy_delivery_clock(design)
+    reasons = set()
+    for row in planner:
+        if row.get("error_category") == "instrumentation_or_input_invalid":
+            reasons.add("policy_timing_instrumentation_invalid")
+        if "actions" not in row:
+            continue
+        diag = row.get("diagnostics", {})
+        if not isinstance(diag, dict):
+            reasons.add("plan_delivery_timing_diagnostics_invalid")
+            continue
+        if diag.get("sim_policy_delivery_clock", "native") != expected:
+            reasons.add("plan_delivery_clock_differs_from_campaign")
+        if expected == "native":
+            if diag.get("sim_policy_replan_wall_time_s") is not None:
+                reasons.add("undeclared_rpc_wall_plan_timing")
+            continue
+        names = (
+            "sim_native_inference_latency_s",
+            "sim_policy_replan_wall_time_s",
+            "sim_policy_delivery_base_s",
+            "sim_effective_delivery_delay_s",
+            "sim_effective_inference_latency_s",
+            "sim_inference_delay_add_s",
+            "sim_inference_request_t",
+            "sim_rpc_minus_native_latency_s",
+        )
+        try:
+            values = [diag[k] for k in names]
+            values += [
+                row[k] for k in ("t", "t_created", "latency_s", "inference_wall_time_s")
+            ]
+            if any(isinstance(x, bool) or not np.isfinite(float(x)) for x in values):
+                raise ValueError("nonfinite timing")
+            native, wall, base, delivery, legacy_delivery, added, request, overhead = (
+                map(float, values[:8])
+            )
+            row_t, created, plan_latency, runner_wall = map(float, values[8:])
+            times = np.asarray(row["action_times"], float)
+            rate = design["runtime_hardware"]["effective_model"]["control"][
+                "action_rate_hz"
+            ]
+            expected_grid = request + native + np.arange(len(row["actions"])) / rate
+            if (
+                min(native, wall, added) < 0
+                or wall + 1e-9 < native
+                or runner_wall + 1e-9 < wall
+                or not np.allclose(
+                    [
+                        base,
+                        delivery,
+                        legacy_delivery,
+                        added,
+                        request,
+                        created,
+                        plan_latency,
+                        overhead,
+                    ],
+                    [
+                        wall,
+                        wall + added,
+                        delivery,
+                        condition["inference_delay_add_s"],
+                        row_t,
+                        request,
+                        native,
+                        wall - native,
+                    ],
+                    rtol=0,
+                    atol=1e-8,
+                )
+                or times.shape != expected_grid.shape
+                or not np.allclose(times, expected_grid, rtol=0, atol=1e-8)
+            ):
+                raise ValueError("inconsistent timing/grid")
+            activated = row.get("activated_at")
+            if activated is not None and (
+                isinstance(activated, bool)
+                or not np.isfinite(float(activated))
+                or activated + 1e-8 < request + delivery
+            ):
+                raise ValueError("activation precedes delivery")
+        except (KeyError, ValueError, TypeError, OverflowError, ZeroDivisionError):
+            reasons.add("rpc_wall_plan_timing_missing_or_inconsistent")
+    return sorted(reasons)
+
+
+def servo_reach_limiter_metadata(design):
+    """Frozen opt-in contract; absent/false preserves historical campaigns.
+
+    Constants intentionally belong to the analyzer's versioned contract rather
+    than being imported from the runtime helper it is checking.
+    """
+    enabled = design.get("adapter_profile", {}).get("servo_reach_limiter", False)
+    hold_s = design.get("adapter_profile", {}).get("servo_constraint_hold_s")
+    if not isinstance(enabled, bool):
+        raise TypeError("adapter_profile.servo_reach_limiter must be boolean")
+    if hold_s is not None and (
+        isinstance(hold_s, bool) or not isinstance(hold_s, (float, int))
+        or not np.isfinite(hold_s) or hold_s <= 0
+    ):
+        raise ValueError("Constraint hold deadline must be finite and positive")
+    safety = (
+        design.get("runtime_hardware", {}).get("effective_model", {}).get("safety", {})
+    )
+    if safety.get("servo_constraint_hold_s") != hold_s:
+        raise ValueError("Constraint hold deadline must match declared hardware")
+    if not enabled:
+        if hold_s is not None:
+            raise ValueError("Constraint hold requires the servo reach limiter")
+        return None
+    for field, value in (
+        ("elbow_min_rad", 0.40),
+        ("servo_joint_speed_max_rad_s", 1.0),
+        ("wrist_extension_stop_m", 0.468),
+        ("ur_dh_d1_m", 0.1519),
+    ):
+        actual = safety.get(field)
+        if isinstance(actual, bool) or actual != value:
+            raise ValueError(
+                f"Servo limiter requires declared hardware {field}={value}"
+            )
+    result = {
+        "elbow_min_rad": 0.40,
+        "joint_speed_max_rad_s": 1.0,
+        "branch_tolerance_rad": 0.35,
+        "bisection_iterations": 3,
+        "shoulder_height_m": 0.1519,
+        "algorithm": "shared_native_bisection_slide_v1",
+        "measured_wrist_extension_stop_m": 0.468,
+        "consecutive_reject_limit": 25,
+        "tracking_guarantee": False,
+    }
+    if hold_s is not None:
+        result.update(constraint_hold_s=hold_s, constraint_hold_progress_rad=0.001)
+    return result
+
+
+def servo_reach_limiter_audit(design, info, run):
+    try:
+        expected = servo_reach_limiter_metadata(design)
+    except (TypeError, ValueError):
+        return ["servo_reach_limiter_campaign_contract_invalid"]
+    reported = info.get("servo_reach_limiter")
+    if expected is None:
+        if any(
+            value is not None and value is not False
+            for value in (reported, run.get("servo_reach_limiter"))
+        ):
+            return ["undeclared_servo_reach_limiter"]
+        return []
+    if not isinstance(reported, dict):
+        return ["missing_or_invalid_servo_reach_limiter_metadata"]
+    numeric_fields = (
+        "elbow_min_rad",
+        "joint_speed_max_rad_s",
+        "branch_tolerance_rad",
+        "shoulder_height_m",
+        "measured_wrist_extension_stop_m",
+        "constraint_hold_s",
+        "constraint_hold_progress_rad",
+    )
+    if (
+        reported != expected
+        or reported.get("tracking_guarantee") is not False
+        or any(isinstance(reported.get(field), bool) for field in numeric_fields)
+        or type(reported.get("bisection_iterations")) is not int
+        or type(reported.get("consecutive_reject_limit")) is not int
+    ):
+        return ["effective_servo_reach_limiter_differs_from_campaign"]
+    # A supplied run-level copy must agree too. Historical scorers required only
+    # policy_info; do not invent a missing-file requirement for old recordings.
+    if "servo_reach_limiter" in run:
+        run_copy = run["servo_reach_limiter"]
+        if (
+            not isinstance(run_copy, dict)
+            or {k: v for k, v in run_copy.items() if k != "final_consecutive_rejects"}
+            != expected
+        ):
+            return ["run_servo_reach_limiter_differs_from_campaign"]
+    return []
+
+
 def load_design(path):
     design = json.loads(Path(path).read_text())
     if design.get("status") != "frozen":
@@ -91,6 +288,8 @@ def load_design(path):
     latency = design.get("delivery_latency_s")
     if latency is not None and (not np.isfinite(latency) or latency < 0):
         raise ValueError("delivery_latency_s must be finite and nonnegative")
+    servo_reach_limiter_metadata(design)
+    policy_delivery_clock(design)
     return design, fingerprint(path)
 
 
@@ -164,6 +363,15 @@ def read_rows(path):
 def runtime_audit(design, policy, condition, info, server, run, times, stop):
     """Reject recipe drift and incomplete time coverage before outcome scoring."""
     reasons = []
+    reasons.extend(servo_reach_limiter_audit(design, info, run))
+    delivery_clock = policy_delivery_clock(design)
+    if info.get("policy_delivery_clock", "native") != delivery_clock:
+        reasons.append("effective_policy_delivery_clock_differs_from_campaign")
+    if (
+        "policy_delivery_clock" in run
+        and run["policy_delivery_clock"] != delivery_clock
+    ):
+        reasons.append("run_policy_delivery_clock_differs_from_campaign")
     settings = policy_settings(design, policy)
     expected = {
         "nfe": settings["nfe"],
@@ -207,9 +415,11 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
         reasons.append("effective_delivery_latency_override_differs_from_campaign")
     profile = design.get("adapter_profile", {})
     veto = profile.get("terminal_veto", False)
-    if "terminal_veto_feedback_source" in profile and info.get(
-        "terminal_veto_feedback_source"
-    ) != profile["terminal_veto_feedback_source"]:
+    if (
+        "terminal_veto_feedback_source" in profile
+        and info.get("terminal_veto_feedback_source")
+        != profile["terminal_veto_feedback_source"]
+    ):
         reasons.append("effective_terminal_veto_feedback_source_differs_from_campaign")
     for field, expected_value in (
         ("planner_stall_watchdog", True),
@@ -220,7 +430,14 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     ):
         if info.get(field) != expected_value:
             reasons.append(f"effective_{field}_differs_from_campaign")
-    if profile or condition.get("initial_state"):
+    # Adding only the new default-off declaration must not activate older
+    # optional-profile checks that historically did not apply to that design.
+    legacy_profile = {
+        key: value
+        for key, value in profile.items()
+        if key not in ("servo_reach_limiter", "servo_constraint_hold_s", "policy_delivery_clock")
+    }
+    if legacy_profile or condition.get("initial_state"):
         for field in (
             "placement_release",
             "gel_contact_coverage",
@@ -349,6 +566,11 @@ def load_trials(runs, design, design_sha, out):
                 run,
                 times,
                 metrics.get("control", {}).get("stop_reason"),
+            )
+        )
+        metrics["invalid_reasons"].extend(
+            policy_delivery_timing_audit(
+                design, conditions[key[1]], read_rows(folder / "planner_trace.json")
             )
         )
         metrics["valid_for_scoring"] = not metrics["invalid_reasons"]

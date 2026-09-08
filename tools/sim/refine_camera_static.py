@@ -22,6 +22,7 @@ def main():
     from scipy.spatial.transform import Rotation
 
     from phantom.sim.kinematics import link_transforms
+    from phantom.sim.geometry import bin_geometry
 
     E = Path("artifacts/isaac_waffles/evidence")
     frames = json.loads((E / "landmark_frames.json").read_text())
@@ -73,8 +74,8 @@ def main():
             sig.append(8.0)
             labels.append(f"{i}:forearm_cap_band")
     b = cfg["bin"]
-    bc = np.array(b["center"])
-    bs = np.array(b["size"])
+    geometry = bin_geometry(b)
+    bc, bs = geometry.center, geometry.outer_size
     binpts = np.array(
         [
             bc + np.array([x * bs[0] / 2, y * bs[1] / 2, bs[2]])
@@ -82,6 +83,7 @@ def main():
         ]
     )
     binpix = np.array([[194, 92], [430, 92], [439, 249], [178, 249]])
+    binpts = geometry.from_interior_frame(binpts)
     robotpts = np.array(pts)
     robotpix = np.array(pix)
     robotsig = np.array(sig)

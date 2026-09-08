@@ -16,17 +16,18 @@ from __future__ import annotations
 
 import logging
 import math
-import threading
 import sys
+import threading
 import time
 
 import numpy as np
 
 from phantom.config.hardware import HardwareConfig
+from phantom.data.derived import rotvec_nearest
+from phantom.drivers import servo_limiter
 from phantom.drivers.base import (Arm, ArmState, ControlLost, ServoBranchFault,
                                   ServoHoldTimeout, ServoResult)
 from phantom.drivers.real import rig_lease
-from phantom.data.derived import rotvec_nearest
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ class URArm(Arm):
         self._limiter_holds = 0
         self._limiter_log_t = 0.0
         self.limiter_last: dict = {}
+        self._constraint_hold_budget = None
+        self.constraint_hold_last: dict = {}
         # RTDEControlInterface is NOT thread-safe and its C++ object is freed on
         # disconnect(). The teleop streamer calls servo_j from its own thread
         # while the record loop (zero_ft) and teardown (disconnect /
@@ -124,6 +127,8 @@ class URArm(Arm):
         # made move_l refuse start-pose homing for the rest of the session
         # even though the fresh script has no servo stream at all.
         self._servo_active = False
+        if self._constraint_hold_budget is not None:
+            self._constraint_hold_budget.reset()
         if old is None:
             return
         for op in ("servoStop", "stopScript", "disconnect"):
@@ -385,94 +390,30 @@ class URArm(Arm):
             return ctrl.getInverseKinematics(pose, list(qref))
         return ctrl.getInverseKinematics(pose)
 
-    def _limit_violation(self, q, qref, dt: float) -> str | None:
-        """Why the IK solution `q` must not be streamed as-is: the elbow would
-        fold under elbow_min_rad (reach boundary) or a joint would have to
-        move faster than servo_joint_speed_max_rad_s in this tick."""
+    def _servo_limits(self) -> servo_limiter.ServoLimits:
         sf = getattr(getattr(self, "hw", None), "safety", None)
-        if sf is None:                    # bare test doubles built via __new__
-            return None
-        emin = getattr(sf, "elbow_min_rad", None)
-        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None)
-        if emin is None and vmax is None:
-            # limiter DISABLED: never engage, not even for an empty IK
-            # solution — that tick must behave exactly as before the
-            # limiter existed (review 09-05, finding 1)
-            return None
-        if not q:
-            return "no_solution"
-        if emin is not None and abs(float(q[2])) < float(emin):
-            return "elbow"
-        if self._speed_violation(q, qref, dt):
-            return "joint_speed"
-        return None
+        return servo_limiter.ServoLimits(
+            elbow_min_rad=getattr(sf, "elbow_min_rad", None),
+            joint_speed_max_rad_s=getattr(sf, "servo_joint_speed_max_rad_s", None),
+            branch_tolerance_rad=self.IK_BRANCH_TOL_RAD,
+            bisection_iterations=self.LIMITER_BISECT,
+            shoulder_height_m=float(getattr(sf, "ur_dh_d1_m", 0.1519)),
+        )
+
+    def _limit_violation(self, q, qref, dt: float) -> str | None:
+        return servo_limiter.limit_violation(q, qref, dt, self._servo_limits())
 
     def _speed_violation(self, q, qref, dt: float) -> bool:
-        sf = getattr(getattr(self, "hw", None), "safety", None)
-        vmax = getattr(sf, "servo_joint_speed_max_rad_s", None) if sf is not None else None
-        if vmax is None or qref is None or dt <= 0 or not q:
-            return False
-        return max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax)
+        return servo_limiter.speed_violation(q, qref, dt, self._servo_limits())
 
     def _feasible(self, q, qref, dt: float) -> bool:
-        if not self._ik_valid(q):
-            return False
-        if qref is not None and max(abs(a - b) for a, b in zip(q, qref)) > self.IK_BRANCH_TOL_RAD:
-            return False
-        viol = self._limit_violation(q, qref, dt)
-        if viol == "elbow" and qref is not None:
-            # review 09-05 item 2: when the ANCHOR itself already sits below
-            # elbow_min_rad (the 0.468 m stop allows parking there), no
-            # micro-step inside the region is "feasible" and the arm can
-            # never leave — accept any step that moves the elbow OUT.
-            sf = getattr(getattr(self, "hw", None), "safety", None)
-            emin = float(getattr(sf, "elbow_min_rad", 0.0) or 0.0)
-            if (abs(float(qref[2])) < emin
-                    and abs(float(q[2])) > abs(float(qref[2])) + 1e-6
-                    # the escape may never buy elbow progress with a joint
-                    # whip: the speed rule still applies (verify 09-05 #2)
-                    and not self._speed_violation(q, qref, dt)):
-                return True
-        return viol is None
+        return servo_limiter.feasible(q, qref, dt, self._servo_limits())
 
     def _limited_step(self, ctrl, prev: np.ndarray, target: np.ndarray, qref, dt: float):
-        """Largest feasible fraction of the step prev -> target (bisection),
-        then, if that is < 1/2, the same for the step with its radial
-        (shoulder -> TCP) component removed — a slide along the reach sphere
-        instead of a stop. Candidates are compared by ACHIEVED displacement
-        (review 09-05 item 4: a large fraction of a near-zero tangential step
-        used to beat a small fraction of the real step and stall the arm).
-        Returns (pose, q, fraction, mode) or None (hold)."""
-        best = None
-        best_disp = -1.0
-        cands = [("step", target)]
-        sf = getattr(getattr(self, "hw", None), "safety", None)
-        sh = np.array([0.0, 0.0, float(getattr(sf, "ur_dh_d1_m", 0.1519))])
-        r = prev[:3] - sh
-        rn = float(np.linalg.norm(r))
-        if rn > 1e-6:
-            d = target[:3] - prev[:3]
-            tang = target.copy()
-            tang[:3] = prev[:3] + d - r * (float(np.dot(d, r)) / (rn * rn))
-            cands.append(("slide", tang))
-        for mode, tgt in cands:
-            lo, hi, found = 0.0, 1.0, None
-            for _ in range(self.LIMITER_BISECT):
-                mid = 0.5 * (lo + hi)
-                pm = prev + mid * (tgt - prev)
-                qm = self._solve_ik(ctrl, pm, qref)
-                if self._feasible(qm, qref, dt):
-                    found = (pm, list(qm), mid, mode)
-                    lo = mid
-                else:
-                    hi = mid
-            if found is not None:
-                disp = float(np.linalg.norm(found[0][:3] - prev[:3]))
-                if disp > best_disp:
-                    best, best_disp = found, disp
-            if best is not None and best[3] == "step" and best[2] >= 0.5:
-                break
-        return best
+        return servo_limiter.limited_step(
+            lambda pose, seed: self._solve_ik(ctrl, pose, seed),
+            prev, target, qref, dt, self._servo_limits(),
+        )
 
     @staticmethod
     def _ik_valid(q) -> bool:
@@ -483,7 +424,7 @@ class URArm(Arm):
         except Exception:
             return False
 
-    def _reject(self, why: str, detail: str) -> ServoResult:
+    def _reject(self, why: str, detail: str, *, strict_fault: bool = False) -> ServoResult:
         """Hold the previous setpoint for this tick; a sustained run of
         rejects ends the episode (executor crash net) instead of streaming
         anything doubtful."""
@@ -502,6 +443,15 @@ class URArm(Arm):
                     f"servo cannot stream ({self._branch_rejects} consecutive "
                     f"ticks rejected, last: {why}) — the target is at/beyond a "
                     "kinematic boundary")
+        if strict_fault and self._ik_rejects >= self.IK_REJECT_LIMIT:
+            # The opt-in verified-hold path grants extra time only to audited
+            # finite/on-branch constraints. Its mixed invalid/branch solves
+            # retain the original stricter fault counter, even if verified
+            # anchor holds were streamed between the rejected ticks. The
+            # default path still grants no-solution holds its 4 s budget.
+            raise RuntimeError(
+                f"servo cannot stream ({self._ik_rejects} consecutive "
+                f"ticks rejected, last: {why}) — unverified IK or constraint fault")
         # (a no-solution tick between two off-branch ticks does not forgive
         # the branch streak; only a SENT tick does)
         since = getattr(self, "_hold_since", None)
@@ -517,6 +467,9 @@ class URArm(Arm):
         with self._ctrl_lock:
             self._servo_active = True
             ctrl = self._require_ctrl()
+            safety = getattr(getattr(self, "hw", None), "safety", None)
+            if getattr(safety, "servo_constraint_hold_s", None) is not None:
+                return self._servo_l_bounded_hold(ctrl, tcp_pose, dt, lookahead, gain)
             qref = self._last_qsol
             if qref is None and self._recv is not None:
                 qref = list(self._recv.getActualQ())
@@ -578,9 +531,9 @@ class URArm(Arm):
                     return self._reject("limiter_no_anchor", "no anchor pose to shorten towards")
             if not self._ik_valid(q):
                 return self._reject("ik_invalid", f"no streamable solution ({q!r})")
-            self._last_qsol = list(q)
             ok = ctrl.servoJ(list(q), 0.0, 0.0, dt, lookahead, gain)
             if ok is not False:
+                self._last_qsol = list(q)
                 self._last_cmd_pose = np.asarray(tcp_pose, dtype=float).copy()
                 self._ik_rejects = 0          # the streak ends only on a SENT tick
                 self._branch_rejects = 0
@@ -654,6 +607,77 @@ class URArm(Arm):
         self.control_loss_last = d
         log.error("servo control lost: %s", d["summary"])
         return d
+
+    def _servo_l_bounded_hold(self, ctrl, tcp_pose, dt, lookahead, gain):
+        """Opt-in: stream a verified held anchor without fabricating progress.
+
+        Invalid solves retain the historical fault counter. Only explicit
+        finite/on-branch envelope holds get the separate elapsed-time budget.
+        The caller owns the control lock; native measured safety still runs.
+        """
+        from phantom.drivers.servo_hold import (
+            ConstraintHoldBudget,
+            ServoHoldTimeout as ConstraintHoldTimeout,
+            verified_constraint_hold,
+        )
+
+        limits = self._servo_limits()
+        if not limits.enabled:
+            raise ValueError("servo_constraint_hold_s requires an enabled servo limiter")
+        if self._constraint_hold_budget is None:
+            self._constraint_hold_budget = ConstraintHoldBudget(
+                self.hw.safety.servo_constraint_hold_s
+            )
+        qref = self._last_qsol
+        prev = self._last_cmd_pose
+        if qref is None and self._recv is not None:
+            qref = list(self._recv.getActualQ())
+        if prev is None and self._recv is not None:
+            prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
+        selection = servo_limiter.select_servo_step(
+            tcp_pose, prev, qref, dt,
+            lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
+        )
+        held = verified_constraint_hold(selection, qref, dt, limits)
+        if not selection.accepted and not held:
+            return self._reject(
+                selection.reason, "unverified constrained hold or IK fault",
+                strict_fault=True,
+            )
+        sent_q = np.asarray(qref if held else selection.q, dtype=float)
+        sent_pose = np.asarray(prev if held else selection.pose, dtype=float)
+        if np.array_equal(sent_q, np.asarray(qref)):
+            # IK tolerance can accept a nearby pose with identical joints.
+            # Re-sending those joints cannot advance the Cartesian anchor.
+            sent_pose = np.asarray(prev, dtype=float)
+        state = self._constraint_hold_budget.check(time.perf_counter(), sent_q, held=held)
+        self.constraint_hold_last = {
+            **state, "held": held, "mode": selection.mode,
+            "violation": selection.violation, "ik_calls": selection.ik_calls,
+            "all_ik_valid": selection.all_ik_valid,
+            "all_ik_on_branch": selection.all_ik_on_branch,
+        }
+        if state["timed_out"]:
+            raise ConstraintHoldTimeout("verified constraint hold exceeded its fixed deadline")
+        ok = ctrl.servoJ(sent_q.tolist(), 0.0, 0.0, dt, lookahead, gain)
+        if ok is False:
+            diag = self._diagnose_control_loss(sent_q, sent_pose)
+            raise ControlLost(
+                "servoJ rejected while streaming constrained servo target; "
+                f"robot: {diag.get('summary', 'n/a')}"
+            )
+        self._last_qsol = sent_q.tolist()
+        self._last_cmd_pose = sent_pose.copy()
+        if selection.violation is not None:
+            self._limiter_hits += 1
+        if held:
+            self._limiter_holds += 1
+            # Streamed hold is not IK recovery; preserve preceding fault count.
+        else:
+            self._ik_rejects = 0
+            self._branch_rejects = 0
+            self._hold_since = None
+        return ServoResult(True, sent_pose, "constraint_hold" if held else "sent")
 
     def _limiter_enabled(self) -> bool:
         sf = getattr(getattr(self, "hw", None), "safety", None)
@@ -740,8 +764,12 @@ class URArm(Arm):
         self.limiter_last = {"hits": self._limiter_hits, "holds": self._limiter_holds,
                              "ik_rejects": self._ik_rejects_total,
                              "ik_dev_max_rad": round(self._ik_dev_max, 4)}
+        if self.constraint_hold_last:
+            self.limiter_last["constraint_hold"] = self.constraint_hold_last.copy()
         self._last_qsol = None
         self._last_cmd_pose = None
+        if self._constraint_hold_budget is not None:
+            self._constraint_hold_budget.reset()
         self._limiter_hits = 0
         self._limiter_holds = 0
         self._ik_rejects = 0

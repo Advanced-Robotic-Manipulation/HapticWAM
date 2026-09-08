@@ -14,6 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
+from phantom.sim.geometry import bin_geometry, mount_plate_geometry, table_hole_centers
+
 
 def elliptical_prism_mesh(size, segments=48):
     """Convex pad proxy: flat contact faces on X, rounded perimeter in YZ.
@@ -213,6 +215,74 @@ def set_forearm_collision_approximation(stage, robot_path, approximation="convex
     return changed
 
 
+def build_bin_primitives(box, b: dict, blue, bin_phys):
+    """Author bin primitives using the same cavity definition as task scoring.
+
+    ``box`` is the scene's USD cube writer; accepting it here keeps metre-level
+    physical/visual bounds independently testable without an Isaac runtime.
+    Historical scenes keep the original decorative rims and authoring order.
+    """
+    geometry = bin_geometry(b)
+    if geometry.model == "rectangular_envelope":
+        # No decorative extension beyond the measured outer envelope. These
+        # solid proxy sides are not a claim of measured plastic wall thickness.
+        for part in geometry.collision_boxes():
+            box(f"/World/Bin/{part.name}", part.center, part.size, blue, True, bin_phys)
+        return
+    bx, by, bz = b["center"]
+    bsx, bsy, bsz = b["size"]
+    wall = b["wall"]
+    box(
+        "/World/Bin/Bottom",
+        [bx, by, bz + wall / 2],
+        [bsx, bsy, wall],
+        blue,
+        True,
+        bin_phys,
+    )
+    for side, sign in (("Left", -1), ("Right", 1)):
+        box(
+            f"/World/Bin/{side}",
+            [bx + sign * (bsx - wall) / 2, by, bz + bsz / 2],
+            [wall, bsy, bsz],
+            blue,
+            True,
+            bin_phys,
+        )
+        box(
+            f"/World/Bin/{side}Rim",
+            [bx + sign * bsx / 2, by, bz + bsz],
+            [0.011, bsy + 0.015, 0.01],
+            blue,
+        )
+    for side, sign in (("Front", -1), ("Back", 1)):
+        box(
+            f"/World/Bin/{side}",
+            [bx, by + sign * (bsy - wall) / 2, bz + bsz / 2],
+            [bsx, wall, bsz],
+            blue,
+            True,
+            bin_phys,
+        )
+        box(
+            f"/World/Bin/{side}Rim",
+            [bx, by + sign * bsy / 2, bz + bsz],
+            [bsx + 0.015, 0.011, 0.01],
+            blue,
+        )
+        for i in range(10):
+            box(
+                f"/World/Bin/{side}Rib_{i}",
+                [
+                    bx - bsx / 2 + 0.015 + i * (bsx - 0.03) / 9,
+                    by + sign * (bsy + 0.004) / 2,
+                    bz + bsz * 0.42,
+                ],
+                [0.005, 0.009, bsz * 0.8],
+                blue,
+            )
+
+
 def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
@@ -344,31 +414,27 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     box("/World/Bench/Slab", tab["center"], tab["size"], steel, True, table_phys)
     # Recessed interiors and rim geometry preserve the optical breadboard pattern
     # while the underlying table uses a continuous collision surface.
-    pitch = tab["hole_pitch"]
     cx, cy, _ = tab["center"]
     sx, sy, _ = tab["size"]
     points = []
     counts = []
     indices = []
-    for i in range(int(sx / pitch)):
-        for j in range(int(sy / pitch)):
-            x = cx - sx / 2 + (i + 0.5) * pitch
-            y = cy - sy / 2 + (j + 0.5) * pitch
-            start = len(points)
-            points.extend(
-                [(x, y, tab["top_z"] + 0.0001)]
-                + [
-                    (
-                        x + tab["hole_radius"] * math.cos(k * math.tau / 16),
-                        y + tab["hole_radius"] * math.sin(k * math.tau / 16),
-                        tab["top_z"] + 0.00012,
-                    )
-                    for k in range(16)
-                ]
-            )
-            for k in range(16):
-                counts.append(3)
-                indices.extend([start, start + 1 + k, start + 1 + (k + 1) % 16])
+    for x, y in table_hole_centers(tab):
+        start = len(points)
+        points.extend(
+            [(x, y, tab["top_z"] + 0.0001)]
+            + [
+                (
+                    x + tab["hole_radius"] * math.cos(k * math.tau / 16),
+                    y + tab["hole_radius"] * math.sin(k * math.tau / 16),
+                    tab["top_z"] + 0.00012,
+                )
+                for k in range(16)
+            ]
+        )
+        for k in range(16):
+            counts.append(3)
+            indices.extend([start, start + 1 + k, start + 1 + (k + 1) % 16])
     holes = UsdGeom.Mesh.Define(stage, "/World/Bench/Perforations")
     holes.CreatePointsAttr(points)
     holes.CreateFaceVertexCountsAttr(counts)
@@ -380,10 +446,16 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             box(f"/World/Bench/Leg_{i}_{j}", [xx, yy, -0.43], [0.05, 0.05, 0.74], dark)
     # Table panel seam and robot mounting plate/fasteners.
     box("/World/Bench/Seam", [cx, 0, tab["top_z"] + 0.0002], [sx, 0.001, 0.0002], black)
+    mount = mount_plate_geometry(cfg.get("robot_mount", {}))
+    if mount.yaw:
+        # Rotate the plate and its fasteners together about the fixed UR origin.
+        UsdGeom.Xform.Define(stage, "/World/Mount").AddRotateZOp().Set(
+            math.degrees(mount.yaw)
+        )
     box(
         "/World/Mount/Plate",
-        [0, 0, -0.011],
-        [0.16, 0.16, 0.022],
+        mount.center,
+        mount.size,
         steel,
         True,
         table_phys,
@@ -395,17 +467,36 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
                 f"/World/Mount/Socket_{i}_{j}", [x, y, 0.0031], 0.0028, 0.0001, black
             )
     m = cfg["mat"]
-    box("/World/Mat/Base", m["center"], m["size"], dark, True, mat_phys)
-    mx, my, mz = m["center"]
+    local_mat = m.get("frame_model") == "local_planar"
+    if m.get("frame_model") not in (None, "local_planar"):
+        raise ValueError("Unsupported mat.frame_model")
+    if not local_mat and ("yaw" in m or "grid_origin_xy" in m):
+        raise ValueError("Mat yaw/grid phase require frame_model='local_planar'")
+    mat_center = m["center"]
+    if local_mat:
+        mat_frame = UsdGeom.Xform.Define(stage, "/World/Mat")
+        mat_frame.AddTranslateOp().Set(Gf.Vec3d(*map(float, mat_center)))
+        mat_frame.AddRotateZOp().Set(math.degrees(float(m.get("yaw", 0))))
+        mat_center = [0., 0., 0.]
+    box("/World/Mat/Base", mat_center, m["size"], dark, True, mat_phys)
+    mx, my, mz = mat_center
     msx, msy, msz = m["size"]
-    for i, x in enumerate(np.arange(-msx / 2, msx / 2 + 0.00001, m["grid_pitch"])):
+    grid_start = m.get("grid_origin_xy", [-msx / 2, -msy / 2])
+    def grid_positions(axis, extent):
+        if not local_mat:
+            return np.arange(-extent/2, extent/2+.00001, m["grid_pitch"])
+        phase = float(grid_start[axis])
+        first = math.ceil((-extent/2-phase)/m["grid_pitch"])
+        last = math.floor((extent/2-phase)/m["grid_pitch"])
+        return phase + np.arange(first,last+1)*m["grid_pitch"]
+    for i, x in enumerate(grid_positions(0, msx)):
         box(
             f"/World/Mat/X_{i}",
             [mx + x, my, mz + msz / 2 + 0.00005],
             [0.00065, msy, 0.0001],
             grid,
         )
-    for i, y in enumerate(np.arange(-msy / 2, msy / 2 + 0.00001, m["grid_pitch"])):
+    for i, y in enumerate(grid_positions(1, msy)):
         box(
             f"/World/Mat/Y_{i}",
             [mx, my + y, mz + msz / 2 + 0.00005],
@@ -413,58 +504,14 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             grid,
         )
     b = cfg["bin"]
-    bx, by, bz = b["center"]
-    bsx, bsy, bsz = b["size"]
-    wall = b["wall"]
-    box(
-        "/World/Bin/Bottom",
-        [bx, by, bz + wall / 2],
-        [bsx, bsy, wall],
-        blue,
-        True,
-        bin_phys,
-    )
-    for side, sign in (("Left", -1), ("Right", 1)):
-        box(
-            f"/World/Bin/{side}",
-            [bx + sign * (bsx - wall) / 2, by, bz + bsz / 2],
-            [wall, bsy, bsz],
-            blue,
-            True,
-            bin_phys,
-        )
-        box(
-            f"/World/Bin/{side}Rim",
-            [bx + sign * bsx / 2, by, bz + bsz],
-            [0.011, bsy + 0.015, 0.01],
-            blue,
-        )
-    for side, sign in (("Front", -1), ("Back", 1)):
-        box(
-            f"/World/Bin/{side}",
-            [bx, by + sign * (bsy - wall) / 2, bz + bsz / 2],
-            [bsx, wall, bsz],
-            blue,
-            True,
-            bin_phys,
-        )
-        box(
-            f"/World/Bin/{side}Rim",
-            [bx, by + sign * bsy / 2, bz + bsz],
-            [bsx + 0.015, 0.011, 0.01],
-            blue,
-        )
-        for i in range(10):
-            box(
-                f"/World/Bin/{side}Rib_{i}",
-                [
-                    bx - bsx / 2 + 0.015 + i * (bsx - 0.03) / 9,
-                    by + sign * (bsy + 0.004) / 2,
-                    bz + bsz * 0.42,
-                ],
-                [0.005, 0.009, bsz * 0.8],
-                blue,
-            )
+    if bin_geometry(b).yaw:
+        # Rotate all physical and visual pieces together; containment scoring
+        # uses the same configured yaw in BinGeometry.to_interior_frame.
+        bin_frame = UsdGeom.Xform.Define(stage, "/World/Bin")
+        bin_frame.AddTranslateOp().Set(Gf.Vec3d(*map(float, b["center"])))
+        bin_frame.AddRotateZOp().Set(math.degrees(float(b["yaw"])))
+        b = {**b, "center": [0., 0., 0.]}
+    build_bin_primitives(box, b, blue, bin_phys)
 
     # Packet geometry has separate rendering and collision meshes.
     obj = UsdGeom.Xform.Define(stage, "/World/Waffle")

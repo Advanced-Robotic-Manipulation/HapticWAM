@@ -29,6 +29,7 @@ fingerprint = _analysis.fingerprint
 load_design = _analysis.load_design
 policy_settings = _analysis.policy_settings
 adapter_input = _analysis.adapter_input
+servo_reach_limiter_metadata = _analysis.servo_reach_limiter_metadata
 
 
 def write_json(path, value):
@@ -40,12 +41,19 @@ def write_json(path, value):
 
 def blocks(design):
     result = []
+    phase_ids = set()
     for phase in design["execution_phases"]:
+        if phase["id"] in phase_ids:
+            raise ValueError("Duplicate execution phase ID")
+        phase_ids.add(phase["id"])
+        seeds = phase.get("sampling_seeds", design["sampling_seeds"])
+        if not seeds or not phase["policy_ids"] or not phase["condition_ids"]:
+            raise ValueError("Execution phases must not contain empty blocks")
         for policy in phase["policy_ids"]:
             trials = [
                 (condition, int(seed))
                 for condition in phase["condition_ids"]
-                for seed in design["sampling_seeds"]
+                for seed in seeds
             ]
             result.append(
                 {
@@ -59,7 +67,12 @@ def blocks(design):
         for b in result
         for condition, seed in b["trials"]
     ]
-    if len(keys) != len(set(keys)) or len(keys) != design["planned_counts"]["total"]:
+    expected = set(_analysis.planned_keys(design))
+    if (
+        len(keys) != len(set(keys))
+        or set(keys) != expected
+        or len(keys) != design["planned_counts"]["total"]
+    ):
         raise ValueError("Execution phases do not cover the frozen grid exactly once")
     return result
 
@@ -121,6 +134,7 @@ def server_command(args, design, policy, directory):
 
 def simulation_command(args, design, policy, condition, seed, directory, robot_usd):
     profile = design.get("adapter_profile", {})
+    delivery_clock = _analysis.policy_delivery_clock(design)
     settings = policy_settings(design, policy)
     relative_episode = Path(design["prepared_episode"]).relative_to("evidence")
     command = [
@@ -169,6 +183,8 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
             command += [flag, spec["path"]]
     if design.get("delivery_latency_s") is not None:
         command += ["--policy-latency", str(design["delivery_latency_s"])]
+    if delivery_clock != "native":
+        command += ["--policy-delivery-clock", delivery_clock]
     for field, flag in (
         ("terminal_veto", "--terminal-veto-config"),
         ("placement_release", "--placement-release-config"),
@@ -181,6 +197,10 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         command += ["--save-policy-observations"]
     if profile.get("record_packet_support"):
         command += ["--record-packet-support"]
+    if servo_reach_limiter_metadata(design) is not None:
+        command += ["--servo-reach-limiter"]
+        if profile.get("servo_constraint_hold_s") is not None:
+            command += ["--servo-constraint-hold-s", str(profile["servo_constraint_hold_s"])]
     return command
 
 
@@ -255,6 +275,18 @@ def source_manifest(args, design_sha, design):
         "configs/hardware.nuc.yaml",
     ]
     paths.update(args.source / name for name in core_names)
+    if servo_reach_limiter_metadata(design) is not None:
+        limiter_path = args.source / "phantom/drivers/servo_limiter.py"
+        if not limiter_path.is_file():
+            raise FileNotFoundError(
+                "Enabled servo limiter source is missing: " + str(limiter_path)
+            )
+        paths.add(limiter_path)
+        hold_path = args.source / "phantom/drivers/servo_hold.py"
+        if design.get("adapter_profile", {}).get("servo_constraint_hold_s") is not None:
+            if not hold_path.is_file():
+                raise FileNotFoundError("Enabled constraint-hold source is missing: " + str(hold_path))
+            paths.add(hold_path)
     episode = args.evidence / Path(design["prepared_episode"]).relative_to("evidence")
     profile_inputs = {}
     for field in ("initial_state", "tactile_baseline"):
@@ -279,6 +311,14 @@ def source_manifest(args, design_sha, design):
         "hardware_config": str(args.hardware_config),
         "hardware_sha256": fingerprint(args.hardware_config),
         "source_root": str(args.source),
+        "external_controller_source_root": str(REPO),
+        "external_controller_source_sha256": {
+            str(path.relative_to(REPO)): fingerprint(path)
+            for path in sorted(
+                set((REPO / "tools/sim").glob("*.py"))
+                | set((REPO / "phantom/sim").glob("*.py"))
+            )
+        },
         "live_repository": str(args.live_repo),
         "source_sha256": {
             str(path.relative_to(args.source)): fingerprint(path)
@@ -297,6 +337,20 @@ def source_manifest(args, design_sha, design):
         "adapter_profile_inputs": profile_inputs,
         "condition_initial_state_inputs": condition_inputs,
     }
+
+
+def analysis_command(args, snapshot):
+    """Audit per-policy overrides with the controller's own versioned analyzer."""
+    return [
+        str(args.server_python),
+        str(REPO / "tools/sim/analyze_policy_campaign.py"),
+        "--campaign",
+        str(snapshot),
+        "--runs",
+        str(args.output / "rollouts"),
+        "--out",
+        str(args.output / "analysis"),
+    ]
 
 
 def completed_case(directory, design_sha, policy, condition, seed):
@@ -365,6 +419,11 @@ def parser():
     p.add_argument("--hardware-config", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--robot-usd", type=Path)
+    p.add_argument(
+        "--stage-gate-audit",
+        type=Path,
+        help="Passed, hash-linked mechanics/reproduction audit when required by the design",
+    )
     p.add_argument("--port", type=int, default=7792)
     p.add_argument("--server-timeout", type=float, default=600)
     p.add_argument("--rollout-timeout", type=float, default=900)
@@ -418,11 +477,33 @@ def main():
                 for condition in design["conditions"]
             },
             "delivery_latency_override_s": design.get("delivery_latency_s"),
+            "policy_delivery_clock": _analysis.policy_delivery_clock(design),
         }
         write_json(args.output / "plan.json", plan)
         if not args.execute:
             print(json.dumps(plan, indent=2))
             return
+        gate = None
+        if design.get("stage_gate"):
+            from tools.sim.teacher_anchor_design import verify_execution_gate
+
+            gate = verify_execution_gate(design, args.stage_gate_audit, args.source)
+            episode = args.evidence / Path(design["prepared_episode"]).relative_to(
+                "evidence"
+            )
+            contract = design["runtime_contract"]
+            original_episode = (
+                Path(contract["source"]).parent / design["prepared_episode"]
+            )
+            if episode.resolve() != original_episode.resolve():
+                raise ValueError(
+                    "Anchor episode path differs from the frozen prepared input"
+                )
+            if (
+                args.robot_usd is None
+                or fingerprint(args.robot_usd) != contract["robot_usd"]["sha256"]
+            ):
+                raise ValueError("Anchor requires the original hash-pinned robot asset")
         import yaml
 
         hardware = yaml.safe_load(args.hardware_config.read_text())
@@ -435,6 +516,8 @@ def main():
                 "Campaign hardware config must explicitly disable lift-complete auto-stop"
             )
         current_sources = source_manifest(args, design_sha, design)
+        if gate is not None:
+            current_sources["stage_gate_audit"] = gate
         sources_path = args.output / "frozen_inputs.json"
         if (
             sources_path.exists()
@@ -618,6 +701,9 @@ def main():
                             "policy_latency_override_s": info.get(
                                 "policy_latency_override_s"
                             ),
+                            "policy_delivery_clock": info.get(
+                                "policy_delivery_clock", "native"
+                            ),
                             "policy_initial_state_provenance": info.get(
                                 "policy_initial_state_provenance"
                             ),
@@ -634,17 +720,7 @@ def main():
                         )
                     stop_owned(server)
                     server = None
-                analysis_command = [
-                    str(args.server_python),
-                    str(args.source / "tools/sim/analyze_policy_campaign.py"),
-                    "--campaign",
-                    str(snapshot),
-                    "--runs",
-                    str(args.output / "rollouts"),
-                    "--out",
-                    str(args.output / "analysis"),
-                ]
-                subprocess.run(analysis_command, cwd=args.source, check=True)
+                subprocess.run(analysis_command(args, snapshot), cwd=REPO, check=True)
             ledger["status"] = "all_trials_completed"
         except BaseException as error:
             ledger.update(

@@ -222,6 +222,8 @@ class ChunkExecutor:
         # AFTER the let-go: a driver read must never delay a release
         if not self.halt_state:
             self.halt_state = self._snapshot_arm(reason)
+            if hasattr(self.safety, "wrench_diagnostics"):
+                self.halt_state["wrist_guard"] = self.safety.wrench_diagnostics()
 
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to
@@ -311,7 +313,6 @@ class ChunkExecutor:
     def _run(self) -> None:
         hw = self.hw
         period = 1.0 / hw.control.executor_rate_hz
-        dt_servo = period
         self._last_tick = time.perf_counter()
         hold_pose: np.ndarray | None = None
         while not self._stop.is_set():
@@ -389,7 +390,8 @@ class ChunkExecutor:
                     if self.release_controller is not None and self._last_grip_command is not None:
                         g_sent = self._last_grip_command
                     if g_sent != a[6]:
-                        a = np.array(a, copy=True); a[6] = g_sent
+                        a = np.array(a, copy=True)
+                        a[6] = g_sent
                     if self.record_action is not None:
                         self.record_action(t0, a)
                     # locked: the planner thread reads this deque, and a full
@@ -476,7 +478,10 @@ class ChunkExecutor:
                     log.info("servo tick held by the driver (%s) — anchor not advanced",
                              res.reason)
             if streamed is not None:
-                self._held_ticks = 0
+                if res is not None and res.reason == "constraint_hold":
+                    self._held_ticks += 1
+                else:
+                    self._held_ticks = 0
                 with self._lock:
                     self._last_cmd = streamed.copy()
             if grip is not None:
@@ -497,8 +502,14 @@ class ChunkExecutor:
         field-debugged 2026-08-14: an uncaught servo exception killed the
         thread silently and the planner kept replanning into a stopped arm
         for 30+ cycles."""
+        from phantom.drivers.servo_hold import ServoHoldTimeout
+
         try:
             self._run()
+        except ServoHoldTimeout as exc:
+            log.warning("servo controller stopped: %s", exc)
+            self._halt(exc.reason)
+            self._set_reason(exc.reason)
         except Exception as e:
             log.exception("executor thread crashed")
             self.crash_text = traceback.format_exc()[-3000:]

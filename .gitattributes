@@ -1,7 +1,11 @@
 # Preserve byte hashes of the frozen CSV exports, whose writer uses CRLF.
 docs/results/**/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/measurements/**/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # Runtime logs are retained verbatim, including the simulator's whitespace.
 docs/results/**/*.log -text -whitespace
+# Frozen patches need their context-line prefixes; renderer fixtures keep byte hashes.
+docs/results/**/*.patch -text -whitespace
+docs/results/**/*.usda -text -whitespace
 # Keep generated evidence identifiable in GitHub review; reports remain visible.
 docs/results/**/*.json linguist-generated=true
 docs/results/**/*.jsonl linguist-generated=true

@@ -152,6 +152,9 @@ class DeploymentRuntime:
             arm_drv = getattr(getattr(self, "rig", None), "arm", None)
             live = {"hits": getattr(arm_drv, "_limiter_hits", None),
                     "holds": getattr(arm_drv, "_limiter_holds", None)}
+            constraint_hold = getattr(arm_drv, "constraint_hold_last", None)
+            if constraint_hold:
+                live["constraint_hold"] = constraint_hold
             last = getattr(arm_drv, "limiter_last", None) or {}
             if last or live["hits"]:
                 out["servo_limiter"] = last if last else live
@@ -168,7 +171,8 @@ class DeploymentRuntime:
                  base_hw: HardwareConfig | None = None,
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
-                 max_play_steps: int | None = None, release_config=None):
+                 max_play_steps: int | None = None, release_config=None,
+                 controller_profile: str | None = None):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
         with model_copy). Episodes are stamped with ITS config_hash so a
@@ -194,6 +198,14 @@ class DeploymentRuntime:
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
         self.release_config = None if controller is None else controller.config
+        self.planner_class = PlannerLoop
+        if controller_profile is not None:
+            from phantom.deploy.minimal_v5 import planner_class, validate_profile
+            profile_meta = validate_profile(controller_profile, release_config=self.release_config,
+                                            veto=veto, mode=mode, hw=hw)
+            self.deploy_overrides["placement_controller_profile"] = profile_meta
+            self.deploy_overrides["placement_veto_feedback"] = profile_meta["veto_feedback_source"]
+            self.planner_class = planner_class(controller_profile, PlannerLoop)
         self.rig = make_rig(hw, control=True)
         self.rig.worker_owned_tactile = True    # real DM-Tac is single-open
         self.session: SensorSession | None = None
@@ -258,7 +270,7 @@ class DeploymentRuntime:
                                     wrench_baseline_rows=int(
                                         getattr(self.policy, "wrench_baseline_rows", 0) or 0))
         trace: list = []
-        planner = PlannerLoop(hw, self.policy, snapshots, executor, trace=trace,
+        planner = self.planner_class(hw, self.policy, snapshots, executor, trace=trace,
                               session=self.session, veto=self.veto)
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
@@ -345,6 +357,7 @@ class DeploymentRuntime:
                      "count": int(getattr(e, "count", 1))}
                     for e in safety.log_events],
             stop_state={**self._arm_state_now(),
+                        "wrist_guard": safety.wrench_diagnostics(),
                         **({"placement_release": executor.release_diagnostics()}
                            if getattr(executor, "release_controller", None) is not None else {}),
                         **({"at_halt": executor.halt_state}

@@ -22,6 +22,8 @@ from itertools import product
 
 import numpy as np
 
+from phantom.sim.geometry import bin_geometry
+
 DEFAULT_THRESHOLDS = {
     "contact_force_n": 0.1,
     "acquisition_hold_s": 0.15,
@@ -340,34 +342,22 @@ def evaluate_policy_trace(
     rotation = _rotations(q)
     position = arrays["waffle_position"]
     size = np.asarray(config["waffle"]["size"], float)
-    b = config["bin"]
-    bin_center, bin_size = np.asarray(b["center"], float), np.asarray(b["size"], float)
-    wall = float(b["wall"])
-    if (
-        size.shape != (3,)
-        or bin_center.shape != (3,)
-        or bin_size.shape != (3,)
-        or not np.isfinite(np.r_[size, bin_center, bin_size, wall]).all()
-        or (size <= 0).any()
-        or wall <= 0
-        or (bin_size <= 2 * wall).any()
-    ):
-        raise ValueError("Object and bin must have finite positive physical dimensions")
+    geometry = bin_geometry(config["bin"])
+    if size.shape != (3,) or not np.isfinite(size).all() or (size <= 0).any():
+        raise ValueError("Object must have finite positive physical dimensions")
     corners = np.asarray(list(product([-1, 1], repeat=3))) * size / 2
     world_corners = np.einsum("nij,kj->nki", rotation, corners) + position[:, None]
     tol = limits["bin_tolerance_m"]
-    lower_xy, upper_xy = (
-        bin_center[:2] - bin_size[:2] / 2 + wall,
-        bin_center[:2] + bin_size[:2] / 2 - wall,
-    )
+    lower, upper = geometry.interior_bounds
+    bin_corners = geometry.to_interior_frame(world_corners)
     over_bin = (
-        (world_corners[:, :, :2] >= lower_xy - tol)
-        & (world_corners[:, :, :2] <= upper_xy + tol)
+        (bin_corners[:, :, :2] >= lower[:2] - tol)
+        & (bin_corners[:, :, :2] <= upper[:2] + tol)
     ).all(axis=(1, 2))
     inside_bin = (
         over_bin
-        & (world_corners[:, :, 2].min(axis=1) >= bin_center[2] + wall - tol)
-        & (world_corners[:, :, 2].max(axis=1) <= bin_center[2] + bin_size[2] + tol)
+        & (world_corners[:, :, 2].min(axis=1) >= lower[2] - tol)
+        & (world_corners[:, :, 2].max(axis=1) <= upper[2] + tol)
     )
     speed = np.r_[0.0, np.linalg.norm(np.diff(position, axis=0), axis=1) / intervals]
     angular = np.r_[

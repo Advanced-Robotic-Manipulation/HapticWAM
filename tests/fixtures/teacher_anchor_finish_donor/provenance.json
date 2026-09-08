@@ -1,0 +1,14 @@
+{
+  "source_commit": "6e437dd1f10eb16364909c405130bdd180af465f",
+  "purpose": "Hash-exact historical donor for FINISH overlay parity tests; independent of current repository code.",
+  "files": {
+    "phantom/sim/policy_adapter.py": {
+      "fixture": "policy_adapter.py.txt",
+      "sha256": "c405c9e472252697d25e438b00f2505fe7cdbfa54df8b59168764c477549d8c6"
+    },
+    "phantom/deploy/release_controller.py": {
+      "fixture": "release_controller.py.txt",
+      "sha256": "3405da4cf01617d42ff0348e8ad6d2e20b69801572b853588fb5fb8c1f867e26"
+    }
+  }
+}

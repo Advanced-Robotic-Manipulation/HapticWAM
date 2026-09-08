@@ -33,6 +33,7 @@ The simulator records accepted gripper targets directly; the real gripper's
 
 from __future__ import annotations
 
+import time
 from collections import deque
 from collections.abc import Callable
 from copy import copy
@@ -129,13 +130,21 @@ def _vector(value, n: int, name: str) -> np.ndarray:
     return arr
 
 
+class PolicyTimingError(ValueError):
+    """Invalid timing instrumentation/input; never a policy task outcome."""
+
+    infrastructure_invalid = True
+
+
 class SimulationPolicyAdapter:
     """Single-threaded deployment semantics driven explicitly by sim time.
 
-    ``latency_s=None`` uses measured policy inference latency. Supplying a
-    nonnegative latency (including 0 for an idealized experiment) delays plan
-    activation on sim time by exactly that amount; rendering/physics should
-    continue stepping until activation. No wall-clock sleeps are used.
+    Default ``native`` delivery uses the policy's reported inference latency.
+    A nonnegative ``latency_s`` override retains the existing idealized timing
+    experiment. Opt-in ``rpc_wall`` instead measures the complete synchronous
+    policy call, preserving the native action grid and latency for conditioning.
+    Its later delivery skips expired samples through the usual submit path.
+    Rendering/physics continue on sim time; no wall-clock sleeps are used.
 
     ``step`` requires feedback before the next tick. Commands rejected by IK
     must never be presented as measured motion or executed-past actions.
@@ -156,6 +165,8 @@ class SimulationPolicyAdapter:
         observation_callback: Callable | None = None,
         delivered_plan_callback: Callable | None = None,
         release_config=None,
+        policy_delivery_clock: str = "native",
+        replan_clock: Callable[[], float] | None = None,
     ):
         if mode not in (
             "teacher",
@@ -175,6 +186,10 @@ class SimulationPolicyAdapter:
             raise ValueError("open_aperture is outside the configured closure limits")
         if ik_reject_limit < 1:
             raise ValueError("ik_reject_limit must be positive")
+        if policy_delivery_clock not in ("native", "rpc_wall"):
+            raise ValueError("policy_delivery_clock must be native or rpc_wall")
+        if replan_clock is not None and not callable(replan_clock):
+            raise TypeError("replan_clock must be callable")
         self.hw, self.policy, self.mode = hw, policy, mode
         self.parity_fixes = bool(parity_fixes)
         self.max_play_steps = max_play_steps
@@ -183,6 +198,8 @@ class SimulationPolicyAdapter:
         self.plan_filter = plan_filter
         self.observation_callback = observation_callback
         self.delivered_plan_callback = delivered_plan_callback
+        self.policy_delivery_clock = policy_delivery_clock
+        self._replan_clock = time.perf_counter if replan_clock is None else replan_clock
         from phantom.deploy.release_controller import make_release_controller
 
         self.release_controller = make_release_controller(release_config, hw)
@@ -474,27 +491,64 @@ class SimulationPolicyAdapter:
             )
         if self._pending is not None:
             raise RuntimeError("a policy plan is already pending activation")
+        if self.policy_delivery_clock == "rpc_wall" and latency_s is not None:
+            raise PolicyTimingError(
+                "rpc_wall cannot be combined with a latency override"
+            )
         now = self._last_observe_t if t is None else float(t)
         if not np.isfinite(inference_delay_add_s) or inference_delay_add_s < 0:
             raise ValueError("inference_delay_add_s must be finite and nonnegative")
         snap = self.snapshot(t, observation_delay_s=observation_delay_s)
         if self.observation_callback is not None:
             self.observation_callback(snap)
+        rpc_wall = None
+        if self.policy_delivery_clock == "rpc_wall":
+            started = self._read_replan_clock()
         plan = self.policy.replan(
             snap, self._plan, snap.ur_state[12:18].astype(np.float64)
         )
+        if self.policy_delivery_clock == "rpc_wall":
+            rpc_wall = self._read_replan_clock() - started
+            try:
+                native_latency = float(plan.latency_s)
+            except (ValueError, TypeError, OverflowError) as error:
+                raise PolicyTimingError(
+                    "native latency is not a finite duration"
+                ) from error
+            if (
+                not np.isfinite(rpc_wall)
+                or rpc_wall < 0
+                or not np.isfinite(native_latency)
+                or native_latency < 0
+                or rpc_wall + 1e-9 < native_latency
+            ):
+                raise PolicyTimingError(
+                    "rpc_wall requires finite monotonic timing and complete client wall "
+                    "duration at least the reported native latency"
+                )
         delay = float(plan.latency_s if latency_s is None else latency_s)
         if not np.isfinite(delay) or delay < 0:
             raise ValueError("latency_s must be finite and nonnegative")
-        delivery_delay = delay + inference_delay_add_s
+        delivery_delay = (
+            delay if rpc_wall is None else rpc_wall
+        ) + inference_delay_add_s
+        if rpc_wall is not None and not np.isfinite(delivery_delay):
+            raise PolicyTimingError("rpc_wall delivery duration overflowed")
         plan = copy(
             plan
         )  # preserve remote CPK token; never mutate the policy's proposal
         plan.actions = np.array(plan.actions, copy=True)
         plan.t0_pose = np.array(plan.t0_pose, copy=True)
-        plan.action_times = (
-            now + delay + np.arange(len(plan.actions)) / self.hw.control.action_rate_hz
-        )
+        if self.policy_delivery_clock == "rpc_wall":
+            # Preserve native temporal conditioning. Only delivery is later;
+            # submit() skips expired samples and rebases the surviving head.
+            plan.action_times = np.array(plan.action_times, copy=True)
+        else:
+            plan.action_times = (
+                now
+                + delay
+                + np.arange(len(plan.actions)) / self.hw.control.action_rate_hz
+            )
         plan.diag = {
             **plan.diag,
             "sim_native_inference_latency_s": float(plan.latency_s),
@@ -505,6 +559,14 @@ class SimulationPolicyAdapter:
             "sim_inference_request_t": now,
             "sim_observation_sensor_timestamps": snap.sensor_times,
         }
+        if rpc_wall is not None:
+            plan.diag.update(
+                sim_policy_delivery_clock="rpc_wall",
+                sim_policy_replan_wall_time_s=rpc_wall,
+                sim_policy_delivery_base_s=rpc_wall,
+                sim_effective_delivery_delay_s=delivery_delay,
+                sim_rpc_minus_native_latency_s=rpc_wall - native_latency,
+            )
         plan.latency_s = delay
         plan.t_created = snap.t
         self._validate_plan(plan)
@@ -514,6 +576,17 @@ class SimulationPolicyAdapter:
         self._pending = (now + delivery_delay, plan, snap)
         self._last_replan_t = now
         return plan
+
+    def _read_replan_clock(self):
+        try:
+            value = float(self._replan_clock())
+        except (ValueError, TypeError, OverflowError) as error:
+            raise PolicyTimingError(
+                "replan clock must return finite seconds"
+            ) from error
+        if not np.isfinite(value):
+            raise PolicyTimingError("replan clock must return finite seconds")
+        return value
 
     def _validate_plan(self, plan):
         actions = np.asarray(plan.actions)
@@ -788,6 +861,7 @@ class SimulationPolicyAdapter:
             self.stopped_reason,
             {
                 "safety_events": kinds,
+                "wrist_guard": self.safety.wrench_diagnostics(),
                 "completed_reason": self.completed_reason,
                 "completed_at_s": self.completed_at_s,
                 "completion_hold": self.completed_reason is not None,
@@ -815,6 +889,8 @@ class SimulationPolicyAdapter:
         tcp_pose=None,
         gripper_command: float | None = None,
         reason: str = "ik_rejected",
+        held: bool = False,
+        controller_stop: bool = False,
     ) -> None:
         """Confirm accepted setpoints after the simulator's IK/drive stage.
 
@@ -825,6 +901,10 @@ class SimulationPolicyAdapter:
         retained. Only explicitly supplied gripper commands enter history,
         whether or not arm IK succeeded. Omit if no gripper command was sent.
         """
+        if held and (not accepted or tcp_pose is None):
+            raise ValueError("a streamed hold requires an explicit accepted pose")
+        if controller_stop and (accepted or self.stopped_reason != reason):
+            raise ValueError("controller-stop feedback requires the matching requested stop")
         cmd = self._awaiting_feedback
         if cmd is None or not np.isclose(t, cmd.t, rtol=0, atol=1e-9):
             raise ValueError(
@@ -845,8 +925,9 @@ class SimulationPolicyAdapter:
                 )
         if accepted:
             self._last_cmd = accepted_pose
-            self.ik_rejects = 0
-        else:
+            if not held:
+                self.ik_rejects = 0
+        elif not controller_stop:
             self.ik_rejects += 1
             self.ik_rejects_total += 1
             if self.ik_rejects >= self.ik_reject_limit:
