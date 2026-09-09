@@ -288,6 +288,19 @@ class URArm(Arm):
     _RT_STOPPED = 1
     _RT_PLAYING = 2
 
+    def _control_script_dead(self) -> bool:
+        """True only when the receive side POSITIVELY reports the control
+        script not PLAYING. Unreadable state (no receive, a test double
+        without getRuntimeState, a transport error) is NOT a verdict —
+        the stale-stream guard covers that path."""
+        r = self._recv
+        if r is None:
+            return False
+        try:
+            return int(r.getRuntimeState()) != URArm._RT_PLAYING
+        except Exception:
+            return False
+
     def program_running(self) -> bool:
         """Is the control SCRIPT actually running (not just the socket)?
 
@@ -434,6 +447,19 @@ class URArm(Arm):
         if self._ik_rejects == 1:
             self._hold_since = now
             log.warning("servo hold (%s): %s", why, detail)
+        # Rig 09-09: 24 of 61 episodes ended as a 4 s "hold" that was really a
+        # DEAD CONTROL SCRIPT (E-stop): ur_rtde's getInverseKinematics returns
+        # an EMPTY solution, never an error, once the script is down, so the
+        # rejects looked like an unreachable target. Ask the receive side
+        # (runtime_state, read-only) on the first reject and every 25 ticks
+        # and name the real cause immediately.
+        if self._ik_rejects == 1 or self._ik_rejects % 25 == 0:
+            if self._control_script_dead():
+                diag = self._diagnose_control_loss(None, None)
+                raise ControlLost(
+                    "control script is not running (runtime_state != PLAYING) "
+                    f"— E-stop / protective stop / pendant popup; robot: "
+                    f"{diag.get('summary', 'n/a')}")
         if why == "ik_branch":
             # a solution on another branch: streaming it would whip the arm;
             # a sustained run means the seed is lost — give up fast

@@ -195,3 +195,27 @@ def test_gripper_close_position_clamped():
     g.move(0.3, 0.5, 0.01)
     assert g._target == pytest.approx(0.3)      # under the cap: untouched
     g.disconnect()
+
+
+def test_wrench_guard_is_armed_only_after_the_baseline_settles():
+    """Rig 09-09: two trips at 1.6 s from an unconverged baseline. With
+    wrench_arm_delay_s set, an over-limit deviation inside the delay adapts
+    the baseline instead of tripping; after the delay the guard trips."""
+    hw = make_small_hw()
+    object.__setattr__(hw.safety, "wrench_arm_delay_s", 4.0)
+    with _rings(hw) as rings:
+        mon = SafetyMonitor(hw, rings)
+        t0 = time.perf_counter()
+        push_arm(rings, ft=[0, 0, 10.0, 0, 0, 0], ts=t0)
+        assert mon.check(t0, IN_BOX).action == SafetyAction.OK
+        for k in range(1, 30):                                   # 3 s of over-limit: no trip
+            t = t0 + 0.1 * k
+            push_arm(rings, ft=[0, 0, 10.0 + hw.safety.wrench_limit_N + 20, 0, 0, 0], ts=t)
+            push_tactile(rings, 0.0, hw, ts=t)                   # keep the pad streams fresh
+            v = mon.check(t, IN_BOX)
+            assert not any(e.kind == "wrench_limit" for e in v.events), (k, v.events)
+        for t in (t0 + 4.5, t0 + 4.5 + 0.35):
+            push_arm(rings, ft=[0, 0, 10.0 + 2 * hw.safety.wrench_limit_N + 40, 0, 0, 0], ts=t)
+            push_tactile(rings, 0.0, hw, ts=t)
+            v = mon.check(t, IN_BOX)
+        assert any(e.kind == "wrench_limit" for e in v.events)

@@ -378,7 +378,16 @@ class SafetyMonitor:
         self._wrench_last_t = t_now
         debounce_s = sf.wrench_debounce_ticks / self.hw.control.action_rate_hz
         event, adapted = None, False
-        if f_mag > sf.wrench_limit_N or t_mag > sf.wrench_limit_Nm:
+        armed = (self._wrench_capture_t is None
+                 or sample_t - self._wrench_capture_t >= float(getattr(sf, "wrench_arm_delay_s", 0.0) or 0.0))
+        if not armed:
+            # baseline still converging: adapt, never trip (rig 09-09)
+            self._wrench_over_since = None
+            if dt > 0.0 and not fixed:
+                alpha = min(1.0, dt / sf.wrench_baseline_tau_s)
+                self._wrench_base += alpha * (ft - self._wrench_base)
+                adapted = True
+        elif f_mag > sf.wrench_limit_N or t_mag > sf.wrench_limit_Nm:
             if self._wrench_over_since is None:
                 self._wrench_over_since = t_now
             if t_now - self._wrench_over_since >= debounce_s:

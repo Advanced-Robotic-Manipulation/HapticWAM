@@ -369,6 +369,12 @@ class SafetyConfig(_Frozen):
     wrench_limit_Nm: float = Field(gt=0)
     wrench_baseline_tau_s: float = Field(default=2.0, gt=0)   # rolling-baseline time constant
     wrench_debounce_ticks: int = Field(default=3, ge=1)       # consecutive over-limit checks to trip
+    # Rig 09-09: 2 of 12 wrench trips fired at 1.6 s into the episode, arm
+    # still, fingers empty — the rolling baseline (tau 2 s) had not converged
+    # from the raw current-estimate bias (36-45 N). The guard only TRIPS after
+    # this many seconds of samples; the baseline adapts from the first one.
+    # 0 = legacy (trip from the first sample); the rig yaml sets 4.0 (2*tau).
+    wrench_arm_delay_s: float = Field(default=0.0, ge=0)
     # Deployment SafetyMonitor only; data-collection ArmGuard remains rolling.
     # Fixed mode requires a reviewed unloaded episode start. It does not model
     # the CB3's pose-dependent current-estimate bias or alter teacher inputs.
@@ -623,7 +629,8 @@ class HardwareConfig(_Frozen):
         # same for the 09-08 latch placement-release fields: a config that
         # never set them keeps the hash it had before they existed
         for name, default in (("grip_latch_release_drop", 0.15), ("grip_latch_release_s", 0.5),
-                              ("grip_latch_release_z_m", 0.16), ("grip_latch_release_lift_m", 0.08)):
+                              ("grip_latch_release_z_m", 0.16), ("grip_latch_release_lift_m", 0.08),
+                              ("wrench_arm_delay_s", 0.0)):
             if getattr(self.safety, name) == default:
                 data["safety"].pop(name, None)
         return yaml.safe_dump(data, sort_keys=True)

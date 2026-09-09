@@ -406,3 +406,35 @@ def test_typed_driver_faults_name_their_stop_reason():
         assert seen == [("halt", want), ("reason", want)], (exc, seen)
         assert want in _CONTROL_DEAD_REASONS
         assert ex.crash_text
+
+
+def test_dead_control_script_is_named_immediately_not_held(monkeypatch):
+    """Rig 09-09: 24 episodes were held 4 s on an EMPTY IK answer that was
+    really a dead control script (E-stop). With the receive side reporting
+    runtime_state STOPPED, the first rejected tick must raise ControlLost."""
+    from phantom.drivers.base import ControlLost
+    a = _arm()
+    prime(a, pose_at_reach(0.40))
+    a._ctrl.mode = "empty"
+
+    class Recv(FakeRecv):
+        def getRuntimeState(self): return 1          # STOPPED
+        def isProtectiveStopped(self): return False
+        def getRobotMode(self): return 7
+        def getSafetyMode(self): return 7            # EMERGENCY_STOP
+        def getSafetyStatusBits(self): return (1 << 6) | (1 << 7) | (1 << 10)
+        def getActualQd(self): return [0.0] * 6
+        def getActualTCPForce(self): return [1.0, 2.0, 2.0, 0, 0, 0]
+
+    a._recv = Recv(pose_at_reach(0.40))
+    monkeypatch.setitem(sys.modules, "dashboard_client", None)
+    with pytest.raises(ControlLost, match="not running.*robot_estop"):
+        a.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    assert a.control_loss_last["safety_status_names"] == ["robot_estop", "emergency_stopped", "stopped_due_to_safety"]
+
+    # a PLAYING script with a genuinely unreachable target still holds
+    class Live(Recv):
+        def getRuntimeState(self): return 2          # PLAYING
+    b = _arm(); prime(b, pose_at_reach(0.40)); b._ctrl.mode = "empty"; b._recv = Live(pose_at_reach(0.40))
+    r = b.servo_l(pose_at_reach(0.401), 0.008, 0.1, 300)
+    assert r.sent is False and r.reason == "ik_invalid"
