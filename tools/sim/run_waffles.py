@@ -47,6 +47,10 @@ def arguments():
         help="Required native command replay declaration: trace/config hashes, named joint ordering and radian drive semantics",
     )
     p.add_argument(
+        "--command-finger-hold-at", type=float,
+        help="Counterfactual native command_replay only: from this recorded command time retain the preceding submitted finger drives; keep every arm target unchanged",
+    )
+    p.add_argument(
         "--render-hz",
         type=float,
         help="Override media/trace sampling rate for tuning runs",
@@ -531,16 +535,22 @@ class PolicyAudit:
 
 def load_command_replay(args, cfg):
     """Validate target truth before Kit starts, preserving the legacy format."""
-    from phantom.sim.command_replay import NativeRecordedDriveCommands, RecordedDriveCommands
+    from phantom.sim.command_replay import NativeFingerHoldReplay, NativeRecordedDriveCommands, RecordedDriveCommands
     from phantom.sim.gripper_articulation import is_adaptive, is_articulated
 
     if not args.command_trace or not args.policy_initial_state:
         raise ValueError("command_replay requires an explicit command trace and measured initial state")
     manifest = getattr(args, "command_trace_manifest", None)
+    hold_at = getattr(args, "command_finger_hold_at", None)
+    if hold_at is not None and getattr(args, "mode", None) != "command_replay":
+        raise ValueError("--command-finger-hold-at requires command_replay mode")
     if is_adaptive(cfg):
         if manifest is None:
             raise ValueError("Native command_replay requires --command-trace-manifest with named radian drive references")
-        return NativeRecordedDriveCommands(args.command_trace, manifest_path=manifest, cfg=cfg)
+        replay = NativeRecordedDriveCommands(args.command_trace, manifest_path=manifest, cfg=cfg)
+        return NativeFingerHoldReplay(replay, hold_at_s=hold_at) if hold_at is not None else replay
+    if hold_at is not None:
+        raise ValueError("--command-finger-hold-at requires native adaptive command replay")
     if is_articulated(cfg):
         raise ValueError("Legacy command traces contain prismatic jaw metres; coupled W2L command replay remains unsupported")
     if manifest is not None:
@@ -550,6 +560,8 @@ def load_command_replay(args, cfg):
 
 def main():
     args = arguments()
+    if args.command_finger_hold_at is not None and args.mode != "command_replay":
+        raise ValueError("--command-finger-hold-at requires command_replay mode")
     if args.servo_reach_limiter and args.mode != "policy":
         raise ValueError("--servo-reach-limiter is only supported in policy mode")
     args.output = args.output.resolve()
@@ -1054,7 +1066,7 @@ def run(app, args, cfg, data, duration):
         "adaptive_passive_joints": adaptive_gripper,
         "initial_finger_seed_rad": qfull[fingers].tolist() if adaptive_gripper else None,
         "initial_finger_drive_references_rad": initial_drive[fingers].tolist() if adaptive_gripper else None,
-        "passive_settling_s": 2.0 if adaptive_gripper and args.mode in ("dynamics", "policy") else 0.0,
+        "passive_settling_s": 2.0 if adaptive_gripper and args.mode in ("dynamics", "policy", "command_replay") else 0.0,
         "policy_initial_state": initial_state,
         "policy_initial_state_sha256": hashlib.sha256(
             args.policy_initial_state.read_bytes()

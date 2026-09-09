@@ -147,3 +147,58 @@ class NativeRecordedDriveCommands(RecordedDriveCommands):
             "after_final_command": "Hold final recorded targets; subsequent physics has no recorded policy or safety decisions",
             "actual_joint_guards": "Unchanged native coupling, joint-limit and loop-closure checks on every physics step",
         }
+
+
+class NativeFingerHoldReplay:
+    """Explicit counterfactual: retain pre-event finger drives during replay.
+
+    The immutable source still contains only actual historical submissions.
+    This overlay changes returned finger references from the declared event
+    onward, using the immediately preceding submitted command. Arm references
+    always follow the original stream. No policy or safety decision is replayed
+    or inferred here; the caller still runs the native mechanics guards.
+    """
+
+    def __init__(self, source, *, hold_at_s):
+        if not isinstance(source, NativeRecordedDriveCommands):
+            raise ValueError("Finger-hold intervention requires native recorded drive commands")
+        if not np.isfinite(hold_at_s) or hold_at_s < 0:
+            raise ValueError("Finger-hold event time must be finite and nonnegative")
+        # Require an existing submission timestamp, rather than selecting a
+        # future/nearest command or silently moving the intervention in time.
+        matches = np.flatnonzero(np.abs(source.t - hold_at_s) <= 1e-10)
+        if len(matches) != 1 or matches[0] == 0:
+            raise ValueError("Finger-hold event must match a recorded submission with a preceding command")
+        event_index = int(matches[0])
+        previous_index = event_index - 1
+        self.source = source
+        self.hold_at_s = float(source.t[event_index])
+        self._held_fingers = source.fingers[previous_index].copy()
+        self.metadata = {
+            **source.metadata,
+            "semantics": "Counterfactual native-command mechanics replay; explicit finger-drive hold overlay, no inference, no object pose replay, no new safety decisions; not a policy score",
+            "intervention": {
+                "format": "phantom_native_finger_hold_replay_v1",
+                "kind": "hold_last_pre_event_submitted_finger_drive_references",
+                "start_s": self.hold_at_s,
+                "end": "simulation_end",
+                "source_row_index": previous_index,
+                "source_command_s": float(source.t[previous_index]),
+                "source_finger_targets_rad": self._held_fingers.tolist(),
+                "superseded_event_row_index": event_index,
+                "superseded_event_finger_targets_rad": source.fingers[event_index].tolist(),
+                "arm_commands": "Unmodified causal zero-order hold of the complete original arm command stream",
+                "input_trace": "Original bytes remain unchanged; returned intervention targets are counterfactual, not historical drive submissions",
+                "safety": "No reevaluation of boundary, force, veto or controller stops; per-step native mechanics guards remain the caller's responsibility",
+            },
+            "after_final_command": "Hold the final recorded arm targets and the declared pre-event finger references; no new policy or safety decisions",
+        }
+
+    def at(self, t):
+        targets = self.source.at(t)
+        if targets is None:
+            return None
+        arm, fingers = targets
+        if t + 1e-10 >= self.hold_at_s:
+            fingers = self._held_fingers.copy()
+        return arm, fingers

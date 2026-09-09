@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from phantom.sim.command_replay import (
+    NativeFingerHoldReplay,
     NativeRecordedDriveCommands,
     native_drive_manifest,
 )
@@ -131,3 +132,68 @@ def test_runner_requires_manifest_for_native_and_preserves_legacy_format(tmp_pat
     trace.write_text(json.dumps({"t": 0.001, "status": "drive_submitted", "target_q": [0] * 6, "target_finger_q": [0.03] * 2}) + "\n")
     replay = load_command_replay(args, legacy)
     np.testing.assert_array_equal(replay.at(0.001)[1], [0.03, 0.03])
+
+
+def test_finger_hold_overlay_is_explicit_causal_and_preserves_arm_stream_and_source(tmp_path):
+    cfg = config()
+    rows = [command(.0005, .1, cfg), command(.0085, .61, cfg, q=.5),
+            command(.0165, .232, cfg, q=.6), command(.0245, .2, cfg, q=.7)]
+    trace, manifest = files(tmp_path, cfg, rows)
+    original = trace.read_bytes()
+    source = NativeRecordedDriveCommands(trace, manifest_path=manifest, cfg=cfg)
+    replay = NativeFingerHoldReplay(source, hold_at_s=.0165)
+    assert replay.at(0) is None
+    for t in [0., .0005, .008, .0085, .016, .0165, .024, .0245, 2.0165]:
+        actual, expected = replay.at(t), source.at(t)
+        if expected is None:
+            assert actual is None
+            continue
+        np.testing.assert_array_equal(actual[0], expected[0])
+        target = expected[1] if t < .0165 else rows[1]["target_finger_q"]
+        np.testing.assert_array_equal(actual[1], target)
+    # The loaded command is finite-P drive truth, never measured finger angles,
+    # the event's release target, or a later submitted command.
+    held = replay.at(.0165)[1]
+    assert not np.array_equal(held, rows[1]["measured_finger_q"])
+    assert not np.array_equal(held, rows[2]["target_finger_q"])
+    assert not np.array_equal(held, rows[3]["target_finger_q"])
+    held[:] = 99
+    np.testing.assert_array_equal(replay.at(99)[1], rows[1]["target_finger_q"])
+    np.testing.assert_array_equal(source.fingers, [row["target_finger_q"] for row in rows])
+    assert trace.read_bytes() == original
+    assert "intervention" not in source.metadata
+    detail = replay.metadata["intervention"]
+    assert detail["start_s"] == .0165
+    assert detail["source_command_s"] == .0085
+    assert detail["source_row_index"] == 1
+    assert detail["superseded_event_row_index"] == 2
+    assert detail["source_finger_targets_rad"] == rows[1]["target_finger_q"]
+    assert "counterfactual" in detail["input_trace"]
+    assert "not a policy score" in replay.metadata["semantics"]
+    assert replay.metadata["sha256"] == source.metadata["sha256"]
+    json.dumps(replay.metadata, allow_nan=False)
+
+
+@pytest.mark.parametrize("time", [-1., float("nan"), float("inf"), 0., .0005, .006, .02])
+def test_finger_hold_rejects_missing_predecessor_nonfinite_or_unrecorded_event(tmp_path, time):
+    cfg = config()
+    trace, manifest = files(tmp_path, cfg, [command(.0005, .6, cfg), command(.0085, .2, cfg)])
+    replay = NativeRecordedDriveCommands(trace, manifest_path=manifest, cfg=cfg)
+    with pytest.raises(ValueError, match="Finger-hold"):
+        NativeFingerHoldReplay(replay, hold_at_s=time)
+
+
+def test_finger_hold_requires_native_replay_and_explicit_runner_mode(tmp_path):
+    cfg = config()
+    trace, manifest = files(tmp_path, cfg, [command(.0005, .6, cfg), command(.0085, .2, cfg)])
+    args = SimpleNamespace(command_trace=trace, policy_initial_state=tmp_path / "initial.json",
+                           command_trace_manifest=manifest, command_finger_hold_at=.0085,
+                           mode="policy")
+    with pytest.raises(ValueError, match="requires command_replay"):
+        load_command_replay(args, cfg)
+    args.mode = "command_replay"
+    assert isinstance(load_command_replay(args, cfg), NativeFingerHoldReplay)
+    with pytest.raises(ValueError, match="requires native adaptive"):
+        load_command_replay(args, {"gripper": {"stroke": .085}})
+    with pytest.raises(ValueError, match="requires native recorded"):
+        NativeFingerHoldReplay(object(), hold_at_s=.0085)
