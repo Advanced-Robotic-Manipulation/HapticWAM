@@ -51,22 +51,30 @@ def _snap(hw, t=None, chunk_rows=None):
 class _StubChunkPolicy:
     """Chunk-native LeRobot policy: `predict_action_chunk` + `reset`."""
 
-    def __init__(self, chunk: np.ndarray, accepts_num_steps: bool = True):
+    def __init__(self, chunk: np.ndarray):
         self.chunk = np.asarray(chunk, dtype=np.float32)
         self.resets = 0
         self.seen: list[dict] = []
         self.num_steps: list = []
-        self._accepts = accepts_num_steps
 
     def reset(self):
         self.resets += 1
 
     def predict_action_chunk(self, batch, **kwargs):
-        if kwargs and not self._accepts:
-            raise TypeError("predict_action_chunk() got an unexpected keyword")
+        """pi05's real signature: `(batch, **kwargs)`, forwarded straight into
+        `sample_actions`, whose `num_steps` is the denoise budget."""
         self.seen.append(batch)
         self.num_steps.append(kwargs.get("num_steps"))
         return torch.from_numpy(self.chunk)[None]      # (1, T, A)
+
+
+class _StubNoKwargsPolicy(_StubChunkPolicy):
+    """An older policy: the chunk call takes no keyword parameters at all."""
+
+    def predict_action_chunk(self, batch):
+        self.seen.append(batch)
+        self.num_steps.append(None)
+        return torch.from_numpy(self.chunk)[None]
 
 
 class _StubStepPolicy:
@@ -332,9 +340,10 @@ def test_nfe_reaches_the_policy_as_num_steps_and_degrades_loudly():
     assert ad.policy.num_steps == [5]
     assert plan.diag["nfe"] == 5 and plan.diag["nfe_applied"] is True
 
-    stubborn = LeRobotPolicy(_StubChunkPolicy(_delta_chunk(H),
-                                              accepts_num_steps=False),
-                             hw, device="cpu")
+    # a policy whose chunk call takes no kwargs: decided by SIGNATURE, so a
+    # TypeError from inside a real model is never mistaken for this
+    stubborn = LeRobotPolicy(_StubNoKwargsPolicy(_delta_chunk(H)), hw,
+                             device="cpu")
     stubborn.nfe = 5
     p1 = stubborn.replan(_snap(hw), None, TCP)
     assert p1.diag["nfe_applied"] is False

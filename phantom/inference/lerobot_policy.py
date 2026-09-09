@@ -96,6 +96,19 @@ UNSUPPORTED_FLAGS = {
 }
 
 
+def _accepts_kwarg(fn, name: str) -> bool:
+    """True when `fn` takes `name` by keyword, explicitly or via **kwargs.
+    An unreadable signature (a C extension) counts as NOT accepting: better a
+    lever that visibly does nothing than a call that dies mid-episode."""
+    import inspect
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return False
+    return name in params or any(p.kind is inspect.Parameter.VAR_KEYWORD
+                                 for p in params.values())
+
+
 class _EpisodeReset:
     """The `policy.rf` shim `PolicyServer` reaches through.
 
@@ -310,21 +323,24 @@ class LeRobotPolicy:
     # -- action --------------------------------------------------------
     def _call_chunk(self, fn, batch):
         """`predict_action_chunk`, passing `--nfe` through as `num_steps` when
-        the policy accepts it. Probed once, then remembered: a policy whose
-        chunk call takes no kwargs must not raise on every replan."""
+        the policy's signature accepts it.
+
+        Decided by inspecting the signature, not by catching TypeError: a
+        TypeError raised INSIDE the model is a real bug and must not be
+        silently retried as "this policy takes no kwargs". pi05's chunk call is
+        `(batch, **kwargs)` and forwards straight into `sample_actions`, whose
+        `num_steps` defaults to `config.num_inference_steps`."""
         want = int(self.nfe) if self.nfe else None
-        if want is None or self._nfe_kwarg is False:
+        if want is None:
             return fn(batch)
-        try:
-            out = fn(batch, num_steps=want)
-        except TypeError:
-            self._nfe_kwarg = False
-            log.warning("%s.predict_action_chunk does not accept num_steps — "
-                        "--nfe %s is IGNORED; the checkpoint's own denoise "
-                        "step count runs", type(self.policy).__name__, want)
-            return fn(batch)
-        self._nfe_kwarg = True
-        return out
+        if self._nfe_kwarg is None:
+            self._nfe_kwarg = _accepts_kwarg(fn, "num_steps")
+            if not self._nfe_kwarg:
+                log.warning("%s.predict_action_chunk takes no num_steps — "
+                            "--nfe %s is IGNORED and the checkpoint's own "
+                            "denoise step count runs",
+                            type(self.policy).__name__, want)
+        return fn(batch, num_steps=want) if self._nfe_kwarg else fn(batch)
 
     def _raw_chunk(self, batch: dict) -> np.ndarray:
         """(T, A) numpy chunk, through LeRobot's own pre/post pipelines.
