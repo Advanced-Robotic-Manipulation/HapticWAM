@@ -63,7 +63,10 @@ read -p "append flags (Enter for none): " MORE
 if [[ "$EXTRA" != *"--policy-server"* ]]; then
   ATTACHED=""; FOUND=""
   WANT=$(basename "$(readlink -f "$BASE/phantom/$CKPT" 2>/dev/null || echo "$CKPT")")
-  for PORT in 7777 7778 7779; do
+  # one port per menu slot (SERVE.sh: 7776 + slot); probe every slot (09-09
+  # audit: only 7777-7779 were probed, so students on slots 4+ never attached
+  # and every launch reloaded the model in-process)
+  for PORT in $(seq 7777 $((7776 + i))); do
     # probe prints "<ckpt> <idle|busy> <sha>"; exit 1 = nothing listens,
     # exit 2 = something listens but does not answer (AMBIGUOUS). A busy or
     # ambiguous server must never turn into a competing local load that
