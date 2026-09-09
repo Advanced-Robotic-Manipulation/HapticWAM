@@ -898,13 +898,25 @@ def run(app, args, cfg, data, duration):
         return closure_from_joint_positions(values, cfg)
 
     native_mechanics_monitor = {"enabled": adaptive_gripper, "checks": 0}
+    from phantom.sim.native_failure_audit import (
+        NativeFailureHistory, json_value, read_diagnostic, runtime_readback,
+    )
+    native_failure_history = NativeFailureHistory() if adaptive_gripper else None
 
-    def check_native_mechanics(phase, t):
+    def check_native_mechanics(phase, t, drive_references):
         if not adaptive_gripper:
             return
         from phantom.sim.gripper_adaptive import mechanical_diagnostics
 
         values = np.asarray(robot.get_joint_positions()[fingers], float)
+        velocity_readback = read_diagnostic(
+            lambda: np.asarray(robot.get_joint_velocities()[fingers], float)
+        )
+        velocities = velocity_readback.get("value")
+        native_failure_history.observe(
+            phase, t, finger_names, values, velocities, drive_references[fingers],
+            velocity_read_error=velocity_readback.get("error"),
+        )
         try:
             diagnostic = mechanical_diagnostics(values)
         except ValueError as error:
@@ -919,7 +931,26 @@ def run(app, args, cfg, data, duration):
         if not diagnostic["passed"]:
             failure = {"phase": phase, "t_s": float(t), "diagnostic": diagnostic,
                        "finger_joint_names": list(finger_names),
-                       "finger_q_rad": [float(v) if np.isfinite(v) else str(v) for v in values]}
+                       "finger_q_rad": json_value(values),
+                       "finger_qd_rad_s": json_value(velocities),
+                       "finger_qd_readback": velocity_readback,
+                       "desired_drive_references_rad": dict(zip(finger_names, json_value(drive_references[fingers]))),
+                       "recent_physics_steps": native_failure_history.report(),
+                       "runtime_readback": read_diagnostic(lambda: runtime_readback(
+                           stage, roots[0], paths["joint_paths"], robot, finger_names, fingers
+                       )),
+                       "failure_step_contacts": {"t_s": float(t), "physics_dt_s": float(dt)}}
+            # These getters inspect the already completed physics step. They
+            # neither advance physics nor alter policy/safety observation state.
+            for label, reader in (
+                ("gel", gel_views),
+                ("robot_environment", robot_environment_views),
+                ("gripper_environment", gripper_wrist.reader if gripper_wrist is not None else None),
+            ):
+                failure["failure_step_contacts"][label] = (
+                    read_diagnostic(lambda reader=reader: reader.get_all(dt))
+                    if reader is not None else {"available": False, "reason": "not configured"}
+                )
             (args.output / "native_mechanics_failure.json").write_text(
                 json.dumps(failure, indent=2, allow_nan=False) + "\n"
             )
@@ -1008,7 +1039,7 @@ def run(app, args, cfg, data, duration):
             if adaptive_gripper:
                 native_finger_settling.append(np.r_[settling_t, robot.get_joint_positions()[fingers]])
                 try:
-                    check_native_mechanics("initialization_settling", settling_t)
+                    check_native_mechanics("initialization_settling", settling_t, initial_drive)
                 except RuntimeError:
                     np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling,
                                         native_finger_samples=native_finger_settling)
@@ -1058,8 +1089,13 @@ def run(app, args, cfg, data, duration):
     (args.output / "initialization.json").write_text(
         json.dumps(initialization, indent=2) + "\n"
     )
-    check_native_mechanics("after_initialization_settling", 0.)
+    check_native_mechanics("after_initialization_settling", 0., initial_drive)
     if adaptive_gripper:
+        (args.output / "native_runtime_readback.json").write_text(
+            json.dumps(read_diagnostic(lambda: runtime_readback(
+                stage, roots[0], paths["joint_paths"], robot, finger_names, fingers
+            )), indent=2, allow_nan=False) + "\n"
+        )
         initialization["native_mechanics"] = native_mechanics_monitor["last_diagnostic"]
         initialization["settled_finger_q_rad"] = robot.get_joint_positions()[fingers].tolist()
         (args.output / "initialization.json").write_text(
@@ -1490,7 +1526,7 @@ def run(app, args, cfg, data, duration):
             )
         for step in range(nsteps + 1):
             t = step * dt
-            check_native_mechanics("execution", t)
+            check_native_mechanics("execution", t, desired)
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
