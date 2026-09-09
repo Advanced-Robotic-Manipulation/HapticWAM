@@ -25,7 +25,9 @@
 > pairs only. Teacher first on odd cells, student first on even cells, same placement, label every
 > episode (`s`/`f`/`c`, `d` for damage) with where it ended: approach / grasp / carry / release.
 > Order: ftA (2) vs stu_ftA_r1 (7) x 10 cells (6 waffles, 4 Carton); then stu_ftA_r1 vs ctl_ftA (5)
-> x 8; then v5_6 (1) vs stu_v5_6 (4) if time. Warm servers with `./SERVE.sh` (or ask Claude).
+> x 8; then **v6 (8) vs stu_v6 (9)** x 8 (v6 is the clean retrain: offline waffles 20.1 mm vs ftA 24.4,
+> but its student is weaker offline, 29.5 vs 22.7 — the rig decides); then v5_6 (1) vs stu_v5_6 (4)
+> if time. Warm servers with `./SERVE.sh` (or ask Claude). Slot 10 = ctl_v6 (ablation only).
 
 > **8 September teacher-only update:** For the fixed ftA1500 inference requested
 > for the next lab session, use [the current main quickstart](rig_teacher_fixed_inference.md)
