@@ -21,6 +21,7 @@ import numpy as np
 from phantom.sim.gripper_visual import _origin, _rotation
 
 MODEL = "robotiq_2f85_w2l_articulated_v1"
+ADAPTIVE_MODEL = "robotiq_2f85_w2l_adaptive_v2"
 MASTER = "finger_joint"
 JOINT_MULTIPLIERS = {
     MASTER: 1.0,
@@ -37,11 +38,16 @@ PAD_PARENTS = {"left": "right_inner_finger", "right": "left_inner_finger"}
 
 def is_articulated(cfg):
     model = cfg["gripper"].get("model")
-    if model == MODEL:
+    if model in (MODEL, ADAPTIVE_MODEL):
         return True
     if model is None or model == "legacy_sliding_pad_proxy":
         return False
     raise ValueError(f"Unknown gripper.model={model!r}; refusing silent legacy fallback")
+
+
+def is_adaptive(cfg):
+    is_articulated(cfg)  # Keep unknown-model rejection consistent.
+    return cfg["gripper"].get("model") == ADAPTIVE_MODEL
 
 
 def _settings(cfg):
@@ -61,6 +67,9 @@ def _positive(value, label, *, zero=False):
 
 
 def finger_joint_names(cfg):
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import JOINT_NAMES
+        return tuple(JOINT_NAMES)
     return tuple(JOINT_MULTIPLIERS) if is_articulated(cfg) else ("left_finger_joint", "right_finger_joint")
 
 
@@ -70,6 +79,9 @@ def finger_drive_type(cfg):
 
 def joint_targets(closure, cfg):
     """Full joint state in radians (candidate) or metres (legacy), never degrees."""
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import joint_targets as adaptive_seed
+        return adaptive_seed(closure, cfg)
     closure = float(closure)
     if not math.isfinite(closure):
         raise ValueError("closure must be finite")
@@ -83,7 +95,18 @@ def joint_targets(closure, cfg):
     return angle * fraction * np.asarray(list(JOINT_MULTIPLIERS.values()))
 
 
+def drive_targets(closure, cfg):
+    """Drive references, distinct from passive-joint initialization positions."""
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import drive_targets as adaptive_drive
+        return adaptive_drive(closure, cfg)
+    return joint_targets(closure, cfg)
+
+
 def closure_from_joint_positions(values, cfg):
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import closure_from_joint_positions as adaptive_closure
+        return adaptive_closure(values, cfg)
     values = np.asarray(values, dtype=float)
     if values.shape != (len(finger_joint_names(cfg)),) or not np.isfinite(values).all():
         raise ValueError("Expected one finite position per named gripper joint")
@@ -97,6 +120,9 @@ def closure_from_joint_positions(values, cfg):
 
 
 def coupling_residuals(values, cfg):
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import coupling_residuals as adaptive_residuals
+        return adaptive_residuals(values, cfg)
     values = np.asarray(values, dtype=float)
     closure_from_joint_positions(values, cfg)  # validates shape and finiteness
     if not is_articulated(cfg):
@@ -209,6 +235,9 @@ def append_gripper_urdf(root, repo, cfg):
     component geometry is rotated pi around pad Z, retaining the old inner-face
     convention (-X left, +X right). Each part has its own fixed rigid body.
     """
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import append_gripper_urdf as append_adaptive
+        return append_adaptive(root, repo, cfg)
     settings = _settings(cfg)
     if not isinstance(settings.get("mounts"),dict) or any(side not in settings["mounts"] for side in PAD_PARENTS):
         raise ValueError("Explicit left and right inner-finger mounts are required")
@@ -297,6 +326,9 @@ def configure_gripper_physics(stage, joint_paths, cfg):
     this PhysX candidate, preventing duplicate mimic declarations. Generic USD
     authoring permits CPU tests without a PhysX extension/GPU.
     """
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import configure_gripper_physics as configure_adaptive
+        return configure_adaptive(stage, joint_paths, cfg)
     from pxr import Sdf, UsdPhysics
     settings = _settings(cfg)
     stiffness = _positive(settings["drive_stiffness_nm_rad"],"drive_stiffness_nm_rad")

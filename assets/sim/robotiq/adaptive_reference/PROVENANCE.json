@@ -1,0 +1,58 @@
+{
+  "repository": "https://github.com/google-deepmind/mujoco_menagerie",
+  "commit": "8161bba264d7fa7c99ca301e91e7fb44737676ad",
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/2f85.xml",
+      "path": "artifacts/isaac_waffles/w2l_native_linkage_20260909/menagerie_reference/2f85.xml",
+      "sha256": "d48aca5f9151798ffd38111ce4e8b2081f3ec2d4f525161b33643451580010de",
+      "bytes": 9540
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/README.md",
+      "path": "artifacts/isaac_waffles/w2l_native_linkage_20260909/menagerie_reference/README.md",
+      "sha256": "a10f34027d417f8f7b9102b74b42976031f0246f3090444728ab322bc4632aaf",
+      "bytes": 1367
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/CHANGELOG.md",
+      "path": "artifacts/isaac_waffles/w2l_native_linkage_20260909/menagerie_reference/CHANGELOG.md",
+      "sha256": "38082db6de93a95ef85a319c2a8cac8b1dbcff597a718d8cdf843c339e7b23a6",
+      "bytes": 146
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/LICENSE",
+      "path": "artifacts/isaac_waffles/w2l_native_linkage_20260909/menagerie_reference/LICENSE",
+      "sha256": "3d5edd18d1e22a17666e9bb84270171ed5ac90b192d24e0177fd171708ea2316",
+      "bytes": 1297
+    }
+  ],
+  "usage": "Topology and joint origins from simplified Menagerie model; sensor assets, installed mount, motor settings and inertial allocation remain PHANTOM candidate parameters. No factory calibration claim.",
+  "installed_files": [
+    {
+      "path": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "sha256": "d48aca5f9151798ffd38111ce4e8b2081f3ec2d4f525161b33643451580010de",
+      "source_url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/2f85.xml"
+    },
+    {
+      "path": "assets/sim/robotiq/adaptive_reference/README.md",
+      "sha256": "a10f34027d417f8f7b9102b74b42976031f0246f3090444728ab322bc4632aaf",
+      "source_url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/README.md"
+    },
+    {
+      "path": "assets/sim/robotiq/adaptive_reference/CHANGELOG.md",
+      "sha256": "38082db6de93a95ef85a319c2a8cac8b1dbcff597a718d8cdf843c339e7b23a6",
+      "source_url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/CHANGELOG.md"
+    },
+    {
+      "path": "assets/sim/robotiq/adaptive_reference/LICENSE",
+      "sha256": "3d5edd18d1e22a17666e9bb84270171ed5ac90b192d24e0177fd171708ea2316",
+      "source_url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/8161bba264d7fa7c99ca301e91e7fb44737676ad/robotiq_2f85/LICENSE"
+    }
+  ],
+  "license": {
+    "spdx": "BSD-2-Clause",
+    "copyright": "Copyright (c) 2013, ROS-Industrial",
+    "notice_path": "assets/sim/robotiq/adaptive_reference/LICENSE"
+  }
+}

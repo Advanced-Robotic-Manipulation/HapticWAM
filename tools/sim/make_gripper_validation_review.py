@@ -100,7 +100,9 @@ def run(args):
         raise RuntimeError("ffmpeg is required for browser-compatible H.264 output")
     hashes = {k: sha(p) for k, p in inputs.items()}
     metadata = json.loads(inputs["run_metadata"].read_text())
-    articulated = metadata.get("gripper_model") == "robotiq_2f85_w2l_articulated_v1"
+    articulated = metadata.get("gripper_model") in (
+        "robotiq_2f85_w2l_articulated_v1", "robotiq_2f85_w2l_adaptive_v2"
+    )
     mode = metadata.get("mode", "unspecified")
     scope = ("SYNTHETIC PROBE; not matched real motion" if mode == "contact_probe" else
              "MEASURED-MOTION REPLAY; no policy success claim" if mode in ["replay", "dynamics"] else

@@ -19,7 +19,7 @@ from scipy.spatial.transform import Rotation
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(REPO))
 from phantom.sim.gripper_articulation import (
-    JOINT_MULTIPLIERS, MODEL, append_gripper_urdf, finger_joint_names,
+    JOINT_MULTIPLIERS, MODEL, ADAPTIVE_MODEL, append_gripper_urdf, finger_joint_names, is_adaptive,
 )
 from phantom.sim.gripper_visual import _origin, _rotation
 from tools.sim.compare_replay import physics_clock_metrics, state_metrics, validate_trace
@@ -91,7 +91,7 @@ def interval_stats(t,condition,start,end,max_gap):
     return {'sample_fraction':float(condition[selected].mean()),'samples':int(selected.sum()),'longest_false_gap_s':longest,'interval_s':[start,end]}
 
 
-def _fk_function(repo,cfg):
+def _fk_function(repo,cfg,*,all_links=False):
     root=ET.Element('robot',name='audit');ET.SubElement(root,'link',name='tool0')
     append_gripper_urdf(root,repo,cfg)
     pending=list(root.findall('joint'));ready={'tool0'};ordered=[]
@@ -109,13 +109,16 @@ def _fk_function(repo,cfg):
         positions=dict(zip(names,values));frames={'tool0':np.eye(4)}
         for parent,child,origin,name,axis in ordered:
             frames[child]=frames[parent] @ origin @ (_rotation(axis,positions[name]) if axis is not None else np.eye(4))
-        return [frames['left_pad'],frames['right_pad']]
+        return frames if all_links else [frames['left_pad'],frames['right_pad']]
     return fk
 
 
 def mechanics_metrics(trace,run,cfg,protocol,repo):
     n=len(trace['t']);names=list(finger_joint_names(cfg))
-    if run.get('finger_joint_names')!=names or run.get('finger_joint_units')!='radians' or run.get('gripper_model')!=MODEL or run.get('gripper_feedback_source')!='measured master joint angle':
+    if (run.get('finger_joint_names')!=names or run.get('finger_joint_units')!='radians'
+            or run.get('gripper_model') not in (MODEL,ADAPTIVE_MODEL)
+            or run.get('gripper_model')!=cfg['gripper'].get('model')
+            or run.get('gripper_feedback_source')!='measured master joint angle'):
         raise ValueError('Run does not declare the expected articulated joint names/radian units/model')
     q=array(trace,'finger_q',(n,len(names)))
     array(trace,'target_finger_q',q.shape)
@@ -123,8 +126,15 @@ def mechanics_metrics(trace,run,cfg,protocol,repo):
     pads=array(trace,'pad_position',(n,2,3));quats=array(trace,'pad_orientation_wxyz',(n,2,4))
     if np.min(np.linalg.norm(quats,axis=-1))<1e-6:
         raise ValueError('Pad orientation contains zero quaternion')
-    multipliers=np.asarray(list(JOINT_MULTIPLIERS.values()))
-    residual=q-q[:,0,None]*multipliers
+    adaptive=is_adaptive(cfg)
+    if adaptive:
+        # Only the two motor drivers are coupled. Passive follower errors
+        # against a parallel pose are actual adaptive motion, not failures.
+        per_joint={'right_outer_knuckle_joint':float(np.max(abs(q[:,3]-q[:,0])))}
+    else:
+        multipliers=np.asarray(list(JOINT_MULTIPLIERS.values()))
+        residual=q-q[:,0,None]*multipliers
+        per_joint=dict(zip(names[1:],np.max(abs(residual[:,1:]),axis=0).tolist()))
     tool_rotation=Rotation.from_rotvec(tcp[:,3:]).as_matrix()
     offset=np.asarray(protocol['kinematics']['tool_tcp_offset_m'])
     tool_position=tcp[:,:3]-np.einsum('nij,j->ni',tool_rotation,offset)
@@ -138,14 +148,44 @@ def mechanics_metrics(trace,run,cfg,protocol,repo):
             measured_rotation=Rotation.from_quat(quats[i,side,[1,2,3,0]]).as_matrix()
             position_error.append(np.linalg.norm(pads[i,side]-expected_position))
             angle_error.append(Rotation.from_matrix(expected_rotation.T@measured_rotation).magnitude())
-    maximum=float(np.max(np.abs(residual[:,1:])))
+    maximum=max(per_joint.values())
     pmax=float(np.max(position_error))
-    return {'coupling_max_abs_rad':maximum,'coupling_per_joint_max_abs_rad':dict(zip(names[1:],np.max(abs(residual[:,1:]),axis=0).tolist())),
+    result={'coupling_max_abs_rad':maximum,'coupling_per_joint_max_abs_rad':per_joint,
             'pad_fk_translation_max_m':pmax,'pad_fk_translation_rmse_m':float(np.sqrt(np.mean(np.square(position_error)))),
             'pad_fk_rotation_max_rad':float(np.max(angle_error)),'pad_fk_rotation_is_diagnostic_only':True,
             'gates':{'joint_coupling':maximum<=protocol['kinematics']['joint_coupling_max_abs_rad'],
                      'pad_world_fk':pmax<=protocol['kinematics']['pad_fk_max_translation_m']},
-            'fk_definition':'actual six joint positions; actual tool0 derived from measured sim TCP minus rotated 0.18 m offset; both pad rigid bodies compared separately'}
+            'fk_definition':f'actual {len(names)} joint positions; actual tool0 derived from measured sim TCP minus rotated 0.18 m offset; both pad rigid bodies compared separately'}
+    if adaptive:
+        from phantom.sim.gripper_adaptive import loop_specs
+        k=protocol['kinematics']
+        required=('adaptive_loop_max_translation_m','adaptive_joint_limit_tolerance_rad')
+        if any(key not in k or not np.isfinite(k[key]) or k[key]<=0 for key in required):
+            raise ValueError('Adaptive validation requires explicit positive loop and joint-limit thresholds')
+        complete_fk=_fk_function(repo,cfg,all_links=True)
+        loops=loop_specs()
+        errors={loop['name']:[] for loop in loops}
+        for values in q:
+            frames=complete_fk(values)
+            for loop in loops:
+                a=frames[loop['body0']]@np.r_[loop['local_pos0'],1.]
+                b=frames[loop['body1']]@np.r_[loop['local_pos1'],1.]
+                errors[loop['name']].append(float(np.linalg.norm(a[:3]-b[:3])))
+        maxima={name:max(values) for name,values in errors.items()}
+        root=ET.Element('robot',name='limit_audit');ET.SubElement(root,'link',name='tool0')
+        append_gripper_urdf(root,repo,cfg)
+        violations={}
+        for i,name in enumerate(names):
+            limit=root.find(f"joint[@name='{name}']/limit")
+            lo,hi=float(limit.get('lower')),float(limit.get('upper'))
+            violations[name]=float(max(0.,np.max(lo-q[:,i]),np.max(q[:,i]-hi)))
+        result.update(coupling_definition='equal motor drivers only; passive joints are not mimicked',
+                      loop_closure_per_side_max_m=maxima,
+                      joint_limit_violation_max_rad=max(violations.values()),
+                      joint_limit_violation_per_joint_rad=violations)
+        result['gates'].update(adaptive_loop_closure=max(maxima.values())<=k[required[0]],
+                               joint_limits=max(violations.values())<=k[required[1]])
+    return result
 
 
 def camera_readback_matches(run,cfg):
@@ -264,6 +304,10 @@ def validate_run(directory,protocol_path=DEFAULT_PROTOCOL,*,reference_path=None,
         for path in [Path(repo)/'assets/sim/robotiq/robotiq_2f85.urdf',
                      Path(repo)/cfg['gripper']['articulation'].get('geometry_manifest','assets/sim/dmtac_w2l/geometry.json')]:
             dependencies[str(path)]=sha(path)
+        if is_adaptive(cfg):
+            for path in [REPO/'phantom/sim/gripper_adaptive.py',
+                         Path(repo)/'assets/sim/robotiq/adaptive_reference/2f85.xml']:
+                dependencies[str(path)]=sha(path)
         with np.load(paths['sim_trace.npz'],allow_pickle=False) as data:trace={key:data[key] for key in data.files}
         reference=None
         if reference_path is not None:

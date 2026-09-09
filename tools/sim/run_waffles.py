@@ -443,7 +443,17 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
-    from phantom.sim.gripper_articulation import is_articulated
+    from phantom.sim.gripper_articulation import is_articulated, is_adaptive
+
+    if is_adaptive(cfg):
+        from phantom.sim.gripper_adaptive import validate_physics_timestep
+        validate_physics_timestep(cfg)
+        if args.mode == "policy":
+            raise ValueError(
+                "Native adaptive W2L policy execution is not qualified yet. "
+                "Use measured dynamics or contact_probe to validate the "
+                "mechanism and tactile mapping first."
+            )
 
     if is_articulated(cfg) and args.mode == "command_replay":
         raise ValueError(
@@ -522,11 +532,14 @@ def run(app, args, cfg, data, duration):
     )
     from phantom.sim.scene import build_scene, import_robot
     from phantom.sim.gripper_articulation import (
-        is_articulated, finger_joint_names, joint_targets,
+        is_articulated, is_adaptive, finger_joint_names, joint_targets, drive_targets,
         closure_from_joint_positions, finger_drive_type,
     )
 
     articulated_gripper = is_articulated(cfg)
+    adaptive_gripper = is_adaptive(cfg)
+    if adaptive_gripper and args.mode == "command_replay":
+        raise ValueError("Legacy recorded drive arrays do not specify adaptive passive-joint references")
 
     dt = cfg["physics"]["dt"]
     fps = cfg["physics"]["render_hz"]
@@ -779,17 +792,51 @@ def run(app, args, cfg, data, duration):
         )
 
     def finger_target(closure):
-        return joint_targets(closure, cfg)
+        # Direct replay is a kinematic nominal pose only. During physics, the
+        # spring rest references must not be replaced by prescribed follower
+        # angles; contact determines those passive positions.
+        return (joint_targets if args.mode == "replay" else drive_targets)(closure, cfg)
 
     def finger_closure(values):
         return closure_from_joint_positions(values, cfg)
 
+    native_mechanics_monitor = {"enabled": adaptive_gripper, "checks": 0}
+
+    def check_native_mechanics(phase, t):
+        if not adaptive_gripper:
+            return
+        from phantom.sim.gripper_adaptive import mechanical_diagnostics
+
+        values = np.asarray(robot.get_joint_positions()[fingers], float)
+        try:
+            diagnostic = mechanical_diagnostics(values)
+        except ValueError as error:
+            diagnostic = {"passed": False, "error": str(error)}
+        native_mechanics_monitor["checks"] += 1
+        native_mechanics_monitor["last_phase"] = phase
+        native_mechanics_monitor["last_t_s"] = float(t)
+        maxima = native_mechanics_monitor.setdefault("observed_maxima", {})
+        for key in ("coupling_max_abs_rad", "joint_limit_violation_max_rad", "loop_closure_max_m"):
+            if key in diagnostic:
+                maxima[key] = max(maxima.get(key, 0.), diagnostic[key])
+        if not diagnostic["passed"]:
+            failure = {"phase": phase, "t_s": float(t), "diagnostic": diagnostic,
+                       "finger_joint_names": list(finger_names),
+                       "finger_q_rad": [float(v) if np.isfinite(v) else str(v) for v in values]}
+            (args.output / "native_mechanics_failure.json").write_text(
+                json.dumps(failure, indent=2, allow_nan=False) + "\n"
+            )
+            raise RuntimeError(f"Native gripper mechanics failed during {phase} at t={t:.6f}s; see native_mechanics_failure.json")
+        native_mechanics_monitor["last_diagnostic"] = diagnostic
+
     qfull = np.zeros(len(names))
     qfull[ids] = q0
-    qfull[fingers] = finger_target(g0)
+    qfull[fingers] = joint_targets(g0, cfg)
+    initial_drive = qfull.copy()
+    initial_drive[fingers] = finger_target(g0)
     robot.set_joint_positions(qfull)
     robot.set_joint_velocities(np.zeros_like(qfull))
-    robot.apply_action(ArticulationAction(joint_positions=qfull))
+    robot.apply_action(ArticulationAction(joint_positions=initial_drive))
     for name, index in zip(JOINT_NAMES, ids):
         UsdPhysics.DriveAPI(
             stage.GetPrimAtPath(paths["joint_paths"][name]), "angular"
@@ -800,7 +847,7 @@ def run(app, args, cfg, data, duration):
         )
         target = drive.GetTargetPositionAttr()
         if target.IsValid():
-            target.Set(float(np.degrees(qfull[index]) if articulated_gripper else qfull[index]))
+            target.Set(float(np.degrees(initial_drive[index]) if articulated_gripper else initial_drive[index]))
 
     # World.reset() initializes physics at the imported articulation's default
     # pose before measured q0 is assigned. Clear any packet impulse from that
@@ -844,26 +891,42 @@ def run(app, args, cfg, data, duration):
         world.step(render=False)
         world.render()
     robot_settling = []
-    if args.mode in ("policy", "command_replay"):
+    native_finger_settling = []
+    if args.mode in ("policy", "command_replay") or (adaptive_gripper and args.mode == "dynamics"):
         # Pose assignment during renderer initialization is not a controller
         # equilibrium. Let the position drives settle before enabling safety
         # and starting the trial clock; never waive a velocity safety check.
+        settling_physics_origin = world.current_time
         for settle_step in range(int(np.ceil(2.0 / dt))):
-            robot.apply_action(ArticulationAction(joint_positions=qfull))
+            robot.apply_action(ArticulationAction(joint_positions=initial_drive))
             world.step(render=False)
+            settling_t = world.current_time - settling_physics_origin if adaptive_gripper else settle_step * dt
             robot_settling.append(
                 np.r_[
-                    settle_step * dt,
+                    settling_t,
                     robot.get_joint_positions()[ids],
                     robot.get_joint_velocities()[ids],
                 ]
             )
-        np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling)
+            if adaptive_gripper:
+                native_finger_settling.append(np.r_[settling_t, robot.get_joint_positions()[fingers]])
+                try:
+                    check_native_mechanics("initialization_settling", settling_t)
+                except RuntimeError:
+                    np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling,
+                                        native_finger_samples=native_finger_settling)
+                    raise
+        np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling,
+                            **({"native_finger_samples": native_finger_settling} if adaptive_gripper else {}))
         world.render()
     camera.get_rgba()
     settled_position = np.asarray(packet.get_world_pose()[0])
     settling_error = float(np.linalg.norm(settled_position - cfg["waffle"]["center"]))
     initialization = {
+        "adaptive_passive_joints": adaptive_gripper,
+        "initial_finger_seed_rad": qfull[fingers].tolist() if adaptive_gripper else None,
+        "initial_finger_drive_references_rad": initial_drive[fingers].tolist() if adaptive_gripper else None,
+        "passive_settling_s": 2.0 if adaptive_gripper and args.mode in ("dynamics", "policy") else 0.0,
         "policy_initial_state": initial_state,
         "policy_initial_state_sha256": hashlib.sha256(
             args.policy_initial_state.read_bytes()
@@ -898,6 +961,13 @@ def run(app, args, cfg, data, duration):
     (args.output / "initialization.json").write_text(
         json.dumps(initialization, indent=2) + "\n"
     )
+    check_native_mechanics("after_initialization_settling", 0.)
+    if adaptive_gripper:
+        initialization["native_mechanics"] = native_mechanics_monitor["last_diagnostic"]
+        initialization["settled_finger_q_rad"] = robot.get_joint_positions()[fingers].tolist()
+        (args.output / "initialization.json").write_text(
+            json.dumps(initialization, indent=2) + "\n"
+        )
     if not np.isfinite(settling_error) or settling_error > 0.02:
         raise RuntimeError(
             f"Packet moved {settling_error:.4f}m before replay; initial geometry/settling is invalid"
@@ -1076,7 +1146,7 @@ def run(app, args, cfg, data, duration):
     previous_tcp = None
     previous_frame_t = None
     rgb = None
-    desired = qfull.copy()
+    desired = initial_drive.copy()
     nsteps = int(np.floor((duration + (0.5 if args.mode == "policy" else 0)) / dt))
     physics_origin = world.current_time
     start = time.monotonic()
@@ -1315,6 +1385,7 @@ def run(app, args, cfg, data, duration):
             )
         for step in range(nsteps + 1):
             t = step * dt
+            check_native_mechanics("execution", t)
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
@@ -1721,6 +1792,10 @@ def run(app, args, cfg, data, duration):
         )
     finally:
         writer.release()
+        if adaptive_gripper:
+            (args.output / "native_mechanics_monitor.json").write_text(
+                json.dumps(native_mechanics_monitor, indent=2, allow_nan=False) + "\n"
+            )
         if wrist_contact_file is not None:
             wrist_contact_file.close()
         # Preserve measured states even when a policy or transport call fails.
@@ -1771,6 +1846,7 @@ def run(app, args, cfg, data, duration):
         "events": events,
         "robot_usd": robot_usd,
         "joint_state_source": "actual PhysX articulation joints and tool0 rigid body pose; independent nominal FK also logged",
+        "native_mechanics_monitor": native_mechanics_monitor if adaptive_gripper else None,
         "object_dynamics": {
             "rigid_body_dynamic": True,
             "kinematic": False,
@@ -1795,6 +1871,12 @@ def run(app, args, cfg, data, duration):
         "finger_joint_names": list(finger_names),
         "finger_joint_units": "radians" if articulated_gripper else "metres",
         "gripper_feedback_source": "measured master joint angle" if articulated_gripper else "mean of two measured sliders",
+        "finger_target_semantics": (
+            "Direct replay: nominal eight-joint kinematic pose, not measured passive angles"
+            if adaptive_gripper and args.mode == "replay" else
+            "Motor position and passive spring rest references; passive positions evolve under contact"
+            if adaptive_gripper else "nominal coupled gripper targets"
+        ),
         "gel_geometry": cfg["gripper"].get("gel_geometry") if articulated_gripper else None,
         "contact_trace_source": (
             "PhysX contacts between separate supplier wear-layer rigid bodies and packet; "

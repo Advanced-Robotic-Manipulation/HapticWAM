@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.001,
+    "render_hz": 15,
+    "solver_position_iterations": 64,
+    "solver_velocity_iterations": 8,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.1,
+      -0.037500000000000006
+    ],
+    "size": [
+      1.7,
+      1.2,
+      0.05
+    ],
+    "hole_pitch": 0.05,
+    "hole_radius": 0.0055,
+    "top_z": -0.0125,
+    "friction": 0.55,
+    "grid_origin_xy": [
+      -0.9644390170881325,
+      0.5216767944318121
+    ],
+    "grid_yaw": -0.016781155522956927
+  },
+  "mat": {
+    "center": [
+      -0.3540619100398728,
+      -0.23909237515846665,
+      -0.011000000000000001
+    ],
+    "size": [
+      0.4,
+      0.38,
+      0.003
+    ],
+    "grid_pitch": 0.085,
+    "friction": 0.7,
+    "frame_model": "local_planar",
+    "yaw": -0.016781155522956927,
+    "grid_origin_xy": [
+      -0.03949566789022466,
+      0.0075523360591647146
+    ]
+  },
+  "bin": {
+    "center": [
+      -0.39052377006030875,
+      0.06490764411969535,
+      -0.009500000000000001
+    ],
+    "friction": 0.4,
+    "geometry_model": "rectangular_envelope",
+    "outer_size": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "opening_size": [
+      0.36,
+      0.26
+    ],
+    "floor_thickness": 0.004,
+    "yaw": -0.012089355098796523
+  },
+  "waffle": {
+    "center": [
+      -0.3987114560752966,
+      -0.2733251174313464,
+      0.0355
+    ],
+    "size": [
+      0.17,
+      0.035,
+      0.09
+    ],
+    "yaw": 0.2595497954083121,
+    "mass": 0.035,
+    "static_friction": 0.65,
+    "dynamic_friction": 0.5,
+    "restitution": 0.015
+  },
+  "gripper": {
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.0017016676138155162,
+      0.038595568388700485,
+      0.04787348955869675
+    ],
+    "pad_friction": 1.0,
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": 0.0,
+    "geometry_source": "Supplier W2L CAD and nominal 2F85 linkage; two-parameter unloaded RGB seam fit with root yaw0, symmetric origin spacing and static opposite sensor tilt",
+    "contact_shape": "ellipse",
+    "model": "robotiq_2f85_w2l_adaptive_v2",
+    "gel_geometry": {
+      "pad_thickness_m": 0.0017023373024049053,
+      "active_size_yz_m": [
+        0.027,
+        0.036
+      ],
+      "active_center_yz_m": [
+        0.0,
+        0.0
+      ],
+      "inner_face_tolerance_m": 0.0003
+    },
+    "articulation": {
+      "angle_at_touch_rad": 0.8,
+      "bare_gripper_mass_kg": 0.925,
+      "drive_stiffness_nm_rad": 12.0,
+      "drive_damping_nm_s_rad": 0.16,
+      "drive_max_torque_nm": 1.7,
+      "mounts": {
+        "left": {
+          "xyz": [
+            7.489382892357449e-19,
+            -0.0238281817996744,
+            0.08
+          ],
+          "rpy": [
+            0.0,
+            0.03077906342243697,
+            1.5707963267948963
+          ]
+        },
+        "right": {
+          "xyz": [
+            -7.489382892357449e-19,
+            -0.0238281817996744,
+            0.08
+          ],
+          "rpy": [
+            0.0,
+            -0.03077906342243697,
+            -1.5707963267948963
+          ]
+        }
+      },
+      "mount_status": "DIAGNOSTIC fixed rest-pose approximation only. Sensor-origin shift and splay jointly fit frozen precontact frames0/60/89; heldout15/74 and independent settled POS3 checked separately. No custom hinge or native adaptive response implemented; absolute mount/root registration and loaded geometry remain unvalidated.",
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      }
+    }
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "cx": 337.8138732910156,
+    "cy": 249.65126037597656,
+    "position": [
+      -0.35399058583569004,
+      -0.44643379477503714,
+      0.9535
+    ],
+    "target": [
+      -0.3491143716535526,
+      -0.016208984538463922,
+      0.05079138965436125
+    ],
+    "world_from_cv": [
+      [
+        0.9999720414746357,
+        -0.005669109656577374,
+        0.00487621418213748,
+        -0.35399058583569004
+      ],
+      [
+        -0.007215535335001398,
+        -0.9026929426481264,
+        0.4302248102365732,
+        -0.44643379477503714
+      ],
+      [
+        0.0019627325028448834,
+        -0.4302479662810364,
+        -0.9027086103456388,
+        0.9535
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "Connected D435 factory RGB K; camera normal from 50mm table lattice at measured963mm above mat; UR registration from wrist caps and photo mount/mat constraints.",
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": [],
+    "factory_profile": {
+      "path": "docs/results/d435_factory_calibration_20260908/d435_rgb_profile.json",
+      "sha256": "22d05713a0b2181c20111ce646f01323173d9b17b3d621708f69bd807b32d687",
+      "serial": "944622074411",
+      "sdk_distortion_model": "distortion.inverse_brown_conrady",
+      "zero_coefficients_make_pinhole_equivalent": true
+    }
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Measured packet/bin sizes and pitches; photo-estimated mount thickness/base centering. Mat400mm width estimated from image; mat length380mm and table outer extent remain support-envelope estimates. Bin untapered proxy and support height remain approximate.",
+    "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+    "camera": "Factory RGB K read from matching D435 serial; zero SDK coefficients. Extrinsics estimated using metric grid and measuredheight; UR registration uses nominal CAD wrist faces and photo plate/mat alignment. Historical radiometry and rolling-shutter motion are not calibrated."
+  },
+  "calibration": {
+    "revision": "w2l_native_adaptive_splayed_20260909",
+    "status": "Exploratory native loop physics with existing measured-geometry hypothesis; installed mount and passive response remain uncalibrated",
+    "measurement_manifest": "docs/measurements/setup_20260908/revision_02/measurements.json",
+    "packet_orientation": "Inferred from IMG_2036: long X170mm, thicknessY35mm, verticalZ90mm; not confirmed for all training episodes.",
+    "box_model": "Measured envelope/opening/height; rectangular untapered sides approximate the rim/body profile. Floor4mm is retained estimate, giving186mm depth.",
+    "frame_warning": "MountX200/Y150mm, yaw aligned with table/mat by photo hypothesis; base centered on plate. TableZ\u221212.5mm and mat3mm retained estimates.",
+    "validation": "docs/results/d435_factory_calibration_20260908/registration.json",
+    "camera_warning": "Factory K fixed. Camera tilt from metric table grid; noisy forearm volume-center correspondence excluded. No policy success claim.",
+    "gripper_validation": "docs/results/w2l_native_linkage_20260909/static_mount_fit.md",
+    "parent_static_config": {
+      "path": "configs/sim/waffles_w2l_splayed_diagnostic_20260909.json",
+      "sha256": "a6910b209dd814fffa9bc841b73761966e8fb1e359d5d1bc9bb14339c3ea4288"
+    },
+    "native_topology": {
+      "source": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "motor_settings": "Existing12/.16/1.7 unchanged; reference actuator/armature not imported",
+      "spring_reference": "Reference spring rest angle2.62rad may lie beyond the physicaljointlimit; this is a torque-drive reference, never an initialization position",
+      "initialization": "Loop-consistent geometricseed then2sforce-drive settling before t0 in measured dynamics; no passive position resets duringtrial",
+      "registration": "Static sensor geometry retained as a conditional hypothesis; shared image-registration residual remains unresolved"
+    },
+    "native_seed_opening_POS0": {
+      "profile_mm": {
+        "full_gel_proximal": 85.56924736793556,
+        "active_proximal": 85.93370927107726,
+        "center": 87.04210558975214,
+        "active_distal": 88.15050190842702,
+        "full_gel_distal": 88.51718067843441
+      },
+      "relative_face_angle_rad": 0.06155812684487372,
+      "scope": "Geometric seed, not loaded or force-equilibrium aperture"
+    }
+  },
+  "robot_mount": {
+    "size": [
+      0.2,
+      0.15,
+      0.0125
+    ],
+    "yaw": -0.016781155522956927
+  }
+}

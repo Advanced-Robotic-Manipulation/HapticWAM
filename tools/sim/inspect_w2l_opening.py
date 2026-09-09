@@ -21,6 +21,7 @@ sys.path.insert(0,str(ROOT))
 from phantom.sim.gripper_articulation import (
     coupling_residuals,
     finger_joint_names,
+    is_adaptive,
     joint_targets,
     link_transforms_from_joint_positions,
     load_sensor_geometry,
@@ -182,6 +183,9 @@ def inspect_config(repo, cfg, values):
     source_paths=[repo/'assets/sim/robotiq/robotiq_2f85.urdf',repo/gel['visual_mesh'],
         repo/cfg['gripper']['articulation'].get('geometry_manifest','assets/sim/dmtac_w2l/geometry.json'),
         repo/'phantom/sim/gripper_articulation.py',Path(__file__)]
+    if is_adaptive(cfg):
+        source_paths += [repo/'phantom/sim/gripper_adaptive.py',
+                         repo/'assets/sim/robotiq/adaptive_reference/2f85.xml']
     report['input_sha256']={str(p):hashlib.sha256(p.read_bytes()).hexdigest()for p in source_paths}
     return report
 
@@ -192,7 +196,7 @@ def main():
     parser.add_argument('--out',type=Path)
     selection=parser.add_mutually_exclusive_group()
     selection.add_argument('--pos',type=float,help='Raw encoder0..255, mapped through current configuration; default0')
-    selection.add_argument('--finger-q',nargs=6,type=float,help='Six measured radians in reported finger_joint_names order; no mimic averaging')
+    selection.add_argument('--finger-q',nargs='+',type=float,help='Measured radians in the configured finger_joint_names order (six coupled or eight adaptive); no mimic averaging')
     args=parser.parse_args();cfg=json.loads(args.config.read_text())
     if args.pos is not None and (not np.isfinite(args.pos) or not 0<=args.pos<=255):
         parser.error('--pos must be finite and in0..255')

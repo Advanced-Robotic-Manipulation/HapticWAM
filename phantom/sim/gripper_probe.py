@@ -14,7 +14,8 @@ from scipy.spatial.transform import Rotation
 
 from phantom.sim.contact_probe import ContactProbe
 from phantom.sim.gripper_articulation import (
-    is_articulated, joint_targets, link_transforms_from_joint_positions,
+    is_articulated, is_adaptive, joint_targets, drive_targets,
+    link_transforms_from_joint_positions, load_sensor_geometry,
 )
 from phantom.sim.kinematics import JOINT_NAMES
 
@@ -25,10 +26,55 @@ def jaw_geometry(repo, cfg, closure):
     thickness = float(cfg['gripper']['gel_geometry']['pad_thickness_m'])
     lf = left[:3, 3] + left[:3, :3] @ [-thickness/2, 0, 0]
     rf = right[:3, 3] + right[:3, :3] @ [thickness/2, 0, 0]
+    if is_adaptive(cfg):
+        geometry = load_sensor_geometry(repo, cfg)
+        gel = next(p for p in geometry['parts'] if p['role'] == 'gel')
+        return native_probe_aperture(left, right, lf, rf,
+                                     [gel['bounding_box_m'][key][2] for key in ('min', 'max')])
     axis = left[:3, 0]
     if np.dot(axis, right[:3, 0]) < .999:
         raise ValueError('Synthetic width probe requires parallel mounted gel faces')
     return float(np.dot(lf-rf, axis)), (lf+rf)/2, left[:3, :3]
+
+
+def native_probe_aperture(left, right, lf, rf, longitudinal_bounds):
+    """Conservative plane aperture for a centred synthetic native-jaw probe.
+
+    Use the minimum closing-axis gap over the common full-gel longitudinal
+    interval. Curved gel edges are bounded by the extended front plane; this
+    is a synthetic initialization envelope, not finite-body clearance. The
+    legacy parallel-jaw probe and its rejection guard remain unchanged.
+    """
+    if np.dot(left[:3, 1], right[:3, 1]) < 1-1e-8:
+        raise ValueError('Native synthetic probe requires aligned sensor width axes')
+    x = left[:3, 0]+right[:3, 0]
+    z = left[:3, 2]+right[:3, 2]
+    if np.linalg.norm(x) < 1e-8 or np.linalg.norm(z) < 1e-8:
+        raise ValueError('Degenerate native jaw bisector')
+    x /= np.linalg.norm(x)
+    z -= x*np.dot(x, z)
+    z /= np.linalg.norm(z)
+    rotation = np.column_stack((x, np.cross(z, x), z))
+    center = (lf+rf)/2
+    bounds = np.asarray(longitudinal_bounds, float)
+    if bounds.shape != (2,) or not np.isfinite(bounds).all() or bounds[1] <= bounds[0]:
+        raise ValueError('Increasing finite gel longitudinal bounds are required')
+    intervals = [sorted(float(np.dot(face+frame[:3, 2]*depth-center, z)) for depth in bounds)
+                 for face, frame in ((lf, left), (rf, right))]
+    lo, hi = max(v[0] for v in intervals), min(v[1] for v in intervals)
+    if lo >= hi:
+        raise ValueError('No common native gel longitudinal interval')
+    gaps = []
+    for depth in (lo, hi):
+        origin = center+depth*z
+        intersections = []
+        for face, frame in ((lf, left), (rf, right)):
+            denominator = np.dot(frame[:3, 0], x)
+            if denominator <= 1e-8:
+                raise ValueError('Native front plane does not face the common closing axis')
+            intersections.append(np.dot(frame[:3, 0], face-origin)/denominator)
+        gaps.append(intersections[0]-intersections[1])
+    return float(min(gaps)), center, rotation
 
 
 def closure_for_gap(repo, cfg, width):
@@ -63,7 +109,7 @@ class ArticulatedContactProbe:
         self.diagnostics = dict(self.arm_path.diagnostics)
         self.diagnostics.pop('finger_gap_m', None)
         self.diagnostics.update(normalized_motor_target=closure, finger_joint_units='radians')
-        return q, joint_targets(closure, self.cfg)
+        return q, drive_targets(closure, self.cfg)
 
 
 def initialize(packet, robot, finger_ids, qfull, cfg, tool_world_position, tool_world_quaternion):
@@ -91,7 +137,7 @@ def initialize(packet, robot, finger_ids, qfull, cfg, tool_world_position, tool_
     packet.set_linear_velocity(np.zeros(3))
     packet.set_angular_velocity(np.zeros(3))
     target = full.copy()
-    target[finger_ids] = joint_targets(close_command, cfg)
+    target[finger_ids] = drive_targets(close_command, cfg)
     robot.apply_action(ArticulationAction(joint_positions=target))
     arm_ids = [list(robot.dof_names).index(n) for n in JOINT_NAMES]
     metadata = {
@@ -101,6 +147,8 @@ def initialize(packet, robot, finger_ids, qfull, cfg, tool_world_position, tool_
         'object_pose_writes_after_initialization': 0,
         'packet_width_m': width,
         'initial_pad_gap_m': actual_gap,
+        'gap_definition': ('Minimum opposing front-plane aperture over common full-gel longitudinal overlap; conservative curved-edge envelope'
+                           if is_adaptive(cfg) else 'Parallel opposing gel front-plane separation'),
         'target_unloaded_pad_gap_m': width-.002,
         'initial_motor_command': initial_command,
         'close_motor_command': close_command,
