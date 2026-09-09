@@ -51,16 +51,21 @@ def _snap(hw, t=None, chunk_rows=None):
 class _StubChunkPolicy:
     """Chunk-native LeRobot policy: `predict_action_chunk` + `reset`."""
 
-    def __init__(self, chunk: np.ndarray):
+    def __init__(self, chunk: np.ndarray, accepts_num_steps: bool = True):
         self.chunk = np.asarray(chunk, dtype=np.float32)
         self.resets = 0
         self.seen: list[dict] = []
+        self.num_steps: list = []
+        self._accepts = accepts_num_steps
 
     def reset(self):
         self.resets += 1
 
-    def predict_action_chunk(self, batch):
+    def predict_action_chunk(self, batch, **kwargs):
+        if kwargs and not self._accepts:
+            raise TypeError("predict_action_chunk() got an unexpected keyword")
         self.seen.append(batch)
+        self.num_steps.append(kwargs.get("num_steps"))
         return torch.from_numpy(self.chunk)[None]      # (1, T, A)
 
 
@@ -112,14 +117,16 @@ def test_observation_matches_the_exporter_contract():
     img = batch[DEFAULT_IMAGE_KEY]
     assert img.shape == (1, 3, 224, 224) and img.dtype == np.float32
     assert 0.0 <= img.min() and img.max() <= 1.0
-    assert batch["task"] == ["pick up the egg"]
+    # a plain str, as LeRobot's own `predict_action` passes it; the pipeline's
+    # AddBatchDimensionComplementaryDataStep wraps it into a list
+    assert batch["task"] == "pick up the egg"
 
 
 def test_task_text_is_live_and_reconfigurable():
     hw = _hw()
     ad = _adapter(hw, _delta_chunk(hw.control.chunk_horizon))
     ad.task_text = "place the waffle"                  # what `configure` does
-    assert ad.observation(_snap(hw))["task"] == ["place the waffle"]
+    assert ad.observation(_snap(hw))["task"] == "place the waffle"
     ad.use_task_key = False
     assert "task" not in ad._to_torch(ad.observation(_snap(hw)))
 
@@ -261,6 +268,111 @@ def test_select_action_fallback_reproduces_the_chunk():
     ad = LeRobotPolicy(_StubStepPolicy(chunk), hw, device="cpu")
     plan = ad.replan(_snap(hw), None, TCP)
     np.testing.assert_allclose(plan.actions, chunk, atol=1e-6)
+
+
+# ------------------------------------------------- LeRobot processor pipelines
+class _StubPipeline:
+    """Stands in for a `PolicyProcessorPipeline`: the pre-processor rewrites
+    the batch (LeRobot's really normalises + tokenises), the post-processor
+    unnormalises ONE `(B, action_dim)` chunk step per call."""
+
+    def __init__(self, fn):
+        self.fn = fn
+        self.calls = 0
+
+    def __call__(self, x):
+        self.calls += 1
+        return self.fn(x)
+
+
+def test_processor_pipelines_are_applied_around_inference():
+    """The pre/post pipelines carry the checkpoint's normalisation stats and
+    pi05's state->prompt discretisation; the adapter must run BOTH, and the
+    post-processor per chunk STEP (it is written for (B, action_dim))."""
+    hw = _hw()
+    H = hw.control.chunk_horizon
+    chunk = _delta_chunk(H) * 0.0 + 1.0                # all-ones raw output
+    inner = _StubChunkPolicy(chunk)
+
+    def pre(batch):
+        batch = dict(batch)
+        batch["tokenized"] = True                      # what a real pipeline adds
+        return batch
+
+    pre_p, post_p = _StubPipeline(pre), _StubPipeline(lambda a: a * 2.0)
+    ad = LeRobotPolicy(inner, hw, device="cpu", preprocessor=pre_p,
+                       postprocessor=post_p)
+    plan = ad.replan(_snap(hw), None, TCP)
+
+    assert pre_p.calls == 1
+    assert post_p.calls == H, "post-processor runs once per chunk STEP"
+    assert inner.seen[0]["tokenized"] is True, "the policy saw the PROCESSED batch"
+    np.testing.assert_allclose(plan.actions, 2.0, atol=1e-9)
+
+
+def test_processor_pipelines_also_wrap_the_select_action_fallback():
+    hw = _hw()
+    H = hw.control.chunk_horizon
+    ad = LeRobotPolicy(_StubStepPolicy(_delta_chunk(H) * 0.0 + 1.0), hw,
+                       device="cpu", preprocessor=_StubPipeline(lambda b: b),
+                       postprocessor=_StubPipeline(lambda a: a * 3.0))
+    plan = ad.replan(_snap(hw), None, TCP)
+    np.testing.assert_allclose(plan.actions, 3.0, atol=1e-9)
+
+
+def test_nfe_reaches_the_policy_as_num_steps_and_degrades_loudly():
+    """`--nfe` is the latency lever on the 5090. It must reach pi05's
+    `sample_actions` as `num_steps`, and a policy that does not take it must
+    say so in the trace instead of silently running its own budget."""
+    hw = _hw()
+    H = hw.control.chunk_horizon
+    ad = _adapter(hw, _delta_chunk(H))
+    ad.nfe = 5                                          # what `configure` does
+    plan = ad.replan(_snap(hw), None, TCP)
+    assert ad.policy.num_steps == [5]
+    assert plan.diag["nfe"] == 5 and plan.diag["nfe_applied"] is True
+
+    stubborn = LeRobotPolicy(_StubChunkPolicy(_delta_chunk(H),
+                                              accepts_num_steps=False),
+                             hw, device="cpu")
+    stubborn.nfe = 5
+    p1 = stubborn.replan(_snap(hw), None, TCP)
+    assert p1.diag["nfe_applied"] is False
+    p2 = stubborn.replan(_snap(hw), None, TCP)          # probed once, remembered
+    assert p2.diag["nfe_applied"] is False
+    assert stubborn.policy.num_steps == [None, None]
+
+
+# ------------------------------------------------------- checkpoint contract
+def test_checkpoint_contract_check_catches_a_wrong_camera_key_or_action_dim():
+    from types import SimpleNamespace
+
+    from phantom.inference.lerobot_policy import check_checkpoint_contract
+    hw = _hw()
+
+    def _policy(image_keys, action_dim, n_steps=50):
+        cfg = SimpleNamespace(
+            image_features={k: None for k in image_keys},
+            output_features={"action": SimpleNamespace(shape=(action_dim,))},
+            n_action_steps=n_steps)
+        return SimpleNamespace(config=cfg)
+
+    ok = _policy(["observation.images.scene"], 7)
+    check_checkpoint_contract(ok, image_key="observation.images.scene",
+                              action_dim=7, chunk_horizon=hw.control.chunk_horizon)
+    # a missing camera key is padded with a BLANK image by pi05 — refuse it
+    with pytest.raises(RuntimeError, match="BLANK image"):
+        check_checkpoint_contract(_policy(["observation.images.top"], 7),
+                                  image_key="observation.images.scene",
+                                  action_dim=7, chunk_horizon=16)
+    with pytest.raises(RuntimeError, match="action dims"):
+        check_checkpoint_contract(_policy(["observation.images.scene"], 6),
+                                  image_key="observation.images.scene",
+                                  action_dim=7, chunk_horizon=16)
+    # a policy with no config must not crash the load
+    check_checkpoint_contract(SimpleNamespace(),
+                              image_key="observation.images.scene",
+                              action_dim=7, chunk_horizon=16)
 
 
 # ---------------------------------------------------------- deploy semantics

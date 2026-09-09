@@ -25,6 +25,35 @@ The state fields are read out of `ObsSnapshot.ur_state` at the same offsets
 `ur_state[-2]` for the aperture), so the deployed state vector is by
 construction the one the recorder wrote.
 
+### The processor pipelines are load-bearing
+
+Verified against lerobot 0.4.4. A LeRobot policy is not called on raw
+observations. Normalisation, pi05's discretisation of the state into the
+PaliGemma prompt and the tokenisation all live in a `PolicyProcessorPipeline`
+that is saved **with the checkpoint**, and the matching unnormalisation lives
+in the post-processor. `PI05Policy.predict_action_chunk` reads only the image
+keys and the tokenised prompt: the state reaches the model inside that prompt.
+
+So the adapter runs LeRobot's own chain, the one
+`lerobot/utils/control_utils.py:predict_action` and
+`lerobot/async_inference/policy_server.py:_predict_action_chunk` run:
+
+```
+raw numpy -> torch -> preprocessor -> predict_action_chunk
+          -> postprocessor (once per chunk STEP) -> numpy
+```
+
+Two consequences for the exporter. The dataset statistics written at export
+time become the normalisation the deployed policy uses, so they must come from
+the same data the model was fine-tuned on. And the camera key must be the one
+in `config.image_features`: pi05 pads an ABSENT camera with a blank image and a
+zero mask, so a misnamed key runs happily and produces nonsense. The server
+refuses that at load (`check_checkpoint_contract`), as it refuses a checkpoint
+whose action dimension is not 7.
+
+`--no-processors` exists only for a policy that genuinely ships no pipeline.
+Using it on pi05 feeds the model normalised-space garbage.
+
 ## Deploy adapter
 
 `phantom/inference/lerobot_policy.py` (`LeRobotPolicy`) duck-types
@@ -56,8 +85,14 @@ Terminal B, per episode batch:
 run_deploy --system student --policy-server 127.0.0.1:7790 \
     --task egg --text "pick up the egg" \
     --hardware configs/hardware.nuc.yaml \
-    --max-play-steps 9 --grip-play-steps 9
+    --nfe 10 --max-play-steps 9 --grip-play-steps 9
 ```
+
+`--nfe` is live: it is forwarded to pi05's flow-matching sampler as
+`num_steps` (the checkpoint's default is `config.num_inference_steps`, 10), so
+it is the latency lever if a replan is too slow. A policy whose chunk call does
+not accept it logs a warning once and records `nfe_applied: false` in the
+trace, so a run can never claim a denoise budget the model ignored.
 
 `--system student` because this policy reads no tactile stream: it selects the
 sensor-free `SnapshotBuilder` path. The server's checkpoint is the one that
@@ -86,7 +121,7 @@ executor-side and protect this policy exactly as they protect ours.
 | `sigma` | `zeros(16)`. `GovernorConfig.sigma_lo >= 0` is validated, so zero is provably full playback speed for any legal governor config |
 | `gate`, `p_evt` | `0.0`, `zeros(5)` — logged only, and the veto they feed is refused above |
 | `cpk` | `None` (no contact package; `_invalidate_cpk` is a no-op) |
-| `diag` | `policy`, `policy_class`, `action_space`, `chunk_steps`, `padded_steps` |
+| `diag` | `policy`, `policy_class`, `action_space`, `chunk_steps`, `padded_steps`, `nfe`, `nfe_applied` |
 
 **Horizon.** pi05's native chunk (50) is truncated to `chunk_horizon` (16). A
 SHORTER chunk is padded: `--pad-mode hold` (default) pads with zero pose-delta
@@ -118,12 +153,20 @@ started by hand on that slot's port (`7776 + slot`).
 
 ### Verified vs. unverified
 
-`tests/test_lerobot_adapter.py` pins the whole adapter against a stub policy —
-observation mapping, delta and absolute decoding, rotvec wrap, truncation and
-both padding modes, zero-sigma full speed, refused flags, the reset/seed path,
-and an `info` + `replan` round trip over a real localhost policy-server wire
-whose plans the real `ChunkExecutor` accepts. What still needs the real
-checkpoint: the LeRobot entry point actually present on the installed version
-(`predict_action_chunk`, with a per-step `select_action` fallback), the
-normalisation statistics baked into the checkpoint, and the per-replan latency
-on the 5090.
+`tests/test_lerobot_adapter.py` pins the whole adapter against a stub policy,
+with no `lerobot` import and no GPU: observation mapping, delta and absolute
+decoding, rotvec wrap, truncation and both padding modes, the pre/post
+processor pipelines being applied around inference (post-processor once per
+chunk step), the `--nfe` passthrough and its loud degradation, zero-sigma full
+speed, refused flags, the checkpoint contract check, the reset/seed path, and
+an `info` + `replan` round trip over a real localhost policy-server wire whose
+plans the real `ChunkExecutor` accepts.
+
+The LeRobot names the adapter binds to were read from the real
+`lerobot 0.4.4` wheel: `get_policy_class("pi05")`, `PI05Policy.from_pretrained`
+/ `reset` / `select_action` / `predict_action_chunk`,
+`make_pre_post_processors`, and `PI05Config.num_inference_steps`.
+
+Still needs the real checkpoint: that the fine-tune's saved processor
+statistics are the ones we expect, the exported camera key matching
+`config.image_features`, and the per-replan latency on the 5090.

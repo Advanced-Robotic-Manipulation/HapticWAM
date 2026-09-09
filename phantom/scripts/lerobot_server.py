@@ -87,6 +87,16 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--no-task-key", action="store_true",
                     help="omit the `task` key for a policy that is not "
                          "language-conditioned")
+    ap.add_argument("--no-processors", action="store_true",
+                    help="do NOT load the checkpoint's LeRobot pre/post "
+                         "processor pipelines. They carry the dataset "
+                         "normalisation stats, pi05's state->prompt "
+                         "discretisation and the tokeniser, so skipping them "
+                         "feeds the model garbage — for a policy that ships "
+                         "no pipeline only")
+    ap.add_argument("--skip-contract-check", action="store_true",
+                    help="do not verify the checkpoint's camera key and action "
+                         "dimension against the deploy contract")
     ap.add_argument("--no-warmup", action="store_true")
     ap.add_argument("--probe", action="store_true",
                     help="print the running server's ckpt and exit "
@@ -106,16 +116,23 @@ def main(argv: list[str] | None = None) -> int:
                         format="%(asctime)s %(name)s: %(message)s")
     from phantom.config.hardware import load_hardware
     from phantom.inference.lerobot_policy import (LeRobotPolicy,
+                                                  check_checkpoint_contract,
                                                   load_lerobot_policy)
 
     hw = load_hardware(args.hardware)
-    inner = load_lerobot_policy(args.ckpt, policy_type=args.policy_type,
-                                device=args.device)
+    inner, pre, post = load_lerobot_policy(
+        args.ckpt, policy_type=args.policy_type, device=args.device,
+        with_processors=not args.no_processors)
+    if not args.skip_contract_check:
+        check_checkpoint_contract(inner, image_key=args.image_key,
+                                  action_dim=hw.control.action_dim,
+                                  chunk_horizon=hw.control.chunk_horizon)
     policy = LeRobotPolicy(
         inner, hw, task_text=args.task, action_space=args.action_space,
         image_size=args.image_size, image_key=args.image_key,
         state_key=args.state_key, pad_mode=args.pad_mode, device=args.device,
-        use_task_key=not args.no_task_key)
+        use_task_key=not args.no_task_key,
+        preprocessor=pre, postprocessor=post)
     sha = dir_digest(args.ckpt)
     log.info("checkpoint digest sha256[:12]=%s (%s)", sha, args.ckpt)
     srv = PolicyServer(policy, ckpt=str(args.ckpt), ckpt_sha=sha)

@@ -15,18 +15,37 @@ byte-for-byte or the policy sees a distribution it never trained on):
                               scene frame to S x S (S = 224 by default).
                               NOTE this SQUASHES 640x480 to square; the
                               exporter must squash identically, not crop.
+                              (pi05 then `resize_with_pad`s to its own
+                              `config.image_resolution` and rescales to
+                              [-1, 1] internally — `_preprocess_images`.)
     observation.state         (1, 7) float32
                               [tcp x, y, z, rx, ry, rz (rotvec, BASE frame),
                                gripper aperture]
                               read out of `ObsSnapshot.ur_state` at the same
                               offsets `PlannerLoop.run` uses.
-    task                      [str] the episode instruction.
+    task                      str, the episode instruction.
 
-Action contract: the policy returns a chunk (T, 7) of
-`[dx, dy, dz, drx, dry, drz, grip]` at `hw.control.action_rate_hz` (10 Hz),
-already in metres / radians / aperture units (LeRobot policies unnormalise
-their own output). `--action-space absolute` instead reads the six pose
-channels as ABSOLUTE base-frame poses and differences them with
+VERIFIED against lerobot 0.4.4 (`lerobot/utils/control_utils.py:predict_action`,
+`lerobot/async_inference/policy_server.py:_predict_action_chunk`): a LeRobot
+policy is NOT called on raw observations. Normalisation, pi05's state
+DISCRETISATION into the PaliGemma prompt (`Pi05PrepareStateTokenizerProcessorStep`)
+and tokenisation all live in a `PolicyProcessorPipeline` saved WITH the
+checkpoint, and unnormalisation lives in the matching post-processor. So the
+call chain here is exactly LeRobot's:
+
+    raw numpy -> torch -> preprocessor -> predict_action_chunk
+              -> postprocessor (per chunk step) -> numpy
+
+`predict_action_chunk` for pi05 reads only the image keys and the tokenised
+prompt; the state reaches the model INSIDE that prompt, which is why the
+pipelines are load-bearing rather than a convenience. Skipping them
+(`--no-processors`) feeds the model normalised-space garbage and is offered
+only for a policy that genuinely ships no pipeline.
+
+Action contract: the post-processed chunk is (T, 7) of
+`[dx, dy, dz, drx, dry, drz, grip]` at `hw.control.action_rate_hz` (10 Hz), in
+metres / radians / aperture units. `--action-space absolute` instead reads the
+six pose channels as ABSOLUTE base-frame poses and differences them with
 `phantom.data.derived.pose_delta`, the same rotvec-continuity convention the
 executor's cumulative-sum playback assumes.
 
@@ -128,12 +147,19 @@ class LeRobotPolicy:
                  image_key: str = DEFAULT_IMAGE_KEY,
                  state_key: str = DEFAULT_STATE_KEY,
                  pad_mode: str = "hold", device: str = "cpu",
-                 use_task_key: bool = True):
+                 use_task_key: bool = True,
+                 preprocessor=None, postprocessor=None):
         assert action_space in ACTION_SPACES, \
             f"action_space must be one of {ACTION_SPACES}, got {action_space!r}"
         assert pad_mode in PAD_MODES, \
             f"pad_mode must be one of {PAD_MODES}, got {pad_mode!r}"
         self.policy = policy
+        # LeRobot's PolicyProcessorPipelines, loaded from the checkpoint.
+        # `preprocessor` carries the dataset normalisation stats, pi05's
+        # state->prompt discretisation and the PaliGemma tokeniser;
+        # `postprocessor` carries the matching unnormalisation.
+        self.preprocessor = preprocessor
+        self.postprocessor = postprocessor
         self.hw = hw
         self.action_space = action_space
         self.image_size = int(image_size)
@@ -158,7 +184,14 @@ class LeRobotPolicy:
         # live; the rest exist so `configure` and the tag line do not crash,
         # and `assert_deploy_flags` refuses the ones that would LIE.
         self.task_text = task_text
-        self.nfe = getattr(getattr(policy, "config", None), "num_steps", None)
+        # pi05's flow-matching denoise steps are the direct analogue of our
+        # `nfe`, and `predict_action_chunk` forwards `num_steps` down to
+        # `sample_actions` — so --nfe stays a real latency lever and the
+        # `nfe{...}` cond_tag stays honest. `_nfe_kwarg` records whether this
+        # policy actually accepts it (probed on the first replan).
+        self.nfe = getattr(getattr(policy, "config", None),
+                           "num_inference_steps", None)
+        self._nfe_kwarg: bool | None = None
         self.guidance = 1.0
         self.k_seeds = 1
         self.parity_fixes = False
@@ -212,7 +245,10 @@ class LeRobotPolicy:
         img = np.ascontiguousarray(img.transpose(2, 0, 1), dtype=np.float32)
         return {self.image_key: img[None],          # (1, 3, S, S)
                 self.state_key: state[None],        # (1, 7)
-                "task": [self.task_text]}
+                # a plain str, exactly as LeRobot's own `predict_action`
+                # passes it; `AddBatchDimensionComplementaryDataStep` wraps
+                # it into a one-element list inside the pipeline
+                "task": self.task_text}
 
     def _to_torch(self, batch: dict) -> dict:
         import torch
@@ -220,44 +256,69 @@ class LeRobotPolicy:
         for k, v in batch.items():
             if k == "task":
                 if self.use_task_key:
-                    out[k] = list(v)
+                    out[k] = v
                 continue
             out[k] = torch.from_numpy(np.asarray(v)).to(self.device)
         return out
 
     # -- action --------------------------------------------------------
-    def _raw_chunk(self, batch: dict) -> np.ndarray:
-        """(T, A) numpy chunk out of whichever LeRobot entry point exists.
+    def _call_chunk(self, fn, batch):
+        """`predict_action_chunk`, passing `--nfe` through as `num_steps` when
+        the policy accepts it. Probed once, then remembered: a policy whose
+        chunk call takes no kwargs must not raise on every replan."""
+        want = int(self.nfe) if self.nfe else None
+        if want is None or self._nfe_kwarg is False:
+            return fn(batch)
+        try:
+            out = fn(batch, num_steps=want)
+        except TypeError:
+            self._nfe_kwarg = False
+            log.warning("%s.predict_action_chunk does not accept num_steps — "
+                        "--nfe %s is IGNORED; the checkpoint's own denoise "
+                        "step count runs", type(self.policy).__name__, want)
+            return fn(batch)
+        self._nfe_kwarg = True
+        return out
 
-        `predict_action_chunk` is the chunk-native call (pi0 / pi05 / ACT /
-        diffusion all expose it). `select_action` is the fallback: it returns
-        ONE action per call off the policy's internal queue, so H calls on the
-        same observation reproduce the chunk — correct, but it re-runs any
-        policy whose queue is shorter than H.
+    def _raw_chunk(self, batch: dict) -> np.ndarray:
+        """(T, A) numpy chunk, through LeRobot's own pre/post pipelines.
+
+        Mirrors `lerobot.async_inference.policy_server._predict_action_chunk`:
+        the pre-processor normalises / tokenises, `predict_action_chunk` is the
+        chunk-native call every LeRobot policy exposes, and the post-processor
+        unnormalises ONE chunk step at a time — it is written for a
+        `(B, action_dim)` action, not for a `(B, T, action_dim)` chunk.
+
+        `select_action` is the fallback for a policy without the chunk call: it
+        pops one action per call off the policy's internal queue, so H calls on
+        the same observation reproduce the head of the chunk.
         """
         import torch
         with torch.no_grad():
+            if self.preprocessor is not None:
+                batch = self.preprocessor(batch)
             fn = getattr(self.policy, "predict_action_chunk", None)
             if callable(fn):
-                out = fn(batch)
-                arr = np.asarray(out.detach().float().cpu().numpy(), dtype=np.float64)
-                if arr.ndim == 3:
-                    arr = arr[0]
-                elif arr.ndim == 1:
-                    arr = arr[None]
-                return arr
-            sel = getattr(self.policy, "select_action", None)
-            if not callable(sel):
-                raise AttributeError(
-                    f"{type(self.policy).__name__} exposes neither "
-                    "`predict_action_chunk` nor `select_action` — this is not "
-                    "a LeRobot PreTrainedPolicy")
-            rows = []
-            for _ in range(self.H):
-                a = sel(batch)
-                a = np.asarray(a.detach().float().cpu().numpy(), dtype=np.float64)
-                rows.append(a.reshape(-1)[:])
-            return np.stack(rows)
+                out = self._call_chunk(fn, batch)
+                if out.ndim == 1:            # (A,)
+                    out = out[None, None]
+                elif out.ndim == 2:          # (T, A) — no batch dim
+                    out = out[None]
+            else:
+                sel = getattr(self.policy, "select_action", None)
+                if not callable(sel):
+                    raise AttributeError(
+                        f"{type(self.policy).__name__} exposes neither "
+                        "`predict_action_chunk` nor `select_action` — this is "
+                        "not a LeRobot PreTrainedPolicy")
+                rows = [sel(batch) for _ in range(self.H)]
+                rows = [r[None] if r.ndim == 1 else r for r in rows]   # (B, A)
+                out = torch.stack(rows, dim=1)                          # (B,T,A)
+            if self.postprocessor is not None:
+                out = torch.stack([self.postprocessor(out[:, i, :])
+                                   for i in range(out.shape[1])], dim=1)
+            return np.asarray(out[0].detach().float().cpu().numpy(),
+                              dtype=np.float64)
 
     def _to_deltas(self, chunk: np.ndarray, tcp_pose: np.ndarray) -> np.ndarray:
         """(T, 7) policy output -> (T, 7) base-frame deltas + gripper."""
@@ -332,7 +393,11 @@ class LeRobotPolicy:
                   "policy_class": type(self.policy).__name__,
                   "action_space": self.action_space,
                   "chunk_steps": int(chunk.shape[0]),
-                  "padded_steps": int(padded)},
+                  "padded_steps": int(padded),
+                  "nfe": int(self.nfe) if self.nfe else 0,
+                  # whether --nfe actually reached the policy, so a trace
+                  # never claims a denoise budget the model ignored
+                  "nfe_applied": bool(self._nfe_kwarg)},
         )
 
 
@@ -340,10 +405,12 @@ class LeRobotPolicy:
 # loading
 # ---------------------------------------------------------------------------
 def load_lerobot_policy(ckpt: str, *, policy_type: str = "pi05",
-                        device: str = "cuda"):
-    """`from_pretrained` on the LeRobot policy class for `policy_type`.
+                        device: str = "cuda", with_processors: bool = True):
+    """Load the policy AND the processor pipelines saved with the checkpoint.
 
-    Imported lazily and only here: `phantom` must stay installable (and its
+    Returns `(policy, preprocessor, postprocessor)`; the pipelines are None
+    when `with_processors` is False or the checkpoint ships none. lerobot is
+    imported lazily and only here: `phantom` must stay installable (and its
     tests runnable) without lerobot on the path."""
     cls = _policy_class(policy_type)
     log.info("loading %s from %s (%s)", cls.__name__, ckpt, device)
@@ -353,7 +420,53 @@ def load_lerobot_policy(ckpt: str, *, policy_type: str = "pi05",
     reset = getattr(policy, "reset", None)
     if callable(reset):
         reset()
-    return policy
+    pre = post = None
+    if with_processors:
+        # exactly the async policy server's construction (lerobot 0.4.4)
+        from lerobot.policies.factory import make_pre_post_processors
+        dev = {"device": device}
+        pre, post = make_pre_post_processors(
+            policy.config, pretrained_path=ckpt,
+            preprocessor_overrides={"device_processor": dev},
+            postprocessor_overrides={"device_processor": dev})
+    return policy, pre, post
+
+
+def check_checkpoint_contract(policy, *, image_key: str, action_dim: int,
+                              chunk_horizon: int) -> None:
+    """Loud, load-time check that the checkpoint matches the deploy contract.
+
+    Every one of these is a silent-wrong-answer at runtime otherwise: a
+    missing camera key is padded with a BLANK image (`_preprocess_images`
+    fills absent `config.image_features` with -1s and a zero mask), and a
+    different action dimension means the six pose channels are not the pose
+    channels."""
+    cfg = getattr(policy, "config", None)
+    if cfg is None:
+        log.warning("policy has no `config` — skipping the checkpoint contract "
+                    "check; verify the camera key and action layout by hand")
+        return
+    feats = getattr(cfg, "image_features", None)
+    if feats is not None and image_key not in feats:
+        raise RuntimeError(
+            f"checkpoint expects image keys {sorted(feats)} but the adapter "
+            f"sends {image_key!r}. A missing camera is silently padded with a "
+            "BLANK image, so this would run and produce nonsense. Fix the "
+            "exporter's camera name or pass --image-key.")
+    out = getattr(cfg, "output_features", None)
+    try:
+        n = int(out["action"].shape[0])
+    except Exception:                                # noqa: BLE001
+        n = None
+    if n is not None and n != action_dim:
+        raise RuntimeError(
+            f"checkpoint predicts {n} action dims, the deploy contract needs "
+            f"{action_dim} ([dx dy dz drx dry drz grip]). Re-export or remap.")
+    n_steps = getattr(cfg, "n_action_steps", None)
+    if n_steps is not None and int(n_steps) < chunk_horizon:
+        log.warning("checkpoint returns %d action steps but the deploy horizon "
+                    "is %d — the tail will be PADDED every replan",
+                    int(n_steps), chunk_horizon)
 
 
 def _policy_class(policy_type: str):
