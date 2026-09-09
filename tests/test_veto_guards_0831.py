@@ -182,7 +182,7 @@ def test_the_release_wins_the_race_with_a_latched_close():
         worker.start()
         ex._grip_target = 0.9                       # latched close
         time.sleep(0.002)                           # let the worker pick it up
-        ex._halt("hitbox_exit")
+        ex._halt("wrench_limit")
         worker.join(timeout=2.0)
         assert not worker.is_alive()
         assert g.moves, "release never ran"

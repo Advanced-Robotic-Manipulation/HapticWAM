@@ -156,6 +156,10 @@ def held_selection():
 
 def sim_tick(ad, t, selection, budget, rejects=0, qd=None):
     observe(ad, t, pose=POSE, q=Q, qd=qd, grip=0.63)
+    if t == 0.0:
+        # These tests exercise an executing servo hold. Native startup emits
+        # no command before a plan, so explicitly supply the initial plan.
+        assert ad.submit(plan(t, tcp=POSE, delta=0.002, grip=0.63), t)
     command = ad.step(t)
     telemetry = {}
     achieved, rejects = report_servo_limiter_execution(

@@ -64,7 +64,8 @@ def test_hitbox_top_exit_is_not_a_letgo():
     """Rig 2026-09-01: the first tactile-confirmed grasp lifted past the
     hitbox ceiling and 'hitbox_exit' (a let-go reason) opened the fingers at
     z=0.49 m — the object was dropped. A pure top-face exit must stop the
-    episode WITHOUT releasing; every other face keeps let-go semantics."""
+    episode WITHOUT releasing. Side-face exits now retain the accepted
+    gripper target too; all faces remain episode stops."""
     import time as _time
 
     import pytest
@@ -73,7 +74,7 @@ def test_hitbox_top_exit_is_not_a_letgo():
     from test_rig_safety_0828 import _fresh, _rings
 
     assert not is_letgo_reason("hitbox_exit_top")
-    assert is_letgo_reason("hitbox_exit")
+    assert not is_letgo_reason("hitbox_exit")
 
     hw = make_small_hw()
     ws = hw.safety.workspace_m

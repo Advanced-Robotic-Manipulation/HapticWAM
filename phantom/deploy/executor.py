@@ -29,7 +29,12 @@ from phantom.deploy.release_controller import (
     make_release_controller,
     original_policy_grip,
 )
-from phantom.deploy.safety import SafetyAction, SafetyMonitor
+from phantom.deploy.safety import (
+    LETGO_STOP_REASONS as LETGO_STOP_REASONS,
+    SafetyAction,
+    SafetyMonitor,
+    is_letgo_reason as is_letgo_reason,
+)
 from phantom.drivers.base import Arm, Gripper
 
 if TYPE_CHECKING:
@@ -44,20 +49,17 @@ log = logging.getLogger(__name__)
 #: squeezing at the pad ceiling through the label prompt and the "clear the
 #: arm's path" prompt — minutes, unattended — is the opposite of that
 #: (validation_0830/safety-final.md §4).
-LETGO_STOP_REASONS = ("wrench_limit", "hitbox_exit", "veto_retry_cap")
+# Re-export the shared safety classifier above for existing executor callers.
 
 
 def halt_reason_for(events) -> str:
-    """Executor stop reason for a STOP_EPISODE verdict: a stop made ONLY of
-    lift_complete events is the SUCCESS end (never a let-go); anything else
-    stays the generic safety_stop whose events carry the let-go granularity."""
+    """Preserve the legacy lift_complete reason only for that event alone.
+
+    Other verdicts retain safety_stop and their detailed events. A stop reason
+    does not establish object placement or full-task success.
+    """
     kinds = {getattr(e, "kind", "") for e in (events or [])}
     return "lift_complete" if kinds and kinds == {"lift_complete"} else "safety_stop"
-
-
-def is_letgo_reason(name: str | None) -> bool:
-    return bool(name) and (str(name).startswith("tactile_")
-                           or str(name) in LETGO_STOP_REASONS)
 
 
 class ChunkExecutor:
@@ -209,10 +211,17 @@ class ChunkExecutor:
 
         On a stop that means "let go" (`is_letgo_reason` over the reason and
         over the safety events behind a generic `safety_stop`) the gripper is
-        commanded OPEN once, synchronously, BEFORE `_stop` is set — after that
-        the gripper worker exits without sending anything and the next
+        commanded OPEN once, synchronously, AFTER `_stop` and the mailbox are
+        invalidated. The I/O lock orders release after an already-issued move;
+        a waiting worker cannot send a new command. The next
         `gripper.move` in the whole deploy path is the NEXT episode's homing
-        (start_pose.py:208)."""
+        (start_pose.py:208).
+
+        A hitbox boundary by itself sends no new gripper move: the driver's
+        accepted target remains active. An already-issued I/O transaction can
+        still finish; a halt cannot undo it. Do not substitute measured closure
+        or a waiting mailbox proposal; either can unload the grasp.
+        """
         self._set_reason(reason)
         if getattr(self, "release_controller", None) is not None:
             with self._release_lock:
@@ -438,7 +447,8 @@ class ChunkExecutor:
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
                 # the EVENTS carry the granularity `safety_stop` loses: a
-                # tactile/wrench/hitbox stop must also open the fingers
+                # tactile/wrench stops must also open the fingers; a pure
+                # hitbox boundary retains the accepted gripper command
                 self._halt(halt_reason_for(verdict.events), events=verdict.events)
                 break
             if verdict.action == SafetyAction.CLAMP:

@@ -359,7 +359,7 @@ def _ex_with_gripper(hw, g, **kw):
     ("safety_stop", [("tactile_fz", SafetyAction.STOP_EPISODE)], True),
     ("safety_stop", [("tactile_depth", SafetyAction.STOP_EPISODE)], True),
     ("safety_stop", [("wrench_limit", SafetyAction.STOP_EPISODE)], True),
-    ("safety_stop", [("hitbox_exit", SafetyAction.STOP_EPISODE)], True),
+    ("safety_stop", [("hitbox_exit", SafetyAction.STOP_EPISODE)], False),
     ("veto_retry_cap", [], True),
     ("camera_scene_stale", [], False),
     ("replan_cap", [], False),

@@ -50,6 +50,7 @@ from phantom.deploy.safety import (
     SafetyMonitor,
     arm_stale_s,
     camera_stale_s,
+    is_letgo_reason,
 )
 
 log = logging.getLogger(__name__)
@@ -861,14 +862,13 @@ class SimulationPolicyAdapter:
             return None
         if self.stopped_reason:
             target = self._last_cmd.copy()
-            if any(
-                k.startswith("tactile_")
-                or k in ("wrench_limit", "hitbox_exit", "veto_retry_cap")
-                for k in kinds + [self.stopped_reason]
-            ):
+            if any(is_letgo_reason(k) for k in kinds + [self.stopped_reason]):
                 self.clear_grip_latch()
                 grip = self.open_aperture
             else:
+                # report_execution retains the accepted drive command here.
+                # Replacing it with measured closure would unload a finite-P
+                # gripper at a boundary halt; the arm remains stopped.
                 grip = self._last_grip
             if self.release_controller is not None:
                 self.release_controller.stop()

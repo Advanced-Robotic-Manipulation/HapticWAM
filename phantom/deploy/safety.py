@@ -43,6 +43,17 @@ class SafetyVerdict:
     events: list[SafetyEvent] = field(default_factory=list)
 
 
+# Shared native/simulator stop disposition; no driver import is needed.
+# Boundary events stop motion while retaining the accepted gripper target.
+LETGO_STOP_REASONS = ("wrench_limit", "veto_retry_cap")
+
+
+def is_letgo_reason(name: str | None) -> bool:
+    """Force/tactile and explicit veto stops release, including simultaneous events."""
+    return bool(name) and (str(name).startswith("tactile_")
+                          or str(name) in LETGO_STOP_REASONS)
+
+
 def camera_stale_s(hw: HardwareConfig) -> float:
     """How old the newest scene frame may be before the episode is stopped.
 
@@ -286,12 +297,10 @@ class SafetyMonitor:
         if hb is not None:
             p3 = self.clamp_target(np.asarray(tcp_target, dtype=np.float64))[:3]
             if not hb.contains(p3):
-                # A pure TOP-face exit is a successful lift outgrowing the
-                # demo envelope, not the policy getting lost sideways — stop
-                # the episode but do NOT let go: "hitbox_exit" is a let-go
-                # reason in the executor, and opening the fingers half a
-                # metre up drops a held object (rig 2026-09-01: the first
-                # tactile-confirmed grasp was dropped exactly this way).
+                # Keep the legacy top-face event distinct for diagnostics.
+                # Every boundary still stops the episode; it does not prove
+                # a successful lift or placement. The executor holds the
+                # accepted gripper target unless another event requires release.
                 only_top = (p3[2] > hb.z[1]
                             and hb.x[0] <= p3[0] <= hb.x[1]
                             and hb.y[0] <= p3[1] <= hb.y[1])
