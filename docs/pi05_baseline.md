@@ -170,10 +170,16 @@ speed, refused flags, the checkpoint contract check, the reset/seed path, and
 an `info` + `replan` round trip over a real localhost policy-server wire whose
 plans the real `ChunkExecutor` accepts.
 
-The LeRobot names the adapter binds to were read from the real
-`lerobot 0.4.4` wheel: `get_policy_class("pi05")`, `PI05Policy.from_pretrained`
-/ `reset` / `select_action` / `predict_action_chunk`,
-`make_pre_post_processors`, and `PI05Config.num_inference_steps`.
+Every LeRobot name the adapter binds to was checked against an installed
+`lerobot 0.4.4`, by introspection and not from memory:
+`get_policy_class("pi05")` resolves `PI05Policy`, which has `from_pretrained`,
+`reset`, `select_action` and `predict_action_chunk`; the chunk call takes
+`**kwargs` and so accepts `num_steps`, while `select_action` does not;
+`make_pre_post_processors(policy_cfg, pretrained_path=...)` is the pipeline
+factory. `PI05Config` defaults: `num_inference_steps` 10, `chunk_size` 50,
+`n_action_steps` 50, `image_resolution` (224, 224), `max_state_dim` 32. The
+224 default here therefore matches pi05's own resolution exactly, so its
+internal `resize_with_pad` is a no-op on our frames.
 
 Still needs the real checkpoint: that the fine-tune's saved processor
 statistics are the ones we expect, the exported camera key matching
