@@ -236,8 +236,41 @@ decay to 2.5e-6 (auto-scaled from 30k to the 20k we run). 20,000 steps at batch
 `last` a symlink to the newest. Each holds `pretrained_model/` (weights,
 policy config, train config **and the saved pre/post-processor pipeline** --
 this is what the deploy adapter loads) plus `training_state/` for resuming.
-lerobot 0.4.4 prunes nothing, so keep an eye on the disk: the box had 56 GB
-free at launch.
+
+Measured at step 2500: **9.1 GB per checkpoint**. lerobot 0.4.4 prunes nothing
+and the box had 54 GB free at launch, so the eight checkpoints this run wants
+(73 GB) do not fit -- it would hit ENOSPC around step 15000.
+`~/lerobot/prune_checkpoints.sh <run_dir> <keep_n> [--apply]` keeps the newest
+N and refuses to touch anything that is not a six-digit checkpoint directory
+under a `runs/` path, or whatever `last` points at. It is NOT wired to run
+automatically: deleting anything needs Mikhail's explicit say-so.
+
+### What the deploy adapter gets, and the one thing it must fix
+
+Read off the step-2500 checkpoint, so this is what it will see:
+
+| | value |
+| --- | --- |
+| `config.image_features` | exactly `['observation.images.scene']` -- no `--rename_map`, the adapter's key matches the checkpoint's |
+| saved `rename_observations_processor` | empty map, so nothing is silently renamed under the adapter |
+| action feature | `(7,)` -- passes the adapter's action-dim contract |
+| `chunk_size` / `n_action_steps` / `num_inference_steps` | 50 / 16 / 10 |
+| normalisation | `policy_preprocessor_step_2_normalizer_processor.safetensors` and the matching unnormalizer, both written from THIS dataset's stats |
+
+**The tokenizer path is absolute and local to compute2.** The saved
+preprocessor carries
+`tokenizer_processor.tokenizer_name = /home/isr-lab-4/lerobot/paligemma_tokenizer`,
+which will not exist on the deploy box. Either ship that directory to the same
+path beside the checkpoint, or override the step when the adapter builds its
+pipelines -- `make_pre_post_processors` already honours
+`preprocessor_overrides={"tokenizer_processor": {"tokenizer_name": <path>}}`
+next to the `device_processor` override it passes today.
+
+**Do not gate on the declared state shape.** `config.json` still says
+`observation.state` is `(32,)`, inherited from pi05_base: pi0.5 pads state to
+`max_state_dim` 32 inside `Pi05PrepareStateTokenizerProcessorStep`. The real
+input is our `(7,)` vector and the saved normalizer stats are 7-dimensional.
+The action feature was rewritten to 7 by training; the state feature was not.
 
 ### Offline evaluation
 
