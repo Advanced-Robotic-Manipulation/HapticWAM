@@ -199,13 +199,59 @@ class LeRobotPolicy:
         self.drop_video = False
         self.close_p = 0.5
 
-    # ------------------------------------------------------------------
-    def assert_deploy_flags(self, **flags) -> None:
-        """Refuse a launch that asked for a lever this policy cannot honour.
+    # -- live refusal of the levers this policy cannot honour -----------
+    # `RemotePolicy.__init__` sends run_deploy's whole lever set through
+    # `configure`, which does `setattr(policy, k, v)` server-side. Three of
+    # them are visible there, so they are refused at ATTACH rather than
+    # silently ignored: the error travels back as ("err", traceback),
+    # `RemotePolicy._call` raises, and `run_deploy --policy-server <addr>`
+    # exits 3 before the arm is touched. run_deploy always sends the DEFAULTS
+    # too, so only the unsupported VALUE raises.
+    #
+    # `--terminal-veto` is NOT in `remote.CONFIGURABLE` and never reaches the
+    # server, so it stays operator discipline (docs/pi05_baseline.md) plus
+    # `assert_deploy_flags` for any caller that does see the flags.
 
-        Called by `lerobot_server` at load and by `configure` at attach: a
-        silently-ignored `--terminal-veto` produces an arm tagged `veto:on`
-        that vetoed nothing (validation 2026-08-30 §9)."""
+    def _refuse(self, flag: str) -> None:
+        raise RuntimeError(
+            f"a LeRobot baseline cannot honour --{flag.replace('_', '-')}: "
+            f"{UNSUPPORTED_FLAGS[flag]}. Drop it from the run_deploy line — "
+            "running with it set would tag the arm with a condition it never "
+            "ran.")
+
+    @property
+    def parity_fixes(self) -> bool:
+        return False
+
+    @parity_fixes.setter
+    def parity_fixes(self, value) -> None:
+        if value:
+            self._refuse("parity_fixes")
+
+    @property
+    def drop_video(self) -> bool:
+        return False
+
+    @drop_video.setter
+    def drop_video(self, value) -> None:
+        if value:
+            self._refuse("drop_video")
+
+    @property
+    def k_seeds(self) -> int:
+        return 1
+
+    @k_seeds.setter
+    def k_seeds(self, value) -> None:
+        if int(value or 1) > 1:
+            raise RuntimeError(
+                "a LeRobot baseline cannot honour --k-seeds > 1: this policy "
+                "samples one chunk per replan; there is nothing to select "
+                "between. Drop it from the run_deploy line.")
+
+    def assert_deploy_flags(self, **flags) -> None:
+        """Refuse a whole flag set at once, for a caller that can see it all
+        (including `--terminal-veto`, which never reaches the server)."""
         bad = [f"--{k.replace('_', '-')}: {why}"
                for k, why in UNSUPPORTED_FLAGS.items() if flags.get(k)]
         if int(flags.get("k_seeds") or 1) > 1:

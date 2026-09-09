@@ -100,13 +100,21 @@ runs; `--ckpt` on the `run_deploy` line only warns when it disagrees.
 
 ### Flags that MUST be off
 
-| flag | why |
-| --- | --- |
-| `--terminal-veto` | no ACC head. `p_evt` is `zeros(5)`, so `p_contact = 1.0` and the close-mask allows every close while logging `close_allowed` — an arm tagged `veto:on` that vetoes nothing. `run_deploy.assert_acc_head` refuses this for phantom checkpoints; `LeRobotPolicy.assert_deploy_flags` refuses it here. |
-| `--parity-fixes` | there is no `prev_chunk` conditioning and no ACC package to realign. |
-| `--k-seeds > 1` | one chunk per replan; there is nothing to select between. |
-| `--drop-video` | the scene image is this policy's only observation. |
-| `--persistent-noise` | inert (no held sampling noise); leave at the default. |
+| flag | why | enforced |
+| --- | --- | --- |
+| `--parity-fixes` | there is no `prev_chunk` conditioning and no ACC package to realign. | yes |
+| `--k-seeds > 1` | one chunk per replan; there is nothing to select between. | yes |
+| `--drop-video` | the scene image is this policy's only observation. | yes |
+| `--terminal-veto` | no ACC head. `p_evt` is `zeros(5)`, so `p_contact = 1.0` and the close-mask allows every close while logging `close_allowed` — an arm tagged `veto:on` that vetoes nothing. | **no** |
+| `--persistent-noise` | inert (no held sampling noise); leave at the default. | n/a |
+
+The three enforced flags travel to the server inside `configure`, which does
+`setattr` on the policy, so the adapter refuses them on the attribute itself:
+the attach fails and `run_deploy` exits 3 before the arm is touched. Sending
+the defaults stays silent, so an ordinary launch is unaffected.
+
+`--terminal-veto` is not in `remote.CONFIGURABLE` and never reaches the server,
+so it stays operator discipline. Leave it off.
 
 `--max-play-steps` / `--grip-play-steps` stay ON: the chunk-tail caps are
 executor-side and protect this policy exactly as they protect ours.

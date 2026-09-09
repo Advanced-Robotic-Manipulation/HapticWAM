@@ -396,6 +396,24 @@ def test_unsupported_deploy_flags_are_refused_not_ignored():
             ad.assert_deploy_flags(**kw)
 
 
+def test_setting_an_unsupported_lever_raises_so_configure_refuses_the_attach():
+    """`configure` does setattr(policy, k, v) server-side, so the refusal has
+    to live on the ATTRIBUTE. run_deploy sends the defaults on every launch —
+    those must stay silent."""
+    hw = _hw()
+    ad = _adapter(hw, _delta_chunk(hw.control.chunk_horizon))
+    ad.parity_fixes = False                     # the default: no complaint
+    ad.k_seeds = 1
+    ad.drop_video = False
+    with pytest.raises(RuntimeError, match="prev_chunk"):
+        ad.parity_fixes = True
+    with pytest.raises(RuntimeError, match="one chunk per replan"):
+        ad.k_seeds = 4
+    with pytest.raises(RuntimeError, match="only observation"):
+        ad.drop_video = True
+    assert (ad.parity_fixes, ad.k_seeds, ad.drop_video) == (False, 1, False)
+
+
 def test_reset_episode_clears_the_queue_and_a_seed_reaches_the_rng():
     hw = _hw()
     ad = _adapter(hw, _delta_chunk(hw.control.chunk_horizon))
@@ -455,6 +473,19 @@ def test_info_and_replan_round_trip_over_the_real_wire(live_server):
     client.close()
     time.sleep(0.1)
     assert RemotePolicy.probe(("127.0.0.1", port))["busy"] is False
+
+
+def test_attaching_with_k_seeds_is_refused_over_the_wire(live_server):
+    """The refusal must reach run_deploy as a hard error at ATTACH — before
+    anything is sent to the robot — not as a silently ignored lever."""
+    hw, srv, port = live_server
+    with pytest.raises(RuntimeError, match="one chunk per replan"):
+        RemotePolicy(("127.0.0.1", port), {"k_seeds": 4})
+    time.sleep(0.1)
+    # ... and a clean launch still attaches afterwards
+    ok = RemotePolicy(("127.0.0.1", port), {"k_seeds": 1, "parity_fixes": False})
+    assert ok.info["busy"] is True
+    ok.close()
 
 
 # ------------------------------------------------------------------ digests
