@@ -238,12 +238,21 @@ policy config, train config **and the saved pre/post-processor pipeline** --
 this is what the deploy adapter loads) plus `training_state/` for resuming.
 
 Measured at step 2500: **9.1 GB per checkpoint**. lerobot 0.4.4 prunes nothing
-and the box had 54 GB free at launch, so the eight checkpoints this run wants
-(73 GB) do not fit -- it would hit ENOSPC around step 15000.
-`~/lerobot/prune_checkpoints.sh <run_dir> <keep_n> [--apply]` keeps the newest
-N and refuses to touch anything that is not a six-digit checkpoint directory
-under a `runs/` path, or whatever `last` points at. It is NOT wired to run
-automatically: deleting anything needs Mikhail's explicit say-so.
+and `/` had 45 GB free after that first one, so the eight checkpoints this run
+wants (73 GB) do not fit -- untouched, it hits ENOSPC around step 15000.
+
+Two scripts sit on compute2, and only one of them is running:
+
+* `~/lerobot/archive_checkpoints.sh <train_pid> <min_free_GB>` -- ARMED. When
+  `/` drops below 14 GB it RELOCATES the oldest checkpoint to the box's second
+  disk (`/media/isr-lab-4/Main/pi05_phantom_expert_v1_checkpoints`, 307 GB
+  free) and nothing else. Nothing is deleted; `mv` unlinks the source only
+  after the copy lands, so every checkpoint stays readable, just not on `/`.
+  It never touches the newest checkpoint or whatever `last` resolves to, and
+  it exits when the training pid does.
+* `~/lerobot/prune_checkpoints.sh <run_dir> <keep_n> [--apply]` -- NOT armed,
+  and deliberately so. It genuinely deletes, which needs Mikhail's explicit
+  say-so; without `--apply` it only prints what it would remove. Same guards.
 
 ### What the deploy adapter gets, and the one thing it must fix
 
@@ -294,6 +303,14 @@ uniform` spreads them over the whole episode and is the easier metric -- quote
 which one). Every row also carries `zero_endpoint_err_mm`, the same metric for
 a policy that proposes no motion at all: that is the scale reference a
 fine-tune has to beat before any of the numbers mean anything.
+
+Exercised end to end against the step-2500 checkpoint (CPU, 2 windows, while
+the GPU stayed on training). It loads the checkpoint and its saved pipelines,
+runs the chunk, and reports 50.2 mm endpoint against 53.7 mm for the no-motion
+reference -- i.e. 0.94x, a model that has learnt essentially nothing yet at
+step 2500 out of 20000. That is the expected reading this early and it is the
+point of quoting the reference: the tooling is verified, the number is not yet
+a result. Re-run it on the finished checkpoint with the GPU free.
 
 ## Deploy adapter
 
