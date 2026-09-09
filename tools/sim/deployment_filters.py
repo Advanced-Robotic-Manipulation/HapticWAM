@@ -180,9 +180,14 @@ class TerminalVetoFilter:
 
     VETO_RECOVERY_REPLANS = 1
 
-    def __init__(self, hw, config=None, *, wrench_base=None, implementation="live"):
+    def __init__(self, hw, config=None, *, wrench_base=None, implementation="live", controller_profile=None):
         if implementation not in ("live", "fd4a032"):
             raise ValueError("terminal veto implementation must be live or fd4a032")
+        if controller_profile not in (None, "minimal_v5"):
+            raise ValueError(f"Unknown placement controller profile: {controller_profile}")
+        if controller_profile == "minimal_v5" and implementation != "fd4a032":
+            raise ValueError("minimal_v5 requires the explicit fd4a032 veto implementation")
+        self.controller_profile = controller_profile
         self.implementation = implementation
         self.hw = hw
         self.veto = (
@@ -248,6 +253,7 @@ class TerminalVetoFilter:
         return (
             "current_delivery"
             if getattr(adapter, "release_controller", None) is not None
+            and getattr(adapter, "controller_profile", None) != "minimal_v5"
             else "request_snapshot_historical"
         )
 
@@ -343,13 +349,17 @@ class TerminalVetoFilter:
             if self.implementation == "live"
             else self._apply_veto_historical
         )
-        rec = apply_veto(
-            filtered,
-            veto_tcp,
-            veto_grip,
-            self.state,
-            self.replan_index,
-        )
+        if self.controller_profile == "minimal_v5":
+            from phantom.deploy.minimal_v5 import HistoricalV5VetoMixin
+
+            # The profile shares the native decision implementation, while the
+            # bridge retains its explicit simulated delivery clock and rings.
+            rec = HistoricalV5VetoMixin._apply_veto_historical(
+                self, filtered, veto_tcp, veto_grip, self.state, self.replan_index
+            )
+            rec["controller_profile"] = self.controller_profile
+        else:
+            rec = apply_veto(filtered, veto_tcp, veto_grip, self.state, self.replan_index)
         # Explicit placement variant: the native whole-chunk max test can call
         # an opening prefix "closing" because of a later close sample. Only
         # restore the teacher's opening samples inside the declared release

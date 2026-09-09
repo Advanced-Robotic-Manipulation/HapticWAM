@@ -11,19 +11,23 @@ from phantom.sim.remote_policy import CONFIGURABLE, PLAN_FIELDS, RemoteSimulatio
 
 
 class Connection:
-    def __init__(self):
+    def __init__(self, *, wrench_baseline_rows=None):
         self.closed = False
         self.close_event = threading.Event()
         self.settings = {k: None for k in CONFIGURABLE}
         self.settings.update(task_text="recorded task", nfe=12, parity_fixes=True)
         self.requests = []
         self.available = True
+        self.wrench_baseline_rows = wrench_baseline_rows
 
     def send(self, message):
         self.requests.append(message)
         kind = message[0]
         if kind == "info":
-            self.reply = ("ok", {"ckpt": "/runs/test.pt", "warmed": True})
+            self.reply = ("ok", {
+                "ckpt": "/runs/test.pt", "warmed": True,
+                "wrench_baseline_rows": self.wrench_baseline_rows,
+            })
         elif kind == "configure":
             self.settings.update(message[1])
             self.reply = ("ok", {"effective": self.settings.copy()})
@@ -95,6 +99,16 @@ def test_response_timeout_discards_connection(monkeypatch):
     with pytest.raises(ConnectionError, match="closed"):
         policy.reset_episode()
     policy.close()
+
+
+@pytest.mark.parametrize("rows,expected", [(None, 0), (0, 0), (8, 8)])
+def test_checkpoint_baseline_property_is_mirrored_without_configuration(monkeypatch, rows, expected):
+    connection = Connection(wrench_baseline_rows=rows)
+    monkeypatch.setattr("multiprocessing.connection.Client", lambda *a, **k: connection)
+    with RemoteSimulationPolicy() as policy:
+        assert policy.wrench_baseline_rows == expected
+        assert connection.requests == [("info",), ("configure", {})]
+    assert "wrench_baseline_rows" not in CONFIGURABLE
 
 
 def test_busy_server_handshake_times_out_and_late_connection_is_closed(monkeypatch):

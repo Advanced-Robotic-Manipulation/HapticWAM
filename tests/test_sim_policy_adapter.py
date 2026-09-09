@@ -89,9 +89,10 @@ def observe(
 
 def tick(ad, t, *, accepted=True, grip=True):
     command = ad.step(t)
-    ad.report_execution(
-        t, accepted=accepted, gripper_command=command.gripper if grip else None
-    )
+    if command is not None:
+        ad.report_execution(
+            t, accepted=accepted, gripper_command=command.gripper if grip else None
+        )
     return command
 
 
@@ -131,6 +132,8 @@ def test_measured_prev_chunk_uses_rotvec_continuity_and_confirmed_gripper():
         # Equivalent axis-angle representations must not create 2pi actions.
         pose[4] = np.pi if i % 2 == 0 else -np.pi
         observe(ad, t, pose=pose)
+        if i == 0:
+            assert ad.submit(plan(), t)
         ad.step(t)
         ad.report_execution(t, accepted=True, gripper_command=0.42)
     prev = ad.snapshot().prev_chunk
@@ -145,9 +148,9 @@ def test_policy_latency_activates_on_sim_time_and_preserves_accepted_feedback():
     pending = ad.replan()
     assert pending.action_times[0] == pytest.approx(0.2)
     assert ad.policy.calls[-1][1] is None
-    assert not tick(ad, 0).diagnostics["plan_activated"]
+    assert tick(ad, 0) is None
     observe(ad, 0.199)
-    assert not tick(ad, 0.199).diagnostics["plan_activated"]
+    assert tick(ad, 0.199) is None
     observe(ad, 0.2)
     activated = tick(ad, 0.2)
     assert activated.diagnostics["plan_activated"]
@@ -271,6 +274,7 @@ def test_ik_rejection_never_enters_executed_history_and_stops_at_limit():
 def test_feedback_can_report_ik_shortening_and_requires_pending_timestamp():
     ad = adapter()
     observe(ad)
+    assert ad.submit(plan(), 0)
     ad.step(0)
     with pytest.raises(RuntimeError, match="report_execution"):
         ad.step(0.1)
@@ -286,6 +290,8 @@ def test_accepted_targets_do_not_fabricate_measured_motion():
     for t in (0.0, 0.1, 0.2):
         # The controller is accepted, but contact/stall prevents any movement.
         observe(ad, t, pose=POSE)
+        if t == 0:
+            assert ad.submit(plan(), t)
         command = ad.step(t)
         requested = command.tcp_pose.copy()
         requested[0] += 0.001

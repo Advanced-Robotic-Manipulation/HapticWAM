@@ -11,9 +11,10 @@ Loop contract::
     if adapter.ready_for_replan(t):
         adapter.replan(latency_s=recorded_latency)
     command = adapter.step(t)
-    # Solve IK seeded from the previous joints; apply bounded joint drives.
-    adapter.report_execution(t, accepted=ik_ok, tcp_pose=accepted_target,
-                             gripper_command=sent_closure)
+    if command is not None:
+        # Solve IK seeded from previous joints; apply bounded joint drives.
+        adapter.report_execution(t, accepted=ik_ok, tcp_pose=accepted_target,
+                                 gripper_command=sent_closure)
 
 TCP is in the UR base frame, metres + rotation vector in radians; it includes
 the configured tool offset. Joint order is shoulder_pan, shoulder_lift, elbow,
@@ -33,6 +34,7 @@ The simulator records accepted gripper targets directly; the real gripper's
 
 from __future__ import annotations
 
+import logging
 import time
 from collections import deque
 from collections.abc import Callable
@@ -49,6 +51,8 @@ from phantom.deploy.safety import (
     arm_stale_s,
     camera_stale_s,
 )
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -146,8 +150,10 @@ class SimulationPolicyAdapter:
     Its later delivery skips expired samples through the usual submit path.
     Rendering/physics continue on sim time; no wall-clock sleeps are used.
 
-    ``step`` requires feedback before the next tick. Commands rejected by IK
-    must never be presented as measured motion or executed-past actions.
+    ``step`` returns None while awaiting the first accepted plan: retain the
+    existing drive targets without reporting execution. Returned commands
+    require feedback before the next tick. Commands rejected by IK must never
+    be presented as measured motion or executed-past actions.
     Teacher mode requires complete tactile data for every configured pad.
     """
 
@@ -159,12 +165,14 @@ class SimulationPolicyAdapter:
         mode: str = "student",
         parity_fixes: bool = True,
         max_play_steps: int | None = 10,
+        grip_play_steps: int | None = None,
         open_aperture: float = 0.0,
         ik_reject_limit: int = 25,
         plan_filter: Callable | None = None,
         observation_callback: Callable | None = None,
         delivered_plan_callback: Callable | None = None,
         release_config=None,
+        controller_profile: str | None = None,
         policy_delivery_clock: str = "native",
         replan_clock: Callable[[], float] | None = None,
     ):
@@ -182,6 +190,8 @@ class SimulationPolicyAdapter:
             )
         if max_play_steps is not None and max_play_steps < 1:
             raise ValueError("max_play_steps must be positive or None")
+        if grip_play_steps is not None and grip_play_steps < 1:
+            raise ValueError("grip_play_steps must be positive or None")
         if not 0 <= open_aperture <= hw.gripper.max_close_cmd:
             raise ValueError("open_aperture is outside the configured closure limits")
         if ik_reject_limit < 1:
@@ -191,8 +201,12 @@ class SimulationPolicyAdapter:
         if replan_clock is not None and not callable(replan_clock):
             raise TypeError("replan_clock must be callable")
         self.hw, self.policy, self.mode = hw, policy, mode
+        self.wrench_baseline_rows = int(
+            getattr(policy, "wrench_baseline_rows", 0) or 0
+        )
         self.parity_fixes = bool(parity_fixes)
         self.max_play_steps = max_play_steps
+        self.grip_play_steps = grip_play_steps
         self.open_aperture = float(open_aperture)
         self.ik_reject_limit = int(ik_reject_limit)
         self.plan_filter = plan_filter
@@ -203,6 +217,21 @@ class SimulationPolicyAdapter:
         from phantom.deploy.release_controller import make_release_controller
 
         self.release_controller = make_release_controller(release_config, hw)
+        from phantom.deploy.minimal_v5 import validate_profile
+
+        self.controller_profile = controller_profile
+        self.controller_profile_metadata = validate_profile(
+            controller_profile,
+            release_config=self.release_controller.config if self.release_controller else None,
+            veto=getattr(plan_filter, "veto", None), mode=mode, hw=hw,
+        )
+        if controller_profile != getattr(plan_filter, "controller_profile", None):
+            raise ValueError("adapter and terminal veto controller profiles must agree")
+        if self.controller_profile_metadata is not None:
+            self.controller_profile_metadata = {
+                **self.controller_profile_metadata,
+                "sensor_inputs": "Simulator observations with native checkpoint preprocessing; tactile and wrist transfer remain unvalidated",
+            }
         self.governor = SpeedGovernor(hw.safety.governor)
         self.reset(reset_policy=False)
 
@@ -243,6 +272,7 @@ class SimulationPolicyAdapter:
             self.release_controller.reset()
         self._grip_hist: deque = deque(maxlen=self._history_capacity)
         self._prev_fields = None
+        self.reset_baseline()
         self.stopped_reason = None
         self.completed_reason = None
         self.completed_at_s = None
@@ -250,6 +280,45 @@ class SimulationPolicyAdapter:
         self.ik_rejects = self.ik_rejects_total = 0
         if self.plan_filter is not None and hasattr(self.plan_filter, "reset"):
             self.plan_filter.reset()
+
+    def reset_baseline(self) -> None:
+        """Capture each pad's zero offset again at the next teacher snapshot."""
+        self.wrench_base: dict[str, np.ndarray] = {}
+
+    def _baseline_for(self, name: str, ring) -> np.ndarray:
+        """Match native SnapshotBuilder's first-build, latest-N median.
+
+        The caller must hold the pads unloaded during startup. Like native
+        deployment, an early first snapshot uses the available rows and warns;
+        it neither waits for N rows nor updates the baseline during contact.
+        Only model contact-state wrench is corrected; safety keeps raw sensors.
+        """
+        rows = self.wrench_baseline_rows
+        if rows <= 0:
+            return np.zeros(6, np.float32)
+        if name not in self.wrench_base:
+            try:
+                _, tac = ring.latest(rows)
+                wrench = np.asarray(tac["wrench"], dtype=np.float32).reshape(-1, 6)
+                if len(wrench) < rows:
+                    log.warning(
+                        "tactile %s: wrench baseline from %d rows (< %d): ring not warm yet",
+                        name, len(wrench), rows,
+                    )
+                self.wrench_base[name] = np.median(wrench, axis=0).astype(np.float32)
+            except Exception:
+                # Native fallback preserves the raw pad wrench, not zero model
+                # observations. Normal snapshots validate the ring beforehand.
+                log.exception(
+                    "tactile %s: could not read the wrench baseline — using ZERO "
+                    "(the model input keeps this pad's offset)", name,
+                )
+                self.wrench_base[name] = np.zeros(6, np.float32)
+            log.info(
+                "tactile %s wrench baseline (%d rows) %s",
+                name, rows, np.round(self.wrench_base[name], 2).tolist(),
+            )
+        return self.wrench_base[name]
 
     def observe(
         self,
@@ -347,7 +416,9 @@ class SimulationPolicyAdapter:
                     raise ValueError(
                         f"tactile {name} infer_img must be grayscale or RGB uint8 at {(ih, iw)}"
                     )
-            self.rings.setdefault(f"tactile_{name}", _History(32)).push(tt, **fields)
+            self.rings.setdefault(
+                f"tactile_{name}", _History(max(32, self.wrench_baseline_rows))
+            ).push(tt, **fields)
         if self._last_cmd is None:
             self._last_cmd = pose.copy()
             self._last_grip = float(grip[0])
@@ -437,10 +508,11 @@ class SimulationPolicyAdapter:
                     else 1 / self.hw.recording.field_ds_rate_hz
                 )
                 derived = dv.derive_timestep(cur, prev, dt, self.hw)
+                baseline = self._baseline_for(sensor.name, ring)
                 contact.append(
                     np.concatenate(
                         [
-                            tac["wrench"][-1],
+                            np.asarray(tac["wrench"][-1], dtype=np.float32) - baseline,
                             [float(tac["area"][-1])],
                             np.nan_to_num(derived["cop"], nan=0.0),
                             [derived["slip"], derived["mask_frac"]],
@@ -610,6 +682,11 @@ class SimulationPolicyAdapter:
         if not np.isfinite(plan.sigma).all():
             raise ValueError("plan sigma must be finite")
 
+    def _grip_play_limit(self) -> int | None:
+        """Match native: gripper cannot outlive its own or the pose cap."""
+        limits = [int(limit) for limit in (self.max_play_steps, self.grip_play_steps) if limit]
+        return min(limits) if limits else None
+
     def _pose_at(self, plan, play_time):
         H = len(plan.actions)
         cap = H if self.max_play_steps is None else min(H, self.max_play_steps)
@@ -617,9 +694,9 @@ class SimulationPolicyAdapter:
         k = int(u)
         cum = np.cumsum(plan.actions[:, :6], axis=0)
         prev = cum[k - 1] if k else np.zeros(6)
-        return plan.t0_pose + prev + (u - k) * (cum[k] - prev), float(
-            plan.actions[k, 6]
-        )
+        grip_limit = self._grip_play_limit()
+        kg = k if grip_limit is None else min(k, grip_limit - 1)
+        return plan.t0_pose + prev + (u - k) * (cum[k] - prev), float(plan.actions[kg, 6])
 
     def submit(self, plan, t: float) -> bool:
         """Accept a ready plan, rebased at the last confirmed command."""
@@ -678,7 +755,7 @@ class SimulationPolicyAdapter:
             self._plan,
             self._play_time,
             self.hw.control.action_rate_hz,
-            self.max_play_steps,
+            self._grip_play_limit(),
         )
 
     def entered_grip_after(self, t):
@@ -690,8 +767,14 @@ class SimulationPolicyAdapter:
             self.stopped_reason = str(reason)
         self._pending = None
 
-    def step(self, t: float) -> SimulationCommand:
-        """Compute one safe TCP command; report actual execution afterwards."""
+    def step(self, t: float) -> SimulationCommand | None:
+        """Compute a safe command, or None while no plan has been accepted.
+
+        A missing plan must not turn measured closure into a new drive target.
+        Native ChunkExecutor leaves the previous hardware command active while
+        waiting. Simulator safety checks still run, and explicit safety stops
+        retain their existing hold/release behavior before the first plan.
+        """
         t = float(t)
         if self._last_cmd is None:
             raise RuntimeError("observe measured sensors before stepping")
@@ -772,6 +855,10 @@ class SimulationPolicyAdapter:
                 else "safety_stop"
             )
             self.request_stop(reason)
+        if self._plan is None and not self.stopped_reason:
+            # In particular, no feedback token, gripper-history entry or latch
+            # transition is created during sensor warmup / first inference.
+            return None
         if self.stopped_reason:
             target = self._last_cmd.copy()
             if any(

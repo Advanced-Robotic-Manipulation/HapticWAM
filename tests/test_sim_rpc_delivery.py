@@ -58,7 +58,7 @@ def test_rpc_delivery_skips_and_rebases_preserving_native_plan_and_cpk():
     assert p.diag["sim_effective_delivery_delay_s"] == 0.6
     tick(ad, 0)
     observe(ad, 0.592)
-    assert not tick(ad, 0.592).diagnostics["plan_activated"]
+    assert tick(ad, 0.592) is None
     observe(ad, 0.6)
     command = tick(ad, 0.6)
     assert command.diagnostics["plan_activated"]
@@ -95,9 +95,10 @@ def test_rpc_timer_excludes_observation_callback_and_expired_chunks_are_rejected
     tick(ad, 0)
     observe(ad, 3)
     command = tick(ad, 3)
-    assert not command.diagnostics["plan_activated"]
+    assert command is None
     assert deliveries == [False] and ad._plan is None
-    np.testing.assert_array_equal(command.tcp_pose, POSE)
+    np.testing.assert_array_equal(ad._last_cmd, POSE)
+    assert ad.gripper_cmd_at([3]) is None
 
 
 def test_rpc_override_fails_before_observation_or_inference():

@@ -630,3 +630,54 @@ def test_campaign_passes_frozen_teacher_sensor_and_release_profile(tmp_path):
         args.output / "runtime/placement_release.json"
     )
     assert "--record-packet-support" in cmd and "--save-policy-observations" in cmd
+
+
+def optional_native_runtime():
+    audit, design, policy, condition, info, server = audited_runtime()
+    design["adapter_profile"] = {
+        "placement_controller_profile": "minimal_v5", "grip_play_steps": 10,
+    }
+    info.update(
+        placement_controller_profile={
+            "id": "minimal_v5", "veto_implementation": "fd4a032",
+            "veto_feedback_source": "request_snapshot_historical",
+        },
+        grip_play_steps=10, effective_grip_play_steps=10,
+    )
+    return audit, design, policy, condition, info, server
+
+
+def test_explicit_native_controller_metadata_and_split_cap_pass_audit():
+    audit, design, policy, condition, info, server = optional_native_runtime()
+    assert audit(design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None) == []
+
+
+@pytest.mark.parametrize("field,value,reason", [
+    ("placement_controller_profile", None, "effective_placement_controller_profile_differs_from_campaign"),
+    ("placement_controller_profile", {"id": "other"}, "effective_placement_controller_profile_differs_from_campaign"),
+    ("placement_controller_profile", {
+        "id": "minimal_v5", "veto_implementation": "fd4a032",
+        "veto_feedback_source": "current_delivery",
+    }, "effective_placement_controller_semantics_differ_from_campaign"),
+    ("grip_play_steps", 16, "effective_grip_play_steps_differs_from_campaign"),
+    ("effective_grip_play_steps", 16, "effective_combined_gripper_playback_cap_differs_from_campaign"),
+])
+def test_new_declared_native_settings_cannot_silently_use_historical_behavior(field, value, reason):
+    audit, design, policy, condition, info, server = optional_native_runtime()
+    info[field] = value
+    assert reason in audit(design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None)
+
+
+@pytest.mark.parametrize("grip_cap,effective", [(None, 10), (4, 4), (16, 10)])
+def test_declared_effective_grip_cap_accounts_for_pose_cap(grip_cap, effective):
+    audit, design, policy, condition, info, server = optional_native_runtime()
+    design["adapter_profile"]["grip_play_steps"] = grip_cap
+    info.update(grip_play_steps=grip_cap, effective_grip_play_steps=effective)
+    assert audit(design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None) == []
+
+
+def test_undeclared_optional_fields_preserve_historical_audit():
+    audit, design, policy, condition, info, server = audited_runtime()
+    info.update(grip_play_steps=10, effective_grip_play_steps=10,
+                placement_controller_profile={"id": "not_a_historical_declaration"})
+    assert audit(design, policy, condition, info, server, {"duration_s": 30}, [0, 30], None) == []

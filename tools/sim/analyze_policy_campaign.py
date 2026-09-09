@@ -458,6 +458,29 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
     if info.get("policy_latency_override_s") != design.get("delivery_latency_s"):
         reasons.append("effective_delivery_latency_override_differs_from_campaign")
     profile = design.get("adapter_profile", {})
+    if "placement_controller_profile" in profile:
+        declared_profile = profile["placement_controller_profile"]
+        reported_profile = info.get("placement_controller_profile")
+        if declared_profile is None:
+            if reported_profile is not None:
+                reasons.append("effective_placement_controller_profile_differs_from_campaign")
+        elif not isinstance(reported_profile, dict) or reported_profile.get("id") != declared_profile:
+            reasons.append("effective_placement_controller_profile_differs_from_campaign")
+        elif declared_profile == "minimal_v5" and (
+            reported_profile.get("veto_implementation") != "fd4a032"
+            or reported_profile.get("veto_feedback_source") != "request_snapshot_historical"
+        ):
+            reasons.append("effective_placement_controller_semantics_differ_from_campaign")
+    if "grip_play_steps" in profile:
+        grip_cap = profile["grip_play_steps"]
+        if grip_cap is not None and (type(grip_cap) is not int or grip_cap < 1):
+            reasons.append("invalid_declared_grip_play_steps")
+        else:
+            if info.get("grip_play_steps") != grip_cap:
+                reasons.append("effective_grip_play_steps_differs_from_campaign")
+            expected_cap = settings["max_play"] if grip_cap is None else min(settings["max_play"], grip_cap)
+            if info.get("effective_grip_play_steps") != expected_cap:
+                reasons.append("effective_combined_gripper_playback_cap_differs_from_campaign")
     veto = profile.get("terminal_veto", False)
     if (
         "terminal_veto_feedback_source" in profile

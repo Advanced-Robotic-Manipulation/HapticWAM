@@ -134,6 +134,12 @@ class RemoteSimulationPolicy:
                 self.info.update(self._call("configure", override))
             for key, value in self.info.get("effective", {}).items():
                 setattr(self, key, value)
+            # Checkpoint preprocessing property, never a configurable override.
+            # Older teachers were trained on raw pad wrench; v6 subtracts the
+            # per-episode median captured by the observation builder.
+            self.wrench_baseline_rows = int(
+                self.info.get("wrench_baseline_rows", 0) or 0
+            )
         except Exception:
             self.close()
             raise
