@@ -54,6 +54,264 @@ whose action dimension is not 7.
 `--no-processors` exists only for a policy that genuinely ships no pipeline.
 Using it on pi05 feeds the model normalised-space garbage.
 
+## Export
+
+`tools/export_lerobot.py` writes a LeRobot v3.0 dataset straight from the
+PHANTOM episode store. It does not invent field names: the frame dict is
+validated by `lerobot.datasets.utils.validate_frame` against the feature spec
+handed to `LeRobotDataset.create`, so the export is whatever the installed
+lerobot (0.4.4) writes.
+
+```
+python tools/export_lerobot.py \
+    --episodes-root data/phantom-episodes \
+    --out-root ~/data2/lerobot/phantom_pi05 \
+    --repo-id phantom/scene_pi05 \
+    --splits train val --recon-checks 5 --overwrite
+```
+
+Run on `compute` (the episode store lives there), 36 min for both splits.
+`--limit 10` gives a smoke export.
+
+### What came out
+
+| | train | val |
+| --- | --- | --- |
+| manifest rows | 991 | 124 |
+| episodes exported | 876 | 124 |
+| skipped | 115 | 0 |
+| frames | 177,193 | 24,652 |
+| duration | 17,938 s | 2,496 s |
+
+**Every one of the 115 skips is the same reason: `deliberate failure demo
+(action_weight 0)`.** Not one episode was lost to a missing stream, a short
+action grid or a camera that does not overlap the action grid, and none were
+dropped as untrainable or as a policy rollout needing re-derivation. The
+exporter writes the full per-episode list to `phantom_skipped.json` next to the
+split, so this is checkable rather than asserted. Failure demos are dropped
+because LeRobot has no per-sample action weight, and our own training path
+gives them weight 0 -- keeping them would train pi0.5 on demonstrations we
+deliberately teach our students to ignore. `--include-failure-demos` exports
+them if a later ablation wants them.
+
+### Validation
+
+`tools/validate_lerobot_export.py` re-loads the written dataset through
+`LeRobotDataset` -- exercising the parquet and the encoded AV1 video, not the
+writer's buffers -- and checks feature shapes, dtypes, fps, per-episode counts,
+a non-empty `task` on every sampled frame, images in `[0, 1]`, and the
+integration identity the executor relies on.
+
+```
+python tools/validate_lerobot_export.py \
+    --root ~/data2/lerobot/phantom_pi05/train \
+    --episodes-root data/phantom-episodes --n-recon 8
+```
+
+Both splits pass (`OK: export is loadable and pi0.5-shaped`), 10 fps, robot
+`ur5e_phantom`, one video key `observation.images.scene` at 224x224x3, state
+and action both `(7,)` with the names in the contract above.
+
+The reconstruction check integrates the LOADED actions the way
+`deploy/executor.py:_pose_at` does -- `t0_pose + cumsum(action[:, :6])` -- and
+compares against the recorded 125 Hz TCP stream:
+
+| split | windows | mean err | worst peak | worst rot peak |
+| --- | --- | --- | --- | --- |
+| train | 8 episodes | 0.27 - 0.37 mm | 4.23 mm | 0.63 deg |
+| val | 8 episodes | 0.30 - 0.42 mm | 5.46 mm | 0.85 deg |
+
+The residual is not an export artefact. `actions` rows are deltas between TCP
+poses the recorder read at its own tick, while the reference is the 125 Hz
+stream sampled nearest to the nominal grid time; sub-tick lag at ~100 mm/s is a
+few mm at the peak of a fast reach. The validator therefore gates on the mean
+(< 1 mm) and only warns on the peak (< 10 mm).
+
+## Fine-tune
+
+Runs on `compute2` (RTX 4090, 24 GB). `compute`'s GPU is busy with another
+training run and must not be touched.
+
+### Three things the published checkpoint needs first
+
+`lerobot/pi05_base` is published against a lerobot that is not 0.4.4, and
+against a gated tokenizer. `tools/patch_pi05_processors.py` fixes all three,
+idempotently, keeping a `.orig` beside every file it edits:
+
+```
+python tools/patch_pi05_processors.py \
+    --policy-dir ~/lerobot/pi05_base \
+    --tokenizer ~/lerobot/paligemma_tokenizer \
+    --single-camera observation.images.scene
+```
+
+1. **Two processor steps 0.4.4 does not register.**
+   `relative_actions_processor` in the preprocessor and
+   `absolute_actions_processor` in the postprocessor.
+   `PolicyProcessorPipeline.from_pretrained` resolves every `registry_name`
+   through `ProcessorStepRegistry` before reading its config, so an unknown
+   name is a hard `ImportError` -- even though both steps are published with
+   `"enabled": false` and are therefore no-ops. The tool drops them and
+   REFUSES to drop either if it is ever found enabled, because an enabled
+   relative-action step would silently re-differentiate an action column that
+   is already a pose delta.
+
+2. **A gated tokenizer.** The preprocessor names
+   `google/paligemma-3b-pt-224`, which needs manual approval, and there is no
+   `HF_TOKEN` on the box. `leo009/paligemma-3b-pt-224` carries byte-identical
+   tokenizer files; they are downloaded and checked against the sha256 and byte
+   sizes Google publishes for its own blobs before anything is rewritten, so a
+   tampered mirror cannot pass:
+   `tokenizer.json` `ef6773c1...` 17,549,604 B, `tokenizer.model` `8986bb4f...`
+   4,264,023 B. The step is then pointed at the local directory.
+
+3. **Three camera slots for a one-camera rig.** `config.json` declares
+   `base_0_rgb`, `left_wrist_0_rgb` and `right_wrist_0_rgb`. Left alone,
+   `modeling_pi05` appends the two absent cameras as -1 images with a ZERO
+   `img_mask` -- and that is a pure memory tax, because those masks become the
+   2-D attention mask (nothing attends to a blank camera) and
+   `position_ids = cumsum(pad_masks) - 1`, so a masked token does not advance
+   the rotary position of anything after it. Measured on this GPU: the
+   three-slot layout OOMs at batch 4 (20.7 GiB), one slot fits batch 6 in
+   17.5 GiB. Nothing in `lerobot.policies.pi0*` matches the literal camera
+   names, so the slots are collapsed onto OUR key,
+   `observation.images.scene` -- which also lets the adapter's checkpoint
+   contract match `config.image_features` exactly, with no `--rename_map` in
+   the picture.
+
+**A benign warning to expect.** Loading pi05_base prints `Could not remap state
+dict keys: Missing key(s): ...paligemma.model.language_model.embed_tokens.weight`.
+The embedding is not missing: Gemma ties it to `lm_head`, which the checkpoint
+does carry. Verified directly -- the live `embed_tokens` and the checkpoint's
+`lm_head` are the same tensor object (`data_ptr` equal) with matching values
+(std 0.1856), and an ordinary expert weight loads as a control.
+
+### The run
+
+```
+lerobot-train \
+  --policy.path=~/lerobot/pi05_base \
+  --policy.train_expert_only=true \
+  --policy.dtype=bfloat16 --policy.device=cuda \
+  --policy.chunk_size=50 --policy.n_action_steps=16 \
+  --policy.push_to_hub=false \
+  --dataset.repo_id=phantom/scene_pi05_train \
+  --dataset.root=~/lerobot/data/phantom_pi05/train \
+  --batch_size=6 --steps=20000 --save_freq=2500 --log_freq=50 \
+  --num_workers=6 \
+  --output_dir=~/lerobot/runs/pi05_phantom_expert_v1 \
+  --job_name=pi05_phantom_expert_v1 --wandb.enable=false --seed=1000
+```
+
+Wrapped by `~/lerobot/launch_pi05.sh` under `setsid nohup`, log at
+`~/lerobot/runs/pi05_phantom_expert_v1/train.log`. Two wrapper details are not
+cosmetic: `lerobot-train` REFUSES to start when `--output_dir` already exists,
+and it creates that directory only at its first checkpoint -- so the log starts
+at a staging path and is renamed into the run dir once it appears (same
+filesystem, the writer's descriptor follows the rename).
+
+**Expert-only** means the whole VLM is frozen and only the action expert and
+the projections train: 693.4 M trainable of 3,616.8 M. Measured, on the exported
+data, against the alternatives on this 24 GB card:
+
+| config | trainable | batch | peak reserved | s/step |
+| --- | --- | --- | --- | --- |
+| expert_only | 693.4 M | 6 | ~17.5 GiB | 0.262 |
+| expert_only | 693.4 M | 8 | 20.0 GiB | 0.335 |
+| expert_only (3 cam) | 693.4 M | 4 | OOM | - |
+| lora16 | 1.3 M | 4 | 12.4 GiB | 0.159 |
+| vision_frozen / full | 3,616.8 M | 1 | OOM | - |
+
+Batch is **6, not 8**, because another user's process holds 2.3 GB on this
+shared GPU: batch 8 would leave ~1.2 GB, and batch 6 leaves 4.2 GB. Full
+fine-tuning and vision-frozen both OOM at batch 1, so expert-only is not a
+preference here, it is the only configuration above LoRA that fits.
+
+Defaults inherited from `PI05Config`, all of them openpi's: AdamW at peak lr
+2.5e-5, betas (0.9, 0.95), weight decay 0.01, 1,000 warm-up steps then cosine
+decay to 2.5e-6 (auto-scaled from 30k to the 20k we run). 20,000 steps at batch
+6 is 120,000 samples over 177,193 frames, i.e. ~0.68 epochs.
+
+**Checkpoints.** `runs/pi05_phantom_expert_v1/checkpoints/NNNNNN/`, with
+`last` a symlink to the newest. Each holds `pretrained_model/` (weights,
+policy config, train config **and the saved pre/post-processor pipeline** --
+this is what the deploy adapter loads) plus `training_state/` for resuming.
+
+Measured at step 2500: **9.1 GB per checkpoint**. lerobot 0.4.4 prunes nothing
+and `/` had 45 GB free after that first one, so the eight checkpoints this run
+wants (73 GB) do not fit -- untouched, it hits ENOSPC around step 15000.
+
+Two scripts sit on compute2, and only one of them is running:
+
+* `~/lerobot/archive_checkpoints.sh <train_pid> <min_free_GB>` -- ARMED. When
+  `/` drops below 14 GB it RELOCATES the oldest checkpoint to the box's second
+  disk (`/media/isr-lab-4/Main/pi05_phantom_expert_v1_checkpoints`, 307 GB
+  free) and nothing else. Nothing is deleted; `mv` unlinks the source only
+  after the copy lands, so every checkpoint stays readable, just not on `/`.
+  It never touches the newest checkpoint or whatever `last` resolves to, and
+  it exits when the training pid does.
+* `~/lerobot/prune_checkpoints.sh <run_dir> <keep_n> [--apply]` -- NOT armed,
+  and deliberately so. It genuinely deletes, which needs Mikhail's explicit
+  say-so; without `--apply` it only prints what it would remove. Same guards.
+
+### What the deploy adapter gets, and the one thing it must fix
+
+Read off the step-2500 checkpoint, so this is what it will see:
+
+| | value |
+| --- | --- |
+| `config.image_features` | exactly `['observation.images.scene']` -- no `--rename_map`, the adapter's key matches the checkpoint's |
+| saved `rename_observations_processor` | empty map, so nothing is silently renamed under the adapter |
+| action feature | `(7,)` -- passes the adapter's action-dim contract |
+| `chunk_size` / `n_action_steps` / `num_inference_steps` | 50 / 16 / 10 |
+| normalisation | `policy_preprocessor_step_2_normalizer_processor.safetensors` and the matching unnormalizer, both written from THIS dataset's stats |
+
+**The tokenizer path is absolute and local to compute2.** The saved
+preprocessor carries
+`tokenizer_processor.tokenizer_name = /home/isr-lab-4/lerobot/paligemma_tokenizer`,
+which will not exist on the deploy box. Either ship that directory to the same
+path beside the checkpoint, or override the step when the adapter builds its
+pipelines -- `make_pre_post_processors` already honours
+`preprocessor_overrides={"tokenizer_processor": {"tokenizer_name": <path>}}`
+next to the `device_processor` override it passes today.
+
+**Do not gate on the declared state shape.** `config.json` still says
+`observation.state` is `(32,)`, inherited from pi05_base: pi0.5 pads state to
+`max_state_dim` 32 inside `Pi05PrepareStateTokenizerProcessorStep`. The real
+input is our `(7,)` vector and the saved normalizer stats are 7-dimensional.
+The action feature was rewritten to 7 by training; the state feature was not.
+
+### Offline evaluation
+
+`tools/pi05_offline_eval.py` scores a checkpoint on the val split with the
+same `endpoint_err_mm` `tools/terminal_eval.py` reports for our students --
+the distance between predicted and demonstrated TCP after integrating 16 pose
+deltas -- so a pi0.5 row can sit next to a student row without a footnote.
+
+```
+python tools/pi05_offline_eval.py \
+    --ckpt ~/lerobot/runs/pi05_phantom_expert_v1/checkpoints/last/pretrained_model \
+    --data ~/lerobot/data/phantom_pi05/val \
+    --horizon 16 --anchor close --max-windows 200 --out pi05_eval.json
+```
+
+It runs the DEPLOY path, not a shortcut: preprocessor,
+`predict_action_chunk(num_steps=nfe)`, then the postprocessor once per chunk
+step exactly as `phantom/inference/lerobot_policy.py` applies it. Windows are
+anchored in the 1.5 s before each episode's first gripper close (`--anchor
+uniform` spreads them over the whole episode and is the easier metric -- quote
+which one). Every row also carries `zero_endpoint_err_mm`, the same metric for
+a policy that proposes no motion at all: that is the scale reference a
+fine-tune has to beat before any of the numbers mean anything.
+
+Exercised end to end against the step-2500 checkpoint (CPU, 2 windows, while
+the GPU stayed on training). It loads the checkpoint and its saved pipelines,
+runs the chunk, and reports 50.2 mm endpoint against 53.7 mm for the no-motion
+reference -- i.e. 0.94x, a model that has learnt essentially nothing yet at
+step 2500 out of 20000. That is the expected reading this early and it is the
+point of quoting the reference: the tooling is verified, the number is not yet
+a result. Re-run it on the finished checkpoint with the GPU free.
+
 ## Deploy adapter
 
 `phantom/inference/lerobot_policy.py` (`LeRobotPolicy`) duck-types
