@@ -41,6 +41,7 @@ class SafetyEvent:
 class SafetyVerdict:
     action: SafetyAction
     events: list[SafetyEvent] = field(default_factory=list)
+    selected_target: np.ndarray | None = None
 
 
 # Shared native/simulator stop disposition; no driver import is needed.
@@ -90,9 +91,11 @@ _MAX_LOG_EVENTS = 1000
 
 
 class SafetyMonitor:
-    def __init__(self, hw: HardwareConfig, rings: dict[str, SharedRingBuffer]):
+    def __init__(self, hw: HardwareConfig, rings: dict[str, SharedRingBuffer], *, boundary_config=None):
         self.hw = hw
         self.rings = rings
+        from phantom.deploy.boundary_projection import make_boundary_projection
+        self.boundary_projection = make_boundary_projection(boundary_config, hw, rings)
         self.log_events: list[SafetyEvent] = []
         self.dropped_events = 0
         # kind -> the retained SafetyEvent for the condition currently active,
@@ -277,6 +280,20 @@ class SafetyMonitor:
                                           t_now - ts_c, SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
+        # Optional command treatment, after physical checks and within this
+        # single stateful evaluation. A force/protective stop always wins.
+        selected_target = None
+        if self.boundary_projection is not None:
+            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+            try:
+                selected_target = self.boundary_projection.select(
+                    t_now, tcp_target, self.clamp_target(np.asarray(tcp_target, dtype=float)),
+                    physical_preempted=action in (SafetyAction.STOP_EPISODE, SafetyAction.PROTECTIVE_STOP),
+                )
+                tcp_target = selected_target
+            except BoundaryProjectionStop as error:
+                events.append(SafetyEvent(t_now, error.reason, 0.0, SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
         # reach clamp on the commanded target (see clamp_target)
         if (hw.safety.reach_clamp_m is not None
                 and float(np.linalg.norm(tcp_target[:3])) > hw.safety.reach_clamp_m):
@@ -315,7 +332,7 @@ class SafetyMonitor:
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
         self._record(t_now, events)
-        return SafetyVerdict(action=action, events=events)
+        return SafetyVerdict(action=action, events=events, selected_target=selected_target)
 
     def _record(self, t_now: float, events: list[SafetyEvent]) -> None:
         """Retain and log CONDITIONS, not ticks.

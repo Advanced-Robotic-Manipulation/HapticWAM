@@ -173,6 +173,7 @@ class SimulationPolicyAdapter:
         observation_callback: Callable | None = None,
         delivered_plan_callback: Callable | None = None,
         release_config=None,
+        boundary_config=None,
         controller_profile: str | None = None,
         policy_delivery_clock: str = "native",
         replan_clock: Callable[[], float] | None = None,
@@ -218,6 +219,8 @@ class SimulationPolicyAdapter:
         from phantom.deploy.release_controller import make_release_controller
 
         self.release_controller = make_release_controller(release_config, hw)
+        from phantom.deploy.boundary_projection import boundary_config as parse_boundary_config
+        self.boundary_config = parse_boundary_config(boundary_config)
         from phantom.deploy.minimal_v5 import validate_profile
 
         self.controller_profile = controller_profile
@@ -261,7 +264,7 @@ class SimulationPolicyAdapter:
             "gripper": _History(self._history_capacity),
             "camera_scene": _History(64),
         }
-        self.safety = SafetyMonitor(self.hw, self.rings)
+        self.safety = SafetyMonitor(self.hw, self.rings, boundary_config=self.boundary_config)
         self._plan = self._prev_plan = self._pending = None
         self._play_time = self._prev_play_time = self._swap_t = 0.0
         self._last_tick = self._last_observe_t = None
@@ -880,6 +883,8 @@ class SimulationPolicyAdapter:
             if self.release_controller is not None:
                 self.release_controller.stop()
         else:
+            if getattr(verdict, "selected_target", None) is not None:
+                target = verdict.selected_target
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
             grip = float(np.clip(grip, 0, self.hw.gripper.max_close_cmd))
@@ -934,10 +939,27 @@ class SimulationPolicyAdapter:
                         self.completed_at_s = float(t)
                         self._finish_pose = measured.copy()
                         self._finish_grip = self._last_grip
+                        if self.safety.boundary_projection is not None:
+                            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+                            try:
+                                self._finish_pose = self.safety.boundary_projection.request_finish(
+                                    t, self._finish_grip, self._grip_ack)
+                            except BoundaryProjectionStop as error:
+                                self.request_stop(error.reason)
+                                kinds.append(error.reason)
+                                self._finish_pose = self._last_cmd.copy()
                         self._pending = self._prev_plan = None
                     target, grip = self._finish_pose.copy(), self._finish_grip
                     target = self.safety.clamp_target(target)
         dt_eff = float(np.clip(dt, period, 2 * period))
+        if not self.stopped_reason and self.safety.boundary_projection is not None:
+            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+            try:
+                self.safety.boundary_projection.check_grip(grip)
+            except BoundaryProjectionStop as error:
+                self.request_stop(error.reason)
+                kinds.append(error.reason)
+                target, grip = self._last_cmd.copy(), self._last_grip
         target = np.asarray(target, dtype=np.float64).copy()
         rate_reference = (
             self._finish_pose
@@ -987,6 +1009,10 @@ class SimulationPolicyAdapter:
                     and not stale and self._original_policy_grip()
                 )
         self._awaiting_feedback = command
+        if self.safety.boundary_projection is not None:
+            # Mutable per-tick diagnostic receives final FK/ACK after the
+            # runner verifies it, before this exact trace row is serialized.
+            command.diagnostics["boundary_projection"] = self.safety.boundary_projection.last
         return command
 
     def report_execution(
@@ -1042,7 +1068,8 @@ class SimulationPolicyAdapter:
                 self.request_stop(reason)
         if gripper_command is not None:
             self._last_grip = grip
-            if self.release_controller is not None and self.release_controller.unlatched_observer is not None:
+            if ((self.release_controller is not None and self.release_controller.unlatched_observer is not None)
+                    or self.safety.boundary_projection is not None):
                 from phantom.deploy.unlatched_finish import acknowledge_gripper
 
                 self._grip_ack = acknowledge_gripper(

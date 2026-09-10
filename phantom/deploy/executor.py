@@ -99,6 +99,8 @@ class ChunkExecutor:
         self.arm = arm
         self.gripper = gripper
         self.safety = safety
+        if getattr(safety, "boundary_projection", None) is not None:
+            safety.boundary_projection.decision_clock = time.perf_counter
         self.governor = SpeedGovernor(hw.safety.governor)
         self.record_action = record_action     # recorder.record_action hook
         # The executor thread is the gripper's ONLY user at deploy, so gripper
@@ -251,6 +253,9 @@ class ChunkExecutor:
                 self.halt_state["safety_target"] = self.safety.target_diagnostics(
                     *safety_target
                 )
+            boundary = getattr(self.safety, "boundary_projection", None)
+            if boundary is not None:
+                self.halt_state["boundary_projection"] = dict(boundary.last)
 
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to
@@ -463,6 +468,8 @@ class ChunkExecutor:
                 self._halt(halt_reason_for(verdict.events), events=verdict.events,
                            safety_target=(t0, target))
                 break
+            if getattr(verdict, "selected_target", None) is not None:
+                target = verdict.selected_target
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)
             if self.release_controller is not None:
@@ -471,6 +478,9 @@ class ChunkExecutor:
                     # The achieved pose may differ from the target checked
                     # above. Completion must never undo geometric clamps.
                     target = self.safety.clamp_target(target)
+            boundary = getattr(self.safety, "boundary_projection", None)
+            if boundary is not None:
+                boundary.check_grip(grip)
 
             # Kinematic rate limit on the COMMANDED pose — the model/plan side
             # has no dynamics bound, and replan-boundary jumps otherwise get
@@ -509,8 +519,10 @@ class ChunkExecutor:
             # to reach the setpoint in; give it the interval the setpoint was
             # actually sized for, so a delayed tick never doubles the
             # commanded speed (review 2026-08-20)
+            boundary = getattr(self.safety, "boundary_projection", None)
+            servo_kwargs = {} if boundary is None else {"target_guard": boundary}
             res = self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
-                                   hw.arm.servoj.gain)
+                                   hw.arm.servoj.gain, **servo_kwargs)
             # The anchor is what the arm RECEIVED, not what we proposed
             # (issue #7): a driver hold (IK branch reject, invalid IK, limiter
             # hold) keeps the previous anchor, a limiter-shortened step
@@ -554,9 +566,16 @@ class ChunkExecutor:
         thread silently and the planner kept replanning into a stopped arm
         for 30+ cycles."""
         from phantom.drivers.servo_hold import ServoHoldTimeout
+        from phantom.deploy.boundary_projection import BoundaryProjectionStop
 
         try:
             self._run()
+        except BoundaryProjectionStop as exc:
+            log.warning("boundary controller stopped: %s", exc)
+            try:
+                self.arm.stop(2.0)
+            finally:
+                self._halt(exc.reason)
         except ServoHoldTimeout as exc:
             log.warning("servo controller stopped: %s", exc)
             self._halt(exc.reason)
@@ -768,6 +787,9 @@ class ChunkExecutor:
                     self.completed_at_s = float(t)
                     self._finish_pose = measured.copy()
                     self._finish_grip = self._last_grip_command
+                    boundary = getattr(self.safety, "boundary_projection", None)
+                    if boundary is not None:
+                        self._finish_pose = boundary.request_finish(t, self._finish_grip, self._grip_ack)
                     self._grip_target = self._finish_grip
                     if self._observes_unlatched_finish():
                         self._observer_policy_eligible = False
@@ -791,6 +813,8 @@ class ChunkExecutor:
                 pose = np.full(6, np.nan)
             return {
                 **self.release_controller.diagnostics(pose),
+                **({"boundary_projection": dict(self.safety.boundary_projection.last)}
+                   if getattr(self.safety, "boundary_projection", None) is not None else {}),
                 "completed_reason": self.completed_reason,
                 "completed_at_s": self.completed_at_s,
                 "hold_tcp_pose": None if self._finish_pose is None else self._finish_pose.tolist(),
@@ -836,11 +860,15 @@ class ChunkExecutor:
                                 tgt = mailbox[0] if mailbox is not None else self._grip_target
                                 if tgt is None:
                                     continue
+                            boundary = getattr(self.safety, "boundary_projection", None)
+                            if boundary is not None:
+                                boundary.check_grip(tgt)
                             self.gripper.move(tgt, hw.gripper.default_speed,
                                               hw.gripper.default_force)
                             last_sent = tgt
                             self._last_grip_command = float(tgt)
-                            if self._observes_unlatched_finish():
+                            if (self._observes_unlatched_finish()
+                                    or getattr(self.safety, "boundary_projection", None) is not None):
                                 self._grip_ack = acknowledge_gripper(
                                     self._grip_ack, time.perf_counter(), float(tgt),
                                     mailbox is not None and mailbox[1],

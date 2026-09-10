@@ -39,6 +39,13 @@ def write_json(path, value):
     temporary.replace(path)
 
 
+def write_controller_configs(output, profile, *, writer=write_json):
+    """Materialize the exact optional JSONs referenced by simulation_command."""
+    for field in ("terminal_veto", "placement_release", "boundary_projection"):
+        if profile.get(field):
+            writer(output / "runtime" / f"{field}.json", profile[field])
+
+
 def blocks(design):
     result = []
     phase_ids = set()
@@ -188,6 +195,7 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
     for field, flag in (
         ("terminal_veto", "--terminal-veto-config"),
         ("placement_release", "--placement-release-config"),
+        ("boundary_projection", "--boundary-projection-config"),
     ):
         if profile.get(field):
             command += [flag, str(args.output / "runtime" / f"{field}.json")]
@@ -317,6 +325,8 @@ def source_manifest(args, design_sha, design):
             for path in sorted(
                 set((REPO / "tools/sim").glob("*.py"))
                 | set((REPO / "phantom/sim").glob("*.py"))
+                | ({REPO / "phantom/deploy/boundary_projection.py"}
+                   if design.get("adapter_profile", {}).get("boundary_projection") else set())
             )
         },
         "live_repository": str(args.live_repo),
@@ -537,10 +547,7 @@ def main():
                 args.output / "runtime" / f"inference_{policy['id']}.json",
                 inference_config(design, policy),
             )
-        for field in ("terminal_veto", "placement_release"):
-            value = design.get("adapter_profile", {}).get(field)
-            if value:
-                write_json(args.output / "runtime" / f"{field}.json", value)
+        write_controller_configs(args.output, design.get("adapter_profile", {}))
         for condition in design["conditions"]:
             write_json(
                 args.output / "conditions" / f"{condition['id']}.json",
