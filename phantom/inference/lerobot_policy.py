@@ -153,6 +153,7 @@ class _EpisodeReset:
 
 class LeRobotPolicy:
     """Duck-types `PhantomPolicy` for `PlannerLoop` / `PolicyServer`."""
+    policy_kind = "lerobot"
 
     def __init__(self, policy, hw, *, task_text: str = "",
                  action_space: str = "delta",

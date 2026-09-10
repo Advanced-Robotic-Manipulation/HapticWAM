@@ -895,6 +895,15 @@ class ChunkExecutor:
         self._last_cmd = None                  # re-seed the rate limit per episode
         self._held_ticks = 0
         self.halt_state = {}
+        # a control-loss snapshot belongs to the episode that lost control:
+        # the driver object is reused across the episodes of one process, so
+        # without this every later stop.json in the process carried the FIRST
+        # E-stop's bits (audit 09-10: 16 of 46 "E-stop" records were stale)
+        if hasattr(self.arm, "control_loss_last"):
+            try:
+                self.arm.control_loss_last = {}
+            except Exception:
+                pass
         self._grip_target = None
         self._last_grip_command = None
         self._grip_ack = None

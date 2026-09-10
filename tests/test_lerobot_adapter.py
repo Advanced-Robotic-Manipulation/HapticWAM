@@ -510,3 +510,18 @@ def test_dir_digest_tracks_the_weight_files(tmp_path):
     (d / "model.safetensors").write_bytes(b"weights-v2")
     assert dir_digest(str(d)) != first                   # content-sensitive
     assert dir_digest(str(tmp_path / "nope")) is None
+
+
+def test_server_advertises_policy_kind_so_run_deploy_can_refuse_the_veto(live_server):
+    """Audit 09-10: `--terminal-veto` was a silent no-op on the LeRobot arm
+    (no ACC head; the ACC guard sits under `if args.ckpt`, which is None when
+    attaching). The server now publishes policy_kind and run_deploy refuses
+    the veto at attach; a phantom-kind server keeps reporting 'phantom'."""
+    hw, srv, port = live_server
+    info = RemotePolicy.probe(("127.0.0.1", port))
+    assert info["policy_kind"] == "lerobot"
+    from phantom.inference.remote import PolicyServer
+
+    class Plain:                       # a stub without the attribute = a Cosmos policy
+        wrench_baseline_rows = 0
+    assert PolicyServer(Plain(), ckpt="x", ckpt_sha="y").status()["policy_kind"] == "phantom"

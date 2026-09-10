@@ -916,6 +916,12 @@ def main(argv=None) -> int:
                      "no local model load", host, port,
                      policy.info.get("ckpt"), policy.info.get("ckpt_sha"),
                      policy.info.get("warmed"))
+            if policy.info.get("policy_kind") == "lerobot" and args.terminal_veto:
+                log.error("--terminal-veto cannot run on a LeRobot policy server "
+                          "(no ACC head: every close would be 'allowed' while the "
+                          "trace tags veto:on). Drop --terminal-veto for this arm.")
+                policy.close()
+                return 3
             if args.ckpt and str(args.ckpt) not in str(policy.info.get("ckpt")) \
                     and str(policy.info.get("ckpt")) not in str(args.ckpt):
                 log.warning("policy server holds %s but --ckpt asked for %s — "

@@ -214,6 +214,10 @@ class PolicyServer:
                 "warmed": self.warmed, "busy": o is not None,
                 # checkpoint properties the robot process must mirror
                 "wrench_baseline_rows": int(getattr(self.policy, "wrench_baseline_rows", 0) or 0),
+                # "phantom" (Cosmos teacher/student, has an ACC head) or
+                # "lerobot" (π0.5 adapter: no ACC head — --terminal-veto is
+                # a silent no-op and must be refused at attach; audit 09-10)
+                "policy_kind": str(getattr(self.policy, "policy_kind", "phantom")),
                 "owner": o["id"] if o else None,
                 "owner_since": o["since"] if o else None}
 
