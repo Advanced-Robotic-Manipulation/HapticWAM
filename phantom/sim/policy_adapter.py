@@ -268,6 +268,7 @@ class SimulationPolicyAdapter:
         self._last_replan_t = None
         self._last_cmd = self._hold_pose = self._awaiting_feedback = None
         self._last_grip = self.open_aperture
+        self._grip_ack = None
         self._grip_latch = None
         if self.release_controller is not None:
             self.release_controller.reset()
@@ -886,8 +887,12 @@ class SimulationPolicyAdapter:
             loads = self.safety.contact_load
             suppress_latch = False
             if self.release_controller is not None:
-                measured = self.rings["arm"].latest(1)[1]["tcp_pose"][0]
-                measured_grip = self.rings["gripper"].latest(1)[1]["state"][0, 0]
+                from phantom.deploy.unlatched_finish import feedback_capture_times
+
+                arm_times, arm_feedback = self.rings["arm"].latest(1)
+                grip_times, grip_feedback = self.rings["gripper"].latest(1)
+                measured = arm_feedback["tcp_pose"][0]
+                measured_grip = grip_feedback["state"][0, 0]
                 self.release_controller.note_latch(self._grip_latch)
                 suppress_latch = self.release_controller.update(
                     t,
@@ -897,6 +902,10 @@ class SimulationPolicyAdapter:
                     pad_loads=loads,
                     eligible=not stale and self._original_policy_grip(),
                     accepted_grip=self._last_grip,
+                    accepted_grip_ack=self._grip_ack,
+                    feedback_times=feedback_capture_times(
+                        arm_times[0], grip_times[0], self.safety.contact_load_times, self.hw.tactile.sensors,
+                    ) if self.release_controller.unlatched_observer is not None else None,
                     finish_permitted=np.allclose(
                         self.safety.clamp_target(measured),
                         measured,
@@ -972,6 +981,11 @@ class SimulationPolicyAdapter:
                 self.release_controller.diagnostics(measured)
             )
             command.diagnostics["grip_latch"] = self._grip_latch
+            if self.release_controller.unlatched_observer is not None:
+                command.diagnostics["original_policy_gripper_eligible"] = bool(
+                    not self.stopped_reason and not self.completed_reason
+                    and not stale and self._original_policy_grip()
+                )
         self._awaiting_feedback = command
         return command
 
@@ -1028,6 +1042,14 @@ class SimulationPolicyAdapter:
                 self.request_stop(reason)
         if gripper_command is not None:
             self._last_grip = grip
+            if self.release_controller is not None and self.release_controller.unlatched_observer is not None:
+                from phantom.deploy.unlatched_finish import acknowledge_gripper
+
+                self._grip_ack = acknowledge_gripper(
+                    self._grip_ack, t, grip,
+                    bool(cmd.diagnostics.get("original_policy_gripper_eligible", False)
+                         and np.isclose(grip, cmd.gripper, atol=1e-12, rtol=0)),
+                )
             if not self._grip_hist or self._grip_hist[-1][1] != grip:
                 self._grip_hist.append((float(t), grip))
         self._awaiting_feedback = None

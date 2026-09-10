@@ -12,6 +12,8 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 
+from phantom.deploy.unlatched_finish import UnlatchedFinishConfig, UnlatchedFinishObserver
+
 
 @dataclass(frozen=True)
 class PlacementReleaseConfig:
@@ -24,6 +26,7 @@ class PlacementReleaseConfig:
     rearm_close_command_min: float = 0.5
     finish_after_release: bool = False
     finish_observation_s: float = 2.0
+    unlatched_finish: UnlatchedFinishConfig | None = None
 
     def __post_init__(self):
         for name in ("tcp_min_m", "tcp_max_m"):
@@ -45,13 +48,23 @@ class PlacementReleaseConfig:
             raise TypeError("finish_after_release must be a boolean")
         if not np.isfinite(self.finish_observation_s) or self.finish_observation_s <= 0:
             raise ValueError("finish_observation_s must be finite and positive")
+        if isinstance(self.unlatched_finish, dict):
+            object.__setattr__(self, "unlatched_finish", UnlatchedFinishConfig(**self.unlatched_finish))
+        if self.unlatched_finish is not None:
+            if not isinstance(self.unlatched_finish, UnlatchedFinishConfig):
+                raise TypeError("unlatched_finish must be a configuration object or dict")
+            if not self.finish_after_release:
+                raise ValueError("unlatched_finish requires finish_after_release")
 
     @classmethod
     def from_dict(cls, values):
         return cls(**values)
 
     def to_dict(self):
-        return asdict(self)
+        values = asdict(self)
+        if self.unlatched_finish is None:
+            values.pop("unlatched_finish")  # preserve legacy serialized config
+        return values
 
 
 class PlacementReleaseController:
@@ -65,6 +78,9 @@ class PlacementReleaseController:
 
     def __init__(self, config: PlacementReleaseConfig):
         self.config = config
+        self.unlatched_observer = (
+            UnlatchedFinishObserver(config.unlatched_finish) if config.unlatched_finish else None
+        )
         self.reset()
 
     def reset(self):
@@ -74,9 +90,13 @@ class PlacementReleaseController:
         self.committed_at = None
         self.finished_at = None
         self.last_event = None
+        if self.unlatched_observer is not None:
+            self.unlatched_observer.reset()
 
     @property
     def variant(self):
+        if self.unlatched_observer is not None:
+            return "placement_policy_release_finish_v3_observe_unlatched"
         return (
             "placement_policy_release_finish_v2"
             if self.config.finish_after_release
@@ -90,6 +110,8 @@ class PlacementReleaseController:
     def note_latch(self, latch):
         if latch is not None and self.phase == "unarmed":
             self.phase = "holding"
+            if self.unlatched_observer is not None:
+                self.unlatched_observer.reset("native_latch_owns_release")
 
     def in_volume(self, tcp):
         xyz = np.asarray(tcp, dtype=float)[:3]
@@ -122,9 +144,30 @@ class PlacementReleaseController:
         eligible,
         accepted_grip=None,
         finish_permitted=True,
+        accepted_grip_ack=None,
+        feedback_times=None,
+        observer_deferred=False,
     ):
         self.last_event = None
         c = self.config
+        if self.phase == "unarmed" and self.unlatched_observer is not None:
+            if observer_deferred and eligible:
+                self.unlatched_observer.reason = "awaiting_causal_executor_tick"
+                return self.suppress_latch
+            finished = self.unlatched_observer.update(
+                t, tcp=tcp, measured=measured_grip, loads=pad_loads,
+                eligible=eligible, ack=accepted_grip_ack, samples=feedback_times,
+                unloaded_force_max_n=c.unloaded_force_max_n,
+                unloaded_hold_s=c.unloaded_hold_s,
+                finish_permitted=(finish_permitted and accepted_grip is not None
+                                  and accepted_grip_ack is not None
+                                  and np.isfinite(accepted_grip)
+                                  and np.isclose(accepted_grip, accepted_grip_ack[2], atol=1e-12, rtol=0)),
+            )
+            if finished:
+                self.phase = "finished"
+                self.finished_at = float(t)
+                self.last_event = "unlatched_release_finished"
         if self.phase == "holding":
             opening = (
                 eligible
@@ -177,9 +220,11 @@ class PlacementReleaseController:
     def stop(self):
         self.opening_since = None
         self.last_event = "safety_preempted"
+        if self.unlatched_observer is not None and not self.finished:
+            self.unlatched_observer.reset("safety_preempted")
 
     def diagnostics(self, tcp):
-        return {
+        values = {
             "variant": self.variant,
             "phase": self.phase,
             "window_active": self.window_active(tcp),
@@ -192,6 +237,9 @@ class PlacementReleaseController:
             "suppress_latch": self.suppress_latch,
             "event": self.last_event,
         }
+        if self.unlatched_observer is not None:
+            values["unlatched_observer"] = self.unlatched_observer.diagnostics(tcp)
+        return values
 
 
 def make_release_controller(config, hw):

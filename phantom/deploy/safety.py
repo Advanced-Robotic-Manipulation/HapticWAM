@@ -131,6 +131,7 @@ class SafetyMonitor:
         # windows; `contact_load` is the executor's read-only view (latch)
         self._pad_hist: dict[str, list[tuple[float, float]]] = {}
         self.contact_load: dict[str, float] = {}
+        self.contact_load_times: dict[str, float] = {}
 
     # ------------------------------------------------------------------
     def check(self, t_now: float, tcp_target: np.ndarray) -> SafetyVerdict:
@@ -197,6 +198,7 @@ class SafetyMonitor:
 
         # fingertip force / indentation e-stop (teacher rigs always record tactile)
         pad_load: dict[str, float] = {}
+        pad_load_times: dict[str, float] = {}
         for s in hw.tactile.sensors:
             ring = self.rings.get(f"tactile_{s.name}")
             if ring is None:
@@ -222,6 +224,7 @@ class SafetyMonitor:
                 while hist and t_now - hist[0][0] > max(win, 1e-3):
                     hist.pop(0)
                 pad_load[s.name] = max(v for _, v in hist)   # trailing max
+                pad_load_times[s.name] = float(ts_t[0])
             f_raw = tac.get("fields_ds") if hasattr(tac, "get") else None
             if f_raw is None:
                 continue
@@ -244,6 +247,7 @@ class SafetyMonitor:
         # stop (non-letgo: the object stays held). Needs at least two pads
         # reporting so a single wired sensor can never fire it alone.
         self.contact_load = dict(pad_load)
+        self.contact_load_times = dict(pad_load_times)
         lc_z = hw.safety.lift_complete_z_m
         if (lc_z > 0 and hw.safety.lift_complete_fz_n > 0 and len(pad_load) >= 2
                 and self._tcp_z is not None):

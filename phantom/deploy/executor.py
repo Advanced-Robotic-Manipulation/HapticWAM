@@ -35,6 +35,7 @@ from phantom.deploy.safety import (
     SafetyMonitor,
     is_letgo_reason as is_letgo_reason,
 )
+from phantom.deploy.unlatched_finish import acknowledge_gripper, feedback_capture_times
 from phantom.drivers.base import Arm, Gripper
 
 if TYPE_CHECKING:
@@ -75,6 +76,9 @@ class ChunkExecutor:
         self.completed_at_s = None
         self._finish_pose = self._finish_grip = None
         self._last_grip_command = None
+        self._grip_ack = None
+        self._grip_observer_mailbox = None
+        self._observer_policy_eligible = False
         # Chunk-tail cap (run analysis 09-01 P1 #5): steps beyond
         # HEAD_STEPS are never validated by a subsequent replan, and ALL
         # four whips began in that unsupervised tail, 0.08-0.43 s after the
@@ -534,6 +538,9 @@ class ChunkExecutor:
                 # hand the gripper target to the gripper thread (non-blocking):
                 # a synchronous socket round-trip here throttled the servo loop
                 self._grip_target = grip
+                if self._observes_unlatched_finish():
+                    # Atomic value/provenance pair consumed by the I/O owner.
+                    self._grip_observer_mailbox = (grip, self._observer_policy_eligible)
 
             wait = period - (time.perf_counter() - t0)
             if wait > 0:
@@ -669,7 +676,7 @@ class ChunkExecutor:
             if controller is not None and self.completed_reason is None:
                 controller.reset()
 
-    def _release_feedback(self):
+    def _release_feedback(self, *, with_arm_time=False):
         """Read measured robot/gripper rings; no object state or driver command."""
         arm_ring = self.safety.rings.get("arm")
         times, arm = arm_ring.latest(1) if arm_ring is not None else ([], {})
@@ -682,7 +689,8 @@ class ChunkExecutor:
         grip = float(np.asarray(gr["state"][-1])[0])
         if pose.shape != (6,) or not np.isfinite(pose).all():
             raise RuntimeError("invalid measured release TCP")
-        return pose, grip, float(gt[-1])
+        values = (pose, grip, float(gt[-1]))
+        return (*values, float(times[-1])) if with_arm_time else values
 
     def placement_release_opening_mask(self, proposed_grip):
         values = np.asarray(proposed_grip)
@@ -701,7 +709,11 @@ class ChunkExecutor:
         """Called only AFTER current SafetyMonitor verdict permits a command."""
         with self._release_lock:
             controller = self.release_controller
-            measured, measured_grip, grip_t = self._release_feedback()
+            if self._observes_unlatched_finish():
+                measured, measured_grip, grip_t, arm_t = self._release_feedback(with_arm_time=True)
+            else:
+                measured, measured_grip, grip_t = self._release_feedback()
+                arm_t = None
             if self.completed_reason is not None:
                 return self._finish_pose.copy(), self._finish_grip
             # Gripper feedback too old cannot prove completed opening. This
@@ -712,19 +724,34 @@ class ChunkExecutor:
                 latch = self._grip_latch
             controller.note_latch(latch)
             requested = None if grip is None else float(np.clip(grip, 0, self.hw.gripper.max_close_cmd))
+            eligible = not stale and requested is not None and original_policy_grip(
+                plan, self._play_time, self.hw.control.action_rate_hz, self._grip_play_limit(),
+            )
+            self._observer_policy_eligible = eligible
             # Never wait for socket I/O in the servo loop. A finish transition
             # waits for a free mailbox lock so an older close cannot be sent
             # after completion. The worker rechecks the mailbox under this lock.
             io_free = self._grip_io_lock.acquire(blocking=False)
             try:
+                capture_times = feedback_capture_times(
+                    arm_t, grip_t, self.safety.contact_load_times, self.hw.tactile.sensors,
+                ) if self._observes_unlatched_finish() else None
+                # Feedback/I/O workers may publish during this servo tick.
+                # Those timestamps are valid, but not yet causal at tick t0.
+                # Wait for the next tick without erasing accumulated activity.
+                defer_observer = bool(capture_times is not None and (
+                    any(v is not None and v > t + 1e-9 for v in capture_times.values())
+                    or (self._grip_ack is not None and self._grip_ack[1] > t + 1e-9)
+                ))
                 suppress = controller.update(
                     t, tcp=measured,
                     policy_grip=float("nan") if requested is None else requested,
                     measured_grip=measured_grip, pad_loads=self.safety.contact_load,
-                    eligible=not stale and requested is not None and original_policy_grip(
-                        plan, self._play_time, self.hw.control.action_rate_hz, self._grip_play_limit(),
-                    ),
+                    eligible=eligible,
                     accepted_grip=self._last_grip_command,
+                    accepted_grip_ack=self._grip_ack,
+                    feedback_times=capture_times,
+                    observer_deferred=defer_observer,
                     finish_permitted=io_free and np.allclose(
                         self.safety.clamp_target(measured), measured, atol=1e-9, rtol=0,
                     ),
@@ -742,11 +769,17 @@ class ChunkExecutor:
                     self._finish_pose = measured.copy()
                     self._finish_grip = self._last_grip_command
                     self._grip_target = self._finish_grip
+                    if self._observes_unlatched_finish():
+                        self._observer_policy_eligible = False
+                        self._grip_observer_mailbox = (self._finish_grip, False)
                     return self._finish_pose.copy(), self._finish_grip
                 return target, requested
             finally:
                 if io_free:
                     self._grip_io_lock.release()
+
+    def _observes_unlatched_finish(self):
+        return self.release_controller is not None and self.release_controller.unlatched_observer is not None
 
     def release_diagnostics(self):
         if self.release_controller is None:
@@ -781,7 +814,8 @@ class ChunkExecutor:
         while not self._stop.is_set():
             t0 = time.perf_counter()
             try:
-                tgt = self._grip_target
+                mailbox = self._grip_observer_mailbox if self._observes_unlatched_finish() else None
+                tgt = mailbox[0] if mailbox is not None else self._grip_target
                 stable_for = stable_for + 1 if tgt == last_seen else 0
                 last_seen = tgt
                 due = tgt is not None and (
@@ -798,13 +832,19 @@ class ChunkExecutor:
                             if self.release_controller is not None:
                                 # A finish can replace the mailbox while this
                                 # worker was waiting for the I/O lock.
-                                tgt = self._grip_target
+                                mailbox = self._grip_observer_mailbox if self._observes_unlatched_finish() else None
+                                tgt = mailbox[0] if mailbox is not None else self._grip_target
                                 if tgt is None:
                                     continue
                             self.gripper.move(tgt, hw.gripper.default_speed,
                                               hw.gripper.default_force)
                             last_sent = tgt
                             self._last_grip_command = float(tgt)
+                            if self._observes_unlatched_finish():
+                                self._grip_ack = acknowledge_gripper(
+                                    self._grip_ack, time.perf_counter(), float(tgt),
+                                    mailbox is not None and mailbox[1],
+                                )
                             if self.release_controller is not None:
                                 with self._latch_lock():
                                     self._grip_hist.append((time.perf_counter(), float(tgt)))
@@ -829,6 +869,9 @@ class ChunkExecutor:
         self.halt_state = {}
         self._grip_target = None
         self._last_grip_command = None
+        self._grip_ack = None
+        self._grip_observer_mailbox = None
+        self._observer_policy_eligible = False
         self.completed_reason = self.completed_at_s = None
         self._finish_pose = self._finish_grip = None
         if self.release_controller is not None:
