@@ -844,6 +844,12 @@ class SimulationPolicyAdapter:
             target, grip = self._finish_pose.copy(), self._finish_grip
         verdict = self.safety.check(t, target)
         kinds = [e.kind for e in verdict.events]
+        # A STOP replaces target with the last accepted command below. Keep
+        # the checked proposal so a rejected next target cannot be mistaken
+        # for measured motion outside the workspace.
+        safety_target = (
+            self.safety.target_diagnostics(t, target) if kinds else None
+        )
         if self.rings["camera_scene"].latest_ts() is None:
             kinds.append("camera_scene_stale")
             self.request_stop("camera_scene_stale")
@@ -948,6 +954,7 @@ class SimulationPolicyAdapter:
             self.stopped_reason,
             {
                 "safety_events": kinds,
+                "safety_target": safety_target,
                 "wrist_guard": self.safety.wrench_diagnostics(),
                 "completed_reason": self.completed_reason,
                 "completed_at_s": self.completed_at_s,

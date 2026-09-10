@@ -487,6 +487,22 @@ class SafetyMonitor:
                 return False
         return True
 
+    def target_diagnostics(self, t: float, tcp_target: np.ndarray) -> dict:
+        """Preserve the checked proposal, before a stop replaces the command.
+
+        Hitbox checks use the workspace/reach-clamped proposal. Neither pose
+        below is measured feedback or proof that a command was submitted.
+        """
+        target = np.asarray(tcp_target, dtype=np.float64)
+        return {
+            "checked_at_s": float(t),
+            "proposed_tcp_pose": target.tolist(),
+            "hitbox_checked_tcp_pose": (
+                self.clamp_target(target).tolist()
+                if self.hw.safety.hitbox_m is not None else None
+            ),
+        }
+
     def clamp_target(self, tcp_target: np.ndarray) -> np.ndarray:
         ws = self.hw.safety.workspace_m
         out = tcp_target.copy()

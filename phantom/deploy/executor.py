@@ -203,7 +203,7 @@ class ChunkExecutor:
             if self.stopped_reason is None:
                 self.stopped_reason = reason
 
-    def _halt(self, reason: str, *, events=None) -> None:
+    def _halt(self, reason: str, *, events=None, safety_target=None) -> None:
         """Stop BOTH threads and invalidate the gripper mailbox. Safety stops
         used to only break the servo loop — the gripper worker could still
         consume the previous tick's target (possibly a close) on an arm that
@@ -241,6 +241,12 @@ class ChunkExecutor:
             self.halt_state = self._snapshot_arm(reason)
             if hasattr(self.safety, "wrench_diagnostics"):
                 self.halt_state["wrist_guard"] = self.safety.wrench_diagnostics()
+            if safety_target is not None and hasattr(self.safety, "target_diagnostics"):
+                # Only serialize after the stop/release operations above.
+                # This is the rejected proposal, not the measured halt pose.
+                self.halt_state["safety_target"] = self.safety.target_diagnostics(
+                    *safety_target
+                )
 
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to
@@ -442,14 +448,16 @@ class ChunkExecutor:
                 # protective stop in the same tick; PROTECTIVE_STOP outranks
                 # STOP_EPISODE, so without the events the letgo release never
                 # ran on exactly that coincidence (revalidation §2 #5)
-                self._halt("protective_stop", events=verdict.events)
+                self._halt("protective_stop", events=verdict.events,
+                           safety_target=(t0, target))
                 break
             if verdict.action == SafetyAction.STOP_EPISODE:
                 self.arm.stop(2.0)
                 # the EVENTS carry the granularity `safety_stop` loses: a
                 # tactile/wrench stops must also open the fingers; a pure
                 # hitbox boundary retains the accepted gripper command
-                self._halt(halt_reason_for(verdict.events), events=verdict.events)
+                self._halt(halt_reason_for(verdict.events), events=verdict.events,
+                           safety_target=(t0, target))
                 break
             if verdict.action == SafetyAction.CLAMP:
                 target = self.safety.clamp_target(target)

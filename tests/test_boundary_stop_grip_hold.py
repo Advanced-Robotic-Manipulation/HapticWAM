@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from phantom.deploy.executor import ChunkExecutor, halt_reason_for
+from phantom.deploy import executor as executor_module
 from phantom.deploy.safety import SafetyAction, SafetyEvent
 from phantom.sim.policy_adapter import SimulationPolicyAdapter
 from phantom_test_utils import make_small_hw
@@ -17,10 +18,10 @@ OPEN = .232
 RELEASE = {"tcp_min_m": [-.55, -.076, .058], "tcp_max_m": [-.23, .149, .274]}
 
 
-def adapter_with_accepted_command():
+def adapter_with_accepted_command(*, workspace_floor=.03):
     hw = make_small_hw(safety={
         "wrist_extension_stop_m": None, "reach_clamp_m": None,
-        "workspace_m": {"x": [-.7, .15], "y": [-.5, .3], "z": [.03, .8]},
+        "workspace_m": {"x": [-.7, .15], "y": [-.5, .3], "z": [workspace_floor, .8]},
         "hitbox_m": {"x": [-.5, -.2], "y": [-.2, .1], "z": [.1, .35]},
     })
     ad = SimulationPolicyAdapter(hw, Policy(), open_aperture=OPEN, release_config=RELEASE)
@@ -84,10 +85,15 @@ def test_every_geometric_boundary_stops_native_and_sim_without_unloading(axis, b
     assert halt_reason_for(verdict.events) == "safety_stop"
 
     ex, grip, stops = native_with_accepted_command(ad)
-    ex._halt(halt_reason_for(verdict.events), events=verdict.events)
+    ex._halt(halt_reason_for(verdict.events), events=verdict.events,
+             safety_target=(.008, target))
     assert ex.stopped_reason == "safety_stop"
     assert ex._last_grip_command == ACCEPTED
     assert_native_halted(ex, grip, stops, ACCEPTED)
+    np.testing.assert_array_equal(ex.halt_state["tcp_pose"], POSE)
+    np.testing.assert_array_equal(
+        ex.halt_state["safety_target"]["proposed_tcp_pose"], target
+    )
 
     ad._pose_at = lambda *_: (target.copy(), .15)
     command = ad.step(.008)
@@ -95,6 +101,12 @@ def test_every_geometric_boundary_stops_native_and_sim_without_unloading(axis, b
     assert command.diagnostics["safety_events"] == [expected_kind]
     assert command.gripper == ACCEPTED and command.gripper != MEASURED
     np.testing.assert_array_equal(command.tcp_pose, POSE)
+    # The halted/held command remains inside while the checked next proposal
+    # identifies the actual rejected boundary. Native and sim preserve it.
+    assert command.diagnostics["safety_target"] == ex.halt_state["safety_target"]
+    assert not ad.hw.safety.hitbox_m.contains(
+        command.diagnostics["safety_target"]["hitbox_checked_tcp_pose"][:3]
+    )
     assert ad.completed_reason is None and not command.diagnostics["completion_hold"]
     assert not ad.release_controller.finished
     ad.report_execution(.008, accepted=True, gripper_command=command.gripper)
@@ -165,3 +177,41 @@ def test_boundary_halt_blocks_worker_waiting_to_send_a_new_opening():
         worker.join(2)
     assert not worker.is_alive()
     assert_native_halted(ex, grip, stops, ACCEPTED)
+
+
+def test_native_servo_loop_records_rejected_target_without_sending_it(monkeypatch):
+    ad = adapter_with_accepted_command()
+    ex, grip, stops = native_with_accepted_command(ad)
+    target = POSE.copy()
+    target[1] = .1002856
+    ex._last_cmd = POSE.copy()
+    ex._plan = plan(0, delta=0, grip=.15)
+    ex._pose_at = lambda *_: (target.copy(), .15)
+    sent = []
+    ex.arm.servo_l = lambda *args: sent.append(args)
+    ex.arm.stop = lambda *_: stops.append("arm_stop")
+    monkeypatch.setattr(executor_module.time, "perf_counter", lambda: .008)
+    ex._run()
+    assert ex.stopped_reason == "safety_stop" and not sent
+    assert stops == ["arm_stop"] and grip.moves == [ACCEPTED]
+    assert ex._grip_target is None
+    np.testing.assert_array_equal(ex.halt_state["tcp_pose"], POSE)
+    captured = ex.halt_state["safety_target"]
+    assert captured["checked_at_s"] == .008
+    np.testing.assert_array_equal(captured["proposed_tcp_pose"], target)
+    np.testing.assert_array_equal(captured["hitbox_checked_tcp_pose"], target)
+    target[:] = 0  # Diagnostic owns its saved values.
+    assert captured["proposed_tcp_pose"][1] == .1002856
+
+
+def test_hitbox_diagnostic_preserves_the_floor_clamp_semantics():
+    ad = adapter_with_accepted_command(workspace_floor=.1)
+    target = POSE.copy()
+    target[2] = .05
+    verdict = ad.safety.check(.008, target)
+    assert verdict.action == SafetyAction.CLAMP
+    assert "hitbox_exit" not in [event.kind for event in verdict.events]
+    captured = ad.safety.target_diagnostics(.008, target)
+    assert captured["proposed_tcp_pose"][2] == .05
+    assert captured["hitbox_checked_tcp_pose"][2] == .1
+    assert ad.hw.safety.hitbox_m.contains(captured["hitbox_checked_tcp_pose"][:3])
