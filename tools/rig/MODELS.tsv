@@ -9,3 +9,5 @@ stu_ftA_r1	runs/student_ftA_r1/student_001200.pt	SENSOR-FREE student round 2 fro
 v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6: clean retrain on all 1115 eps + wrench-baseline fix (val124 20.0/nfe1; waffles 20.1 vs v5_6 27.0, Carton 38.6 vs 20.5); teacher-only cells first, its student stu_v6 lands 09-09 ~afternoon
 stu_v6	runs/student_v6/student_001500.pt	SENSOR-FREE student distilled from v6 (round-2 recipe; val124 29.5mm - worse offline than stu_ftA_r1 22.7; waffles 35.7) - the v6 pair's student	student
 ctl_v6	runs/control_v6/teacher_001200.pt	CONTROL: same inputs as stu_v6, init from v6, NO distillation (ablation only)	student
+B_nodistill	runs/cosmos_nodistill_v1/teacher_006000.pt	BASELINE B: cold Cosmos init, student inputs, NO distillation (val 31.2mm) - ablation row	student
+A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos init, vision-only (no pads, no wrist) (val 31.5mm) - ablation row	vision_only
