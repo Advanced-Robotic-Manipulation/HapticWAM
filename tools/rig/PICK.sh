@@ -79,14 +79,19 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
     [ "$RC" = "0" ] && [ -n "$LINE" ] || continue
     read -r SRV_CKPT SRV_STATE SRV_SHA <<< "$LINE"
     FOUND="$FOUND $PORT:$(basename "$SRV_CKPT")[$SRV_STATE]"
-    HAVE=$(basename "$(readlink -f "$BASE/phantom/$SRV_CKPT" 2>/dev/null || echo "$SRV_CKPT")")
-    if [ "$HAVE" = "$WANT" ] || [ "$(basename "$SRV_CKPT")" = "$(basename "$CKPT")" ]; then
+    # Match by CONTENT (sha256[:12] of the file the server loaded), never by
+    # basename: eight menu rows share three basenames (student_001200.pt x3,
+    # teacher_001200.pt x3, teacher_006000.pt x2), so a basename match would
+    # attach stu_v5_6's launch to a warm stu_ftA_r1 server and record the
+    # wrong model under the right label (audit 09-10).
+    WANT_SHA=$(sha256sum "$BASE/phantom/$CKPT" 2>/dev/null | cut -c1-12)
+    if [ -n "$WANT_SHA" ] && [ "$SRV_SHA" = "$WANT_SHA" ]; then
       if [ "$SRV_STATE" = "busy" ]; then
         echo "!! the policy server on :$PORT holds $SRV_CKPT but is BUSY: another run_deploy is attached"
         echo "!! (possibly Ctrl-Z'd: 'jobs' / 'ps -ef | grep run_deploy'). Bring it to the foreground and end it."
         echo "!! Not launching a competing process."; exit 3
       fi
-      echo ">> warm policy server on :$PORT holds $SRV_CKPT (sha $SRV_SHA) — attaching (fast start)"
+      echo ">> warm policy server on :$PORT holds $SRV_CKPT (sha $SRV_SHA = menu $MODEL) — attaching (fast start)"
       EXTRA="$EXTRA --policy-server 127.0.0.1:$PORT"; ATTACHED=1; break
     fi
   done
