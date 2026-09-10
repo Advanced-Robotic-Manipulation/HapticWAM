@@ -36,7 +36,7 @@ class BoundaryProjectionConfig:
     budget_s: float
 
     def __post_init__(self):
-        if self.variant != "upper_y_projection_v1":
+        if self.variant not in ("upper_y_projection_v1", "upper_y_projection_v2"):
             raise ValueError("unknown boundary projection variant")
         for f in fields(self):
             if f.name == "variant":
@@ -83,6 +83,63 @@ def _pose(value):
     return a.copy()
 
 
+def _solver_domain(lower_xyz, upper_xyz, radius_m):
+    lower, upper = np.asarray(lower_xyz, dtype=float), np.asarray(upper_xyz, dtype=float)
+    if (lower.shape != (3,) or upper.shape != (3,)
+            or not np.isfinite(lower).all() or not np.isfinite(upper).all()
+            or np.any(lower > upper) or isinstance(radius_m, (bool, np.bool_))
+            or radius_m is None or not math.isfinite(radius_m) or radius_m <= 0):
+        raise ValueError("solver interior requires finite ordered bounds and a positive radius")
+    nearest = np.clip(np.zeros(3), lower, upper)
+    if np.linalg.norm(nearest) > radius_m:
+        raise ValueError("solver interior box and reach sphere have empty intersection")
+    return lower, upper, float(radius_m), nearest
+
+
+def solver_interior_projection(pose, lower_xyz, upper_xyz, radius_m):
+    """Closest point in box intersected with origin-centered reach ball.
+
+    KKT gives q(lambda) = clip(p / (1 + lambda), lower, upper).
+    Retain the actually feasible upper bracket; numerical labels never relax
+    a bound. A tangent-only intersection returns its unique point and None
+    for the infinite-multiplier limit. Rotation is copied without conversion.
+    This selects a solver target, not authority to accept an infeasible FK.
+    """
+    output = _pose(pose)
+    lower, upper, radius, nearest = _solver_domain(lower_xyz, upper_xyz, radius_m)
+    source = output[:3].copy()
+    clipped = np.clip(source, lower, upper)
+    if np.linalg.norm(clipped) <= radius:
+        output[:3] = clipped
+        return output, 0.0
+    if np.linalg.norm(nearest) == radius:
+        output[:3] = nearest
+        return output, None
+    low, high = 0.0, 1.0
+    for _ in range(128):
+        feasible = np.clip(source / (1.0 + high), lower, upper)
+        if np.linalg.norm(feasible) <= radius:
+            break
+        low, high = high, 2.0 * high
+    else:
+        raise BoundaryProjectionStop("solver_interior_bracket")
+    for _ in range(80):
+        middle = low + (high - low) / 2.0
+        if middle == low or middle == high:
+            break
+        candidate = np.clip(source / (1.0 + middle), lower, upper)
+        if np.linalg.norm(candidate) <= radius:
+            high, feasible = middle, candidate
+        else:
+            low = middle
+    # Check the returned point itself with exactly the production inequalities.
+    if not (np.all(feasible >= lower) and np.all(feasible <= upper)
+            and np.linalg.norm(feasible) <= radius):
+        raise BoundaryProjectionStop("solver_interior_infeasible")
+    output[:3] = feasible
+    return output, high
+
+
 class UpperYBoundaryProjection:
     def __init__(self, config, hw, rings):
         self.config = boundary_config(config)
@@ -98,6 +155,17 @@ class UpperYBoundaryProjection:
         self.rearm = self.upper - self.config.rearm_inward_m
         if self.rearm <= self.hb.y[0]:
             raise ValueError("boundary projection rearm plane is outside task hitbox")
+        if self.config.variant == "upper_y_projection_v2":
+            workspace = hw.safety.workspace_m
+            epsilon = self.config.solver_inset_m
+            lower = [max(getattr(workspace, a)[0], getattr(self.hb, a)[0]) + epsilon
+                     for a in ("x", "y", "z")]
+            upper = [min(getattr(workspace, a)[1], getattr(self.hb, a)[1]) - epsilon
+                     for a in ("x", "y", "z")]
+            upper[1] = min(upper[1], self.plane)
+            reach = hw.safety.reach_clamp_m
+            radius = None if reach is None else reach - epsilon
+            self.solver_lower, self.solver_upper, self.solver_radius, _ = _solver_domain(lower, upper, radius)
         self.started_at = None
         self.last_t = None
         self.anchor = None
@@ -165,7 +233,7 @@ class UpperYBoundaryProjection:
         return p
 
     def select(self, t, raw, clamped, *, physical_preempted=False):
-        """Called once per safety tick; only Y of the ordinary clamped pose changes."""
+        """Select upper-Y continuation, with explicit v2 solver target inset."""
         self.last = {"variant": self.config.variant, "stopped": False,
                      "started_at_s": self.started_at,
                      "deadline_s": None if self.started_at is None else self.started_at + self.config.budget_s,
@@ -175,6 +243,8 @@ class UpperYBoundaryProjection:
                      "selected_tcp_pose": None, "final_verified_tcp_pose": None,
                      "accepted_tcp_pose": None, "accepted_at_s": None,
                      "selected_target_kind": "continuation", "drive_submission": None}
+        if self.config.variant == "upper_y_projection_v2":
+            self.last.update(upper_y_selected_tcp_pose=None, solver_interior=None)
         self.pending = None
         self.submitted = None
         self.selected_at = None
@@ -231,6 +301,29 @@ class UpperYBoundaryProjection:
         self.measured_interior = bool(measured[1] <= self.rearm)
         if not self.raw_interior or not self.measured_interior:
             self.rearm_since = self.rearm_last_ack = None
+        if self.config.variant == "upper_y_projection_v2":
+            before = target.copy()
+            try:
+                target, multiplier = solver_interior_projection(
+                    target, self.solver_lower, self.solver_upper, self.solver_radius)
+            except BoundaryProjectionStop as error:
+                self._stop(error.reason.removeprefix("boundary_projection_"))
+            active = []
+            # This tolerance only labels active faces; it never admits a point.
+            for i, axis in enumerate(("x", "y", "z")):
+                if abs(target[i] - self.solver_lower[i]) <= 1e-12:
+                    active.append(axis + "_low")
+                if abs(target[i] - self.solver_upper[i]) <= 1e-12:
+                    active.append(axis + "_high")
+            if abs(np.linalg.norm(target[:3]) - self.solver_radius) <= 1e-12:
+                active.append("reach_sphere")
+            self.last.update(upper_y_selected_tcp_pose=before.tolist(), solver_interior={
+                "inset_m": self.config.solver_inset_m,
+                "lower_xyz_m": self.solver_lower.tolist(), "upper_xyz_m": self.solver_upper.tolist(),
+                "radius_m": self.solver_radius, "input_tcp_pose": before.tolist(),
+                "output_tcp_pose": target.tolist(), "corrected": not np.array_equal(before, target),
+                "correction_m": float(np.linalg.norm(target[:3] - before[:3])),
+                "active_constraints": active, "lambda": multiplier})
         self.selected_at = float(t)
         self.last.update(selected_tcp_pose=target.tolist(), projected=projected,
                          reason="projected" if projected else "unmodified",
@@ -267,6 +360,8 @@ class UpperYBoundaryProjection:
                                "gripper_command": float(grip), "gripper_ack": list(grip_ack)}
         self.last["terminal_hold_request"] = dict(self.finish_request)
         self.last.update(selected_target_kind="finish_transition", selected_tcp_pose=measured.tolist())
+        if self.config.variant == "upper_y_projection_v2":
+            self.last.update(upper_y_selected_tcp_pose=None, solver_interior=None)
         return measured
 
     def terminal_joint_target(self):
