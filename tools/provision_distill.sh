@@ -266,6 +266,10 @@ set +e
 # the Isaac-sim suite (tests/test_sim_*, teacher-anchor overlays) is not what a
 # training rental exercises and pins sim-module hashes that drift with sim
 # commits (09-09: gripper_wrist.py hash mismatch on main) — excluded here
+# scipy + cv2: pulled in by the sim-adjacent deploy tests (boundary projection,
+# shared limiter, ur_main_merge) that a fresh box lacks; installing them is
+# cheaper than maintaining a skip list that drifts with every sim commit
+pip install -q scipy opencv-python-headless >/dev/null 2>&1 || true
 python -m pytest tests/ -q --deselect tests/test_ddp_sync.py::test_ddp_ranks_stay_in_sync \
     --ignore-glob="tests/test_sim_*" --ignore=tests/test_prepare_teacher_anchor_sensors.py \
     > "$W/pytest_gate.log" 2>&1
