@@ -211,8 +211,15 @@ DEFAULT_MAX_REPLANS = 40
 
 #: Jitter (in demo sigma) for successive homing attempts of ONE episode:
 #: attempt 0 is the normal jittered start, each retry halves the offset and the
-#: LAST one is the demo mean exactly, which passes the start gate by
-#: construction (0 sigma on every TCP axis and every joint).
+#: LAST one COMMANDS the demo mean exactly: moveJ to q_mean, then moveL to
+#: tcp_mean. That scores 0 sigma on every TCP axis and on the gripper. It is
+#: NOT exactly 0 on the joints: the demos' mean joint vector and their mean TCP
+#: pose are two independent element-wise means, so FK(q_mean) != tcp_mean and
+#: the closing moveL pulls the joints slightly off q_mean. That residual is the
+#: second-order curvature of FK over the demo spread — far below the 3-4 joint
+#: sigma a full 1-sigma TCP draw produces, but "0 by construction" would be a
+#: lie. If a 0-jitter attempt ever fails the joint gate on the rig, the demo
+#: stats themselves are inconsistent and no homing schedule can fix it.
 #:
 #: Before this (rig 2026-09-11) every retry re-drew a FRESH full 1-sigma
 #: sample, so the auto-home was a coin flip repeated twice rather than a
@@ -239,7 +246,7 @@ def home_jitter(attempt: int) -> float:
     log.info("homing attempt %d/%d: %.2f-sigma jitter%s",
              min(attempt, len(AUTO_HOME_JITTER) - 1) + 1,
              len(AUTO_HOME_JITTER), jit,
-             " (the exact demo mean posture — 0 sigma by construction)"
+             " (the demo mean commanded exactly — the last attempt)"
              if jit == 0.0 else "")
     return jit
 
@@ -1134,6 +1141,10 @@ def main(argv=None) -> int:
     # configuration: the gate measures joints, so homing that cannot set them
     # can only converge by luck. --home-joints stays accepted (and still forces
     # it on); --no-home-joints is the opt-out.
+    if args.home_joints and args.no_home_joints:
+        log.warning("--home-joints AND --no-home-joints were both passed — "
+                    "--no-home-joints wins (the first homing is moveL only). "
+                    "The auto-home RETRIES still moveJ.")
     home_joints_first = (not args.no_home_joints) and (
         args.home_joints or getattr(stats, "q_mean", None) is not None)
     if arm_real and args.home and stats is not None:
@@ -1240,8 +1251,9 @@ def main(argv=None) -> int:
                             # jog + restart: a JOINT-space home fixes exactly
                             # what the joint gate measures (incl. a wrapped
                             # wrist — it unwinds), and the SHRINKING jitter
-                            # makes the sequence converge: the final attempt is
-                            # the demo mean, which scores 0 sigma everywhere.
+                            # makes the sequence converge: the final attempt
+                            # commands the demo mean itself (see
+                            # AUTO_HOME_JITTER for the one residual).
                             # Slow move; countdown so the operator can e-stop
                             # if the path is not clear.
                             home_attempt += 1

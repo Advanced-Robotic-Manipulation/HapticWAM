@@ -535,8 +535,8 @@ def test_the_realised_start_pose_is_tagged(monkeypatch, tmp_path):
 # is 56 mm, so a full 1-sigma TCP draw is 3-4 JOINT sigma: re-drawing at full
 # sigma after a gate failure is the same coin flip, and the operator was stuck
 # after 2 tries (measured: q1 2.2, q2 3.7, q3 2.9, q5 2.6 sigma with every TCP
-# axis <= 1). The retries now shrink the jitter to zero, which is the demo mean
-# and passes by construction.
+# axis <= 1). The retries now shrink the jitter to zero, i.e. the last attempt
+# commands the demo mean itself (see run_deploy.AUTO_HOME_JITTER).
 
 def test_the_auto_home_shrinks_the_jitter_until_the_gate_passes(monkeypatch,
                                                                 tmp_path):
@@ -612,6 +612,11 @@ def test_moveJ_first_is_the_default_when_the_task_has_demo_joint_stats(
     assert [h["home_joints"] for h in bare["homes"]] == [False]
     forced = _run_main(monkeypatch, tmp_path, argv=("--home-joints",))
     assert [h["home_joints"] for h in forced["homes"]] == [True]
+    # both flags: the SUPPRESSING one wins (it is the one that keeps the arm
+    # from sweeping the bin), and it is logged, not silently dropped
+    both = _run_main(monkeypatch, tmp_path, q_mean=True,
+                     argv=("--home-joints", "--no-home-joints"))
+    assert [h["home_joints"] for h in both["homes"]] == [False]
 
 
 def test_the_gate_reports_which_axis_is_worst(monkeypatch, tmp_path):
