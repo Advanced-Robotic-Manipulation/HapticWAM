@@ -1,14 +1,6 @@
-# label<TAB>ckpt<TAB>note<TAB>system(teacher|student, optional)
-v5_6	runs/teacher_v5_batch0822/v5_6.pt	LEAD - best overall (val124 18.2mm); arm A in the Session-5 pairing
-ftA	runs/teacher_v5_ftA/BEST.pt	EXPERIMENTAL ftA_1500 - best on waffles (24.4mm) + all of 09-01 grasps; arm B in the pairing
-stu_ftA	runs/student_ftA/student_001200.pt	SENSOR-FREE student distilled from ftA (val 23.6mm; egg 6.6, waffles 35.6) - first student to test	student
-stu_v5_6	runs/student_v5_6/student_001200.pt	SENSOR-FREE student distilled from v5_6 (val 27.3mm)	student
-ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: same inputs as stu_ftA, NO distillation (ablation only)	student
-ctl_v5_6	runs/control_v5_6/teacher_001200.pt	CONTROL: same inputs as stu_v5_6, NO distillation (val 37.7mm; ablation only)	student
-stu_ftA_r1	runs/student_ftA_r1/student_001200.pt	SENSOR-FREE student round 2 from ftA (val 22.7mm - best student; teacher full NFE + trained sigma head)	student
-v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6: clean retrain on all 1115 eps + wrench-baseline fix (val124 20.0/nfe1; waffles 20.1 vs v5_6 27.0, Carton 38.6 vs 20.5); teacher-only cells first, its student stu_v6 lands 09-09 ~afternoon
-stu_v6	runs/student_v6/student_001500.pt	SENSOR-FREE student distilled from v6 (round-2 recipe; val124 29.5mm - worse offline than stu_ftA_r1 22.7; waffles 35.7) - the v6 pair's student	student
-ctl_v6	runs/control_v6/teacher_001200.pt	CONTROL: same inputs as stu_v6, init from v6, NO distillation (ablation only)	student
-B_nodistill	runs/cosmos_nodistill_v1/teacher_006000.pt	BASELINE B: cold Cosmos init, student inputs, NO distillation (val 31.2mm) - ablation row	student
-A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos init, vision-only (no pads, no wrist) (val 31.5mm) - ablation row	vision_only
-stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	SENSOR-FREE student from ftA + 09-08/09 rig rollouts (DAgger r2, 2000 steps; val124 4-seed 19.8mm / median 13.8 - best student, level with the ftA teacher 19.6; stu_ftA_r1 is 22.3 at 4 seeds)	student
+# label<TAB>ckpt<TAB>note<TAB>system(teacher|student|vision_only, optional)
+# 09-11 trimmed to the 4 rows the paper's closed-loop needs (4-seed val124 mm, mean/median). Dropped rows live on the hub.
+ftA	runs/teacher_v5_ftA/BEST.pt	TEACHER (pads + wrist): ftA_1500, 19.6/15.8 - arm A of pair 1
+stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	SENSOR-FREE student from ftA + 09-08/09 rig rollouts (DAgger r2, 2000 steps): 19.8/13.8, level with the teacher - arm B of pair 1, arm A of pair 2	student
+ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: student inputs, init from ftA, NO distillation: 23.0/16.6 - arm B of pair 2	student
+A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos, camera only: 31.5/18.6 - Friday baseline arm	vision_only
