@@ -151,7 +151,7 @@ def main():
         assert args.setups, "stage C needs --setups model:recipe ..."
         trials = stage_c(args.seeds[0], [tuple(x.split(":")) for x in args.setups])
     study = dict(study_id=f"sim_zoo_20260912_{args.stage}", stage=args.stage,
-                 runtime=REMOTE_ROOT + "runtime_v12_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
+                 runtime=REMOTE_ROOT + "runtime_v13_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
                  raw=REMOTE_ROOT + f"raw_20260912/{args.stage}", prepared_episode=PREPARED_EPISODE,
                  tactile_baseline=TACTILE_BASELINE, fixed=FIXED, models=models, recipes=RECIPES, trials=trials,
                  input_manifest_sha256=sha(inputs_dir / "input_manifest.json"), planned_trials=len(trials))
