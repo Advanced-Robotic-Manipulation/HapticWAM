@@ -45,9 +45,9 @@ RECIPES = {
     "K4_obs": dict(BASE_RECIPE, k_seeds=4, action_time_origin="observation"),
     "K1_obs": dict(BASE_RECIPE, k_seeds=1, action_time_origin="observation"),
     "pi05": dict(nfe=10, guidance=1.0, k_seeds=1, parity_fixes=False, persistent_noise=False, task_text="pick up the waffles",
-                 drop_video=False, close_p=0.5, use_ema=True, terminal_veto=False,
-                 # the box pi0.5 server (main) predates action_time_origin and cannot report it as
-                 # restorable; the sim client then defaults to inference_ready, which is that server's behaviour
+                 drop_video=False, close_p=0.5, use_ema=True, terminal_veto=False, action_time_origin="inference_ready",
+                 # the sim's adaptive contract requires action_time_origin explicitly; the box pi0.5 server (main)
+                 # predates the key, so runtime v13's client honours an explicit inference_ready for lerobot servers
                  max_play_steps=16, grip_play_steps=16),
 }
 CONFIGURABLE = ("nfe", "guidance", "k_seeds", "parity_fixes", "persistent_noise", "task_text", "drop_video", "close_p",
