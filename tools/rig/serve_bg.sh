@@ -44,8 +44,15 @@ for m in "$@"; do
   [ -f "$C" ] || { echo "checkpoint missing on disk: $BASE/phantom/$C"; continue; }
   PORT=$((7776 + m)); LOG=$BASE/logs/serve_${L}.log
   if [ -n "$(listener_pid $PORT)" ]; then echo "$L already listening on :$PORT"; continue; fi
+  if [ "$S" = lerobot ]; then
+    # pi0.5 (LeRobot) row: its own venv (lerobot + transformers pins), same wire/probe contract
+    PY=$BASE/pi05venv/bin/python; [ -x "$PY" ] || { echo "missing $PY (pi0.5 venv) — see docs/pi05_baseline.md"; continue; }
+    nohup "$PY" -m phantom.scripts.lerobot_server --ckpt "$C" --port $PORT --hardware configs/hardware.nuc.yaml \
+        --policy-type pi05 --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
+  else
   nohup .venv/bin/python -m phantom.scripts.policy_server --ckpt "$C" --system "$S" \
       --hardware configs/hardware.nuc.yaml --port $PORT > "$LOG" 2>&1 &
+  fi
   echo "$L ($S) starting on :$PORT, pid $!, log $LOG"
   started+=("$m")
 done

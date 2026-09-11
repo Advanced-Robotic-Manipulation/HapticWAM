@@ -4,3 +4,4 @@ ftA	runs/teacher_v5_ftA/BEST.pt	TEACHER (pads + wrist): ftA_1500, 19.6/15.8 - ar
 stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	SENSOR-FREE student from ftA + 09-08/09 rig rollouts (DAgger r2, 2000 steps): 19.8/13.8, level with the teacher - arm B of pair 1, arm A of pair 2	student
 ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: student inputs, init from ftA, NO distillation: 23.0/16.6 - arm B of pair 2	student
 A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos, camera only: 31.5/18.6 - Friday baseline arm	vision_only
+pi05	runs/pi05_20k/pretrained_model	pi0.5 BASELINE (LeRobot, expert fine-tune 20k on our demos; camera+proprio only): 40.2/26.8 offline, below the 32 no-motion floor - warm with ./serve_bg.sh 5 (needs pi05venv + runs/pi05_20k); Friday arm	lerobot

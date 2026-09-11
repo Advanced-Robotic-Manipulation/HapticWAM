@@ -32,8 +32,16 @@ echo "  5) BOUNDED REACH (teacher-only trials, sim evidence only): LEVERS + elbo
 # arms under the SAME controller or the pair measures the controller, not the
 # model. BOUNDED REACH (5) is an explicit choice for teacher-only trials.
 DEFAULT_PRESET=1
+if [ "$SYSTEM" = lerobot ]; then
+  # pi0.5 (LeRobot) arm: no terminal veto / parity fixes / k-seeds (the adapter refuses them);
+  # nfe = its flow-matching steps (checkpoint default 10); play caps per docs/pi05_baseline.md.
+  p=pi05; NFE=10; EXTRA="--max-play-steps 9 --grip-play-steps 9 --max-episode-s 150 --max-replans 200"; PRESET=PI05
+  echo "  (pi0.5 row: preset fixed to PI05 = nfe 10, plays 9/9, no veto)"
+else
 read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
+fi
 case $p in
+  pi05) ;;
   1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # pose plays the whole chunk (09-08: the turn to the box lives in the tail); gripper capped at the validated head (tail openings flapped the fingers)
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
@@ -42,6 +50,10 @@ case $p in
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
+if [ "$SYSTEM" = lerobot ]; then
+  case "$TASK" in Carton) PHRASE="pick up the carton";; whiteboard) PHRASE="pick up the whiteboard marker";; *) PHRASE="pick up the $TASK";; esac
+  EXTRA="$EXTRA --text '$PHRASE'"
+fi
 read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
@@ -84,7 +96,11 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
     # teacher_001200.pt x3, teacher_006000.pt x2), so a basename match would
     # attach stu_v5_6's launch to a warm stu_ftA_r1 server and record the
     # wrong model under the right label (audit 09-10).
-    WANT_SHA=$(sha256sum "$BASE/phantom/$CKPT" 2>/dev/null | cut -c1-12)
+    if [ -d "$BASE/phantom/$CKPT" ]; then
+      WANT_SHA=$(cd $BASE/phantom && .venv/bin/python -c "from phantom.scripts.lerobot_server import dir_digest; print(dir_digest('$CKPT') or '')" 2>/dev/null)
+    else
+      WANT_SHA=$(sha256sum "$BASE/phantom/$CKPT" 2>/dev/null | cut -c1-12)
+    fi
     if [ -n "$WANT_SHA" ] && [ "$SRV_SHA" = "$WANT_SHA" ]; then
       if [ "$SRV_STATE" = "busy" ]; then
         echo "!! the policy server on :$PORT holds $SRV_CKPT but is BUSY: another run_deploy is attached"
@@ -95,6 +111,9 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
       EXTRA="$EXTRA --policy-server 127.0.0.1:$PORT"; ATTACHED=1; break
     fi
   done
+  if [ -z "$ATTACHED" ] && [ "$SYSTEM" = lerobot ]; then
+    echo "!! pi0.5 runs only through its warm server: ./serve_bg.sh $m  (lerobot_server), then re-run PICK."; exit 3
+  fi
   if [ -z "$ATTACHED" ]; then
     if [ -n "$FOUND" ]; then
       echo ">> NOTE: running servers hold [$FOUND ] but you picked $CKPT."
@@ -123,4 +142,5 @@ read -p "Enter to launch (Ctrl-C to abort) "
 # behind a git pull and previously left the fixed controller disabled.
 LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
 [ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
+[ "$SYSTEM" = lerobot ] && SYSTEM=student
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0
