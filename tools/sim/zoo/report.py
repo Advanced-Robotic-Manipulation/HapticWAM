@@ -72,8 +72,10 @@ def summarize(rows):
         placed = sum(1 for r in primary if r["stage"] == 4)
         box = sum(1 for r in primary if r["stage"] >= 3)
         stops = defaultdict(int)
+        stage_by_stop = defaultdict(lambda: defaultdict(int))
         for r in scored:
             stops[str(r.get("stop_reason"))] += 1
+            stage_by_stop[r["stage_name"]][str(r.get("stop_reason"))] += 1
         table.append(dict(model=model, recipe=recipe, planned=len(members), scored=len(scored), primary_n=len(primary),
                           placed=placed, placed_rate=round(placed / len(primary), 3) if primary else None,
                           placed_ci95=wilson(placed, len(primary)), stage3plus=box,
@@ -83,7 +85,9 @@ def summarize(rows):
                           stage_counts_all_scored=counts, dropped=sum(1 for r in scored if r.get("dropped")),
                           invalid=sum(1 for r in scored if not r["valid"]),
                           latency_confounded=sum(1 for r in scored if r["latency_confounded"]),
-                          unrun_or_failed=len(members) - len(scored), stop_reasons=dict(stops)))
+                          unrun_or_failed=len(members) - len(scored), stop_reasons=dict(stops),
+                          stage_by_stop_reason={k: dict(v) for k, v in stage_by_stop.items()},
+                          failed_statuses=dict(defaultdict(int, {str(r["run_status"]): sum(1 for m in members if m["run_status"] == r["run_status"]) for r in members if r["stage"] is None}))))
     return table
 
 
