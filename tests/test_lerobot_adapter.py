@@ -525,3 +525,18 @@ def test_server_advertises_policy_kind_so_run_deploy_can_refuse_the_veto(live_se
     class Plain:                       # a stub without the attribute = a Cosmos policy
         wrench_baseline_rows = 0
     assert PolicyServer(Plain(), ckpt="x", ckpt_sha="y").status()["policy_kind"] == "phantom"
+
+
+def test_planner_min_replan_wait_floors_the_period():
+    """--min-replan-s: pi0.5 answers in ~0.16 s and re-samples an independent chunk
+    every 1.6 played steps (zig-zag, 09-11); a floor on the period lets its own
+    chunk be played. Disabled (0) or before the first replan the wait is 0."""
+    from phantom.deploy.planner import PlannerLoop
+    pl = PlannerLoop.__new__(PlannerLoop)
+    pl.min_replan_s = 0.0; pl._last_replan_t = None
+    assert pl.replan_wait(10.0) == 0.0
+    pl.min_replan_s = 0.5
+    assert pl.replan_wait(10.0) == 0.0          # first replan: no wait
+    pl._last_replan_t = 10.0
+    assert abs(pl.replan_wait(10.16) - 0.34) < 1e-9
+    assert pl.replan_wait(10.9) == 0.0

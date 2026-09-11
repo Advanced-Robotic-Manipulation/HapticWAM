@@ -172,6 +172,7 @@ class DeploymentRuntime:
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
                  max_play_steps: int | None = None, release_config=None, boundary_config=None,
+                 min_replan_s: float = 0.0,
                  grip_play_steps: int | None = None,
                  controller_profile: str | None = None):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
@@ -196,6 +197,7 @@ class DeploymentRuntime:
         # the aperture a "let go" stop reopens to (task demo start aperture)
         self.open_aperture = float(open_aperture)
         self.max_play_steps = max_play_steps
+        self.min_replan_s = float(min_replan_s or 0.0)
         self.grip_play_steps = grip_play_steps
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
@@ -286,7 +288,8 @@ class DeploymentRuntime:
         cpk_log = CpkTraceLog(hw)
         planner = self.planner_class(hw, self.policy, snapshots, executor, trace=trace,
                               session=self.session, veto=self.veto,
-                              cpk_log=cpk_log)
+                              cpk_log=cpk_log,
+                              **({"min_replan_s": self.min_replan_s} if self.min_replan_s > 0 else {}))
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
         # ring warm-up — the snapshot hard-requires gripper state (no silent
