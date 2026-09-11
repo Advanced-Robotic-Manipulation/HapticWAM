@@ -11,3 +11,4 @@ stu_v6	runs/student_v6/student_001500.pt	SENSOR-FREE student distilled from v6 (
 ctl_v6	runs/control_v6/teacher_001200.pt	CONTROL: same inputs as stu_v6, init from v6, NO distillation (ablation only)	student
 B_nodistill	runs/cosmos_nodistill_v1/teacher_006000.pt	BASELINE B: cold Cosmos init, student inputs, NO distillation (val 31.2mm) - ablation row	student
 A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos init, vision-only (no pads, no wrist) (val 31.5mm) - ablation row	vision_only
+stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	SENSOR-FREE student from ftA + 09-08/09 rig rollouts (DAgger r2, 2000 steps; val124 4-seed 19.8mm / median 13.8 - best student, level with the ftA teacher 19.6; stu_ftA_r1 is 22.3 at 4 seeds)	student
