@@ -540,3 +540,23 @@ def test_planner_min_replan_wait_floors_the_period():
     pl._last_replan_t = 10.0
     assert abs(pl.replan_wait(10.16) - 0.34) < 1e-9
     assert pl.replan_wait(10.9) == 0.0
+
+
+def test_policy_z_offset_shifts_only_what_the_policy_sees():
+    """--policy-z-offset-m shifts the TCP z inside the policy's ur_state and the
+    replan anchor, leaves the measured snapshot untouched, and is a no-op at 0."""
+    import numpy as np
+    from types import SimpleNamespace
+    from phantom.deploy.planner import PlannerLoop, ObsSnapshot
+    pl = PlannerLoop.__new__(PlannerLoop)
+    pl.hw = SimpleNamespace(arm=SimpleNamespace(dof=6))
+    us = np.zeros(2 * 6 + 6 + 2, dtype=np.float32); us[2 * 6 + 2] = 0.150
+    snap = ObsSnapshot(t=1.0, rgb=np.zeros((2, 2, 3), np.uint8), wrist_window=np.zeros((3, 6), np.float32), ur_state=us)
+    tcp = np.array([-0.3, -0.2, 0.150, 0, 0, 0])
+    pl.policy_z_offset_m = 0.0
+    s0, t0 = pl.policy_view(snap, tcp)
+    assert s0 is snap and t0 is tcp
+    pl.policy_z_offset_m = -0.023
+    s1, t1 = pl.policy_view(snap, tcp)
+    assert abs(s1.ur_state[2 * 6 + 2] - 0.127) < 1e-6 and abs(t1[2] - 0.127) < 1e-9
+    assert abs(snap.ur_state[2 * 6 + 2] - 0.150) < 1e-6 and tcp[2] == 0.150   # measured untouched
