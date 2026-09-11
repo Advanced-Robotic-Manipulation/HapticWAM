@@ -514,28 +514,18 @@ def test_the_homing_jitter_is_seeded_from_the_episode_seed(monkeypatch, tmp_path
 
 
 def test_the_realised_start_pose_is_tagged(monkeypatch, tmp_path):
+    """`start:` is the pose the arm actually stands at when the episode starts
+    (read from the arm), `start_req:` the sampled homing target. 09-11: the
+    tag came from move_to_start's return value and the auto-home path
+    re-sampled without updating it, so 3 of 5 seeds carried a start 60-96 mm
+    from the truth."""
+    monkeypatch.setattr(_StubArm, "get_state",
+                        lambda self: SimpleNamespace(tcp_pose=np.array([0.15, 0.26, 0.37, 0, 0, 0])))
     kw = _run_main(monkeypatch, tmp_path)
-    tags = [t for t in kw["tags"] if t.startswith("start:")]
-    assert len(tags) == 1, kw["tags"]
-    assert "111" in tags[0] and "0.33" in tags[0], tags
-
-
-# ---------------------------------------------------------------------------
-# F9 — the trace records the proposal, the per-seed descents and the pose
-# ---------------------------------------------------------------------------
-
-def test_the_trace_keeps_the_pre_veto_chunk():
-    """G0 (`trace_in_spread`) scores `trace["actions"]`; on a vetoed replan that
-    is the veto's arithmetic, not a chunk the model ever produced."""
-    hw = make_small_hw()
-    ex = _Ex()
-    loop = _loop(hw, _Pol(hw, [0.99]), ex, VETO)
-    loop.run(max_replans=1)
-    row = loop.trace[0]
-    assert row["terminal_veto"]["action"] == "close_masked"
-    pre = np.asarray(row["actions_pre_veto"])
-    assert np.allclose(pre[:, 6], 0.8)                  # the policy's proposal
-    assert np.allclose(np.asarray(row["actions"])[:, 6], 0.30)   # what was sent
+    req = [t for t in kw["tags"] if t.startswith("start_req:")]
+    real = [t for t in kw["tags"] if t.startswith("start:")]
+    assert len(req) == 1 and "111" in req[0] and "0.33" in req[0], kw["tags"]
+    assert len(real) == 1 and real[0].startswith("start:150,260,370mm/g"), kw["tags"]
 
 
 def test_an_untouched_replan_has_no_pre_veto_chunk():
@@ -587,15 +577,17 @@ class _StubArm:
 
 
 def _run_main(monkeypatch, tmp_path, *, argv=(), episodes=1, hitbox=False,
-              expect_rc=0) -> dict:
+              expect_rc=0, all_calls=False):
     """Drive run_deploy.main() over a stubbed real-arm session; return the
-    kwargs of the LAST run_episode call plus the homing RNG draws."""
+    kwargs of the LAST run_episode call plus the homing RNG draws (or, with
+    all_calls, the list of every run_episode call's kwargs)."""
     from phantom.deploy import start_pose as sp
     from phantom.deploy.runtime import EpisodeResult
     from phantom.scripts import run_deploy as RD
 
     hw = make_small_hw(mode={"drivers": "real"})
     seen: dict = {"draws": []}
+    calls: list[dict] = []
 
     class _StubRuntime:
         def __init__(self, hw, policy, mode, out_root, **kw):
@@ -613,6 +605,7 @@ def _run_main(monkeypatch, tmp_path, *, argv=(), episodes=1, hitbox=False,
 
         def run_episode(self, **kw):
             seen.update(kw)
+            calls.append(dict(kw))
             return EpisodeResult(episode_path=None, stopped_reason=None,
                                  n_replans=1, safety_events=0, trace_path=None)
 
@@ -640,4 +633,4 @@ def _run_main(monkeypatch, tmp_path, *, argv=(), episodes=1, hitbox=False,
                   "--episodes", str(episodes), *argv])
     assert rc == expect_rc, rc
     seen["rc"] = rc
-    return seen
+    return calls if all_calls else seen

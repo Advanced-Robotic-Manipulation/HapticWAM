@@ -1034,6 +1034,21 @@ def main(argv=None) -> int:
         log.warning("task %r has no start stats — homing and the OOD gate are "
                     "DISABLED (--allow-ood-start)", args.task)
 
+    def _realised_start_tag(rt) -> str | None:
+        """'start:x,y,zmm/gA' from the arm + gripper state at episode start;
+        None when the rig cannot be read (bench stubs, sim)."""
+        try:
+            st = rt.rig.arm.get_state()
+            tcp = np.asarray(getattr(st, "tcp_pose", None), dtype=float)
+            if tcp.shape[0] < 3 or not np.all(np.isfinite(tcp[:3])):
+                return None
+            gs = rt.rig.gripper.get_state()
+            grip = float(getattr(gs, "position", float("nan")))
+        except Exception:
+            return None
+        gtxt = f"{grip:.2f}" if np.isfinite(grip) else "?"
+        return "start:" + ",".join(f"{v * 1000:.0f}" for v in tcp[:3]) + f"mm/g{gtxt}"
+
     def _gate(rt) -> tuple[float, bool]:
         """(worst sigma incl. gripper, gripper settled)."""
         st = rt.rig.arm.get_state()
@@ -1087,11 +1102,16 @@ def main(argv=None) -> int:
                         homed = sp.move_to_start(
                             rt.rig.arm, rt.rig.gripper, hw, stats,
                             home_joints=args.home_joints, rng=rng)
-                        # provenance: the REALISED start, not just the seed —
-                        # the pairing of an A/B cell is only readable with it
+                        # provenance of the REQUESTED start (the sampled
+                        # target). The realised pose is read from the arm
+                        # right before the episode (see start_tag below):
+                        # move_to_start returns its target, and the auto-home
+                        # path re-samples without touching this tag (09-11:
+                        # 3 of 5 seeds carried a tag 60-96 mm off the pose
+                        # the arm actually stood at).
                         if homed is not None:
                             tcp_t, grip_t = homed
-                            start_tag = ("start:" + ",".join(
+                            start_tag = ("start_req:" + ",".join(
                                 f"{v * 1000:.0f}" for v in np.asarray(tcp_t)[:3])
                                 + f"mm/g{float(grip_t):.2f}")
                     except Exception:
@@ -1204,9 +1224,16 @@ def main(argv=None) -> int:
                 policy.rf.reset_episode_noise()
             else:                       # test stubs without a sampler
                 log.warning("policy has no sampling generator to seed")
-            ep_tags = [t for t in ep_tags if not t.startswith("seed:")] + [f"seed:{ep_seed}"]
+            ep_tags = [t for t in ep_tags if not t.startswith(("seed:", "start:", "start_req:"))] \
+                + [f"seed:{ep_seed}"]
             if start_tag is not None:
                 ep_tags.append(start_tag)
+            # the REALISED start: measured from the arm now, after homing, any
+            # auto-home and the operator's confirm — the pairing of an A/B cell
+            # is only readable from where the arm actually stood
+            realised = _realised_start_tag(rt)
+            if realised is not None:
+                ep_tags.append(realised)
             budget = float(args.max_episode_s)
             op_stop = make_operator_stop()
             if op_stop is not None:
