@@ -528,6 +528,100 @@ def test_the_realised_start_pose_is_tagged(monkeypatch, tmp_path):
     assert len(real) == 1 and real[0].startswith("start:150,260,370mm/g"), kw["tags"]
 
 
+# ---------------------------------------------------------------------------
+# F9 — the auto-home CONVERGES (rig 2026-09-11)
+# ---------------------------------------------------------------------------
+# The gate scores joints against a 5-deg floor while the whiteboard demo y-std
+# is 56 mm, so a full 1-sigma TCP draw is 3-4 JOINT sigma: re-drawing at full
+# sigma after a gate failure is the same coin flip, and the operator was stuck
+# after 2 tries (measured: q1 2.2, q2 3.7, q3 2.9, q5 2.6 sigma with every TCP
+# axis <= 1). The retries now shrink the jitter to zero, which is the demo mean
+# and passes by construction.
+
+def test_the_auto_home_shrinks_the_jitter_until_the_gate_passes(monkeypatch,
+                                                                tmp_path):
+    # gate: fail, fail, pass (then the post-confirm re-gate also passes)
+    kw = _run_main(monkeypatch, tmp_path, sigmas=[9.0, 9.0, 0.0])
+    assert [h["jitter"] for h in kw["homes"]] == [1.0, 0.5, 0.25], kw["homes"]
+    # the retries must moveJ to q_mean first — that is what the joint gate
+    # measures and what a moveL can only fix by luck
+    assert [h["home_joints"] for h in kw["homes"]] == [False, True, True]
+    assert kw.get("task") == "waffles", "the episode must still have run"
+
+
+def test_a_gate_that_never_passes_ends_at_the_operator_prompt(monkeypatch,
+                                                              tmp_path):
+    """Four attempts (the last at 0 jitter = the demo mean), then the SAME
+    re-check prompt as before — Ctrl-C aborts, which is the pre-existing
+    contract for an unfixable start. The attempt count must be capped: no
+    unbounded loop of slow arm moves."""
+    rec: dict = {}
+
+    def _abort(prompt):
+        if "re-check when ready" in prompt:
+            raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        _run_main(monkeypatch, tmp_path, sigmas=[9.0], on_input=_abort,
+                  seen=rec)
+    assert [h["jitter"] for h in rec["homes"]] == [1.0, 0.5, 0.25, 0.0], rec["homes"]
+    assert any("re-check when ready" in p for p in rec["prompts"])
+
+
+def test_the_jitter_schedule_terminates_at_the_demo_mean():
+    from phantom.scripts import run_deploy as RD
+    assert RD.AUTO_HOME_JITTER == (1.0, 0.5, 0.25, 0.0)
+    # clamped, never IndexError: the second gate loop is unbounded by design
+    assert [RD.home_jitter(i) for i in range(6)] == [1.0, 0.5, 0.25, 0, 0, 0]
+    assert RD.home_jitter(-1) == 1.0
+
+
+def test_the_shrink_sequence_is_identical_for_the_same_seed(monkeypatch,
+                                                            tmp_path):
+    """Paired A/B cell: same seed on both arms must give the same targets AND
+    the same shrink sequence, however many attempts it took."""
+    kwargs = dict(sigmas=[9.0, 9.0, 0.0], argv=("--seed", "4242"))
+    a = _run_main(monkeypatch, tmp_path, **kwargs)
+    b = _run_main(monkeypatch, tmp_path, **kwargs)
+    c = _run_main(monkeypatch, tmp_path, sigmas=[9.0, 9.0, 0.0],
+                  argv=("--seed", "77"))
+    assert a["draws"] == b["draws"] and len(a["draws"]) == 3, a["draws"]
+    assert [h["jitter"] for h in a["homes"]] == [h["jitter"] for h in b["homes"]]
+    assert a["draws"] != c["draws"]
+
+
+def test_start_req_names_the_attempt_that_passed_the_gate(monkeypatch, tmp_path):
+    """One tag, and it is the THIRD attempt's target (x = 113 mm) — not the
+    first homing's, which the arm no longer stands at."""
+    kw = _run_main(monkeypatch, tmp_path, sigmas=[9.0, 9.0, 0.0])
+    req = [t for t in kw["tags"] if t.startswith("start_req:")]
+    assert len(req) == 1 and req[0].startswith("start_req:113,222,333mm/g"), req
+
+
+def test_moveJ_first_is_the_default_when_the_task_has_demo_joint_stats(
+        monkeypatch, tmp_path):
+    """The gate scores joints, so homing that cannot set them is a coin flip.
+    --no-home-joints restores the moveL-only behaviour."""
+    kw = _run_main(monkeypatch, tmp_path, q_mean=True)
+    assert [h["home_joints"] for h in kw["homes"]] == [True], kw["homes"]
+    off = _run_main(monkeypatch, tmp_path, q_mean=True,
+                    argv=("--no-home-joints",))
+    assert [h["home_joints"] for h in off["homes"]] == [False], off["homes"]
+    # no q stats -> nothing to moveJ to, unless the flag forces it
+    bare = _run_main(monkeypatch, tmp_path)
+    assert [h["home_joints"] for h in bare["homes"]] == [False]
+    forced = _run_main(monkeypatch, tmp_path, argv=("--home-joints",))
+    assert [h["home_joints"] for h in forced["homes"]] == [True]
+
+
+def test_the_gate_reports_which_axis_is_worst(monkeypatch, tmp_path):
+    """'3.7 sigma' hides that every TCP axis was fine and the elbow was not."""
+    from phantom.scripts.run_deploy import _sigma_labels
+    assert _sigma_labels(7) == ["x", "y", "z", "rx", "ry", "rz", "grip"]
+    assert _sigma_labels(13)[7:] == [f"q{i + 1}" for i in range(6)]
+    assert _sigma_labels(3) == ["x", "y", "z"]
+
+
 def test_an_untouched_replan_has_no_pre_veto_chunk():
     hw = make_small_hw()
     ex = _Ex()
@@ -577,16 +671,24 @@ class _StubArm:
 
 
 def _run_main(monkeypatch, tmp_path, *, argv=(), episodes=1, hitbox=False,
-              expect_rc=0, all_calls=False):
+              expect_rc=0, all_calls=False, sigmas=None, q_mean=False,
+              on_input=None, seen=None):
     """Drive run_deploy.main() over a stubbed real-arm session; return the
     kwargs of the LAST run_episode call plus the homing RNG draws (or, with
-    all_calls, the list of every run_episode call's kwargs)."""
+    all_calls, the list of every run_episode call's kwargs).
+
+    `sigmas`: worst-sigma values the stubbed start gate reports, one per _gate
+    call, the last repeating forever (default: always 0 = in distribution).
+    `q_mean`: give the stub stats a demo joint configuration.
+    `on_input`: called with each input() prompt (raise from it to abort).
+    `seen`: pass a dict to keep the record readable when the run aborts."""
     from phantom.deploy import start_pose as sp
     from phantom.deploy.runtime import EpisodeResult
     from phantom.scripts import run_deploy as RD
 
     hw = make_small_hw(mode={"drivers": "real"})
-    seen: dict = {"draws": []}
+    seen = {} if seen is None else seen
+    seen.update(draws=[], homes=[], prompts=[])
     calls: list[dict] = []
 
     class _StubRuntime:
@@ -616,17 +718,38 @@ def _run_main(monkeypatch, tmp_path, *, argv=(), episodes=1, hitbox=False,
         nfe=1, guidance=1.0, rf=SimpleNamespace()))
     monkeypatch.setattr(RD, "DeploymentRuntime", _StubRuntime)
     monkeypatch.setattr(RD.time, "sleep", lambda *_: None)
-    monkeypatch.setattr("builtins.input", lambda *_: "")
+    def _input(prompt=""):
+        seen["prompts"].append(str(prompt))
+        if on_input is not None:
+            on_input(str(prompt))
+        return ""
+
+    monkeypatch.setattr("builtins.input", _input)
     stats = SimpleNamespace(tcp_z_min=0.052, gripper_mean=0.25, task="waffles",
                             tcp_min=(np.array([-.4, -.4, .052]) if hitbox else None),
-                            tcp_max=(np.array([.4, .4, .44]) if hitbox else None))
+                            tcp_max=(np.array([.4, .4, .44]) if hitbox else None),
+                            **({"q_mean": np.zeros(6)} if q_mean else {}))
     monkeypatch.setattr(sp, "load_start_stats", lambda: {"waffles": stats})
-    monkeypatch.setattr(sp, "start_sigma_report",
-                        lambda *a, **k: (np.zeros(7), "in distribution"))
+    sig_seq = list(sigmas) if sigmas else None
 
-    def _move(arm, gripper, hw_, st, rng=None, **k):
+    def _report(*a, **k):
+        worst = 0.0
+        if sig_seq:
+            worst = float(sig_seq.pop(0) if len(sig_seq) > 1 else sig_seq[0])
+        v = np.zeros(7)
+        v[1] = worst                        # 'y' is the worst axis
+        return v, "in distribution"
+
+    monkeypatch.setattr(sp, "start_sigma_report", _report)
+
+    def _move(arm, gripper, hw_, st, rng=None, jitter_sigma=1.0, **k):
         seen["draws"].append(float(np.asarray(rng.standard_normal(1))[0]))
-        return np.array([0.111, 0.222, 0.333, 0.0, 0.0, 0.0]), 0.33
+        seen["homes"].append({"jitter": jitter_sigma,
+                              "home_joints": bool(k.get("home_joints", False))})
+        # a DIFFERENT target per attempt, so a tag can be traced to the
+        # attempt that produced it (attempt 1 keeps the historical 111 mm)
+        x = 0.111 + 0.001 * (len(seen["homes"]) - 1)
+        return np.array([x, 0.222, 0.333, 0.0, 0.0, 0.0]), 0.33
 
     monkeypatch.setattr(sp, "move_to_start", _move)
     rc = RD.main(["--system", "teacher", "--task", "waffles", "--tiny",

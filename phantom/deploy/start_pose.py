@@ -231,17 +231,29 @@ def move_to_start(arm, gripper, hw, stats: TaskStartStats,
                   rng: np.random.Generator | None = None,
                   speed: float = 0.10, accel: float = 0.30,
                   home_joints: bool = False, joint_speed: float = 0.20,
-                  joint_accel: float = 0.50) -> tuple[np.ndarray, float]:
+                  joint_accel: float = 0.50,
+                  jitter_sigma: float = 1.0) -> tuple[np.ndarray, float]:
     """Move arm+gripper to a jittered demo start. Returns (tcp_target, grip_target).
 
     Uses moveL at a deliberately slow speed (0.1 m/s). The caller owns safety:
     call this BEFORE the executor starts (single arm user), operator at the
     E-stop.
+
+    ``jitter_sigma`` scales the sampled offset from the demo mean (1.0 = the
+    full truncated 1-sigma draw this has always used; 0.0 = the demo mean
+    exactly). The caller shrinks it to converge a failing start gate: on the
+    whiteboard task a 1-sigma TCP draw (y std 56 mm) swings the shoulder/elbow
+    ~20 deg, which is 3-4 JOINT sigma, so re-drawing at full sigma after a gate
+    failure is as likely to fail again (rig 2026-09-11). The RNG is consumed
+    identically at every jitter_sigma — ``sample_start_pose`` always draws 7
+    normals — so the draw sequence of a seeded episode does not depend on how
+    many homing attempts it took.
     """
-    tcp_target, grip_target = sample_start_pose(stats, rng)
+    tcp_target, grip_target = sample_start_pose(stats, rng,
+                                                jitter_sigma=jitter_sigma)
     log.info("homing to %s demo start: xyz=[%.0f, %.0f, %.0f]mm grip=%.2f "
-             "(task mean + <=1sigma jitter)", stats.task,
-             *(tcp_target[:3] * 1000), grip_target)
+             "(task mean + <=%.2f sigma jitter)", stats.task,
+             *(tcp_target[:3] * 1000), grip_target, jitter_sigma)
     gripper.move(grip_target, hw.gripper.default_speed, hw.gripper.default_force)
     if home_joints:
         if stats.q_mean is None:

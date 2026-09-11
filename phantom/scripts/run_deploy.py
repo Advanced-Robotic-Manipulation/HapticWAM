@@ -209,6 +209,51 @@ def recover_control(arm, reason: str) -> bool:
 #: from "nobody said anything" (revalidation 2026-08-31 #1).
 DEFAULT_MAX_REPLANS = 40
 
+#: Jitter (in demo sigma) for successive homing attempts of ONE episode:
+#: attempt 0 is the normal jittered start, each retry halves the offset and the
+#: LAST one is the demo mean exactly, which passes the start gate by
+#: construction (0 sigma on every TCP axis and every joint).
+#:
+#: Before this (rig 2026-09-11) every retry re-drew a FRESH full 1-sigma
+#: sample, so the auto-home was a coin flip repeated twice rather than a
+#: convergent sequence: the whiteboard demo y-std is 56 mm, a 1-sigma TCP draw
+#: swings the shoulder/elbow ~20 deg = 3-4 joint sigma, and the operator was
+#: stuck after 2 failures. Relaxing --max-start-sigma instead is what put the
+#: arm in an extended posture that tripped the UR joint-speed protective stop.
+AUTO_HOME_JITTER = (1.0, 0.5, 0.25, 0.0)
+
+
+def home_jitter(attempt: int) -> float:
+    """Jitter sigma for homing attempt `attempt` of an episode (clamped).
+
+    Seed/RNG contract: the caller always passes the EPISODE rng to
+    move_to_start, and sample_start_pose draws the same 7 normals whatever
+    jitter_sigma is. So attempt k under a given episode seed draws the
+    identical underlying sample and scales it by the identical
+    AUTO_HOME_JITTER[k] — a paired cell (same seed on both arms) gets the same
+    targets and the same shrink sequence. (The pairing holds while both arms
+    take the same number of attempts; the realised `start:` tag records where
+    each arm actually stood, which is what the A/B reads.)
+    """
+    jit = AUTO_HOME_JITTER[min(max(attempt, 0), len(AUTO_HOME_JITTER) - 1)]
+    log.info("homing attempt %d/%d: %.2f-sigma jitter%s",
+             min(attempt, len(AUTO_HOME_JITTER) - 1) + 1,
+             len(AUTO_HOME_JITTER), jit,
+             " (the exact demo mean posture — 0 sigma by construction)"
+             if jit == 0.0 else "")
+    return jit
+
+
+def _sigma_labels(n: int) -> list[str]:
+    """Names for start_sigma_report's sigma vector, in the order it builds it:
+    the 6 TCP axes, then the gripper, then one entry per joint."""
+    from phantom.deploy.start_pose import AXES
+    labs = list(AXES)[:n]
+    if n > len(AXES):
+        labs.append("grip")
+    labs += [f"q{i + 1}" for i in range(max(0, n - len(AXES) - 1))]
+    return labs
+
 
 def resolve_max_replans(args) -> int | None:
     """The replan cap the episode actually runs with.
@@ -364,7 +409,15 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--home-joints", action="store_true",
                     help="before the slow moveL homing, moveJ to the task's demo JOINT "
                          "configuration (start_poses.yaml q_mean). Fixes a wrapped wrist / "
-                         "flipped IK branch that the TCP gate cannot see. Path must be clear.")
+                         "flipped IK branch that the TCP gate cannot see. Path must be clear. "
+                         "NOTE (2026-09-11): this is now the DEFAULT whenever the task's "
+                         "stats carry q_mean — the start gate scores joints, so a moveL-only "
+                         "homing can only satisfy it by luck. The flag still forces it on "
+                         "(e.g. --allow-thin-q stats); --no-home-joints opts out.")
+    ap.add_argument("--no-home-joints", action="store_true",
+                    help="suppress the moveJ-to-demo-q step of the FIRST homing of each "
+                         "episode (pre-2026-09-11 behaviour: moveL only). The auto-home "
+                         "retries still moveJ — a joint-space gate failure has no other fix.")
     ap.add_argument("--z-floor", type=float, default=None,
                     help="no-go floor for the commanded TCP z (m). Default: the task's demo "
                          "tcp_z_min - --z-floor-margin from start_poses.yaml")
@@ -1049,14 +1102,43 @@ def main(argv=None) -> int:
         gtxt = f"{grip:.2f}" if np.isfinite(grip) else "?"
         return "start:" + ",".join(f"{v * 1000:.0f}" for v in tcp[:3]) + f"mm/g{gtxt}"
 
-    def _gate(rt) -> tuple[float, bool]:
-        """(worst sigma incl. gripper, gripper settled)."""
+    def _gate(rt) -> tuple[float, bool, str]:
+        """(worst sigma incl. gripper, gripper settled, name of the worst axis).
+
+        The axis name is what tells the operator WHICH way the start is out:
+        on 2026-09-11 every TCP axis gated <=1 sigma while q2 sat at 3.7, i.e.
+        the TCP jitter had been absorbed by an arm posture the demos never
+        used. A bare "3.7 sigma" hides that."""
         st = rt.rig.arm.get_state()
         gs = rt.rig.gripper.get_state()
         sig, table = sp.start_sigma_report(stats, st.tcp_pose, gs.position,
                                            q=getattr(st, "q", None))
         print(f"live state vs {args.task} demo start distribution:\n{table}")
-        return float(np.max(sig)), float(getattr(gs, "obj", 3.0)) == 3.0
+        sig = np.atleast_1d(np.asarray(sig, dtype=float))
+        settled = float(getattr(gs, "obj", 3.0)) == 3.0
+        if sig.size == 0:
+            return 0.0, settled, "?"
+        i = int(np.argmax(sig))
+        return float(sig[i]), settled, _sigma_labels(sig.size)[i]
+
+    def _start_req_tag(homed) -> str | None:
+        """'start_req:x,y,zmm/gA' for a move_to_start return value."""
+        if homed is None:
+            return None
+        tcp_t, grip_t = homed
+        return ("start_req:" + ",".join(f"{v * 1000:.0f}"
+                                        for v in np.asarray(tcp_t)[:3])
+                + f"mm/g{float(grip_t):.2f}")
+
+    # moveJ-first is the DEFAULT whenever the task's stats carry a demo joint
+    # configuration: the gate measures joints, so homing that cannot set them
+    # can only converge by luck. --home-joints stays accepted (and still forces
+    # it on); --no-home-joints is the opt-out.
+    home_joints_first = (not args.no_home_joints) and (
+        args.home_joints or getattr(stats, "q_mean", None) is not None)
+    if arm_real and args.home and stats is not None:
+        log.info("homing: moveJ-first=%s, jitter schedule %s sigma",
+                 home_joints_first, list(AUTO_HOME_JITTER))
 
     prev_reason: str | None = None
     open_aperture = float(getattr(stats, "gripper_mean", 0.0) or 0.0)
@@ -1079,6 +1161,11 @@ def main(argv=None) -> int:
             ep_seed = episode_seed(args.seed, i)
             rng = np.random.default_rng(ep_seed)
             start_tag = None
+            # index into AUTO_HOME_JITTER for THIS episode: the first homing
+            # is attempt 0 (full jitter) and every auto-home advances it, so
+            # the sequence shrinks 1.0 -> 0.5 -> 0.25 -> 0 and terminates at
+            # the demo mean instead of re-rolling the same dice.
+            home_attempt = 0
             if arm_real:
                 ep_tag = f"episode {i + 1}/{args.episodes}"
                 # -- stage 0: restore control after a protective stop -------
@@ -1101,19 +1188,17 @@ def main(argv=None) -> int:
                     try:
                         homed = sp.move_to_start(
                             rt.rig.arm, rt.rig.gripper, hw, stats,
-                            home_joints=args.home_joints, rng=rng)
+                            home_joints=home_joints_first, rng=rng,
+                            jitter_sigma=home_jitter(home_attempt))
                         # provenance of the REQUESTED start (the sampled
                         # target). The realised pose is read from the arm
-                        # right before the episode (see start_tag below):
-                        # move_to_start returns its target, and the auto-home
-                        # path re-samples without touching this tag (09-11:
-                        # 3 of 5 seeds carried a tag 60-96 mm off the pose
-                        # the arm actually stood at).
-                        if homed is not None:
-                            tcp_t, grip_t = homed
-                            start_tag = ("start_req:" + ",".join(
-                                f"{v * 1000:.0f}" for v in np.asarray(tcp_t)[:3])
-                                + f"mm/g{float(grip_t):.2f}")
+                        # right before the episode (see start_tag below).
+                        # Every later homing attempt REWRITES this tag, so it
+                        # names the target of the attempt that finally passed
+                        # the gate — the auto-home path used to re-sample and
+                        # leave the tag behind (09-11: 3 of 5 seeds carried a
+                        # tag 60-96 mm off the pose the arm actually stood at).
+                        start_tag = _start_req_tag(homed) or start_tag
                     except Exception:
                         if recovered_from is not None:
                             # We JUST rebuilt the control script and verified it
@@ -1136,70 +1221,88 @@ def main(argv=None) -> int:
                                       "re-checks before anything runs")
                 # -- stage 2: gate loop + operator confirm ------------------
                 if stats is not None:
-                    auto_homes = 0
                     while True:
-                        worst, settled = _gate(rt)
+                        worst, settled, worst_ax = _gate(rt)
                         ok = worst <= args.max_start_sigma and settled
                         if ok or args.allow_ood_start:
                             if not ok:
                                 log.warning("OOD start ALLOWED by flag: "
-                                            "%.1f sigma, settled=%s",
-                                            worst, settled)
+                                            "%.1f sigma (worst: %s), settled=%s",
+                                            worst, worst_ax, settled)
                             break
                         if not settled:
                             log.warning("gripper not settled (OBJ != 3) — "
                                         "waiting up to 10 s...")
                             if sp.wait_gripper_settled(rt.rig.gripper):
                                 continue
-                        if args.home and auto_homes < 2:
+                        if args.home and home_attempt + 1 < len(AUTO_HOME_JITTER):
                             # self-correct instead of asking the operator to
                             # jog + restart: a JOINT-space home fixes exactly
                             # what the joint gate measures (incl. a wrapped
-                            # wrist — it unwinds). Slow move; countdown so the
-                            # operator can e-stop if the path is not clear.
-                            auto_homes += 1
-                            log.warning("START GATE: %.1f sigma — AUTO-HOMING "
-                                        "(slow joint-space move) in 3 s. "
+                            # wrist — it unwinds), and the SHRINKING jitter
+                            # makes the sequence converge: the final attempt is
+                            # the demo mean, which scores 0 sigma everywhere.
+                            # Slow move; countdown so the operator can e-stop
+                            # if the path is not clear.
+                            home_attempt += 1
+                            log.warning("START GATE: %.1f sigma (worst: %s) — "
+                                        "AUTO-HOMING attempt %d/%d at %.2f-sigma "
+                                        "jitter (slow joint-space move) in 3 s. "
                                         "E-stop if the path is not clear.",
-                                        worst)
+                                        worst, worst_ax, home_attempt + 1,
+                                        len(AUTO_HOME_JITTER),
+                                        AUTO_HOME_JITTER[home_attempt])
                             time.sleep(3.0)
                             try:
-                                sp.move_to_start(rt.rig.arm, rt.rig.gripper,
-                                                 hw, stats, home_joints=True,
-                                                 rng=rng)
+                                homed = sp.move_to_start(
+                                    rt.rig.arm, rt.rig.gripper, hw, stats,
+                                    home_joints=True, rng=rng,
+                                    jitter_sigma=home_jitter(home_attempt))
+                                start_tag = _start_req_tag(homed) or start_tag
                                 continue
                             except Exception:
                                 log.exception("auto-home FAILED — manual fix")
                         log.error("START GATE: %.1f sigma from the demo start "
-                                  "(max %.1f) or gripper unsettled. Fix it "
-                                  "(re-run homing / jog / reactivate gripper), "
-                                  "then Enter to re-check. Ctrl-C aborts.",
-                                  worst, args.max_start_sigma)
+                                  "(worst axis: %s, max %.1f) or gripper "
+                                  "unsettled. Fix it (re-run homing / jog / "
+                                  "reactivate gripper), then Enter to re-check. "
+                                  "Ctrl-C aborts.",
+                                  worst, worst_ax, args.max_start_sigma)
                         input("re-check when ready...")
                     while True:
                         input(f"{ep_tag}: place the object, confirm the scene "
                               "is safe. Enter to START EPISODE...")
                         # re-gate: the arm may have been bumped/jogged while
                         # the operator set the scene
-                        worst, settled = _gate(rt)
+                        worst, settled, worst_ax = _gate(rt)
                         if (worst <= args.max_start_sigma and settled) \
                                 or args.allow_ood_start:
                             break
                         if args.home:
-                            log.warning("bumped off the start (%.1f sigma) — "
-                                        "AUTO-HOMING in 3 s. E-stop if the "
-                                        "path is not clear.", worst)
+                            # same shrinking schedule, continued: this loop is
+                            # unbounded (it re-prompts every pass), so it must
+                            # not keep re-rolling full-sigma jitter either. It
+                            # clamps at the last entry = the demo mean.
+                            home_attempt = min(home_attempt + 1,
+                                               len(AUTO_HOME_JITTER) - 1)
+                            log.warning("bumped off the start (%.1f sigma, "
+                                        "worst: %s) — AUTO-HOMING at %.2f-sigma "
+                                        "jitter in 3 s. E-stop if the path is "
+                                        "not clear.", worst, worst_ax,
+                                        AUTO_HOME_JITTER[home_attempt])
                             time.sleep(3.0)
                             try:
-                                sp.move_to_start(rt.rig.arm, rt.rig.gripper,
-                                                 hw, stats, home_joints=True,
-                                                 rng=rng)
+                                homed = sp.move_to_start(
+                                    rt.rig.arm, rt.rig.gripper, hw, stats,
+                                    home_joints=True, rng=rng,
+                                    jitter_sigma=home_jitter(home_attempt))
+                                start_tag = _start_req_tag(homed) or start_tag
                             except Exception:
                                 log.exception("auto-home FAILED — fix by hand")
                         log.error("state drifted while setting the scene "
-                                  "(%.1f sigma, settled=%s) — fix it (jog / "
-                                  "re-settle gripper), then Enter to re-check",
-                                  worst, settled)
+                                  "(%.1f sigma on %s, settled=%s) — fix it "
+                                  "(jog / re-settle gripper), then Enter to "
+                                  "re-check", worst, worst_ax, settled)
                 else:
                     input(f"{ep_tag}: reset scene, Enter to start...")
                 # RealSense auto-exposure needs seconds after the stream opens
