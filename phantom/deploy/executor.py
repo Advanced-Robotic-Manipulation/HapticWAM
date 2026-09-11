@@ -889,6 +889,25 @@ class ChunkExecutor:
             if wait > 0:
                 time.sleep(wait)
 
+    def _reset_arm_episode_state(self) -> None:
+        """Per-episode driver bookkeeping that would otherwise leak across the
+        episodes of one process (the arm object is shared): the control-loss
+        snapshot, and the servo-limiter hit/hold counters that every later
+        stop.json reported as launch-to-date totals (09-11 forensics)."""
+        arm = self.arm
+        for name, empty in (("control_loss_last", dict), ("limiter_last", dict)):
+            if hasattr(arm, name):
+                try:
+                    setattr(arm, name, empty())
+                except Exception:
+                    pass
+        for name in ("_limiter_hits", "_limiter_holds"):
+            if hasattr(arm, name):
+                try:
+                    setattr(arm, name, 0)
+                except Exception:
+                    pass
+
     def start(self) -> None:
         self._stop.clear()
         self.stopped_reason = None
@@ -899,11 +918,7 @@ class ChunkExecutor:
         # the driver object is reused across the episodes of one process, so
         # without this every later stop.json in the process carried the FIRST
         # E-stop's bits (audit 09-10: 16 of 46 "E-stop" records were stale)
-        if hasattr(self.arm, "control_loss_last"):
-            try:
-                self.arm.control_loss_last = {}
-            except Exception:
-                pass
+        self._reset_arm_episode_state()
         self._grip_target = None
         self._last_grip_command = None
         self._grip_ack = None
