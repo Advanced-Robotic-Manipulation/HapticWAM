@@ -66,11 +66,11 @@ CELLF=$BASE/.pick_cell_$(date +%Y%m%d); LAST=$(cat "$CELLF" 2>/dev/null || echo 
 # different models (the other arm is still due), else the next free number: last cell +
 # the batch size that ran there (a 5-episode batch uses seeds cell..cell+4, so the next
 # placement starts 5 higher and never reuses a seed). Enter accepts; a typed number wins.
-RUNS=$BASE/.pick_runs_$(date +%Y%m%d)
-LASTT=$(awk -v t="$TASK" '$2==t{c=$1} END{print c+0}' "$RUNS" 2>/dev/null); LASTT=${LASTT:-0}
+RUNS=$BASE/.pick_runs_$(date +%Y%m%d); touch "$RUNS"   # set -e: every awk below must see a file
+LASTT=$(awk -F"\t" -v t="$TASK" '$2==t{c=$1} END{print c+0}' "$RUNS" || echo 0); LASTT=${LASTT:-0}
 if [ "$LASTT" -gt 0 ]; then
-  ARMS=$(awk -v t="$TASK" -v c="$LASTT" '$2==t && $1==c{print $3}' "$RUNS" | sort -u | tr "\n" " ")
-  NARMS=$(echo $ARMS | wc -w); EPSL=$(awk -v t="$TASK" -v c="$LASTT" '$2==t && $1==c{e=$4} END{print e+0}' "$RUNS")
+  ARMS=$(awk -F"\t" -v t="$TASK" -v c="$LASTT" '$2==t && $1==c{print $3}' "$RUNS" | sort -u | tr "\n" " " || true)
+  NARMS=$(echo $ARMS | wc -w | tr -d " "); EPSL=$(awk -F"\t" -v t="$TASK" -v c="$LASTT" '$2==t && $1==c{e=$4} END{print e+0}' "$RUNS" || echo 1)
   case " $ARMS " in *" $MODEL "*) ALREADY=1;; *) ALREADY=0;; esac
   if [ "$NARMS" -lt 2 ] && [ "$ALREADY" = 0 ]; then
     PROPOSE=$LASTT; WHY="cell $LASTT on $TASK has run on [$ARMS] only — this is the OTHER arm"
