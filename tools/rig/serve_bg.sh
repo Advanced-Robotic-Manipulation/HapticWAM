@@ -61,7 +61,7 @@ for m in "${started[@]}"; do
   L=${labels[$m]}; LOG=$BASE/logs/serve_${L}.log; PID=""
   for i in $(seq 1 180); do
     grep -q "^READY " "$LOG" 2>/dev/null && { echo "READY  $m) $L on :$((7776 + m))"; break; }
-    grep -qiE "Traceback|Error|out of memory" "$LOG" 2>/dev/null && { echo "FAILED $m) $L — see $LOG"; tail -n 3 "$LOG"; break; }
+    grep -qE "^Traceback|CUDA out of memory|Error: |RuntimeError|OSError|ConnectionRefused" "$LOG" 2>/dev/null && { echo "FAILED $m) $L — see $LOG"; tail -n 3 "$LOG"; break; }
     sleep 2
   done
 done
