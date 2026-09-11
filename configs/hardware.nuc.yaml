@@ -262,7 +262,12 @@ safety:
   # 09-08: the right pad reports ~10x the depth of the left for the same
   # finger press (1.65 at 11 N vs 0.14 at 39 N); 0.6 ended 3 of 7 grasps
   # today and 6 episodes on 09-07 at the moment of closing (depth 0.62).
-  tactile_depth_limit: 1.5
+  # 09-11 (26 rig episodes): the only two trips were one-sided point contacts on the
+  # LEFT pad (1.55 / 1.68 at 13.6-14.3 N, right pad 0.015) closing on the carton edge at
+  # seed 103; every genuine held grasp peaked <= 1.035 (Carton) / 0.816 (waffles). The
+  # per-newton right/left ratio measured 1.3-2x today, not 10x. Raised so an edge
+  # contact does not end the episode; a crush still trips.
+  tactile_depth_limit: 2.5
   # Sized 2026-07-17 to cover: parked TCP (-0.29,-0.12,0.25), the teleop base
   # pose TCP (-0.474,-0.112,0.295, FK-verified), AND the joint-space engage
   # arc (its TCP transit peaked above z=0.55 and froze teleop at the old
@@ -290,6 +295,11 @@ safety:
   # not shoulder-to-wrist distance: it cannot guarantee the 0.468 wrist bound.
   # Retain the joint-space limiter and measured wrist-extension stop.
   reach_clamp_m: 0.60
+  # 09-11: the one latched Carton carry asked to open by 0.070-0.139 per chunk (mean 0.100)
+  # below the latch for its last 10 chunks at z 128-142 mm and never released — the drop
+  # threshold 0.15 missed by 0.011. 0.06 clears every played step of that request; the
+  # z < 0.16 m and lift gates still block mid-carry openings.
+  grip_latch_release_drop: 0.06
   governor:
     sigma_lo: 0.1
     sigma_hi: 1.0
