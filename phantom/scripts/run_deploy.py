@@ -230,8 +230,12 @@ DEFAULT_MAX_REPLANS = 40
 AUTO_HOME_JITTER = (1.0, 0.5, 0.25, 0.0)
 
 
-def home_jitter(attempt: int) -> float:
-    """Jitter sigma for homing attempt `attempt` of an episode (clamped).
+def home_jitter(attempt: int, scale: float = 1.0) -> float:
+    """Jitter sigma for homing attempt `attempt` of an episode (clamped);
+    `scale` shrinks the whole ladder (--home-jitter 0.5 -> 0.5, 0.25, 0.125, 0):
+    whiteboard's demo y-spread (56 mm) puts a full 1-sigma draw near the elbow
+    singularity (09-11 forensics: 9% of 1-sigma draws had no branch-continuous
+    IK, 3% put the elbow under 23 deg; at 0.25 sigma all 200 draws were feasible).
 
     Seed/RNG contract: the caller always passes the EPISODE rng to
     move_to_start, and sample_start_pose draws the same 7 normals whatever
@@ -242,7 +246,7 @@ def home_jitter(attempt: int) -> float:
     take the same number of attempts; the realised `start:` tag records where
     each arm actually stood, which is what the A/B reads.)
     """
-    jit = AUTO_HOME_JITTER[min(max(attempt, 0), len(AUTO_HOME_JITTER) - 1)]
+    jit = AUTO_HOME_JITTER[min(max(attempt, 0), len(AUTO_HOME_JITTER) - 1)] * float(scale)
     log.info("homing attempt %d/%d: %.2f-sigma jitter%s",
              min(attempt, len(AUTO_HOME_JITTER) - 1) + 1,
              len(AUTO_HOME_JITTER), jit,
@@ -421,6 +425,10 @@ def build_parser() -> argparse.ArgumentParser:
                          "stats carry q_mean — the start gate scores joints, so a moveL-only "
                          "homing can only satisfy it by luck. The flag still forces it on "
                          "(e.g. --allow-thin-q stats); --no-home-joints opts out.")
+    ap.add_argument("--home-jitter", type=float, default=1.0,
+                    help="scale of the homing jitter ladder (1.0 = full demo sigma on the first "
+                         "attempt; 0.5 recommended on whiteboard, whose 1-sigma starts sit near the "
+                         "elbow singularity)")
     ap.add_argument("--no-home-joints", action="store_true",
                     help="suppress the moveJ-to-demo-q step of the FIRST homing of each "
                          "episode (pre-2026-09-11 behaviour: moveL only). The auto-home "
@@ -1200,7 +1208,7 @@ def main(argv=None) -> int:
                         homed = sp.move_to_start(
                             rt.rig.arm, rt.rig.gripper, hw, stats,
                             home_joints=home_joints_first, rng=rng,
-                            jitter_sigma=home_jitter(home_attempt))
+                            jitter_sigma=home_jitter(home_attempt, args.home_jitter))
                         # provenance of the REQUESTED start (the sampled
                         # target). The realised pose is read from the arm
                         # right before the episode (see start_tag below).
@@ -1269,7 +1277,7 @@ def main(argv=None) -> int:
                                 homed = sp.move_to_start(
                                     rt.rig.arm, rt.rig.gripper, hw, stats,
                                     home_joints=True, rng=rng,
-                                    jitter_sigma=home_jitter(home_attempt))
+                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter))
                                 start_tag = _start_req_tag(homed) or start_tag
                                 continue
                             except Exception:
@@ -1307,7 +1315,7 @@ def main(argv=None) -> int:
                                 homed = sp.move_to_start(
                                     rt.rig.arm, rt.rig.gripper, hw, stats,
                                     home_joints=True, rng=rng,
-                                    jitter_sigma=home_jitter(home_attempt))
+                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter))
                                 start_tag = _start_req_tag(homed) or start_tag
                             except Exception:
                                 log.exception("auto-home FAILED — fix by hand")
