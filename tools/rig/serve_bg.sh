@@ -41,7 +41,7 @@ started=()
 for m in "$@"; do
   L=${labels[$m]}; C=${ckpts[$m]}; S=${systems[$m]}
   [ -n "$C" ] || { echo "bad menu number $m (1..$n)"; continue; }
-  [ -f "$C" ] || { echo "checkpoint missing on disk: $BASE/phantom/$C"; continue; }
+  [ -e "$C" ] || { echo "checkpoint missing on disk: $BASE/phantom/$C"; continue; }
   PORT=$((7776 + m)); LOG=$BASE/logs/serve_${L}.log
   if [ -n "$(listener_pid $PORT)" ]; then echo "$L already listening on :$PORT"; continue; fi
   if [ "$S" = lerobot ]; then

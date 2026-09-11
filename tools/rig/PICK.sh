@@ -20,7 +20,7 @@ done < "$TSV"
 read -p "model [1]: " m; m=${m:-1}
 CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -n "$CKPT" ] || { echo "bad choice"; exit 1; }
-[ -f "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
+[ -e "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
 echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + pose plays 16 / gripper 10 + max-episode-s 150 + max-replans 200"
