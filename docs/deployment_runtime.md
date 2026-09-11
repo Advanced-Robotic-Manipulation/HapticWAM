@@ -76,6 +76,11 @@ executor is halted, the planner trace is written, and the operator still gets
 the success/notes prompt. Before 2026-08-27 these escaped `run_episode` as an
 rc-1 traceback and left an empty episode directory with no label.
 
+Next to `planner_trace.json` the runtime also writes `planner_cpk.npz`: every
+replan's PREDICTED contact package, denormalized, for the tactile
+prediction-error metric (`docs/tactile_prediction_error.md`); each trace row
+carries a `cpk_pred` digest and the matching `cpk_index`.
+
 `EpisodeResult.stopped_reason` values and what run_deploy does with each:
 
 | reason | meaning | run_deploy |

@@ -201,4 +201,9 @@ def trial_metrics(ep_path: Path, hw: HardwareConfig, tau_obj: float) -> dict:
         "event_f1": event_f1(ep, hw, ep_path),
     }
     out.update(latency_stats(ep_path))
+    # tactile prediction error (`tpe_*`): the predicted contact package of
+    # every replan (planner_cpk.npz) vs the pads' later measurements, next to
+    # a persistence baseline. {} for episodes recorded without the package.
+    from phantom.eval.tactile_prediction import tactile_prediction_summary
+    out.update(tactile_prediction_summary(ep_path, hw, ep=ep))
     return out

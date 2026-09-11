@@ -105,8 +105,10 @@ def aggregate(ledger_path: Path, hw: HardwareConfig, *, tau_obj: float = 1.0,
 
     lead_times: dict[str, list[float]] = defaultdict(list)
     ep_metrics: dict[str, list[dict]] = defaultdict(list)
+    tpe_results: dict[str, list] = defaultdict(list)
     if compute_episode_metrics:
         from phantom.data.episode_store import EpisodeReader
+        from phantom.eval import tactile_prediction as TP
         for r in rows:
             ep_path = Path(r["episode_path"])
             if not ep_path.exists():
@@ -116,19 +118,47 @@ def aggregate(ledger_path: Path, hw: HardwareConfig, *, tau_obj: float = 1.0,
                 ep_metrics[r["system"]].append(m)
                 ep = EpisodeReader(ep_path)
                 lead_times[r["system"]] += M.acc_lead_times(ep_path, ep, hw)
+                tpe = TP.episode_tactile_prediction(ep_path, hw, ep=ep)
+                if tpe is not None:
+                    tpe_results[r["system"]].append(tpe)
             except Exception:
                 log.exception("metrics failed for %s", ep_path)
 
+    # tactile prediction error per system: POOLED over every scored replan
+    # (not a mean of episode means) + the horizon curves for the figure
+    tactile_prediction = {}
+    if tpe_results:
+        from phantom.eval import tactile_prediction as TP
+        for system, res in tpe_results.items():
+            pooled = TP.pool_steps(res)
+            Tc = res[0].Tc
+            tactile_prediction[system] = {
+                "n_episodes": len(res),
+                "summary": TP.summarize_steps(
+                    pooled, Tc=Tc, fz_unit_to_N=res[0].dist_force_unit_to_N,
+                    n_total=sum(r.n_replans for r in res),
+                    n_scored=sum(r.n_scored for r in res)),
+                "horizon": TP.horizon_curves(res),
+                "skill_ci": TP.bootstrap_ci([r.summary().get("tpe_dfz_skill", np.nan)
+                                             for r in res]),
+            }
+
     return {"cells": table, "headline": headline,
             "lead_times": dict(lead_times),
-            "episode_metrics": {k: _mean_dicts(v) for k, v in ep_metrics.items()}}
+            "episode_metrics": {k: _mean_dicts(v) for k, v in ep_metrics.items()},
+            "tactile_prediction": tactile_prediction}
 
 
 def _mean_dicts(dicts: list[dict]) -> dict:
     if not dicts:
         return {}
     keys = dicts[0].keys()
-    return {k: float(np.nanmean([d[k] for d in dicts if k in d])) for k in keys}
+    import warnings
+    with warnings.catch_warnings():
+        # a metric undefined on every episode (no trace, no contact, ...) is
+        # a NaN mean, not a warning
+        warnings.simplefilter("ignore", RuntimeWarning)
+        return {k: float(np.nanmean([d[k] for d in dicts if k in d])) for k in keys}
 
 
 def write_report(result: dict, out_dir: Path) -> Path:
@@ -168,7 +198,39 @@ def write_report(result: dict, out_dir: Path) -> Path:
         for system, m in sorted(result["episode_metrics"].items()):
             lines.append(f"- **{system}**: "
                          + ", ".join(f"{k}={v:.3f}" for k, v in m.items()))
+    tpe = result.get("tactile_prediction") or {}
+    if tpe:
+        lines += ["", "## Tactile prediction error (predicted contact package vs "
+                  "measured pads; pooled over scored replans; skill = 1 - model/persistence)",
+                  "",
+                  "| system | episodes | replans scored | d_fz RMSE model / persist | d_fz skill "
+                  "[95% CI over episodes] | mask IoU model / persist | event acc model / persist |",
+                  "|---|---|---|---|---|---|---|"]
+        for system, t in sorted(tpe.items()):
+            s = t["summary"]
+            lo, hi = t["skill_ci"]
+            ci = f"[{lo:.2f}, {hi:.2f}]" if np.isfinite(lo) else "—"
+            lines.append(
+                f"| {system} | {t['n_episodes']} | {int(s.get('tpe_n_replans_scored', 0))}"
+                f"/{int(s.get('tpe_n_replans_total', 0))} "
+                f"| {s.get('tpe_dfz_rmse', np.nan):.4f} / {s.get('tpe_dfz_rmse_persist', np.nan):.4f} "
+                f"| {s.get('tpe_dfz_skill', np.nan):.3f} {ci} "
+                f"| {s.get('tpe_mask_iou', np.nan):.3f} / {s.get('tpe_mask_iou_persist', np.nan):.3f} "
+                f"| {s.get('tpe_event_acc', np.nan):.3f} / {s.get('tpe_event_acc_persist', np.nan):.3f} |")
+        (out_dir / "tactile_prediction.json").write_text(
+            json.dumps(tpe, indent=1, default=_json_default), encoding="utf-8")
     (out_dir / "report.md").write_text("\n".join(lines), encoding="utf-8")
     (out_dir / "lead_times.json").write_text(json.dumps(result["lead_times"]),
                                              encoding="utf-8")
     return out_dir / "report.md"
+
+
+def _json_default(o):
+    if isinstance(o, (np.floating, np.integer)):
+        v = o.item()
+        return None if isinstance(v, float) and not math.isfinite(v) else v
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, float) and not math.isfinite(o):
+        return None
+    raise TypeError(f"not JSON serializable: {type(o).__name__}")

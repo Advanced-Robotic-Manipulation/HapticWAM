@@ -215,6 +215,10 @@ layer that drives them.
 - `dagger/relabel.py` — offline teacher relabeling from recorded streams.
 - `dagger/manifest.py` — round-k training mixes (DAgger on/off ablation).
 - `eval/trial_runner.py` — campaign YAML → resumable ledger CSV.
+- `eval/tactile_prediction.py` — **tactile prediction error**: the predicted
+  contact package of every replan (`deploy/cpk_trace.py` → `planner_cpk.npz`)
+  scored against the pads' later measurements next to a persistence baseline
+  (`tpe_*` skill scores; `docs/tactile_prediction_error.md`).
 - `eval/metrics.py` — peak force, threshold violations, slip recovery, **ACC
   lead time** (gate crossing vs derived onset), event F1, latency.
 - `eval/aggregate.py` — recovery ratio + retention tables, markdown report,

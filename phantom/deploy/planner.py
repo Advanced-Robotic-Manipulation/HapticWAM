@@ -403,13 +403,19 @@ class PlannerLoop:
     def __init__(self, hw: HardwareConfig, policy: PhantomPolicy,
                  snapshots: SnapshotBuilder, executor, *, trace: list | None = None,
                  session: SensorSession | None = None,
-                 veto: "TerminalVeto | None" = None):
+                 veto: "TerminalVeto | None" = None,
+                 cpk_log=None):
         self.hw = hw
         self.policy = policy
         self.snapshots = snapshots
         self.executor = executor
         self.veto = veto
         self.trace = trace if trace is not None else []
+        # optional CpkTraceLog: keeps every replan's PREDICTED contact package
+        # (the model's imagined tactile future) so it can be scored against
+        # the pads' later measurements — the tactile-prediction-error metric.
+        # None => the package is consumed by the next replan and dropped.
+        self.cpk_log = cpk_log
         # optional: when given, a dead sensor/arm worker ends the episode as
         # `worker_died` instead of the loop replanning on whatever the abandoned
         # ring last held (workers.py: a dead worker "aborts the in-progress
@@ -761,6 +767,7 @@ class PlannerLoop:
                     strikes = 0
             prev_tcp, prev_cmd = tcp_pose.copy(), cmd
             plan = self.policy.replan(snap, prev_plan, tcp_pose)
+            cpk_extra = self._record_cpk(snap, plan)
             grip_now = float(snap.ur_state[-2]) if np.size(snap.ur_state) >= 2 else 0.0
             # the PROPOSAL, before the veto rewrites the chunk in place: on a
             # vetoed replan `actions` is the veto's arithmetic, and G0's
@@ -795,7 +802,7 @@ class PlannerLoop:
                                    **({"wrist_guard": self.executor.safety.wrench_diagnostics()}
                                       if hasattr(self.executor, "safety") else {}),
                                    "tcp_pose": tcp_row,
-                                   "terminal_veto": veto_rec})
+                                   "terminal_veto": veto_rec, **cpk_extra})
                 log.error("terminal veto: %d open/re-descend retries exhausted — "
                           "ending the episode", self.veto.max_retries)
                 self.executor.request_stop("veto_retry_cap")
@@ -823,6 +830,9 @@ class PlannerLoop:
                          if isinstance(v, (int, float, str, bool))
                          or (isinstance(v, (list, tuple))
                              and all(isinstance(x, (int, float)) for x in v))},
+                # predicted contact package digest + row of planner_cpk.npz
+                # (absent when the policy returned no package / no log)
+                **cpk_extra,
             }
             if pre_veto is not None and veto_rec is not None \
                     and veto_rec.get("action") in VETO_REWRITE_ACTIONS:
@@ -895,6 +905,24 @@ class PlannerLoop:
                 break
 
         self._log_gate_calibration()
+
+    def _record_cpk(self, snap, plan) -> dict:
+        """Keep this replan's predicted contact package (if any) and return
+        the trace-row keys for it. Never lets a logging failure end an
+        episode: the package is a diagnostic, the chunk is what matters."""
+        if self.cpk_log is None or getattr(plan, "cpk", None) is None:
+            return {}
+        try:
+            rec = self.cpk_log.append(
+                t_host=float(snap.t), latency_s=float(plan.latency_s),
+                trace_index=len(self.trace), cpk=plan.cpk,
+                norm=getattr(self.policy, "norm", None),
+                latent_dt=float(getattr(self.policy, "latent_dt", float("nan"))))
+        except Exception:
+            log.exception("cpk trace: could not record the predicted package")
+            return {}
+        return {"cpk_pred": rec.summary, "cpk_index": rec.index}
+
     def _log_gate_calibration(self) -> None:
         """One line per episode: the p_none distribution the veto thresholds
         were never fitted on (revalidation 2026-08-31 §2 #3 — Session 4 must

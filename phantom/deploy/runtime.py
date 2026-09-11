@@ -280,8 +280,13 @@ class DeploymentRuntime:
                                     wrench_baseline_rows=int(
                                         getattr(self.policy, "wrench_baseline_rows", 0) or 0))
         trace: list = []
+        # the policy's predicted contact package per replan (tactile
+        # prediction error, scored offline against the recorded pads)
+        from phantom.deploy.cpk_trace import CPK_TRACE_FILE, CpkTraceLog
+        cpk_log = CpkTraceLog(hw)
         planner = self.planner_class(hw, self.policy, snapshots, executor, trace=trace,
-                              session=self.session, veto=self.veto)
+                              session=self.session, veto=self.veto,
+                              cpk_log=cpk_log)
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
         # ring warm-up — the snapshot hard-requires gripper state (no silent
@@ -353,6 +358,11 @@ class DeploymentRuntime:
                     trace_path = saved_dir / "planner_trace.json"
                     trace_path.write_text(json.dumps(trace, indent=1),
                                           encoding="utf-8")
+                if saved_dir is not None and len(cpk_log):
+                    try:
+                        cpk_log.save(saved_dir / CPK_TRACE_FILE)
+                    except Exception:
+                        log.exception("could not write %s", CPK_TRACE_FILE)
         return EpisodeResult(
             episode_path=saved,
             # the executor's reason wins; the planner's own caps (replan_cap /
