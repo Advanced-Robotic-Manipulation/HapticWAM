@@ -103,14 +103,16 @@ def all_starts():
 
 def stage_b(seeds, recipe, models):
     """7 models x the A1 identities under the winning recipe; pi0.5 keeps its own recipe."""
-    lanes = {"v6": 0, "ftA": 0, "stu_ftA_r2": 0, "pi05": 0, "ctl_ftA": 1, "stu_v6": 1, "A_visiononly": 1}
+    lanes = {"v6": 0, "ftA": 0, "stu_ftA_r2": 0, "ctl_ftA": 1, "stu_v6": 1, "A_visiononly": 1}
     trials = []
     for model in models:
         rid = "pi05" if model == "pi05" else recipe
         for start in STARTS_A:
             for seed in seeds:
+                # pi0.5 is split by seed so both lanes carry 28 trials (each lane owns its own pi0.5 server)
+                lane = lanes[model] if model != "pi05" else (0 if seed == seeds[0] else 1)
                 trials.append(dict(id=f"B__{model}__{rid}__{start}__seed{seed}", model=model, recipe=rid, start=start,
-                                   seed=seed, lane=lanes[model]))
+                                   seed=seed, lane=lane))
     return trials
 
 
