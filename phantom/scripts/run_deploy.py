@@ -370,6 +370,9 @@ def build_parser() -> argparse.ArgumentParser:
                          "when --max-play-steps plays the pose further (09-08: "
                          "16 played steps flapped the fingers once per replan "
                          "whenever the latch was not armed). 0 = same as pose.")
+    ap.add_argument("--min-replan-s", type=float, default=0.0,
+                    help="floor on the replan period (s); 0 = as fast as the policy answers. "
+                         "pi0.5 answers in 0.16 s and zig-zags without it (0.5 recommended)")
     ap.add_argument("--max-play-steps", type=int, default=10,
                     help="cap chunk playback at this many action steps and "
                          "hold until the next plan (steps beyond HEAD_STEPS=9 "
@@ -1059,6 +1062,8 @@ def main(argv=None) -> int:
             "tactile_fz_limit_N", "stale_plan_timeout_s")
         if hasattr(hw.safety, k)}
     deploy_overrides["max_play_steps"] = int(getattr(args, "max_play_steps", 0) or 0)
+    if float(getattr(args, "min_replan_s", 0.0) or 0.0) > 0:
+        deploy_overrides["min_replan_s"] = float(args.min_replan_s)
     deploy_overrides["grip_play_steps"] = int(getattr(args, "grip_play_steps", 0) or 0)
     deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
@@ -1166,6 +1171,7 @@ def main(argv=None) -> int:
                            base_hw=base_hw, open_aperture=open_aperture,
                            deploy_overrides=deploy_overrides,
                            max_play_steps=(args.max_play_steps or None),
+                           min_replan_s=float(getattr(args, "min_replan_s", 0.0) or 0.0),
                            grip_play_steps=(getattr(args, 'grip_play_steps', 0) or None),
                            release_config=release_config,
                            boundary_config=boundary_config,

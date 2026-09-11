@@ -404,9 +404,16 @@ class PlannerLoop:
                  snapshots: SnapshotBuilder, executor, *, trace: list | None = None,
                  session: SensorSession | None = None,
                  veto: "TerminalVeto | None" = None,
-                 cpk_log=None):
+                 cpk_log=None, min_replan_s: float = 0.0):
         self.hw = hw
         self.policy = policy
+        # optional floor on the replan period: a fast policy (pi0.5: 0.16 s per
+        # replan) otherwise re-samples an independent chunk every 1.6 played
+        # steps and the path zig-zags (09-11 forensics: 0.8 velocity reversals
+        # per second vs 0.01 for the 0.85 s teacher). 0 = replan as fast as
+        # the policy answers (the teacher's behaviour, unchanged).
+        self.min_replan_s = float(min_replan_s or 0.0)
+        self._last_replan_t = None
         self.snapshots = snapshots
         self.executor = executor
         self.veto = veto
@@ -766,6 +773,10 @@ class PlannerLoop:
                 else:
                     strikes = 0
             prev_tcp, prev_cmd = tcp_pose.copy(), cmd
+            wait = self.replan_wait(time.perf_counter())
+            if wait > 0:
+                time.sleep(wait)
+            self._last_replan_t = time.perf_counter()
             plan = self.policy.replan(snap, prev_plan, tcp_pose)
             cpk_extra = self._record_cpk(snap, plan)
             grip_now = float(snap.ur_state[-2]) if np.size(snap.ur_state) >= 2 else 0.0
@@ -905,6 +916,13 @@ class PlannerLoop:
                 break
 
         self._log_gate_calibration()
+
+    def replan_wait(self, now: float) -> float:
+        """Seconds to wait before the next replan so the period is >= min_replan_s
+        (0 when disabled or on the first replan)."""
+        if self.min_replan_s <= 0 or self._last_replan_t is None:
+            return 0.0
+        return max(0.0, self.min_replan_s - (now - self._last_replan_t))
 
     def _record_cpk(self, snap, plan) -> dict:
         """Keep this replan's predicted contact package (if any) and return

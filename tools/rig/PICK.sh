@@ -35,8 +35,8 @@ DEFAULT_PRESET=1
 if [ "$SYSTEM" = lerobot ]; then
   # pi0.5 (LeRobot) arm: no terminal veto / parity fixes / k-seeds (the adapter refuses them);
   # nfe = its flow-matching steps (checkpoint default 10); play caps per docs/pi05_baseline.md.
-  p=pi05; NFE=10; EXTRA="--max-play-steps 9 --grip-play-steps 9 --max-episode-s 150 --max-replans 200"; PRESET=PI05
-  echo "  (pi0.5 row: preset fixed to PI05 = nfe 10, plays 9/9, no veto)"
+  p=pi05; NFE=10; EXTRA="--max-play-steps 16 --grip-play-steps 16 --min-replan-s 0.5 --max-episode-s 150 --max-replans 400"; PRESET=PI05
+  echo "  (pi0.5 row: preset fixed to PI05 = nfe 10, plays 16/16, replan >= 0.5 s, no veto)"
 else
 read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
 fi
