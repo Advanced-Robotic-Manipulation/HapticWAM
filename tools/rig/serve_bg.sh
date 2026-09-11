@@ -5,7 +5,7 @@
 #   ./serve_bg.sh status     what is listening on the menu ports (ckpt + busy/idle)
 #   ./serve_bg.sh stop 2     stop the server of menu row 2 (ours only; kills by pid of the listener)
 # Ports: 7776 + menu row (same as SERVE.sh and PICK.sh, which attaches by checkpoint sha).
-BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
+SELF=$(readlink -f "$0"); BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
 labels=(); ckpts=(); systems=(); n=0
 while IFS=$'\t' read -r label ckpt note system; do
   [ -z "$label" ] && continue; case "$label" in \#*) continue;; esac
@@ -17,7 +17,7 @@ cd "$BASE/phantom" || exit 1
 listener_pid() { ss -ltnp "sport = :$1" 2>/dev/null | grep -oE "pid=[0-9]+" | head -1 | cut -d= -f2; }
 
 case "${1:-}" in
-  ""|-h|--help) sed -n 2,7p "$0"; exit 0;;
+  ""|-h|--help) sed -n 2,7p "$SELF"; exit 0;;
   status)
     for m in $(seq 1 $n); do
       PORT=$((7776 + m)); PID=$(listener_pid $PORT)
