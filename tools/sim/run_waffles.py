@@ -130,6 +130,11 @@ def arguments():
                    help="Disable the default policy-mode servo reach limiter")
     p.add_argument("--observation-delay-s", type=float, default=0.0)
     p.add_argument(
+        "--no-progress-stop-s", type=float, default=None,
+        help="Policy mode: end the trial (reason no_progress_timeout) when the packet has not been "
+             "lifted 3 cm by this simulated time; the independent scorer still scores the trial",
+    )
+    p.add_argument(
         "--servo-constraint-hold-s", type=float, default=None,
         help="Verified stationary servo hold deadline; requires the servo reach limiter. "
              "Default 2.5 s whenever the limiter is active (bounded_v1 parity); 0 disables the hold",
@@ -240,8 +245,8 @@ def validate_adaptive_policy_experiment(args, cfg):
             "Native adaptive W2L policy execution is uncalibrated; an audited "
             "teacher experiment requires --experimental-adaptive-policy."
         )
-    if args.policy_mode != "teacher":
-        raise ValueError("The experimental adaptive policy contract is teacher-only")
+    if args.policy_mode not in ("teacher", "student", "vision_only"):
+        raise ValueError("The experimental adaptive policy contract covers teacher, student and vision_only modes")
     if args.tactile != "measured_baseline_proxy" or args.wrist != "gripper_contact_proxy":
         raise ValueError("Adaptive teacher experiment requires measured_baseline_proxy and gripper_contact_proxy")
     if args.gel_contact_coverage != "manifold_patch_v2":
@@ -1124,6 +1129,7 @@ def run(app, args, cfg, data, duration):
         world.render()
     camera.get_rgba()
     settled_position = np.asarray(packet.get_world_pose()[0])
+    next_progress_check_t = 0.0
     settling_error = float(np.linalg.norm(settled_position - cfg["waffle"]["center"]))
     initialization = {
         "adaptive_passive_joints": adaptive_gripper,
@@ -1691,6 +1697,20 @@ def run(app, args, cfg, data, duration):
                     wrist_ft=measured_wrist,
                     tactile=tactile_sample,
                 )
+                if (
+                    args.no_progress_stop_s is not None
+                    and t + 1e-9 >= args.no_progress_stop_s
+                    and t + 1e-9 >= next_progress_check_t
+                    and adapter.stopped_reason is None
+                    and not getattr(adapter, "completed_reason", None)
+                ):
+                    next_progress_check_t = t + 0.5
+                    packet_lift_now = float(np.asarray(packet.get_world_pose()[0])[2] - settled_position[2])
+                    if packet_lift_now < 0.03:
+                        adapter.request_stop("no_progress_timeout")
+                        events.append({"t": t, "event": "no_progress_timeout",
+                                       "packet_lift_m": packet_lift_now,
+                                       "deadline_s": args.no_progress_stop_s})
                 if (
                     t + 1e-9 >= policy_ready_t
                     and not getattr(adapter, "completed_reason", None)

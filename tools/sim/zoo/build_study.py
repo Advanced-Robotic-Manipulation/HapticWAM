@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Build the frozen inputs and a stage study for the sim zoo evaluation (design: docs/results/sim_zoo_20260912/DESIGN.md).
+
+Inputs are copied byte-for-byte from the audited genuine-eight v4 campaign
+(scene, hardware, thresholds, controller configs with the rate backoff) and the
+frozen 20-start pool; only the policy configs (recipes) are new. Nothing runs.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import shutil
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[3]
+CAMPAIGN = REPO / "docs/results/teacher_recovery_20260910/finish/genuine8_rate_v4_frozen"
+POOL = REPO / "docs/results/teacher_followthrough_20260909/design/qualification_campaign/frozen"
+REMOTE_ROOT = "/dev/shm/phantom_sim_zoo_"
+BOX = "/home/physicalai/phantom-icra-2027/phantom/"
+PREPARED_EPISODE = "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000"
+TACTILE_BASELINE = "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz"
+
+MODELS = {
+    "v6": dict(checkpoint=BOX + "runs/teacher_v6/teacher_020000.pt", kind="phantom", system="teacher", policy_mode="teacher",
+               inputs="camera+pads+wrist", role="teacher, clean retrain"),
+    "ftA": dict(checkpoint=BOX + "runs/teacher_v5_ftA/BEST.pt", kind="phantom", system="teacher", policy_mode="teacher",
+                inputs="camera+pads+wrist", role="teacher fine-tuned on rig grasps"),
+    "stu_ftA_r2": dict(checkpoint=BOX + "runs/student_ftA_r2/student_002000.pt", kind="phantom", system="student",
+                       policy_mode="student", inputs="camera+proprio", role="paper's sensor-free student"),
+    "ctl_ftA": dict(checkpoint=BOX + "runs/control_ftA/teacher_001200.pt", kind="phantom", system="student",
+                    policy_mode="student", inputs="camera+proprio", role="no-distillation control"),
+    "stu_v6": dict(checkpoint=BOX + "runs/student_v6/student_001500.pt", kind="phantom", system="student",
+                   policy_mode="student", inputs="camera+proprio", role="student of v6"),
+    "A_visiononly": dict(checkpoint=BOX + "runs/cosmos_visiononly_v1/teacher_006000.pt", kind="phantom", system="auto",
+                         policy_mode="vision_only", inputs="camera", role="vision-only baseline"),
+    "pi05": dict(checkpoint=BOX + "runs/pi05_20k/pretrained_model", kind="lerobot", system="lerobot",
+                 policy_mode="student", inputs="camera+proprio+text", role="external VLA baseline"),
+}
+BASE_RECIPE = dict(nfe=1, guidance=1.0, parity_fixes=True, persistent_noise=True, task_text="waffles",
+                   drop_video=False, close_p=0.5, use_ema=True, terminal_veto=True)
+RECIPES = {
+    "K4_ir": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready"),
+    "K1_ir": dict(BASE_RECIPE, k_seeds=1, action_time_origin="inference_ready"),
+    "K4_obs": dict(BASE_RECIPE, k_seeds=4, action_time_origin="observation"),
+    "K1_obs": dict(BASE_RECIPE, k_seeds=1, action_time_origin="observation"),
+    "pi05": dict(nfe=10, guidance=1.0, k_seeds=1, parity_fixes=False, persistent_noise=False, task_text="pick up the waffles",
+                 drop_video=False, close_p=0.5, use_ema=True, terminal_veto=False, action_time_origin="inference_ready",
+                 max_play_steps=16, grip_play_steps=16),
+}
+CONFIGURABLE = ("nfe", "guidance", "k_seeds", "parity_fixes", "persistent_noise", "task_text", "drop_video", "close_p",
+                "action_time_origin")
+FIXED = dict(horizon_s=40.0, no_progress_stop_s=25.0, max_play_steps=10, grip_play_steps=10, servo_constraint_hold_s=2.5,
+             robot_usd=None, waffle_placement="as collected (scene.json)", reach_limiter="bounded_v1 (elbow>=0.40 rad, 1.0 rad/s)")
+# one start per stratum (the first interleaved quartet of the frozen qualification schedule)
+STARTS_A = ["ep_waffles_1785594294_001_open", "ep_waffles_1785594503_010_open",
+            "ep_waffles_1787393283_000_open", "ep_waffles_1787394107_011_open"]
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def build_inputs(out: Path):
+    out.mkdir(parents=True, exist_ok=False)
+    design = json.loads((CAMPAIGN / "v6_relative_on_rate_v4/campaign.json").read_text())
+    profile = design["adapter_profile"]
+    for name in ("scene.json", "hardware_input.yaml"):
+        shutil.copyfile(CAMPAIGN / name, out / name)
+    (out / "thresholds.json").write_text(json.dumps(design["thresholds"], indent=2) + "\n")
+    for field in ("terminal_veto", "placement_release", "boundary_projection"):
+        (out / f"{field}.json").write_text(json.dumps(profile[field], indent=2) + "\n")
+    assert profile["boundary_projection"]["rate_solver_backoff"] == "fk_rate_interior_v1"
+    (out / "initial_states").mkdir()
+    for p in sorted((POOL / "initial_states").glob("*.json")):
+        shutil.copyfile(p, out / "initial_states" / p.name)
+    shutil.copyfile(POOL / "initial_state_lineage.json", out / "initial_state_lineage.json")
+    for rid, recipe in RECIPES.items():
+        (out / f"policy_config__{rid}.json").write_text(
+            json.dumps({k: recipe[k] for k in CONFIGURABLE}, indent=2) + "\n")
+    manifest = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob("*")) if p.is_file()}
+    (out / "input_manifest.json").write_text(json.dumps({"source_campaign": str(CAMPAIGN), "source_pool": str(POOL),
+                                                        "files": manifest}, indent=2) + "\n")
+    return manifest
+
+
+def stage_a1(seeds):
+    trials = []
+    lanes = {"K4_ir": 0, "K1_ir": 0, "K4_obs": 1, "K1_obs": 1}
+    for recipe in ("K4_ir", "K1_ir", "K4_obs", "K1_obs"):
+        for start in STARTS_A:
+            for seed in seeds:
+                trials.append(dict(id=f"A1__v6__{recipe}__{start}__seed{seed}", model="v6", recipe=recipe, start=start,
+                                   seed=seed, lane=lanes[recipe]))
+    return trials
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stage", choices=["A1"], required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--checkpoint-shas", type=Path, required=True, help="json {checkpoint path: sha256}")
+    parser.add_argument("--seeds", type=int, nargs="+", default=[910501, 910502])
+    args = parser.parse_args()
+    shas = json.loads(args.checkpoint_shas.read_text())
+    inputs_dir = args.out / "inputs"
+    manifest = build_inputs(inputs_dir) if not inputs_dir.exists() else json.loads((inputs_dir / "input_manifest.json").read_text())["files"]
+    models = {}
+    for mid, m in MODELS.items():
+        models[mid] = dict(m, sha256=shas.get(m["checkpoint"], "lerobot_directory" if m["kind"] == "lerobot" else None))
+        if models[mid]["sha256"] is None:
+            raise SystemExit("missing checkpoint sha for " + mid)
+    trials = {"A1": stage_a1}[args.stage](args.seeds)
+    study = dict(study_id=f"sim_zoo_20260912_{args.stage}", stage=args.stage,
+                 runtime=REMOTE_ROOT + "runtime_v11_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
+                 raw=REMOTE_ROOT + f"raw_20260912/{args.stage}", prepared_episode=PREPARED_EPISODE,
+                 tactile_baseline=TACTILE_BASELINE, fixed=FIXED, models=models, recipes=RECIPES, trials=trials,
+                 input_manifest_sha256=sha(inputs_dir / "input_manifest.json"), planned_trials=len(trials))
+    path = args.out / f"study_{args.stage}.json"
+    path.write_text(json.dumps(study, indent=2) + "\n")
+    print(json.dumps({"study": str(path), "trials": len(trials), "inputs_files": len(manifest)}))
+
+
+if __name__ == "__main__":
+    main()
