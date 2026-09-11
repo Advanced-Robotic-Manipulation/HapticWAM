@@ -38,10 +38,15 @@ def stage_of(outcomes, obj):
     return 0
 
 
-def latency_summary(planner_rows, isaac_log):
+def latency_summary(planner_rows, isaac_log, reference_p95=None):
     lat = [r["latency_s"] for r in planner_rows if r.get("latency_s") is not None]
     rpc = [(r.get("diagnostics") or {}).get("sim_policy_replan_wall_time_s") for r in planner_rows]
     rpc = [x for x in rpc if x is not None]
+    # the first call carries server warm-up; it is excluded from the gate
+    if len(rpc) > 1:
+        rpc = rpc[1:]
+    if len(lat) > 1:
+        lat = lat[1:]
     statuses = {}
     for r in planner_rows:
         statuses[r.get("status")] = statuses.get(r.get("status"), 0) + 1
@@ -53,7 +58,11 @@ def latency_summary(planner_rows, isaac_log):
                "rpc_wall_mean_s": float(np.mean(values)) if values else None,
                "rpc_wall_p95_s": float(np.percentile(values, 95)) if values else None,
                "rpc_wall_max_s": float(np.max(values)) if values else None}
-    summary["latency_confounded"] = bool(capped > 0 or (summary["rpc_wall_p95_s"] or 0) > 0.5)
+    # gate: any observation-epoch admission rejection, or p95 above 1.5x the
+    # recipe's single-lane reference (fixed 0.5 s when no reference exists)
+    limit = 1.5 * reference_p95 if reference_p95 else 0.5
+    summary["gate_p95_limit_s"] = limit
+    summary["latency_confounded"] = bool(capped > 0 or (summary["rpc_wall_p95_s"] or 0) > limit)
     return summary
 
 
@@ -63,6 +72,7 @@ def main():
     parser.add_argument("--thresholds", type=Path, required=True)
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--latency-reference-p95", type=float, default=None)
     args = parser.parse_args()
     sys.path.insert(0, str(args.runtime))
     from phantom.sim.policy_metrics import evaluate_policy_trace
@@ -101,7 +111,7 @@ def main():
                   stop_events=safety[:3], duration_s=run.get("duration_s"),
                   object=obj, control={k: metrics.get("control", {}).get(k) for k in
                                         ("stop_reason", "ik_rejects", "replans", "plans_activated", "effective_latency_s")},
-                  latency=latency_summary(planner, folder / "isaac.log"),
+                  latency=latency_summary(planner, folder / "isaac.log", args.latency_reference_p95),
                   reach_error_m=obj.get("reach_error_before_first_closing_motion_m"),
                   min_pad_object_m=obj.get("minimum_pad_midpoint_to_object_m"))
     out.write_text(json.dumps(result, indent=2, default=str) + "\n")

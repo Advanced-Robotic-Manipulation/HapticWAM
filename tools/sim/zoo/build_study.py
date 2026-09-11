@@ -95,12 +95,42 @@ def stage_a1(seeds):
     return trials
 
 
+def all_starts():
+    return sorted(p.stem for p in (POOL / "initial_states").glob("*.json"))
+
+
+def stage_b(seeds, recipe, models):
+    """7 models x the A1 identities under the winning recipe; pi0.5 keeps its own recipe."""
+    lanes = {"v6": 0, "ftA": 0, "stu_ftA_r2": 0, "pi05": 0, "ctl_ftA": 1, "stu_v6": 1, "A_visiononly": 1}
+    trials = []
+    for model in models:
+        rid = "pi05" if model == "pi05" else recipe
+        for start in STARTS_A:
+            for seed in seeds:
+                trials.append(dict(id=f"B__{model}__{rid}__{start}__seed{seed}", model=model, recipe=rid, start=start,
+                                   seed=seed, lane=lanes[model]))
+    return trials
+
+
+def stage_c(seed, setups):
+    """finalists x all 20 starts x one fresh seed; one setup per lane."""
+    trials = []
+    for lane, (model, recipe) in enumerate(setups):
+        for start in all_starts():
+            trials.append(dict(id=f"C__{model}__{recipe}__{start}__seed{seed}", model=model, recipe=recipe, start=start,
+                               seed=seed, lane=lane % 2))
+    return trials
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["A1"], required=True)
+    parser.add_argument("--stage", choices=["A1", "B", "C"], required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--checkpoint-shas", type=Path, required=True, help="json {checkpoint path: sha256}")
     parser.add_argument("--seeds", type=int, nargs="+", default=[910501, 910502])
+    parser.add_argument("--recipe", default=None, help="stage B: winning recipe id from A1")
+    parser.add_argument("--models", nargs="+", default=list(MODELS), help="stage B: models to run")
+    parser.add_argument("--setups", nargs="+", default=[], help="stage C: model:recipe finalists")
     args = parser.parse_args()
     shas = json.loads(args.checkpoint_shas.read_text())
     inputs_dir = args.out / "inputs"
@@ -110,9 +140,16 @@ def main():
         models[mid] = dict(m, sha256=shas.get(m["checkpoint"], "lerobot_directory" if m["kind"] == "lerobot" else None))
         if models[mid]["sha256"] is None:
             raise SystemExit("missing checkpoint sha for " + mid)
-    trials = {"A1": stage_a1}[args.stage](args.seeds)
+    if args.stage == "A1":
+        trials = stage_a1(args.seeds)
+    elif args.stage == "B":
+        assert args.recipe in RECIPES, "stage B needs --recipe"
+        trials = stage_b(args.seeds, args.recipe, args.models)
+    else:
+        assert args.setups, "stage C needs --setups model:recipe ..."
+        trials = stage_c(args.seeds[0], [tuple(x.split(":")) for x in args.setups])
     study = dict(study_id=f"sim_zoo_20260912_{args.stage}", stage=args.stage,
-                 runtime=REMOTE_ROOT + "runtime_v11_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
+                 runtime=REMOTE_ROOT + "runtime_v12_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
                  raw=REMOTE_ROOT + f"raw_20260912/{args.stage}", prepared_episode=PREPARED_EPISODE,
                  tactile_baseline=TACTILE_BASELINE, fixed=FIXED, models=models, recipes=RECIPES, trials=trials,
                  input_manifest_sha256=sha(inputs_dir / "input_manifest.json"), planned_trials=len(trials))

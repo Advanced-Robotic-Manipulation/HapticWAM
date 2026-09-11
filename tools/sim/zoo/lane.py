@@ -21,6 +21,10 @@ import time
 from pathlib import Path
 
 ISAAC = "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0"
+# the pi0.5 adapter (phantom.scripts.lerobot_server) lives on main / the box checkout, not in the
+# frozen v10-based sim runtime; the server is only an RPC peer, so it runs from the box checkout
+# exactly as serve_bg.sh does. Nothing there is modified.
+BOX_REPO = "/home/physicalai/phantom-icra-2027/phantom"
 PHANTOM_PY = "/home/physicalai/phantom-icra-2027/phantom/.venv/bin/python"
 PI05_PY = "/home/physicalai/phantom-icra-2027/pi05venv/bin/python"
 
@@ -72,9 +76,10 @@ class Server:
         self.dir.mkdir(parents=True, exist_ok=True)
         if not port_free(self.port):
             raise RuntimeError(f"port {self.port} busy")
-        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONPATH=self.study["runtime"])
+        root = BOX_REPO if self.model["kind"] == "lerobot" else self.study["runtime"]
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONPATH=root)
         log = (self.dir / "server_console.log").open("a")
-        self.proc = subprocess.Popen(self.command(), cwd=self.study["runtime"], env=env, stdout=log,
+        self.proc = subprocess.Popen(self.command(), cwd=root, env=env, stdout=log,
                                      stderr=subprocess.STDOUT, start_new_session=True)
         write(self.dir / "owned_pid.json", {"pid": self.proc.pid, "command": self.command(), "started_unix_s": time.time()})
         deadline = time.monotonic() + timeout_s
@@ -128,7 +133,11 @@ def trial_command(study, trial, model, recipe, port, out_dir):
            "--experimental-adaptive-policy", "--save-policy-observations", "--record-gel-contacts",
            "--record-packet-support", "--record-robot-environment-contacts",
            "--no-progress-stop-s", str(fixed["no_progress_stop_s"])]
-    if recipe.get("terminal_veto", True) and model["kind"] != "lerobot":
+    if model["kind"] == "lerobot":
+        # no ACC head: neither the terminal veto nor the minimal_v5 port (both
+        # consume p_evt) can run; the rig's pi0.5 preset makes the same choice
+        cmd = [c for c in cmd if c not in ("--placement-controller-profile", "minimal_v5")]
+    elif recipe.get("terminal_veto", True):
         cmd += ["--terminal-veto-config", inputs + "/terminal_veto.json"]
     if fixed.get("robot_usd"):
         cmd += ["--robot-usd", fixed["robot_usd"]]
@@ -192,8 +201,10 @@ def main():
                         code = "timeout"
                 status.update(status="finished" if code == 0 else "runtime_error", exit_code=code, finished_unix_s=time.time())
                 write(out_dir / "run_status.json", status)
+                reference = (study.get("latency_reference_p95_s") or {}).get(recipe_id)
                 score = subprocess.run([PHANTOM_PY, study["runtime"] + "/tools/sim/zoo/score_trial.py", "--trial", str(out_dir),
-                                        "--thresholds", study["inputs"] + "/thresholds.json", "--runtime", study["runtime"]],
+                                        "--thresholds", study["inputs"] + "/thresholds.json", "--runtime", study["runtime"]]
+                                       + (["--latency-reference-p95", str(reference)] if reference else []),
                                        env=dict(env, CUDA_VISIBLE_DEVICES="", PYTHONPATH=study["runtime"]),
                                        capture_output=True, text=True)
                 status["score_stdout"] = score.stdout[-600:]
