@@ -14,6 +14,8 @@ REPO = Path(__file__).resolve().parents[1]
     # controller on both arms); BOUNDED REACH is an explicit choice
     ("teacher", "", False), ("teacher", "1", False),
     ("student", "", False), ("teacher", "5", True), ("student", "5", True),
+    # run_deploy defaults to bounded_v1 since 09-11; preset 6 is the explicit opt-out
+    ("teacher", "6", None),
 ])
 def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset, fixed):
     base = tmp_path / "rig"
@@ -39,6 +41,9 @@ def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset,
     command = next(line for line in result.stdout.splitlines() if line.startswith("TRACKED|"))
     assert "STALE_COPY" not in result.stdout
     assert f"TRACKED|{system}|runs/model.pt|" in command
-    assert ("--servo-reach-profile bounded_v1" in command) is fixed
+    if fixed is None:
+        assert "--servo-reach-profile none" in command
+    else:
+        assert ("--servo-reach-profile bounded_v1" in command) is fixed
     assert "--max-play-steps 16 --grip-play-steps 10" in command and "--seed 101" in command
     assert command.endswith("|waffles 1 1 1.0")

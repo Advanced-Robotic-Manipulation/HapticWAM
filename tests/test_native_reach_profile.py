@@ -96,12 +96,13 @@ def test_file_only_invalid_config_fails_before_any_runtime(tmp_path, rig_hw, cap
     assert "requires the configured six-joint UR3" in capsys.readouterr().err
 
 
-def test_native_parser_opt_in_default_unchanged():
+def test_native_parser_defaults_to_bounded_and_none_disables():
     from phantom.scripts.run_deploy import build_parser
     parser = build_parser()
     args = ["--system", "teacher", "--task", "waffles"]
-    assert parser.parse_args(args).servo_reach_profile is None
+    assert parser.parse_args(args).servo_reach_profile == PROFILE
     assert parser.parse_args(args + ["--servo-reach-profile", PROFILE]).servo_reach_profile == PROFILE
+    assert parser.parse_args(args + ["--servo-reach-profile", "none"]).servo_reach_profile == "none"
 
 
 @pytest.mark.parametrize("profile", [None, PROFILE])
@@ -138,8 +139,7 @@ def test_native_main_binds_profile_to_real_driver_and_records_effective_limits(
     monkeypatch.setattr(runtime.DeploymentRuntime, "__enter__", before_connect)
     argv = ["--system", "teacher", "--task", "waffles", "--tiny",
             "--no-hitbox", "--no-z-floor", "--allow-ood-start", "--out", str(tmp_path)]
-    if profile:
-        argv += ["--servo-reach-profile", profile]
+    argv += ["--servo-reach-profile", profile or "none"]
     with pytest.raises(PreConnectionBoundary):
         run_deploy.main(argv)
     rt = seen["runtime"]

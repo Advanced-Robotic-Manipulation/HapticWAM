@@ -23,11 +23,12 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -e "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
-echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + pose plays 16 / gripper 10 + max-episode-s 150 + max-replans 200"
+echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + pose plays 16 / gripper 10 + max-episode-s 150 + max-replans 200 (+ bounded reach, ON by default since 09-11)"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
 echo "  4) CUSTOM  type your own nfe + flags"
-echo "  5) BOUNDED REACH (teacher-only trials, sim evidence only): LEVERS + elbow >=0.40 rad, command joint speed <=1.0 rad/s, verified hold <=2.5 s"
+echo "  5) BOUNDED REACH: LEVERS + explicit --servo-reach-profile bounded_v1 (same controller as 1 now that it is the default)"
+echo "  6) NO REACH LIMITER: LEVERS + --servo-reach-profile none (attribution control only: elbow may straighten at the box)"
 # The default preset must NOT depend on the model: a paired cell runs both
 # arms under the SAME controller or the pair measures the controller, not the
 # model. BOUNDED REACH (5) is an explicit choice for teacher-only trials.
@@ -47,6 +48,7 @@ case $p in
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
   4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
   5) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile bounded_v1"; PRESET=BOUNDED_REACH;;
+  6) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile none"; PRESET=NO_REACH_LIMITER;;
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}

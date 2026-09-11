@@ -397,8 +397,10 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
-    ap.add_argument("--servo-reach-profile", choices=["bounded_v1"], default=None,
-                    help="opt-in UR3 command limiter: 0.40 rad minimum elbow, "
+    ap.add_argument("--servo-reach-profile", choices=["bounded_v1", "none"], default="bounded_v1",
+                    help="UR3 command limiter, ON by default since 09-11 (real lifts ended with a "
+                         "straight elbow at the far point over the box; see "
+                         "docs/rig_apex_analysis_0911.md). 'none' disables it: 0.40 rad minimum elbow, "
                          "1.0 rad/s joint command cap, 2.5 s verified constraint "
                          "hold budget; preserves measured safety stops and "
                          "does not enable placement/release")
@@ -871,6 +873,10 @@ def main(argv=None) -> int:
     base_hw = hw
     deploy_overrides: dict = {}
     from phantom.deploy.reach_profile import PROFILE_LIMITS, apply_reach_profile
+    if args.servo_reach_profile == "none":
+        args.servo_reach_profile = None
+        log.warning("servo reach profile OFF (--servo-reach-profile none): the arm may straighten "
+                    "its elbow at the far point over the box and end on wrist_extension/joint_speed")
     try:
         hw = apply_reach_profile(hw, args.servo_reach_profile)
     except ValueError as error:
@@ -1085,8 +1091,8 @@ def main(argv=None) -> int:
                   f"r{args.veto_max_retries}" if args.terminal_veto else "veto:off"),
                  f"kseeds:{max(1, args.k_seeds)}"]
     veto = build_veto(args, stats, z_floor)
-    if args.servo_reach_profile is not None:
-        cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile}")
+    # always tagged (on by default since 09-11) so an A/B arm is reconstructible
+    cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile or 'off'}")
     if veto is not None:
         log.info("terminal veto ON: p_close=%.2f p_none=%.2f max_retries=%d "
                  "z_floor=%s open_aperture=%.2f", veto.p_close, veto.p_none,

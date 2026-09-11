@@ -205,11 +205,28 @@ def simulation_command(args, design, policy, condition, seed, directory, robot_u
         command += ["--save-policy-observations"]
     if profile.get("record_packet_support"):
         command += ["--record-packet-support"]
+    # Since 09-11 the runner defaults to the limiter (+2.5 s hold) in policy
+    # mode. A campaign design stays authoritative, so a runner that knows the
+    # opt-out gets it explicitly; frozen older sources keep their exact CLI.
+    explicit = runner_has_default_limiter(args.source)
     if servo_reach_limiter_metadata(design) is not None:
         command += ["--servo-reach-limiter"]
         if profile.get("servo_constraint_hold_s") is not None:
             command += ["--servo-constraint-hold-s", str(profile["servo_constraint_hold_s"])]
+        elif explicit:
+            command += ["--servo-constraint-hold-s", "0"]
+    elif explicit:
+        command += ["--no-servo-reach-limiter"]
     return command
+
+
+def runner_has_default_limiter(source) -> bool:
+    """True when the source's run_waffles.py knows --no-servo-reach-limiter."""
+    runner = Path(source) / "tools/sim/run_waffles.py"
+    try:
+        return "--no-servo-reach-limiter" in runner.read_text()
+    except OSError:
+        return False
 
 
 def stop_owned(process, timeout=20):
