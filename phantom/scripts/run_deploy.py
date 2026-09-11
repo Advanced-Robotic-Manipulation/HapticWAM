@@ -370,6 +370,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "when --max-play-steps plays the pose further (09-08: "
                          "16 played steps flapped the fingers once per replan "
                          "whenever the latch was not armed). 0 = same as pose.")
+    ap.add_argument("--policy-z-offset-m", type=float, default=0.0,
+                    help="constant z offset (m) on the TCP the POLICY is told about (proprio + "
+                         "replan anchor), not on the commanded targets: negative = the policy "
+                         "believes it is lower and stops higher in the real world. Recorded in "
+                         "deploy_overrides. 09-11: pi0.5 on whiteboard needs about -0.023")
     ap.add_argument("--min-replan-s", type=float, default=0.0,
                     help="floor on the replan period (s); 0 = as fast as the policy answers. "
                          "pi0.5 answers in 0.16 s and zig-zags without it (0.5 recommended)")
@@ -1070,6 +1075,8 @@ def main(argv=None) -> int:
     deploy_overrides["max_play_steps"] = int(getattr(args, "max_play_steps", 0) or 0)
     if float(getattr(args, "min_replan_s", 0.0) or 0.0) > 0:
         deploy_overrides["min_replan_s"] = float(args.min_replan_s)
+    if float(getattr(args, "policy_z_offset_m", 0.0) or 0.0):
+        deploy_overrides["policy_z_offset_m"] = float(args.policy_z_offset_m)
     deploy_overrides["grip_play_steps"] = int(getattr(args, "grip_play_steps", 0) or 0)
     deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
@@ -1178,6 +1185,7 @@ def main(argv=None) -> int:
                            deploy_overrides=deploy_overrides,
                            max_play_steps=(args.max_play_steps or None),
                            min_replan_s=float(getattr(args, "min_replan_s", 0.0) or 0.0),
+                           policy_z_offset_m=float(getattr(args, "policy_z_offset_m", 0.0) or 0.0),
                            grip_play_steps=(getattr(args, 'grip_play_steps', 0) or None),
                            release_config=release_config,
                            boundary_config=boundary_config,

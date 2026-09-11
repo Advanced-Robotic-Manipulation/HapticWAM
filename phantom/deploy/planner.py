@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+import dataclasses
 from dataclasses import dataclass
 from typing import Callable
 
@@ -404,9 +405,17 @@ class PlannerLoop:
                  snapshots: SnapshotBuilder, executor, *, trace: list | None = None,
                  session: SensorSession | None = None,
                  veto: "TerminalVeto | None" = None,
-                 cpk_log=None, min_replan_s: float = 0.0):
+                 cpk_log=None, min_replan_s: float = 0.0,
+                 policy_z_offset_m: float = 0.0):
         self.hw = hw
         self.policy = policy
+        # constant z offset on what the POLICY is told about its own TCP (its
+        # proprio and the replan anchor), never on the commanded targets, so it
+        # cannot accumulate across chunks: a negative value makes the policy
+        # believe it is lower than it is and it therefore stops HIGHER in the
+        # real world by that amount. 09-11: pi0.5 bottomed out 21-26 mm below
+        # the sponge (whiteboard task) 6/7 times with 5 mm scatter.
+        self.policy_z_offset_m = float(policy_z_offset_m or 0.0)
         # optional floor on the replan period: a fast policy (pi0.5: 0.16 s per
         # replan) otherwise re-samples an independent chunk every 1.6 played
         # steps and the path zig-zags (09-11 forensics: 0.8 velocity reversals
@@ -777,7 +786,8 @@ class PlannerLoop:
             if wait > 0:
                 time.sleep(wait)
             self._last_replan_t = time.perf_counter()
-            plan = self.policy.replan(snap, prev_plan, tcp_pose)
+            snap_p, tcp_p = self.policy_view(snap, tcp_pose)
+            plan = self.policy.replan(snap_p, prev_plan, tcp_p)
             cpk_extra = self._record_cpk(snap, plan)
             grip_now = float(snap.ur_state[-2]) if np.size(snap.ur_state) >= 2 else 0.0
             # the PROPOSAL, before the veto rewrites the chunk in place: on a
@@ -916,6 +926,22 @@ class PlannerLoop:
                 break
 
         self._log_gate_calibration()
+
+    def policy_view(self, snap, tcp_pose):
+        """(snapshot, tcp_pose) as the policy should see them: identical to the
+        measured ones unless policy_z_offset_m is set, in which case the TCP z
+        inside ur_state and the anchor pose are shifted by the offset."""
+        off = self.policy_z_offset_m
+        if not off:
+            return snap, tcp_pose
+        us = np.array(snap.ur_state, dtype=np.float32, copy=True)
+        zi = 2 * self.hw.arm.dof + 2
+        if us.shape[0] > zi:
+            us[zi] += off
+        tp = np.array(tcp_pose, dtype=float, copy=True)
+        if tp.shape[0] > 2:
+            tp[2] += off
+        return dataclasses.replace(snap, ur_state=us), tp
 
     def replan_wait(self, now: float) -> float:
         """Seconds to wait before the next replan so the period is >= min_replan_s

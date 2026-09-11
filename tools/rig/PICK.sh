@@ -55,6 +55,9 @@ read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
 if [ "$SYSTEM" = lerobot ]; then
   case "$TASK" in Carton) PHRASE="pick up the carton";; whiteboard) PHRASE="pick up the whiteboard marker";; *) PHRASE="pick up the $TASK";; esac
   EXTRA="$EXTRA --text '$PHRASE'"
+  # 09-11 forensics: on whiteboard pi0.5 bottoms out 21-26 mm below the sponge (sd 5 mm) and rams
+  # the brick; tell the policy it is 23 mm lower than it is (policy-side only, recorded in overrides)
+  [ "$TASK" = whiteboard ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
 fi
 read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
