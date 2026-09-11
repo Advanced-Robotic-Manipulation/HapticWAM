@@ -173,7 +173,7 @@ def test_existing_margin_is_geometric_and_measured_stop_is_not_relaxed():
 
 
 def test_limiter_stall_is_a_controller_stop_preserving_grip_and_feedback():
-    from tests.test_sim_policy_adapter import POSE, adapter, observe
+    from tests.test_sim_policy_adapter import POSE, adapter, observe, plan
     from tools.sim.run_waffles import report_servo_limiter_execution
 
     ad = adapter()
@@ -182,6 +182,10 @@ def test_limiter_stall_is_a_controller_stop_preserving_grip_and_feedback():
     for i in range(25):
         t = i * 0.008
         observe(ad, t, grip=0.55)
+        if i == 0:
+            # A plan must be playing: without one the executor is still in
+            # warm-up and commands nothing, so no limiter rejection can occur.
+            assert ad.submit(plan(), t)
         command = ad.step(t)
         assert not command.stopped
         pose, rejects = report_servo_limiter_execution(ad, t, rejection, 0.61, rejects)
