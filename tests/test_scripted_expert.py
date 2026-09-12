@@ -17,6 +17,8 @@ def drive(policy, tcp0, seconds=60.0, dt=0.2):
         assert plan.actions.shape == (p.horizon, 7) and np.isfinite(plan.actions).all()
         assert np.all(np.linalg.norm(plan.actions[:, :3], axis=1) <= p.v_travel / rate + 1e-9)   # per-step speed cap
         assert np.all(np.linalg.norm(plan.actions[:, 3:6], axis=1) <= p.w_max_rad_s / rate + 1e-9)
+        if policy.phase in ("lift", "carry", "orient", "place_descend"):
+            assert np.all(np.linalg.norm(plan.actions[:, 3:6], axis=1) <= p.w_max_gripped_rad_s / rate + 1e-9)
         steps = plan.actions[:int(round(dt * rate)), :6]
         tcp[:6] += steps.sum(axis=0)
         trace.append((t, policy.phase, tcp[:6].copy(), float(plan.actions[0, 6]), plan.p_evt.argmax()))
@@ -31,7 +33,9 @@ def test_expert_runs_through_all_phases_and_places_in_the_bin():
     trace = drive(pol, [-0.386, -0.315, 0.351, -1.02, -1.86, 1.54])
     phases = [ph for _, ph, _, _, _ in trace]
     assert pol.phase == "done"
-    assert all(p in PHASES for p in phases) and phases.index("close") < phases.index("lift") < phases.index("open")
+    assert all(p in PHASES for p in phases) and phases.index("close") < phases.index("lift") < phases.index("orient") < phases.index("open")
+    carry = [pose for _, ph, pose, _, _ in trace if ph == "carry"]
+    assert max(np.linalg.norm(c[3:6] - carry[0][3:6]) for c in carry) < 0.05   # no turning while carrying
     grasp = next(pose for _, ph, pose, _, _ in trace if ph == "close")
     assert abs(grasp[2] - (packet[2] + .035)) < .01 and np.linalg.norm(grasp[:2] - packet[:2]) < .01
     # orientation at closure = demo grasp orientation; at release = demo release orientation
