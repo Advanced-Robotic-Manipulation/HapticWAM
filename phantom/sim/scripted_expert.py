@@ -1,6 +1,7 @@
 """Privileged scripted expert for the simulated waffle task (data generation, not a policy).
 
-Produces deployment-frame plans (``phantom.inference.policy.Plan``: t0_pose + per-step
+Produces deployment-frame plans (same fields as ``phantom.inference.policy.Plan``, as a
+SimpleNamespace so the Isaac Python, which has no zarr, never imports the data stack: t0_pose + per-step
 Δ-EE(6) at the action rate, absolute gripper channel) from the sim's ground-truth packet
 pose, so the recorded executed actions live in exactly the frame the teacher is trained
 on. The executor path (bounded limiter, rate limits, latch) is unchanged: the expert only
@@ -10,6 +11,8 @@ lift, carry at demo height, descent into the bin, open on the floor band, retrea
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -162,7 +165,6 @@ class ScriptedExpertPolicy:
 
     # -- the policy call ----------------------------------------------------
     def replan(self, obs, prev_plan, tcp_pose):
-        from phantom.inference.policy import Plan
         p = self.p
         t = float(obs.t)
         tcp = np.asarray(tcp_pose, dtype=float)
@@ -183,9 +185,9 @@ class ScriptedExpertPolicy:
             actions[k, 6] = self._grip(t + p.latency_s + k * dt)
         kind = {"close": "onset", "settle": "hold", "lift": "hold", "carry": "hold", "place_descend": "hold",
                 "open": "release"}.get(self.phase, "none")
-        return Plan(t_created=t, t0_pose=tcp.copy(), actions=actions,
+        return SimpleNamespace(t_created=t, t0_pose=tcp.copy(), actions=actions,
                     action_times=t + p.latency_s + np.arange(H) / p.action_rate_hz,
                     sigma=np.zeros(H, dtype=np.float32), gate=1.0, p_evt=self._p_evt(kind), cpk=None,
-                    latency_s=p.latency_s,
+                    latency_s=p.latency_s, _cpk_token=None,
                     diag={"expert_phase": self.phase, "packet_xyz": packet.tolist(),
                           "target_xyz": None if target is None else [float(v) for v in target]})
