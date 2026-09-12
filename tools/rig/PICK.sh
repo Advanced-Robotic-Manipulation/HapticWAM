@@ -70,6 +70,13 @@ if [ -n "$LEROBOT_TYPE" ]; then
   [ "$TASK" = whiteboard ] && [ "$LEROBOT_TYPE" = pi05 ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
 fi
 read -p "episodes [1]: " EPS; EPS=${EPS:-1}
+# 09-12 forensics: a multi-episode launch increments the seed per episode, so the second arm of the
+# cell never shares a seed and 142 episodes produced ZERO teacher-vs-student pairs. Paired cells are
+# one episode per launch; PICK_ALLOW_MULTI=1 is the explicit opt-out for solo/diagnostic runs.
+if [ "$EPS" -gt 1 ] && [ -z "$PICK_ALLOW_MULTI" ]; then
+  echo "!! $EPS episodes in one launch breaks the pairing (seed advances per episode). Paired cells = 1 episode."
+  echo "!! Re-run with 1, or PICK_ALLOW_MULTI=1 ./PICK.sh $m for a deliberate solo run."; exit 3
+fi
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
 # remembered per day, so the second arm of a cell just presses Enter; type
