@@ -184,6 +184,12 @@ def main() -> int:
                 # lerobot's select_action does (repeat the first observation).
                 from lerobot.policies.utils import populate_queues
                 policy.reset()
+                img_keys = list(getattr(getattr(policy, "config", None), "image_features", []) or [])
+                if "observation.images" in policy._queues and img_keys:
+                    # Diffusion Policy stacks its camera features under one key in
+                    # select_action before queueing; mirror it here
+                    obs = dict(obs)
+                    obs["observation.images"] = torch.stack([obs[k] for k in img_keys], dim=-4)
                 policy._queues = populate_queues(policy._queues, obs, exclude_keys=[ACTION])
             out = policy.predict_action_chunk(obs, num_steps=args.nfe) \
                 if args.nfe is not None else policy.predict_action_chunk(obs)
