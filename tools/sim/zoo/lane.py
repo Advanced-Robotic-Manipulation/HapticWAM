@@ -68,6 +68,9 @@ class Server:
                "--persistent-noise" if r["persistent_noise"] else "--no-persistent-noise"]
         if r.get("action_time_origin") == "observation":
             cmd += ["--action-time-origin", "observation"]
+        # inference-latency levers under test (policy_server --compile / --flex); recorded in the
+        # server's info and therefore in every trial's policy_info.json
+        cmd += list(r.get("server_extra_args", []))
         if not r.get("use_ema", True):
             cmd.append("--raw")
         return cmd
