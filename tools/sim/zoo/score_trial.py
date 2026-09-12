@@ -82,7 +82,13 @@ def main():
     result = {"trial": folder.name, "status": "missing_inputs"}
     required = ["run.json", "sim_trace.npz", "effective_config.json", "execution_trace.jsonl", "planner_trace.json"]
     missing = [n for n in required if not (folder / n).exists()]
-    if missing:
+    integrity = folder / "native_mechanics_failure.json"
+    if missing == ["run.json"] and integrity.exists():
+        # the every-step mechanics monitor aborted the rollout before run.json was written;
+        # the partial trace is scored with run=None (scorer marks it invalid, flags still
+        # observed) so the stage reached *before* the integrity stop is reported separately
+        run = None
+    elif missing:
         result["missing"] = missing
         run_status = folder / "run_status.json"
         if run_status.exists():
@@ -90,7 +96,8 @@ def main():
         out.write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result))
         return
-    run = json.loads((folder / "run.json").read_text())
+    else:
+        run = json.loads((folder / "run.json").read_text())
     effective = json.loads((folder / "effective_config.json").read_text())
     thresholds = json.loads(args.thresholds.read_text())
     planner = read_rows(folder / "planner_trace.json")
@@ -101,14 +108,23 @@ def main():
     outcomes = metrics["outcomes"]
     obj = metrics.get("object", {})
     stage = stage_of(outcomes, obj)
-    events = run.get("events") or []
-    stop_reason = run.get("policy_stop_reason")
+    events = (run or {}).get("events") or []
+    stop_reason = (run or {}).get("policy_stop_reason")
     safety = [e for e in events if e.get("event") in ("policy_stop", "controller_stop", "no_progress_timeout")]
-    result.update(status="scored" if metrics.get("valid_for_scoring") else "invalid",
+    if run is None:
+        failure = json.loads(integrity.read_text())
+        diag = failure.get("diagnostic", {})
+        result["integrity_stop"] = {"phase": failure.get("phase"), "t_s": failure.get("t_s"), "gates": diag.get("gates"),
+                                    "joint_limit_violation_per_joint_rad": {k: v for k, v in
+                                                                           (diag.get("joint_limit_violation_per_joint_rad") or {}).items() if v},
+                                    "coupling_max_abs_rad": diag.get("coupling_max_abs_rad")}
+        stop_reason = "integrity_stop_native_mechanics"
+    status = "integrity_stopped" if run is None else ("scored" if metrics.get("valid_for_scoring") else "invalid")
+    result.update(status=status,
                   invalid_reasons=metrics.get("invalid_reasons", []),
                   stage=stage, stage_name=STAGES[stage], outcomes=outcomes, dropped=bool(outcomes.get("dropped")),
                   event_times_s=metrics.get("event_times_s"), stop_reason=stop_reason,
-                  stop_events=safety[:3], duration_s=run.get("duration_s"),
+                  stop_events=safety[:3], duration_s=(run or {}).get("duration_s", (result.get("integrity_stop") or {}).get("t_s")),
                   object=obj, control={k: metrics.get("control", {}).get(k) for k in
                                         ("stop_reason", "ik_rejects", "replans", "plans_activated", "effective_latency_s")},
                   latency=latency_summary(planner, folder / "isaac.log", args.latency_reference_p95),

@@ -45,8 +45,16 @@ def load(study, raw_root):
         folder = Path(raw_root) / "rollouts" / t["id"]
         status = json.loads((folder / "run_status.json").read_text()) if (folder / "run_status.json").exists() else {}
         result = json.loads((folder / "trial_result.json").read_text()) if (folder / "trial_result.json").exists() else None
+        # post-hoc partial score of an integrity-stopped rollout (original trial_result.json is kept untouched)
+        if (result or {}).get("status") == "missing_inputs" and (folder / "trial_result_integrity.json").exists():
+            result = json.loads((folder / "trial_result_integrity.json").read_text())
         row = dict(t, run_status=status.get("status", "unrun"), exit_code=status.get("exit_code"))
-        if result and result.get("status") in ("scored", "invalid"):
+        if result and result.get("status") == "integrity_stopped":
+            row.update(stage=None, stage_name=None, valid=False, latency_confounded=result["latency"]["latency_confounded"],
+                       invalid_reasons=["integrity_stopped"], integrity_stopped=True,
+                       integrity_stage_reached=result["stage_name"], integrity_stop_t_s=(result.get("integrity_stop") or {}).get("t_s"),
+                       stop_reason=result.get("stop_reason"), rpc_p95_s=result["latency"].get("rpc_wall_p95_s"))
+        elif result and result.get("status") in ("scored", "invalid"):
             row.update(stage=result["stage"], stage_name=result["stage_name"], dropped=result["dropped"],
                        stop_reason=result.get("stop_reason"), duration_s=result.get("duration_s"),
                        valid=result["status"] == "scored", invalid_reasons=result.get("invalid_reasons", []),
@@ -87,6 +95,8 @@ def summarize(rows):
                           latency_confounded=sum(1 for r in scored if r["latency_confounded"]),
                           unrun_or_failed=len(members) - len(scored), stop_reasons=dict(stops),
                           stage_by_stop_reason={k: dict(v) for k, v in stage_by_stop.items()},
+                          integrity_stopped=sum(1 for r in members if r.get("integrity_stopped")),
+                          integrity_stage_reached=[r["integrity_stage_reached"] for r in members if r.get("integrity_stopped")],
                           failed_statuses=dict(defaultdict(int, {str(r["run_status"]): sum(1 for m in members if m["run_status"] == r["run_status"]) for r in members if r["stage"] is None}))))
     return table
 
@@ -105,14 +115,14 @@ def paired(rows, a, b):
 
 
 def markdown(table):
-    lines = ["| model | recipe | primary n / scored / planned | placed (CI95) | stage≥3 | mean stage | no grab / grab / pick / in-box / placed | dropped | confounded | invalid | stops |",
-             "|---|---|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| model | recipe | primary n / scored / planned | placed (CI95) | stage≥3 | mean stage | no grab / grab / pick / in-box / placed | dropped | confounded | invalid | integrity-stopped (stage reached) | stops |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in table:
         c = r["stage_counts_all_scored"]
         lines.append(f"| {r['model']} | {r['recipe']} | {r['primary_n']} / {r['scored']} / {r['planned']} | "
                      f"{r['placed']} ({r['placed_rate']}, {r['placed_ci95']}) | {r['stage3plus']} ({r['stage3plus_rate']}) | {r['mean_stage']} | "
                      f"{c['no_grab']} / {c['grab']} / {c['pick']} / {c['in_box_gripped']} / {c['placed']} | {r['dropped']} | "
-                     f"{r['latency_confounded']} | {r['invalid']} | {json.dumps(r['stop_reasons'])} |")
+                     f"{r['latency_confounded']} | {r['invalid']} | {r['integrity_stopped']} {r['integrity_stage_reached'] or ''} | {json.dumps(r['stop_reasons'])} |")
     return "\n".join(lines)
 
 
