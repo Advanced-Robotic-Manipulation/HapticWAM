@@ -15,7 +15,8 @@ class Connection:
         self.closed = False
         self.close_event = threading.Event()
         self.settings = {k: None for k in CONFIGURABLE}
-        self.settings.update(task_text="recorded task", nfe=12, parity_fixes=True)
+        self.settings.update(task_text="recorded task", nfe=12, parity_fixes=True,
+                             action_time_origin="inference_ready")
         self.requests = []
         self.available = True
         self.wrench_baseline_rows = wrench_baseline_rows

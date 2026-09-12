@@ -22,6 +22,11 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from phantom.inference.action_timing import (
+    plan_action_time_origin, observation_submission_gate,
+    fresh_startup_anchor, submission_diagnostics,
+)
+
 from phantom.config.hardware import HardwareConfig
 from phantom.data.derived import rotvec_nearest
 from phantom.deploy.governor import SpeedGovernor
@@ -34,6 +39,7 @@ from phantom.deploy.safety import (
     SafetyAction,
     SafetyMonitor,
     is_letgo_reason as is_letgo_reason,
+    arm_stale_s,
 )
 from phantom.deploy.unlatched_finish import acknowledge_gripper, feedback_capture_times
 from phantom.drivers.base import Arm, Gripper
@@ -167,6 +173,34 @@ class ChunkExecutor:
         with self._lock:
             if getattr(self, "completed_reason", None) is not None or self.stopped_reason is not None:
                 return False
+            continuity_anchor = self._last_cmd
+            startup_anchor = False
+            if plan_action_time_origin(plan) == "observation":
+                anchor_kind, feedback_t = "last_accepted_command", None
+                if continuity_anchor is None and self._plan is None:
+                    try:
+                        state = self.arm.get_state()
+                        now = time.perf_counter()
+                        continuity_anchor = fresh_startup_anchor(
+                            state.tcp_pose, state.t_host, now, arm_stale_s(self.hw))
+                        if state.protective_stop:
+                            raise ValueError("startup arm is protectively stopped")
+                        anchor_kind, feedback_t = "startup_measured_feedback", state.t_host
+                        startup_anchor = True
+                    except (AttributeError, TypeError, ValueError, RuntimeError) as error:
+                        plan.diag = {**plan.diag, "action_time_submission_accepted": False,
+                                     "action_time_submission_reason": "invalid_startup_feedback",
+                                     "action_time_anchor_error": str(error)}
+                        return False
+                timing = observation_submission_gate(
+                    plan, now, self.hw.control.action_rate_hz,
+                    self.max_play_steps, self.grip_play_steps,
+                    self.hw.control.replan_min_lead_s, continuity_anchor is not None)
+                plan.diag = {**plan.diag, **submission_diagnostics(
+                    timing, anchor_kind, feedback_t, continuity_anchor)}
+                if not timing["accepted"]:
+                    log.warning("observation-epoch plan rejected: %s", timing["reason"])
+                    return False
             lead_ok = (plan.action_times[-1]
                        > now + self.hw.control.replan_min_lead_s)
             if not lead_ok:
@@ -188,9 +222,11 @@ class ChunkExecutor:
             cum = np.cumsum(plan.actions[:, :6], axis=0)
             prev0 = cum[k0 - 1] if k0 > 0 else np.zeros(6)
             c0 = prev0 + (u0 - k0) * (cum[k0] - prev0)
-            if self._last_cmd is not None:
-                # continuity: target(u0) = t0_pose + c0 == _last_cmd
-                plan.t0_pose = self._last_cmd.copy() - c0
+            if continuity_anchor is not None:
+                # Residual-only continuity; startup measured feedback is NOT an ACK.
+                plan.t0_pose = continuity_anchor.copy() - c0
+            if startup_anchor:
+                self._observation_start_anchor = continuity_anchor.copy()
             self._prev_plan = self._plan
             self._prev_play_time = self._play_time
             self._plan = plan
@@ -491,6 +527,8 @@ class ChunkExecutor:
             target = np.array(target, dtype=np.float64)
             dt_eff = period
             rate_reference = self._finish_pose if self.completed_reason else self._last_cmd
+            if (rate_reference is None and plan_action_time_origin(plan) == "observation"):
+                rate_reference = getattr(self, "_observation_start_anchor", None)
             if rate_reference is not None:
                 # Finish targets the achieved pose, not an older ahead-of-arm
                 # setpoint. Its zero motion must not be clipped towards that
@@ -746,6 +784,15 @@ class ChunkExecutor:
             eligible = not stale and requested is not None and original_policy_grip(
                 plan, self._play_time, self.hw.control.action_rate_hz, self._grip_play_limit(),
             )
+            played_sample = None
+            if controller.observes_relative_release and eligible:
+                from phantom.deploy.relative_release import original_played_sample
+
+                played_sample = original_played_sample(
+                    plan, self._play_time, self.hw.control.action_rate_hz,
+                    self._grip_play_limit(), t,
+                )
+                eligible = played_sample is not None
             self._observer_policy_eligible = eligible
             # Never wait for socket I/O in the servo loop. A finish transition
             # waits for a free mailbox lock so an older close cannot be sent
@@ -770,11 +817,16 @@ class ChunkExecutor:
                     accepted_grip=self._last_grip_command,
                     accepted_grip_ack=self._grip_ack,
                     feedback_times=capture_times,
+                    played_sample=played_sample,
                     observer_deferred=defer_observer,
                     finish_permitted=io_free and np.allclose(
                         self.safety.clamp_target(measured), measured, atol=1e-9, rtol=0,
                     ),
                 )
+                restore_floor = controller.latch_floor_to_restore
+                if restore_floor is not None:
+                    with self._latch_lock():
+                        self._grip_latch = max(self._grip_latch or 0.0, restore_floor)
                 if suppress:
                     with self._latch_lock():
                         self._grip_latch = None
@@ -801,7 +853,11 @@ class ChunkExecutor:
                     self._grip_io_lock.release()
 
     def _observes_unlatched_finish(self):
-        return self.release_controller is not None and self.release_controller.unlatched_observer is not None
+        """Causal feedback/ACK path also serves relative release without FINISH."""
+        return self.release_controller is not None and (
+            self.release_controller.unlatched_observer is not None
+            or self.release_controller.observes_relative_release
+        )
 
     def release_diagnostics(self):
         if self.release_controller is None:
@@ -889,36 +945,13 @@ class ChunkExecutor:
             if wait > 0:
                 time.sleep(wait)
 
-    def _reset_arm_episode_state(self) -> None:
-        """Per-episode driver bookkeeping that would otherwise leak across the
-        episodes of one process (the arm object is shared): the control-loss
-        snapshot, and the servo-limiter hit/hold counters that every later
-        stop.json reported as launch-to-date totals (09-11 forensics)."""
-        arm = self.arm
-        for name, empty in (("control_loss_last", dict), ("limiter_last", dict)):
-            if hasattr(arm, name):
-                try:
-                    setattr(arm, name, empty())
-                except Exception:
-                    pass
-        for name in ("_limiter_hits", "_limiter_holds"):
-            if hasattr(arm, name):
-                try:
-                    setattr(arm, name, 0)
-                except Exception:
-                    pass
-
     def start(self) -> None:
         self._stop.clear()
         self.stopped_reason = None
         self._last_cmd = None                  # re-seed the rate limit per episode
+        self._observation_start_anchor = None  # measured startup reference, never an ACK
         self._held_ticks = 0
         self.halt_state = {}
-        # a control-loss snapshot belongs to the episode that lost control:
-        # the driver object is reused across the episodes of one process, so
-        # without this every later stop.json in the process carried the FIRST
-        # E-stop's bits (audit 09-10: 16 of 46 "E-stop" records were stale)
-        self._reset_arm_episode_state()
         self._grip_target = None
         self._last_grip_command = None
         self._grip_ack = None

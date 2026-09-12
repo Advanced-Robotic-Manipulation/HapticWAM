@@ -43,16 +43,21 @@ def policy_settings(design, policy=None):
         "k_seeds",
         "max_play",
         "task_text",
+        "action_time_origin",
     }
     if set(overrides) - allowed:
         raise ValueError(
             f"Unsupported policy inference overrides: {sorted(set(overrides) - allowed)}"
         )
     settings.update(overrides)
+    if settings.get("action_time_origin", "inference_ready") not in ("inference_ready", "observation"):
+        raise ValueError("action_time_origin must be inference_ready or observation")
     for field in ("nfe", "k_seeds", "max_play"):
         value = settings[field]
         if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
             raise ValueError(f"{field} must be a positive integer")
+    if settings.get("action_time_origin", "inference_ready") == "observation" and settings["k_seeds"] != 1:
+        raise ValueError("First observation-origin candidate requires k_seeds=1")
     for field in ("use_ema", "persistent_noise", "parity"):
         if not isinstance(settings[field], bool):
             raise TypeError(f"{field} must be boolean")
@@ -80,10 +85,18 @@ def policy_delivery_clock(design):
     return mode
 
 
-def policy_delivery_timing_audit(design, condition, planner):
+def policy_delivery_timing_audit(design, condition, planner, policy=None):
     """Verify delivery instrumentation without changing physical outcome rules."""
     expected = policy_delivery_clock(design)
+    settings = {**design.get("inference_settings", {}),
+                **(policy or {}).get("inference_settings", {})}
+    origin = settings.get("action_time_origin", "inference_ready")
+    if origin not in ("inference_ready", "observation"):
+        return ["campaign_action_time_origin_invalid"]
     reasons = set()
+    if origin == "observation" and (type(condition.get("observation_delay_s")) not in (int, float)
+                                    or condition["observation_delay_s"] != 0):
+        reasons.add("observation_epoch_requires_zero_observation_delay")
     for row in planner:
         if row.get("error_category") == "instrumentation_or_input_invalid":
             reasons.add("policy_timing_instrumentation_invalid")
@@ -95,6 +108,32 @@ def policy_delivery_timing_audit(design, condition, planner):
             continue
         if diag.get("sim_policy_delivery_clock", "native") != expected:
             reasons.add("plan_delivery_clock_differs_from_campaign")
+        if diag.get("action_time_origin", "inference_ready") != origin:
+            reasons.add("plan_action_time_origin_differs_from_campaign")
+        if origin == "observation":
+            # The new epoch is the actual observation/capture time. Historical
+            # inference-ready metadata keeps its original validation below.
+            try:
+                fields = [row["t"], row["t_created"], diag["sim_inference_request_t"],
+                          diag["sim_observation_capture_t"], diag["sim_observation_delay_s"],
+                          condition["observation_delay_s"]]
+                if any(isinstance(x, bool) or not np.isfinite(float(x)) for x in fields):
+                    raise ValueError("nonfinite observation epoch")
+                row_time, created_at, requested_at, captured_at, delayed_by, declared_delay = map(float, fields)
+                rate = float(design["runtime_hardware"]["effective_model"]["control"]["action_rate_hz"])
+                if not np.isfinite(rate) or rate <= 0:
+                    raise ValueError("invalid action rate")
+                times = np.asarray(row["action_times"], float)
+                expected_times = captured_at + np.arange(len(row["actions"]))/rate
+                if (delayed_by != 0 or declared_delay != 0 or not np.isfinite(rate) or rate <= 0
+                        or not len(expected_times) or times.shape != expected_times.shape
+                        or not np.allclose([row_time, created_at, captured_at, delayed_by],
+                                           [requested_at, captured_at, requested_at-delayed_by, declared_delay],
+                                           rtol=0, atol=1e-8)
+                        or not np.allclose(times, expected_times, rtol=0, atol=1e-8)):
+                    raise ValueError("observation capture/grid mismatch")
+            except (KeyError, ValueError, TypeError, OverflowError, ZeroDivisionError):
+                reasons.add("observation_epoch_plan_timing_missing_or_inconsistent")
         if expected == "native":
             if diag.get("sim_policy_replan_wall_time_s") is not None:
                 reasons.add("undeclared_rpc_wall_plan_timing")
@@ -124,7 +163,9 @@ def policy_delivery_timing_audit(design, condition, planner):
             rate = design["runtime_hardware"]["effective_model"]["control"][
                 "action_rate_hz"
             ]
-            expected_grid = request + native + np.arange(len(row["actions"])) / rate
+            epoch = created if origin == "observation" else request + native
+            expected_grid = epoch + np.arange(len(row["actions"])) / rate
+            expected_created = diag["sim_observation_capture_t"] if origin == "observation" else request
             if (
                 min(native, wall, added) < 0
                 or wall + 1e-9 < native
@@ -146,7 +187,7 @@ def policy_delivery_timing_audit(design, condition, planner):
                         delivery,
                         condition["inference_delay_add_s"],
                         row_t,
-                        request,
+                        expected_created,
                         native,
                         wall - native,
                     ],
@@ -321,7 +362,12 @@ def load_design(path):
     if design["planned_counts"]["per_policy"] != expected:
         raise ValueError("Frozen planned count disagrees with condition/seed grid")
     for policy in policies:
-        policy_settings(design, policy)
+        settings = policy_settings(design, policy)
+        if settings.get("action_time_origin", "inference_ready") == "observation" and any(
+            type(condition.get("observation_delay_s")) not in (int, float)
+            or condition["observation_delay_s"] != 0 for condition in conditions
+        ):
+            raise ValueError("First observation-origin candidate requires observation_delay_s=0")
     latency = design.get("delivery_latency_s")
     if latency is not None and (not np.isfinite(latency) or latency < 0):
         raise ValueError("delivery_latency_s must be finite and nonnegative")
@@ -426,6 +472,10 @@ def runtime_audit(design, policy, condition, info, server, run, times, stop):
         for field, value in expected.items():
             if reported.get("effective", {}).get(field) != value:
                 reasons.append(f"{source}_effective_{field}_differs_from_campaign")
+        # An absent field remains compatible only with the historical epoch.
+        origin = reported.get("effective", {}).get("action_time_origin", "inference_ready")
+        if origin != settings.get("action_time_origin", "inference_ready"):
+            reasons.append(f"{source}_effective_action_time_origin_differs_from_campaign")
     if info.get("ckpt_sha") != policy["checkpoint_sha256"]:
         reasons.append("remote_checkpoint_identity_not_verified")
     if server.get("checkpoint_sha256") != policy["checkpoint_sha256"]:
@@ -637,7 +687,7 @@ def load_trials(runs, design, design_sha, out):
         )
         metrics["invalid_reasons"].extend(
             policy_delivery_timing_audit(
-                design, conditions[key[1]], read_rows(folder / "planner_trace.json")
+                design, conditions[key[1]], read_rows(folder / "planner_trace.json"), policies[key[0]]
             )
         )
         metrics["valid_for_scoring"] = not metrics["invalid_reasons"]

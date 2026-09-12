@@ -29,6 +29,7 @@ CONFIGURABLE = (
     "task_text",
     "drop_video",
     "close_p",
+    "action_time_origin",
 )
 PLAN_FIELDS = (
     "t_created",
@@ -124,7 +125,21 @@ class RemoteSimulationPolicy:
             self.info.update(current)
             effective = dict(current.get("effective", {}))
             override = {k: v for k, v in (config or {}).items() if v is not None}
+            if ("action_time_origin" not in override
+                    and effective.get("action_time_origin", "inference_ready") != "inference_ready"):
+                raise RuntimeError("observation-epoch server requires explicit client action_time_origin")
             missing = set(override) - set(effective)
+            # A lerobot (pi0.5) server built before the action-timing work has
+            # exactly one delivery semantics, inference_ready, and cannot report
+            # the key; an explicit inference_ready request is therefore honoured
+            # without a restore entry (any other value is still refused).
+            legacy_lerobot = (str(self.info.get("policy_kind", "phantom")) == "lerobot"
+                              and "action_time_origin" not in effective)
+            if legacy_lerobot and override.get("action_time_origin") == "inference_ready":
+                missing.discard("action_time_origin")
+                override = {k: v for k, v in override.items() if k != "action_time_origin"}
+                effective["action_time_origin"] = "inference_ready"
+                self.info.setdefault("effective", {})["action_time_origin"] = "inference_ready"
             if missing:
                 raise RuntimeError(
                     f"server cannot report restorable settings: {sorted(missing)}"
@@ -132,6 +147,7 @@ class RemoteSimulationPolicy:
             self._restore = {k: effective[k] for k in override}
             if override:
                 self.info.update(self._call("configure", override))
+                self.info.get("effective", {}).setdefault("action_time_origin", "inference_ready")
             for key, value in self.info.get("effective", {}).items():
                 setattr(self, key, value)
             # Checkpoint preprocessing property, never a configurable override.

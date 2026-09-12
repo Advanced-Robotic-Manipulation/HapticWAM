@@ -81,13 +81,23 @@ def test_runner_keeps_all_drive_references_without_ik_or_execution_feedback():
                  and ast.unparse(node.test) == "command is not None"
                  and any(isinstance(child, ast.Name) and child.id == "pending_execution"
                          for child in ast.walk(node)))
-    module = ast.fix_missing_locations(ast.Module(body=[guard], type_ignores=[]))
+    # Preserve the runner's lexical binding for its nested verified-submit
+    # callback. Compiling this guard at module scope rejects its nonlocal;
+    # never strip or rewrite that statement merely to make extraction pass.
+    scope = ast.parse(
+        "def dispatch(command, desired, pending_execution):\n"
+        "    submitted_this_tick = False\n"
+        "    return desired, pending_execution, submitted_this_tick\n"
+    ).body[0]
+    scope.body.insert(1, guard)
+    module = ast.fix_missing_locations(ast.Module(body=[scope], type_ignores=[]))
     desired = np.array([1., 2., 3., 4., 5., 6., .38, 2.62, 0., .38, 2.62, 0., 0., 0.])
     original = desired.copy()
-    namespace = {"command": None, "desired": desired, "pending_execution": None}
+    namespace = {}
     exec(compile(module, str(source), "exec"), namespace)
+    returned, pending, submitted = namespace["dispatch"](None, desired, None)
     np.testing.assert_array_equal(desired, original)
-    assert namespace["pending_execution"] is None
+    assert returned is desired and pending is None and submitted is False
 
 
 def test_startup_safety_stop_remains_an_explicit_command():

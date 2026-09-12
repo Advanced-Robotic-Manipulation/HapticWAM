@@ -130,7 +130,8 @@ def _finish_policy(pm, norm, args, payload):
                          guidance=getattr(args, "guidance", 1.0),
                          parity_fixes=getattr(args, "parity_fixes", False),
                          k_seeds=getattr(args, "k_seeds", 1),
-                         close_p=getattr(args, "veto_p_close", 0.5))
+                         close_p=getattr(args, "veto_p_close", 0.5),
+                         action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
     policy.wrench_baseline_rows = wrench_baseline_rows_of(payload)
@@ -304,6 +305,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "PlannerLoop checks the COUNT first — so unless "
                          "--max-replans is passed explicitly this budget "
                          "replaces it. 0 or negative disables it")
+    ap.add_argument("--action-time-origin", choices=("inference_ready", "observation"),
+                    default=None, help="Experimental epoch; omission preserves historical playback")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
                          "LATENCY LEVER (review P4): the loop is compute-bound and "
@@ -995,6 +998,8 @@ def main(argv=None) -> int:
                    task_text=(args.text or args.task),
                    drop_video=args.drop_video,
                    close_p=getattr(args, "veto_p_close", 0.5))
+        if getattr(args, "action_time_origin", None) is not None:
+            cfg["action_time_origin"] = args.action_time_origin
         try:
             policy = RemotePolicy((host, port), cfg)
             log.info("using policy server at %s:%d (ckpt %s sha %s, warm=%s) — "

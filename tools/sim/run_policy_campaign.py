@@ -90,7 +90,7 @@ def trial_id(policy, condition, seed):
 
 def inference_config(design, policy=None):
     settings = policy_settings(design, policy)
-    return {
+    config = {
         "nfe": settings["nfe"],
         "guidance": settings["guidance"],
         "k_seeds": settings["k_seeds"],
@@ -100,6 +100,9 @@ def inference_config(design, policy=None):
         "drop_video": False,
         "close_p": 0.5,
     }
+    if "action_time_origin" in settings:
+        config["action_time_origin"] = settings["action_time_origin"]
+    return config
 
 
 def server_command(args, design, policy, directory):
@@ -134,6 +137,8 @@ def server_command(args, design, policy, directory):
         if settings["persistent_noise"]
         else "--no-persistent-noise",
     ]
+    if "action_time_origin" in settings:
+        command.extend(["--action-time-origin", settings["action_time_origin"]])
     if not settings["use_ema"]:
         command.append("--raw")
     return command

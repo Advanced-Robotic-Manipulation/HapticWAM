@@ -37,8 +37,8 @@ def validate_profile(profile, *, release_config, veto, mode, hw):
         return None
     if profile != PROFILE:
         raise ValueError(f"Unknown placement controller profile: {profile}")
-    if mode != "teacher":
-        raise ValueError("minimal_v5 is an explicitly teacher-only controller port")
+    if mode not in ("teacher", "student", "vision_only"):
+        raise ValueError("minimal_v5 controller port supports teacher, student and vision_only modes")
     if veto is None:
         raise ValueError("minimal_v5 requires --terminal-veto")
     if release_config is None or not release_config.finish_after_release:
