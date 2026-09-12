@@ -650,10 +650,18 @@ class ChunkExecutor:
             if rc is not None and getattr(rc, "descent", None) is not None:
                 desc = rc.descent.state
             sent = None if res is None else (bool(res.sent), None if res.pose is None else [round(float(v), 3) for v in res.pose[:3]])
-            log.info("guard tick t=%.2f target=%s sent=%s guard=%s active=%s corr_mm=%s backoff=%s/%s hold=%s/%s descent=%s phase=%s",
+            att = (rb.get("attempts") or [{}])[-1] if rb.get("attempts") else {}
+            log.info("guard tick t=%.2f target=%s sent=%s guard=%s active=%s corr_mm=%s backoff=%s/%s "
+                     "step_mm=%s/cap%s rot_mrad=%s/cap%s frac=%s hold=%s/%s ik=%s descent=%s phase=%s",
                      t0, [round(float(v), 3) for v in np.asarray(target)[:3]], sent, b.get("reason"),
                      si.get("active_constraints"), None if si.get("correction_m") is None else round(si["correction_m"] * 1e3, 1),
-                     rb.get("reason"), len(rb.get("attempts") or []), hold.get("mode"), hold.get("violation"),
+                     rb.get("reason"), len(rb.get("attempts") or []),
+                     None if rb.get("initial_translation_m") is None else round(rb["initial_translation_m"] * 1e3, 2),
+                     None if rb.get("translation_cap_m") is None else round(rb["translation_cap_m"] * 1e3, 2),
+                     None if rb.get("initial_rotation_vector_rad") is None else round(rb["initial_rotation_vector_rad"] * 1e3, 2),
+                     None if rb.get("rotation_vector_cap_rad") is None else round(rb["rotation_vector_cap_rad"] * 1e3, 2),
+                     None if att.get("translation_fraction") is None else round(att["translation_fraction"], 3),
+                     hold.get("mode"), hold.get("violation"), hold.get("ik_calls"),
                      desc, None if rc is None else rc.phase)
         except Exception as exc:  # noqa: BLE001 - diagnostics never affect control
             log.debug("guard tick log unavailable: %s", exc)
