@@ -82,7 +82,8 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
            "--placement-release-config", str(inputs / "placement_release.json"),
            "--boundary-projection-config", str(inputs / "boundary_projection__D3.json"),
            "--servo-reach-limiter", "--servo-constraint-hold-s", "2.5", "--experimental-adaptive-policy",
-           "--record-gel-contacts", "--record-packet-support", "--record-robot-environment-contacts",
+           "--save-policy-observations", "--record-gel-contacts", "--record-packet-support",
+           "--record-robot-environment-contacts",
            "--no-progress-stop-s", "25"]
     if args.expert_params:
         cmd += ["--expert-params", args.expert_params]
@@ -155,6 +156,7 @@ def main(argv=None) -> int:
     done = set()
     if ledger.exists():
         done = {json.loads(l)["index"] for l in ledger.read_text().splitlines() if l.strip()}
+    fast_fail = 0
     for i in range(args.n):
         if i % args.lanes != args.lane or i in done:
             continue
@@ -169,6 +171,12 @@ def main(argv=None) -> int:
         with open(ledger, "a") as f:
             f.write(json.dumps(row) + "\n")
         print(json.dumps({k: row[k] for k in ("index", "stage", "stop", "wall_s", "exported")}), flush=True)
+        # a launch that dies in seconds is a configuration error, not a sim outcome:
+        # stop the lane instead of burning the whole index range
+        fast_fail = fast_fail + 1 if (row["rc"] != 0 and row["wall_s"] < 60) else 0
+        if fast_fail >= 3:
+            print("three consecutive fast failures — lane aborted", file=sys.stderr, flush=True)
+            return 2
     return 0
 
 
