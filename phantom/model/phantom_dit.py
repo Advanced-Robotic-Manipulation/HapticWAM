@@ -120,7 +120,7 @@ class PhantomDiT(ActionChunkConditionedMinimalV1LVGDiT):
         return rope
 
     def _structural(self, layout: SequenceLayout, device: torch.device) -> torch.Tensor:
-        key = (layout.slots, layout.drop_video, str(device))
+        key = (layout.slots, layout.drop_video, layout.video_attend, str(device))
         cached = self._structural_cache.get(key)
         if cached is None:
             cached = structural_bias_tokens(layout, device=device)

@@ -51,9 +51,31 @@ TRAIN_ONLY_MODEL_FIELDS: frozenset[str] = frozenset({
 # the whole point of the FT-A bundle, so --init-weights only warns.
 # `action_t_max_of_two` and `cond_dropout_p` are read exclusively by
 # `training_step` (verified 2026-08-29).
+# `video_attend` changes the deployed FORWARD (the structural attention mask),
+# so it is deliberately NOT train-only: deploy/replay must rebuild from the
+# checkpoint's own config. Flipping it on a 5k fine-tune from a masked teacher
+# IS the world-model ablation (§6 item 2), so --init-weights only warns.
+# `loss.video` is the dotted name of one nested LossWeights entry — the only
+# nested weight a fine-tune may retune (the λ_v = 0 arm of the same ablation);
+# every other loss weight still hard-fails the drift check.
 FINETUNE_MUTABLE_MODEL_FIELDS: frozenset[str] = TRAIN_ONLY_MODEL_FIELDS | frozenset({
     "action_noise_per_strip", "action_t_max_of_two", "cond_dropout_p",
+    "video_attend", "loss.video",
 })
+
+
+def flat_model_config(d: dict) -> dict:
+    """`mc.to_dict()`-shaped mapping with the LOSS WEIGHTS expanded to dotted
+    keys (`loss.video`, `loss.action`, ...), so a drift check can tolerate one
+    weight without tolerating the whole objective. `acc`/`lora` stay whole:
+    their entries are module shapes and behaviour, compared as one unit."""
+    out: dict = {}
+    for k, v in d.items():
+        if k == "loss" and isinstance(v, dict):
+            out.update({f"loss.{sk}": sv for sk, sv in v.items()})
+        else:
+            out[k] = v
+    return out
 
 
 @dataclass(frozen=True)
@@ -68,6 +90,15 @@ class LoRAConfig:
 class PhantomModelConfig:
     student: bool = False
     drop_video_at_inference: bool = False
+    # Let CONTACT/ACTION queries attend the VIDEO_GEN keys — true world-model
+    # -> action coupling. False (default) keeps the Fast-WAM structural mask of
+    # `SequenceLayout.structural_attn_bias`: the imagined future frames shape
+    # the shared LoRA through the video loss and nothing else, so they are
+    # droppable at inference. With it True the actions READ the imagined
+    # future, which is the point of the ablation (§6 item 2) and also means
+    # `drop_video` stops being a free latency lever — dropping the frames now
+    # changes the actions, so every inference path REFUSES it (rf.sample).
+    video_attend: bool = False
     # aligned:   v3 behavior — integer positions 1+k*(t_gen//t_len) clamped to
     #            t_gen; with H=16@10Hz on the 4Hz backbone this collapses to
     #            [1,2,3,3]: the last two ACTION frames are exactly exchangeable
@@ -132,6 +163,18 @@ class PhantomModelConfig:
     acc: AccConfig = field(default_factory=AccConfig)
     feature_align: bool = False            # Efficient-WAM-style hidden alignment (HID ablation)
 
+    def __post_init__(self) -> None:
+        # the two flags are contradictory by construction: video_attend makes
+        # the ACTION frames depend on the VIDEO_GEN frames, so a config that
+        # also asks to delete those frames at inference describes a model
+        # whose actions cannot be reproduced. Fail at config time, not at the
+        # first replan on the rig.
+        if self.video_attend and self.drop_video_at_inference:
+            raise ValueError(
+                "video_attend=True with drop_video_at_inference=True: the "
+                "ACTION/CONTACT frames attend VIDEO_GEN, so dropping the "
+                "imagined frames would change the actions — pick one")
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -145,7 +188,8 @@ class PhantomModelConfig:
         temporal phase (v4 audit: inference used to construct defaults)."""
         d = dict(d)
         kw: dict = {}
-        for f in ("student", "drop_video_at_inference", "rope_time_mode",
+        for f in ("student", "drop_video_at_inference", "video_attend",
+                  "rope_time_mode",
                   "use_action_adaln_intent", "hht_dim", "contact_obs_frames",
                   "nfe", "feature_align", "cond_dropout_p",
                   "action_t_max_of_two", "mask_wrist",

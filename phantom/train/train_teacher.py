@@ -168,9 +168,15 @@ def model_config_drift(saved_mc: dict, mc, *,
     (`FINETUNE_MUTABLE_MODEL_FIELDS`): they change the training objective or
     the noise schedule, never a module shape, and the new checkpoint records
     its own values so run_deploy/replay still rebuild the right model. Those
-    land in `soft` (warn); everything else in `hard` (fail)."""
-    cur = mc.to_dict()
-    defaults = type(mc)().to_dict()
+    land in `soft` (warn); everything else in `hard` (fail).
+
+    Loss weights are compared under their DOTTED names (`loss.video`), so the
+    one weight an ablation retunes can be tolerated while the rest of the
+    objective still fails the check. `acc`/`lora` stay whole-dict."""
+    from phantom.config.model import flat_model_config
+    cur = flat_model_config(mc.to_dict())
+    defaults = flat_model_config(type(mc)().to_dict())
+    saved_mc = flat_model_config(saved_mc)
     hard: dict = {}
     soft: dict = {}
     for k, v in cur.items():
@@ -313,6 +319,22 @@ def main(argv=None) -> int:
                          "sampling. i.i.d. cells leave a structured strip-mean "
                          "offset that --persistent-noise freezes into a fixed "
                          "per-episode velocity bias.")
+    # --- world-model ablation (§6 item 2 of docs/ARCH_EXPLAINER_0912.md).
+    # Both default to the shipped v6 behaviour.
+    ap.add_argument("--loss-video", type=float, default=None,
+                    help="override lambda_v, the video_v_mse weight (config "
+                         "default 0.1). 0 = the video objective is SKIPPED "
+                         "while the VIDEO_GEN frames stay in the layout "
+                         "(identical token count, attention and RoPE) — the "
+                         "'does the video loss help the actions at all' arm. "
+                         "Recorded in the checkpoint's model config.")
+    ap.add_argument("--video-attend", action="store_true",
+                    help="let the CONTACT/ACTION queries attend the VIDEO_GEN "
+                         "keys (true world-action coupling). Default off = the "
+                         "Fast-WAM structural mask, which makes the imagined "
+                         "frames droppable at inference; with it ON the actions "
+                         "read the imagined future and every inference path "
+                         "REFUSES --drop-video for the resulting checkpoint.")
     ap.add_argument("--student", action="store_true",
                     help="train the STUDENT layout (no OBS_GEL/OBS_MECH "
                          "frames, no tactile encoders) directly from demos. "
@@ -332,6 +354,8 @@ def main(argv=None) -> int:
     if args.contact_nll_beta is not None and not 0.0 <= args.contact_nll_beta <= 1.0:
         raise SystemExit(f"--contact-nll-beta must be in [0, 1], got "
                          f"{args.contact_nll_beta}")
+    if args.loss_video is not None and args.loss_video < 0:
+        raise SystemExit(f"--loss-video must be >= 0, got {args.loss_video}")
     if args.contact_self_forcing and not args.acc_two_pass:
         raise SystemExit(
             "--contact-self-forcing needs the model's own predicted contact "
@@ -351,15 +375,18 @@ def main(argv=None) -> int:
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
     from phantom.config.model import (FINETUNE_MUTABLE_MODEL_FIELDS, AccConfig,
-                                      PhantomModelConfig)
+                                      LossWeights, PhantomModelConfig)
     acc = (AccConfig(self_anticipation="two_pass") if args.acc_two_pass
            else AccConfig())
+    loss = (LossWeights() if args.loss_video is None
+            else dataclasses.replace(LossWeights(), video=float(args.loss_video)))
     if not args.acc_two_pass:
         log.warning(
             "ACC self-anticipation = gt_noised (fast proxy). Do NOT report the "
             "RQ2 gate lead-time from this run — retrain the final teacher with "
             "--acc-two-pass so the gate never sees leaked GT contact.")
-    mc = PhantomModelConfig(student=args.student, acc=acc,
+    mc = PhantomModelConfig(student=args.student, acc=acc, loss=loss,
+                            video_attend=args.video_attend,
                             rope_time_mode=args.rope_time_mode,
                             cond_dropout_p=args.cond_dropout,
                             action_t_max_of_two=args.action_t_max_of_two,
@@ -378,6 +405,14 @@ def main(argv=None) -> int:
             if v != getattr(PhantomModelConfig(), k)}
     if ft_a:
         log.info("FT-A objective knobs active (non-default): %s", ft_a)
+    if args.loss_video is not None:
+        log.info("WORLD-MODEL ABLATION: lambda_v = %.4g (config default %.4g)%s",
+                 mc.loss.video, LossWeights().video,
+                 " — video objective SKIPPED, frames KEPT" if mc.loss.video == 0 else "")
+    if mc.video_attend:
+        log.info("WORLD-MODEL ABLATION: video_attend ON — CONTACT/ACTION "
+                 "queries attend VIDEO_GEN; this checkpoint REFUSES "
+                 "drop_video at inference")
     if args.student:
         # the `no_distill` / `vision_only` control arms (P10A): same program,
         # student LAYOUT — no OBS_GEL/OBS_MECH frames and no tactile encoders,
@@ -421,8 +456,19 @@ def main(argv=None) -> int:
         tol = set(FINETUNE_MUTABLE_MODEL_FIELDS) | ({"student"} if args.student else set())
         hard, soft = model_config_drift(saved_mc, mc, tolerate=frozenset(tol))
         if soft:
+            # wording kept verbatim: the launch scripts and
+            # test_fixnow_train_0830 grep for it
             log.warning("--init-weights: training-only model flags differ from "
-                        "the checkpoint (checkpoint -> this run): %s", soft)
+                        "the checkpoint (checkpoint -> this run): %s — this "
+                        "run's checkpoint records ITS OWN values, so "
+                        "deploy/replay rebuild from them", soft)
+        if "video_attend" in soft:
+            log.warning("--init-weights: video_attend flips %s -> %s. The "
+                        "structural attention mask CHANGES, so the first steps "
+                        "see a different network than these weights were "
+                        "trained under — that adaptation is what the fine-tune "
+                        "budget buys. Compare only against a control fine-tune "
+                        "of the same length.", *soft["video_attend"])
         if hard:
             raise SystemExit(f"--init-weights model-config drift vs checkpoint: "
                              f"{hard} — pass the flags the checkpoint was "

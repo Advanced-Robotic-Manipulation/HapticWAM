@@ -507,6 +507,16 @@ class PhantomRectifiedFlow(nn.Module):
         NOT the rig's."""
         nfe = nfe or self.mc.nfe
         drop_video = self.mc.drop_video_at_inference if drop_video is None else drop_video
+        if drop_video and self.mc.video_attend:
+            # This checkpoint's ACTION/CONTACT queries were trained to READ the
+            # VIDEO_GEN frames (mc.video_attend), so deleting them does not
+            # merely save latency — it changes the actions. Refuse rather than
+            # tag a rig arm with a condition whose plan is not the model's.
+            raise ValueError(
+                "drop_video is not available for a video_attend checkpoint: "
+                "the ACTION/CONTACT frames attend VIDEO_GEN, so dropping the "
+                "imagined frames changes the actions. Re-run without "
+                "--drop-video, or evaluate a masked (default) checkpoint.")
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
                                        student=self.layout.student, drop_video=True)
                   if drop_video else self.layout)

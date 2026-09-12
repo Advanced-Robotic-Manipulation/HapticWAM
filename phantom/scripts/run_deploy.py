@@ -64,6 +64,20 @@ def build_policy(args, hw, paths) -> PhantomPolicy:
             log.info("model config from checkpoint: rope=%s cond_dropout=%.2f "
                      "acc=%s", mc.rope_time_mode, mc.cond_dropout_p,
                      mc.acc.self_anticipation)
+            if mc.video_attend and getattr(args, "drop_video", False):
+                # BEFORE the build, for the same reason as the veto check
+                # below: this checkpoint's ACTION frames READ the imagined
+                # future, so --drop-video would change the plan, not just the
+                # latency. rf.sample refuses it too — this only saves the
+                # operator the 2-minute build.
+                raise SystemExit(
+                    "--drop-video is not available for this checkpoint: it was "
+                    "trained with video_attend, so deleting the VIDEO_GEN "
+                    "frames changes the actions. Drop the flag.")
+            if mc.video_attend:
+                log.info("checkpoint trained with VIDEO_ATTEND: the action and "
+                         "contact frames attend the imagined future — the "
+                         "video frames are NOT droppable for this arm")
         if getattr(args, "terminal_veto", False):
             # BEFORE the model is built: an ACC-less checkpoint makes the veto
             # a silent no-op, and finding that out after a 2-minute build (on
