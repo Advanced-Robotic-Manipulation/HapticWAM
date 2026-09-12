@@ -146,6 +146,12 @@ def main() -> int:
     policy = get_policy_class(cfg.type).from_pretrained(ckpt, config=cfg)
     policy.to(args.device)
     policy.eval()
+    cfg_ = getattr(policy, "config", None)
+    if cfg_ is not None and hasattr(cfg_, "n_action_steps") and hasattr(cfg_, "horizon") \
+            and hasattr(cfg_, "n_obs_steps") and cfg_.n_action_steps < args.horizon:
+        # score as many steps as the policy can execute from one chunk (DP: horizon - n_obs_steps + 1)
+        cfg_.n_action_steps = min(args.horizon, cfg_.horizon - cfg_.n_obs_steps + 1)
+        print(f"n_action_steps raised to {cfg_.n_action_steps} for scoring")
     dev = {"device": args.device}
     pre, post = make_pre_post_processors(
         policy_cfg=cfg, pretrained_path=ckpt,
@@ -199,12 +205,18 @@ def main() -> int:
             # the deploy adapter unnormalises ONCE PER CHUNK STEP; mirror it
             out = torch.stack([post(out[:, k, :]) for k in range(out.shape[1])], dim=1)
         pred = out[0, :H].float().cpu().numpy().astype(np.float64)
+        if pred.shape[0] < H:
+            # a policy whose executable chunk is shorter than the horizon (Diffusion
+            # Policy: horizon 16 with n_obs_steps 2 -> 15 executable steps) is scored
+            # over its own length; the row records it so the table can say so
+            gt = gt[: pred.shape[0]]
 
         cg, cp = np.cumsum(gt[:, :3], axis=0), np.cumsum(pred[:, :3], axis=0)
         rg, rp = np.cumsum(gt[:, 3:6], axis=0), np.cumsum(pred[:, 3:6], axis=0)
         gi, pi_ = close_index(gt[:, 6]), close_index(pred[:, 6])
         rows.append({
             "frame": int(i),
+            "steps_scored": int(pred.shape[0]),
             "endpoint_err_mm": float(np.linalg.norm(cp[-1] - cg[-1]) * 1000.0),
             "z_end_err_mm": float((cp[-1, 2] - cg[-1, 2]) * 1000.0),
             "rot_end_err_deg": float(np.degrees(np.linalg.norm(rp[-1] - rg[-1]))),
