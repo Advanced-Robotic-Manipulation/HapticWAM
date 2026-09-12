@@ -258,3 +258,20 @@ def test_actual_native_materialization_matches_command_and_preserves_frozen_conf
     design["adapter_profile"]["boundary_projection"]["maximum_excursion_m"] = .001
     with pytest.raises(RuntimeError, match="Frozen input differs"):
         write_controller_configs(tmp_path, design["adapter_profile"], writer=runner.frozen_json)
+
+
+def test_native_first_tick_uses_controller_fk_for_the_previous_pose(monkeypatch):
+    """Rig 2026-09-12: with no streamed pose yet, the driver compared the RTDE measured TCP against
+    the controller FK of the solution; the calibration offset looked like a one-tick jump and the
+    guard stopped the episode (final_rate) before the arm ever moved."""
+    arm, g, ring, clock = native(monkeypatch)
+    arm._last_qsol, arm._last_cmd_pose = None, None
+    offset = np.array([.004, -.003, .005, .02, -.01, .015])       # measured vs model FK mismatch
+    arm._recv = SimpleNamespace(getActualQ=lambda: Q.tolist(),
+                                getActualTCPPose=lambda: (P + offset).tolist())
+    ring.update(clock[0], P)
+    target = P.copy(); target[2] += .0005
+    selected = g.select(clock[0], target, target)
+    res = arm.servo_l(selected, .008, .1, 300, target_guard=g)
+    assert res.sent and g.failure is None
+    assert np.allclose(arm._last_cmd_pose, forward_pose(Q))

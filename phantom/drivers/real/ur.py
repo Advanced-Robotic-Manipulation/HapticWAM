@@ -663,6 +663,12 @@ class URArm(Arm):
             qref = list(self._recv.getActualQ())
         if prev is None and self._recv is not None:
             prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
+            if target_guard is not None:
+                # Same kinematic model on both sides of the guard's final-step check: the
+                # measured TCP (RTDE actual pose) and the controller FK of the joint solution
+                # differ by the calibration offset, which on the first tick was read as a
+                # single-tick jump ("final_rate"; rig 2026-09-12, arm never moved).
+                prev = np.asarray(ctrl.getForwardKinematics(np.asarray(qref, dtype=float).tolist()), dtype=float)
         selection = None if target_guard is None else target_guard.terminal_selection(prev, qref, dt, limits)
         if selection is None:
             selection = servo_limiter.select_servo_step(
