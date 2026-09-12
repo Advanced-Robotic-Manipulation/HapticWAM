@@ -96,7 +96,52 @@ from phantom.train.builder import build_model
 NULL_MODES = ("none", "tactile", "wrist", "prev_cpk", "obs", "contact_zero",
               "contact_gt", "all")
 METRICS = ("endpoint_err_mm", "z_end_err_mm", "commit_ratio", "close_step_err",
-           "pred_close_height_mm")
+           "pred_close_height_mm", "zero_endpoint_err_mm", "head_endpoint_err_mm",
+           "head_z_err_mm", "head_commit_ratio")
+
+#: early-chunk horizon for the head_* metrics. The rig presets allow the whole
+#: 16-step chunk (--max-play-steps 16, grip 10) but replan as soon as the next
+#: package lands — 0.3-1 s of inference at 10 Hz, i.e. the first 3-10 actions
+#: are the ones normally executed. 8 = half the chunk; override with --head-steps.
+HEAD_STEPS = 8
+
+
+def score_window(gt: np.ndarray, pr: np.ndarray, z0: float, head_steps: int = HEAD_STEPS) -> dict:
+    """Metrics of one (window, seed): `gt` / `pr` are (H, A) de-normalised
+    action chunks (xyz deltas in m, gripper at index 6), `z0` the absolute TCP
+    z at the window start (m).
+
+    endpoint_err_mm       |cumsum(pred)[-1] - cumsum(gt)[-1]| over the FULL chunk
+    zero_endpoint_err_mm  the same error for a policy that never moves
+                          (|cumsum(gt)[-1]|): the no-motion floor of this window
+    head_*                the same over the first `head_steps` actions (the early
+                          part of the chunk; the rig usually replans mid-chunk)
+    commit_ratio          predicted / GT descent over the chunk (NaN when the GT
+                          descends < 2 mm)
+    """
+    cg, cp = np.cumsum(gt[:, :3], axis=0), np.cumsum(pr[:, :3], axis=0)
+    h = max(1, min(int(head_steps), len(cg)))
+    end_err = float(np.linalg.norm(cp[-1] - cg[-1]) * 1000)
+    z_err = float((cp[-1, 2] - cg[-1, 2]) * 1000)
+    gt_desc = float(-cg[-1, 2]); pr_desc = float(-cp[-1, 2])
+    commit = pr_desc / gt_desc if abs(gt_desc) > 2e-3 else float("nan")
+    hg_desc = float(-cg[h - 1, 2]); hp_desc = float(-cp[h - 1, 2])
+    head_commit = hp_desc / hg_desc if abs(hg_desc) > 2e-3 else float("nan")
+    gt_i, pr_i = close_steps(gt[:, 6], pr[:, 6])
+    return {"endpoint_err_mm": end_err, "z_end_err_mm": z_err,
+            "zero_endpoint_err_mm": float(np.linalg.norm(cg[-1]) * 1000),
+            "head_endpoint_err_mm": float(np.linalg.norm(cp[h - 1] - cg[h - 1]) * 1000),
+            "head_z_err_mm": float((cp[h - 1, 2] - cg[h - 1, 2]) * 1000),
+            "head_steps": h,
+            "commit_ratio": commit, "head_commit_ratio": head_commit,
+            "close_step_err": (pr_i - gt_i) if gt_i is not None else float("nan"),
+            # absolute height at the close each side predicts
+            "pred_close_height_mm": ((z0 + cp[pr_i, 2]) * 1000
+                                     if pr_i < len(pr) else float("nan")),
+            "gt_close_height_mm": ((z0 + cg[gt_i, 2]) * 1000
+                                   if gt_i is not None else float("nan")),
+            "gt_close_aperture": float(gt[gt_i, 6]) if gt_i is not None else float("nan"),
+            "pr_max_aperture": float(pr[:, 6].max())}
 
 
 def close_steps(gt_grip: np.ndarray, pr_grip: np.ndarray) -> tuple[int | None, int]:
@@ -314,10 +359,25 @@ def summarize(rows: list[dict], **meta) -> dict:
                "n_windows": len({(r["episode"], round(float(r["t0"]), 4)) for r in rows}),
                "n_episodes": len({r["episode"] for r in rows})}
     summary.update(block(rows))
+    summary.update(floor_block(rows))
     summary["per_task"] = {t: {**block([r for r in rows if r["task"] == t]),
+                              **floor_block([r for r in rows if r["task"] == t]),
                               "n": sum(r["task"] == t for r in rows)}
                            for t in tasks}
     return summary
+
+
+def floor_block(rows: list[dict]) -> dict:
+    """How the policy compares with never moving: mean error / mean no-motion
+    error, and the share of windows where it is WORSE than the no-motion floor."""
+    pairs = [(r["endpoint_err_mm"], r["zero_endpoint_err_mm"]) for r in rows
+             if np.isfinite(r.get("endpoint_err_mm", np.nan))
+             and np.isfinite(r.get("zero_endpoint_err_mm", np.nan))]
+    if not pairs:
+        return {"ratio_to_floor": float("nan"), "worse_than_zero_rate": float("nan")}
+    e, z = np.asarray(pairs).T
+    return {"ratio_to_floor": float(e.mean() / z.mean()) if z.mean() > 0 else float("nan"),
+            "worse_than_zero_rate": float(np.mean(e > z))}
 
 
 # ---------------------------------------------------------------------------
@@ -329,7 +389,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--hardware", required=True)
     ap.add_argument("--nfe", type=int, default=5)
     ap.add_argument("--guidance", type=float, default=1.0)
-    ap.add_argument("--seeds", type=int, default=2)
+    ap.add_argument("--seeds", type=int, default=4,
+                    help="noise seeds per window (the paper's table uses 4)")
+    ap.add_argument("--head-steps", type=int, default=HEAD_STEPS,
+                    help="early-chunk horizon of the head_* metrics (default half the 16-step chunk)")
     ap.add_argument("--lead-s", type=float, default=None,
                     help="anchor t0 this many seconds before the first close "
                          "(default: the chunk duration, so the chunk ENDS at "
@@ -467,28 +530,14 @@ def main(argv: list[str] | None = None) -> int:
                 preds.append((s, p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64)
                               * a_std + a_mean))
         for s, pr in preds:
-            cg, cp = np.cumsum(gt[:, :3], axis=0), np.cumsum(pr[:, :3], axis=0)
-            end_err = float(np.linalg.norm(cp[-1] - cg[-1]) * 1000)
-            z_err = float((cp[-1, 2] - cg[-1, 2]) * 1000)
-            gt_desc = float(-cg[-1, 2]); pr_desc = float(-cp[-1, 2])
-            commit = pr_desc / gt_desc if abs(gt_desc) > 2e-3 else float("nan")
-            gt_i, pr_i = close_steps(gt[:, 6], pr[:, 6])
             rows.append({"episode": wi.episode.name, "task": item.get("text", "?"),
                          "t0": float(t0), "seed": int(s), "z_start_mm": z0 * 1000,
-                         "endpoint_err_mm": end_err, "z_end_err_mm": z_err,
-                         "commit_ratio": commit,
-                         "close_step_err": (pr_i - gt_i) if gt_i is not None else float("nan"),
-                         # absolute height at the close each side predicts
-                         "pred_close_height_mm": ((z0 + cp[pr_i, 2]) * 1000
-                                                  if pr_i < len(pr) else float("nan")),
-                         "gt_close_height_mm": ((z0 + cg[gt_i, 2]) * 1000
-                                                if gt_i is not None else float("nan")),
-                         "gt_close_aperture": float(gt[gt_i, 6]) if gt_i is not None else float("nan"),
-                         "pr_max_aperture": float(pr[:, 6].max())})
+                         **score_window(gt, pr, z0, args.head_steps)})
     if not rows:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
     summary = summarize(rows, nfe=args.nfe, guidance=args.guidance, seeds=args.seeds,
+                        head_steps=args.head_steps,
                         null=args.null, null_semantics=null_semantics(args.null),
                         student=bool(mc.student), split=args.split,
                         persistent_noise=bool(args.persistent_noise),
