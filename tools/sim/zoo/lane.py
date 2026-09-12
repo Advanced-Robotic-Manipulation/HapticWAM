@@ -126,7 +126,7 @@ def trial_command(study, trial, model, recipe, port, out_dir):
            "--wrist", "gripper_contact_proxy", "--gel-contact-coverage", "manifold_patch_v2",
            "--skip-stage-export", "--policy-initial-state", f"{inputs}/initial_states/{trial['start']}.json",
            "--policy-delivery-clock", "rpc_wall",
-           "--placement-release-config", inputs + "/placement_release.json",
+           "--placement-release-config", inputs + "/" + recipe.get("placement_release_config", "placement_release.json"),
            "--boundary-projection-config", inputs + "/" + recipe.get("boundary_projection_config", "boundary_projection.json"),
            "--placement-controller-profile", "minimal_v5",
            "--servo-reach-limiter", "--servo-constraint-hold-s", str(fixed["servo_constraint_hold_s"]),

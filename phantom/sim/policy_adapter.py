@@ -987,6 +987,8 @@ class SimulationPolicyAdapter:
                     self._grip_latch = max(self._grip_latch or 0.0, restore_floor)
                 if suppress_latch:
                     self._grip_latch = None
+                if self.completed_reason is None:
+                    target = self.release_controller.descent_target(t, measured, target)
             if (
                 threshold > 0
                 and not suppress_latch

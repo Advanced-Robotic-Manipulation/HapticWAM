@@ -847,6 +847,7 @@ class ChunkExecutor:
                         self._observer_policy_eligible = False
                         self._grip_observer_mailbox = (self._finish_grip, False)
                     return self._finish_pose.copy(), self._finish_grip
+                target = controller.descent_target(t, measured, target)
                 return target, requested
             finally:
                 if io_free:

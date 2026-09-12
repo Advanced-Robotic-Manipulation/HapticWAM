@@ -47,7 +47,8 @@ def parser():
                    default="inference_ready")
     p.add_argument("--nfe", type=int, default=5)
     p.add_argument("--guidance", type=float, default=1.0)
-    p.add_argument("--k-seeds", type=int, default=1)
+    # default 4 since the sim zoo (2026-09-12): K1 placed 0/16 vs K4 12/36 for the same teacher
+    p.add_argument("--k-seeds", type=int, default=4)
     p.add_argument("--task-text", default="waffles")
     p.add_argument(
         "--parity-fixes", action=argparse.BooleanOptionalAction, default=True
