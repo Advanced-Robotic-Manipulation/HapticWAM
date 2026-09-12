@@ -1451,8 +1451,12 @@ def run(app, args, cfg, data, duration):
                 # privileged scripted expert for data generation: ground-truth packet pose,
                 # plans in the deployment frame, the executor path unchanged
                 from phantom.sim.scripted_expert import ExpertParams, ScriptedExpertPolicy
-                expert_params = (ExpertParams(**json.loads(args.expert_params.read_text()))
-                                 if getattr(args, "expert_params", None) else ExpertParams())
+                expert_overrides = (json.loads(args.expert_params.read_text())
+                                    if getattr(args, "expert_params", None) else {})
+                expert_overrides = {k: (tuple(v) if isinstance(v, list) else v) for k, v in expert_overrides.items()}
+                # the plan grid is the deployment action grid: rate/horizon from the hardware config
+                expert_params = ExpertParams(**{"action_rate_hz": float(hw.control.action_rate_hz),
+                                                "horizon": int(hw.control.chunk_horizon), **expert_overrides})
                 policy = ScriptedExpertPolicy(
                     lambda: np.asarray(packet.get_world_pose()[0], dtype=float),
                     np.asarray(cfg["bin"]["center"], dtype=float)[:2], expert_params, rng_seed=int(args.seed or 0))
