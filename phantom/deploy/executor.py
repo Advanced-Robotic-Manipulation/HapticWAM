@@ -614,10 +614,12 @@ class ChunkExecutor:
                 self.arm.stop(2.0)
             finally:
                 self._halt(exc.reason)
+            self._log_halt_state("boundary controller stop")
         except ServoHoldTimeout as exc:
             log.warning("servo controller stopped: %s", exc)
             self._halt(exc.reason)
             self._set_reason(exc.reason)
+            self._log_halt_state("servo controller stop")
         except Exception as e:
             log.exception("executor thread crashed")
             self.crash_text = traceback.format_exc()[-3000:]
@@ -626,6 +628,24 @@ class ChunkExecutor:
             reason = str(getattr(e, "stop_reason", None) or "executor_crash")
             self._halt(reason)
             self._set_reason(reason)
+            self._log_halt_state("executor crash")
+
+    def _log_halt_state(self, what: str) -> None:
+        """Write the halt state (boundary/placement diagnostics) to the log so a stop can be
+        diagnosed from disk even when stop.json is never written (rig 2026-09-12)."""
+        try:
+            import json as _json
+            state = dict(getattr(self, "halt_state", {}) or {})
+            rc = getattr(self, "release_controller", None)
+            if rc is not None:
+                try:
+                    state["placement_release"] = rc.diagnostics(np.zeros(6))
+                except Exception as exc:  # noqa: BLE001
+                    state["placement_release"] = f"unavailable: {exc}"
+            log.warning("%s: reason=%s halt_state=%s", what, self.stopped_reason,
+                        _json.dumps(state, default=str)[:6000])
+        except Exception as exc:  # noqa: BLE001 - diagnostics must never mask the stop
+            log.warning("%s: halt state unavailable: %s", what, exc)
 
     crash_text: str | None = None  # traceback of an executor_crash (stop.json)
     def _latched_grip(self, grip: float) -> float:

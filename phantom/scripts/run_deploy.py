@@ -866,8 +866,30 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
     return c
 
 
+def _attach_file_log() -> Path | None:
+    """Durable copy of the whole run_deploy log (rig 2026-09-12): stop reasons, executor
+    crash tracebacks and boundary/placement halt states used to exist only on the terminal
+    and were lost whenever the operator abandoned the verdict prompt. Best effort."""
+    try:
+        import time as _time
+        log_dir = Path(__file__).resolve().parents[2] / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        path = log_dir / f"run_deploy_{_time.strftime('%Y%m%d_%H%M%S')}.log"
+        handler = logging.FileHandler(path, encoding="utf-8")
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+        logging.getLogger().addHandler(handler)
+        return path
+    except Exception as exc:  # noqa: BLE001 - logging must never block a launch
+        log.warning("no file log: %s", exc)
+        return None
+
+
 def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    log_path = _attach_file_log()
+    if log_path is not None:
+        log.info("run_deploy log file: %s", log_path)
     args = build_parser().parse_args(argv)
     explicit_max_replans = args.max_replans is not None
     args.max_replans = resolve_max_replans(args)
