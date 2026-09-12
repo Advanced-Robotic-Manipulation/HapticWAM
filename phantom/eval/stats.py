@@ -354,7 +354,11 @@ def main(argv=None) -> int:
         if diag["unlabeled_skipped"]:
             print(f"unlabeled (skipped): {diag['unlabeled_skipped']}")
         if diag["unpaired"]:
-            print("unpaired seeds:", [(u['task'], u['seed'], u['have']) for u in diag["unpaired"]])
+            per_arm = defaultdict(int)
+            for u in diag["unpaired"]:
+                per_arm[",".join(u["have"])] += 1
+            print(f"unpaired cells: {len(diag['unpaired'])} "
+                  f"({'; '.join(f'{k}: {v}' for k, v in sorted(per_arm.items()))}) — full list in --json-out")
         if hw is not None:
             print(f"rule: inconclusive (operator fallback) {res['rule_inconclusive']}, "
                   f"unreadable {res['rule_errors']}, operator-placed-but-rule-lower {len(res['rule_conflicts'])}")

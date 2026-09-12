@@ -174,7 +174,8 @@ class DeploymentRuntime:
                  max_play_steps: int | None = None, release_config=None, boundary_config=None,
                  min_replan_s: float = 0.0, policy_z_offset_m: float = 0.0,
                  grip_play_steps: int | None = None,
-                 controller_profile: str | None = None):
+                 controller_profile: str | None = None,
+                 record_tail_s: float = 0.0):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
         with model_copy). Episodes are stamped with ITS config_hash so a
@@ -200,6 +201,11 @@ class DeploymentRuntime:
         self.min_replan_s = float(min_replan_s or 0.0)
         self.policy_z_offset_m = float(policy_z_offset_m or 0.0)
         self.grip_play_steps = grip_play_steps
+        # keep recording this long after the arm is stopped: the P8 grasp rule
+        # needs >= 2 s of hold after the close, and an episode that ends on its
+        # last replan (or a controller stop) used to end INSIDE the hold window
+        # — 13 of the 09-11 v6 episodes were inconclusive for that reason alone
+        self.record_tail_s = max(0.0, float(record_tail_s or 0.0))
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
         self.release_config = None if controller is None else controller.config
@@ -238,6 +244,18 @@ class DeploymentRuntime:
         self.rig.disconnect_all()
 
     # ------------------------------------------------------------------
+    def _record_tail(self, reason: str | None) -> None:
+        """Let the sensors record for `record_tail_s` after the arm halted, so a
+        grasp held at the end of the episode gets a measurable hold. Skipped
+        when a worker died (its rings are frozen — nothing new to record)."""
+        if self.record_tail_s <= 0 or reason == "worker_died":
+            return
+        t_end = time.monotonic() + self.record_tail_s
+        while time.monotonic() < t_end:
+            if self.session is None or not self.session.all_alive():
+                return
+            time.sleep(min(0.1, max(0.0, t_end - time.monotonic())))
+
     def run_episode(self, *, task: str, text: str = "", tags: list[str] | None = None,
                     max_replans: int = 20, max_episode_s: float | None = None,
                     policy_name: str = "", dagger_round: int = 0,
@@ -330,6 +348,7 @@ class DeploymentRuntime:
         finally:
             planner.stop()
             executor.stop()
+            self._record_tail(executor.stopped_reason or planner.stop_reason)
             try:
                 saved = self.recorder.stop(success=None)
                 if saved is not None:
