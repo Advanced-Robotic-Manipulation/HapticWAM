@@ -83,11 +83,17 @@ class PlacementDescentSupervisor:
         """False only while actively holding the release for a descent."""
         return self.state != "descending"
 
-    def update(self, t, *, measured_tcp, policy_grip, reference_command, in_volume, loaded):
-        """Called once per servo tick before the release gate decides permission."""
+    def update(self, t, *, measured_tcp, policy_grip, reference_command, in_volume, loaded, committed=False):
+        """Called once per servo tick before the release gate decides permission.
+
+        ``committed``: the controller has already committed/finished the release; the
+        supervisor then keeps holding the release pose and never cancels.
+        """
         c = self.config
         tcp = np.asarray(measured_tcp, dtype=float)
         valid = tcp.shape == (6,) and np.isfinite(tcp).all()
+        if committed and self.state == "at_release_height":
+            return
         intent = (loaded and in_volume and valid and reference_command is not None
                   and np.isfinite(policy_grip) and np.isfinite(reference_command)
                   and reference_command - policy_grip >= c.activation_command_delta - 1e-12)

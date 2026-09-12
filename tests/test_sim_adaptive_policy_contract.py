@@ -118,10 +118,12 @@ def test_legacy_gripper_cannot_claim_native_optin(experiment):
 
 
 @pytest.mark.parametrize("mode", ["student", "vision_only"])
-def test_contract_is_teacher_only(experiment, mode):
+def test_contract_covers_student_and_vision_only_modes(experiment, mode):
+    # sim zoo 2026-09-12: the Cosmos students and the vision-only model run under the same
+    # explicit contract as the teacher (the old teacher-only gate is gone)
     experiment[0].policy_mode = mode
-    with pytest.raises(ValueError, match="teacher-only"):
-        check(experiment)
+    result = check(experiment)
+    assert result["hardware_transfer_qualified"] is False
 
 
 @pytest.mark.parametrize("field,value", [

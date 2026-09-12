@@ -208,7 +208,9 @@ class PlacementReleaseController:
             # the relative gate (when configured) owns the release volume; the legacy volume otherwise
             volume = self.relative_gate.in_volume(tcp) if self.relative_gate is not None else self.in_volume(tcp)
             self.descent.update(t, measured_tcp=tcp, policy_grip=policy_grip, reference_command=reference_command,
-                                in_volume=volume, loaded=self.phase == "holding")
+                                in_volume=volume, loaded=self.phase == "holding",
+                                committed=self.phase in ("releasing", "waiting_for_close", "finished",
+                                                         "relative_releasing", "relative_released"))
             if self.descent.last_event is not None and self.descent.events and self.descent.events[-1]["t"] == float(t):
                 self.last_event = self.descent.last_event
         descent_allows = self.descent is None or self.descent.permission_allowed
