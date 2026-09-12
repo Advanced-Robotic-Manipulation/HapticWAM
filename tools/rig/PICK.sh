@@ -57,6 +57,9 @@ case $p in
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
+# the grasp rule and the pairing key are case-sensitive (Z_MAX_MM: waffles Carton egg whiteboard)
+case "$(echo "$TASK" | tr "A-Z" "a-z")" in waffles) TASK=waffles;; carton) TASK=Carton;; egg) TASK=egg;; whiteboard|sponge|marker) TASK=whiteboard;;
+  *) echo "!! unknown task '$TASK' — use one of: waffles Carton egg whiteboard"; exit 1;; esac
 if [ -n "$LEROBOT_TYPE" ]; then
   case "$TASK" in Carton) PHRASE="pick up the carton";; whiteboard) PHRASE="pick up the whiteboard marker";; *) PHRASE="pick up the $TASK";; esac
   EXTRA="$EXTRA --text '$PHRASE'"
