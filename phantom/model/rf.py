@@ -416,6 +416,13 @@ class PhantomRectifiedFlow(nn.Module):
         act_w = batch.get("action_weight")
         if act_w is not None:
             act_w = torch.as_tensor(act_w, device=dev).reshape(-1)
+        # pads-masked sim windows (windows.py, tag `pads_masked`): idle pad rows
+        # carry no tactile truth, so the contact-package reconstruction, the packed
+        # event band and the wrist term are switched off for them; events/gate
+        # come from the sim's physical contact and keep their heads trained
+        con_w = batch.get("contact_weight")
+        if con_w is not None:
+            con_w = torch.as_tensor(con_w, device=dev).reshape(-1)
         parts: dict[str, torch.Tensor] = {
             # channels: only the packer's live cells — averaging the zero
             # padding diluted the action gradient 4x and floored the metric
@@ -426,14 +433,14 @@ class PhantomRectifiedFlow(nn.Module):
                 x0_pred, x0, log_sigma, layout,
                 group_channels=sigma_group_channels(self.hw.n_fingers),
                 beta=self.mc.contact_nll_beta,
-                detach_weight=self.mc.contact_nll_detach_weight),
+                detach_weight=self.mc.contact_nll_detach_weight, weights=con_w),
             # the event band is in no sigma group; without this it was never
             # denoised yet fed ACC via cpk.event (see losses.event_band_mse)
-            "contact_event_mse": L.event_band_mse(x0_pred, x0, layout, CH_EVENT),
+            "contact_event_mse": L.event_band_mse(x0_pred, x0, layout, CH_EVENT, weights=con_w),
             "event_ce": L.event_ce(event_logits, batch["events"].to(dev)),
             # duplicate supervision of packed channel 15 (also the NLL's
             # `wrist` sigma group) — zeroed, not merely unweighted, when off
-            "wrist_mse": (L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST)
+            "wrist_mse": (L.wrist_region_mse(x0_pred, x0, layout, _CH_WRIST, weights=con_w)
                           if self.mc.wrist_region_mse
                           else torch.zeros((), device=dev)),
             "sigma_reg": (log_sigma ** 2).mean(),

@@ -28,6 +28,7 @@ import torch
 
 from phantom.data import derived as dv
 from phantom.data.episode_store import EpisodeReader, list_episodes
+from phantom.config.model import EVENT_IDX
 from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
@@ -76,6 +77,11 @@ class WindowItem:
 
 
 # ---------------------------------------------------------------------------
+
+# Simulated episodes with idle (unmodelled) pads: tools/sim/export_expert_episode.py
+PADS_MASKED_TAG = "pads_masked"
+STREAM_CONTACT_GT = "contact_gt"     # (T, 3) [any pad in contact, left N, right N]
+
 
 class _EpisodeCache:
     """Reader + per-stream timestamp cache for one episode."""
@@ -137,6 +143,13 @@ class _EpisodeCache:
     def rows(self, stream: str, idxs: list[int]) -> np.ndarray:
         data = self.reader.data(stream)
         return np.stack([np.asarray(data[i]) for i in idxs])
+
+    def contact_gt_at(self, t: float) -> bool:
+        """Physical pad-object contact at ~t (pads-masked sim episodes)."""
+        if not self.reader.has(STREAM_CONTACT_GT):
+            raise KeyError(f"{self.reader.path.name}: tagged {PADS_MASKED_TAG} but has no "
+                           f"{STREAM_CONTACT_GT} stream")
+        return bool(float(self.at(STREAM_CONTACT_GT, t)[0]) > 0.5)
 
 
 class WindowSampler:
@@ -385,7 +398,6 @@ class WindowSampler:
         # #1; see DerivedConfig.tau_contact_area)
         contact = (mask_frac > hw.derived.tau_contact_area).any(axis=1)
         slip_any = slip.max(axis=1)
-        from phantom.config.model import EVENT_IDX
         ev = np.full(Tc, EVENT_IDX["none"], dtype=np.int64)
         for k in range(1, Tc + 1):
             if contact[k] and not contact[k - 1]:
@@ -395,23 +407,41 @@ class WindowSampler:
             elif contact[k]:
                 ev[k - 1] = EVENT_IDX["slip"] if slip_any[k] > hw.derived.tau_slip \
                     else EVENT_IDX["hold"]
-        w["events"] = torch.from_numpy(ev)
-
         # ---- ACC gate label: contact within (t0, t0 + lookahead]
         gate = 0.0
         probes = t0 + np.linspace(0.15, 1.0, 6) * hw.derived.event_lookahead_s
-        for sname in sensors:
-            for tp in probes:
-                frame, _, _ = self._field_frame(c, sname, float(tp))
-                # area statistic, not max — max over 110k pixels fires on any
-                # single noisy pixel (gate labels were 100% positive; issue #1)
-                if (np.abs(frame[..., ch["depth"].start]) > tau).mean() \
-                        > hw.derived.tau_contact_area:
-                    gate = 1.0
+        pads_masked = PADS_MASKED_TAG in {str(x) for x in (c.reader.meta.tags or [])}
+        if pads_masked:
+            # simulated episode: the pads carry idle rows (no gel model), so the
+            # contact events and the gate come from the sim's physical
+            # pad-object contact (`contact_gt`, tools/sim/export_expert_episode.py)
+            # and the tactile reconstruction losses are switched off for the
+            # window (contact_weight 0). Slip is never labelled in sim.
+            contact = np.array([c.contact_gt_at(float(uk)) for uk in u], dtype=bool)
+            ev = np.full(Tc, EVENT_IDX["none"], dtype=np.int64)
+            for k in range(1, Tc + 1):
+                if contact[k] and not contact[k - 1]:
+                    ev[k - 1] = EVENT_IDX["onset"]
+                elif not contact[k] and contact[k - 1]:
+                    ev[k - 1] = EVENT_IDX["release"]
+                elif contact[k]:
+                    ev[k - 1] = EVENT_IDX["hold"]
+            gate = 1.0 if any(c.contact_gt_at(float(tp)) for tp in probes) else 0.0
+        else:
+            for sname in sensors:
+                for tp in probes:
+                    frame, _, _ = self._field_frame(c, sname, float(tp))
+                    # area statistic, not max — max over 110k pixels fires on any
+                    # single noisy pixel (gate labels were 100% positive; issue #1)
+                    if (np.abs(frame[..., ch["depth"].start]) > tau).mean() \
+                            > hw.derived.tau_contact_area:
+                        gate = 1.0
+                        break
+                if gate:
                     break
-            if gate:
-                break
+        w["events"] = torch.from_numpy(ev)
         w["gate_label"] = torch.tensor(gate, dtype=torch.float32)
+        w["contact_weight"] = 0.0 if pads_masked else 1.0
 
         # ---- teacher-only observation keys
         if not self.student:

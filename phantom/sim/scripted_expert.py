@@ -181,7 +181,10 @@ class ScriptedExpertPolicy:
         """Rotation-vector target for the current phase (nearest representation to the
         measured one); None = hold the current orientation."""
         p = self.p
-        goal = {"pregrasp": p.rot_descend, "descend": p.rot_grasp, "lift": p.rot_carry,
+        # lift keeps the grasp orientation: turning to the carry orientation straight above
+        # the packet parks the arm on the elbow constraint (limiter hold timeout, 1 ms
+        # physics smoke 2026-09-12); the demos turn while translating toward the bin
+        goal = {"pregrasp": p.rot_descend, "descend": p.rot_grasp, "lift": p.rot_grasp,
                 "carry": p.rot_carry, "place_descend": p.rot_release, "retreat": p.rot_release}.get(self.phase)
         if goal is None:
             return None

@@ -81,12 +81,24 @@ def _nll_term(d_B_Tc: torch.Tensor, log_var: torch.Tensor,
     return nll + d_B_Tc if detach_weight else nll
 
 
+def _weighted_mean(per_sample: torch.Tensor, weights: torch.Tensor | None) -> torch.Tensor:
+    """Mean over the batch, optionally weighted per sample (B,). Used to switch the
+    tactile reconstruction terms off for pads-masked sim windows (contact_weight 0)
+    while the same batch's real windows keep theirs. All-zero weights give 0, not NaN."""
+    if weights is None:
+        return per_sample.mean()
+    w = weights.to(per_sample.device, per_sample.dtype).reshape(-1)
+    flat = per_sample.reshape(per_sample.shape[0], -1).mean(1)
+    return (flat * w).sum() / w.sum().clamp_min(1e-6)
+
+
 def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
                        log_sigma_B_Tc_K: torch.Tensor,
                        layout: SequenceLayout,
                        group_channels: dict[str, list[int]] | None = None,
                        beta: float | None = None,
-                       detach_weight: bool = False) -> torch.Tensor:
+                       detach_weight: bool = False,
+                       weights: torch.Tensor | None = None) -> torch.Tensor:
     """Heteroscedastic NLL d/sigma^2 + log sigma^2 on the CONTACT frames' x0,
     PER SIGMA GROUP: each SigmaHead channel is supervised against the residual
     of its own packed channels (sigma_group_channels), so the per-group sigma
@@ -101,7 +113,7 @@ def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
     if group_channels is None:
         d_B_Tc = d.mean(dim=(1, 3, 4))                   # (B, Tc)
         log_var = 2.0 * log_sigma_B_Tc_K.mean(-1)        # (B, Tc)
-        return _nll_term(d_B_Tc, log_var, beta, detach_weight).mean()
+        return _weighted_mean(_nll_term(d_B_Tc, log_var, beta, detach_weight), weights)
     terms = []
     for k, name in enumerate(SIGMA_GROUPS):
         chans = group_channels.get(name)
@@ -110,11 +122,12 @@ def contact_hetero_nll(x0_pred: torch.Tensor, x0_target: torch.Tensor,
         d_B_Tc = d[:, chans].mean(dim=(1, 3, 4))         # (B, Tc)
         log_var = 2.0 * log_sigma_B_Tc_K[..., k]         # (B, Tc)
         terms.append(_nll_term(d_B_Tc, log_var, beta, detach_weight))
-    return torch.stack(terms, dim=-1).mean()
+    return _weighted_mean(torch.stack(terms, dim=-1), weights)
 
 
 def wrist_region_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor,
-                     layout: SequenceLayout, wrist_channel: int) -> torch.Tensor:
+                     layout: SequenceLayout, wrist_channel: int,
+                     weights: torch.Tensor | None = None) -> torch.Tensor:
     """lambda_w term: the wrist-F/T channel of the CONTACT frames.
 
     NOTE (P5): channel 15 is ALSO the NLL's `wrist` sigma group, so this term
@@ -122,8 +135,8 @@ def wrist_region_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor,
     checkpoint parity; `PhantomModelConfig.wrist_region_mse=False`
     (--no-wrist-region-mse) drops it."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
-    return F.mse_loss(x0_pred[:, wrist_channel, sl].float(),
-                      x0_target[:, wrist_channel, sl].float())
+    d = (x0_pred[:, wrist_channel, sl].float() - x0_target[:, wrist_channel, sl].float()) ** 2
+    return _weighted_mean(d, weights)
 
 
 def event_ce(event_logits_B_Tc_E: torch.Tensor, events_B_Tc: torch.Tensor) -> torch.Tensor:
@@ -150,7 +163,7 @@ def acc_losses(acc: AccOutput, gate_label_B: torch.Tensor,
 
 
 def event_band_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor, layout,
-                   event_channel: int) -> torch.Tensor:
+                   event_channel: int, weights: torch.Tensor | None = None) -> torch.Tensor:
     """Reconstruction MSE on the packed contact-EVENT channel.
 
     That channel belongs to no SigmaHead group, so the grouped contact NLL
@@ -162,7 +175,7 @@ def event_band_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor, layout,
     unchanged (Codex review 2026-08-26)."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
     d = (x0_pred[:, event_channel, sl].float() - x0_target[:, event_channel, sl].float()) ** 2
-    return d.mean()
+    return _weighted_mean(d, weights)
 
 
 def total_loss(parts: dict[str, torch.Tensor], w: LossWeights,
