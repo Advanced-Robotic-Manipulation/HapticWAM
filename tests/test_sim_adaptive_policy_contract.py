@@ -42,6 +42,7 @@ def experiment(tmp_path, monkeypatch):
         "task_text": "Pick up the waffles and place them in the box.",
         "drop_video": False,
         "close_p": .5,
+        "action_time_origin": "inference_ready",
     }))
     monkeypatch.setattr(sys, "argv", [
         "run_waffles.py", "--episode", str(tmp_path / "episode"),
@@ -162,7 +163,7 @@ def test_policy_json_cannot_silently_inherit_resident_server_settings(experiment
 
 @pytest.mark.parametrize("key", [
     "nfe", "guidance", "k_seeds", "parity_fixes", "persistent_noise",
-    "task_text", "drop_video", "close_p",
+    "task_text", "drop_video", "close_p", "action_time_origin",
 ])
 def test_every_remote_inference_setting_must_be_explicit(experiment, key):
     path = experiment[0].policy_config
