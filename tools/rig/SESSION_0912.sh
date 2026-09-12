@@ -37,7 +37,7 @@ case "${1:-warm}" in
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   baselines) warm 5 9 10; ./serve_bg.sh status;;
   blockc) ./serve_bg.sh stop 2; ./serve_bg.sh stop 5; ./serve_bg.sh stop 9; ./serve_bg.sh stop 10; warm 8; ./serve_bg.sh status;;
-  status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;
+  status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB (our servers hold $(ours_mib) MiB)"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;
   stop) shift; [ $# -eq 0 ] && set -- 6 2 5 9 10; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
   *) sed -n 2,9p "$0";;
 esac
