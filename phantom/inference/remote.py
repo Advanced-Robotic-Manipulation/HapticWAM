@@ -142,6 +142,9 @@ class RemotePolicy:
                if k in CONFIGURABLE and v is not None}
         self.info = self._call("configure", cfg)
         effective_origin = self.info.get("effective", {}).get("action_time_origin", "inference_ready")
+        if effective_origin is None and str(self.info.get("policy_kind", "phantom")) == "lerobot":
+            # the pi0.5 adapter has no timing settings: one delivery semantics, inference_ready
+            effective_origin = "inference_ready"
         if effective_origin != cfg.get("action_time_origin", "inference_ready"):
             self.close()
             raise RuntimeError("server action_time_origin differs from explicit client request/default; "
