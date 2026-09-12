@@ -174,4 +174,5 @@ read -p "Enter to launch (Ctrl-C to abort) "
 LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
 [ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
 [ -n "$LEROBOT_TYPE" ] && SYSTEM=student
+EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.py pairs by it)
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0

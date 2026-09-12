@@ -289,6 +289,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--ckpt", default="")
     ap.add_argument("--task", required=True)
     ap.add_argument("--text", default="")
+    ap.add_argument("--tag", action="append", default=[], metavar="KEY:VALUE",
+                    help="extra episode tag, repeatable (PICK.sh adds label:<menu row> so the three "
+                         "LeRobot rows, which all load a directory called pretrained_model, stay apart)")
     ap.add_argument("--episodes", type=int, default=1)
     ap.add_argument("--max-replans", type=int, default=None,
                     help=f"episode cap in replans (~0.9 s each; default "
@@ -1104,6 +1107,7 @@ def main(argv=None) -> int:
     veto = build_veto(args, stats, z_floor)
     # always tagged (on by default since 09-11) so an A/B arm is reconstructible
     cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile or 'off'}")
+    cond_tags += [str(t) for t in (getattr(args, "tag", None) or []) if str(t).strip()]
     if veto is not None:
         log.info("terminal veto ON: p_close=%.2f p_none=%.2f max_retries=%d "
                  "z_floor=%s open_aperture=%.2f", veto.p_close, veto.p_none,

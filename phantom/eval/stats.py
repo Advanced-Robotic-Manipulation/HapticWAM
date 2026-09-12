@@ -132,11 +132,34 @@ def episode_seed(meta: dict) -> int | None:
     return None
 
 
+ARM_TAG_PREFIXES = ("label:", "ckpt_sha:", "ckpt:")
+
+
 def episode_arm(meta: dict) -> str | None:
+    """The `ckpt:<basename>` tag (legacy identity of an arm)."""
     for t in meta.get("tags", []) or []:
         if isinstance(t, str) and t.startswith("ckpt:"):
             return t
     return None
+
+
+def episode_arm_tags(meta: dict) -> set[str]:
+    """Every tag that can name an arm: `label:<menu row>` (PICK.sh, 09-12),
+    `ckpt_sha:<12 hex>`, `ckpt:<basename>`. An --arm-a/--arm-b spec matches an
+    episode when it is one of these. Prefer label: or ckpt_sha: — the three
+    LeRobot rows (pi0.5, diffusion, x-vla) all load a directory named
+    `pretrained_model`, and two students are both `student_002000.pt`."""
+    return {t for t in (meta.get("tags", []) or [])
+            if isinstance(t, str) and t.startswith(ARM_TAG_PREFIXES)}
+
+
+def episode_stop(meta: dict) -> str | None:
+    """Stop reason from the `stop:<reason>` tag run_deploy files at episode end."""
+    for t in meta.get("tags", []) or []:
+        if isinstance(t, str) and t.startswith("stop:"):
+            return t[5:] or None
+    d = meta.get("deploy_overrides")
+    return d.get("stop_reason") if isinstance(d, dict) else None
 
 
 def load_episodes(root: Path, hw=None) -> list[dict]:
@@ -156,9 +179,9 @@ def load_episodes(root: Path, hw=None) -> list[dict]:
             outcome, info = episode_outcome(meta), {"source": "operator"}
         out.append({"path": str(mp.parent), "task": meta.get("task"),
                     "seed": episode_seed(meta), "arm": episode_arm(meta),
+                    "arm_tags": episode_arm_tags(meta),
                     "outcome": outcome, "outcome_info": info,
-                    "stop": (meta.get("deploy_overrides") or {}).get("stop_reason")
-                    if isinstance(meta.get("deploy_overrides"), dict) else None})
+                    "stop": episode_stop(meta)})
     return out
 
 
@@ -171,15 +194,19 @@ def pair_episodes(eps: list[dict], arm_a: str, arm_b: str, task: str | None = No
     number. Returns (pairs, diagnostics)."""
     by_key: dict[tuple, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
     unlabeled = 0
+    if arm_a == arm_b:
+        raise ValueError("arm A and arm B are the same spec")
     for e in eps:
         if task and e["task"] != task:
             continue
-        if e["arm"] not in (arm_a, arm_b) or e["seed"] is None:
+        tags = e.get("arm_tags") or ({e["arm"]} if e.get("arm") else set())
+        arm = arm_a if arm_a in tags else (arm_b if arm_b in tags else None)
+        if arm is None or e["seed"] is None:
             continue
         if e["outcome"] is None:
             unlabeled += 1
             continue
-        by_key[(e["task"], e["seed"])][e["arm"]].append(e)
+        by_key[(e["task"], e["seed"])][arm].append(e)
     pairs, unpaired = [], []
     for key in sorted(by_key, key=lambda k: (str(k[0]), k[1])):
         arms = by_key[key]
@@ -318,8 +345,8 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("pairs", help="paired sign test over rig episodes")
     p.add_argument("root", type=Path)
-    p.add_argument("--arm-a", required=True, help="ckpt tag of arm A, e.g. ckpt:BEST.pt")
-    p.add_argument("--arm-b", required=True, help="ckpt tag of arm B, e.g. ckpt:student_002000.pt")
+    p.add_argument("--arm-a", required=True, help="arm A tag: label:<menu row> (preferred), ckpt_sha:<12hex> or ckpt:<basename>")
+    p.add_argument("--arm-b", required=True, help="arm B tag, e.g. label:stu_ftA_r2")
     p.add_argument("--task", default=None)
     p.add_argument("--hw", type=Path, default=None,
                    help="hardware yaml: stages 0-2 from the tactile rule on the recorded streams "

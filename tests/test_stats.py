@@ -189,3 +189,22 @@ def test_load_episodes_with_hw_uses_rule(monkeypatch, tmp_path):
     eps = S.load_episodes(tmp_path, hw=object())
     assert eps[0]["outcome"] == 2 and eps[0]["outcome_info"]["source"] == "rule"
     assert S.load_episodes(tmp_path)[0]["outcome"] == 0
+
+
+def test_arms_match_label_or_sha_tags_not_only_ckpt_basename(tmp_path):
+    # the three LeRobot rows all load a dir called pretrained_model: label:/ckpt_sha: keep them apart
+    for name, label, sha, seed, ok in (("ep_a", "pi05", "aaa", 101, False), ("ep_b", "dp", "bbb", 101, True),
+                                       ("ep_c", "xvla", "ccc", 101, False)):
+        d = tmp_path / name; d.mkdir()
+        (d / "meta.json").write_text(json.dumps({"task": "waffles", "status": "finalized", "success": ok,
+            "notes": "", "tags": [f"seed:{seed}", "ckpt:pretrained_model", f"ckpt_sha:{sha}", f"label:{label}",
+                                  "stop:finish"]}))
+    eps = S.load_episodes(tmp_path)
+    assert all(e["arm"] == "ckpt:pretrained_model" for e in eps) and eps[0]["stop"] == "finish"
+    pairs, _ = S.pair_episodes(eps, "label:pi05", "label:dp")
+    assert [(p["seed"], p["a"], p["b"]) for p in pairs] == [(101, 0, 3)]
+    pairs, _ = S.pair_episodes(eps, "ckpt_sha:ccc", "ckpt_sha:bbb")
+    assert [(p["a"], p["b"]) for p in pairs] == [(0, 3)]
+    # the legacy basename spec still works when it is unambiguous
+    pairs, _ = S.pair_episodes(eps, "ckpt:pretrained_model", "label:dp")
+    assert pairs == [] or all(p["a"] is not None for p in pairs)
