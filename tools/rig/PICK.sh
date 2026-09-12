@@ -23,6 +23,7 @@ CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -e "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
 
 echo "-- inference presets --"
+echo "  7) PLACEMENT_FIX (waffles, sim-validated 09-12, rig-unverified): LEVERS + boundary projection v3 (3 cm raw band, 2 cm apex cap) + descend-then-release supervisor (release only below TCP z 0.21 m) + minimal_v5; NOT the default until a rig session confirms the release volume"
 echo "  1) LEVERS  (paired sessions, both arms): nfe=1 + terminal-veto + parity-fixes + k-seeds 4 + pose plays 16 / gripper 10 + max-episode-s 150 + max-replans 200 (+ bounded reach, ON by default since 09-11)"
 echo "  2) PLAIN   nfe=5, no extras (pre-fix inference style — attribution control only)"
 echo "  3) VETO    nfe=5 + terminal-veto + parity-fixes (quality sampling, safety gate on)"
@@ -54,6 +55,7 @@ case $p in
   4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
   5) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile bounded_v1"; PRESET=BOUNDED_REACH;;
   6) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile none"; PRESET=NO_REACH_LIMITER;;
+  7) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --boundary-projection-config configs/boundary_projection_d3.json --placement-release-config configs/placement_release_descent_sim_waffles.json --placement-controller-profile minimal_v5"; PRESET=PLACEMENT_FIX;;   # sim zoo 09-12: boundary v3 + 2 cm apex cap + descend-then-release; release volume = sim waffle scene, UNVERIFIED on the rig
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}

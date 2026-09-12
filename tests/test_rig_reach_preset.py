@@ -43,6 +43,11 @@ def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset,
     assert f"TRACKED|{system}|runs/model.pt|" in command
     if fixed is None:
         assert "--servo-reach-profile none" in command
+    elif fixed == "placement":
+        assert "--boundary-projection-config configs/boundary_projection_d3.json" in command
+        assert "--placement-release-config configs/placement_release_descent_sim_waffles.json" in command
+        assert "--placement-controller-profile minimal_v5" in command
+        assert "--servo-reach-profile" not in command   # default bounded_v1 applies
     else:
         assert ("--servo-reach-profile bounded_v1" in command) is fixed
     assert "--max-play-steps 16 --grip-play-steps 10" in command and "--seed 101" in command
