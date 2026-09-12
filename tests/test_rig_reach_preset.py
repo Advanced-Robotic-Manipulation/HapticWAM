@@ -16,6 +16,8 @@ REPO = Path(__file__).resolve().parents[1]
     ("student", "", False), ("teacher", "5", True), ("student", "5", True),
     # run_deploy defaults to bounded_v1 since 09-11; preset 6 is the explicit opt-out
     ("teacher", "6", None),
+    # preset 7 adds the sim-validated placement fix configs (boundary v3 + descent supervisor)
+    ("teacher", "7", "placement"),
 ])
 def test_menu_selects_reach_fix_and_uses_same_checkout(tmp_path, system, preset, fixed):
     base = tmp_path / "rig"
