@@ -182,3 +182,24 @@ def test_ack_and_anchor_intervals_use_the_tick_bound_not_the_sensor_bound():
         else:
             proj.acknowledge(0.004 + gap, final)
             assert proj.anchor_t == pytest.approx(0.004 + gap)
+
+
+def test_rate_contract_admits_the_fk_round_trip_but_not_a_real_overshoot():
+    """Rig 2026-09-12: steps sized exactly at the cap came back 1e-8 m over it after the IK/FK
+    round trip and were halved by the rate-interior retry on ~half of all ticks (1/3 speed)."""
+    from phantom.drivers.servo_rate_interior import refine_rate_selection, RATE_TOLERANCE_M
+    from phantom.drivers.servo_limiter import ServoLimits
+    from types import SimpleNamespace
+    dt, v = .016, .25
+    prev = np.array([-.35, -.28, .30, -1.1, -1.8, 1.5])
+    limits = ServoLimits(elbow_min_rad=.4, joint_speed_max_rad_s=1.0, branch_tolerance_rad=.35, bisection_iterations=3)
+    q0 = [0.2, -1.5, 1.0, 0.8, 1.3, -3.0]
+    for overshoot, expect_original in ((1e-8, True), (5e-6, False)):
+        pose = prev.copy(); pose[2] += v * dt + overshoot            # exactly the cap (+ round trip)
+        from phantom.drivers.servo_limiter import ServoStep
+        sel = ServoStep(q=np.asarray(q0), pose=pose, reason="ok", mode="step", fraction=None, violation=None,
+                        ik_calls=1, all_ik_valid=True, all_ik_on_branch=True)
+        refined, ev = refine_rate_selection(sel, prev, q0, dt, lambda p, s: list(q0), limits,
+                                            lambda q: pose, linear_speed=v, angular_speed=1.0, solver_inset_m=.002)
+        assert (ev["reason"] == "original_fk_within_rate_budget") is expect_original, (overshoot, ev["reason"])
+    assert RATE_TOLERANCE_M < 1e-3

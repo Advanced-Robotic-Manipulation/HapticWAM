@@ -14,6 +14,13 @@ import numpy as np
 from phantom.data.derived import rotvec_nearest
 from phantom.drivers.servo_limiter import select_servo_step
 
+# Numerical tolerance on the per-tick rate contract: the FK of an IK solution reproduces
+# the requested pose to ~1e-8 m on the calibrated UR controller and to ~1e-9 in the
+# simulator; 1e-6 m / 1e-6 rad admits that round trip and nothing a policy could exploit
+# (a tick budget is >= 2e-3 m / 8e-3 rad).
+RATE_TOLERANCE_M = 1e-6
+RATE_TOLERANCE_RAD = 1e-6
+
 
 def rate_displacements(previous_pose, final_pose):
     previous, final = (np.asarray(v, dtype=float) for v in (previous_pose, final_pose))
@@ -45,8 +52,11 @@ def refine_rate_selection(selection, previous_pose, qref, dt, solve_ik, limits,
                     rotation_vector_cap_rad=angular_cap)
 
     def fits(displacement):
-        # Exactly the original final-rate comparison, without extra tolerance.
-        return displacement[0] <= linear_cap + 1e-9 and displacement[1] <= angular_cap + 1e-9
+        # Same comparison as the final-rate guard (RATE_TOLERANCE_M / _RAD): the executor
+        # sizes steps exactly at the cap, and the IK/FK round trip returns them a few
+        # nanometres over it; rig 2026-09-12 halved about half of all ticks this way.
+        return (displacement[0] <= linear_cap + RATE_TOLERANCE_M
+                and displacement[1] <= angular_cap + RATE_TOLERANCE_RAD)
 
     if fits((linear, angular)):
         evidence["reason"] = "original_fk_within_rate_budget"

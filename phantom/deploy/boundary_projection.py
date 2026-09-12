@@ -545,8 +545,9 @@ class UpperYBoundaryProjection:
             self._stop("unsafe_final_anchor")
         linear = float(np.linalg.norm(pose[:3] - previous[:3]))
         angular = float(np.linalg.norm(rotvec_nearest(previous[3:], pose[3:]) - previous[3:]))
-        if (linear > self.hw.arm.limits.tcp_speed_m_s * dt + 1e-9
-                or angular > self.hw.arm.limits.joint_speed_rad_s * dt + 1e-9):
+        from phantom.drivers.servo_rate_interior import RATE_TOLERANCE_M, RATE_TOLERANCE_RAD
+        if (linear > self.hw.arm.limits.tcp_speed_m_s * dt + RATE_TOLERANCE_M
+                or angular > self.hw.arm.limits.joint_speed_rad_s * dt + RATE_TOLERANCE_RAD):
             self._stop("final_rate")
         if not self._envelope(pose, ceiling=self.ceiling):
             self._stop("final_envelope")
