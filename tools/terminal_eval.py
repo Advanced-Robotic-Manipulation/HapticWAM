@@ -388,6 +388,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--data", required=True)
     ap.add_argument("--hardware", required=True)
     ap.add_argument("--nfe", type=int, default=5)
+    ap.add_argument("--drop-video", action="store_true",
+                    help="drop the VIDEO_GEN frames at inference (CONTACT/ACTION never attend them: "
+                         "actions should be unchanged, latency lower) — the deploy --drop-video lever")
     ap.add_argument("--guidance", type=float, default=1.0)
     ap.add_argument("--seeds", type=int, default=4,
                     help="noise seeds per window (the paper's table uses 4)")
@@ -522,11 +525,13 @@ def main(argv: list[str] | None = None) -> int:
                 if t_prev >= wi.lo:
                     _, pb = make_batch(wi.episode, t_prev)
                     prev_cpk = pm.rf.sample(pb, nfe=args.nfe, guidance_scale=args.guidance,
-                                            reuse_noise=args.persistent_noise).cpk
+                                            reuse_noise=args.persistent_noise,
+                                            drop_video=args.drop_video).cpk
                     if nulls_prev_cpk(args.null):
                         prev_cpk = zero_package(prev_cpk)
                 p = pm.rf.sample(batch, nfe=args.nfe, guidance_scale=args.guidance,
-                                 prev_cpk=prev_cpk, reuse_noise=args.persistent_noise)
+                                 prev_cpk=prev_cpk, reuse_noise=args.persistent_noise,
+                                 drop_video=args.drop_video)
                 preds.append((s, p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64)
                               * a_std + a_mean))
         for s, pr in preds:
@@ -537,7 +542,7 @@ def main(argv: list[str] | None = None) -> int:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
     summary = summarize(rows, nfe=args.nfe, guidance=args.guidance, seeds=args.seeds,
-                        head_steps=args.head_steps,
+                        head_steps=args.head_steps, drop_video=bool(args.drop_video),
                         null=args.null, null_semantics=null_semantics(args.null),
                         student=bool(mc.student), split=args.split,
                         persistent_noise=bool(args.persistent_noise),
