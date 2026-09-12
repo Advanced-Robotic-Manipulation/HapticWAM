@@ -94,6 +94,13 @@ def main(argv=None) -> int:
                     help="K-seed batched sampling (run_deploy --k-seeds): profile the "
                          "replan latency cost on the DEPLOY GPU before booking rig time")
     ap.add_argument("--hardware", default=None)
+    ap.add_argument("--seed", type=int, default=None,
+                    help="reseed the sampling noise before EVERY replan (parity across levers)")
+    ap.add_argument("--persistent-noise", action="store_true", default=True)
+    ap.add_argument("--out", default="", help="write the summary (medians, config) as JSON")
+    ap.add_argument("--dump", default="", help="npz with per-iteration actions and p_evt (parity input)")
+    ap.add_argument("--parity-against", default="",
+                    help="npz from a previous --dump run with the same --seed: report max |delta|")
     args = ap.parse_args(argv)
     args.device = "cuda"
     args.tiny = False
@@ -123,7 +130,11 @@ def main(argv=None) -> int:
 
     prev_plan = None
     rows = []
+    dumped_actions, dumped_p_evt = [], []
     for i in range(args.warmup + args.iters):
+        if args.seed is not None:
+            rf._gen.manual_seed(int(args.seed) + i)
+            torch.manual_seed(int(args.seed) + i)
         torch.cuda.synchronize()
         t0 = time.perf_counter()
         plan = policy.replan(obs, prev_plan, tcp_pose)
@@ -134,6 +145,8 @@ def main(argv=None) -> int:
         prev_plan = plan
         if i >= args.warmup:
             rows.append((wall, net_ms, vae_ms))
+            dumped_actions.append(np.asarray(plan.actions, dtype=np.float32))
+            dumped_p_evt.append(np.asarray(getattr(plan, "p_evt", np.zeros(5)), dtype=np.float32))
         log.info("replan %d%s: wall=%.0f ms | net=%.0f ms (%d calls) | "
                  "vae=%.0f ms (%d calls) | other=%.0f ms",
                  i, " (warmup)" if i < args.warmup else "", wall * 1e3,
@@ -157,6 +170,31 @@ def main(argv=None) -> int:
     if args.dump_actions:
         np.save(args.dump_actions, prev_plan.actions)
         log.info("actions of the last replan saved to %s", args.dump_actions)
+    summary = {"nfe": nfe, "k_seeds": policy.k_seeds, "drop_video": bool(policy.drop_video),
+               "compile": bool(do_compile), "compile_mode": args.compile_mode if do_compile else None,
+               "flex": bool(args.flex), "fp8": bool(args.fp8), "iters": args.iters, "seed": args.seed,
+               "wall_ms_median": statistics.median(walls), "wall_ms_min": min(walls), "wall_ms_max": max(walls),
+               "net_ms_median": statistics.median(nets), "vae_ms_median": statistics.median(vaes),
+               "other_ms_median": statistics.median([w - n - v for w, n, v in zip(walls, nets, vaes)]),
+               "ckpt": args.ckpt, "torch": torch.__version__, "gpu": torch.cuda.get_device_name(0)}
+    if args.dump:
+        np.savez(args.dump, actions=np.stack(dumped_actions), p_evt=np.stack(dumped_p_evt))
+        log.info("per-iteration actions/p_evt saved to %s", args.dump)
+    if args.parity_against:
+        ref = np.load(args.parity_against)
+        a, b = ref["actions"], np.stack(dumped_actions)
+        n = min(len(a), len(b))
+        da = float(np.abs(a[:n] - b[:n]).max()); dp = float(np.abs(ref["p_evt"][:n] - np.stack(dumped_p_evt)[:n]).max())
+        nan = bool(np.isnan(b).any())
+        summary.update(parity_against=args.parity_against, parity_max_abs_action_delta=da,
+                       parity_max_abs_p_evt_delta=dp, parity_nan=nan)
+        log.info("PARITY vs %s: max |delta action| = %.3g, max |delta p_evt| = %.3g, nan=%s",
+                 args.parity_against, da, dp, nan)
+    if args.out:
+        import json
+        with open(args.out, "w") as fh:
+            json.dump(summary, fh, indent=2)
+        log.info("summary written to %s", args.out)
     return 0
 
 

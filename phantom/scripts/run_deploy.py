@@ -1039,6 +1039,10 @@ def main(argv=None) -> int:
                      "no local model load", host, port,
                      policy.info.get("ckpt"), policy.info.get("ckpt_sha"),
                      policy.info.get("warmed"))
+            levers = policy.info.get("inference_levers") or {}
+            if any(levers.get(k) for k in ("compile", "flex", "fp8")):
+                deploy_overrides["server_inference_levers"] = dict(levers)
+                log.info("policy server inference levers: %s", levers)
             if policy.info.get("policy_kind") == "lerobot" and args.terminal_veto:
                 log.error("--terminal-veto cannot run on a LeRobot policy server "
                           "(no ACC head: every close would be 'allowed' while the "

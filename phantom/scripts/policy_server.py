@@ -74,6 +74,14 @@ def main() -> int:
     ap.add_argument("--guidance", type=float, default=1.0)
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--drop-video", action="store_true")
+    # inference-latency levers (measured with phantom.scripts.bench_inference; parity
+    # against the plain path is required before a warm rig server runs with them)
+    ap.add_argument("--compile", action="store_true",
+                    help="torch.compile the DiT blocks (compile happens in the warm-up replan)")
+    ap.add_argument("--compile-mode", default="default",
+                    help="torch.compile mode: default | reduce-overhead (cudagraphs) | max-autotune")
+    ap.add_argument("--flex", action="store_true",
+                    help="FlexAttention self-attention with a block mask (needs the flex kernels)")
     ap.add_argument("--terminal-veto", action="store_true", default=True,
                     help="assert the ACC head exists at load (veto launches "
                          "must not discover its absence mid-session)")
@@ -103,7 +111,10 @@ def main() -> int:
     policy = build_policy(args, hw, paths)
     sha = digest(args.ckpt)
     log.info("checkpoint digest sha256[:12]=%s (%s)", sha, args.ckpt)
-    srv = PolicyServer(policy, ckpt=args.ckpt, ckpt_sha=sha)
+    levers = {"compile": bool(args.compile), "compile_mode": args.compile_mode if args.compile else None,
+              "flex": bool(args.flex), "fp8": False}
+    log.info("inference levers: %s", levers)
+    srv = PolicyServer(policy, ckpt=args.ckpt, ckpt_sha=sha, levers=levers)
     if not args.no_warmup:
         srv.warmup(hw, teacher=(args.system == "teacher"))
     try:

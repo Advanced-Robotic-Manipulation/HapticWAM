@@ -202,10 +202,13 @@ class PolicyServer:
     ACCEPT_FAILURE_LIMIT = 20
 
     def __init__(self, policy, ckpt: str, keep_packages: int = 4,
-                 ckpt_sha: str | None = None):
+                 ckpt_sha: str | None = None, levers: dict | None = None):
         self.policy = policy
         self.ckpt = ckpt
         self.ckpt_sha = ckpt_sha          # digest of the LOADED artifact (#9)
+        # inference-latency levers the server was started with (compile / flex / fp8);
+        # reported in `info` so every episode records what produced its plans
+        self.levers = dict(levers or {})
         self.warmed = False
         self._store: dict[int, object] = {}
         self._next_token = 1
@@ -227,6 +230,7 @@ class PolicyServer:
                 # "lerobot" (π0.5 adapter: no ACC head — --terminal-veto is
                 # a silent no-op and must be refused at attach; audit 09-10)
                 "policy_kind": str(getattr(self.policy, "policy_kind", "phantom")),
+                "inference_levers": dict(self.levers),
                 "owner": o["id"] if o else None,
                 "owner_since": o["since"] if o else None}
 
