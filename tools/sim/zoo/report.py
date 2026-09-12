@@ -60,7 +60,8 @@ def load(study, raw_root):
                        valid=result["status"] == "scored", invalid_reasons=result.get("invalid_reasons", []),
                        latency_confounded=result["latency"]["latency_confounded"],
                        rpc_p95_s=result["latency"].get("rpc_wall_p95_s"), capped=result["latency"].get("capped_lead_rejections"),
-                       reach_error_m=result.get("reach_error_m"), min_pad_object_m=result.get("min_pad_object_m"))
+                       reach_error_m=result.get("reach_error_m"), min_pad_object_m=result.get("min_pad_object_m"),
+                       final_inside_bin=bool((result.get("object") or {}).get("final_inside_bin")))
         else:
             row.update(stage=None, stage_name=None, valid=False, latency_confounded=None,
                        invalid_reasons=[(result or {}).get("status", status.get("status", "unrun"))])
@@ -95,6 +96,7 @@ def summarize(rows):
                           latency_confounded=sum(1 for r in scored if r["latency_confounded"]),
                           unrun_or_failed=len(members) - len(scored), stop_reasons=dict(stops),
                           stage_by_stop_reason={k: dict(v) for k, v in stage_by_stop.items()},
+                          ended_inside_bin=sum(1 for r in scored if r.get("final_inside_bin")),
                           integrity_stopped=sum(1 for r in members if r.get("integrity_stopped")),
                           integrity_stage_reached=[r["integrity_stage_reached"] for r in members if r.get("integrity_stopped")],
                           failed_statuses=dict(defaultdict(int, {str(r["run_status"]): sum(1 for m in members if m["run_status"] == r["run_status"]) for r in members if r["stage"] is None}))))
@@ -115,13 +117,13 @@ def paired(rows, a, b):
 
 
 def markdown(table):
-    lines = ["| model | recipe | primary n / scored / planned | placed (CI95) | stage≥3 | mean stage | no grab / grab / pick / in-box / placed | dropped | confounded | invalid | integrity-stopped (stage reached) | stops |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| model | recipe | primary n / scored / planned | placed (CI95) | stage≥3 | mean stage | no grab / grab / pick / in-box / placed | dropped | ended in bin (any) | confounded | invalid | integrity-stopped (stage reached) | stops |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in table:
         c = r["stage_counts_all_scored"]
         lines.append(f"| {r['model']} | {r['recipe']} | {r['primary_n']} / {r['scored']} / {r['planned']} | "
                      f"{r['placed']} ({r['placed_rate']}, {r['placed_ci95']}) | {r['stage3plus']} ({r['stage3plus_rate']}) | {r['mean_stage']} | "
-                     f"{c['no_grab']} / {c['grab']} / {c['pick']} / {c['in_box_gripped']} / {c['placed']} | {r['dropped']} | "
+                     f"{c['no_grab']} / {c['grab']} / {c['pick']} / {c['in_box_gripped']} / {c['placed']} | {r['dropped']} | {r['ended_inside_bin']} | "
                      f"{r['latency_confounded']} | {r['invalid']} | {r['integrity_stopped']} {r['integrity_stage_reached'] or ''} | {json.dumps(r['stop_reasons'])} |")
     return "\n".join(lines)
 
