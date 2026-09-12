@@ -51,6 +51,17 @@ log = logging.getLogger("distill_hid")
 
 # ---------------------------------------------------------------------------
 
+
+def student_model_config(mc, *, mask_wrist: bool = False):
+    """The student's PhantomModelConfig: the teacher's config with student=True,
+    plus mask_wrist when the student must not see the wrist F/T either.
+    mask_wrist is an input-ablation switch inside the model (HHT zeroes the
+    wrist window), so it travels with the checkpoint into eval and deploy."""
+    from phantom.config.model import PhantomModelConfig
+    if mc is None:
+        return PhantomModelConfig(student=True, mask_wrist=True) if mask_wrist else None
+    return dataclasses.replace(mc, student=True, mask_wrist=bool(mask_wrist or mc.mask_wrist))
+
 def hid_weights(teacher_pred, cfg: HIDConfig) -> torch.Tensor:
     """w_tau = s_tau * c_tau (B, Tc): saliency from teacher event probs,
     confidence from teacher sigma."""
@@ -202,6 +213,11 @@ def main(argv=None) -> int:
     ap.add_argument("--eval-every", type=int, default=None,
                     help="val cadence (default 1000; clipped to --max-steps)")
     ap.add_argument("--dagger-round", type=int, default=0)
+    ap.add_argument("--mask-wrist", action="store_true",
+                    help="student INPUT ablation: zero the wrist F/T window for the student "
+                         "(camera + proprio only = genuinely sensor-free; the teacher keeps "
+                         "pads + wrist). The flag is stored in the student checkpoint's model "
+                         "config, so terminal_eval / run_deploy zero it again automatically.")
     ap.add_argument("--extra-data", nargs="*", default=[],
                     help="additional episode roots (DAgger rollouts)")
     ap.add_argument("--resume", default="",
@@ -259,7 +275,7 @@ def main(argv=None) -> int:
                      "cond_dropout=%.2f", mc.rope_time_mode,
                      mc.acc.self_anticipation, mc.cond_dropout_p)
     mc_teacher = dataclasses.replace(mc, student=False) if mc else None
-    mc_student = dataclasses.replace(mc, student=True) if mc else None
+    mc_student = student_model_config(mc, mask_wrist=bool(getattr(args, "mask_wrist", False)))
     teacher = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc_teacher,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
     student = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc_student,
