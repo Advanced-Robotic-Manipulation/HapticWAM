@@ -63,6 +63,10 @@ def parser():
         help="Explicit last-step weight ablation; default EMA",
     )
     p.add_argument("--no-warmup", action="store_true")
+    # inference-latency levers (bench 2026-09-12: flex+compile 460 ms vs 834 ms per K4 replan)
+    p.add_argument("--flex", action="store_true", help="FlexAttention self-attention with a block mask")
+    p.add_argument("--compile", action="store_true", help="torch.compile the DiT blocks (warm-up replan compiles)")
+    p.add_argument("--compile-mode", default="default")
     return p
 
 
@@ -168,6 +172,17 @@ def build_policy(args, metadata):
         std={k: np.asarray(v, np.float32) for k, v in ns["std"].items()},
     )
     merge_lora(pm.rf.net)
+    # same order as run_deploy.build_policy: merge -> flex -> compile
+    if getattr(args, "flex", False):
+        from phantom.backbone.loader import enable_flex_attention
+        enable_flex_attention(pm.rf.net)
+    if getattr(args, "compile", False):
+        from phantom.backbone.loader import compile_blocks
+        compile_blocks(pm.rf.net, mode=getattr(args, "compile_mode", "default") or "default")
+    metadata["inference_levers"] = {"flex": bool(getattr(args, "flex", False)),
+                                    "compile": bool(getattr(args, "compile", False)),
+                                    "compile_mode": (getattr(args, "compile_mode", None) if getattr(args, "compile", False) else None),
+                                    "fp8": False}
     policy = PhantomPolicy(
         pm,
         norm,
@@ -275,7 +290,8 @@ def main():
             write_json(args.out / "server.json", metadata)
             policy, hw = build_policy(args, metadata)
             server = PolicyServer(
-                policy, str(args.ckpt.resolve()), ckpt_sha=metadata["checkpoint_sha256"]
+                policy, str(args.ckpt.resolve()), ckpt_sha=metadata["checkpoint_sha256"],
+                levers=metadata.get("inference_levers"),
             )
             metadata["status"] = "warming"
             write_json(args.out / "server.json", metadata)
