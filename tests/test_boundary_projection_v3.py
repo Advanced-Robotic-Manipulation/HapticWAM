@@ -159,3 +159,26 @@ def test_v3_allows_a_wider_tick_cap_than_v2():
     replace(cfg("upper_y_projection_v3", .03), max_tick_s=.1)
     with pytest.raises(ValueError):
         replace(cfg("upper_y_projection_v3", .03), max_tick_s=.3)
+
+
+def test_ack_and_anchor_intervals_use_the_tick_bound_not_the_sensor_bound():
+    """Rig 2026-09-12: verify -> servoJ -> ack took > 16 ms on the first streamed tick (stale_ack)."""
+    from dataclasses import replace
+    hw = hardware(); ring = Ring()
+    inside = P.copy(); inside[1] = -.10
+    for tick_cap, gap, expect_stop in ((.016, .05, True), (.1, .05, False)):
+        proj = UpperYBoundaryProjection(replace(cfg("upper_y_projection_v3", .03), max_tick_s=tick_cap), hw, {"arm": ring})
+        proj.anchor, proj.anchor_t, proj.anchor_q = inside.copy(), 0.0, Q.copy()
+        ring.update(0.0, inside)
+        target = inside.copy(); target[2] += .0005
+        selected = proj.select(0.0, target, target)
+        ring.update(0.004, inside)
+        final = proj.verify_final(0.004, selected, Q, verified=True, dt=.008, previous_pose=inside)
+        proj.note_submission(0.004 + gap / 2, final, Q, mechanism="test")
+        if expect_stop:
+            with pytest.raises(BoundaryProjectionStop) as err:
+                proj.acknowledge(0.004 + gap, final)
+            assert err.value.reason.endswith("stale_ack")
+        else:
+            proj.acknowledge(0.004 + gap, final)
+            assert proj.anchor_t == pytest.approx(0.004 + gap)

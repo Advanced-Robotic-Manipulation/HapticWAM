@@ -355,7 +355,7 @@ class UpperYBoundaryProjection:
             self._stop("multiple_raw_faces")
         if projected:
             if (self.anchor is None or self.anchor_t is None
-                    or not 0 <= t - self.anchor_t <= self.config.feedback_max_age_s
+                    or not 0 <= t - self.anchor_t <= self.config.max_tick_s
                     or not self._envelope(self.anchor, ceiling=self.ceiling)):
                 self._stop("unverified_anchor")
             if self.started_at is None:
@@ -435,7 +435,7 @@ class UpperYBoundaryProjection:
                     or not np.array_equal(prior["q"], self.anchor_q)
                     or not prior["verified_at_s"] <= prior["submitted_at_s"] <= prior["accepted_at_s"] <= now):
                 self._stop("finish_without_actual_arm_ack")
-            if not 0 <= now - self.anchor_t <= self.config.feedback_max_age_s:
+            if not 0 <= now - self.anchor_t <= self.config.max_tick_s:
                 self._stop("finish_stale_arm_ack")
             if not self._envelope(self.anchor, ceiling=self.ceiling):
                 self._stop("finish_unsafe_arm_ack")
@@ -574,7 +574,11 @@ class UpperYBoundaryProjection:
         if self.submitted is None or not self.submitted["submitted_at_s"] <= t:
             self._stop("ack_without_submission")
         self.last.update(accepted_tcp_pose=pose.tolist(), accepted_q=q.tolist(), accepted_at_s=float(t))
-        if not 0 <= t - vt <= self.config.feedback_max_age_s:
+        # verify -> servoJ -> ack is one executor tick; the real driver's RTDE round trips make
+        # that longer than the 16 ms sensor-freshness bound (rig 2026-09-12: stale_ack on the
+        # first streamed tick). Tick-sized intervals use max_tick_s; feedback_max_age_s stays
+        # the bound on sensor capture age only.
+        if not 0 <= t - vt <= self.config.max_tick_s:
             self._stop("stale_ack")
         # Compare against the PRIOR accepted command. Replacing anchor_t first
         # would hide a late native ACK behind a zero-length new interval.
