@@ -44,6 +44,12 @@ RECIPES = {
     "K1_ir": dict(BASE_RECIPE, k_seeds=1, action_time_origin="inference_ready"),
     "K4_obs": dict(BASE_RECIPE, k_seeds=4, action_time_origin="observation"),
     "K1_obs": dict(BASE_RECIPE, k_seeds=1, action_time_origin="observation"),
+    # placement-phase controller treatments (sim zoo follow-up 2026-09-12): same K4_ir recipe,
+    # different boundary-projection config (see docs/results/sim_zoo_20260912/README.md, "next steps")
+    "K4_ir_D1": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
+                     boundary_projection_config="boundary_projection__D1.json"),
+    "K4_ir_D2": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
+                     boundary_projection_config="boundary_projection__D2.json"),
     "pi05": dict(nfe=10, guidance=1.0, k_seeds=1, parity_fixes=False, persistent_noise=False, task_text="pick up the waffles",
                  drop_video=False, close_p=0.5, use_ema=True, terminal_veto=False, action_time_origin="inference_ready",
                  # the sim's adaptive contract requires action_time_origin explicitly; the box pi0.5 server (main)
@@ -77,6 +83,12 @@ def build_inputs(out: Path):
     for p in sorted((POOL / "initial_states").glob("*.json")):
         shutil.copyfile(p, out / "initial_states" / p.name)
     shutil.copyfile(POOL / "initial_state_lineage.json", out / "initial_state_lineage.json")
+    base = json.loads((out / "boundary_projection.json").read_text())
+    # D1: solver inset 2 mm (>> the 0.2-0.3 mm FK/IK round-trip error that tripped final_envelope at the z ceiling)
+    (out / "boundary_projection__D1.json").write_text(json.dumps(dict(base, solver_inset_m=0.002), indent=2) + "\n")
+    # D2: D1 + upper_y_projection_v3 (raw-request band 3 cm; executed pose still projected onto the plane)
+    (out / "boundary_projection__D2.json").write_text(
+        json.dumps(dict(base, solver_inset_m=0.002, variant="upper_y_projection_v3", maximum_excursion_m=0.03), indent=2) + "\n")
     for rid, recipe in RECIPES.items():
         (out / f"policy_config__{rid}.json").write_text(
             json.dumps({k: recipe[k] for k in CONFIGURABLE if k in recipe}, indent=2) + "\n")
@@ -126,9 +138,14 @@ def stage_c(seed, setups):
     return trials
 
 
+def stage_e1(seed, setups):
+    """placement-fix treatments: model:recipe setups x all 20 starts x the Stage C seed; one setup per lane."""
+    return [dict(t, id="E1" + t["id"][1:]) for t in stage_c(seed, setups)]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["A1", "B", "C"], required=True)
+    parser.add_argument("--stage", choices=["A1", "B", "C", "E1"], required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--checkpoint-shas", type=Path, required=True, help="json {checkpoint path: sha256}")
     parser.add_argument("--seeds", type=int, nargs="+", default=[910501, 910502])
@@ -149,11 +166,14 @@ def main():
     elif args.stage == "B":
         assert args.recipe in RECIPES, "stage B needs --recipe"
         trials = stage_b(args.seeds, args.recipe, args.models)
-    else:
+    elif args.stage == "C":
         assert args.setups, "stage C needs --setups model:recipe ..."
         trials = stage_c(args.seeds[0], [tuple(x.split(":")) for x in args.setups])
+    else:
+        assert args.setups, "stage E1 needs --setups model:recipe ..."
+        trials = stage_e1(args.seeds[0], [tuple(x.split(":")) for x in args.setups])
     study = dict(study_id=f"sim_zoo_20260912_{args.stage}", stage=args.stage,
-                 runtime=REMOTE_ROOT + "runtime_v13_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
+                 runtime=REMOTE_ROOT + "runtime_v14_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
                  raw=REMOTE_ROOT + f"raw_20260912/{args.stage}", prepared_episode=PREPARED_EPISODE,
                  tactile_baseline=TACTILE_BASELINE, fixed=FIXED, models=models, recipes=RECIPES, trials=trials,
                  input_manifest_sha256=sha(inputs_dir / "input_manifest.json"), planned_trials=len(trials))

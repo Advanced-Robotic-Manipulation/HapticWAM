@@ -133,9 +133,13 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--pair", nargs=2, action="append", default=[], metavar=("A", "B"),
                         help="paired comparison of two model:recipe setups")
+    parser.add_argument("--baseline", nargs=2, action="append", default=[], metavar=("STUDY", "RAW"),
+                        help="extra (study, raw) pairs whose trials join the table and the paired tests")
     args = parser.parse_args()
     study = json.loads(args.study.read_text())
     rows = load(study, args.raw)
+    for extra_study, extra_raw in args.baseline:
+        rows += load(json.loads(Path(extra_study).read_text()), extra_raw)
     table = summarize(rows)
     pairs = [paired(rows, tuple(a.split(":")), tuple(b.split(":"))) for a, b in args.pair]
     args.output.mkdir(parents=True, exist_ok=True)
