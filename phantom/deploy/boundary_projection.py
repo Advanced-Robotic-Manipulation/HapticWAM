@@ -239,11 +239,18 @@ class UpperYBoundaryProjection:
                 and t - self.anchor_t > self.config.max_tick_s + 1e-9):
             self._stop("tick_overrun")
 
-    def _envelope(self, p, *, ceiling=None):
+    def _envelope(self, p, *, ceiling=None, reach=True):
+        """Workspace and task hitbox always; the reach ball only for commanded targets.
+
+        The reach clamp is a COMMAND clamp (SafetyMonitor scales commands radially,
+        rig 2026-09-01); it is not a stop envelope for where the arm already is. The
+        auto-home start poses (demo starts, up to ~0.61 m from the base) sit just
+        outside it, and the first ticks pull the arm inward. Rig 2026-09-12: preset 7
+        aborted on tick 1 with measured_envelope at reach 0.610 m."""
         sf = self.hw.safety
         return bool(
             sf.workspace_m.contains(p[:3]) and self.hb.contains(p[:3])
-            and (sf.reach_clamp_m is None or np.linalg.norm(p[:3]) <= sf.reach_clamp_m)
+            and (not reach or sf.reach_clamp_m is None or np.linalg.norm(p[:3]) <= sf.reach_clamp_m)
             and (ceiling is None or p[1] <= ceiling)
         )
 
@@ -264,7 +271,7 @@ class UpperYBoundaryProjection:
         if self.feedback_t is not None and capture < self.feedback_t:
             self._stop("backwards_feedback")
         self.feedback_t = capture
-        if not self._envelope(p):
+        if not self._envelope(p, reach=False):
             self._stop("measured_envelope")
         return p
 

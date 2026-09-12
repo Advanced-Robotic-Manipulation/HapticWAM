@@ -90,3 +90,26 @@ def test_v3_z_inset_caps_solver_upper_z_only():
     raw = P.copy(); raw[2] = .74; clamped = raw.copy()
     out = proj.select(0.0, raw, clamped)
     assert out[2] == pytest.approx(.73) and "z_high" in proj.last["solver_interior"]["active_constraints"]
+
+
+def test_measured_feedback_outside_reach_ball_is_not_a_stop():
+    """Rig 2026-09-12: auto-home start at 0.610 m from the base, reach clamp 0.6 m -> tick-1 abort."""
+    from phantom_test_utils import make_small_hw
+    hw = make_small_hw(safety={
+        "wrist_extension_stop_m": None, "reach_clamp_m": .6,
+        "servo_constraint_hold_s": 2.5, "elbow_min_rad": .4,
+        "servo_joint_speed_max_rad_s": 1.0,
+        "workspace_m": {"x": [-.7, .15], "y": [-.5, .3], "z": [.03, .8]},
+        "hitbox_m": {"x": [-.6, .1], "y": [-.4, .1758], "z": [.03, .75]},
+    })
+    ring = Ring()
+    stretched = np.array([-.386, -.315, .351, 0, 0, 0])   # |p| = 0.610 m, inside hitbox and workspace
+    ring.update(0.0, stretched)
+    proj = UpperYBoundaryProjection(cfg("upper_y_projection_v3", .03), hw, {"arm": ring})
+    assert proj._envelope(stretched, reach=False) and not proj._envelope(stretched)
+    assert np.allclose(proj._feedback(0.0)[:3], stretched[:3])      # measured: no stop
+    outside = stretched.copy(); outside[0] = -.65                      # outside the hitbox: still a stop
+    ring.update(0.0, outside)
+    with pytest.raises(BoundaryProjectionStop) as err:
+        proj._feedback(0.0)
+    assert err.value.reason.endswith("measured_envelope")
