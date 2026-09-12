@@ -127,6 +127,7 @@ def trial_command(study, trial, model, recipe, port, out_dir):
            "--skip-stage-export", "--policy-initial-state", f"{inputs}/initial_states/{trial['start']}.json",
            "--policy-delivery-clock", "rpc_wall",
            "--placement-release-config", inputs + "/" + recipe.get("placement_release_config", "placement_release.json"),
+           *(["--gripper-max-close-cmd", str(recipe["gripper_max_close_cmd"])] if recipe.get("gripper_max_close_cmd") is not None else []),
            "--boundary-projection-config", inputs + "/" + recipe.get("boundary_projection_config", "boundary_projection.json"),
            "--placement-controller-profile", "minimal_v5",
            "--servo-reach-limiter", "--servo-constraint-hold-s", str(fixed["servo_constraint_hold_s"]),

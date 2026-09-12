@@ -126,6 +126,9 @@ def arguments():
              "thresholds stay unchanged. ON by default in policy mode since 09-11 (the real rig "
              "runs the same bounded_v1 profile); --no-servo-reach-limiter disables it",
     )
+    p.add_argument("--gripper-max-close-cmd", type=float, default=None,
+                   help="opt-in cap on the policy's close command (lowers hardware gripper.max_close_cmd; "
+                        "sim zoo 2026-09-12 student over-squeeze workaround)")
     p.add_argument("--no-servo-reach-limiter", action="store_true",
                    help="Disable the default policy-mode servo reach limiter")
     p.add_argument("--observation-delay-s", type=float, default=0.0)
@@ -1393,6 +1396,9 @@ def run(app, args, cfg, data, duration):
             stall_watchdog = PlannerStallWatchdog()
 
             hw = load_hardware(args.hardware_config, quiet=True)
+            if getattr(args, "gripper_max_close_cmd", None) is not None:
+                from phantom.deploy.safety import apply_gripper_max_close
+                hw = apply_gripper_max_close(hw, args.gripper_max_close_cmd)
             if args.tactile == "measured_baseline_proxy":
                 from phantom.sim.tactile_proxy import MeasuredBaselineTactileProxy
 

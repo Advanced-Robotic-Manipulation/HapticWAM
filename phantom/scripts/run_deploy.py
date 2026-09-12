@@ -408,6 +408,9 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
+    ap.add_argument("--gripper-max-close-cmd", type=float, default=None,
+                    help="opt-in cap on the policy's close command (0-1); lowers hardware gripper.max_close_cmd, "
+                         "never raises it (sim zoo 2026-09-12: students over-squeeze to 0.66-0.71, teacher ~0.60)")
     ap.add_argument("--servo-reach-profile", choices=["bounded_v1", "none"], default="bounded_v1",
                     help="UR3 command limiter, ON by default since 09-11 (real lifts ended with a "
                          "straight elbow at the far point over the box; see "
@@ -900,6 +903,11 @@ def main(argv=None) -> int:
         log.info("servo reach profile %s: %s (measured safety stops preserved)",
                  args.servo_reach_profile, limits)
     from phantom.deploy.safety import apply_wrench_baseline_mode
+    if getattr(args, "gripper_max_close_cmd", None) is not None:
+        from phantom.deploy.safety import apply_gripper_max_close
+        hw = apply_gripper_max_close(hw, args.gripper_max_close_cmd)
+        deploy_overrides["gripper_max_close_cmd"] = float(hw.gripper.max_close_cmd)
+        log.info("gripper close command capped at %.3f (max_close_cmd)", hw.gripper.max_close_cmd)
     hw = apply_wrench_baseline_mode(hw, args.wrench_baseline_mode)
     if args.wrench_baseline_mode is not None:
         deploy_overrides["wrench_baseline_mode"] = hw.safety.wrench_baseline_mode

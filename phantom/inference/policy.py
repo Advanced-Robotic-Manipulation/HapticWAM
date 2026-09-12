@@ -122,7 +122,8 @@ class PhantomPolicy:
 
     @property
     def action_time_origin(self):
-        return self._action_time_origin
+        # policies built without the timing settings (tests, legacy loaders) are inference_ready
+        return getattr(self, "_action_time_origin", "inference_ready")
 
     @action_time_origin.setter
     def action_time_origin(self, value):
