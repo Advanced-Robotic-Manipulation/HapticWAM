@@ -104,12 +104,25 @@ class _FakeQueuePolicy:
         return torch.from_numpy(self.chunk)[None]
 
 
+def _pi05_config():
+    """The REAL pi05 checkpoint config (armteam/phantom-checkpoints,
+    pi05_20k/pretrained_model/config.json), so the "pi05 path unchanged"
+    claim is a test and not an assertion."""
+    return SimpleNamespace(
+        n_obs_steps=1, chunk_size=50, n_action_steps=16,
+        image_resolution=(224, 224), num_inference_steps=10,
+        empty_cameras=0, max_state_dim=32,
+        image_features={DEFAULT_IMAGE_KEY: SimpleNamespace(shape=(3, 224, 224))},
+        output_features={"action": SimpleNamespace(shape=(7,))})
+
+
 class _FakeSingleFramePolicy:
     """pi05 / X-VLA: `_queues` holds the ACTION deque and nothing else."""
 
-    def __init__(self, chunk, *, cameras=(XVLA_IMAGE_KEY,), n_action_steps=30):
+    def __init__(self, chunk, *, cameras=(XVLA_IMAGE_KEY,), n_action_steps=30,
+                 config=None):
         self.chunk = np.asarray(chunk, np.float32)
-        self.config = SimpleNamespace(
+        self.config = config or SimpleNamespace(
             n_obs_steps=1, n_action_steps=n_action_steps,
             image_features={k: SimpleNamespace(shape=(3, 256, 256))
                             for k in cameras},
@@ -117,6 +130,7 @@ class _FakeSingleFramePolicy:
             num_denoising_steps=10, resize_imgs_with_padding=(224, 224))
         self.resets = 0
         self.batches: list[dict] = []
+        self.num_steps: list = []
         self.reset()
 
     def reset(self):
@@ -124,7 +138,21 @@ class _FakeSingleFramePolicy:
         self._queues = {LR_ACTION_KEY: deque(maxlen=self.config.n_action_steps)}
 
     def predict_action_chunk(self, batch, noise=None):
+        """X-VLA's real signature: `(batch, noise=None)`, no `num_steps` — its
+        denoise budget is `config.num_denoising_steps` and nothing else."""
         self.batches.append(dict(batch))
+        self.num_steps.append(None)
+        return torch.from_numpy(self.chunk)[None]
+
+
+class _FakePi05Policy(_FakeSingleFramePolicy):
+    """pi05: single-frame like X-VLA, but its chunk call is `(batch, **kwargs)`
+    and forwards `num_steps` into `sample_actions`, so `--nfe` is a real
+    lever."""
+
+    def predict_action_chunk(self, batch, **kwargs):
+        self.batches.append(dict(batch))
+        self.num_steps.append(kwargs.get("num_steps"))
         return torch.from_numpy(self.chunk)[None]
 
 
@@ -309,6 +337,33 @@ def test_a_single_frame_policy_is_left_completely_alone():
     assert ad._obs_hist == []
     assert set(pol.batches[0]) == {XVLA_IMAGE_KEY, DEFAULT_STATE_KEY, "task"}
     assert LR_IMAGES_KEY not in pol.batches[0]
+
+
+def test_the_real_pi05_config_is_untouched_by_every_new_lever():
+    """Regression guard for the checkpoint actually on the rig: the new
+    image-size check, the multi-camera warning and the chunk widening must all
+    be no-ops for pi05, and it must never be treated as a queue policy."""
+    hw = _hw()
+    pol = _FakePi05Policy(_delta_chunk(50), config=_pi05_config())
+
+    # widening: 16 executable steps already cover the 16-step deploy horizon
+    assert widen_action_steps(pol, hw.control.chunk_horizon) is None
+    assert pol.config.n_action_steps == 16
+    # contract check: no rename, and 224 px matches the declared feature
+    check_checkpoint_contract(pol, image_key=DEFAULT_IMAGE_KEY, action_dim=7,
+                              chunk_horizon=hw.control.chunk_horizon,
+                              rename_map={}, image_size=224)
+
+    ad = _adapter(hw, pol)
+    assert ad.n_obs_steps == 1
+    plan = ad.replan(_snap(hw, t=1.0), None, TCP)
+    assert ad._obs_queues() is None and ad._obs_hist == []
+    assert pol.resets == 1                        # never reset per replan
+    assert set(pol.batches[0]) == {DEFAULT_IMAGE_KEY, DEFAULT_STATE_KEY, "task"}
+    assert plan.actions.shape == (hw.control.chunk_horizon, 7)
+    assert plan.diag["denoise_steps"] == 10       # pi05's num_inference_steps
+    # --nfe still reaches pi05 as num_steps, exactly as before this change
+    assert pol.num_steps == [10] and plan.diag["nfe_applied"] is True
 
 
 # ------------------------------------------------------- chunk handling
