@@ -191,6 +191,9 @@ def main() -> int:
                     obs = dict(obs)
                     obs["observation.images"] = torch.stack([obs[k] for k in img_keys], dim=-4)
                 policy._queues = populate_queues(policy._queues, obs, exclude_keys=[ACTION])
+                # the dataset window carries the ground-truth ACTION; predict_action_chunk
+                # stacks every batch key that has a queue, and the action queue is empty
+                obs = {k: v for k, v in obs.items() if k != ACTION}
             out = policy.predict_action_chunk(obs, num_steps=args.nfe) \
                 if args.nfe is not None else policy.predict_action_chunk(obs)
             # the deploy adapter unnormalises ONCE PER CHUNK STEP; mirror it
