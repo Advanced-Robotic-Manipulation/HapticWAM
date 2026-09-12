@@ -18,7 +18,7 @@ echo "bench start $(date -u +%FT%TZ) free=$(free_mib) MiB" > $OUT/progress.txt
 run() { name=$1; shift; echo "--- $name $(date -u +%T)" >> $OUT/progress.txt
   if [ "$busy" ]; then :; fi
   if pgrep -f "phantom.scripts.run_deploy" >/dev/null; then echo "rig became busy; aborting before $name" >> $OUT/progress.txt; exit 0; fi
-  env PYTHONDONTWRITEBYTECODE=1 timeout 1500 $PY -m phantom.scripts.bench_inference --ckpt $CK --system teacher --nfe 1 --ema --iters 10 --warmup 3 --seed 7 --out $OUT/$name.json --dump $OUT/$name.npz --k-seeds 4 "$@" > $OUT/$name.log 2>&1
+  env PYTHONDONTWRITEBYTECODE=1 timeout 1500 $PY -m phantom.scripts.bench_inference --ckpt $CK --hardware configs/hardware.nuc.yaml --system teacher --nfe 1 --ema --iters 10 --warmup 3 --seed 7 --out $OUT/$name.json --dump $OUT/$name.npz --k-seeds 4 "$@" > $OUT/$name.log 2>&1
   echo "rc=$? $(grep -E "replan wall|PARITY" $OUT/$name.log | tail -2 | tr "\n" " ")" >> $OUT/progress.txt; }
 run baseline
 run compile_default   --compile --compile-mode default --parity-against $OUT/baseline.npz
