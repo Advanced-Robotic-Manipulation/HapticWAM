@@ -19,7 +19,7 @@ REMOTE_RAW = "/dev/shm/phantom_sim_zoo_raw_20260912"
 LOCAL_RAW = REPO / "artifacts/isaac_waffles/sim_zoo_20260912/raw"
 SMALL = ["run_status.json", "trial_result.json", "run.json", "effective_config.json", "planner_trace.json",
          "policy_info.json", "initialization.json", "adaptive_policy_experiment.json", "boundary_physics_audit.json",
-         "sim_first.png", "sim_last.png"]
+         "sim_first.png", "sim_last.png", "trial_result_integrity.json", "native_mechanics_failure.json"]
 
 
 def rsync(stage: str, full: bool) -> None:
