@@ -275,3 +275,36 @@ def test_native_first_tick_uses_controller_fk_for_the_previous_pose(monkeypatch)
     res = arm.servo_l(selected, .008, .1, 300, target_guard=g)
     assert res.sent and g.failure is None
     assert np.allclose(arm._last_cmd_pose, forward_pose(Q))
+
+
+def test_native_guard_fk_falls_back_to_nominal_when_controller_fk_is_garbage(monkeypatch):
+    """Rig 2026-09-12: getForwardKinematics(q) returned a pose 1.7 m from the base; the guard
+    compared real poses against it and stopped every episode before motion."""
+    arm, g, ring, clock = native(monkeypatch)
+
+    class GarbageCtrl(NominalCtrl):
+        def getForwardKinematics(self, q, tcp_offset=None):
+            self.fk_calls += 1
+            return [-1.6588, -0.5221, 1.4755, 1.0983, -0.1307, -0.7024]
+
+        def getTCPOffset(self):
+            return [0, 0, .18, 0, 0, 0]
+
+    arm._ctrl = GarbageCtrl()
+    arm._last_qsol, arm._last_cmd_pose = None, None
+    arm._recv = SimpleNamespace(getActualQ=lambda: Q.tolist(), getActualTCPPose=lambda: P.tolist())
+    ring.update(clock[0], P)
+    target = P.copy(); target[2] += .0005
+    selected = g.select(clock[0], target, target)
+    res = arm.servo_l(selected, .008, .1, 300, target_guard=g)
+    assert res.sent and g.failure is None
+    assert arm.guard_fk_source == "nominal_dh"
+    assert np.allclose(arm._last_cmd_pose, forward_pose(Q))
+    # a controller FK that reproduces the measured TCP is trusted
+    arm2, g2, ring2, clock2 = native(monkeypatch)
+    arm2._last_qsol, arm2._last_cmd_pose = None, None
+    arm2._recv = SimpleNamespace(getActualQ=lambda: Q.tolist(), getActualTCPPose=lambda: P.tolist())
+    ring2.update(clock2[0], P)
+    selected2 = g2.select(clock2[0], target, target)
+    assert arm2.servo_l(selected2, .008, .1, 300, target_guard=g2).sent
+    assert arm2.guard_fk_source.startswith("controller_fk")

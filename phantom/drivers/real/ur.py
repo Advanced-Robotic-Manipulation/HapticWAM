@@ -127,6 +127,7 @@ class URArm(Arm):
         # made move_l refuse start-pose homing for the rest of the session
         # even though the fresh script has no servo stream at all.
         self._servo_active = False
+        self._guard_fk_cache = None
         if self._constraint_hold_budget is not None:
             self._constraint_hold_budget.reset()
         if old is None:
@@ -649,6 +650,57 @@ class URArm(Arm):
         log.error("servo control lost: %s", d["summary"])
         return d
 
+    GUARD_FK_TOL_M = 0.01   # controller FK must reproduce the measured TCP this closely to be trusted
+
+    def _guard_fk(self, ctrl):
+        """Forward kinematics for the boundary guard's checks, validated once per control session.
+
+        Rig 2026-09-12: ``getForwardKinematics(q)`` (no explicit tcp_offset) returned a pose
+        1.7 m from the base for a UR3 at rest; every guard check that compared real poses
+        against it stopped the episode before motion. The controller FK is trusted only if it
+        reproduces the measured TCP at the current joints within GUARD_FK_TOL_M (tried with
+        the active TCP offset passed explicitly, then without); otherwise the repo's nominal
+        DH model (phantom.sim.kinematics.forward_pose, the same FK the simulator validated
+        this controller with; 1.5 mm from the measured TCP on this rig) is used. The choice
+        is logged and recorded in ``guard_fk_source``."""
+        cached = getattr(self, "_guard_fk_cache", None)
+        if cached is not None and cached[0] is ctrl:
+            return cached[1]
+        from phantom.sim.kinematics import forward_pose as nominal_fk
+        source, fk = "nominal_dh", (lambda q: np.asarray(nominal_fk(np.asarray(q, dtype=float)), dtype=float))
+        r = self._recv
+        try:
+            q_now = np.asarray(r.getActualQ(), dtype=float)
+            tcp_now = np.asarray(r.getActualTCPPose(), dtype=float)
+            candidates = []
+            try:
+                offset = list(ctrl.getTCPOffset())
+                candidates.append(("controller_fk_active_tcp",
+                                   lambda q, o=offset: np.asarray(ctrl.getForwardKinematics(np.asarray(q, dtype=float).tolist(), o), dtype=float)))
+            except Exception:
+                pass
+            candidates.append(("controller_fk",
+                               lambda q: np.asarray(ctrl.getForwardKinematics(np.asarray(q, dtype=float).tolist()), dtype=float)))
+            errors = {}
+            for name, cand in candidates:
+                try:
+                    pose = cand(q_now)
+                    err = float(np.linalg.norm(pose[:3] - tcp_now[:3])) if pose.shape == (6,) and np.isfinite(pose).all() else float("inf")
+                except Exception as exc:  # noqa: BLE001
+                    err = float("inf"); errors[name] = repr(exc)[:80]
+                errors[name] = err
+                if err <= self.GUARD_FK_TOL_M:
+                    source, fk = name, cand
+                    break
+            nominal_err = float(np.linalg.norm(fk(q_now)[:3] - tcp_now[:3])) if source == "nominal_dh" else None
+            log.warning("boundary guard FK source: %s (controller FK errors vs measured TCP: %s; nominal DH error: %s)",
+                        source, errors, None if nominal_err is None else round(nominal_err, 4))
+        except Exception as exc:  # noqa: BLE001 - no receive interface (tests): nominal model
+            log.warning("boundary guard FK source: nominal_dh (validation unavailable: %s)", exc)
+        self.guard_fk_source = source
+        self._guard_fk_cache = (ctrl, fk)
+        return fk
+
     def _servo_l_bounded_hold(self, ctrl, tcp_pose, dt, lookahead, gain, *, target_guard=None):
         """Opt-in: stream a verified held anchor without fabricating progress.
 
@@ -677,10 +729,10 @@ class URArm(Arm):
             prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
             if target_guard is not None:
                 # Same kinematic model on both sides of the guard's final-step check: the
-                # measured TCP (RTDE actual pose) and the controller FK of the joint solution
-                # differ by the calibration offset, which on the first tick was read as a
-                # single-tick jump ("final_rate"; rig 2026-09-12, arm never moved).
-                prev = np.asarray(ctrl.getForwardKinematics(np.asarray(qref, dtype=float).tolist()), dtype=float)
+                # measured TCP (RTDE actual pose) and the FK of the joint solution differ by
+                # the calibration offset, which on the first tick was read as a single-tick
+                # jump ("final_rate"; rig 2026-09-12, arm never moved).
+                prev = self._guard_fk(ctrl)(qref)
         selection = None if target_guard is None else target_guard.terminal_selection(prev, qref, dt, limits)
         if selection is None:
             selection = servo_limiter.select_servo_step(
@@ -691,7 +743,7 @@ class URArm(Arm):
                 selection = target_guard.refine_rate_selection(
                     selection, prev, qref, dt,
                     lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
-                    lambda q: ctrl.getForwardKinematics(np.asarray(q).tolist()))
+                    self._guard_fk(ctrl))
         held = verified_constraint_hold(selection, qref, dt, limits)
         if not selection.accepted and not held:
             log.warning("bounded servo selection rejected: reason=%s mode=%s violation=%s ik_calls=%s "
@@ -719,9 +771,9 @@ class URArm(Arm):
         if state["timed_out"]:
             raise ConstraintHoldTimeout("verified constraint hold exceeded its fixed deadline")
         if target_guard is not None:
-            # Calibrated controller FK (active TCP), not a nominal UR model.
-            # A missing/failed FK method fails before any joint submission.
-            sent_pose = np.asarray(ctrl.getForwardKinematics(sent_q.tolist()), dtype=float)
+            # Validated FK (controller FK if it reproduces the measured TCP, else the
+            # nominal DH model; see _guard_fk). A failed FK fails before any joint submission.
+            sent_pose = np.asarray(self._guard_fk(ctrl)(sent_q), dtype=float)
             target_guard.verify_final(
                 time.perf_counter(), sent_pose, sent_q,
                 verified=bool(selection.all_ik_valid and selection.all_ik_on_branch),
