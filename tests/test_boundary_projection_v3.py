@@ -115,19 +115,20 @@ def test_measured_feedback_outside_reach_ball_is_not_a_stop():
     assert err.value.reason.endswith("measured_envelope")
 
 
-def test_selection_age_bound_is_configurable_for_the_real_driver():
-    """Rig 2026-09-12: select() at tick start, verify_final() after RTDE IK/FK solves > 16 ms later."""
+def test_selection_currency_is_structural_not_wall_clock():
+    """Rig 2026-09-12: select() at tick start, verify_final() after RTDE IK/FK solves; three aborts
+    before the arm moved. The verified pose must belong to the latest selection (once); a wall-clock
+    bound applies only when selection_max_age_s is configured."""
     from dataclasses import replace
-    from test_boundary_projection import hardware as v1_hardware  # noqa: F401  (fixture module import)
     hw = hardware(); ring = Ring()
     base = cfg("upper_y_projection_v3", .03)
     assert BoundaryProjectionConfig.from_dict({k: v for k, v in base.to_dict().items()
                                                if k not in ("z_inset_m", "selection_max_age_s")}).selection_max_age_s is None
     with pytest.raises(ValueError):
         replace(base, selection_max_age_s=0.3)
-    for age_cfg, delay, expect_stop in ((None, .05, True), (.1, .05, False), (.1, .2, True)):
+    inside = P.copy(); inside[1] = -.10
+    for age_cfg, delay, expect_stop in ((None, .05, False), (None, 1.5, False), (.1, .05, False), (.1, .2, True)):
         proj = UpperYBoundaryProjection(replace(base, selection_max_age_s=age_cfg), hw, {"arm": ring})
-        inside = P.copy(); inside[1] = -.10                      # well inside the wall plane: no hold engaged
         proj.anchor, proj.anchor_t, proj.anchor_q = inside.copy(), 0.0, Q.copy()
         ring.update(0.0, inside)
         target = inside.copy(); target[2] += .001
@@ -140,3 +141,12 @@ def test_selection_age_bound_is_configurable_for_the_real_driver():
             assert proj.last["selection_age_s"] == pytest.approx(delay)
         else:
             proj.verify_final(delay, selected, Q, verified=True, dt=.008, previous_pose=inside)
+            # the same selection cannot be verified twice, and no selection at all is refused
+            with pytest.raises(BoundaryProjectionStop) as err:
+                proj.verify_final(delay + .001, selected, Q, verified=True, dt=.008, previous_pose=inside)
+            assert err.value.reason.endswith("missing_current_selection")
+    fresh = UpperYBoundaryProjection(base, hw, {"arm": ring})
+    fresh.anchor, fresh.anchor_t, fresh.anchor_q = inside.copy(), 0.0, Q.copy()
+    ring.update(0.0, inside)
+    with pytest.raises(BoundaryProjectionStop):
+        fresh.verify_final(0.0, inside, Q, verified=True, dt=.008, previous_pose=inside)

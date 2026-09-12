@@ -223,6 +223,8 @@ class UpperYBoundaryProjection:
         self.pending = None
         self.submitted = None
         self.submission_sequence = 0
+        self.selection_sequence = 0       # incremented by every completed select()
+        self.verified_selection = None    # selection_sequence already consumed by verify_final
         self.last_acknowledged_drive = None
         self.selected_at = None
         self.raw_interior = False
@@ -305,6 +307,7 @@ class UpperYBoundaryProjection:
         self.pending = None
         self.submitted = None
         self.selected_at = None
+        self.selection_sequence += 1
         if physical_preempted:
             self.last.update(reason="physical_safety_preempted")
             return clamped
@@ -494,12 +497,20 @@ class UpperYBoundaryProjection:
         if self.decision_clock is not None:
             t = float(self.decision_clock())
         self._clock(t)
+        # The verified pose must belong to the LATEST completed selection and each selection
+        # is consumed exactly once. This is structural (sequence numbers), not wall-clock: the
+        # real UR driver solves IK/FK over RTDE between select() and verify_final() and the
+        # first tick alone took longer than any tick-sized bound (rig 2026-09-12, three
+        # aborts before the arm moved). An optional selection_max_age_s adds a wall-clock
+        # bound on top when a deployment wants one; the measured age is always recorded.
         selection_age = None if self.selected_at is None else float(t) - self.selected_at
-        age_bound = (self.config.feedback_max_age_s if self.config.selection_max_age_s is None
-                     else self.config.selection_max_age_s)
-        self.last.update(selection_age_s=selection_age, selection_max_age_s=age_bound)
-        if selection_age is None or not 0 <= selection_age <= age_bound:
+        self.last.update(selection_age_s=selection_age, selection_sequence=self.selection_sequence,
+                         selection_max_age_s=self.config.selection_max_age_s)
+        if (self.selected_at is None or self.verified_selection == self.selection_sequence
+                or selection_age < 0
+                or (self.config.selection_max_age_s is not None and selection_age > self.config.selection_max_age_s)):
             self._stop("missing_current_selection")
+        self.verified_selection = self.selection_sequence
         measured = self._feedback(t, sample)
         try:
             pose, q = _pose(pose), _pose(q)
