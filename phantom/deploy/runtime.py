@@ -171,7 +171,7 @@ class DeploymentRuntime:
                  base_hw: HardwareConfig | None = None,
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
-                 max_play_steps: int | None = None, release_config=None,
+                 max_play_steps: int | None = None, release_config=None, boundary_config=None,
                  grip_play_steps: int | None = None,
                  controller_profile: str | None = None):
         """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
@@ -200,6 +200,13 @@ class DeploymentRuntime:
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
         self.release_config = None if controller is None else controller.config
+        from phantom.deploy.boundary_projection import boundary_config as parse_boundary_config
+        self.boundary_config = parse_boundary_config(boundary_config)
+        if self.boundary_config is not None:
+            from phantom.deploy.boundary_projection import make_boundary_projection
+            make_boundary_projection(self.boundary_config, hw, {})  # Validate before opening any device.
+            if hw.mode.resolve("arm") == "mock":
+                raise ValueError("native boundary projection requires URArm; use the simulation adapter for physics")
         self.planner_class = PlannerLoop
         if controller_profile is not None:
             from phantom.deploy.minimal_v5 import planner_class, validate_profile
@@ -259,7 +266,7 @@ class DeploymentRuntime:
         if hasattr(self.policy, "reset_episode"):
             self.policy.reset_episode()
 
-        safety = SafetyMonitor(hw, self.session.rings)
+        safety = SafetyMonitor(hw, self.session.rings, boundary_config=self.boundary_config)
         executor = ChunkExecutor(hw, self.rig.arm, self.rig.gripper, safety,
                                  record_action=self.recorder.record_action,
                                  gripper_ring=self.session.rings["gripper"],
@@ -361,6 +368,8 @@ class DeploymentRuntime:
                     for e in safety.log_events],
             stop_state={**self._arm_state_now(),
                         "wrist_guard": safety.wrench_diagnostics(),
+                        **({"boundary_projection": dict(safety.boundary_projection.last)}
+                           if safety.boundary_projection is not None else {}),
                         **({"placement_release": executor.release_diagnostics()}
                            if getattr(executor, "release_controller", None) is not None else {}),
                         **({"at_halt": executor.halt_state}

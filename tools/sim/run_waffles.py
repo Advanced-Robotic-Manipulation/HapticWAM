@@ -47,6 +47,10 @@ def arguments():
         help="Required native command replay declaration: trace/config hashes, named joint ordering and radian drive semantics",
     )
     p.add_argument(
+        "--command-finger-hold-at", type=float,
+        help="Counterfactual native command_replay only: from this recorded command time retain the preceding submitted finger drives; keep every arm target unchanged",
+    )
+    p.add_argument(
         "--render-hz",
         type=float,
         help="Override media/trace sampling rate for tuning runs",
@@ -89,6 +93,10 @@ def arguments():
         help="Explicit opt-in measured-TCP gate allowing policy-commanded release from the grip latch",
     )
     p.add_argument(
+        "--boundary-projection-config", type=Path, default=None,
+        help="Explicit default-off bounded upper-Y projection treatment JSON",
+    )
+    p.add_argument(
         "--placement-controller-profile", choices=["minimal_v5"], default=None,
         help="Explicit shared native historical veto/request feedback plus release/FINISH profile",
     )
@@ -117,6 +125,11 @@ def arguments():
         help="Separate policy diagnostic: existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety thresholds stay unchanged",
     )
     p.add_argument("--observation-delay-s", type=float, default=0.0)
+    p.add_argument(
+        "--no-progress-stop-s", type=float, default=None,
+        help="Policy mode: end the trial (reason no_progress_timeout) when the packet has not been "
+             "lifted 3 cm by this simulated time; the independent scorer still scores the trial",
+    )
     p.add_argument(
         "--servo-constraint-hold-s", type=float, default=None,
         help="Opt-in verified stationary servo hold deadline; requires --servo-reach-limiter",
@@ -216,8 +229,8 @@ def validate_adaptive_policy_experiment(args, cfg):
             "Native adaptive W2L policy execution is uncalibrated; an audited "
             "teacher experiment requires --experimental-adaptive-policy."
         )
-    if args.policy_mode != "teacher":
-        raise ValueError("The experimental adaptive policy contract is teacher-only")
+    if args.policy_mode not in ("teacher", "student", "vision_only"):
+        raise ValueError("The experimental adaptive policy contract covers teacher, student and vision_only modes")
     if args.tactile != "measured_baseline_proxy" or args.wrist != "gripper_contact_proxy":
         raise ValueError("Adaptive teacher experiment requires measured_baseline_proxy and gripper_contact_proxy")
     if args.gel_contact_coverage != "manifold_patch_v2":
@@ -301,13 +314,51 @@ def measured_tcp_twist(previous, current, dt):
 
 def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejects,
                                    *, hold_budget=None, qref=None, limits=None, dt=None,
-                                   telemetry=None):
+                                   telemetry=None, submit_targets=None):
     """Report the accepted joint target, or a bounded ordinary controller stop.
 
     CPU-testable feedback boundary. A stall preserves grip and enters the same
     stopped-tick handling/observation tail as other controller stops.
     """
     from phantom.sim.kinematics import forward_pose
+    if selection.reason.startswith("boundary_projection_"):
+        adapter.request_stop(selection.reason)
+        adapter.report_execution(t, accepted=False, reason=selection.reason, controller_stop=True)
+        if telemetry is not None:
+            telemetry.update(boundary_stop=selection.reason)
+        return None, rejects
+
+    def report_verified(sent_q, *, held=False):
+        achieved = forward_pose(sent_q)
+        boundary = getattr(adapter.safety, "boundary_projection", None)
+        if boundary is not None:
+            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+            try:
+                boundary.verify_final(
+                    t, achieved, sent_q,
+                    verified=bool(selection.all_ik_valid and selection.all_ik_on_branch),
+                    dt=dt, previous_pose=forward_pose(qref),
+                )
+            except BoundaryProjectionStop as error:
+                # No proposed grip was submitted on this failed final check;
+                # do not generate a new ACK or original-policy opening event.
+                adapter.request_stop(error.reason)
+                adapter.report_execution(t, accepted=False, reason=error.reason, controller_stop=True)
+                if telemetry is not None:
+                    telemetry.update(boundary_stop=error.reason)
+                return None
+            if submit_targets is None:
+                raise ValueError("enabled boundary guard requires actual drive submission before ACK")
+            # The callback must apply both verified joint and unchanged grip
+            # targets, and raise if submission fails. No ACK exists yet.
+            if submit_targets(sent_q, gripper_command) is False:
+                raise RuntimeError("verified simulator drive submission rejected")
+            boundary.note_submission(t, achieved, sent_q, mechanism="isaac_apply_action")
+        adapter.report_execution(t, accepted=True, tcp_pose=achieved,
+                                 gripper_command=gripper_command, held=held)
+        if boundary is not None:
+            boundary.acknowledge(t, achieved)
+        return achieved
 
     if hold_budget is not None:
         from phantom.drivers.servo_hold import verified_constraint_hold
@@ -320,23 +371,28 @@ def report_servo_limiter_execution(adapter, t, selection, gripper_command, rejec
                 telemetry.update(state, held=held)
             if state["timed_out"]:
                 adapter.request_stop("servo_constraint_hold_timeout")
-                adapter.report_execution(t, accepted=False, gripper_command=gripper_command,
+                boundary = getattr(adapter.safety, "boundary_projection", None)
+                adapter.report_execution(t, accepted=False,
+                                         gripper_command=gripper_command if boundary is None else None,
                                          reason="servo_constraint_hold_timeout", controller_stop=True)
+                if boundary is not None and telemetry is not None:
+                    telemetry["drive_not_submitted"] = True
                 return None, rejects
-            achieved = forward_pose(sent_q)
-            adapter.report_execution(t, accepted=True, tcp_pose=achieved,
-                                     gripper_command=gripper_command, held=held)
-            return achieved, rejects if held else 0
+            achieved = report_verified(sent_q, held=held)
+            return achieved, rejects if held or achieved is None else 0
 
     if selection.accepted:
-        achieved = forward_pose(selection.q)
-        adapter.report_execution(
-            t, accepted=True, tcp_pose=achieved, gripper_command=gripper_command
-        )
-        return achieved, 0
+        achieved = report_verified(selection.q)
+        return achieved, rejects if achieved is None else 0
     rejects += 1
     if rejects >= 25:
         adapter.request_stop("servo_limiter_stall")
+    boundary = getattr(adapter.safety, "boundary_projection", None)
+    if boundary is not None:
+        if submit_targets is None:
+            raise ValueError("enabled boundary guard requires actual drive submission before gripper ACK")
+        if submit_targets(qref, gripper_command) is False:
+            raise RuntimeError("simulator gripper drive submission rejected")
     adapter.report_execution(
         t, accepted=False, gripper_command=gripper_command, reason=selection.reason
     )
@@ -511,7 +567,7 @@ class PolicyAudit:
             json.dumps(
                 {
                     **row,
-                    "status": "drive_submitted",
+                    "status": row.get("status", "drive_submitted"),
                     "active_replan_id": self.active_replan_id,
                 },
                 default=_json_value,
@@ -531,16 +587,22 @@ class PolicyAudit:
 
 def load_command_replay(args, cfg):
     """Validate target truth before Kit starts, preserving the legacy format."""
-    from phantom.sim.command_replay import NativeRecordedDriveCommands, RecordedDriveCommands
+    from phantom.sim.command_replay import NativeFingerHoldReplay, NativeRecordedDriveCommands, RecordedDriveCommands
     from phantom.sim.gripper_articulation import is_adaptive, is_articulated
 
     if not args.command_trace or not args.policy_initial_state:
         raise ValueError("command_replay requires an explicit command trace and measured initial state")
     manifest = getattr(args, "command_trace_manifest", None)
+    hold_at = getattr(args, "command_finger_hold_at", None)
+    if hold_at is not None and getattr(args, "mode", None) != "command_replay":
+        raise ValueError("--command-finger-hold-at requires command_replay mode")
     if is_adaptive(cfg):
         if manifest is None:
             raise ValueError("Native command_replay requires --command-trace-manifest with named radian drive references")
-        return NativeRecordedDriveCommands(args.command_trace, manifest_path=manifest, cfg=cfg)
+        replay = NativeRecordedDriveCommands(args.command_trace, manifest_path=manifest, cfg=cfg)
+        return NativeFingerHoldReplay(replay, hold_at_s=hold_at) if hold_at is not None else replay
+    if hold_at is not None:
+        raise ValueError("--command-finger-hold-at requires native adaptive command replay")
     if is_articulated(cfg):
         raise ValueError("Legacy command traces contain prismatic jaw metres; coupled W2L command replay remains unsupported")
     if manifest is not None:
@@ -550,6 +612,8 @@ def load_command_replay(args, cfg):
 
 def main():
     args = arguments()
+    if args.command_finger_hold_at is not None and args.mode != "command_replay":
+        raise ValueError("--command-finger-hold-at requires command_replay mode")
     if args.servo_reach_limiter and args.mode != "policy":
         raise ValueError("--servo-reach-limiter is only supported in policy mode")
     args.output = args.output.resolve()
@@ -898,13 +962,25 @@ def run(app, args, cfg, data, duration):
         return closure_from_joint_positions(values, cfg)
 
     native_mechanics_monitor = {"enabled": adaptive_gripper, "checks": 0}
+    from phantom.sim.native_failure_audit import (
+        NativeFailureHistory, json_value, read_diagnostic, runtime_readback,
+    )
+    native_failure_history = NativeFailureHistory() if adaptive_gripper else None
 
-    def check_native_mechanics(phase, t):
+    def check_native_mechanics(phase, t, drive_references):
         if not adaptive_gripper:
             return
         from phantom.sim.gripper_adaptive import mechanical_diagnostics
 
         values = np.asarray(robot.get_joint_positions()[fingers], float)
+        velocity_readback = read_diagnostic(
+            lambda: np.asarray(robot.get_joint_velocities()[fingers], float)
+        )
+        velocities = velocity_readback.get("value")
+        native_failure_history.observe(
+            phase, t, finger_names, values, velocities, drive_references[fingers],
+            velocity_read_error=velocity_readback.get("error"),
+        )
         try:
             diagnostic = mechanical_diagnostics(values)
         except ValueError as error:
@@ -919,7 +995,26 @@ def run(app, args, cfg, data, duration):
         if not diagnostic["passed"]:
             failure = {"phase": phase, "t_s": float(t), "diagnostic": diagnostic,
                        "finger_joint_names": list(finger_names),
-                       "finger_q_rad": [float(v) if np.isfinite(v) else str(v) for v in values]}
+                       "finger_q_rad": json_value(values),
+                       "finger_qd_rad_s": json_value(velocities),
+                       "finger_qd_readback": velocity_readback,
+                       "desired_drive_references_rad": dict(zip(finger_names, json_value(drive_references[fingers]))),
+                       "recent_physics_steps": native_failure_history.report(),
+                       "runtime_readback": read_diagnostic(lambda: runtime_readback(
+                           stage, roots[0], paths["joint_paths"], robot, finger_names, fingers
+                       )),
+                       "failure_step_contacts": {"t_s": float(t), "physics_dt_s": float(dt)}}
+            # These getters inspect the already completed physics step. They
+            # neither advance physics nor alter policy/safety observation state.
+            for label, reader in (
+                ("gel", gel_views),
+                ("robot_environment", robot_environment_views),
+                ("gripper_environment", gripper_wrist.reader if gripper_wrist is not None else None),
+            ):
+                failure["failure_step_contacts"][label] = (
+                    read_diagnostic(lambda reader=reader: reader.get_all(dt))
+                    if reader is not None else {"available": False, "reason": "not configured"}
+                )
             (args.output / "native_mechanics_failure.json").write_text(
                 json.dumps(failure, indent=2, allow_nan=False) + "\n"
             )
@@ -1008,7 +1103,7 @@ def run(app, args, cfg, data, duration):
             if adaptive_gripper:
                 native_finger_settling.append(np.r_[settling_t, robot.get_joint_positions()[fingers]])
                 try:
-                    check_native_mechanics("initialization_settling", settling_t)
+                    check_native_mechanics("initialization_settling", settling_t, initial_drive)
                 except RuntimeError:
                     np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling,
                                         native_finger_samples=native_finger_settling)
@@ -1018,12 +1113,13 @@ def run(app, args, cfg, data, duration):
         world.render()
     camera.get_rgba()
     settled_position = np.asarray(packet.get_world_pose()[0])
+    next_progress_check_t = 0.0
     settling_error = float(np.linalg.norm(settled_position - cfg["waffle"]["center"]))
     initialization = {
         "adaptive_passive_joints": adaptive_gripper,
         "initial_finger_seed_rad": qfull[fingers].tolist() if adaptive_gripper else None,
         "initial_finger_drive_references_rad": initial_drive[fingers].tolist() if adaptive_gripper else None,
-        "passive_settling_s": 2.0 if adaptive_gripper and args.mode in ("dynamics", "policy") else 0.0,
+        "passive_settling_s": 2.0 if adaptive_gripper and args.mode in ("dynamics", "policy", "command_replay") else 0.0,
         "policy_initial_state": initial_state,
         "policy_initial_state_sha256": hashlib.sha256(
             args.policy_initial_state.read_bytes()
@@ -1058,8 +1154,13 @@ def run(app, args, cfg, data, duration):
     (args.output / "initialization.json").write_text(
         json.dumps(initialization, indent=2) + "\n"
     )
-    check_native_mechanics("after_initialization_settling", 0.)
+    check_native_mechanics("after_initialization_settling", 0., initial_drive)
     if adaptive_gripper:
+        (args.output / "native_runtime_readback.json").write_text(
+            json.dumps(read_diagnostic(lambda: runtime_readback(
+                stage, roots[0], paths["joint_paths"], robot, finger_names, fingers
+            )), indent=2, allow_nan=False) + "\n"
+        )
         initialization["native_mechanics"] = native_mechanics_monitor["last_diagnostic"]
         initialization["settled_finger_q_rad"] = robot.get_joint_positions()[fingers].tolist()
         (args.output / "initialization.json").write_text(
@@ -1103,6 +1204,9 @@ def run(app, args, cfg, data, duration):
     if not writer.isOpened():
         raise RuntimeError("Could not create sim.mp4")
     adapter = policy = audit = probe = None
+    boundary_audit = None
+    emergency_authority = emergency_trace = None
+    boundary_loop_completed = False
     if args.mode == "contact_probe":
         if articulated_gripper:
             from phantom.sim.gripper_probe import initialize as initialize_probe
@@ -1356,6 +1460,13 @@ def run(app, args, cfg, data, duration):
                 )
             release_spec = None
             release_config = None
+            boundary_spec = None
+            if args.boundary_projection_config:
+                from phantom.deploy.boundary_projection import BoundaryProjectionConfig
+                boundary_spec = BoundaryProjectionConfig.from_dict(
+                    json.loads(args.boundary_projection_config.read_text())).to_dict()
+                if servo_reach_limits is None or servo_hold_budget is None:
+                    raise ValueError("boundary projection requires verified shared servo limiter and hold budget")
             if args.placement_release_config:
                 from phantom.sim.release_controller import PlacementReleaseConfig
 
@@ -1376,10 +1487,17 @@ def run(app, args, cfg, data, duration):
                 else None,
                 delivered_plan_callback=audit.delivered,
                 release_config=release_config,
+                boundary_config=boundary_spec,
                 controller_profile=args.placement_controller_profile,
                 policy_delivery_clock=args.policy_delivery_clock,
             )
             adapter.reset(seed=args.seed)
+            if adapter.safety.boundary_projection is not None:
+                from phantom.sim.boundary_audit import BoundaryPhysicsAudit
+                boundary_audit = BoundaryPhysicsAudit(
+                    adapter.safety.boundary_projection, dt,
+                    hashlib.sha256(args.boundary_projection_config.read_bytes()).hexdigest(),
+                )
             if "native_arm_ft" in data:
                 ft_idx = int(np.argmin(np.abs(data["native_arm_ft_t"])))
                 wrist_bias = np.asarray(data["native_arm_ft"][ft_idx], dtype=float)
@@ -1456,6 +1574,10 @@ def run(app, args, cfg, data, duration):
                         if terminal_veto
                         else None,
                         "placement_release": release_spec,
+                        "boundary_projection": boundary_spec,
+                        "boundary_projection_config_sha256": hashlib.sha256(
+                            args.boundary_projection_config.read_bytes()).hexdigest()
+                        if args.boundary_projection_config else None,
                         "record_packet_support": args.record_packet_support,
                         "save_policy_observations": args.save_policy_observations,
                         "policy_initial_state_provenance": {
@@ -1490,10 +1612,12 @@ def run(app, args, cfg, data, duration):
             )
         for step in range(nsteps + 1):
             t = step * dt
-            check_native_mechanics("execution", t)
+            submitted_this_tick = False
+            check_native_mechanics("execution", t, desired)
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
+            measured_capture_t = t  # no world.step occurs before submission
             if (
                 gripper_wrist is not None
                 and (wrist_value is None or args.mode != "policy" or stop_after_step)
@@ -1560,6 +1684,20 @@ def run(app, args, cfg, data, duration):
                     tactile=tactile_sample,
                 )
                 if (
+                    args.no_progress_stop_s is not None
+                    and t + 1e-9 >= args.no_progress_stop_s
+                    and t + 1e-9 >= next_progress_check_t
+                    and adapter.stopped_reason is None
+                    and not getattr(adapter, "completed_reason", None)
+                ):
+                    next_progress_check_t = t + 0.5
+                    packet_lift_now = float(np.asarray(packet.get_world_pose()[0])[2] - settled_position[2])
+                    if packet_lift_now < 0.03:
+                        adapter.request_stop("no_progress_timeout")
+                        events.append({"t": t, "event": "no_progress_timeout",
+                                       "packet_lift_m": packet_lift_now,
+                                       "deadline_s": args.no_progress_stop_s})
+                if (
                     t + 1e-9 >= policy_ready_t
                     and not getattr(adapter, "completed_reason", None)
                     and adapter.ready_for_replan(t)
@@ -1609,9 +1747,46 @@ def run(app, args, cfg, data, duration):
                     }
                     # The gripper worker executes independently of arm IK, including
                     # the safety layer's release command on a stopped episode.
-                    desired[fingers] = finger_target(command.gripper)
                     if command.stopped:
-                        desired[ids] = qactual
+                        from phantom.sim.emergency_stop import (
+                            EmergencySubmissionFault, MeasuredStopAuthority,
+                            persist_submission_fault, write_receipt,
+                        )
+                        emergency_trace = (args.output / "emergency_stop_trace.jsonl").open("x")
+                        boundary = adapter.safety.boundary_projection
+                        emergency_authority = MeasuredStopAuthority(
+                            hw=hw, stop_t=t, stop_reason=command.reason,
+                            safety_events=command.diagnostics.get("safety_events", []),
+                            physics_dt=dt,
+                            feedback_max_age_s=boundary.config.feedback_max_age_s
+                            if boundary is not None else control_dt,
+                            emit=lambda row: write_receipt(emergency_trace, row),
+                        )
+                        stopped_target = desired.copy()
+                        stopped_target[fingers] = finger_target(command.gripper)
+                        stopped_target[ids] = qactual
+                        try:
+                            emergency_receipt = emergency_authority.submit(
+                                step=step, t=t, capture_t=measured_capture_t,
+                                q=qactual, qd=qd, tcp=tcp, candidate=stopped_target,
+                                arm_ids=ids, gripper_command=command.gripper,
+                                apply=lambda target: robot.apply_action(
+                                    ArticulationAction(joint_positions=target)),
+                                wrist_capture_t=wrist_sample_t,
+                                tactile_capture_t=policy_tactile_trace[-1][0]
+                                if policy_tactile_trace else None,
+                            )
+                        except EmergencySubmissionFault as error:
+                            persist_submission_fault(error=error, audit=audit,
+                                row=pending_execution, pause=world.pause)
+                            pending_execution = None
+                            raise
+                        # Commit accepted state only after the actual setter
+                        # returns without rejection; retain the exact old q/grip.
+                        desired[:] = stopped_target
+                        submitted_this_tick = True
+                        pending_execution.update(status="emergency_stop_submitted",
+                                                 emergency_stop=emergency_receipt)
                         adapter.report_execution(
                             t, accepted=True, tcp_pose=tcp, gripper_command=command.gripper
                         )
@@ -1643,14 +1818,29 @@ def run(app, args, cfg, data, duration):
                                 else []
                             )
 
-                        selection = select_servo_step(
-                            command.tcp_pose,
-                            forward_pose(desired[ids]),
-                            desired[ids].tolist(),
-                            control_dt,
-                            nominal_servo_ik,
-                            servo_reach_limits,
-                        )
+                        boundary = adapter.safety.boundary_projection
+                        try:
+                            selection = None if boundary is None else boundary.terminal_selection(
+                                forward_pose(desired[ids]), desired[ids].tolist(), control_dt, servo_reach_limits)
+                        except Exception as error:
+                            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+                            from phantom.drivers.servo_limiter import ServoStep
+                            if not isinstance(error, BoundaryProjectionStop):
+                                raise
+                            selection = ServoStep(None, None, error.reason, "stop", None, None, 0)
+                        if selection is None:
+                            selection = select_servo_step(
+                                command.tcp_pose,
+                                forward_pose(desired[ids]),
+                                desired[ids].tolist(),
+                                control_dt,
+                                nominal_servo_ik,
+                                servo_reach_limits,
+                            )
+                            if boundary is not None:
+                                selection = boundary.refine_rate_selection(
+                                    selection, forward_pose(desired[ids]), desired[ids].tolist(),
+                                    control_dt, nominal_servo_ik, servo_reach_limits, forward_pose)
                         held_qref = desired[ids].copy()
                         pending_execution.update(
                             ik_success=selection.accepted,
@@ -1665,11 +1855,33 @@ def run(app, args, cfg, data, duration):
                             },
                         )
                         hold_telemetry = {}
+
+                        def submit_verified_targets(joints, grip):
+                            nonlocal submitted_this_tick
+                            submitted = desired.copy()
+                            submitted[ids] = joints
+                            submitted[fingers] = finger_target(grip)
+                            ok = robot.apply_action(ArticulationAction(joint_positions=submitted))
+                            if ok is False:
+                                raise RuntimeError("verified simulator drive submission rejected")
+                            desired[:] = submitted
+                            submitted_this_tick = True
+
                         achieved, servo_limiter_rejects = report_servo_limiter_execution(
                             adapter, t, selection, command.gripper, servo_limiter_rejects,
                             hold_budget=servo_hold_budget, qref=held_qref,
                             limits=servo_reach_limits, dt=control_dt, telemetry=hold_telemetry,
+                            submit_targets=submit_verified_targets if boundary is not None else None,
                         )
+                        if hold_telemetry.get("boundary_stop") or hold_telemetry.get("drive_not_submitted"):
+                            # Final IK rejection precedes both motor target
+                            # submission and any new gripper acknowledgement.
+                            pending_execution["gripper_command"] = adapter._last_grip
+                            if hold_telemetry.get("boundary_stop"):
+                                events.append({"t": t, "event": "controller_stop",
+                                               "reason": hold_telemetry["boundary_stop"]})
+                        else:
+                            desired[fingers] = finger_target(command.gripper)
                         if achieved is not None and selection.accepted:
                             desired[ids] = selection.q
                         if hold_telemetry:
@@ -1686,6 +1898,7 @@ def run(app, args, cfg, data, duration):
                             servo_limiter_rejects
                         )
                     else:
+                        desired[fingers] = finger_target(command.gripper)
                         ik = inverse_kinematics(
                             command.tcp_pose, desired[ids], max_joint_delta_rad=0.35
                         )
@@ -1729,7 +1942,41 @@ def run(app, args, cfg, data, duration):
                             pending_execution["accepted_tcp"] = None
                     pending_execution["target_q"] = desired[ids].copy()
                     pending_execution["target_finger_q"] = desired[fingers].copy()
-            robot.apply_action(ArticulationAction(joint_positions=desired))
+            if boundary_audit is not None:
+                # This is the same measured state read at loop entry; physics
+                # has not advanced during control. Include the newly accepted
+                # drive target before submission, and every subsequent hold.
+                boundary_audit.note_selected(
+                    adapter.safety.boundary_projection.last.get("selected_tcp_pose"),
+                    kind=adapter.safety.boundary_projection.last.get("selected_target_kind", "continuation"),
+                )
+                boundary_audit.sample(
+                    step, t, tcp, forward_pose(desired[ids]), qactual, qd,
+                    phase="stop_hold" if stop_after_step else "finish_hold"
+                    if adapter.completed_reason else "active",
+                )
+            if not submitted_this_tick:
+                if emergency_authority is not None:
+                    try:
+                        emergency_authority.submit(
+                            step=step, t=t, capture_t=measured_capture_t,
+                            q=qactual, qd=qd, tcp=tcp, candidate=desired,
+                            arm_ids=ids, gripper_command=adapter._last_grip,
+                            apply=lambda target: robot.apply_action(
+                                ArticulationAction(joint_positions=target)),
+                            wrist_capture_t=wrist_sample_t,
+                            tactile_capture_t=policy_tactile_trace[-1][0]
+                            if policy_tactile_trace else None,
+                        )
+                    except EmergencySubmissionFault as error:
+                        persist_submission_fault(error=error, audit=audit,
+                            row={"t": t, "stopped": True,
+                                 "stop_reason": adapter.stopped_reason,
+                                 "measured_q": qactual, "measured_qd": qd,
+                                 "measured_tcp": tcp}, pause=world.pause)
+                        raise
+                else:
+                    robot.apply_action(ArticulationAction(joint_positions=desired))
             if pending_execution is not None:
                 audit.executed(pending_execution)
                 pending_execution = None
@@ -1746,6 +1993,10 @@ def run(app, args, cfg, data, duration):
             last_tick = t + dt >= (
                 terminal_until if terminal_until is not None else duration
             )
+            if boundary_audit is not None:
+                # Enabled audits include the final readback at the terminal
+                # horizon, not just the step preceding it. Default path stays.
+                last_tick = t + 1e-9 >= (terminal_until if terminal_until is not None else duration)
             render = t + 1e-9 >= next_frame or last_tick
             previous_tcp = tcp
             if render:
@@ -1895,11 +2146,23 @@ def run(app, args, cfg, data, duration):
                 break
             if step < nsteps:
                 world.step(render=False)
+        boundary_loop_completed = True
         cv2.imwrite(
             str(args.output / "sim_last.png"), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         )
     finally:
+        if emergency_trace is not None:
+            emergency_trace.close()
         writer.release()
+        if boundary_audit is not None:
+            report = boundary_audit.finalize(
+                completed=boundary_loop_completed,
+                expected_end_s=terminal_until if terminal_until is not None else duration,
+                stopped_reason=adapter.stopped_reason, completed_reason=adapter.completed_reason,
+                completed_at_s=adapter.completed_at_s,
+            )
+            (args.output / "boundary_physics_audit.json").write_text(
+                json.dumps(report, indent=2, allow_nan=False) + "\n")
         if adaptive_gripper:
             (args.output / "native_mechanics_monitor.json").write_text(
                 json.dumps(native_mechanics_monitor, indent=2, allow_nan=False) + "\n"

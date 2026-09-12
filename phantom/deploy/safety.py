@@ -41,6 +41,18 @@ class SafetyEvent:
 class SafetyVerdict:
     action: SafetyAction
     events: list[SafetyEvent] = field(default_factory=list)
+    selected_target: np.ndarray | None = None
+
+
+# Shared native/simulator stop disposition; no driver import is needed.
+# Boundary events stop motion while retaining the accepted gripper target.
+LETGO_STOP_REASONS = ("wrench_limit", "veto_retry_cap")
+
+
+def is_letgo_reason(name: str | None) -> bool:
+    """Force/tactile and explicit veto stops release, including simultaneous events."""
+    return bool(name) and (str(name).startswith("tactile_")
+                          or str(name) in LETGO_STOP_REASONS)
 
 
 def camera_stale_s(hw: HardwareConfig) -> float:
@@ -79,9 +91,11 @@ _MAX_LOG_EVENTS = 1000
 
 
 class SafetyMonitor:
-    def __init__(self, hw: HardwareConfig, rings: dict[str, SharedRingBuffer]):
+    def __init__(self, hw: HardwareConfig, rings: dict[str, SharedRingBuffer], *, boundary_config=None):
         self.hw = hw
         self.rings = rings
+        from phantom.deploy.boundary_projection import make_boundary_projection
+        self.boundary_projection = make_boundary_projection(boundary_config, hw, rings)
         self.log_events: list[SafetyEvent] = []
         self.dropped_events = 0
         # kind -> the retained SafetyEvent for the condition currently active,
@@ -120,6 +134,7 @@ class SafetyMonitor:
         # windows; `contact_load` is the executor's read-only view (latch)
         self._pad_hist: dict[str, list[tuple[float, float]]] = {}
         self.contact_load: dict[str, float] = {}
+        self.contact_load_times: dict[str, float] = {}
 
     # ------------------------------------------------------------------
     def check(self, t_now: float, tcp_target: np.ndarray) -> SafetyVerdict:
@@ -186,6 +201,7 @@ class SafetyMonitor:
 
         # fingertip force / indentation e-stop (teacher rigs always record tactile)
         pad_load: dict[str, float] = {}
+        pad_load_times: dict[str, float] = {}
         for s in hw.tactile.sensors:
             ring = self.rings.get(f"tactile_{s.name}")
             if ring is None:
@@ -211,6 +227,7 @@ class SafetyMonitor:
                 while hist and t_now - hist[0][0] > max(win, 1e-3):
                     hist.pop(0)
                 pad_load[s.name] = max(v for _, v in hist)   # trailing max
+                pad_load_times[s.name] = float(ts_t[0])
             f_raw = tac.get("fields_ds") if hasattr(tac, "get") else None
             if f_raw is None:
                 continue
@@ -233,6 +250,7 @@ class SafetyMonitor:
         # stop (non-letgo: the object stays held). Needs at least two pads
         # reporting so a single wired sensor can never fire it alone.
         self.contact_load = dict(pad_load)
+        self.contact_load_times = dict(pad_load_times)
         lc_z = hw.safety.lift_complete_z_m
         if (lc_z > 0 and hw.safety.lift_complete_fz_n > 0 and len(pad_load) >= 2
                 and self._tcp_z is not None):
@@ -262,6 +280,20 @@ class SafetyMonitor:
                                           t_now - ts_c, SafetyAction.STOP_EPISODE))
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
+        # Optional command treatment, after physical checks and within this
+        # single stateful evaluation. A force/protective stop always wins.
+        selected_target = None
+        if self.boundary_projection is not None:
+            from phantom.deploy.boundary_projection import BoundaryProjectionStop
+            try:
+                selected_target = self.boundary_projection.select(
+                    t_now, tcp_target, self.clamp_target(np.asarray(tcp_target, dtype=float)),
+                    physical_preempted=action in (SafetyAction.STOP_EPISODE, SafetyAction.PROTECTIVE_STOP),
+                )
+                tcp_target = selected_target
+            except BoundaryProjectionStop as error:
+                events.append(SafetyEvent(t_now, error.reason, 0.0, SafetyAction.STOP_EPISODE))
+                action = _max(action, SafetyAction.STOP_EPISODE)
         # reach clamp on the commanded target (see clamp_target)
         if (hw.safety.reach_clamp_m is not None
                 and float(np.linalg.norm(tcp_target[:3])) > hw.safety.reach_clamp_m):
@@ -286,12 +318,10 @@ class SafetyMonitor:
         if hb is not None:
             p3 = self.clamp_target(np.asarray(tcp_target, dtype=np.float64))[:3]
             if not hb.contains(p3):
-                # A pure TOP-face exit is a successful lift outgrowing the
-                # demo envelope, not the policy getting lost sideways — stop
-                # the episode but do NOT let go: "hitbox_exit" is a let-go
-                # reason in the executor, and opening the fingers half a
-                # metre up drops a held object (rig 2026-09-01: the first
-                # tactile-confirmed grasp was dropped exactly this way).
+                # Keep the legacy top-face event distinct for diagnostics.
+                # Every boundary still stops the episode; it does not prove
+                # a successful lift or placement. The executor holds the
+                # accepted gripper target unless another event requires release.
                 only_top = (p3[2] > hb.z[1]
                             and hb.x[0] <= p3[0] <= hb.x[1]
                             and hb.y[0] <= p3[1] <= hb.y[1])
@@ -302,7 +332,7 @@ class SafetyMonitor:
                 action = _max(action, SafetyAction.STOP_EPISODE)
 
         self._record(t_now, events)
-        return SafetyVerdict(action=action, events=events)
+        return SafetyVerdict(action=action, events=events, selected_target=selected_target)
 
     def _record(self, t_now: float, events: list[SafetyEvent]) -> None:
         """Retain and log CONDITIONS, not ticks.
@@ -369,7 +399,16 @@ class SafetyMonitor:
         self._wrench_last_t = t_now
         debounce_s = sf.wrench_debounce_ticks / self.hw.control.action_rate_hz
         event, adapted = None, False
-        if f_mag > sf.wrench_limit_N or t_mag > sf.wrench_limit_Nm:
+        armed = (self._wrench_capture_t is None
+                 or sample_t - self._wrench_capture_t >= float(getattr(sf, "wrench_arm_delay_s", 0.0) or 0.0))
+        if not armed:
+            # baseline still converging: adapt, never trip (rig 09-09)
+            self._wrench_over_since = None
+            if dt > 0.0 and not fixed:
+                alpha = min(1.0, dt / sf.wrench_baseline_tau_s)
+                self._wrench_base += alpha * (ft - self._wrench_base)
+                adapted = True
+        elif f_mag > sf.wrench_limit_N or t_mag > sf.wrench_limit_Nm:
             if self._wrench_over_since is None:
                 self._wrench_over_since = t_now
             if t_now - self._wrench_over_since >= debounce_s:
@@ -468,6 +507,22 @@ class SafetyMonitor:
             if peak > frac * limit:
                 return False
         return True
+
+    def target_diagnostics(self, t: float, tcp_target: np.ndarray) -> dict:
+        """Preserve the checked proposal, before a stop replaces the command.
+
+        Hitbox checks use the workspace/reach-clamped proposal. Neither pose
+        below is measured feedback or proof that a command was submitted.
+        """
+        target = np.asarray(tcp_target, dtype=np.float64)
+        return {
+            "checked_at_s": float(t),
+            "proposed_tcp_pose": target.tolist(),
+            "hitbox_checked_tcp_pose": (
+                self.clamp_target(target).tolist()
+                if self.hw.safety.hitbox_m is not None else None
+            ),
+        }
 
     def clamp_target(self, tcp_target: np.ndarray) -> np.ndarray:
         ws = self.hw.safety.workspace_m

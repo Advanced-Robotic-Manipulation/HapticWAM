@@ -94,6 +94,37 @@ def passive_settings(cfg):
     }
 
 
+def driver_settings(cfg):
+    """Return actual drive coefficients and their common-coordinate budget.
+
+    ``equal_split`` is an opt-in mechanics diagnostic. It distributes the
+    existing gain and torque budgets across two implicit joint drives. On the
+    driver-equality manifold their ideal summed force law equals the original
+    single-master law. Away from equality, independent joint feedback adds a
+    differential spring/damper, unlike the reference's average-coordinate
+    tendon actuator. This does not import native actuator calibration or claim
+    equivalent constrained-solver behavior.
+    """
+    settings = _settings(cfg)
+    distribution = settings.get("driver_force_distribution", "single_master")
+    if distribution not in ("single_master", "equal_split"):
+        raise ValueError("driver_force_distribution must be single_master or equal_split")
+    common = {
+        "stiffness_nm_rad": _positive(settings["drive_stiffness_nm_rad"], "motor stiffness"),
+        "damping_nm_s_rad": _finite(settings["drive_damping_nm_s_rad"], "motor damping", 0.),
+        "max_torque_nm": _positive(settings["drive_max_torque_nm"], "motor torque"),
+    }
+    weights = (1., 0.) if distribution == "single_master" else (.5, .5)
+    return {
+        "distribution": distribution,
+        "common_mode_drive": common,
+        "driver_drives": {
+            name: {key: weight * value for key, value in common.items()}
+            for name, weight in zip(DRIVERS, weights)
+        },
+    }
+
+
 def validate_physics_timestep(cfg):
     """Reject the timestep that caused native loop divergence in contact tests.
 
@@ -333,16 +364,13 @@ def append_gripper_urdf(root, repo, cfg):
 
 
 def configure_gripper_physics(stage, joint_paths, cfg):
-    """Eight tree revolutes, two excluded spherical loops, one driven master.
+    """Eight tree revolutes, two excluded loops, configurable driver allocation.
 
     USD angular drive positions use degrees and stiffness/damping use per-degree
     coefficients. The public command vectors and reference values use radians.
     """
     from pxr import Gf, Sdf, UsdPhysics
-    settings, passive = _settings(cfg), passive_settings(cfg)
-    stiffness = _positive(settings["drive_stiffness_nm_rad"], "motor stiffness")
-    damping = _finite(settings["drive_damping_nm_s_rad"], "motor damping", 0.)
-    torque = _positive(settings["drive_max_torque_nm"], "motor torque")
+    passive, drivers = passive_settings(cfg), driver_settings(cfg)
     paths = {n: joint_paths[n] for n in JOINT_NAMES}
     prims = {n: stage.GetPrimAtPath(str(p)) for n,p in paths.items()}
     if len(set(map(str,paths.values()))) != 8 or not all(p.IsA(UsdPhysics.RevoluteJoint) for p in prims.values()):
@@ -363,12 +391,13 @@ def configure_gripper_physics(stage, joint_paths, cfg):
         drive.CreateTypeAttr("force")
         drive.CreateTargetVelocityAttr(0.)
         is_spring = name in SPRINGS
-        k = stiffness if name == MASTER else passive["spring_stiffness_nm_rad"] if is_spring else 0.
-        d = damping if name == MASTER else passive["spring_damping_nm_s_rad"] if is_spring else 0.
+        motor = drivers["driver_drives"].get(name)
+        k = motor["stiffness_nm_rad"] if motor else passive["spring_stiffness_nm_rad"] if is_spring else 0.
+        d = motor["damping_nm_s_rad"] if motor else passive["spring_damping_nm_s_rad"] if is_spring else 0.
         drive.CreateStiffnessAttr(k * math.pi / 180)
         drive.CreateDampingAttr(d * math.pi / 180)
         drive.CreateTargetPositionAttr(math.degrees(passive["spring_reference_rad"]) if is_spring else 0.)
-        drive.CreateMaxForceAttr(torque if name == MASTER else float("inf") if is_spring else 0.)
+        drive.CreateMaxForceAttr(motor["max_torque_nm"] if motor else float("inf") if is_spring else 0.)
         if name == DRIVERS[1]:
             token = "rot" + axes[name]
             prim.AddAppliedSchema("PhysxMimicJointAPI:" + token)
@@ -416,12 +445,28 @@ def configure_gripper_physics(stage, joint_paths, cfg):
         pa, pb = body(a), body(b)
         UsdPhysics.FilteredPairsAPI.Apply(pa).CreateFilteredPairsRel().AddTarget(pb.GetPath())
         filtered.append([str(pa.GetPath()), str(pb.GetPath())])
+    master = drivers["driver_drives"][MASTER]
     return {
         "model": MODEL, "master_joint": MASTER, "mimic_joints": [DRIVERS[1]],
         "coupling": "Only driver symmetry; all native couplers/followers/spring links are passive",
         "loop_constraints": loops, "passive_spring": {**passive, "torque_cap": "unlimited native spring response"},
-        "master_stiffness_nm_rad": stiffness, "master_damping_nm_s_rad": damping, "master_max_torque_nm": torque,
-        "usd_stiffness_nm_degree": stiffness*math.pi/180, "usd_damping_nm_s_degree": damping*math.pi/180,
+        "driver_force_distribution": drivers["distribution"],
+        "common_mode_drive": drivers["common_mode_drive"],
+        "driver_drives": drivers["driver_drives"],
+        "master_stiffness_nm_rad": master["stiffness_nm_rad"],
+        "master_damping_nm_s_rad": master["damping_nm_s_rad"],
+        "master_max_torque_nm": master["max_torque_nm"],
+        "usd_stiffness_nm_degree": master["stiffness_nm_rad"]*math.pi/180,
+        "usd_damping_nm_s_degree": master["damping_nm_s_rad"]*math.pi/180,
+        "driver_actuator_transfer": {
+            "status": "Diagnostic candidate; physical response and numerical validity unqualified" if drivers["distribution"] == "equal_split" else "Existing single-master drive retained",
+            "reference": "Pinned native XML distributes actuator force 0.5/0.5 through an average-coordinate fixed tendon; its gains and force cap remain unimported",
+            "common_mode": "For qL=qR and vL=vR, summed ideal drive torque is clip(K*(target-qL)-D*vL, -T, T) under either distribution",
+            "equal_split_difference": "Two independent implicit half-gain drives add differential spring/damping away from equality; they are not the native average-coordinate tendon actuator",
+            "ideal_unsaturated_differential_torque": "tauL-tauR = -K*(qL-qR)/2 - D*(vL-vR)/2 for equal_split; the average-coordinate tendon contributes zero differential actuator torque",
+            "ideal_torque_difference_bound": "With identical targets and independent half-caps, each equal_split torque differs from a half-force average-coordinate actuator using the same K/D/T budget by at most (K*abs(qL-qR)+D*abs(vL-vR))/4; summed torque differs from either that same-budget average-coordinate actuator or single_master by at most (K*abs(qL-qR)+D*abs(vL-vR))/2",
+            "force_law_scope": "Constitutive PD laws evaluated at identical states, including scalar torque clipping; not an actual implicit-solver torque readback or a bound on future trajectories",
+        },
         "structural_collision_filters": filtered, "opposing_sensor_contacts_disabled": False,
         "solver_transfer": "Native point equality represented by excluded PhysX spherical joints; reference soft-constraint solver parameters and armature not copied",
     }

@@ -551,6 +551,13 @@ def evaluate_policy_trace(
         "max_lift_m": float(lift.max()),
         "carry_distance_m": max_carry,
         "final_inside_bin": bool(inside_bin[-1]),
+        # stage-3 ("in the box, still gripped") evidence for the zoo readout:
+        # bilateral pad contact retained while the packet is over/inside the
+        # opening; never a placement claim.
+        "final_over_bin": bool(over_bin[-1]),
+        "final_bilateral_contact": bool(bilateral[-1]),
+        "grasped_over_bin_any": bool(np.any(over_bin & bilateral)),
+        "grasped_inside_bin_any": bool(np.any(inside_bin & bilateral)),
         "final_contacts_unloaded": bool(unloaded[-1]),
         "final_speed_m_s": float(speed[-1]),
         "final_angular_speed_rad_s": float(angular[-1]),

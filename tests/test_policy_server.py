@@ -48,6 +48,7 @@ class _StubPolicy:
         self.task_text = ""
         self.drop_video = False
         self.close_p = 0.5
+        self.action_time_origin = "inference_ready"  # real policy default
         self.seen_prev_cpk = []
 
     def replan(self, obs, prev_plan, tcp_pose):

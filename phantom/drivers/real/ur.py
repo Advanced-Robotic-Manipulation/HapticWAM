@@ -288,6 +288,19 @@ class URArm(Arm):
     _RT_STOPPED = 1
     _RT_PLAYING = 2
 
+    def _control_script_dead(self) -> bool:
+        """True only when the receive side POSITIVELY reports the control
+        script not PLAYING. Unreadable state (no receive, a test double
+        without getRuntimeState, a transport error) is NOT a verdict —
+        the stale-stream guard covers that path."""
+        r = self._recv
+        if r is None:
+            return False
+        try:
+            return int(r.getRuntimeState()) != URArm._RT_PLAYING
+        except Exception:
+            return False
+
     def program_running(self) -> bool:
         """Is the control SCRIPT actually running (not just the socket)?
 
@@ -434,6 +447,19 @@ class URArm(Arm):
         if self._ik_rejects == 1:
             self._hold_since = now
             log.warning("servo hold (%s): %s", why, detail)
+        # Rig 09-09: 24 of 61 episodes ended as a 4 s "hold" that was really a
+        # DEAD CONTROL SCRIPT (E-stop): ur_rtde's getInverseKinematics returns
+        # an EMPTY solution, never an error, once the script is down, so the
+        # rejects looked like an unreachable target. Ask the receive side
+        # (runtime_state, read-only) on the first reject and every 25 ticks
+        # and name the real cause immediately.
+        if self._ik_rejects == 1 or self._ik_rejects % 25 == 0:
+            if self._control_script_dead():
+                diag = self._diagnose_control_loss(None, None)
+                raise ControlLost(
+                    "control script is not running (runtime_state != PLAYING) "
+                    f"— E-stop / protective stop / pendant popup; robot: "
+                    f"{diag.get('summary', 'n/a')}")
         if why == "ik_branch":
             # a solution on another branch: streaming it would whip the arm;
             # a sustained run means the seed is lost — give up fast
@@ -463,13 +489,16 @@ class URArm(Arm):
         return ServoResult(False, getattr(self, "_last_cmd_pose", None), why)
 
     def servo_l(self, tcp_pose: np.ndarray, dt: float, lookahead: float,
-                gain: int) -> ServoResult:
+                gain: int, *, target_guard=None) -> ServoResult:
         with self._ctrl_lock:
             self._servo_active = True
             ctrl = self._require_ctrl()
             safety = getattr(getattr(self, "hw", None), "safety", None)
             if getattr(safety, "servo_constraint_hold_s", None) is not None:
-                return self._servo_l_bounded_hold(ctrl, tcp_pose, dt, lookahead, gain)
+                return self._servo_l_bounded_hold(ctrl, tcp_pose, dt, lookahead, gain,
+                                                  target_guard=target_guard)
+            if target_guard is not None:
+                raise ValueError("boundary projection requires the verified bounded servo path")
             qref = self._last_qsol
             if qref is None and self._recv is not None:
                 qref = list(self._recv.getActualQ())
@@ -608,7 +637,7 @@ class URArm(Arm):
         log.error("servo control lost: %s", d["summary"])
         return d
 
-    def _servo_l_bounded_hold(self, ctrl, tcp_pose, dt, lookahead, gain):
+    def _servo_l_bounded_hold(self, ctrl, tcp_pose, dt, lookahead, gain, *, target_guard=None):
         """Opt-in: stream a verified held anchor without fabricating progress.
 
         Invalid solves retain the historical fault counter. Only explicit
@@ -634,10 +663,17 @@ class URArm(Arm):
             qref = list(self._recv.getActualQ())
         if prev is None and self._recv is not None:
             prev = np.asarray(self._recv.getActualTCPPose(), dtype=float)
-        selection = servo_limiter.select_servo_step(
-            tcp_pose, prev, qref, dt,
-            lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
-        )
+        selection = None if target_guard is None else target_guard.terminal_selection(prev, qref, dt, limits)
+        if selection is None:
+            selection = servo_limiter.select_servo_step(
+                tcp_pose, prev, qref, dt,
+                lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
+            )
+            if target_guard is not None:
+                selection = target_guard.refine_rate_selection(
+                    selection, prev, qref, dt,
+                    lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
+                    lambda q: ctrl.getForwardKinematics(np.asarray(q).tolist()))
         held = verified_constraint_hold(selection, qref, dt, limits)
         if not selection.accepted and not held:
             return self._reject(
@@ -659,6 +695,15 @@ class URArm(Arm):
         }
         if state["timed_out"]:
             raise ConstraintHoldTimeout("verified constraint hold exceeded its fixed deadline")
+        if target_guard is not None:
+            # Calibrated controller FK (active TCP), not a nominal UR model.
+            # A missing/failed FK method fails before any joint submission.
+            sent_pose = np.asarray(ctrl.getForwardKinematics(sent_q.tolist()), dtype=float)
+            target_guard.verify_final(
+                time.perf_counter(), sent_pose, sent_q,
+                verified=bool(selection.all_ik_valid and selection.all_ik_on_branch),
+                dt=dt, previous_pose=prev,
+            )
         ok = ctrl.servoJ(sent_q.tolist(), 0.0, 0.0, dt, lookahead, gain)
         if ok is False:
             diag = self._diagnose_control_loss(sent_q, sent_pose)
@@ -668,6 +713,9 @@ class URArm(Arm):
             )
         self._last_qsol = sent_q.tolist()
         self._last_cmd_pose = sent_pose.copy()
+        if target_guard is not None:
+            target_guard.note_submission(time.perf_counter(), sent_pose, sent_q, mechanism="native_servoJ")
+            target_guard.acknowledge(time.perf_counter(), sent_pose)
         if selection.violation is not None:
             self._limiter_hits += 1
         if held:

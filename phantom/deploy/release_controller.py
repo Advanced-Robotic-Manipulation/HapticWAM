@@ -12,6 +12,9 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 
+from phantom.deploy.unlatched_finish import UnlatchedFinishConfig, UnlatchedFinishObserver
+from phantom.deploy.relative_release import RelativeReleaseConfig, RelativeReleaseGate, finite_json
+
 
 @dataclass(frozen=True)
 class PlacementReleaseConfig:
@@ -24,6 +27,8 @@ class PlacementReleaseConfig:
     rearm_close_command_min: float = 0.5
     finish_after_release: bool = False
     finish_observation_s: float = 2.0
+    unlatched_finish: UnlatchedFinishConfig | None = None
+    relative_release: RelativeReleaseConfig | None = None
 
     def __post_init__(self):
         for name in ("tcp_min_m", "tcp_max_m"):
@@ -45,13 +50,32 @@ class PlacementReleaseConfig:
             raise TypeError("finish_after_release must be a boolean")
         if not np.isfinite(self.finish_observation_s) or self.finish_observation_s <= 0:
             raise ValueError("finish_observation_s must be finite and positive")
+        if isinstance(self.unlatched_finish, dict):
+            object.__setattr__(self, "unlatched_finish", UnlatchedFinishConfig(**self.unlatched_finish))
+        if self.unlatched_finish is not None:
+            if not isinstance(self.unlatched_finish, UnlatchedFinishConfig):
+                raise TypeError("unlatched_finish must be a configuration object or dict")
+            if not self.finish_after_release:
+                raise ValueError("unlatched_finish requires finish_after_release")
+        if isinstance(self.relative_release, dict):
+            object.__setattr__(self, "relative_release", RelativeReleaseConfig(**self.relative_release))
+        if self.relative_release is not None:
+            if not isinstance(self.relative_release, RelativeReleaseConfig):
+                raise TypeError("relative_release must be a configuration object or dict")
+            if self.unlatched_finish is not None and self.relative_release.observer_config() != self.unlatched_finish:
+                raise ValueError("Relative release and optional finish observer must share exact event and region criteria")
 
     @classmethod
     def from_dict(cls, values):
         return cls(**values)
 
     def to_dict(self):
-        return asdict(self)
+        values = asdict(self)
+        if self.unlatched_finish is None:
+            values.pop("unlatched_finish")  # preserve legacy serialized config
+        if self.relative_release is None:
+            values.pop("relative_release")
+        return values
 
 
 class PlacementReleaseController:
@@ -63,8 +87,17 @@ class PlacementReleaseController:
     a subsequent policy closing command permits a new load latch.
     """
 
-    def __init__(self, config: PlacementReleaseConfig):
+    def __init__(self, config: PlacementReleaseConfig, *, loaded_force_min_n=None):
         self.config = config
+        self.unlatched_observer = (
+            UnlatchedFinishObserver(config.unlatched_finish) if config.unlatched_finish else None
+        )
+        if config.relative_release is not None and loaded_force_min_n is None:
+            raise ValueError("Relative release requires the explicit native loaded-latch threshold")
+        self.relative_gate = (RelativeReleaseGate(config.relative_release,
+            loaded_force_min_n=loaded_force_min_n,
+            unloaded_force_max_n=config.unloaded_force_max_n,
+            unloaded_hold_s=config.unloaded_hold_s) if config.relative_release is not None else None)
         self.reset()
 
     def reset(self):
@@ -74,9 +107,19 @@ class PlacementReleaseController:
         self.committed_at = None
         self.finished_at = None
         self.last_event = None
+        self._native_latch = None
+        self._last_relative_update_input = None
+        if self.relative_gate is not None:
+            self.relative_gate.reset()
+        if self.unlatched_observer is not None:
+            self.unlatched_observer.reset()
 
     @property
     def variant(self):
+        if self.relative_gate is not None:
+            return "placement_relative_policy_release_v1" + ("_observe_finish" if self.unlatched_observer is not None else "")
+        if self.unlatched_observer is not None:
+            return "placement_policy_release_finish_v3_observe_unlatched"
         return (
             "placement_policy_release_finish_v2"
             if self.config.finish_after_release
@@ -88,8 +131,11 @@ class PlacementReleaseController:
         return self.phase == "finished"
 
     def note_latch(self, latch):
+        self._native_latch = latch
         if latch is not None and self.phase == "unarmed":
             self.phase = "holding"
+            if self.unlatched_observer is not None:
+                self.unlatched_observer.reset("native_latch_owns_release")
 
     def in_volume(self, tcp):
         xyz = np.asarray(tcp, dtype=float)[:3]
@@ -109,7 +155,15 @@ class PlacementReleaseController:
 
     @property
     def suppress_latch(self):
-        return self.phase in ("releasing", "waiting_for_close", "finished")
+        return self.phase in ("releasing", "waiting_for_close", "finished", "relative_releasing", "relative_released")
+
+    @property
+    def observes_relative_release(self):
+        return self.relative_gate is not None
+
+    @property
+    def latch_floor_to_restore(self):
+        return self.relative_gate.restore_latch if self.relative_gate is not None else None
 
     def update(
         self,
@@ -122,9 +176,63 @@ class PlacementReleaseController:
         eligible,
         accepted_grip=None,
         finish_permitted=True,
+        accepted_grip_ack=None,
+        feedback_times=None,
+        observer_deferred=False,
+        played_sample=None,
     ):
         self.last_event = None
         c = self.config
+        if self.relative_gate is not None:
+            self._last_relative_update_input = finite_json(dict(t=t, tcp=tcp, policy_grip=policy_grip,
+                measured_grip=measured_grip, pad_loads=pad_loads, eligible=eligible,
+                accepted_grip=accepted_grip, accepted_grip_ack=accepted_grip_ack,
+                feedback_times=feedback_times, native_latch=self._native_latch, played_sample=played_sample,
+                phase_before_update=self.phase,
+                permission_allowed=self.phase in ("holding", "relative_releasing", "relative_released"),
+                finish_enabled=self.unlatched_observer is not None, finish_permitted=finish_permitted,
+                observer_deferred=observer_deferred))
+        if self.relative_gate is not None and self.phase not in ("releasing", "waiting_for_close", "finished"):
+            suppress = self.relative_gate.update(t, tcp=tcp, policy_grip=policy_grip,
+                measured_grip=measured_grip, pad_loads=pad_loads, eligible=eligible,
+                accepted_grip=accepted_grip, accepted_grip_ack=accepted_grip_ack,
+                feedback_times=feedback_times, native_latch=self._native_latch,
+                played_sample=played_sample,
+                permission_allowed=self.phase in ("holding", "relative_releasing", "relative_released"),
+                finish_enabled=self.unlatched_observer is not None,
+                finish_permitted=finish_permitted, observer_deferred=observer_deferred)
+            if self.relative_gate.last_event is not None:
+                self.last_event = self.relative_gate.last_event["event"]
+            if self.relative_gate.finished:
+                self.phase = "finished"
+                self.finished_at = float(t)
+                return True
+            if suppress:
+                self.phase = "relative_released" if self.relative_gate.state == "released" else "relative_releasing"
+                if self.committed_at is None:
+                    self.committed_at = float(t)
+                return True
+            if self.phase in ("relative_releasing", "relative_released"):
+                self.phase = "holding" if self.relative_gate.reference is not None else "unarmed"
+                self.committed_at = None
+        if self.relative_gate is None and self.phase == "unarmed" and self.unlatched_observer is not None:
+            if observer_deferred and eligible:
+                self.unlatched_observer.reason = "awaiting_causal_executor_tick"
+                return self.suppress_latch
+            finished = self.unlatched_observer.update(
+                t, tcp=tcp, measured=measured_grip, loads=pad_loads,
+                eligible=eligible, ack=accepted_grip_ack, samples=feedback_times,
+                unloaded_force_max_n=c.unloaded_force_max_n,
+                unloaded_hold_s=c.unloaded_hold_s,
+                finish_permitted=(finish_permitted and accepted_grip is not None
+                                  and accepted_grip_ack is not None
+                                  and np.isfinite(accepted_grip)
+                                  and np.isclose(accepted_grip, accepted_grip_ack[2], atol=1e-12, rtol=0)),
+            )
+            if finished:
+                self.phase = "finished"
+                self.finished_at = float(t)
+                self.last_event = "unlatched_release_finished"
         if self.phase == "holding":
             opening = (
                 eligible
@@ -177,9 +285,13 @@ class PlacementReleaseController:
     def stop(self):
         self.opening_since = None
         self.last_event = "safety_preempted"
+        if self.unlatched_observer is not None and not self.finished:
+            self.unlatched_observer.reset("safety_preempted")
+        if self.relative_gate is not None and not self.finished:
+            self.relative_gate.stop()
 
     def diagnostics(self, tcp):
-        return {
+        values = {
             "variant": self.variant,
             "phase": self.phase,
             "window_active": self.window_active(tcp),
@@ -192,6 +304,12 @@ class PlacementReleaseController:
             "suppress_latch": self.suppress_latch,
             "event": self.last_event,
         }
+        if self.unlatched_observer is not None:
+            values["unlatched_observer"] = self.unlatched_observer.diagnostics(tcp)
+        if self.relative_gate is not None:
+            values["relative_release"] = self.relative_gate.diagnostics(tcp)
+            values["release_update_input"] = self._last_relative_update_input
+        return values
 
 
 def make_release_controller(config, hw):
@@ -206,7 +324,7 @@ def make_release_controller(config, hw):
         raise ValueError("placement release requires the native load latch enabled")
     if config.rearm_close_command_min > hw.gripper.max_close_cmd:
         raise ValueError("release rearm threshold exceeds hardware closure limit")
-    return PlacementReleaseController(config)
+    return PlacementReleaseController(config, loaded_force_min_n=hw.safety.grip_latch_fz_n)
 
 
 def original_policy_grip(plan, play_time, action_rate_hz, max_play_steps):

@@ -231,7 +231,7 @@ def test_preserves_existing_mass_and_sensor_mesh_frame(cfg):
     assert meta['bare_gripper_mass_kg']==pytest.approx(.925)
 
 
-def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
+def usd_stage(cfg):
     from pxr import Sdf, Usd, UsdGeom, UsdPhysics
     root,_=build(cfg)
     stage=Usd.Stage.CreateInMemory();paths={}
@@ -246,6 +246,12 @@ def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
         if link.get('name')=='tool0':continue
         prim=UsdGeom.Xform.Define(stage,'/Robot/'+link.get('name')).GetPrim()
         UsdPhysics.RigidBodyAPI.Apply(prim)
+    return stage, paths
+
+
+def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
+    from pxr import UsdPhysics
+    stage, paths = usd_stage(cfg)
     meta=native.configure_gripper_physics(stage,paths,cfg)
     for name in native.JOINT_NAMES:
         prim=stage.GetPrimAtPath(paths[name]);drive=UsdPhysics.DriveAPI(prim,'angular')
@@ -267,6 +273,10 @@ def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
             assert drive.GetDampingAttr().Get()==0
             assert drive.GetMaxForceAttr().Get()==0
     assert meta['mimic_joints']==['right_outer_knuckle_joint']
+    assert meta['driver_force_distribution'] == 'single_master'
+    assert meta['master_stiffness_nm_rad'] == 12
+    assert meta['master_damping_nm_s_rad'] == .16
+    assert meta['master_max_torque_nm'] == 1.7
     for row in meta['loop_constraints']:
         joint=UsdPhysics.SphericalJoint(stage.GetPrimAtPath(row['path']))
         assert joint.GetExcludeFromArticulationAttr().Get()
@@ -277,6 +287,103 @@ def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
     assert not meta['opposing_sensor_contacts_disabled']
     second=native.configure_gripper_physics(stage,paths,cfg)
     assert len(second['loop_constraints'])==2
+
+
+def test_equal_split_changes_only_two_motor_drives_and_preserves_default(cfg):
+    from pxr import UsdPhysics
+    before = copy.deepcopy(cfg)
+    default_stage, paths = usd_stage(cfg)
+    default_meta = native.configure_gripper_physics(default_stage, paths, cfg)
+    explicit = copy.deepcopy(cfg)
+    explicit['gripper']['articulation']['driver_force_distribution'] = 'single_master'
+    explicit_stage, explicit_paths = usd_stage(explicit)
+    assert native.configure_gripper_physics(explicit_stage, explicit_paths, explicit) == default_meta
+    assert explicit_stage.GetRootLayer().ExportToString() == default_stage.GetRootLayer().ExportToString()
+
+    split = copy.deepcopy(cfg)
+    split['gripper']['articulation']['driver_force_distribution'] = 'equal_split'
+    stage, split_paths = usd_stage(split)
+    meta = native.configure_gripper_physics(stage, split_paths, split)
+    assert cfg == before
+    assert meta['driver_force_distribution'] == 'equal_split'
+    assert meta['common_mode_drive'] == default_meta['common_mode_drive'] == {
+        'stiffness_nm_rad': 12., 'damping_nm_s_rad': .16, 'max_torque_nm': 1.7}
+    for name in native.DRIVERS:
+        drive = UsdPhysics.DriveAPI(stage.GetPrimAtPath(split_paths[name]), 'angular')
+        assert drive.GetTypeAttr().Get() == 'force'
+        assert drive.GetStiffnessAttr().Get() == pytest.approx(6. * math.pi / 180)
+        assert drive.GetDampingAttr().Get() == pytest.approx(.08 * math.pi / 180)
+        assert drive.GetMaxForceAttr().Get() == pytest.approx(.85)
+        assert drive.GetTargetPositionAttr().Get() == 0
+        assert drive.GetTargetVelocityAttr().Get() == 0
+        assert meta['driver_drives'][name] == {
+            'stiffness_nm_rad': 6., 'damping_nm_s_rad': .08, 'max_torque_nm': .85}
+        original = UsdPhysics.DriveAPI(default_stage.GetPrimAtPath(paths[name]), 'angular')
+        for getter in ['GetStiffnessAttr', 'GetDampingAttr', 'GetMaxForceAttr']:
+            getattr(drive, getter)().Set(getattr(original, getter)().Get())
+    # Restore the six changed drive attributes and compare the complete authored
+    # USD: mimic settings, springs, loops, limits and collision filters are intact.
+    assert stage.GetRootLayer().ExportToString() == default_stage.GetRootLayer().ExportToString()
+    assert meta['master_stiffness_nm_rad'] == 6.
+    assert meta['master_damping_nm_s_rad'] == .08
+    assert meta['master_max_torque_nm'] == .85
+    assert 'differential spring/damping' in meta['driver_actuator_transfer']['equal_split_difference']
+    assert 'not an actual implicit-solver torque readback' in meta['driver_actuator_transfer']['force_law_scope']
+    assert ET.tostring(build(split)[0]) == ET.tostring(build(cfg)[0])
+    for closure in np.linspace(0, 1, 17):
+        np.testing.assert_array_equal(native.drive_targets(closure, split), native.drive_targets(closure, cfg))
+        np.testing.assert_array_equal(native.joint_targets(closure, split), native.joint_targets(closure, cfg))
+
+
+@pytest.mark.parametrize('bad', ['both_full', 'single', '', None, 0])
+def test_invalid_driver_distribution_fails_explicitly(cfg, bad):
+    cfg['gripper']['articulation']['driver_force_distribution'] = bad
+    with pytest.raises(ValueError, match='driver_force_distribution'):
+        native.driver_settings(cfg)
+
+
+def test_split_common_mode_budget_and_off_equality_torque_bounds(cfg):
+    cfg['gripper']['articulation']['driver_force_distribution'] = 'equal_split'
+    settings = native.driver_settings(cfg)
+    common = settings['common_mode_drive']
+    for key, value in common.items():
+        assert sum(row[key] for row in settings['driver_drives'].values()) == value
+    k, d, cap = common['stiffness_nm_rad'], common['damping_nm_s_rad'], common['max_torque_nm']
+
+    def force(name, target, q, qd):
+        drive = settings['driver_drives'][name]
+        return np.clip(drive['stiffness_nm_rad'] * (target - q)
+            - drive['damping_nm_s_rad'] * qd, -drive['max_torque_nm'], drive['max_torque_nm'])
+
+    # Exercise both signs of saturation as well as the unsaturated PD regime.
+    for error in [-1., -.05, 0., .05, 1.]:
+        for qd in [-2., 0., 2.]:
+            torques = [force(name, .4 + error, .4, qd) for name in native.DRIVERS]
+            expected = np.clip(k * error - d * qd, -cap, cap)
+            assert sum(torques) == pytest.approx(expected, abs=1e-14)
+            assert torques[0] == torques[1]
+    # Away from equality the split introduces a differential spring/damper.
+    # Scalar clipping is 1-Lipschitz, so these bounds still hold at saturation.
+    rng = np.random.default_rng(909128)
+    unequal_torque_seen = clipped_torque_seen = False
+    for target, ql, qr, vl, vr in rng.uniform(-2, 2, size=(500, 5)):
+        left, right = [force(name, target, q, v) for name, q, v in zip(native.DRIVERS, [ql, qr], [vl, vr])]
+        average_torque = np.clip(k * (target - (ql + qr) / 2) - d * (vl + vr) / 2, -cap, cap)
+        single_master = np.clip(k * (target - ql) - d * vl, -cap, cap)
+        bound = (k * abs(ql - qr) + d * abs(vl - vr)) / 4
+        assert abs(left - average_torque / 2) <= bound + 1e-14
+        assert abs(right - average_torque / 2) <= bound + 1e-14
+        assert abs(left + right - average_torque) <= 2 * bound + 1e-14
+        assert abs(left + right - single_master) <= 2 * bound + 1e-14
+        assert abs(left) + abs(right) <= cap
+        unequal_torque_seen |= abs(left - right) > 1e-3
+        clipped_torque_seen |= abs(left) == cap / 2
+    assert unequal_torque_seen and clipped_torque_seen
+    ql, qr, vl, vr, target = .41, .39, .03, -.01, .4
+    left = force(native.DRIVERS[0], target, ql, vl)
+    right = force(native.DRIVERS[1], target, qr, vr)
+    assert left - right == pytest.approx(-k * (ql - qr) / 2 - d * (vl - vr) / 2)
+    assert left + right == pytest.approx(k * (target - (ql + qr) / 2) - d * (vl + vr) / 2)
 
 
 def test_bad_settings_fail_explicitly(cfg):

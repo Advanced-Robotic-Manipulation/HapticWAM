@@ -130,7 +130,8 @@ def _finish_policy(pm, norm, args, payload):
                          guidance=getattr(args, "guidance", 1.0),
                          parity_fixes=getattr(args, "parity_fixes", False),
                          k_seeds=getattr(args, "k_seeds", 1),
-                         close_p=getattr(args, "veto_p_close", 0.5))
+                         close_p=getattr(args, "veto_p_close", 0.5),
+                         action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
     policy.wrench_baseline_rows = wrench_baseline_rows_of(payload)
@@ -248,6 +249,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "PlannerLoop checks the COUNT first — so unless "
                          "--max-replans is passed explicitly this budget "
                          "replaces it. 0 or negative disables it")
+    ap.add_argument("--action-time-origin", choices=("inference_ready", "observation"),
+                    default=None, help="Experimental epoch; omission preserves historical playback")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
                          "LATENCY LEVER (review P4): the loop is compute-bound and "
@@ -332,6 +335,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "for the success auto-stop")
     ap.add_argument("--lift-complete-hold", type=float, default=0.4,
                     help="seconds the grasp+height condition must hold")
+    ap.add_argument("--boundary-projection-config", type=Path, default=None,
+                    help="Explicit default-off bounded upper-Y projection treatment JSON")
     ap.add_argument("--placement-release-config", type=Path, default=None,
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
@@ -862,6 +867,14 @@ def main(argv=None) -> int:
     log.info("executor TCP speed cap: %.2f m/s", hw.arm.limits.tcp_speed_m_s)
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
+    boundary_config = None
+    if args.boundary_projection_config is not None:
+        from phantom.deploy.boundary_projection import BoundaryProjectionConfig
+        boundary_config = BoundaryProjectionConfig.from_dict(
+            json.loads(args.boundary_projection_config.read_text()))
+        deploy_overrides["boundary_projection"] = boundary_config.to_dict()
+        deploy_overrides["boundary_projection_config_sha256"] = hashlib.sha256(
+            args.boundary_projection_config.read_bytes()).hexdigest()
     release_config = None
     if args.placement_release_config is not None:
         from phantom.deploy.release_controller import make_release_controller
@@ -900,6 +913,8 @@ def main(argv=None) -> int:
                    task_text=(args.text or args.task),
                    drop_video=args.drop_video,
                    close_p=getattr(args, "veto_p_close", 0.5))
+        if getattr(args, "action_time_origin", None) is not None:
+            cfg["action_time_origin"] = args.action_time_origin
         try:
             policy = RemotePolicy((host, port), cfg)
             log.info("using policy server at %s:%d (ckpt %s sha %s, warm=%s) — "
@@ -1036,6 +1051,7 @@ def main(argv=None) -> int:
                            max_play_steps=(args.max_play_steps or None),
                            grip_play_steps=(getattr(args, 'grip_play_steps', 0) or None),
                            release_config=release_config,
+                           boundary_config=boundary_config,
                            **({"controller_profile": args.placement_controller_profile}
                               if args.placement_controller_profile is not None else {})) as rt:
         for i in range(args.episodes):

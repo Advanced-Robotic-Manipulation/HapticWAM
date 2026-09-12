@@ -20,6 +20,9 @@ from dataclasses import fields as dc_fields
 import numpy as np
 import torch
 
+from phantom.inference.action_timing import (
+    validate_action_time_origin, observation_cpk_history,
+)
 from phantom.data.schema import NormStats
 from phantom.data.windows import bilinear_resize
 from phantom.model.ace.packing import ContactPackage
@@ -73,7 +76,8 @@ class PhantomPolicy:
                  drop_video: bool = False, task_text: str = "",
                  persistent_noise: bool = False, guidance: float = 1.0,
                  parity_fixes: bool = False, k_seeds: int = 1,
-                 close_p: float = 0.5):
+                 close_p: float = 0.5,
+                 action_time_origin: str = "inference_ready"):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
         # empty keeps the v2 empty-string conditioning.
@@ -103,7 +107,29 @@ class PhantomPolicy:
         # K-seed sampling with contact-consistent selection (P6 / BID 2408.17355)
         self.k_seeds = max(1, int(k_seeds))
         self.close_p = float(close_p)
+        self.action_time_origin = action_time_origin
         self.rf.eval()
+
+    @property
+    def k_seeds(self):
+        return self._k_seeds
+
+    @k_seeds.setter
+    def k_seeds(self, value):
+        if getattr(self, "_action_time_origin", "inference_ready") == "observation" and value != 1:
+            raise ValueError("observation action epoch candidate supports K1 only")
+        self._k_seeds = value
+
+    @property
+    def action_time_origin(self):
+        return self._action_time_origin
+
+    @action_time_origin.setter
+    def action_time_origin(self, value):
+        validate_action_time_origin(value)
+        if value == "observation" and self.k_seeds != 1:
+            raise ValueError("observation action epoch candidate supports K1 only")
+        self._action_time_origin = value
 
     # ------------------------------------------------------------------
     def _batch_from_obs(self, obs: ObsSnapshot, prev_plan: Plan | None) -> dict:
@@ -239,29 +265,46 @@ class PhantomPolicy:
         t_start = time.perf_counter()
         batch = self._batch_from_obs(obs, prev_plan)
         cpk_step = 0
-        if self.parity_fixes and prev_plan is not None:
+        previous_cpk = prev_plan.cpk if prev_plan is not None else None
+        cpk_timing = {}
+        if self.action_time_origin == "observation":
+            previous_cpk, cpk_step, cpk_timing = observation_cpk_history(
+                obs.t, prev_plan, self.latent_dt)
+        elif self.parity_fixes and prev_plan is not None:
             cpk_step = int(round(float(prev_plan.latency_s) / self.latent_dt))
         pred: PhantomPrediction = self.rf.sample(
             batch, nfe=self.nfe, guidance_scale=self.guidance,
-            prev_cpk=prev_plan.cpk if prev_plan is not None else None,
+            prev_cpk=previous_cpk,
             prev_cpk_step=cpk_step,
             drop_video=self.drop_video,
             reuse_noise=self.persistent_noise,
             k_seeds=self.k_seeds)
         rate = self.hw.control.action_rate_hz
         latency = time.perf_counter() - t_start
-        t_exec0 = obs.t + latency
+        t_exec0 = (obs.t if self.action_time_origin == "observation"
+                   else obs.t + latency)
         acts_K = self.norm.denormalize(
             "action", pred.actions_B_H_A.float().cpu()).numpy()
         p_evt0 = (pred.acc.p_evt[0].float().cpu().numpy()
                   if pred.acc is not None else np.zeros(5))
-        j, sel = self._select_seed(acts_K, 1.0 - float(p_evt0[0]),
-                                   prev_plan, t_exec0, rate)
+        if self.action_time_origin == "observation":
+            # K>1 needs a separately bound capped selector. This candidate
+            # deliberately permits one sample only; no new ranking heuristic.
+            j, sel = 0, {"k_seeds": 1, "k_pick": 0,
+                         "k_selection": "single_sample_no_selection"}
+        else:
+            j, sel = self._select_seed(acts_K, 1.0 - float(p_evt0[0]),
+                                       prev_plan, t_exec0, rate)
         actions = acts_K[j]
         diag = {"nfe": self.nfe, "guidance": self.guidance,
                 "event_logits": pred.event_logits_B_Tc_E[j].float().cpu().numpy()}
-        if self.k_seeds > 1:
+        if self.k_seeds > 1 or self.action_time_origin == "observation":
             diag.update(sel)
+        if self.action_time_origin == "observation":
+            diag.update(cpk_timing)
+            diag.update(action_time_origin="observation",
+                        action_interval_convention="start_grid_end_labeled_delta",
+                        action_observation_epoch_s=float(obs.t))
         return Plan(
             t_created=obs.t,
             t0_pose=np.asarray(tcp_pose, dtype=np.float64).copy(),

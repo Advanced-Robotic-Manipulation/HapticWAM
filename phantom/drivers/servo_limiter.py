@@ -4,8 +4,8 @@ This extracts the existing UR driver's reach/joint-speed algorithm. The slide
 is a candidate search direction, not a projection of the actual wrist center:
 every candidate must pass IK, branch, elbow and speed checks. It constrains
 commanded joints and cannot guarantee measured tracking or stopping distance.
-Raw joint branches are retained; the historical absolute elbow predicate is
-intended for principal elbow branches, not arbitrary added full revolutions.
+Raw joint branches are retained for speed and branch checks. Elbow extension
+uses the periodic bend angle, so full revolutions cannot bypass its bound.
 """
 
 from __future__ import annotations
@@ -46,12 +46,17 @@ def speed_violation(q, qref, dt: float, limits: ServoLimits) -> bool:
     return max(abs(a - b) for a, b in zip(q, qref)) / dt > float(vmax)
 
 
+def elbow_bend(angle: float) -> float:
+    """Distance from a straight elbow, independent of encoder revolutions."""
+    return abs(math.remainder(float(angle), math.tau))
+
+
 def limit_violation(q, qref, dt: float, limits: ServoLimits) -> str | None:
     if not limits.enabled:
         return None
     if q is None or not len(q):
         return "no_solution"
-    if limits.elbow_min_rad is not None and abs(float(q[2])) < float(
+    if limits.elbow_min_rad is not None and elbow_bend(q[2]) < float(
         limits.elbow_min_rad
     ):
         return "elbow"
@@ -72,8 +77,8 @@ def feasible(q, qref, dt: float, limits: ServoLimits) -> bool:
     if violation == "elbow" and qref is not None:
         emin = float(limits.elbow_min_rad or 0.0)
         if (
-            abs(float(qref[2])) < emin
-            and abs(float(q[2])) > abs(float(qref[2])) + 1e-6
+            elbow_bend(qref[2]) < emin
+            and elbow_bend(q[2]) > elbow_bend(qref[2]) + 1e-6
             and not speed_violation(q, qref, dt, limits)
         ):
             return True
