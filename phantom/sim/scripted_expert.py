@@ -65,7 +65,7 @@ class ExpertParams:
     z_place_jitter_m: float = 0.01
 
 
-PHASES = ("pregrasp", "descend", "close", "settle", "lift", "carry", "orient", "place_descend", "open", "retreat", "done")
+PHASES = ("pregrasp", "descend", "close", "settle", "lift", "carry", "place_descend", "open", "retreat", "done")
 
 
 def rotvec_nearest(reference: np.ndarray, rotvec: np.ndarray) -> np.ndarray:
@@ -174,8 +174,6 @@ class ScriptedExpertPolicy:
         if self.phase == "carry":
             xy = self._place_xy()
             return np.array([xy[0], xy[1], p.z_carry_m])
-        if self.phase == "orient":
-            return None                       # turn in place over the bin, then descend
         if self.phase == "place_descend":
             xy = self._place_xy()
             return np.array([xy[0], xy[1], p.z_place_m])
@@ -192,10 +190,14 @@ class ScriptedExpertPolicy:
         # lift keeps the grasp orientation: turning to the carry orientation straight above
         # the packet parks the arm on the elbow constraint (limiter hold timeout, 1 ms
         # physics smoke 2026-09-12); the demos turn while translating toward the bin
-        # no turning while translating with the packet: lift and carry hold the grasp
-        # orientation; the turn to the release orientation happens in place over the bin
+        # the demos' profile: the tool turns gradually while translating — toward the
+        # carry orientation during the carry, toward the release orientation during the
+        # descent into the bin. Holding the grasp orientation all the way to the bin
+        # wrapped the arm into a branch that parks on the elbow limit (v4 smoke), and a
+        # fast turn (0.8 rad/s) shook the packet out (v3); the gripped rate cap keeps
+        # the turn slow instead
         goal = {"pregrasp": p.rot_descend, "descend": p.rot_grasp, "lift": p.rot_grasp,
-                "carry": p.rot_grasp, "orient": p.rot_release, "place_descend": p.rot_release,
+                "carry": p.rot_carry, "place_descend": p.rot_release,
                 "retreat": p.rot_release}.get(self.phase)
         if goal is None:
             return None
@@ -241,9 +243,7 @@ class ScriptedExpertPolicy:
             self._advance(t, "lift")
         elif self.phase == "lift" and pos_ok:
             self._advance(t, "carry")
-        elif self.phase == "carry" and reached:
-            self._advance(t, "orient")
-        elif self.phase == "orient" and rot_ok:
+        elif self.phase == "carry" and pos_ok:
             self._advance(t, "place_descend")
         elif self.phase == "place_descend" and pos_ok:
             self._advance(t, "open")
@@ -276,7 +276,7 @@ class ScriptedExpertPolicy:
             if rot_target is not None:
                 rdelta = rot_target - rot
                 rdist = float(np.linalg.norm(rdelta))
-                gripped = self.phase in ("settle", "lift", "carry", "orient", "place_descend")
+                gripped = self.phase in ("settle", "lift", "carry", "place_descend")
                 cap = (p.w_max_gripped_rad_s if gripped else p.w_max_rad_s) * dt
                 rstep = rdelta if rdist <= cap else rdelta * (cap / rdist)
                 actions[k, 3:6] = rstep
