@@ -37,7 +37,8 @@ class ExpertParams:
     grip_close: float = 0.62
     z_pregrasp_m: float = 0.20          # hover height before the descent
     grasp_height_above_center_m: float = 0.035   # TCP z above the packet centre at closure
-    z_carry_m: float = 0.33
+    z_lift_m: float = 0.20              # straight lift above the grasp; the arm is near full reach at the packet
+    z_carry_m: float = 0.33              # reached over the bin while translating (demo apex 0.29-0.37 over the bin)
     z_place_m: float = 0.10
     z_retreat_m: float = 0.25
     v_travel: float = 0.15              # m/s in free space (demos p99 0.33-0.56)
@@ -163,8 +164,12 @@ class ScriptedExpertPolicy:
         if self.phase in ("close", "settle"):
             return None
         if self.phase == "lift":
+            # only a clearance lift here: lifting to the carry height straight above the
+            # packet (y -0.27, tool tilted) straightens the elbow past the limiter's 0.40 rad
+            # bound (servo_constraint_hold_timeout, smokes 2026-09-12); the demos rise
+            # while translating toward the bin, where the arm is less extended
             g = self.grasp_xyz
-            return np.array([g[0], g[1], p.z_carry_m])
+            return np.array([g[0], g[1], p.z_lift_m])
         if self.phase == "carry":
             xy = self._place_xy()
             return np.array([xy[0], xy[1], p.z_carry_m])
