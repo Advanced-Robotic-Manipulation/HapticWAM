@@ -55,6 +55,8 @@ def arguments():
         type=float,
         help="Override media/trace sampling rate for tuning runs",
     )
+    p.add_argument("--expert-params", type=Path, default=None,
+                   help="JSON overrides for phantom.sim.scripted_expert.ExpertParams (--policy-server scripted)")
     p.add_argument(
         "--skip-stage-export",
         action="store_true",
@@ -1445,15 +1447,25 @@ def run(app, args, cfg, data, duration):
                     "physics dt must not exceed the policy executor period"
                 )
             source_text = str(manifest.get("meta", {}).get("text", ""))
-            host, port = args.policy_server.rsplit(":", 1)
-            policy = RemoteSimulationPolicy(
-                (host, int(port)),
-                config=(
-                    json.loads(args.policy_config.read_text())
-                    if args.policy_config
-                    else {"parity_fixes": True, "task_text": source_text}
-                ),
-            )
+            if args.policy_server == "scripted":
+                # privileged scripted expert for data generation: ground-truth packet pose,
+                # plans in the deployment frame, the executor path unchanged
+                from phantom.sim.scripted_expert import ExpertParams, ScriptedExpertPolicy
+                expert_params = (ExpertParams(**json.loads(args.expert_params.read_text()))
+                                 if getattr(args, "expert_params", None) else ExpertParams())
+                policy = ScriptedExpertPolicy(
+                    lambda: np.asarray(packet.get_world_pose()[0], dtype=float),
+                    np.asarray(cfg["bin"]["center"], dtype=float)[:2], expert_params, rng_seed=int(args.seed or 0))
+            else:
+                host, port = args.policy_server.rsplit(":", 1)
+                policy = RemoteSimulationPolicy(
+                    (host, int(port)),
+                    config=(
+                        json.loads(args.policy_config.read_text())
+                        if args.policy_config
+                        else {"parity_fixes": True, "task_text": source_text}
+                    ),
+                )
             expected_student = args.policy_mode == "student"
             reported_student = policy.info.get("student")
             if (
