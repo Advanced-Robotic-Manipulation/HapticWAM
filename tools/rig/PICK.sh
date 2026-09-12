@@ -190,9 +190,12 @@ EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.p
 # 09-13 session levers, applied to EVERY row (both arms of a cell, phantom and LeRobot alike):
 #  - descend-then-release placement supervisor (rig 09-12: policies plunged through the demo release band
 #    into the 45 N wrench guard; replay converts 5 of 19 non-placements) + 0.35 s latch release dwell
-#  - homing start bounds (Ilya, rig_pick_patterns_20260912: y <= -0.28 m, z 0.31-0.36 m starts reached the
-#    box at mean stage 1.96 vs 0.27 for box-side / low starts, every model)
+#  - homing start bound y <= -0.28 m on waffles/Carton only (4-day analysis, 382 episodes: the start-y effect
+#    holds on every day/task/model — box-side starts score 0.35 vs 1.66; the z effect was the Carton task in
+#    disguise, so no z bound; the bad starts are INSIDE the demo ±1σ draw, so this is a disclosed workaround).
+#    Egg/whiteboard: no bounds (their demo starts sit entirely outside y <= -0.28).
 # PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
-SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35 --home-bounds y_max=-0.28,z_min=0.31,z_max=0.36"
+SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
+case "$TASK" in waffles|Carton) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28";; esac
 [ -z "$PICK_NO_SESSION_EXTRA" ] && EXTRA="$EXTRA $SESSION_EXTRA" && echo ">> session levers: $SESSION_EXTRA"
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0
