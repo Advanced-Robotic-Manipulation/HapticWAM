@@ -561,6 +561,8 @@ class ChunkExecutor:
             servo_kwargs = {} if boundary is None else {"target_guard": boundary}
             res = self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
                                    hw.arm.servoj.gain, **servo_kwargs)
+            if boundary is not None:
+                self._log_guard_tick(t0, target, res)
             # The anchor is what the arm RECEIVED, not what we proposed
             # (issue #7): a driver hold (IK branch reject, invalid IK, limiter
             # hold) keeps the previous anchor, a limiter-shortened step
@@ -629,6 +631,32 @@ class ChunkExecutor:
             self._halt(reason)
             self._set_reason(reason)
             self._log_halt_state("executor crash")
+
+    def _log_guard_tick(self, t0: float, target, res) -> None:
+        """Once per second while a boundary guard is active: what the guard, the rate
+        backoff, the limiter and the release supervisor did to this tick's command (rig
+        2026-09-12: needed to tell a policy stall from a controller hold from disk)."""
+        try:
+            last_log = getattr(self, "_guard_log_t", None)
+            if last_log is not None and t0 - last_log < 1.0:
+                return
+            self._guard_log_t = t0
+            b = self.safety.boundary_projection.last or {}
+            si = b.get("solver_interior") or {}
+            rb = b.get("rate_solver_backoff") or {}
+            hold = getattr(self.arm, "constraint_hold_last", None) or {}
+            rc = getattr(self, "release_controller", None)
+            desc = None
+            if rc is not None and getattr(rc, "descent", None) is not None:
+                desc = rc.descent.state
+            sent = None if res is None else (bool(res.sent), None if res.pose is None else [round(float(v), 3) for v in res.pose[:3]])
+            log.info("guard tick t=%.2f target=%s sent=%s guard=%s active=%s corr_mm=%s backoff=%s/%s hold=%s/%s descent=%s phase=%s",
+                     t0, [round(float(v), 3) for v in np.asarray(target)[:3]], sent, b.get("reason"),
+                     si.get("active_constraints"), None if si.get("correction_m") is None else round(si["correction_m"] * 1e3, 1),
+                     rb.get("reason"), len(rb.get("attempts") or []), hold.get("mode"), hold.get("violation"),
+                     desc, None if rc is None else rc.phase)
+        except Exception as exc:  # noqa: BLE001 - diagnostics never affect control
+            log.debug("guard tick log unavailable: %s", exc)
 
     def _log_halt_state(self, what: str) -> None:
         """Write the halt state (boundary/placement diagnostics) to the log so a stop can be
