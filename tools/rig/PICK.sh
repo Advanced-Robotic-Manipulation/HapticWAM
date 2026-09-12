@@ -70,6 +70,13 @@ if [ -n "$LEROBOT_TYPE" ]; then
   [ "$TASK" = whiteboard ] && [ "$LEROBOT_TYPE" = pi05 ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
 fi
 read -p "episodes [1]: " EPS; EPS=${EPS:-1}
+# 09-12 forensics: a multi-episode launch increments the seed per episode, so the second arm of the
+# cell never shares a seed and 142 episodes produced ZERO teacher-vs-student pairs. Paired cells are
+# one episode per launch; PICK_ALLOW_MULTI=1 is the explicit opt-out for solo/diagnostic runs.
+if [ "$EPS" -gt 1 ] && [ -z "$PICK_ALLOW_MULTI" ]; then
+  echo "!! $EPS episodes in one launch breaks the pairing (seed advances per episode). Paired cells = 1 episode."
+  echo "!! Re-run with 1, or PICK_ALLOW_MULTI=1 ./PICK.sh $m for a deliberate solo run."; exit 3
+fi
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
 # remembered per day, so the second arm of a cell just presses Enter; type
@@ -180,4 +187,12 @@ LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
 [ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
 [ -n "$LEROBOT_TYPE" ] && SYSTEM=student
 EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.py pairs by it)
+# 09-13 session levers, applied to EVERY row (both arms of a cell, phantom and LeRobot alike):
+#  - descend-then-release placement supervisor (rig 09-12: policies plunged through the demo release band
+#    into the 45 N wrench guard; replay converts 5 of 19 non-placements) + 0.35 s latch release dwell
+#  - homing start bounds (Ilya, rig_pick_patterns_20260912: y <= -0.28 m, z 0.31-0.36 m starts reached the
+#    box at mean stage 1.96 vs 0.27 for box-side / low starts, every model)
+# PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
+SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35 --home-bounds y_max=-0.28,z_min=0.31,z_max=0.36"
+[ -z "$PICK_NO_SESSION_EXTRA" ] && EXTRA="$EXTRA $SESSION_EXTRA" && echo ">> session levers: $SESSION_EXTRA"
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0

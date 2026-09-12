@@ -119,6 +119,76 @@ Verify before spending the run: the per-term LoRA grad-norm probe
 per-term norms should land within ~10× of each other instead of the current
 >99% squared-norm share on `contact_nll`.
 
+### The world-model ablation — `--loss-video` and `--video-attend`
+
+`docs/ARCH_EXPLAINER_0912.md` §6 item 2: today the 3 imagined VIDEO_GEN frames
+buy shared LoRA weights and nothing at inference — `0.1·video_v_mse` shapes the
+adapter, the structural mask forbids ACTION/CONTACT from attending them, and
+`drop_video` is off at deploy. Two flags make that measurable, both default to
+the shipped behaviour:
+
+| flag | asks | mechanism |
+|---|---|---|
+| `--loss-video 0` | does the video objective help the actions **at all**? | overrides `mc.loss.video`. At 0 the term is *skipped* (not multiplied by zero, so no gradient reaches the video branch) while the VIDEO_GEN frames stay in the layout — identical token count, attention mask, RoPE and cond mask, so the arm differs from the control in the objective alone. `video_v_mse` is still logged, so the arm stays readable. |
+| `--video-attend` | does letting the actions **read** the imagined future help? | `SequenceLayout.structural_attn_bias` stops masking CONTACT/ACTION queries from VIDEO_GEN keys, at training and at inference identically (one code path: `attention_bias.structural_bias_tokens`). The frames stop being droppable, so `rf.sample`, `tools/terminal_eval.py` and `run_deploy` all **refuse** `--drop-video` for such a checkpoint, and `PhantomModelConfig` refuses `video_attend` + `drop_video_at_inference` outright. |
+
+Both are recorded in the checkpoint's `configs.model` (`video_attend`,
+`loss.video`) and restored by `PhantomModelConfig.from_dict`, so eval, replay
+and deploy rebuild the arm they are scoring. `--init-weights` treats them as
+fine-tune-mutable (warn); `--resume` still refuses any difference, so resuming
+run A must re-pass `--loss-video 0`.
+
+**Budget-matched trio, 5,000 steps each from the v6 teacher.** Use
+`--init-weights`, never `--resume`: a resume would restore v6's optimizer
+moments, its cosine schedule and step 20,000, which is a continuation of v6
+rather than three comparable fine-tunes. `--init-ema` (default) starts all
+three from the EMA weights the rig and `terminal_eval` actually score. Every
+flag outside the one under test is identical across A, B and C — same steps,
+data, split, seed, lr, warmup, EMA decay and batch×accum.
+
+```bash
+# 0) read v6's own recipe off the checkpoint — the --init-weights drift guard
+#    hard-fails on any behavioural mismatch and names the flags to re-pass
+python - <<'PY'
+import json, torch
+c = torch.load("runs/teacher_v6/teacher_020000.pt", map_location="cpu",
+               weights_only=False)["configs"]
+print(json.dumps({"model": c["model"], "train": c.get("train")},
+                 indent=1, default=str))
+PY
+
+# 1) the shared block: v6's recipe (fill the objective knobs from the dump
+#    above; wrench_baseline_rows=8 is v6's, docs/audit/PREFLIGHT_0912.md:20)
+V6=runs/teacher_v6/teacher_020000.pt
+COMMON="--data $DATA --hardware configs/hardware.nuc.yaml --allow-config-drift \
+  --init-weights $V6 --max-steps 5000 --split train \
+  --wrench-baseline-rows 8 --grasp-frac 0.3 --photo-aug 1.0 --acc-two-pass \
+  --lr 2e-5 --lr-new-modules 6e-5 --warmup-steps 150 --ema-decay 0.995 \
+  --ckpt-every 1000 --eval-every 1000 \
+  --batch-size 4 --grad-accum 2 --num-workers $NW --device cuda"
+
+# A — no video objective (frames kept, layout unchanged)
+python -m phantom.train.train_teacher $COMMON \
+    --run-name teacher_v6_ft_noVideoLoss --loss-video 0
+
+# B — world-action coupling (actions attend the imagined future)
+python -m phantom.train.train_teacher $COMMON \
+    --run-name teacher_v6_ft_videoAttend --video-attend
+
+# C — matched control: the same fine-tune with the defaults
+python -m phantom.train.train_teacher $COMMON \
+    --run-name teacher_v6_ft_control
+```
+
+Read the three with `tools/terminal_eval.py` (C is the reference, not v6
+itself — a 5k fine-tune moves the model on its own). B must be evaluated
+**without** `--drop-video`; A and C may be run both ways, and A's
+`--drop-video` delta is the direct measurement of what the video loss was
+buying. On one H100 at effective batch 8 a teacher step is ~7 s
+(`docs/review_20260828/research/CONTEXT.md:25`), so each arm is ≈ 9.7 GPU-h and
+the trio ≈ 29 GPU-h; `docs/review_20260828/lenses/paper-claims.md:263-267`
+prices the same ablation from scratch at ≈ 35 h per arm.
+
 ## (3) `phantom.train.distill_hid` — HID distillation
 
 | | |

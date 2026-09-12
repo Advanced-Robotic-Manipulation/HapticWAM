@@ -66,6 +66,9 @@ class SequenceLayout:
     # physical span of one ACTION latent frame in latent-video-frame units
     # (rope "time_true" mode); 0.0 only for hand-built test layouts
     action_pos_step: float = 0.0
+    # mc.video_attend: drop the CONTACT/ACTION -> VIDEO_GEN block of the
+    # structural mask (world-action coupling). Default False = shipped mask.
+    video_attend: bool = False
 
     # ------------------------------------------------------------------
     @classmethod
@@ -101,7 +104,8 @@ class SequenceLayout:
         return cls(slots=tuple(slots), lat_c=bb.lat_ch, lat_h=bb.lat_h, lat_w=bb.lat_w,
                    tokens_per_frame=bb.tokens_per_frame, t_video_gen=t_gen,
                    actions_per_frame=apf, student=student, drop_video=drop_video,
-                   action_pos_step=action_pos_step)
+                   action_pos_step=action_pos_step,
+                   video_attend=bool(mc.video_attend))
 
     # ------------------------------------------------------------------
     @property
@@ -191,9 +195,13 @@ class SequenceLayout:
         """(T, T) additive {0, -1e4} frame-level mask, Fast-WAM style: CONTACT
         and ACTION queries never attend VIDEO_GEN keys, so video frames are
         droppable at inference without a train/test attention mismatch.
-        Expanded to token level by attention_bias.expand_frame_bias."""
+        Expanded to token level by attention_bias.structural_bias_tokens.
+
+        `video_attend` (ablation) returns the ALL-ZERO bias instead: the
+        CONTACT/ACTION queries do read the imagined future, and the frames stop
+        being droppable (`rf.sample` refuses drop_video for such a model)."""
         bias = np.zeros((self.t_total, self.t_total), dtype=np.float32)
-        if not self.has(FrameGroup.VIDEO_GEN):
+        if self.video_attend or not self.has(FrameGroup.VIDEO_GEN):
             return bias
         vid = self.frame_slice(FrameGroup.VIDEO_GEN)
         for g in (FrameGroup.CONTACT, FrameGroup.ACTION):
@@ -217,4 +225,5 @@ class SequenceLayout:
         rows = [f"  {s.group.value:<12} frames [{s.t_start}:{s.t_start + s.t_len})"
                 for s in self.slots]
         return (f"SequenceLayout(student={self.student}, drop_video={self.drop_video}, "
+                f"video_attend={self.video_attend}, "
                 f"T={self.t_total}, tokens={self.n_tokens})\n" + "\n".join(rows))

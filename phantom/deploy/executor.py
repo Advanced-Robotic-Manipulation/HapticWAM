@@ -29,6 +29,7 @@ from phantom.inference.action_timing import (
 
 from phantom.config.hardware import HardwareConfig
 from phantom.data.derived import rotvec_nearest
+from phantom.deploy.descend_then_release import make_placement_descent
 from phantom.deploy.governor import SpeedGovernor
 from phantom.deploy.release_controller import (
     make_release_controller,
@@ -74,9 +75,12 @@ class ChunkExecutor:
                  safety: SafetyMonitor, *, record_action=None, gripper_ring=None,
                  open_aperture: float = 0.0, max_play_steps: int | None = None,
                  grip_play_steps: int | None = None,
-                 release_config=None):
+                 release_config=None, placement_descent=None):
         self.hw = hw
         self.release_controller = make_release_controller(release_config, hw)
+        # Opt-in descend-then-release supervisor (rig 09-12). None = every path
+        # below is unchanged; see phantom/deploy/descend_then_release.py.
+        self.placement_descent = make_placement_descent(placement_descent)
         self._release_lock = threading.RLock()
         self.completed_reason = None
         self.completed_at_s = None
@@ -292,6 +296,8 @@ class ChunkExecutor:
             boundary = getattr(self.safety, "boundary_projection", None)
             if boundary is not None:
                 self.halt_state["boundary_projection"] = dict(boundary.last)
+            if getattr(self, "placement_descent", None) is not None:
+                self.halt_state["placement_descent"] = self.placement_descent.diagnostics()
 
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to
@@ -514,6 +520,13 @@ class ChunkExecutor:
                     # The achieved pose may differ from the target checked
                     # above. Completion must never undo geometric clamps.
                     target = self.safety.clamp_target(target)
+            if self.placement_descent is not None:
+                target, grip, overrode = self._apply_placement_descent(t0, target, grip)
+                if overrode:
+                    # The supervisor only RAISES the commanded z or holds a
+                    # measured pose; re-clamp anyway so it can never undo a
+                    # geometric clamp (same contract as completion above).
+                    target = self.safety.clamp_target(target)
             boundary = getattr(self.safety, "boundary_projection", None)
             if boundary is not None:
                 boundary.check_grip(grip)
@@ -678,15 +691,75 @@ class ChunkExecutor:
                     state["placement_release"] = rc.diagnostics(np.zeros(6))
                 except Exception as exc:  # noqa: BLE001
                     state["placement_release"] = f"unavailable: {exc}"
-            small = {k: v for k, v in state.items() if k not in ("boundary_projection", "placement_release")}
+            big = ("boundary_projection", "placement_release", "placement_descent")
+            small = {k: v for k, v in state.items() if k not in big}
             log.warning("%s: reason=%s halt_state=%s", what, self.stopped_reason, _json.dumps(small, default=str)[:4000])
-            for key in ("placement_release", "boundary_projection"):
+            for key in ("placement_descent", "placement_release", "boundary_projection"):
                 if key in state:
                     log.warning("%s: %s=%s", what, key, _json.dumps(state[key], default=str)[:8000])
         except Exception as exc:  # noqa: BLE001 - diagnostics must never mask the stop
             log.warning("%s: halt state unavailable: %s", what, exc)
 
     crash_text: str | None = None  # traceback of an executor_crash (stop.json)
+
+    placement_descent = None       # class default: the supervisor is opt-in
+    _descent_latch_block = False   # supervisor denies the latch (re)arming
+
+    def _apply_placement_descent(self, t, target, grip):
+        """Descend-then-release supervisor (rig 09-12): crate-region z floor,
+        forced release over the crate after a dwell, then a vertical retract.
+
+        Returns (target, grip, pose_overridden). `grip` may be None (a stale
+        plan holds the pose); a forced release still reaches the gripper.
+        """
+        sup = self.placement_descent
+        with self._latch_lock():
+            latch = self._grip_latch
+        decision = sup.step(
+            t, measured_tcp=self._measured_pose(), latched=latch is not None,
+            commanded_target=target,
+            policy_grip=(None if grip is None else float(np.clip(grip, 0, 1))),
+            open_aperture=self.open_aperture)
+        self._descent_latch_block = bool(decision.block_latch)
+        cleared = None
+        if decision.clear_latch:
+            with self._latch_lock():
+                if self._grip_latch is not None:
+                    cleared = self._grip_latch
+                    self._grip_latch = None
+                    # same re-arm contract as the native placement release:
+                    # both pads must unload before a new latch is permitted
+                    self._latch_rearm_blocked = True
+                    self._release_req_since = None
+        if cleared is not None:
+            log.warning("placement descent: latch %.2f RELEASED at z=%.3f y=%.3f, "
+                        "commanding %.2f (task %s, dwell %.2f s)", cleared,
+                        sup.release_z if sup.release_z is not None else float("nan"),
+                        sup.release_y if sup.release_y is not None else float("nan"),
+                        decision.grip if decision.grip is not None else float("nan"),
+                        sup.config.task, sup.config.dwell_s)
+        elif decision.event is not None:
+            log.info("placement descent: %s (state=%s)", decision.event, decision.state)
+        # once per second while a latch is held: the gate inputs, so a
+        # "why did it not release" question is answerable from the log alone
+        last_log = getattr(self, "_descent_log_t", None)
+        if latch is not None and (last_log is None or t - last_log >= 1.0):
+            self._descent_log_t = t
+            pose = self._measured_pose()
+            log.info("placement descent tick: state=%s z=%s y=%s zmax=%.3f dwell=%s "
+                     "floor=%s grip=%s", decision.state,
+                     None if pose is None else round(float(pose[2]), 3),
+                     None if pose is None else round(float(pose[1]), 3),
+                     float(sup.z_max_since_latch), sup.dwell_since,
+                     decision.overrode, decision.grip)
+        out_grip = grip if decision.grip is None else float(decision.grip)
+        return decision.target, out_grip, bool(decision.overrode)
+
+    def _descent_blocks_latch(self) -> bool:
+        """True while the supervisor forbids the aperture latch (re)arming."""
+        return bool(getattr(self, "placement_descent", None) is not None
+                    and getattr(self, "_descent_latch_block", False))
+
     def _latched_grip(self, grip: float) -> float:
         """Aperture latch (rig 09-04): in 4 of the 5 objects lost mid-carry
         the policy was commanding the fingers OPEN while carrying. Once both
@@ -720,7 +793,8 @@ class ChunkExecutor:
             if latch is None:
                 if unloaded:
                     self._latch_rearm_blocked = False
-                if loaded and not self._latch_rearm_blocked:
+                if loaded and not self._latch_rearm_blocked \
+                        and not self._descent_blocks_latch():
                     self._grip_latch = grip
                     self._latch_z_max = z if z is not None else -np.inf
                     self._release_req_since = None
@@ -765,6 +839,19 @@ class ChunkExecutor:
     _latch_rearm_blocked = False
     _latch_z_max = -np.inf
     _release_req_since: float | None = None
+
+    def _measured_pose(self) -> np.ndarray | None:
+        """Latest measured TCP pose from the arm ring (never raises, None if
+        unavailable — every consumer then withholds its action)."""
+        try:
+            ring = self.safety.rings.get("arm")
+            times, arm = ring.latest(1) if ring is not None else ([], {})
+            if not len(times):
+                return None
+            pose = np.asarray(arm["tcp_pose"][-1], dtype=float).reshape(-1)
+            return pose if pose.shape == (6,) and np.isfinite(pose).all() else None
+        except Exception:
+            return None
 
     def _measured_z(self) -> float | None:
         """Latest measured TCP z from the arm ring (never raises, None if

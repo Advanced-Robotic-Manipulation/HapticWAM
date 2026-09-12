@@ -19,7 +19,8 @@ from torch.utils.data import DataLoader, Dataset
 
 from phantom.config.backbone import BackboneConfig
 from phantom.config.hardware import HardwareConfig
-from phantom.config.model import TRAIN_ONLY_MODEL_FIELDS, PhantomModelConfig
+from phantom.config.model import (TRAIN_ONLY_MODEL_FIELDS, PhantomModelConfig,
+                                  flat_model_config)
 from phantom.config.training import CommonTrainConfig
 from phantom.data.schema import (NON_TRAINING_TAGS, EpisodeMeta, NormStats,
                                  is_trainable_episode)
@@ -265,13 +266,20 @@ def assert_model_config_matches(payload: dict, model: torch.nn.Module, *,
     caller — `--resume`, deploy, distill, replay — stays strict, and the
     fine-tune path re-checks the same fields itself via `model_config_drift`
     so the difference is warned about rather than silently accepted.
+
+    Loss weights are compared under dotted names (`loss.video`) so that one
+    weight can sit in `tolerate` without exempting the whole objective; a
+    weight key MISSING from the checkpoint (added after it was saved) is not
+    drift, same rule as every other field.
     """
     saved = (payload.get("configs") or {}).get("model")
     mc = getattr(model, "mc", None)          # PhantomRectifiedFlow.mc
     if not isinstance(saved, dict) or mc is None:
         return
+    saved = flat_model_config(saved)
     ignore = ("student", "mask_wrist", *TRAIN_ONLY_MODEL_FIELDS, *tolerate)
-    cur = {k: v for k, v in mc.to_dict().items() if k not in ignore}
+    cur = {k: v for k, v in flat_model_config(mc.to_dict()).items()
+           if k not in ignore}
     drift = {k: {"checkpoint": saved.get(k), "model": v}
              for k, v in cur.items() if k in saved and saved[k] != v}
     if drift:

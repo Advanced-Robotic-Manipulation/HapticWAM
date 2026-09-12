@@ -440,6 +440,14 @@ def main(argv: list[str] | None = None) -> int:
     from phantom.config.model import PhantomModelConfig
     payload = torch.load(args.ckpt, map_location="cpu", weights_only=False)
     mc = PhantomModelConfig.from_dict(payload["configs"]["model"])
+    # rf.sample refuses this too; fail before the 286 MB model build so a typo
+    # in the launch line costs nothing
+    if args.drop_video and mc.video_attend:
+        raise SystemExit(
+            "--drop-video is not available for this checkpoint: it was trained "
+            "with video_attend (the ACTION/CONTACT frames attend VIDEO_GEN), so "
+            "dropping the imagined frames would change the actions rather than "
+            "only the latency")
     # student=mc.student, NOT a hardcoded False: builder.py:48 asserts the two
     # agree, so a student checkpoint (D9/D12 evaluate one offline) used to die
     # at "mc.student must agree with the student flag" (F12). `inference=True`

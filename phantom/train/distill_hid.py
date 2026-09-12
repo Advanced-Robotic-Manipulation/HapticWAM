@@ -141,7 +141,12 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
     parts["action_v_mse"] = L.group_velocity_mse(
         v_s, v_target, layout_s, FrameGroup.ACTION, act_w,
         channels=slice(0, layout_s.actions_per_frame))
-    if layout_s.has(FrameGroup.VIDEO_GEN):
+    # the student's video term rides on cfg.w_ground, NOT on mc.loss.video, so
+    # only the ON/OFF of the weight is honoured here: lambda_v = 0 (inherited
+    # from a --loss-video 0 teacher, or set by distill_hid's own --loss-video)
+    # drops the term; any non-zero value keeps the shipped w_ground weighting.
+    if (layout_s.has(FrameGroup.VIDEO_GEN)
+            and float(student_rf.mc.loss.video) != 0.0):
         parts["video_v_mse"] = L.group_velocity_mse(v_s, v_target, layout_s,
                                                     FrameGroup.VIDEO_GEN)
     from phantom.model.ace.packing import _CH_WRIST
@@ -218,6 +223,13 @@ def main(argv=None) -> int:
                          "(camera + proprio only = genuinely sensor-free; the teacher keeps "
                          "pads + wrist). The flag is stored in the student checkpoint's model "
                          "config, so terminal_eval / run_deploy zero it again automatically.")
+    ap.add_argument("--loss-video", type=float, default=None,
+                    help="override the STUDENT's lambda_v (default: inherited "
+                         "from the teacher checkpoint). Only 0 vs non-zero "
+                         "matters here — the student's video term is weighted "
+                         "by w_ground, so 0 drops it and any other value keeps "
+                         "the shipped weighting. Stored in the student's model "
+                         "config.")
     ap.add_argument("--extra-data", nargs="*", default=[],
                     help="additional episode roots (DAgger rollouts)")
     ap.add_argument("--resume", default="",
@@ -276,6 +288,17 @@ def main(argv=None) -> int:
                      mc.acc.self_anticipation, mc.cond_dropout_p)
     mc_teacher = dataclasses.replace(mc, student=False) if mc else None
     mc_student = student_model_config(mc, mask_wrist=bool(getattr(args, "mask_wrist", False)))
+    if args.loss_video is not None:
+        if args.loss_video < 0:
+            raise SystemExit(f"--loss-video must be >= 0, got {args.loss_video}")
+        from phantom.config.model import LossWeights
+        base = mc_student.loss if mc_student is not None else LossWeights()
+        loss = dataclasses.replace(base, video=float(args.loss_video))
+        mc_student = (dataclasses.replace(mc_student, loss=loss)
+                      if mc_student is not None
+                      else PhantomModelConfig(student=True, loss=loss))
+        log.info("STUDENT lambda_v overridden: %.4g%s", loss.video,
+                 " — video grounding term DROPPED" if loss.video == 0 else "")
     teacher = build_model(hw, paths, student=False, tiny=cfg.tiny, mc=mc_teacher,
                           load_base=not cfg.tiny, device=args.device, dtype=dtype)
     student = build_model(hw, paths, student=True, tiny=cfg.tiny, mc=mc_student,
@@ -292,7 +315,13 @@ def main(argv=None) -> int:
                                   payload=payload, load_ema=has_ema)
         C.load_phantom_checkpoint(Path(cfg.teacher_ckpt), student.rf, hw=hw,
                                   allow_missing=True,   # teacher-only keys dropped
-                                  payload=payload, load_ema=has_ema)
+                                  payload=payload, load_ema=has_ema,
+                                  # an explicit --loss-video is a deliberate
+                                  # objective change vs the teacher's config
+                                  tolerate_model_fields=(
+                                      frozenset({"loss.video"})
+                                      if args.loss_video is not None
+                                      else frozenset()))
     teacher.rf.eval()
     for p in teacher.rf.parameters():
         p.requires_grad = False

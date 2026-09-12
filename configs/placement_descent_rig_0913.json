@@ -1,0 +1,15 @@
+{
+  "y_crate_edge_m": -0.10,
+  "release_gate_z_m": 0.16,
+  "lift_m": 0.08,
+  "dwell_s": 0.35,
+  "open_hold_s": 0.3,
+  "retract_m": 0.08,
+  "retract_speed_m_s": 0.10,
+  "z_tolerance_m": 0.005,
+  "max_retract_s": 2.0,
+  "tasks": {
+    "waffles": {"release_z_m": 0.081, "release_y_min_m": 0.0},
+    "Carton": {"release_z_m": 0.118, "release_y_min_m": 0.0}
+  }
+}

@@ -186,7 +186,12 @@ def total_loss(parts: dict[str, torch.Tensor], w: LossWeights,
                  parts["action_v_mse"].device)
              + w.sigma_reg * parts.get("sigma_reg", torch.zeros(())).to(
                  parts["action_v_mse"].device))
-    if "video_v_mse" in parts:
+    # lambda_v = 0 (the video-objective ablation, --loss-video 0) SKIPS the
+    # term rather than scaling it by zero: the VIDEO_GEN frames stay in the
+    # layout (same token count, same attention, same RoPE) but no gradient
+    # flows from them, so the arm differs from the control in the objective
+    # alone. `video_v_mse` is still reported in `parts` as a diagnostic.
+    if "video_v_mse" in parts and float(w.video) != 0.0:
         total = total + w.video * parts["video_v_mse"]
     if "acc_alpha_entropy" in parts:
         total = total + parts["acc_alpha_entropy"]
