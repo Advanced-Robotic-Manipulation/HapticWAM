@@ -642,8 +642,11 @@ class ChunkExecutor:
                     state["placement_release"] = rc.diagnostics(np.zeros(6))
                 except Exception as exc:  # noqa: BLE001
                     state["placement_release"] = f"unavailable: {exc}"
-            log.warning("%s: reason=%s halt_state=%s", what, self.stopped_reason,
-                        _json.dumps(state, default=str)[:6000])
+            small = {k: v for k, v in state.items() if k not in ("boundary_projection", "placement_release")}
+            log.warning("%s: reason=%s halt_state=%s", what, self.stopped_reason, _json.dumps(small, default=str)[:4000])
+            for key in ("placement_release", "boundary_projection"):
+                if key in state:
+                    log.warning("%s: %s=%s", what, key, _json.dumps(state[key], default=str)[:8000])
         except Exception as exc:  # noqa: BLE001 - diagnostics must never mask the stop
             log.warning("%s: halt state unavailable: %s", what, exc)
 

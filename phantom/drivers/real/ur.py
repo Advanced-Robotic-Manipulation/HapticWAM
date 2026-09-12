@@ -447,6 +447,18 @@ class URArm(Arm):
         if self._ik_rejects == 1:
             self._hold_since = now
             log.warning("servo hold (%s): %s", why, detail)
+            # rig 2026-09-12: name the driver-side facts on the first reject (the
+            # ControlLost check below otherwise hides them)
+            try:
+                r = self._recv
+                state = None if r is None else int(r.getRuntimeState())
+                log.warning("servo hold context: runtime_state=%s (2=PLAYING) last_hold=%s last_qsol=%s last_cmd_pose=%s",
+                            state, getattr(self, "constraint_hold_last", None),
+                            None if self._last_qsol is None else [round(float(v), 4) for v in self._last_qsol],
+                            None if getattr(self, "_last_cmd_pose", None) is None
+                            else [round(float(v), 4) for v in self._last_cmd_pose])
+            except Exception as exc:  # noqa: BLE001
+                log.warning("servo hold context unavailable: %s", exc)
         # Rig 09-09: 24 of 61 episodes ended as a 4 s "hold" that was really a
         # DEAD CONTROL SCRIPT (E-stop): ur_rtde's getInverseKinematics returns
         # an EMPTY solution, never an error, once the script is down, so the
@@ -682,6 +694,11 @@ class URArm(Arm):
                     lambda q: ctrl.getForwardKinematics(np.asarray(q).tolist()))
         held = verified_constraint_hold(selection, qref, dt, limits)
         if not selection.accepted and not held:
+            log.warning("bounded servo selection rejected: reason=%s mode=%s violation=%s ik_calls=%s "
+                        "all_ik_valid=%s all_ik_on_branch=%s fraction=%s guard=%s",
+                        selection.reason, selection.mode, selection.violation, selection.ik_calls,
+                        getattr(selection, "all_ik_valid", None), getattr(selection, "all_ik_on_branch", None),
+                        selection.fraction, target_guard is not None)
             return self._reject(
                 selection.reason, "unverified constrained hold or IK fault",
                 strict_fault=True,
