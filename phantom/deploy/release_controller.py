@@ -135,12 +135,12 @@ class PlacementReleaseController:
         if self.relative_gate is not None:
             return "placement_relative_policy_release_v1" + ("_observe_finish" if self.unlatched_observer is not None else "") + suffix
         if self.unlatched_observer is not None:
-            return "placement_policy_release_finish_v3_observe_unlatched"
+            return "placement_policy_release_finish_v3_observe_unlatched" + suffix
         return (
             "placement_policy_release_finish_v2"
             if self.config.finish_after_release
             else "placement_policy_release_v1"
-        )
+        ) + suffix
 
     @property
     def finished(self):

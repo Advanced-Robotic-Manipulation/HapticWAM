@@ -121,9 +121,13 @@ def arguments():
     )
     p.add_argument(
         "--servo-reach-limiter",
-        action="store_true",
-        help="Separate policy diagnostic: existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety thresholds stay unchanged",
+        action="store_true", default=None,
+        help="Existing native .40 rad elbow / 1 rad/s commanded-joint limiter; measured safety "
+             "thresholds stay unchanged. ON by default in policy mode since 09-11 (the real rig "
+             "runs the same bounded_v1 profile); --no-servo-reach-limiter disables it",
     )
+    p.add_argument("--no-servo-reach-limiter", action="store_true",
+                   help="Disable the default policy-mode servo reach limiter")
     p.add_argument("--observation-delay-s", type=float, default=0.0)
     p.add_argument(
         "--no-progress-stop-s", type=float, default=None,
@@ -132,7 +136,8 @@ def arguments():
     )
     p.add_argument(
         "--servo-constraint-hold-s", type=float, default=None,
-        help="Opt-in verified stationary servo hold deadline; requires --servo-reach-limiter",
+        help="Verified stationary servo hold deadline; requires the servo reach limiter. "
+             "Default 2.5 s whenever the limiter is active (bounded_v1 parity); 0 disables the hold",
     )
     p.add_argument("--inference-delay-add-s", type=float, default=0.0)
     p.add_argument(
@@ -197,6 +202,17 @@ def arguments():
     p.add_argument("--object-offset", type=float, nargs=2, default=[0, 0])
     p.add_argument("--save-stage-only", action="store_true")
     args = p.parse_args()
+    if args.servo_reach_limiter and args.no_servo_reach_limiter:
+        p.error("--servo-reach-limiter and --no-servo-reach-limiter are exclusive")
+    if args.no_servo_reach_limiter:
+        args.servo_reach_limiter = False
+    elif args.servo_reach_limiter is None:
+        # default: bounded reach in policy mode, matching the real rig (09-11)
+        args.servo_reach_limiter = args.mode == "policy"
+    if args.servo_constraint_hold_s is None and args.servo_reach_limiter:
+        args.servo_constraint_hold_s = 2.5
+    elif args.servo_constraint_hold_s is not None and args.servo_constraint_hold_s == 0:
+        args.servo_constraint_hold_s = None
     if args.servo_constraint_hold_s is not None:
         if (not args.servo_reach_limiter or args.mode != "policy"
                 or not np.isfinite(args.servo_constraint_hold_s)

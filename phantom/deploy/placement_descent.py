@@ -98,8 +98,9 @@ class PlacementDescentSupervisor:
             return
         if not intent:
             if self.active:
-                self._event(t, "descent_cancelled", reason="release_intent_withdrawn_or_outside_volume", z=float(tcp[2]) if valid else None)
+                z = float(tcp[2]) if valid else None
                 self.reset()
+                self._event(t, "descent_cancelled", reason="release_intent_withdrawn_or_outside_volume", z=z)
             return
         above = tcp[2] > c.release_z_max_m + c.height_tolerance_m
         if self.state == "idle":
