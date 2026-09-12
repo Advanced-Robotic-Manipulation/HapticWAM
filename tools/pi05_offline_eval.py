@@ -177,6 +177,14 @@ def main() -> int:
         gt = sample[ACTION][:H].numpy().astype(np.float64)
         with torch.no_grad():
             obs = pre(batch)
+            if hasattr(policy, "_queues"):
+                # policies with an observation history (Diffusion Policy, ACT with
+                # n_obs_steps > 1) stack their queues inside predict_action_chunk;
+                # a fresh window is one observation, so prime the queues the way
+                # lerobot's select_action does (repeat the first observation).
+                from lerobot.policies.utils import populate_queues
+                policy.reset()
+                policy._queues = populate_queues(policy._queues, obs, exclude_keys=[ACTION])
             out = policy.predict_action_chunk(obs, num_steps=args.nfe) \
                 if args.nfe is not None else policy.predict_action_chunk(obs)
             # the deploy adapter unnormalises ONCE PER CHUNK STEP; mirror it
