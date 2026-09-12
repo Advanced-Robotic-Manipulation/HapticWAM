@@ -7,3 +7,4 @@ A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos
 pi05	runs/pi05_20k/pretrained_model	pi0.5 BASELINE (LeRobot, expert fine-tune 20k on our demos; camera+proprio only): 40.2/26.8 offline, below the 32 no-motion floor - warm with ./serve_bg.sh 5 (needs pi05venv + runs/pi05_20k); Friday arm	lerobot
 v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6 (all 1115 demos, wrench-zero fix): 20.0 offline; on 09-09 the v6 family was the only one that descended to egg height (stu_v6 closed at 69 mm) - EGG DIAGNOSTIC arm, rightward bias on waffles
 stu_v6	runs/student_v6/student_001500.pt	SENSOR-FREE student of v6: 29.5 offline; egg diagnostic only	student
+stu_v6_r2	runs/student_v6_r2/student_002000.pt	PAD-FREE student of v6 with rig rollouts (DAgger r2 recipe, 2000 steps): 28.2/18.9 offline (weak offline like every v6-lineage student; v6 itself descends on the rig) - the v6 pair student, arm B for cells with 6	student
