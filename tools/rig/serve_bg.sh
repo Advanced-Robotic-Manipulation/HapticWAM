@@ -44,11 +44,15 @@ for m in "$@"; do
   [ -e "$C" ] || { echo "checkpoint missing on disk: $BASE/phantom/$C"; continue; }
   PORT=$((7776 + m)); LOG=$BASE/logs/serve_${L}.log
   if [ -n "$(listener_pid $PORT)" ]; then echo "$L already listening on :$PORT"; continue; fi
-  if [ "$S" = lerobot ]; then
-    # pi0.5 (LeRobot) row: its own venv (lerobot + transformers pins), same wire/probe contract
-    PY=$BASE/pi05venv/bin/python; [ -x "$PY" ] || { echo "missing $PY (pi0.5 venv) — see docs/pi05_baseline.md"; continue; }
+  if [ "${S%%:*}" = lerobot ]; then
+    # LeRobot rows: `lerobot` = pi0.5 in its own venv (lerobot + transformers pins);
+    # `lerobot:<type>` (diffusion, xvla) = the same server from baselines_venv, a thin
+    # overlay on pi05venv with a torchao that diffusers can import (09-12). Same wire/probe contract.
+    PT=${S#lerobot}; PT=${PT#:}; PT=${PT:-pi05}
+    if [ "$PT" = pi05 ]; then PY=$BASE/pi05venv/bin/python; else PY=$BASE/baselines_venv/bin/python; fi
+    [ -x "$PY" ] || { echo "missing $PY (venv for $PT) — see docs/pi05_baseline.md / docs/rig_baselines.md"; continue; }
     nohup "$PY" -m phantom.scripts.lerobot_server --ckpt "$C" --port $PORT --hardware configs/hardware.nuc.yaml \
-        --policy-type pi05 --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
+        --policy-type "$PT" --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
   else
   nohup .venv/bin/python -m phantom.scripts.policy_server --ckpt "$C" --system "$S" \
       --hardware configs/hardware.nuc.yaml --port $PORT > "$LOG" 2>&1 &

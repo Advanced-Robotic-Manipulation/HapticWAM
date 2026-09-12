@@ -1,4 +1,14 @@
-"""Resident policy server for an external LeRobot baseline (target: pi05).
+"""Resident policy server for an external LeRobot baseline.
+
+Serves pi0.5, Diffusion Policy and X-VLA off the same wire:
+
+    --policy-type pi05       (chunk 50, single frame)
+    --policy-type diffusion  (horizon 16, n_obs_steps 2 -> the adapter keeps an
+                              observation history; n_action_steps widened 8->15)
+    --policy-type xvla        (chunk 30, single frame, 3 declared image slots of
+                              which our export fills one — the other two are
+                              zero-padded and MASKED by lerobot's own code)
+
 
 Same wire, same ownership rules and the same `--probe` contract as
 `phantom.scripts.policy_server` — it IS `PolicyServer`, only the policy object
@@ -21,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import logging
 import sys
 from pathlib import Path
@@ -67,7 +78,24 @@ def build_parser() -> argparse.ArgumentParser:
         description="serve a LeRobot policy over the phantom policy protocol")
     ap.add_argument("--ckpt", help="LeRobot checkpoint directory (or HF repo id)")
     ap.add_argument("--policy-type", default="pi05",
-                    help="LeRobot policy type name (default pi05)")
+                    help="LeRobot policy type name: pi05 (default), "
+                         "diffusion, xvla, ...")
+    ap.add_argument("--rename-map", default=None, metavar="JSON",
+                    help='observation-key rename applied to OUR batch, e.g. '
+                         '\'{"observation.images.scene": '
+                         '"observation.images.image"}\' for a checkpoint '
+                         "trained with lerobot's --rename_map. Normally "
+                         "UNNECESSARY: the checkpoint's own preprocessor "
+                         "carries the rename it was trained with. Needed with "
+                         "--no-processors, or to override it")
+    ap.add_argument("--no-widen-chunk", action="store_true",
+                    help="leave the checkpoint's n_action_steps alone. By "
+                         "default a policy whose executable chunk is shorter "
+                         "than the deploy horizon is widened to "
+                         "horizon - n_obs_steps + 1 (Diffusion Policy: 8 -> "
+                         "15), so the plan is predicted steps rather than "
+                         "held padding — the same widening "
+                         "tools/pi05_offline_eval.py applies for scoring")
     ap.add_argument("--hardware", default="configs/hardware.nuc.yaml")
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--device", default="cuda")
@@ -117,22 +145,45 @@ def main(argv: list[str] | None = None) -> int:
     from phantom.config.hardware import load_hardware
     from phantom.inference.lerobot_policy import (LeRobotPolicy,
                                                   check_checkpoint_contract,
-                                                  load_lerobot_policy)
+                                                  load_lerobot_policy,
+                                                  pipeline_rename_map,
+                                                  widen_action_steps)
+
+    rename: dict[str, str] = {}
+    if args.rename_map:
+        rename = json.loads(args.rename_map)
+        if not isinstance(rename, dict):
+            ap.error("--rename-map must be a JSON object of old -> new key")
 
     hw = load_hardware(args.hardware)
     inner, pre, post = load_lerobot_policy(
         args.ckpt, policy_type=args.policy_type, device=args.device,
         with_processors=not args.no_processors)
+    if not args.no_widen_chunk:
+        widen_action_steps(inner, hw.control.chunk_horizon)
     if not args.skip_contract_check:
+        # the key the MODEL sees: our own rename, then the rename the
+        # checkpoint's saved preprocessor performs
+        effective = {**rename, **pipeline_rename_map(pre)}
+        if effective:
+            log.info("effective observation rename: %s", effective)
         check_checkpoint_contract(inner, image_key=args.image_key,
                                   action_dim=hw.control.action_dim,
-                                  chunk_horizon=hw.control.chunk_horizon)
+                                  chunk_horizon=hw.control.chunk_horizon,
+                                  rename_map=effective,
+                                  image_size=args.image_size)
     policy = LeRobotPolicy(
         inner, hw, task_text=args.task, action_space=args.action_space,
         image_size=args.image_size, image_key=args.image_key,
         state_key=args.state_key, pad_mode=args.pad_mode, device=args.device,
         use_task_key=not args.no_task_key,
-        preprocessor=pre, postprocessor=post)
+        preprocessor=pre, postprocessor=post, rename_map=rename)
+    if policy.n_obs_steps > 1:
+        log.warning("this policy conditions on %d past observations. The "
+                    "adapter keeps its own per-episode history, but the frames "
+                    "are one REPLAN apart, not 1/%.0f s as in training — "
+                    "Plan.diag['obs_dt_s'] records the real spacing",
+                    policy.n_obs_steps, hw.control.action_rate_hz)
     sha = dir_digest(args.ckpt)
     log.info("checkpoint digest sha256[:12]=%s (%s)", sha, args.ckpt)
     srv = PolicyServer(policy, ckpt=str(args.ckpt), ckpt_sha=sha)

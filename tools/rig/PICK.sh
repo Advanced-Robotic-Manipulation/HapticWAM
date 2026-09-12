@@ -33,16 +33,21 @@ echo "  6) NO REACH LIMITER: LEVERS + --servo-reach-profile none (attribution co
 # arms under the SAME controller or the pair measures the controller, not the
 # model. BOUNDED REACH (5) is an explicit choice for teacher-only trials.
 DEFAULT_PRESET=1
-if [ "$SYSTEM" = lerobot ]; then
-  # pi0.5 (LeRobot) arm: no terminal veto / parity fixes / k-seeds (the adapter refuses them);
-  # nfe = its flow-matching steps (checkpoint default 10); play caps per docs/pi05_baseline.md.
-  p=pi05; NFE=10; EXTRA="--max-play-steps 16 --grip-play-steps 16 --min-replan-s 0.5 --max-episode-s 150 --max-replans 400"; PRESET=PI05
-  echo "  (pi0.5 row: preset fixed to PI05 = nfe 10, plays 16/16, replan >= 0.5 s, no veto)"
+LEROBOT_TYPE=""
+case "$SYSTEM" in lerobot) LEROBOT_TYPE=pi05;; lerobot:*) LEROBOT_TYPE=${SYSTEM#lerobot:};; esac
+if [ -n "$LEROBOT_TYPE" ]; then
+  # LeRobot arms (pi0.5 / diffusion / xvla): no terminal veto / parity fixes / k-seeds (the adapter
+  # refuses them); nfe = the checkpoint's own inference steps (pi0.5 flow 10; diffusion / xvla use
+  # their config default, 0 = leave it); play caps per docs/pi05_baseline.md, shared by all three
+  # so the baseline column runs one controller.
+  p=lerobot; NFE=10; [ "$LEROBOT_TYPE" != pi05 ] && NFE=0
+  EXTRA="--max-play-steps 16 --grip-play-steps 16 --min-replan-s 0.5 --max-episode-s 150 --max-replans 400"; PRESET=LEROBOT_$LEROBOT_TYPE
+  echo "  ($LEROBOT_TYPE row: preset fixed to LEROBOT = nfe $NFE, plays 16/16, replan >= 0.5 s, no veto)"
 else
 read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
 fi
 case $p in
-  pi05) ;;
+  lerobot) ;;
   1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # pose plays the whole chunk (09-08: the turn to the box lives in the tail); gripper capped at the validated head (tail openings flapped the fingers)
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
@@ -52,12 +57,12 @@ case $p in
   *) echo "bad choice"; exit 1;;
 esac
 read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
-if [ "$SYSTEM" = lerobot ]; then
+if [ -n "$LEROBOT_TYPE" ]; then
   case "$TASK" in Carton) PHRASE="pick up the carton";; whiteboard) PHRASE="pick up the whiteboard marker";; *) PHRASE="pick up the $TASK";; esac
   EXTRA="$EXTRA --text '$PHRASE'"
   # 09-11 forensics: on whiteboard pi0.5 bottoms out 21-26 mm below the sponge (sd 5 mm) and rams
   # the brick; tell the policy it is 23 mm lower than it is (policy-side only, recorded in overrides)
-  [ "$TASK" = whiteboard ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
+  [ "$TASK" = whiteboard ] && [ "$LEROBOT_TYPE" = pi05 ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
 fi
 read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
@@ -137,8 +142,8 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
       EXTRA="$EXTRA --policy-server 127.0.0.1:$PORT"; ATTACHED=1; break
     fi
   done
-  if [ -z "$ATTACHED" ] && [ "$SYSTEM" = lerobot ]; then
-    echo "!! pi0.5 runs only through its warm server: ./serve_bg.sh $m  (lerobot_server), then re-run PICK."; exit 3
+  if [ -z "$ATTACHED" ] && [ -n "$LEROBOT_TYPE" ]; then
+    echo "!! $LEROBOT_TYPE runs only through its warm server: ./serve_bg.sh $m  (lerobot_server), then re-run PICK."; exit 3
   fi
   if [ -z "$ATTACHED" ]; then
     if [ -n "$FOUND" ]; then
@@ -168,5 +173,5 @@ read -p "Enter to launch (Ctrl-C to abort) "
 # behind a git pull and previously left the fixed controller disabled.
 LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
 [ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
-[ "$SYSTEM" = lerobot ] && SYSTEM=student
+[ -n "$LEROBOT_TYPE" ] && SYSTEM=student
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0

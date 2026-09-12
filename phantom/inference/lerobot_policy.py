@@ -42,6 +42,33 @@ pipelines are load-bearing rather than a convenience. Skipping them
 (`--no-processors`) feeds the model normalised-space garbage and is offered
 only for a policy that genuinely ships no pipeline.
 
+Observation-QUEUE policies (Diffusion Policy, ACT with n_obs_steps > 1)
+-----------------------------------------------------------------------
+pi05 and X-VLA are single-frame: `n_obs_steps = 1`, and their `_queues` hold
+only ACTION, so one snapshot is one call. Diffusion Policy is not — it
+conditions on the last `n_obs_steps` observations, and `predict_action_chunk`
+does NOT build that history: it STACKS whatever is already in
+`policy._queues` (lerobot 0.4.4 `modeling_diffusion.py:94`). Its camera
+features are also stacked into the single key `observation.images` BEFORE
+queueing, by `select_action`, not by the model.
+
+So for such a policy this adapter keeps its OWN per-episode history of the
+last `n_obs_steps` post-processor batches and, every replan, clears the
+policy's observation queues and refills them oldest-first — repeating the
+first frame while the history is short, which is exactly lerobot's
+`populate_queues` cold start. `reset_episode` drops the history, so an
+episode never conditions on the previous episode's frames.
+
+CAVEAT, and it is a real one: at training time those `n_obs_steps` frames are
+CONSECUTIVE dataset frames, 1/fps apart (0.1 s here). On the rig the adapter
+only sees an observation when `PlannerLoop` replans, so the older frame is one
+REPLAN old, not one control step old. `Plan.diag["obs_dt_s"]` records the
+actual spacing so a trace never hides it.
+
+The ground-truth ACTION key is dropped from every batch before inference: a
+queue policy has an ACTION queue too, and a batch carrying `action` would
+prime it and make the policy replay the demonstration instead of predicting.
+
 Action contract: the post-processed chunk is (T, 7) of
 `[dx, dy, dz, drx, dry, drz, grip]` at `hw.control.action_rate_hz` (10 Hz), in
 metres / radians / aperture units. `--action-space absolute` instead reads the
@@ -84,6 +111,12 @@ DEFAULT_IMAGE_SIZE = 224
 ACTION_SPACES = ("delta", "absolute")
 PAD_MODES = ("hold", "repeat")
 
+# lerobot.utils.constants, inlined so this module stays importable without
+# lerobot (verified against lerobot 0.4.4: ACTION = "action",
+# OBS_IMAGES = "observation.images").
+LR_ACTION_KEY = "action"
+LR_IMAGES_KEY = "observation.images"
+
 # Deploy levers this policy structurally cannot honour. Passing them would
 # label an arm with a condition it never ran (the failure mode `cond_tags`
 # and `assert_acc_head` exist to prevent).
@@ -94,6 +127,26 @@ UNSUPPORTED_FLAGS = {
     "parity_fixes": "no prev_chunk / ACC conditioning to realign",
     "drop_video": "the scene image is this policy's only observation",
 }
+
+
+def _denoise_steps(cfg) -> int:
+    """The denoise/integration steps the policy's own config asks for.
+
+    pi05 / Diffusion Policy: `num_inference_steps`, and for Diffusion Policy a
+    None there means `num_train_timesteps` (lerobot 0.4.4
+    `DiffusionModel.__init__`). X-VLA: `num_denoising_steps`. 0 when the policy
+    declares none, so a trace never invents a number."""
+    if cfg is None:
+        return 0
+    n = getattr(cfg, "num_inference_steps", None)
+    if n is None:
+        n = getattr(cfg, "num_denoising_steps", None)
+    if n is None:
+        n = getattr(cfg, "num_train_timesteps", None)
+    try:
+        return int(n)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _accepts_kwarg(fn, name: str) -> bool:
@@ -118,10 +171,18 @@ class _EpisodeReset:
     action QUEUE rather than held noise, so `reset_episode_noise` clears that
     queue, and the seed is applied to the process RNG the policy samples from
     (pi0/pi05 flow-matching draws its prior from the global torch generator).
+
+    It also drops the adapter's observation history, and that placement is
+    load-bearing: `PolicyServer._handle_owned` serves the wire's
+    `("reset_episode", seed)` by calling `self.policy.rf.reset_episode_noise()`
+    directly, NOT `LeRobotPolicy.reset_episode`. Clearing the history only in
+    the latter would leave a queue policy conditioning the first chunk of
+    episode N+1 on the LAST frame of episode N.
     """
 
-    def __init__(self, policy):
+    def __init__(self, policy, owner=None):
         self._policy = policy
+        self._owner = owner
         self._gen_value = None
         self.resets = 0
 
@@ -146,6 +207,9 @@ class _EpisodeReset:
 
     def reset_episode_noise(self) -> None:
         self.resets += 1
+        clear = getattr(self._owner, "_clear_obs_history", None)
+        if callable(clear):
+            clear()
         reset = getattr(self._policy, "reset", None)
         if callable(reset):
             reset()
@@ -162,7 +226,8 @@ class LeRobotPolicy:
                  state_key: str = DEFAULT_STATE_KEY,
                  pad_mode: str = "hold", device: str = "cpu",
                  use_task_key: bool = True,
-                 preprocessor=None, postprocessor=None):
+                 preprocessor=None, postprocessor=None,
+                 rename_map: dict | None = None):
         assert action_space in ACTION_SPACES, \
             f"action_space must be one of {ACTION_SPACES}, got {action_space!r}"
         assert pad_mode in PAD_MODES, \
@@ -182,7 +247,13 @@ class LeRobotPolicy:
         self.pad_mode = pad_mode
         self.device = device
         self.use_task_key = bool(use_task_key)
-        self.rf = _EpisodeReset(policy)
+        # observation-key rename applied to OUR batch before the checkpoint's
+        # own pipeline sees it. Needed only when the pipeline does NOT already
+        # carry the rename it was trained with (`--no-processors`), because
+        # `make_pre_post_processors(pretrained_path=...)` restores the saved
+        # `rename_observations_processor` step verbatim.
+        self.rename_map = dict(rename_map or {})
+        self.rf = _EpisodeReset(policy, owner=self)
         # SnapshotBuilder mirrors this off the server's `info`; a LeRobot
         # policy never saw a wrench baseline, so the snapshot must not
         # subtract one.
@@ -192,6 +263,23 @@ class LeRobotPolicy:
         self.A = int(hw.control.action_dim)
         self.rate = float(hw.control.action_rate_hz)
         self.dof = int(hw.arm.dof)
+
+        cfg = getattr(policy, "config", None)
+        # how many past observations this policy conditions on. 1 for pi05 and
+        # X-VLA; 2 for our Diffusion Policy checkpoint.
+        self.n_obs_steps = max(1, int(getattr(cfg, "n_obs_steps", 1) or 1))
+        # the camera keys the checkpoint declares, in the order the model
+        # stacks them — this order IS part of the trained contract.
+        self.image_features = list(getattr(cfg, "image_features", None) or [])
+        # the policy's own denoise budget, for the trace. NOT the same as
+        # `--nfe`: Diffusion Policy exposes no per-call override, and a None
+        # `num_inference_steps` means it runs `num_train_timesteps` DDPM steps
+        # (lerobot 0.4.4 `modeling_diffusion.py:204`).
+        self.denoise_steps = _denoise_steps(cfg)
+        # per-episode observation history for a queue policy, oldest first
+        self._obs_hist: list[dict] = []
+        self._last_obs_t: float | None = None
+        self._obs_dt: float = 0.0
 
         # --- the PhantomPolicy attribute surface `remote.CONFIGURABLE`
         # reconfigures and `run_deploy`'s cond_tags read. Only `task_text` is
@@ -278,6 +366,14 @@ class LeRobotPolicy:
                 + "\nDrop them from the run_deploy line — running with them "
                   "set would tag the arm with a condition it never ran.")
 
+    def _clear_obs_history(self) -> None:
+        """Forget every frame of the finished episode. Called from
+        `_EpisodeReset.reset_episode_noise`, which is the ONE path both the
+        local runtime and the policy-server wire go through."""
+        self._obs_hist = []
+        self._last_obs_t = None
+        self._obs_dt = 0.0
+
     def reset_episode(self) -> None:
         self.rf.reset_episode_noise()
 
@@ -303,12 +399,18 @@ class LeRobotPolicy:
         S = self.image_size
         img = bilinear_resize(rgb.astype(np.float32), (S, S)) / 255.0
         img = np.ascontiguousarray(img.transpose(2, 0, 1), dtype=np.float32)
-        return {self.image_key: img[None],          # (1, 3, S, S)
-                self.state_key: state[None],        # (1, 7)
-                # a plain str, exactly as LeRobot's own `predict_action`
-                # passes it; `AddBatchDimensionComplementaryDataStep` wraps
-                # it into a one-element list inside the pipeline
-                "task": self.task_text}
+        batch = {self.image_key: img[None],         # (1, 3, S, S)
+                 self.state_key: state[None]}       # (1, 7)
+        # `--rename-map`: land the scene camera under the key THIS checkpoint
+        # was trained on (X-VLA: observation.images.image). Applied to
+        # observation keys only, never to `task`.
+        if self.rename_map:
+            batch = {self.rename_map.get(k, k): v for k, v in batch.items()}
+        # a plain str, exactly as LeRobot's own `predict_action` passes it;
+        # `AddBatchDimensionComplementaryDataStep` wraps it into a
+        # one-element list inside the pipeline
+        batch["task"] = self.task_text
+        return batch
 
     def _to_torch(self, batch: dict) -> dict:
         import torch
@@ -320,6 +422,75 @@ class LeRobotPolicy:
                 continue
             out[k] = torch.from_numpy(np.asarray(v)).to(self.device)
         return out
+
+    # -- observation history (queue policies only) ---------------------
+    def _obs_queues(self) -> dict | None:
+        """The policy's OBSERVATION queues, or None when it keeps none.
+
+        lerobot policies all expose `_queues`, but pi05's and X-VLA's hold the
+        ACTION deque ALONE — they are single-frame models and manage nothing we
+        must prime. Only a policy with a non-ACTION queue (Diffusion Policy:
+        `observation.state` + `observation.images`) needs the history dance, so
+        the presence of such a queue IS the test."""
+        q = getattr(self.policy, "_queues", None)
+        if not isinstance(q, dict):
+            return None
+        obs = {k: v for k, v in q.items() if k != LR_ACTION_KEY}
+        return obs or None
+
+    def _stack_cameras(self, batch: dict) -> dict:
+        """Add the single `observation.images` key a Diffusion-Policy queue is
+        named after: its cameras stacked on a new axis at dim=-4.
+
+        `DiffusionPolicy.select_action` does this BEFORE queueing and
+        `predict_action_chunk` only stacks the queue, so an adapter that skips
+        it hands `generate_actions` a batch with no image key at all. The
+        stacking order is `config.image_features`, which is the order the
+        encoder was trained with."""
+        import torch
+        keys = [k for k in self.image_features if k in batch]
+        if not keys:
+            keys = sorted(k for k in batch
+                          if isinstance(k, str)
+                          and k.startswith(LR_IMAGES_KEY + "."))
+            if keys:
+                log.warning("policy declares no image_features; stacking %s "
+                            "into %s in SORTED order — verify it matches the "
+                            "order the checkpoint was trained with",
+                            keys, LR_IMAGES_KEY)
+        if not keys:
+            return batch
+        out = dict(batch)
+        out[LR_IMAGES_KEY] = torch.stack([out[k] for k in keys], dim=-4)
+        return out
+
+    def _push_obs(self, batch: dict) -> None:
+        """Remember this (post-processor) batch, keeping n_obs_steps frames."""
+        self._obs_hist.append(batch)
+        if len(self._obs_hist) > self.n_obs_steps:
+            del self._obs_hist[:-self.n_obs_steps]
+
+    def _prime_queues(self, queues: dict) -> None:
+        """Refill the policy's observation queues from OUR history.
+
+        Deliberately a REFILL from a cleared deque rather than an append, so a
+        replan's conditioning depends only on `self._obs_hist` and never on how
+        many times the policy happened to be called before. The short-history
+        rule is lerobot 0.4.4 `populate_queues`': repeat the oldest frame until
+        the queue is full, which is how `select_action` starts an episode."""
+        for key, q in queues.items():
+            frames = [f[key] for f in self._obs_hist if key in f]
+            if not frames:
+                log.warning("policy queue %r has no matching batch key — it "
+                            "will be left as the policy built it", key)
+                continue
+            maxlen = q.maxlen or len(frames)
+            frames = frames[-maxlen:]
+            q.clear()
+            for _ in range(maxlen - len(frames)):
+                q.append(frames[0])
+            for f in frames:
+                q.append(f)
 
     # -- action --------------------------------------------------------
     def _call_chunk(self, fn, batch):
@@ -360,8 +531,26 @@ class LeRobotPolicy:
         with torch.no_grad():
             if self.preprocessor is not None:
                 batch = self.preprocessor(batch)
+            # The ground-truth ACTION key must never reach the policy: a queue
+            # policy would prime its ACTION deque from it and replay the
+            # demonstration. Our own `observation()` never emits it, so on the
+            # pi05 path this is a no-op copy.
+            batch = {k: v for k, v in batch.items() if k != LR_ACTION_KEY}
             fn = getattr(self.policy, "predict_action_chunk", None)
             if callable(fn):
+                queues = self._obs_queues()
+                if queues is not None:
+                    if LR_IMAGES_KEY in queues:
+                        batch = self._stack_cameras(batch)
+                    self._push_obs(batch)
+                    # `reset()` rebuilds the deques, so re-read them and prime
+                    # from scratch — the conditioning is then a pure function
+                    # of the history.
+                    reset = getattr(self.policy, "reset", None)
+                    if callable(reset):
+                        reset()
+                        queues = self._obs_queues() or queues
+                    self._prime_queues(queues)
                 out = self._call_chunk(fn, batch)
                 if out.ndim == 1:            # (A,)
                     out = out[None, None]
@@ -433,6 +622,11 @@ class LeRobotPolicy:
     def replan(self, obs: ObsSnapshot, prev_plan: Plan | None,
                tcp_pose: np.ndarray) -> Plan:
         t_start = time.perf_counter()
+        # spacing between the frames a queue policy conditions on. At training
+        # time it is 1/fps; here it is one REPLAN, which is longer.
+        self._obs_dt = (0.0 if self._last_obs_t is None
+                        else float(obs.t - self._last_obs_t))
+        self._last_obs_t = float(obs.t)
         np_batch = self.observation(obs)
         chunk = self._raw_chunk(self._to_torch(np_batch))
         actions = self._to_deltas(chunk, tcp_pose)
@@ -460,7 +654,14 @@ class LeRobotPolicy:
                   "nfe": int(self.nfe) if self.nfe else 0,
                   # whether --nfe actually reached the policy, so a trace
                   # never claims a denoise budget the model ignored
-                  "nfe_applied": bool(self._nfe_kwarg)},
+                  "nfe_applied": bool(self._nfe_kwarg),
+                  # the policy's OWN denoise budget (Diffusion Policy takes no
+                  # per-call override, so this is the only honest number)
+                  "denoise_steps": int(self.denoise_steps),
+                  # queue policies: how many past frames conditioned this
+                  # chunk, and how far apart the newest two actually were
+                  "obs_hist": len(self._obs_hist),
+                  "obs_dt_s": round(float(self._obs_dt), 4)},
         )
 
 
@@ -495,8 +696,67 @@ def load_lerobot_policy(ckpt: str, *, policy_type: str = "pi05",
     return policy, pre, post
 
 
+def pipeline_rename_map(pipeline) -> dict:
+    """The observation rename the checkpoint's OWN preprocessor performs.
+
+    `make_pre_post_processors(pretrained_path=...)` rebuilds the pipeline from
+    the saved `policy_preprocessor.json`, so a checkpoint trained with
+    lerobot's `--rename_map` (our X-VLA run: scene -> image) restores that step
+    verbatim and the adapter needs no rename of its own. Reading it back is
+    what lets `check_checkpoint_contract` compare the POST-rename key against
+    `config.image_features` instead of failing on a key the pipeline was about
+    to fix."""
+    out: dict = {}
+    for step in getattr(pipeline, "steps", None) or []:
+        rm = getattr(step, "rename_map", None)
+        if isinstance(rm, dict):
+            out.update(rm)
+    return out
+
+
+def widen_action_steps(policy, chunk_horizon: int) -> int | None:
+    """Raise a queue policy's `n_action_steps` to the most steps ONE chunk can
+    execute, so the deploy horizon is filled with PREDICTED steps.
+
+    Diffusion Policy returns `n_action_steps` rows (8 by default) sliced out of
+    a `horizon`-long sample at `start = n_obs_steps - 1`, so a single chunk can
+    legally yield `horizon - n_obs_steps + 1` = 15 steps. Left at 8, every
+    replan would hand the executor 8 real steps and 8 HELD ones — half the
+    deploy horizon frozen. `tools/pi05_offline_eval.py` raises it the same way
+    for scoring, so the rig and the offline table stay comparable.
+
+    A no-op for pi05 (n_action_steps 50) and X-VLA (no `horizon` attribute).
+    Returns the new value, or None when nothing changed."""
+    cfg = getattr(policy, "config", None)
+    vals = [getattr(cfg, a, None) for a in ("n_action_steps", "horizon",
+                                            "n_obs_steps")]
+    if cfg is None or any(v is None for v in vals):
+        return None
+    try:
+        n_act, horizon, n_obs = (int(v) for v in vals)
+    except (TypeError, ValueError):
+        return None
+    if n_act >= chunk_horizon:
+        return None
+    new = min(int(chunk_horizon), horizon - n_obs + 1)
+    if new <= n_act:
+        return None
+    cfg.n_action_steps = new
+    reset = getattr(policy, "reset", None)
+    if callable(reset):
+        # the ACTION deque's maxlen is n_action_steps; rebuild it
+        reset()
+    log.warning("n_action_steps raised %d -> %d (horizon %d, n_obs_steps %d) "
+                "so one chunk covers the %d-step deploy horizon instead of "
+                "padding %d steps every replan",
+                n_act, new, horizon, n_obs, chunk_horizon, chunk_horizon - n_act)
+    return new
+
+
 def check_checkpoint_contract(policy, *, image_key: str, action_dim: int,
-                              chunk_horizon: int) -> None:
+                              chunk_horizon: int,
+                              rename_map: dict | None = None,
+                              image_size: int | None = None) -> None:
     """Loud, load-time check that the checkpoint matches the deploy contract.
 
     Every one of these is a silent-wrong-answer at runtime otherwise: a
@@ -510,12 +770,46 @@ def check_checkpoint_contract(policy, *, image_key: str, action_dim: int,
                     "check; verify the camera key and action layout by hand")
         return
     feats = getattr(cfg, "image_features", None)
-    if feats is not None and image_key not in feats:
+    # the key the MODEL sees, after the adapter's `--rename-map` and the
+    # checkpoint's own saved rename step
+    sent = (rename_map or {}).get(image_key, image_key)
+    if feats is not None and sent not in feats:
         raise RuntimeError(
             f"checkpoint expects image keys {sorted(feats)} but the adapter "
-            f"sends {image_key!r}. A missing camera is silently padded with a "
+            f"sends {sent!r}. A missing camera is silently padded with a "
             "BLANK image, so this would run and produce nonsense. Fix the "
-            "exporter's camera name or pass --image-key.")
+            "exporter's camera name, pass --image-key, or map ours onto the "
+            f"checkpoint's with --rename-map "
+            f"'{{\"{image_key}\": \"{sorted(feats)[0] if feats else '...'}\"}}'.")
+    if feats is not None and len(feats) > 1:
+        # X-VLA declares 3 image slots (it was fine-tuned from lerobot/xvla-base,
+        # whose config carries them) but our export has ONE camera. lerobot's
+        # `XVLAPolicy._prepare_images` fills the absent slots with zeros AND a
+        # zero attention mask, which is exactly what training did, so this is a
+        # warning rather than a refusal — but a policy that masks nothing would
+        # be reading blank frames as real ones.
+        log.warning("checkpoint declares cameras %s; the adapter supplies only "
+                    "%r. Verify the policy MASKS the absent views (X-VLA does; "
+                    "Diffusion Policy does not and would raise instead)",
+                    sorted(feats), sent)
+    if image_size is not None and isinstance(feats, dict) and sent in feats:
+        shape = tuple(getattr(feats.get(sent), "shape", ()) or ())
+        internal = getattr(cfg, "resize_imgs_with_padding", None) \
+            or getattr(cfg, "resize_shape", None) \
+            or getattr(cfg, "image_resolution", None)
+        if len(shape) == 3 and tuple(shape[1:]) != (image_size, image_size):
+            msg = ("checkpoint declares %s as %s but --image-size is %d"
+                   % (sent, shape, image_size))
+            if internal:
+                log.warning("%s. The policy resizes internally (%s), so this "
+                            "is only a mismatch if the TRAINING export used a "
+                            "different size than %d", msg, internal, image_size)
+            else:
+                raise RuntimeError(
+                    msg + ". This policy does NOT resize internally "
+                    "(resize_shape / crop_shape are unset), so the vision "
+                    "encoder would see the wrong input shape. Pass "
+                    f"--image-size {shape[1]}.")
     out = getattr(cfg, "output_features", None)
     try:
         n = int(out["action"].shape[0])
@@ -544,14 +838,21 @@ def _policy_class(policy_type: str):
         log.warning("lerobot factory lookup for %r failed (%s) — trying the "
                     "module path", policy_type, e)
     import importlib
-    for mod, attr in ((f"lerobot.policies.{policy_type}.modeling_{policy_type}",
-                       f"{policy_type.upper()}Policy"),
-                      (f"lerobot.common.policies.{policy_type}."
-                       f"modeling_{policy_type}", f"{policy_type.upper()}Policy")):
+    # class names are not a single convention: pi05 -> PI05Policy,
+    # xvla -> XVLAPolicy, diffusion -> DiffusionPolicy, act -> ACTPolicy.
+    attrs = (f"{policy_type.upper()}Policy", f"{policy_type.capitalize()}Policy",
+             f"{policy_type.title().replace('_', '')}Policy")
+    mods = (f"lerobot.policies.{policy_type}.modeling_{policy_type}",
+            f"lerobot.common.policies.{policy_type}.modeling_{policy_type}")
+    for mod in mods:
         try:
-            return getattr(importlib.import_module(mod), attr)
+            m = importlib.import_module(mod)
         except Exception:                        # noqa: BLE001
             continue
+        for attr in attrs:
+            cls = getattr(m, attr, None)
+            if cls is not None:
+                return cls
     raise ImportError(
         f"could not resolve a LeRobot policy class for type {policy_type!r}. "
         "Check the installed lerobot version and pass --policy-type.")
