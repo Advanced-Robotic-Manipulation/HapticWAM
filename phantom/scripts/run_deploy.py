@@ -130,7 +130,8 @@ def _finish_policy(pm, norm, args, payload):
                          guidance=getattr(args, "guidance", 1.0),
                          parity_fixes=getattr(args, "parity_fixes", False),
                          k_seeds=getattr(args, "k_seeds", 1),
-                         close_p=getattr(args, "veto_p_close", 0.5))
+                         close_p=getattr(args, "veto_p_close", 0.5),
+                         action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
     policy.wrench_baseline_rows = wrench_baseline_rows_of(payload)
@@ -307,6 +308,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "PlannerLoop checks the COUNT first — so unless "
                          "--max-replans is passed explicitly this budget "
                          "replaces it. 0 or negative disables it")
+    ap.add_argument("--action-time-origin", choices=("inference_ready", "observation"),
+                    default=None, help="Experimental epoch; omission preserves historical playback")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
                          "LATENCY LEVER (review P4): the loop is compute-bound and "
@@ -408,6 +411,9 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
+    ap.add_argument("--gripper-max-close-cmd", type=float, default=None,
+                    help="opt-in cap on the policy's close command (0-1); lowers hardware gripper.max_close_cmd, "
+                         "never raises it (sim zoo 2026-09-12: students over-squeeze to 0.66-0.71, teacher ~0.60)")
     ap.add_argument("--servo-reach-profile", choices=["bounded_v1", "none"], default="bounded_v1",
                     help="UR3 command limiter, ON by default since 09-11 (real lifts ended with a "
                          "straight elbow at the far point over the box; see "
@@ -900,6 +906,11 @@ def main(argv=None) -> int:
         log.info("servo reach profile %s: %s (measured safety stops preserved)",
                  args.servo_reach_profile, limits)
     from phantom.deploy.safety import apply_wrench_baseline_mode
+    if getattr(args, "gripper_max_close_cmd", None) is not None:
+        from phantom.deploy.safety import apply_gripper_max_close
+        hw = apply_gripper_max_close(hw, args.gripper_max_close_cmd)
+        deploy_overrides["gripper_max_close_cmd"] = float(hw.gripper.max_close_cmd)
+        log.info("gripper close command capped at %.3f (max_close_cmd)", hw.gripper.max_close_cmd)
     hw = apply_wrench_baseline_mode(hw, args.wrench_baseline_mode)
     if args.wrench_baseline_mode is not None:
         deploy_overrides["wrench_baseline_mode"] = hw.safety.wrench_baseline_mode
@@ -998,6 +1009,8 @@ def main(argv=None) -> int:
                    task_text=(args.text or args.task),
                    drop_video=args.drop_video,
                    close_p=getattr(args, "veto_p_close", 0.5))
+        if getattr(args, "action_time_origin", None) is not None:
+            cfg["action_time_origin"] = args.action_time_origin
         try:
             policy = RemotePolicy((host, port), cfg)
             log.info("using policy server at %s:%d (ckpt %s sha %s, warm=%s) — "

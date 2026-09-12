@@ -108,7 +108,7 @@ def test_opt_in_is_explicit_and_default_class_identity_is_unchanged():
         is None
     )
     for kwargs in [
-        {"mode": "student"},
+        {"mode": "replay"},   # sim zoo 2026-09-12: student and vision_only are supported modes now
         {"veto": None},
         {"release_config": None},
         {

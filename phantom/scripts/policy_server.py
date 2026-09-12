@@ -68,6 +68,8 @@ def main() -> int:
                     help="print the running server's ckpt and exit")
     # accepted for build_policy compatibility; per-launch values come from the
     # client's configure call
+    ap.add_argument("--action-time-origin", choices=("inference_ready", "observation"),
+                    default="inference_ready")
     ap.add_argument("--nfe", type=int, default=None)
     ap.add_argument("--guidance", type=float, default=1.0)
     ap.add_argument("--tiny", action="store_true")

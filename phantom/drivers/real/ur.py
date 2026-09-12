@@ -669,6 +669,11 @@ class URArm(Arm):
                 tcp_pose, prev, qref, dt,
                 lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
             )
+            if target_guard is not None:
+                selection = target_guard.refine_rate_selection(
+                    selection, prev, qref, dt,
+                    lambda pose, seed: self._solve_ik(ctrl, pose, seed), limits,
+                    lambda q: ctrl.getForwardKinematics(np.asarray(q).tolist()))
         held = verified_constraint_hold(selection, qref, dt, limits)
         if not selection.accepted and not held:
             return self._reject(

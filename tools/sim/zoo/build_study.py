@@ -52,6 +52,13 @@ RECIPES = {
                      boundary_projection_config="boundary_projection__D2.json"),
     "K4_ir_D3": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
                      boundary_projection_config="boundary_projection__D3.json"),
+    "K4_ir_D4": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
+                     boundary_projection_config="boundary_projection__D3.json",
+                     placement_release_config="placement_release__D4.json"),
+    # student over-squeeze workaround: D4 + close command capped at the teacher plateau
+    "K4_ir_D4_cap062": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
+                            boundary_projection_config="boundary_projection__D3.json",
+                            placement_release_config="placement_release__D4.json", gripper_max_close_cmd=0.62),
     "pi05": dict(nfe=10, guidance=1.0, k_seeds=1, parity_fixes=False, persistent_noise=False, task_text="pick up the waffles",
                  drop_video=False, close_p=0.5, use_ema=True, terminal_veto=False, action_time_origin="inference_ready",
                  # the sim's adaptive contract requires action_time_origin explicitly; the box pi0.5 server (main)
@@ -151,7 +158,7 @@ def stage_e1(seed, setups):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["A1", "B", "C", "E1", "E2"], required=True)
+    parser.add_argument("--stage", choices=["A1", "B", "C", "E1", "E2", "E4", "E5"], required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--checkpoint-shas", type=Path, required=True, help="json {checkpoint path: sha256}")
     parser.add_argument("--seeds", type=int, nargs="+", default=[910501, 910502])
@@ -179,7 +186,7 @@ def main():
         assert args.setups, f"stage {args.stage} needs --setups model:recipe ..."
         trials = [dict(t, id=args.stage + t["id"][2:]) for t in stage_e1(args.seeds[0], [tuple(x.split(":")) for x in args.setups])]
     study = dict(study_id=f"sim_zoo_20260912_{args.stage}", stage=args.stage,
-                 runtime=REMOTE_ROOT + "runtime_v15_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
+                 runtime=REMOTE_ROOT + "runtime_v16_20260912", inputs=REMOTE_ROOT + "inputs_20260912",
                  raw=REMOTE_ROOT + f"raw_20260912/{args.stage}", prepared_episode=PREPARED_EPISODE,
                  tactile_baseline=TACTILE_BASELINE, fixed=FIXED, models=models, recipes=RECIPES, trials=trials,
                  input_manifest_sha256=sha(inputs_dir / "input_manifest.json"), planned_trials=len(trials))

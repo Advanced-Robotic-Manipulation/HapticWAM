@@ -561,6 +561,20 @@ def apply_wrench_baseline_mode(hw: HardwareConfig, mode: str | None) -> Hardware
     return hw.model_copy(update={"safety": safety})
 
 
+def apply_gripper_max_close(hw: HardwareConfig, cap: float) -> HardwareConfig:
+    """Copy of `hw` whose gripper.max_close_cmd is LOWERED to `cap` (never raised).
+
+    Sim zoo 2026-09-12: the sensor-free students keep ramping the close command to
+    0.66-0.71 after the packet blocks the fingers (the teacher plateaus at ~0.60),
+    which drives the outer finger joint 2-3.5 mrad past its limit and trips the
+    native-mechanics integrity monitor. This opt-in cap bounds the squeeze; every
+    executor path already clips the requested command to max_close_cmd."""
+    if not np.isfinite(cap) or not 0 < cap <= 1:
+        raise ValueError("gripper close cap must be in (0, 1]")
+    current = float(hw.gripper.max_close_cmd)
+    return hw.model_copy(update={"gripper": hw.gripper.model_copy(update={"max_close_cmd": min(current, float(cap))})})
+
+
 def apply_z_floor(hw: HardwareConfig, floor_m: float) -> HardwareConfig:
     """Copy of `hw` whose workspace z lower bound is RAISED to floor_m.
 

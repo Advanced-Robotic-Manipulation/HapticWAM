@@ -42,6 +42,7 @@ def experiment(tmp_path, monkeypatch):
         "task_text": "Pick up the waffles and place them in the box.",
         "drop_video": False,
         "close_p": .5,
+        "action_time_origin": "inference_ready",
     }))
     monkeypatch.setattr(sys, "argv", [
         "run_waffles.py", "--episode", str(tmp_path / "episode"),
@@ -117,10 +118,12 @@ def test_legacy_gripper_cannot_claim_native_optin(experiment):
 
 
 @pytest.mark.parametrize("mode", ["student", "vision_only"])
-def test_contract_is_teacher_only(experiment, mode):
+def test_contract_covers_student_and_vision_only_modes(experiment, mode):
+    # sim zoo 2026-09-12: the Cosmos students and the vision-only model run under the same
+    # explicit contract as the teacher (the old teacher-only gate is gone)
     experiment[0].policy_mode = mode
-    with pytest.raises(ValueError, match="teacher-only"):
-        check(experiment)
+    result = check(experiment)
+    assert result["hardware_transfer_qualified"] is False
 
 
 @pytest.mark.parametrize("field,value", [
@@ -162,7 +165,7 @@ def test_policy_json_cannot_silently_inherit_resident_server_settings(experiment
 
 @pytest.mark.parametrize("key", [
     "nfe", "guidance", "k_seeds", "parity_fixes", "persistent_noise",
-    "task_text", "drop_video", "close_p",
+    "task_text", "drop_video", "close_p", "action_time_origin",
 ])
 def test_every_remote_inference_setting_must_be_explicit(experiment, key):
     path = experiment[0].policy_config

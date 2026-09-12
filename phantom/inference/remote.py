@@ -50,7 +50,8 @@ DEFAULT_PORT = 7777
 # PhantomPolicy attributes a client may reconfigure per launch without a
 # model reload (all consumed at replan time, none change tensor shapes).
 CONFIGURABLE = ("nfe", "guidance", "k_seeds", "parity_fixes",
-                "persistent_noise", "task_text", "drop_video", "close_p")
+                "persistent_noise", "task_text", "drop_video", "close_p",
+                "action_time_origin")
 
 
 def plan_to_wire(plan: Plan) -> dict:
@@ -140,6 +141,14 @@ class RemotePolicy:
         cfg = {k: v for k, v in (config or {}).items()
                if k in CONFIGURABLE and v is not None}
         self.info = self._call("configure", cfg)
+        effective_origin = self.info.get("effective", {}).get("action_time_origin", "inference_ready")
+        if effective_origin is None and str(self.info.get("policy_kind", "phantom")) == "lerobot":
+            # the pi0.5 adapter has no timing settings: one delivery semantics, inference_ready
+            effective_origin = "inference_ready"
+        if effective_origin != cfg.get("action_time_origin", "inference_ready"):
+            self.close()
+            raise RuntimeError("server action_time_origin differs from explicit client request/default; "
+                               "request inference_ready or observation explicitly")
         # mirror the EFFECTIVE policy attrs (nfe=None falls back to the
         # checkpoint default server-side; tags must show the real value)
         for k, v in self.info.get("effective", {}).items():
@@ -255,7 +264,22 @@ class PolicyServer:
     def _handle_owned(self, msg: tuple):
         kind = msg[0]
         if kind == "configure":
-            for k, v in msg[1].items():
+            config = dict(msg[1])
+            current_origin = getattr(self.policy, "action_time_origin", "inference_ready")
+            if "action_time_origin" in config or current_origin == "observation":
+                from phantom.inference.action_timing import validate_action_time_origin
+                origin = validate_action_time_origin(config.get("action_time_origin", current_origin))
+                seeds = config.get("k_seeds", self.policy.k_seeds)
+                if origin == "observation" and seeds != 1:
+                    raise ValueError("observation action epoch candidate supports K1 only")
+                # Validate the prospective pair before mutating either setting.
+                # Restoring legacy K4 must clear observation mode first; opting
+                # into observation mode must establish K1 before that setter.
+                first = ("action_time_origin", "k_seeds") if origin == "inference_ready" else ("k_seeds", "action_time_origin")
+                for key in first:
+                    if key in config:
+                        setattr(self.policy, key, config.pop(key))
+            for k, v in config.items():
                 if k in CONFIGURABLE:
                     setattr(self.policy, k, v)
             return {**self.status(),

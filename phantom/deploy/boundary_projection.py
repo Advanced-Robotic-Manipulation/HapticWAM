@@ -34,12 +34,32 @@ class BoundaryProjectionConfig:
     max_tick_s: float
     rearm_dwell_s: float
     budget_s: float
+    terminal_hold_reference: str = "measured_achieved_v1"
+    rate_solver_backoff: str = "disabled"
+    # v3 only: extra inset applied to the solver's upper z bound (carry-apex cap). The executed
+    # z creeps ~0.3 mm/tick above the selected target while the arm sweeps in x/y (verified IK
+    # lands above the request; the per-tick rate budget starves the z correction), so a
+    # millimetre inset is beaten within a few ticks; the cap keeps the apex well inside.
+    z_inset_m: float | None = None
 
     def __post_init__(self):
-        if self.variant not in ("upper_y_projection_v1", "upper_y_projection_v2"):
+        if self.variant not in ("upper_y_projection_v1", "upper_y_projection_v2", "upper_y_projection_v3"):
             raise ValueError("unknown boundary projection variant")
+        if self.terminal_hold_reference not in ("measured_achieved_v1", "last_acknowledged_target_v1"):
+            raise ValueError("unknown terminal hold reference")
+        if self.rate_solver_backoff not in ("disabled", "fk_rate_interior_v1"):
+            raise ValueError("unknown rate solver backoff")
         for f in fields(self):
-            if f.name == "variant":
+            if f.name in ("variant", "terminal_hold_reference", "rate_solver_backoff"):
+                continue
+            if f.name == "z_inset_m":
+                if self.z_inset_m is None:
+                    continue
+                if self.variant != "upper_y_projection_v3":
+                    raise ValueError("z_inset_m is an upper_y_projection_v3 field")
+                if isinstance(self.z_inset_m, (bool, np.bool_)) or not isinstance(self.z_inset_m, (int, float)) \
+                        or not math.isfinite(self.z_inset_m) or not 0 < self.z_inset_m <= 0.05:
+                    raise ValueError("z_inset_m must be a finite number in (0, 0.05] m")
                 continue
             v = getattr(self, f.name)
             if isinstance(v, (bool, np.bool_)) or not isinstance(v, (int, float)):
@@ -54,20 +74,33 @@ class BoundaryProjectionConfig:
             raise ValueError("boundary projection requires feedback no older than 16 ms")
         if self.max_tick_s > 0.016:
             raise ValueError("boundary projection supports at most 16 ms command steps")
-        if self.maximum_excursion_m > 0.002:
-            raise ValueError("upper-Y projection cannot allow excursions larger than 2 mm")
+        # v3 (sim zoo follow-up 2026-09-12): the policy sweeps +Y through the far wall at
+        # ~0.1 m/s, so a 2 mm raw band gives the plane hold only ~0.1-0.3 s before the raw
+        # request trips the guard. v3 widens the *raw request* band only (executed pose is
+        # still projected onto the plane and verified against the unchanged envelope; the
+        # 2.5 s budget and the multiple-raw-faces guard still apply).
+        excursion_cap = 0.03 if self.variant == "upper_y_projection_v3" else 0.002
+        if self.maximum_excursion_m > excursion_cap:
+            raise ValueError(f"{self.variant} cannot allow excursions larger than {excursion_cap * 1e3:g} mm")
 
     @classmethod
     def from_dict(cls, value):
         if not isinstance(value, dict):
             raise ValueError("boundary projection config must be an object")
         names = {f.name for f in fields(cls)}
-        if set(value) != names:
+        required = names - {"terminal_hold_reference", "rate_solver_backoff"}
+        if not required <= set(value) <= names:
             raise ValueError(f"boundary projection requires exactly {sorted(names)}")
         return cls(**value)
 
     def to_dict(self):
-        return asdict(self)
+        result = asdict(self)
+        # Preserve the complete preexisting default configuration contract.
+        if self.terminal_hold_reference == "measured_achieved_v1":
+            result.pop("terminal_hold_reference")
+        if self.rate_solver_backoff == "disabled":
+            result.pop("rate_solver_backoff")
+        return result
 
 
 def boundary_config(value):
@@ -155,7 +188,7 @@ class UpperYBoundaryProjection:
         self.rearm = self.upper - self.config.rearm_inward_m
         if self.rearm <= self.hb.y[0]:
             raise ValueError("boundary projection rearm plane is outside task hitbox")
-        if self.config.variant == "upper_y_projection_v2":
+        if self.config.variant in ("upper_y_projection_v2", "upper_y_projection_v3"):
             workspace = hw.safety.workspace_m
             epsilon = self.config.solver_inset_m
             lower = [max(getattr(workspace, a)[0], getattr(self.hb, a)[0]) + epsilon
@@ -163,6 +196,8 @@ class UpperYBoundaryProjection:
             upper = [min(getattr(workspace, a)[1], getattr(self.hb, a)[1]) - epsilon
                      for a in ("x", "y", "z")]
             upper[1] = min(upper[1], self.plane)
+            if self.config.z_inset_m is not None:
+                upper[2] = min(upper[2], float(self.hb.z[1]) - self.config.z_inset_m)
             reach = hw.safety.reach_clamp_m
             radius = None if reach is None else reach - epsilon
             self.solver_lower, self.solver_upper, self.solver_radius, _ = _solver_domain(lower, upper, radius)
@@ -174,6 +209,7 @@ class UpperYBoundaryProjection:
         self.pending = None
         self.submitted = None
         self.submission_sequence = 0
+        self.last_acknowledged_drive = None
         self.selected_at = None
         self.raw_interior = False
         self.measured_interior = False
@@ -243,7 +279,7 @@ class UpperYBoundaryProjection:
                      "selected_tcp_pose": None, "final_verified_tcp_pose": None,
                      "accepted_tcp_pose": None, "accepted_at_s": None,
                      "selected_target_kind": "continuation", "drive_submission": None}
-        if self.config.variant == "upper_y_projection_v2":
+        if self.config.variant in ("upper_y_projection_v2", "upper_y_projection_v3"):
             self.last.update(upper_y_selected_tcp_pose=None, solver_interior=None)
         self.pending = None
         self.submitted = None
@@ -301,7 +337,7 @@ class UpperYBoundaryProjection:
         self.measured_interior = bool(measured[1] <= self.rearm)
         if not self.raw_interior or not self.measured_interior:
             self.rearm_since = self.rearm_last_ack = None
-        if self.config.variant == "upper_y_projection_v2":
+        if self.config.variant in ("upper_y_projection_v2", "upper_y_projection_v3"):
             before = target.copy()
             try:
                 target, multiplier = solver_interior_projection(
@@ -336,7 +372,9 @@ class UpperYBoundaryProjection:
     def request_finish(self, t, grip, grip_ack):
         """Called only on the existing controller's first authentic FINISH.
 
-        Capture achieved joints for a stop, not another IK approximation.
+        The default captures achieved joints. The explicit last-ACK option
+        reissues an already accepted joint target, retaining measured lag as
+        evidence. Neither path creates another IK approximation.
         Sealing occurs only after final FK/rate verification and successful ACK
         before the original deadline. No future command or rearm is licensed.
         """
@@ -358,11 +396,56 @@ class UpperYBoundaryProjection:
                                "tcp_pose": measured.tolist(),
                                "q": _pose(sample[1]["q"][0]).tolist(),
                                "gripper_command": float(grip), "gripper_ack": list(grip_ack)}
+        if self.config.terminal_hold_reference == "last_acknowledged_target_v1":
+            # Retain a command already accepted by the arm. Never fabricate an
+            # anchor from measured feedback, pending IK, or trace row status.
+            prior = self.last_acknowledged_drive
+            if (prior is None or self.anchor is None or self.anchor_q is None
+                    or self.anchor_t is None or prior["sequence"] != self.submission_sequence
+                    or prior["accepted_at_s"] != self.anchor_t
+                    or not np.array_equal(prior["tcp_pose"], self.anchor)
+                    or not np.array_equal(prior["q"], self.anchor_q)
+                    or not prior["verified_at_s"] <= prior["submitted_at_s"] <= prior["accepted_at_s"] <= now):
+                self._stop("finish_without_actual_arm_ack")
+            if not 0 <= now - self.anchor_t <= self.config.feedback_max_age_s:
+                self._stop("finish_stale_arm_ack")
+            if not self._envelope(self.anchor, ceiling=self.ceiling):
+                self._stop("finish_unsafe_arm_ack")
+            from phantom.data.derived import rotvec_nearest
+            delta = self.anchor[:3] - measured[:3]
+            angular = rotvec_nearest(measured[3:], self.anchor[3:]) - measured[3:]
+            measured_q = _pose(sample[1]["q"][0])
+            self.finish_request.update(terminal_hold_reference=self.config.terminal_hold_reference,
+                measured_finish_state={"capture_t_s": float(sample[0][0]), "tcp_pose": measured.tolist(),
+                    "q": measured_q.tolist(), "qd": _pose(sample[1]["qd"][0]).tolist()},
+                prior_arm_ack={key: list(value) if isinstance(value, list) else value for key, value in prior.items()},
+                prior_arm_ack_age_s=float(now - self.anchor_t),
+                existing_tracking_lag={"target_minus_measured_xyz_m": delta.tolist(),
+                    "translation_m": float(np.linalg.norm(delta)), "rotation_vector_delta_rad": angular.tolist(),
+                    "rotation_vector_norm_rad": float(np.linalg.norm(angular)),
+                    "target_minus_measured_q_rad": (self.anchor_q - measured_q).tolist(),
+                    "max_joint_difference_rad": float(np.max(np.abs(self.anchor_q - measured_q)))},
+                tcp_pose=self.anchor.tolist(), q=self.anchor_q.tolist())
         self.last["terminal_hold_request"] = dict(self.finish_request)
-        self.last.update(selected_target_kind="finish_transition", selected_tcp_pose=measured.tolist())
-        if self.config.variant == "upper_y_projection_v2":
+        selected = np.asarray(self.finish_request["tcp_pose"])
+        self.last.update(selected_target_kind="finish_transition", selected_tcp_pose=selected.tolist())
+        if self.config.variant in ("upper_y_projection_v2", "upper_y_projection_v3"):
             self.last.update(upper_y_selected_tcp_pose=None, solver_interior=None)
-        return measured
+        return selected.copy()
+
+    def refine_rate_selection(self, selection, previous, qref, dt, solve_ik, limits, forward_pose):
+        """Optional continuation re-solve; original final guard still decides."""
+        if (self.config.rate_solver_backoff == "disabled"
+                or self.finish_request is not None or self.seal is not None):
+            return selection
+        from phantom.drivers.servo_rate_interior import refine_rate_selection
+        refined, evidence = refine_rate_selection(
+            selection, previous, qref, dt, solve_ik, limits, forward_pose,
+            linear_speed=self.hw.arm.limits.tcp_speed_m_s,
+            angular_speed=self.hw.arm.limits.joint_speed_rad_s,
+            solver_inset_m=self.config.solver_inset_m)
+        self.last["rate_solver_backoff"] = evidence
+        return refined
 
     def terminal_joint_target(self):
         target = self.seal if self.seal is not None else self.finish_request
@@ -457,8 +540,15 @@ class UpperYBoundaryProjection:
         # would hide a late native ACK behind a zero-length new interval.
         self._clock(t)
         self.anchor, self.anchor_q, self.anchor_t = pose.copy(), q.copy(), float(t)
+        self.last_acknowledged_drive = {**self.submitted, "verified_at_s": float(vt), "accepted_at_s": float(t)}
         self.pending = None
         if self.finish_request is not None and self.seal is None:
+            if self.config.terminal_hold_reference == "last_acknowledged_target_v1":
+                prior = self.finish_request["prior_arm_ack"]
+                if (self.submitted["sequence"] <= prior["sequence"]
+                        or not np.array_equal(q, prior["q"])
+                        or not np.array_equal(pose, prior["tcp_pose"])):
+                    self._stop("finish_without_fresh_same_target_ack")
             self.seal = {**self.finish_request, "tcp_pose": pose.tolist(), "q": q.tolist(),
                          "verified_at_s": float(vt), "accepted_at_s": float(t), "sealed_at_s": float(t),
                          "submission_sequence": self.submitted["sequence"],

@@ -43,6 +43,11 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from phantom.inference.action_timing import (
+    plan_action_time_origin, observation_submission_gate,
+    fresh_startup_anchor, submission_diagnostics,
+)
+
 from phantom.data import derived as dv
 from phantom.deploy.governor import SpeedGovernor
 from phantom.deploy.safety import (
@@ -270,6 +275,8 @@ class SimulationPolicyAdapter:
         self._last_tick = self._last_observe_t = None
         self._last_replan_t = None
         self._last_cmd = self._hold_pose = self._awaiting_feedback = None
+        self._has_arm_ack = False
+        self._observation_start_anchor = None
         self._last_grip = self.open_aperture
         self._grip_ack = None
         self._grip_latch = None
@@ -575,6 +582,9 @@ class SimulationPolicyAdapter:
         now = self._last_observe_t if t is None else float(t)
         if not np.isfinite(inference_delay_add_s) or inference_delay_add_s < 0:
             raise ValueError("inference_delay_add_s must be finite and nonnegative")
+        if (getattr(self.policy, "action_time_origin", "inference_ready") == "observation"
+                and observation_delay_s != 0):
+            raise PolicyTimingError("observation action epoch candidate requires observation_delay_s=0")
         snap = self.snapshot(t, observation_delay_s=observation_delay_s)
         if self.observation_callback is not None:
             self.observation_callback(snap)
@@ -616,7 +626,10 @@ class SimulationPolicyAdapter:
         )  # preserve remote CPK token; never mutate the policy's proposal
         plan.actions = np.array(plan.actions, copy=True)
         plan.t0_pose = np.array(plan.t0_pose, copy=True)
-        if self.policy_delivery_clock == "rpc_wall":
+        observation_epoch = plan_action_time_origin(plan) == "observation"
+        if observation_epoch and observation_delay_s != 0:
+            raise PolicyTimingError("observation action epoch candidate requires observation_delay_s=0")
+        if self.policy_delivery_clock == "rpc_wall" or observation_epoch:
             # Preserve native temporal conditioning. Only delivery is later;
             # submit() skips expired samples and rebases the surviving head.
             plan.action_times = np.array(plan.action_times, copy=True)
@@ -710,6 +723,35 @@ class SimulationPolicyAdapter:
             self._last_observe_t is not None and t < self._last_observe_t
         ):
             raise ValueError("plan submission time must cover the newest observation")
+        continuity_anchor = self._last_cmd
+        startup_anchor = False
+        if plan_action_time_origin(plan) == "observation":
+            anchor_kind, feedback_t = "last_accepted_command", None
+            if not self._has_arm_ack:
+                continuity_anchor = None
+                if self._plan is None:
+                    try:
+                        stamps, state = self.rings["arm"].latest(1)
+                        continuity_anchor = fresh_startup_anchor(
+                            state["tcp_pose"][0], stamps[0], t, arm_stale_s(self.hw))
+                        if bool(state["protective_stop"][0]):
+                            raise ValueError("startup arm is protectively stopped")
+                        anchor_kind, feedback_t = "startup_measured_feedback", stamps[0]
+                        startup_anchor = True
+                    except (KeyError, IndexError, TypeError, ValueError, RuntimeError) as error:
+                        plan.diag = {**plan.diag, "action_time_submission_accepted": False,
+                                     "action_time_submission_reason": "invalid_startup_feedback",
+                                     "action_time_anchor_error": str(error)}
+                        return False
+            timing = observation_submission_gate(
+                plan, t, self.hw.control.action_rate_hz, self.max_play_steps,
+                self.grip_play_steps, self.hw.control.replan_min_lead_s,
+                continuity_anchor is not None)
+            plan.diag = {**plan.diag, **submission_diagnostics(
+                timing, anchor_kind, feedback_t, continuity_anchor)}
+            if not timing["accepted"]:
+                log.warning("observation-epoch plan rejected: %s", timing["reason"])
+                return False
         if (
             self.stopped_reason
             or self.completed_reason
@@ -722,7 +764,9 @@ class SimulationPolicyAdapter:
         new.actions = np.array(plan.actions, copy=True)
         elapsed = max(0, t - float(plan.action_times[0]))
         offset, _ = self._pose_at(new, elapsed)
-        new.t0_pose = self._last_cmd.copy() - (offset - plan.t0_pose)
+        new.t0_pose = continuity_anchor.copy() - (offset - plan.t0_pose)
+        if startup_anchor:
+            self._observation_start_anchor = continuity_anchor.copy()
         self._prev_plan, self._prev_play_time = self._plan, self._play_time
         self._plan, self._play_time, self._swap_t = new, elapsed, float(t)
         return True
@@ -761,6 +805,13 @@ class SimulationPolicyAdapter:
             self._play_time,
             self.hw.control.action_rate_hz,
             self._grip_play_limit(),
+        )
+
+    def _observes_release_feedback(self):
+        """Relative permission needs the same fresh feedback and actual ACKs."""
+        return self.release_controller is not None and (
+            self.release_controller.unlatched_observer is not None
+            or self.release_controller.observes_relative_release
         )
 
     def entered_grip_after(self, t):
@@ -870,6 +921,7 @@ class SimulationPolicyAdapter:
             # In particular, no feedback token, gripper-history entry or latch
             # transition is created during sensor warmup / first inference.
             return None
+        played_sample = None
         if self.stopped_reason:
             target = self._last_cmd.copy()
             if any(is_letgo_reason(k) for k in kinds + [self.stopped_reason]):
@@ -899,18 +951,30 @@ class SimulationPolicyAdapter:
                 measured = arm_feedback["tcp_pose"][0]
                 measured_grip = grip_feedback["state"][0, 0]
                 self.release_controller.note_latch(self._grip_latch)
+                eligible = not stale and self._original_policy_grip()
+                if self.release_controller.observes_relative_release and self.completed_reason:
+                    eligible = False
+                if self.release_controller.observes_relative_release and eligible:
+                    from phantom.deploy.relative_release import original_played_sample
+
+                    played_sample = original_played_sample(
+                        self._plan, self._play_time, self.hw.control.action_rate_hz,
+                        self._grip_play_limit(), t,
+                    )
+                    eligible = played_sample is not None
                 suppress_latch = self.release_controller.update(
                     t,
                     tcp=measured,
                     policy_grip=grip,
                     measured_grip=float(measured_grip),
                     pad_loads=loads,
-                    eligible=not stale and self._original_policy_grip(),
+                    eligible=eligible,
                     accepted_grip=self._last_grip,
                     accepted_grip_ack=self._grip_ack,
                     feedback_times=feedback_capture_times(
                         arm_times[0], grip_times[0], self.safety.contact_load_times, self.hw.tactile.sensors,
-                    ) if self.release_controller.unlatched_observer is not None else None,
+                    ) if self._observes_release_feedback() else None,
+                    played_sample=played_sample,
                     finish_permitted=np.allclose(
                         self.safety.clamp_target(measured),
                         measured,
@@ -918,8 +982,13 @@ class SimulationPolicyAdapter:
                         rtol=0,
                     ),
                 )
+                restore_floor = self.release_controller.latch_floor_to_restore
+                if restore_floor is not None:
+                    self._grip_latch = max(self._grip_latch or 0.0, restore_floor)
                 if suppress_latch:
                     self._grip_latch = None
+                if self.completed_reason is None:
+                    target = self.release_controller.descent_target(t, measured, target)
             if (
                 threshold > 0
                 and not suppress_latch
@@ -966,6 +1035,9 @@ class SimulationPolicyAdapter:
             if self.completed_reason and not self.stopped_reason
             else self._last_cmd
         )
+        if (not self._has_arm_ack and not self.completed_reason and not self.stopped_reason
+                and self._plan is not None and plan_action_time_origin(self._plan) == "observation"):
+            rate_reference = self._observation_start_anchor
         for sl, vmax in (
             (slice(0, 3), self.hw.arm.limits.tcp_speed_m_s),
             (slice(3, 6), self.hw.arm.limits.joint_speed_rad_s),
@@ -1003,11 +1075,15 @@ class SimulationPolicyAdapter:
                 self.release_controller.diagnostics(measured)
             )
             command.diagnostics["grip_latch"] = self._grip_latch
-            if self.release_controller.unlatched_observer is not None:
+            if self._observes_release_feedback():
                 command.diagnostics["original_policy_gripper_eligible"] = bool(
                     not self.stopped_reason and not self.completed_reason
                     and not stale and self._original_policy_grip()
+                    and (not self.release_controller.observes_relative_release
+                         or played_sample is not None)
                 )
+            if self.release_controller.observes_relative_release:
+                command.diagnostics["original_played_sample"] = played_sample
         self._awaiting_feedback = command
         if self.safety.boundary_projection is not None:
             # Mutable per-tick diagnostic receives final FK/ACK after the
@@ -1059,6 +1135,7 @@ class SimulationPolicyAdapter:
                 )
         if accepted:
             self._last_cmd = accepted_pose
+            self._has_arm_ack = True
             if not held:
                 self.ik_rejects = 0
         elif not controller_stop:
@@ -1068,7 +1145,7 @@ class SimulationPolicyAdapter:
                 self.request_stop(reason)
         if gripper_command is not None:
             self._last_grip = grip
-            if ((self.release_controller is not None and self.release_controller.unlatched_observer is not None)
+            if (self._observes_release_feedback()
                     or self.safety.boundary_projection is not None):
                 from phantom.deploy.unlatched_finish import acknowledge_gripper
 

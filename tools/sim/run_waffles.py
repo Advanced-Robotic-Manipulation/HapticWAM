@@ -126,6 +126,9 @@ def arguments():
              "thresholds stay unchanged. ON by default in policy mode since 09-11 (the real rig "
              "runs the same bounded_v1 profile); --no-servo-reach-limiter disables it",
     )
+    p.add_argument("--gripper-max-close-cmd", type=float, default=None,
+                   help="opt-in cap on the policy's close command (lowers hardware gripper.max_close_cmd; "
+                        "sim zoo 2026-09-12 student over-squeeze workaround)")
     p.add_argument("--no-servo-reach-limiter", action="store_true",
                    help="Disable the default policy-mode servo reach limiter")
     p.add_argument("--observation-delay-s", type=float, default=0.0)
@@ -583,7 +586,7 @@ class PolicyAudit:
             json.dumps(
                 {
                     **row,
-                    "status": "drive_submitted",
+                    "status": row.get("status", "drive_submitted"),
                     "active_replan_id": self.active_replan_id,
                 },
                 default=_json_value,
@@ -1221,6 +1224,7 @@ def run(app, args, cfg, data, duration):
         raise RuntimeError("Could not create sim.mp4")
     adapter = policy = audit = probe = None
     boundary_audit = None
+    emergency_authority = emergency_trace = None
     boundary_loop_completed = False
     if args.mode == "contact_probe":
         if articulated_gripper:
@@ -1392,6 +1396,9 @@ def run(app, args, cfg, data, duration):
             stall_watchdog = PlannerStallWatchdog()
 
             hw = load_hardware(args.hardware_config, quiet=True)
+            if getattr(args, "gripper_max_close_cmd", None) is not None:
+                from phantom.deploy.safety import apply_gripper_max_close
+                hw = apply_gripper_max_close(hw, args.gripper_max_close_cmd)
             if args.tactile == "measured_baseline_proxy":
                 from phantom.sim.tactile_proxy import MeasuredBaselineTactileProxy
 
@@ -1632,6 +1639,7 @@ def run(app, args, cfg, data, duration):
             qactual = robot.get_joint_positions()[ids]
             qd = robot.get_joint_velocities()[ids]
             tcp = tcp_measured(qactual)
+            measured_capture_t = t  # no world.step occurs before submission
             if (
                 gripper_wrist is not None
                 and (wrist_value is None or args.mode != "policy" or stop_after_step)
@@ -1762,11 +1770,45 @@ def run(app, args, cfg, data, duration):
                     # The gripper worker executes independently of arm IK, including
                     # the safety layer's release command on a stopped episode.
                     if command.stopped:
-                        desired[fingers] = finger_target(command.gripper)
-                        desired[ids] = qactual
-                        if boundary_audit is not None:
-                            robot.apply_action(ArticulationAction(joint_positions=desired))
-                            submitted_this_tick = True
+                        from phantom.sim.emergency_stop import (
+                            EmergencySubmissionFault, MeasuredStopAuthority,
+                            persist_submission_fault, write_receipt,
+                        )
+                        emergency_trace = (args.output / "emergency_stop_trace.jsonl").open("x")
+                        boundary = adapter.safety.boundary_projection
+                        emergency_authority = MeasuredStopAuthority(
+                            hw=hw, stop_t=t, stop_reason=command.reason,
+                            safety_events=command.diagnostics.get("safety_events", []),
+                            physics_dt=dt,
+                            feedback_max_age_s=boundary.config.feedback_max_age_s
+                            if boundary is not None else control_dt,
+                            emit=lambda row: write_receipt(emergency_trace, row),
+                        )
+                        stopped_target = desired.copy()
+                        stopped_target[fingers] = finger_target(command.gripper)
+                        stopped_target[ids] = qactual
+                        try:
+                            emergency_receipt = emergency_authority.submit(
+                                step=step, t=t, capture_t=measured_capture_t,
+                                q=qactual, qd=qd, tcp=tcp, candidate=stopped_target,
+                                arm_ids=ids, gripper_command=command.gripper,
+                                apply=lambda target: robot.apply_action(
+                                    ArticulationAction(joint_positions=target)),
+                                wrist_capture_t=wrist_sample_t,
+                                tactile_capture_t=policy_tactile_trace[-1][0]
+                                if policy_tactile_trace else None,
+                            )
+                        except EmergencySubmissionFault as error:
+                            persist_submission_fault(error=error, audit=audit,
+                                row=pending_execution, pause=world.pause)
+                            pending_execution = None
+                            raise
+                        # Commit accepted state only after the actual setter
+                        # returns without rejection; retain the exact old q/grip.
+                        desired[:] = stopped_target
+                        submitted_this_tick = True
+                        pending_execution.update(status="emergency_stop_submitted",
+                                                 emergency_stop=emergency_receipt)
                         adapter.report_execution(
                             t, accepted=True, tcp_pose=tcp, gripper_command=command.gripper
                         )
@@ -1817,6 +1859,10 @@ def run(app, args, cfg, data, duration):
                                 nominal_servo_ik,
                                 servo_reach_limits,
                             )
+                            if boundary is not None:
+                                selection = boundary.refine_rate_selection(
+                                    selection, forward_pose(desired[ids]), desired[ids].tolist(),
+                                    control_dt, nominal_servo_ik, servo_reach_limits, forward_pose)
                         held_qref = desired[ids].copy()
                         pending_execution.update(
                             ik_success=selection.accepted,
@@ -1932,7 +1978,27 @@ def run(app, args, cfg, data, duration):
                     if adapter.completed_reason else "active",
                 )
             if not submitted_this_tick:
-                robot.apply_action(ArticulationAction(joint_positions=desired))
+                if emergency_authority is not None:
+                    try:
+                        emergency_authority.submit(
+                            step=step, t=t, capture_t=measured_capture_t,
+                            q=qactual, qd=qd, tcp=tcp, candidate=desired,
+                            arm_ids=ids, gripper_command=adapter._last_grip,
+                            apply=lambda target: robot.apply_action(
+                                ArticulationAction(joint_positions=target)),
+                            wrist_capture_t=wrist_sample_t,
+                            tactile_capture_t=policy_tactile_trace[-1][0]
+                            if policy_tactile_trace else None,
+                        )
+                    except EmergencySubmissionFault as error:
+                        persist_submission_fault(error=error, audit=audit,
+                            row={"t": t, "stopped": True,
+                                 "stop_reason": adapter.stopped_reason,
+                                 "measured_q": qactual, "measured_qd": qd,
+                                 "measured_tcp": tcp}, pause=world.pause)
+                        raise
+                else:
+                    robot.apply_action(ArticulationAction(joint_positions=desired))
             if pending_execution is not None:
                 audit.executed(pending_execution)
                 pending_execution = None
@@ -2107,6 +2173,8 @@ def run(app, args, cfg, data, duration):
             str(args.output / "sim_last.png"), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         )
     finally:
+        if emergency_trace is not None:
+            emergency_trace.close()
         writer.release()
         if boundary_audit is not None:
             report = boundary_audit.finalize(
