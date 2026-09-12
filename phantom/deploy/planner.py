@@ -860,6 +860,8 @@ class PlannerLoop:
                 row["actions_pre_veto"] = pre_veto.tolist()
             if getattr(self.executor, "release_controller", None) is not None:
                 row["placement_release"] = self.executor.release_diagnostics()
+            if getattr(self.executor, "placement_descent", None) is not None:
+                row["placement_descent"] = self.executor.placement_descent.diagnostics()
             self.trace.append(row)
             from phantom.config.model import EVENTS
             k_evt = int(np.argmax(plan.p_evt))

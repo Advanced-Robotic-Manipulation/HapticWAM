@@ -245,6 +245,22 @@ DEFAULT_MAX_REPLANS = 40
 AUTO_HOME_JITTER = (1.0, 0.5, 0.25, 0.0)
 
 
+def parse_home_bounds(spec: str) -> dict:
+    """'y_max=-0.28,z_min=0.31' -> {'y_max': -0.28, 'z_min': 0.31}; '' -> {}."""
+    out: dict = {}
+    for part in (spec or "").replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "=" not in part:
+            raise SystemExit(f"--home-bounds: expected key=value, got {part!r}")
+        k, v = (x.strip() for x in part.split("=", 1))
+        if k not in {f"{a}_{m}" for a in "xyz" for m in ("min", "max")}:
+            raise SystemExit(f"--home-bounds: unknown key {k!r} (use x/y/z _min/_max)")
+        out[k] = float(v)
+    return out
+
+
 def home_jitter(attempt: int, scale: float = 1.0) -> float:
     """Jitter sigma for homing attempt `attempt` of an episode (clamped);
     `scale` shrinks the whole ladder (--home-jitter 0.5 -> 0.5, 0.25, 0.125, 0):
@@ -425,6 +441,21 @@ def build_parser() -> argparse.ArgumentParser:
                     help="opt-in JSON TCP-volume policy release/finish controller; "
                          "requires native load latch, no object-state oracle; "
                          "controller completion is not task success")
+    ap.add_argument("--placement-descent", type=Path, default=None,
+                    metavar="CONFIG.json",
+                    help="opt-in descend-then-release supervisor (rig 09-12): floors the "
+                         "commanded TCP z at the task's p10 demo release height while the "
+                         "measured TCP is over the crate, forces the aperture-latch release "
+                         "once a latched carry has held the release zone (y >= "
+                         "release_y_min_m, z <= release_gate_z_m) for dwell_s, then retracts "
+                         "and blocks a re-latch until the tool leaves the crate. A task with "
+                         "no entry in the config leaves it OFF. Does not require "
+                         "--placement-release-config or boundary projection.")
+    ap.add_argument("--grip-latch-release-s", type=float, default=None,
+                    help="override SafetyConfig.grip_latch_release_s (default 0.5 s): how "
+                         "long the policy must ask to open before the native placement "
+                         "release lets the latch go. 0.35 s = one 10-step play prefix "
+                         "(rig 09-12: two carries missed the release on the 0.5 s dwell)")
     ap.add_argument("--gripper-max-close-cmd", type=float, default=None,
                     help="opt-in cap on the policy's close command (0-1); lowers hardware gripper.max_close_cmd, "
                          "never raises it (sim zoo 2026-09-12: students over-squeeze to 0.66-0.71, teacher ~0.60)")
@@ -465,6 +496,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="scale of the homing jitter ladder (1.0 = full demo sigma on the first "
                          "attempt; 0.5 recommended on whiteboard, whose 1-sigma starts sit near the "
                          "elbow singularity)")
+    ap.add_argument("--home-bounds", default="",
+                    help="clamp the sampled demo-start target, e.g. 'y_max=-0.28,z_min=0.31,z_max=0.36' "
+                         "(metres, base frame). Rig 09-12: starts at y <= -0.28 and z 0.31-0.36 reached "
+                         "the box at mean stage 1.96 vs 0.27 for box-side / low starts, every model "
+                         "(docs/results/rig_pick_patterns_20260912). Recorded in deploy_overrides.")
     ap.add_argument("--no-home-joints", action="store_true",
                     help="suppress the moveJ-to-demo-q step of the FIRST homing of each "
                          "episode (pre-2026-09-11 behaviour: moveL only). The auto-home "
@@ -992,6 +1028,15 @@ def main(argv=None) -> int:
         "lift_complete_fz_n": max(0.0, float(args.lift_complete_fz)),
         "lift_complete_hold_s": max(0.0, float(args.lift_complete_hold)),
         "grip_latch_fz_n": 0.0 if args.no_grip_latch else hw.safety.grip_latch_fz_n})})
+    if args.grip_latch_release_s is not None:
+        if not np.isfinite(args.grip_latch_release_s) or args.grip_latch_release_s < 0:
+            log.error("--grip-latch-release-s must be a finite non-negative dwell (s)")
+            return 2
+        hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
+            "grip_latch_release_s": float(args.grip_latch_release_s)})})
+        deploy_overrides["grip_latch_release_s"] = float(hw.safety.grip_latch_release_s)
+        log.info("native placement release dwell: %.2f s (default 0.5)",
+                 hw.safety.grip_latch_release_s)
     if args.max_tcp_speed is not None:
         from phantom.deploy.safety import apply_tcp_speed_limit
         hw = apply_tcp_speed_limit(hw, args.max_tcp_speed)
@@ -1018,6 +1063,34 @@ def main(argv=None) -> int:
         deploy_overrides["placement_release_config_sha256"] = hashlib.sha256(
             args.placement_release_config.read_bytes()).hexdigest()
         deploy_overrides["placement_veto_feedback"] = "current measured delivery feedback"
+    placement_descent = None
+    if args.placement_descent is not None:
+        from phantom.deploy.descend_then_release import DescendThenReleaseConfig
+        descent_sha = hashlib.sha256(args.placement_descent.read_bytes()).hexdigest()
+        task_key = str(args.task).removesuffix("_fail")
+        placement_descent = DescendThenReleaseConfig.from_spec(
+            json.loads(args.placement_descent.read_text()), task_key)
+        if placement_descent is None:
+            log.warning("--placement-descent %s carries no release height for task %r "
+                        "— the descend-then-release supervisor stays OFF (an unmeasured "
+                        "task must not get a guessed release height)",
+                        args.placement_descent, task_key)
+            deploy_overrides["placement_descent"] = {
+                "enabled": False, "task": task_key,
+                "reason": "no per-task release height in the config",
+                "config_sha256": descent_sha}
+        else:
+            deploy_overrides["placement_descent"] = {
+                "enabled": True, **placement_descent.to_dict(),
+                "config_sha256": descent_sha}
+            log.info("descend-then-release supervisor ON (%s): commanded z floored at "
+                     "%.0f mm while TCP y > %.0f mm; forced latch release at y >= %.0f mm "
+                     "and z <= %.0f mm after %.2f s, then retract %.0f mm",
+                     task_key, placement_descent.release_z_m * 1e3,
+                     placement_descent.y_crate_edge_m * 1e3,
+                     placement_descent.release_y_min * 1e3,
+                     placement_descent.release_gate_z_m * 1e3,
+                     placement_descent.dwell_s, placement_descent.retract_m * 1e3)
     if args.placement_controller_profile is not None:
         from phantom.deploy.minimal_v5 import validate_profile
         profile_meta = validate_profile(
@@ -1133,6 +1206,9 @@ def main(argv=None) -> int:
     if float(getattr(args, "policy_z_offset_m", 0.0) or 0.0):
         deploy_overrides["policy_z_offset_m"] = float(args.policy_z_offset_m)
     deploy_overrides["record_tail_s"] = float(getattr(args, "record_tail_s", 0.0) or 0.0)
+    home_bounds = parse_home_bounds(getattr(args, "home_bounds", ""))
+    if home_bounds:
+        deploy_overrides["home_bounds"] = home_bounds
     deploy_overrides["grip_play_steps"] = int(getattr(args, "grip_play_steps", 0) or 0)
     deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
@@ -1147,6 +1223,10 @@ def main(argv=None) -> int:
                   if z_floor is not None else "zfloor:none"),
                  f"hitbox:{round(args.hitbox_margin * 1000)}mm" if hitbox_on else "hitbox:none",
                  f"vmax:{hw.arm.limits.tcp_speed_m_s:.2f}",
+                 # descend-then-release supervisor (rig 09-12), on or off, so a
+                 # paired cell cannot silently mix the two controllers
+                 (f"descent:{round(placement_descent.release_z_m * 1000)}mm"
+                  if placement_descent is not None else "descent:off"),
                  # deploy levers (review 2026-08-28) — ALWAYS tagged, on or off,
                  # so an A/B arm can never be reconstructed from memory alone
                  f"parity:{'on' if args.parity_fixes else 'off'}",
@@ -1247,6 +1327,7 @@ def main(argv=None) -> int:
                            grip_play_steps=(getattr(args, 'grip_play_steps', 0) or None),
                            release_config=release_config,
                            boundary_config=boundary_config,
+                           placement_descent=placement_descent,
                            **({"controller_profile": args.placement_controller_profile}
                               if args.placement_controller_profile is not None else {})) as rt:
         for i in range(args.episodes):
@@ -1286,7 +1367,8 @@ def main(argv=None) -> int:
                         homed = sp.move_to_start(
                             rt.rig.arm, rt.rig.gripper, hw, stats,
                             home_joints=home_joints_first, rng=rng,
-                            jitter_sigma=home_jitter(home_attempt, args.home_jitter))
+                            jitter_sigma=home_jitter(home_attempt, args.home_jitter),
+                            start_bounds=home_bounds)
                         # provenance of the REQUESTED start (the sampled
                         # target). The realised pose is read from the arm
                         # right before the episode (see start_tag below).

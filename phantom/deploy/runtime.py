@@ -172,6 +172,7 @@ class DeploymentRuntime:
                  deploy_overrides: dict | None = None,
                  open_aperture: float = 0.0,
                  max_play_steps: int | None = None, release_config=None, boundary_config=None,
+                 placement_descent=None,
                  min_replan_s: float = 0.0, policy_z_offset_m: float = 0.0,
                  grip_play_steps: int | None = None,
                  controller_profile: str | None = None,
@@ -209,6 +210,13 @@ class DeploymentRuntime:
         from phantom.deploy.release_controller import make_release_controller
         controller = make_release_controller(release_config, hw)
         self.release_config = None if controller is None else controller.config
+        # descend-then-release supervisor (rig 09-12), opt-in: validate the
+        # config here so a bad file fails before any device is opened; each
+        # episode's ChunkExecutor then builds its own fresh state machine.
+        from phantom.deploy.descend_then_release import make_placement_descent
+        self.placement_descent = (
+            None if placement_descent is None
+            else make_placement_descent(placement_descent).config)
         from phantom.deploy.boundary_projection import boundary_config as parse_boundary_config
         self.boundary_config = parse_boundary_config(boundary_config)
         if self.boundary_config is not None:
@@ -294,7 +302,8 @@ class DeploymentRuntime:
                                  open_aperture=self.open_aperture,
                                  max_play_steps=self.max_play_steps,
                                  grip_play_steps=self.grip_play_steps,
-                                 release_config=self.release_config)
+                                 release_config=self.release_config,
+                                 placement_descent=self.placement_descent)
         snapshots = SnapshotBuilder(hw, self.session, self.mode,
                                     parity_fixes=self.parity_fixes,
                                     executor=executor,
@@ -406,6 +415,8 @@ class DeploymentRuntime:
                            if safety.boundary_projection is not None else {}),
                         **({"placement_release": executor.release_diagnostics()}
                            if getattr(executor, "release_controller", None) is not None else {}),
+                        **({"placement_descent": executor.placement_descent.diagnostics()}
+                           if getattr(executor, "placement_descent", None) is not None else {}),
                         **({"at_halt": executor.halt_state}
                            if getattr(executor, "halt_state", None) else {}),
                         **({"crash": executor.crash_text}

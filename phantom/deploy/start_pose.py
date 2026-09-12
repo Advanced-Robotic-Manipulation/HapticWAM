@@ -227,12 +227,34 @@ def wait_gripper_settled(gripper, timeout_s: float = 10.0) -> bool:
     return False
 
 
+def clamp_start_target(tcp_target: np.ndarray, bounds: dict | None) -> np.ndarray:
+    """Clamp the sampled start xyz into `bounds` = {"y_max": -0.28, "z_min": 0.31, ...}
+    (metres; keys <axis>_min / <axis>_max, axis in x y z). Rig 09-12 (Ilya,
+    docs/results/rig_pick_patterns_20260912): starts at y <= -0.28 and z in
+    0.31-0.36 reached the box at mean stage 1.96 vs 0.27 for box-side / low
+    starts, for every model. Deterministic, so a paired cell (same seed on
+    both arms) still gets the same start. None / empty = unchanged."""
+    if not bounds:
+        return tcp_target
+    out = np.array(tcp_target, dtype=np.float64, copy=True)
+    for i, ax in enumerate("xyz"):
+        lo, hi = bounds.get(f"{ax}_min"), bounds.get(f"{ax}_max")
+        if lo is not None and hi is not None and lo > hi:
+            raise ValueError(f"start bounds {ax}_min {lo} > {ax}_max {hi}")
+        if lo is not None:
+            out[i] = max(out[i], float(lo))
+        if hi is not None:
+            out[i] = min(out[i], float(hi))
+    return out
+
+
 def move_to_start(arm, gripper, hw, stats: TaskStartStats,
                   rng: np.random.Generator | None = None,
                   speed: float = 0.10, accel: float = 0.30,
                   home_joints: bool = False, joint_speed: float = 0.20,
                   joint_accel: float = 0.50,
-                  jitter_sigma: float = 1.0) -> tuple[np.ndarray, float]:
+                  jitter_sigma: float = 1.0,
+                  start_bounds: dict | None = None) -> tuple[np.ndarray, float]:
     """Move arm+gripper to a jittered demo start. Returns (tcp_target, grip_target).
 
     Uses moveL at a deliberately slow speed (0.1 m/s). The caller owns safety:
@@ -251,6 +273,11 @@ def move_to_start(arm, gripper, hw, stats: TaskStartStats,
     """
     tcp_target, grip_target = sample_start_pose(stats, rng,
                                                 jitter_sigma=jitter_sigma)
+    raw = tcp_target.copy()
+    tcp_target = clamp_start_target(tcp_target, start_bounds)
+    if np.any(tcp_target[:3] != raw[:3]):
+        log.info("start bounds %s clamped the sampled start xyz=[%.0f, %.0f, %.0f]mm -> "
+                 "[%.0f, %.0f, %.0f]mm", start_bounds, *(raw[:3] * 1000), *(tcp_target[:3] * 1000))
     log.info("homing to %s demo start: xyz=[%.0f, %.0f, %.0f]mm grip=%.2f "
              "(task mean + <=%.2f sigma jitter)", stats.task,
              *(tcp_target[:3] * 1000), grip_target, jitter_sigma)
