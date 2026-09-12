@@ -2,7 +2,7 @@
   "budget_s": 2.5,
   "feedback_max_age_s": 0.016,
   "inward_margin_m": 0.01,
-  "max_tick_s": 0.016,
+  "max_tick_s": 0.1,
   "maximum_excursion_m": 0.03,
   "rearm_dwell_s": 0.25,
   "rearm_inward_m": 0.0122,

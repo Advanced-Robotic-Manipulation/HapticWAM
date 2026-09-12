@@ -150,3 +150,12 @@ def test_selection_currency_is_structural_not_wall_clock():
     ring.update(0.0, inside)
     with pytest.raises(BoundaryProjectionStop):
         fresh.verify_final(0.0, inside, Q, verified=True, dt=.008, previous_pose=inside)
+
+
+def test_v3_allows_a_wider_tick_cap_than_v2():
+    from dataclasses import replace
+    with pytest.raises(ValueError):
+        replace(cfg("upper_y_projection_v2", .002), max_tick_s=.1)
+    replace(cfg("upper_y_projection_v3", .03), max_tick_s=.1)
+    with pytest.raises(ValueError):
+        replace(cfg("upper_y_projection_v3", .03), max_tick_s=.3)

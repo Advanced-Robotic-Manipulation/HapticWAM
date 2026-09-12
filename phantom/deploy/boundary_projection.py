@@ -85,8 +85,12 @@ class BoundaryProjectionConfig:
             raise ValueError("rearm plane must be strictly inward of projection plane")
         if self.feedback_max_age_s > 0.016:
             raise ValueError("boundary projection requires feedback no older than 16 ms")
-        if self.max_tick_s > 0.016:
-            raise ValueError("boundary projection supports at most 16 ms command steps")
+        # v1/v2: sim-tick assumption (8 ms physics, local IK). v3 also runs on the real UR driver,
+        # whose executor tick stretches with RTDE IK/FK solves; the tick cap bounds the hold-budget
+        # accounting and anchor freshness during the wall hold, so it may be wider there.
+        tick_cap = 0.25 if self.variant == "upper_y_projection_v3" else 0.016
+        if self.max_tick_s > tick_cap:
+            raise ValueError(f"{self.variant} supports at most {tick_cap * 1e3:g} ms command steps")
         # v3 (sim zoo follow-up 2026-09-12): the policy sweeps +Y through the far wall at
         # ~0.1 m/s, so a 2 mm raw band gives the plane hold only ~0.1-0.3 s before the raw
         # request trips the guard. v3 widens the *raw request* band only (executed pose is
