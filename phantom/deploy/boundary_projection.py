@@ -41,6 +41,12 @@ class BoundaryProjectionConfig:
     # lands above the request; the per-tick rate budget starves the z correction), so a
     # millimetre inset is beaten within a few ticks; the cap keeps the apex well inside.
     z_inset_m: float | None = None
+    # Age bound between select() and verify_final() (same tick on the executor). None
+    # falls back to feedback_max_age_s (16 ms), which the simulator's local IK meets; the
+    # real UR driver solves IK/FK over RTDE (several round trips per tick, up to 21 extra
+    # solves in the rate-interior retry) and needs a wider bound. Rig 2026-09-12: preset 7
+    # aborted on tick 1 with missing_current_selection.
+    selection_max_age_s: float | None = None
 
     def __post_init__(self):
         if self.variant not in ("upper_y_projection_v1", "upper_y_projection_v2", "upper_y_projection_v3"):
@@ -51,6 +57,13 @@ class BoundaryProjectionConfig:
             raise ValueError("unknown rate solver backoff")
         for f in fields(self):
             if f.name in ("variant", "terminal_hold_reference", "rate_solver_backoff"):
+                continue
+            if f.name == "selection_max_age_s":
+                if self.selection_max_age_s is None:
+                    continue
+                v = self.selection_max_age_s
+                if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not 0 < v <= 0.25:
+                    raise ValueError("selection_max_age_s must be a finite number in (0, 0.25] s")
                 continue
             if f.name == "z_inset_m":
                 if self.z_inset_m is None:
@@ -88,7 +101,8 @@ class BoundaryProjectionConfig:
         if not isinstance(value, dict):
             raise ValueError("boundary projection config must be an object")
         names = {f.name for f in fields(cls)}
-        required = names - {"terminal_hold_reference", "rate_solver_backoff"}
+        # optional fields (defaults preserve the audited v1/v2 behaviour) need not be present
+        required = names - {"terminal_hold_reference", "rate_solver_backoff", "z_inset_m", "selection_max_age_s"}
         if not required <= set(value) <= names:
             raise ValueError(f"boundary projection requires exactly {sorted(names)}")
         return cls(**value)
@@ -480,7 +494,11 @@ class UpperYBoundaryProjection:
         if self.decision_clock is not None:
             t = float(self.decision_clock())
         self._clock(t)
-        if self.selected_at is None or not 0 <= t - self.selected_at <= self.config.feedback_max_age_s:
+        selection_age = None if self.selected_at is None else float(t) - self.selected_at
+        age_bound = (self.config.feedback_max_age_s if self.config.selection_max_age_s is None
+                     else self.config.selection_max_age_s)
+        self.last.update(selection_age_s=selection_age, selection_max_age_s=age_bound)
+        if selection_age is None or not 0 <= selection_age <= age_bound:
             self._stop("missing_current_selection")
         measured = self._feedback(t, sample)
         try:

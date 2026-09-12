@@ -10,5 +10,6 @@
   "terminal_hold_reference": "last_acknowledged_target_v1",
   "variant": "upper_y_projection_v3",
   "rate_solver_backoff": "fk_rate_interior_v1",
-  "z_inset_m": 0.02
+  "z_inset_m": 0.02,
+  "selection_max_age_s": 0.1
 }

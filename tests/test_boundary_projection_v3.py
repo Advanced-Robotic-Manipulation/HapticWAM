@@ -113,3 +113,30 @@ def test_measured_feedback_outside_reach_ball_is_not_a_stop():
     with pytest.raises(BoundaryProjectionStop) as err:
         proj._feedback(0.0)
     assert err.value.reason.endswith("measured_envelope")
+
+
+def test_selection_age_bound_is_configurable_for_the_real_driver():
+    """Rig 2026-09-12: select() at tick start, verify_final() after RTDE IK/FK solves > 16 ms later."""
+    from dataclasses import replace
+    from test_boundary_projection import hardware as v1_hardware  # noqa: F401  (fixture module import)
+    hw = hardware(); ring = Ring()
+    base = cfg("upper_y_projection_v3", .03)
+    assert BoundaryProjectionConfig.from_dict({k: v for k, v in base.to_dict().items()
+                                               if k not in ("z_inset_m", "selection_max_age_s")}).selection_max_age_s is None
+    with pytest.raises(ValueError):
+        replace(base, selection_max_age_s=0.3)
+    for age_cfg, delay, expect_stop in ((None, .05, True), (.1, .05, False), (.1, .2, True)):
+        proj = UpperYBoundaryProjection(replace(base, selection_max_age_s=age_cfg), hw, {"arm": ring})
+        inside = P.copy(); inside[1] = -.10                      # well inside the wall plane: no hold engaged
+        proj.anchor, proj.anchor_t, proj.anchor_q = inside.copy(), 0.0, Q.copy()
+        ring.update(0.0, inside)
+        target = inside.copy(); target[2] += .001
+        selected = proj.select(0.0, target, target)
+        ring.update(delay, inside)
+        if expect_stop:
+            with pytest.raises(BoundaryProjectionStop) as err:
+                proj.verify_final(delay, selected, Q, verified=True, dt=.008, previous_pose=inside)
+            assert err.value.reason.endswith("missing_current_selection")
+            assert proj.last["selection_age_s"] == pytest.approx(delay)
+        else:
+            proj.verify_final(delay, selected, Q, verified=True, dt=.008, previous_pose=inside)
