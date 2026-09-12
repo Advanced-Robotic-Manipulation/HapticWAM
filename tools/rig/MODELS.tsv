@@ -1,12 +1,12 @@
 # label<TAB>ckpt<TAB>note<TAB>system(teacher|student|vision_only|lerobot|lerobot:<type>, optional; lerobot = pi05)
-# 09-11 trimmed to the 4 rows the paper's closed-loop needs (4-seed val124 mm, mean/median). Dropped rows live on the hub.
-ftA	runs/teacher_v5_ftA/BEST.pt	TEACHER (pads + wrist): ftA_1500, 19.6/15.8 - arm A of pair 1
-stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	SENSOR-FREE student from ftA + 09-08/09 rig rollouts (DAgger r2, 2000 steps): 19.8/13.8, level with the teacher - arm B of pair 1, arm A of pair 2	student
-ctl_ftA	runs/control_ftA/teacher_001200.pt	CONTROL: student inputs, init from ftA, NO distillation: 23.0/16.6 - arm B of pair 2	student
-A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	BASELINE A: cold Cosmos, camera only: 31.5/18.6 - Friday baseline arm	vision_only
-pi05	runs/pi05_20k/pretrained_model	pi0.5 BASELINE (LeRobot, expert fine-tune 20k on our demos; camera+proprio only): 40.2/26.8 offline, below the 32 no-motion floor - warm with ./serve_bg.sh 5 (needs pi05venv + runs/pi05_20k); Friday arm	lerobot
-v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6 (all 1115 demos, wrench-zero fix): 20.0 offline; on 09-09 the v6 family was the only one that descended to egg height (stu_v6 closed at 69 mm) - EGG DIAGNOSTIC arm, rightward bias on waffles
-stu_v6	runs/student_v6/student_001500.pt	SENSOR-FREE student of v6: 29.5 offline; egg diagnostic only	student
-stu_v6_r2	runs/student_v6_r2/student_002000.pt	PAD-FREE student of v6 with rig rollouts (DAgger r2 recipe, 2000 steps): 28.2/18.9 offline (weak offline like every v6-lineage student; v6 itself descends on the rig) - the v6 pair student, arm B for cells with 6	student
-dp	runs/baselines/hub/baselines/diffusion_100k/pretrained_model	DIFFUSION POLICY baseline (LeRobot, 100k steps on our demos; camera+proprio, 2-frame history, 16-step chunk): 25.3/16.7 offline over 15 steps - warm with ./serve_bg.sh 9 (baselines_venv, ~2 GB)	lerobot:diffusion
-xvla	runs/baselines/hub/baselines/xvla_20k/pretrained_model	X-VLA-0.9B baseline (LeRobot, 20k steps from lerobot/xvla-base; camera+proprio): 37.3/24.0 offline - warm with ./serve_bg.sh 10 (baselines_venv, ~4 GB)	lerobot:xvla
+# 09-12 16:30: menu REBUILT in today's launch order (RUN_SHEET_0912.md). Rows 1-6 = today (A: 1 vs 2 · B: 4 5 6 · C: 3);
+# rows 7-8 = tomorrow. Dropped: ftA (closes 25-70 mm high on the rig), stu_v6 (superseded by stu_v6_r2). Ports = 7776 + row.
+# Row 9 (sensor-free wrist-masked student) is added when it lands from the H100 (~01:00 09-13).
+v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6 (camera + DM-Tac pads + wrist F/T; all 1115 demos, wrench-zero fix; 20k steps): 20.0/13.9 offline (floor 28.2) - ARM A of Block A and C	
+stu_ftA_r2	runs/student_ftA_r2/student_002000.pt	PAD-FREE student (camera + proprio + wrist F/T; distilled from ftA with 09-08/09 rig rollouts, DAgger r2, 2000 steps): 19.8/13.8 offline - ARM B of Block A	student
+stu_v6_r2	runs/student_v6_r2/student_002000.pt	PAD-FREE student of v6 (rig rollouts, DAgger r2, 2000 steps): 28.2/18.9 offline = the no-motion floor - Block C only (lineage-matched pair, expected negative)	student
+pi05	runs/pi05_20k/pretrained_model	pi0.5 BASELINE (LeRobot expert fine-tune 20k on our demos; camera + proprio): 35.7/23.2 offline - Block B; served from pi05venv	lerobot
+dp	runs/baselines/hub/baselines/diffusion_100k/pretrained_model	DIFFUSION POLICY baseline (LeRobot, 100k steps; camera + proprio, 2-frame history at replan spacing): 25.3/16.7 offline over 15 steps - Block B; baselines_venv	lerobot:diffusion
+xvla	runs/baselines/hub/baselines/xvla_20k/pretrained_model	X-VLA-0.9B baseline (LeRobot, 20k steps from lerobot/xvla-base; camera + proprio): 37.3/24.0 offline - Block B; baselines_venv	lerobot:xvla
+ctl_ftA	runs/control_ftA/teacher_001200.pt	NO-DISTILLATION CONTROL (student inputs, init from ftA, trained on the same data without a teacher; 1200 steps): 23.0/16.6 offline - TOMORROW Block D (vs 2)	student
+A_visiononly	runs/cosmos_visiononly_v1/teacher_006000.pt	VISION-ONLY Cosmos (cold init, camera only; 6000 steps): 31.5/18.6 offline, at the floor - TOMORROW Block F only	vision_only
