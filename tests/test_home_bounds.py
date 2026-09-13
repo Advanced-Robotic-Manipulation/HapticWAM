@@ -31,4 +31,6 @@ def test_parse_home_bounds():
 def test_run_deploy_accepts_the_flag():
     ap = RD.build_arg_parser() if hasattr(RD, "build_arg_parser") else None
     src = open(RD.__file__).read()
-    assert '"--home-bounds"' in src and 'deploy_overrides["home_bounds"]' in src and "start_bounds=home_bounds" in src
+    assert '"--home-bounds"' in src and 'deploy_overrides["home_bounds"]' in src
+    # the bound must reach EVERY homing call: the first one and both auto-home retries
+    assert src.count("start_bounds=home_bounds") == src.count("sp.move_to_start(") == 3

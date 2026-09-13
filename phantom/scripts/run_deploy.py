@@ -1441,7 +1441,8 @@ def main(argv=None) -> int:
                                 homed = sp.move_to_start(
                                     rt.rig.arm, rt.rig.gripper, hw, stats,
                                     home_joints=True, rng=rng,
-                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter))
+                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter),
+                                    start_bounds=home_bounds)
                                 start_tag = _start_req_tag(homed) or start_tag
                                 continue
                             except Exception:
@@ -1479,7 +1480,8 @@ def main(argv=None) -> int:
                                 homed = sp.move_to_start(
                                     rt.rig.arm, rt.rig.gripper, hw, stats,
                                     home_joints=True, rng=rng,
-                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter))
+                                    jitter_sigma=home_jitter(home_attempt, args.home_jitter),
+                                    start_bounds=home_bounds)
                                 start_tag = _start_req_tag(homed) or start_tag
                             except Exception:
                                 log.exception("auto-home FAILED — fix by hand")
