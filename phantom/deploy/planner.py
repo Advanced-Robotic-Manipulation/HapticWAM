@@ -828,7 +828,37 @@ class PlannerLoop:
                           "ending the episode", self.veto.max_retries)
                 self.executor.request_stop("veto_retry_cap")
                 break
-            accepted = self.executor.submit(plan)
+            # opt-in agreement veto (--agreement-veto): the policy marked
+            # this plan because the imagined future of the chunk it chose is
+            # further from the K-median than the threshold — the regime where
+            # the offline sweep says a catastrophic endpoint is likeliest.
+            # NOT a new arm behaviour: the plan is simply never submitted, so
+            # the executor keeps playing the previous one and the next loop
+            # iteration replans, exactly as for a plan submit() refuses.
+            rewritten = (veto_rec or {}).get("action") in VETO_REWRITE_ACTIONS
+            if (getattr(plan, "diag", None) or {}).get("agreement_vetoed") \
+                    and not rewritten:
+                accepted = False
+                d = plan.diag
+                log.warning("agreement veto: imagined-future distance %.5g > "
+                            "%.5g — plan NOT submitted, holding the previous "
+                            "chunk and replanning",
+                            d.get("video_agreement_pick", float("nan")),
+                            d.get("agreement_veto_threshold", float("nan")))
+            else:
+                if rewritten and (plan.diag or {}).get("agreement_vetoed"):
+                    # the chunk on the wire is the terminal veto's arithmetic
+                    # (close mask / phantom-grasp open), NOT a model sample, and
+                    # the recovery has already consumed one of its retries. The
+                    # agreement score describes the PROPOSAL, so it must not
+                    # cancel a scripted safety action (F9: the replay tools draw
+                    # the same line).
+                    plan.diag["agreement_veto_suppressed"] = str(veto_rec["action"])
+                    log.warning("agreement veto suppressed: the terminal veto "
+                                "rewrote this chunk (%s) — a scripted recovery "
+                                "is not the model's imagined future",
+                                veto_rec["action"])
+                accepted = self.executor.submit(plan)
             row = {
                 **({"wrist_guard": self.executor.safety.wrench_diagnostics()}
                    if hasattr(self.executor, "safety") else {}),

@@ -475,3 +475,40 @@ def test_terminal_eval_runs_a_student_checkpoint(tiny_eval_setup, tmp_path):
                     "--no-ema", "--tiny", "--out", str(out)]) == 0
     s = json.loads(out.read_text())["summary"]
     assert s["student"] is True and s["n"] > 0
+
+
+@pytestmark_e2e
+def test_dump_video_error_adds_the_imagined_future_columns_and_changes_nothing_else(
+        tiny_eval_setup, tmp_path):
+    """--dump-video-error is additive: identical action numbers, extra columns.
+
+    The imagined-future error is scored against the VAE encode of the window's
+    REAL future frames (sampling itself skips that encode), and the GT-free
+    across-seed agreement is what a deploy selector could rank on."""
+    off = _run(tiny_eval_setup, tmp_path / "off", "none")
+    on = _run(tiny_eval_setup, tmp_path / "on", "none", ["--dump-video-error"])
+
+    # the flag is OFF by default and adds no key to that JSON
+    assert "video_err" not in off["summary"] and "dump_video_error" not in off["summary"]
+    assert not any(k.startswith("video_") for k in off["rows"][0])
+
+    s = on["summary"]
+    assert s["dump_video_error"] is True and s["video_attend"] is False
+    for k in ("video_err", "median_video_err", "seed_std_video_err",
+              "video_err_to_median", "governor_sigma"):
+        assert k in s, k
+    assert np.isfinite(s["video_err"]) and s["video_err"] > 0
+
+    # same windows and seeds; the flag only ADDS columns (the tiny-backbone
+    # harness is not bit-reproducible run to run, so the values of the shared
+    # action columns are not compared here — the key set is)
+    assert len(on["rows"]) == len(off["rows"])
+    for a, b in zip(off["rows"], on["rows"]):
+        assert (a["episode"], a["seed"], a["t0"]) == (b["episode"], b["seed"], b["t0"])
+        assert set(a) < set(b)
+        assert set(b) - set(a) >= {"video_err", "video_err_frames",
+                                   "video_err_to_median"}
+        assert len(b["video_err_frames"]) == 3 and np.isfinite(b["video_err"])
+        assert b["video_err_to_median"] >= 0.0
+    # the action metrics are still computed and finite under the flag
+    assert np.isfinite(on["summary"]["endpoint_err_mm"])

@@ -98,6 +98,9 @@ NULL_MODES = ("none", "tactile", "wrist", "prev_cpk", "obs", "contact_zero",
 METRICS = ("endpoint_err_mm", "z_end_err_mm", "commit_ratio", "close_step_err",
            "pred_close_height_mm", "zero_endpoint_err_mm", "head_endpoint_err_mm",
            "head_z_err_mm", "head_commit_ratio")
+#: added to every row and to the summary ONLY under --dump-video-error, so the
+#: default JSON stays byte-identical to every table already published
+VIDEO_METRICS = ("video_err", "video_err_to_median", "acc_g", "governor_sigma")
 
 #: early-chunk horizon for the head_* metrics. The rig presets allow the whole
 #: 16-step chunk (--max-play-steps 16, grip 10) but replan as soon as the next
@@ -279,6 +282,87 @@ def contact_pinned_layout(layout):
     return _ContactPinned(**vals)
 
 
+# ---------------------------------------------------------------------------
+# the imagined future (--dump-video-error)
+#
+# WHAT THIS CAN AND CANNOT MEAN. With the shipped mask
+# (SequenceLayout.structural_attn_bias, mc.video_attend=False) the ACTION and
+# CONTACT queries never attend the VIDEO_GEN keys, so the imagined future does
+# not *cause* the action; the coupling runs the other way (VIDEO_GEN queries do
+# attend the ACTION keys, that half of the mask is open) plus the shared
+# conditioning and the shared noise draw. A correlation between video_err and
+# endpoint_err is therefore a SHARED-CAUSE / read-out signal, not evidence that
+# the policy "plans through" its world model. Every run records
+# summary["video_attend"] so the reading cannot be lost.
+# ---------------------------------------------------------------------------
+
+def video_gen_latents(x_final_B_C_T_H_W, layout) -> np.ndarray:
+    """(C, T_gen, h, w) denoised VIDEO_GEN x0 latents of batch row 0.
+
+    `rf.sample`'s Euler loop ends at t=0, so `x_final` IS the x0 estimate."""
+    if not layout.has(FrameGroup.VIDEO_GEN):
+        raise SystemExit("--dump-video-error: this layout has no VIDEO_GEN "
+                         "frames (drop_video) — nothing is imagined to score")
+    return x_final_B_C_T_H_W[0, :, layout.frame_slice(FrameGroup.VIDEO_GEN)] \
+        .float().cpu().numpy()
+
+
+def video_error(pred_C_T_H_W: np.ndarray, gt_C_T_H_W: np.ndarray) -> dict:
+    """MSE between the imagined future latents and the GT future latents.
+
+    The GT side is the VAE encode of the window's REAL future pixel frames,
+    i.e. exactly the `video_v_mse` target of training (rf.build_x0 with
+    encode_gen=True); sampling itself skips that encode, so it is recomputed
+    here rather than read off the batch."""
+    p = np.asarray(pred_C_T_H_W, dtype=np.float64)
+    g = np.asarray(gt_C_T_H_W, dtype=np.float64)
+    if p.shape != g.shape:
+        raise SystemExit(f"video latent shape mismatch pred {p.shape} vs gt {g.shape}")
+    d = (p - g) ** 2
+    return {"video_err": float(d.mean()),
+            "video_err_frames": [float(x) for x in d.mean(axis=(0, 2, 3))],
+            "video_gt_energy": float((g ** 2).mean())}
+
+
+def seed_agreement(vids: list[np.ndarray]) -> list[float]:
+    """Per seed: MSE between its imagined future and the ELEMENTWISE MEDIAN of
+    all seeds' imagined futures.
+
+    Needs no ground truth, so unlike `video_err` this one is computable at
+    deploy — it is the quantity an agreement-based seed selector would rank on.
+    With a single seed every distance is 0 by construction."""
+    a = np.stack([np.asarray(v, dtype=np.float64) for v in vids])
+    med = np.median(a, axis=0)
+    return [float(((v - med) ** 2).mean()) for v in a]
+
+
+def acc_row(pred) -> dict:
+    """Cheap scalars already computed by the sampler: the ACC gate / blend and
+    the speed governor's sigma (mean over the future steps)."""
+    out: dict[str, float] = {}
+    acc = getattr(pred, "acc", None)
+    if acc is not None:
+        for k in ("g", "g_ant", "g_react", "alpha"):
+            v = acc.get(k)
+            if torch.is_tensor(v) and v.numel():
+                out["acc_" + k] = float(v.float().reshape(-1)[0])
+        p_evt = acc.get("p_evt")
+        if torch.is_tensor(p_evt) and p_evt.numel():
+            out["acc_p_evt_max"] = float(p_evt.float().reshape(-1).max())
+    gs = getattr(pred, "governor_sigma_B_Tc", None)
+    if torch.is_tensor(gs) and gs.numel():
+        out["governor_sigma"] = float(gs[0].float().mean())
+    return out
+
+
+def video_rows(vids: list[np.ndarray], gt: np.ndarray,
+               extras: list[dict]) -> list[dict]:
+    """Per-seed video/ACC columns for one window."""
+    agree = seed_agreement(vids)
+    return [{**video_error(v, gt), "video_err_to_median": a, **ex}
+            for v, a, ex in zip(vids, agree, extras)]
+
+
 def ur_z_moments(ns: dict, z_idx: int) -> tuple[float, float]:
     """(mean, std) of the TCP-z channel of `ur_state`; identity if the
     checkpoint carries no ur_state stats (then ur_state is unnormalized)."""
@@ -343,24 +427,28 @@ def _seed_std(rows, key):
     return float(np.mean(stds)) if stds else float("nan")
 
 
-def block(rows: list[dict]) -> dict:
+def block(rows: list[dict], keys: tuple[str, ...] = METRICS) -> dict:
     """mean / median / across-seed std for every metric over `rows`."""
     out = {}
-    for k in METRICS:
+    for k in keys:
         out[k] = _mean(rows, k)
         out["median_" + k] = _median(rows, k)
         out["seed_std_" + k] = _seed_std(rows, k)
     return out
 
 
-def summarize(rows: list[dict], **meta) -> dict:
+def summarize(rows: list[dict], *, extra_metrics: tuple[str, ...] = (), **meta) -> dict:
+    """`extra_metrics` appends columns (the VIDEO_METRICS under
+    --dump-video-error); with the default empty tuple every key of this JSON is
+    what it has always been."""
+    keys = METRICS + tuple(extra_metrics)
     tasks = sorted({r["task"] for r in rows})
     summary = {**meta, "n": len(rows),
                "n_windows": len({(r["episode"], round(float(r["t0"]), 4)) for r in rows}),
                "n_episodes": len({r["episode"] for r in rows})}
-    summary.update(block(rows))
+    summary.update(block(rows, keys))
     summary.update(floor_block(rows))
-    summary["per_task"] = {t: {**block([r for r in rows if r["task"] == t]),
+    summary["per_task"] = {t: {**block([r for r in rows if r["task"] == t], keys),
                               **floor_block([r for r in rows if r["task"] == t]),
                               "n": sum(r["task"] == t for r in rows)}
                            for t in tasks}
@@ -391,6 +479,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--drop-video", action="store_true",
                     help="drop the VIDEO_GEN frames at inference (CONTACT/ACTION never attend them: "
                          "actions should be unchanged, latency lower) — the deploy --drop-video lever")
+    ap.add_argument("--dump-video-error", action="store_true",
+                    help="also record, per (window, seed), the error of the "
+                         "IMAGINED FUTURE: video_err (MSE of the denoised "
+                         "VIDEO_GEN x0 latents against the VAE encode of the "
+                         "real future frames, the video_v_mse target), its "
+                         "per-frame breakdown, video_err_to_median (distance "
+                         "to the elementwise median of this window's seeds — "
+                         "GT-free, what a deploy-time selector could rank on), "
+                         "and the ACC gate / governor sigma. Off = the JSON is "
+                         "byte-identical to a run without the flag")
     ap.add_argument("--guidance", type=float, default=1.0)
     ap.add_argument("--seeds", type=int, default=4,
                     help="noise seeds per window (the paper's table uses 4)")
@@ -504,6 +602,20 @@ def main(argv: list[str] | None = None) -> int:
                     batch[k] = torch.zeros_like(batch[k])
         return item, null_batch(batch, args.null)
 
+    def gt_video_latents(item) -> np.ndarray:
+        """(C, T_gen, h, w) VAE encode of the window's REAL future frames.
+
+        Taken from `item`, NOT from the (possibly nulled) batch: under
+        --null obs/all the batch's video is zeroed, and the ground truth the
+        imagination is scored against must stay the real future either way."""
+        v = item["video"]
+        v = v if torch.is_tensor(v) else torch.from_numpy(np.asarray(v))
+        lat = pm.rf.vae.encode(v.unsqueeze(0).to(dev, dt).permute(0, 2, 1, 3, 4))
+        return lat[0, :, 1:].float().cpu().numpy()
+
+    if args.dump_video_error and not pm.rf.layout.has(FrameGroup.VIDEO_GEN):
+        raise SystemExit("--dump-video-error: this checkpoint's layout has no "
+                         "VIDEO_GEN frames — there is no imagined future to score")
     skipped = 0
     for wi in ds.index[: args.max_episodes]:
         tc = ds._close_time(wi.episode)
@@ -521,6 +633,8 @@ def main(argv: list[str] | None = None) -> int:
         ur0 = ur0.numpy() if torch.is_tensor(ur0) else np.asarray(ur0)
         z0 = float(np.asarray(ur0, dtype=np.float64)[z_idx] * z_std + z_mean)
         preds = []
+        vids: list[np.ndarray] = []
+        extras: list[dict] = []
         with torch.no_grad():
             for s in range(args.seeds):
                 pm.rf._gen = torch.Generator().manual_seed(1000 + s)
@@ -542,10 +656,15 @@ def main(argv: list[str] | None = None) -> int:
                                  drop_video=args.drop_video)
                 preds.append((s, p.actions_B_H_A[0].float().cpu().numpy().astype(np.float64)
                               * a_std + a_mean))
-        for s, pr in preds:
+                if args.dump_video_error:
+                    vids.append(video_gen_latents(p.x_final_B_C_T_H_W, pm.rf.layout))
+                    extras.append(acc_row(p))
+        extra_cols = (video_rows(vids, gt_video_latents(item), extras)
+                      if args.dump_video_error else [{}] * len(preds))
+        for (s, pr), ex in zip(preds, extra_cols):
             rows.append({"episode": wi.episode.name, "task": item.get("text", "?"),
                          "t0": float(t0), "seed": int(s), "z_start_mm": z0 * 1000,
-                         **score_window(gt, pr, z0, args.head_steps)})
+                         **score_window(gt, pr, z0, args.head_steps), **ex})
     if not rows:
         print("no windows with a gripper close found"); return 1
     print(f"episodes skipped (no close / chunk cannot span the close): {skipped}")
@@ -555,7 +674,14 @@ def main(argv: list[str] | None = None) -> int:
                         student=bool(mc.student), split=args.split,
                         persistent_noise=bool(args.persistent_noise),
                         max_episodes=args.max_episodes, ema=bool(args.ema),
-                        skipped=skipped)
+                        skipped=skipped,
+                        extra_metrics=VIDEO_METRICS if args.dump_video_error else (),
+                        **({"dump_video_error": True,
+                            # False = the shipped mask: ACTION/CONTACT queries
+                            # CANNOT read the imagined future, so any
+                            # video_err <-> endpoint_err link is shared-cause
+                            "video_attend": bool(mc.video_attend)}
+                           if args.dump_video_error else {}))
     # gt_close_height_mm is a property of the demos, not of a condition —
     # reported once so a --null run can be read against it
     summary["gt_close_height_mm"] = _mean(rows, "gt_close_height_mm")

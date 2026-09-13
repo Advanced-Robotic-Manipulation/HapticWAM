@@ -18,6 +18,15 @@ episode's condition tags so an A/B arm is reconstructable from the recording):
 `--nfe 3` and `--compile` are the LATENCY levers (P4: latency == the replan
 interval, so only steps 0-9 of each 16-step chunk ever run). `--k-seeds` pushes
 the other way and must be profiled on the deploy GPU first — see its help.
+
+`--select-by video_agreement` (09-13) changes only WHICH of the K sampled
+chunks is kept: the one whose imagined future agrees with the other seeds'.
+It buys ~0.3-0.9 mm of mean endpoint error offline and is the only deploy-time
+score that flags a catastrophic action at all; `--agreement-veto` additionally
+holds the previous chunk when even the chosen candidate's imagination is an
+outlier:
+
+    ... --task waffles --k-seeds 4 --select-by video_agreement
 """
 
 from __future__ import annotations
@@ -145,6 +154,8 @@ def _finish_policy(pm, norm, args, payload):
                          parity_fixes=getattr(args, "parity_fixes", False),
                          k_seeds=getattr(args, "k_seeds", 1),
                          close_p=getattr(args, "veto_p_close", 0.5),
+                         select_by=getattr(args, "select_by", "default"),
+                         agreement_veto=getattr(args, "agreement_veto", None),
                          action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
@@ -561,6 +572,29 @@ def build_parser() -> argparse.ArgumentParser:
                          "p_contact is low, then take the chunk nearest the previous "
                          "accepted plan). PROFILE FIRST: cost scales ~linearly in K on "
                          "a 2B DiT, which fights the P4 latency target")
+    ap.add_argument("--select-by", choices=("default", "video_agreement"),
+                    default="default",
+                    help="how the K sampled chunks are ranked. default = the "
+                         "contact-consistent head-descent rule. video_agreement "
+                         "= keep the candidate whose IMAGINED future (its "
+                         "VIDEO_GEN x0 latents) is closest to the elementwise "
+                         "median of the K imaginations — no ground truth "
+                         "needed. Offline over 124 val windows x 4 seeds it "
+                         "moved mean endpoint error 20.04->19.63 mm (v6), "
+                         "16.25->15.36 (v6 nfe2), 19.57->19.20 (ftA), "
+                         "18.68->18.43 (sensor-free student), and it is the "
+                         "only deploy-time score that flags catastrophic "
+                         "actions at all (AUC 0.64-0.81 vs ~0.5 for the ACC "
+                         "gate and the governor sigma). Needs --k-seeds >= 2 "
+                         "and is incompatible with --drop-video")
+    ap.add_argument("--agreement-veto", type=float, default=None, metavar="MSE",
+                    help="with --select-by video_agreement: when the SELECTED "
+                         "candidate's distance to the K-median imagination "
+                         "exceeds this, the plan is not submitted — the "
+                         "executor keeps the previous chunk and the loop "
+                         "replans (the same path a plan submit() refuses "
+                         "takes; no new arm behaviour). Read a threshold off "
+                         "the video_agreement lists in a pilot trace first")
     ap.add_argument("--tiny", action="store_true")
     ap.add_argument("--hardware", default=None)
     ap.add_argument("--out", default="")
@@ -952,6 +986,28 @@ def main(argv=None) -> int:
                  "(the count is checked first)", args.max_replans,
                  float(args.max_episode_s))
 
+    if args.select_by == "video_agreement":
+        # refuse before anything loads: with one candidate every agreement
+        # distance is 0 by construction, and --drop-video deletes the imagined
+        # frames the score is computed on
+        if args.k_seeds < 2:
+            log.error("--select-by video_agreement needs --k-seeds >= 2 (got "
+                      "%d): with one candidate the agreement distance is 0 by "
+                      "construction and ranks nothing.", args.k_seeds)
+            return 2
+        if args.drop_video:
+            log.error("--select-by video_agreement cannot run with "
+                      "--drop-video: there is no imagined future to score.")
+            return 2
+        if args.agreement_veto is not None and args.agreement_veto <= 0:
+            log.error("--agreement-veto must be a positive distance (the "
+                      "K-median MSE threshold), got %g.", args.agreement_veto)
+            return 2
+    elif args.agreement_veto is not None:
+        log.error("--agreement-veto only applies to --select-by "
+                  "video_agreement (it gates that score).")
+        return 2
+
     hw = load_hardware(args.hardware)
     # The per-task safety overrides below are model_copy()s, so each one changes
     # hw.config_hash(). Episodes are stamped with the BASE hash (the config as
@@ -1117,7 +1173,9 @@ def main(argv=None) -> int:
                    persistent_noise=getattr(args, "persistent_noise", False),
                    task_text=(args.text or args.task),
                    drop_video=args.drop_video,
-                   close_p=getattr(args, "veto_p_close", 0.5))
+                   close_p=getattr(args, "veto_p_close", 0.5),
+                   select_by=getattr(args, "select_by", "default"),
+                   agreement_veto=getattr(args, "agreement_veto", None))
         if getattr(args, "action_time_origin", None) is not None:
             cfg["action_time_origin"] = args.action_time_origin
         try:
@@ -1130,6 +1188,23 @@ def main(argv=None) -> int:
             if any(levers.get(k) for k in ("compile", "flex", "fp8")):
                 deploy_overrides["server_inference_levers"] = dict(levers)
                 log.info("policy server inference levers: %s", levers)
+            if (policy.info.get("policy_kind") == "lerobot"
+                    and args.select_by != "default"):
+                log.error("--select-by %s cannot run on a LeRobot policy "
+                          "server: the adapter imagines no video, so the "
+                          "setting would be accepted and ignored while the "
+                          "trace tagged sel:%s. Drop it for this arm.",
+                          args.select_by, args.select_by)
+                policy.close()
+                return 3
+            effective_sel = getattr(policy, "select_by", "default")
+            if effective_sel != args.select_by:
+                log.error("policy server ranks candidates with %r but this "
+                          "launch asked for %r — the arm would not be the one "
+                          "the tags claim. Restart the server.",
+                          effective_sel, args.select_by)
+                policy.close()
+                return 3
             if policy.info.get("policy_kind") == "lerobot" and args.terminal_veto:
                 log.error("--terminal-veto cannot run on a LeRobot policy server "
                           "(no ACC head: every close would be 'allowed' while the "
@@ -1215,6 +1290,9 @@ def main(argv=None) -> int:
         deploy_overrides["home_bounds"] = home_bounds
     deploy_overrides["grip_play_steps"] = int(getattr(args, "grip_play_steps", 0) or 0)
     deploy_overrides["grip_latch"] = not getattr(args, "no_grip_latch", False)
+    deploy_overrides["select_by"] = str(getattr(args, "select_by", "default"))
+    if getattr(args, "agreement_veto", None) is not None:
+        deploy_overrides["agreement_veto"] = float(args.agreement_veto)
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
@@ -1236,7 +1314,13 @@ def main(argv=None) -> int:
                  f"parity:{'on' if args.parity_fixes else 'off'}",
                  (f"veto:pc{args.veto_p_close:.2f}/pn{args.veto_p_none:.2f}/"
                   f"r{args.veto_max_retries}" if args.terminal_veto else "veto:off"),
-                 f"kseeds:{max(1, args.k_seeds)}"]
+                 f"kseeds:{max(1, args.k_seeds)}",
+                 # K-candidate selector + its optional plan gate, always
+                 # tagged so a paired cell cannot silently mix the two rules
+                 f"sel:{getattr(args, 'select_by', 'default')}",
+                 (f"aveto:{args.agreement_veto:g}"
+                  if getattr(args, "agreement_veto", None) is not None
+                  else "aveto:off")]
     veto = build_veto(args, stats, z_floor)
     # always tagged (on by default since 09-11) so an A/B arm is reconstructible
     cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile or 'off'}")

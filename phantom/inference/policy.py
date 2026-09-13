@@ -27,7 +27,13 @@ from phantom.data.schema import NormStats
 from phantom.data.windows import bilinear_resize
 from phantom.model.ace.packing import ContactPackage
 from phantom.model.rf import PhantomPrediction
+from phantom.model.sequence import FrameGroup
 from phantom.train.builder import PhantomModel
+
+#: K-candidate selectors `replan` can rank the sampled chunks with.
+#: "default"         — the contact-consistent head-descent rule (`_select_seed`)
+#: "video_agreement" — the imagined-future agreement rule below
+SELECTORS = ("default", "video_agreement")
 
 
 @dataclass
@@ -61,6 +67,44 @@ class Plan:
     diag: dict = field(default_factory=dict)
 
 
+def video_gen_latents(x_final_B_C_T_H_W, layout) -> list[np.ndarray]:
+    """Per candidate: the denoised VIDEO_GEN x0 latents, (C, T_gen, h, w).
+
+    `rf.sample`'s Euler loop ends at t=0, so `x_final` IS the x0 estimate, and
+    under K-seed sampling its rows are the K candidates in the SAME order as
+    `actions_B_H_A` (rf.sample repeat_interleaves every conditioning tensor).
+    Identical to tools/terminal_eval.py's `video_gen_latents`, which reads row
+    0 because there each seed is its own single-sample call."""
+    if not layout.has(FrameGroup.VIDEO_GEN):
+        raise ValueError("select_by='video_agreement' needs VIDEO_GEN frames: "
+                         "this layout imagines nothing (drop_video)")
+    sl = layout.frame_slice(FrameGroup.VIDEO_GEN)
+    x = x_final_B_C_T_H_W
+    return [x[j, :, sl].float().cpu().numpy() for j in range(x.shape[0])]
+
+
+def video_agreement_scores(vids) -> list[float]:
+    """Per candidate: MSE between its imagined future and the ELEMENTWISE
+    MEDIAN of all K imagined futures.
+
+    Needs no ground truth, so unlike the hindsight `video_err` it is computable
+    at deploy. THE definition is tools/terminal_eval.py's `seed_agreement`, the
+    column the offline sweep called `video_err_to_median`; this function must
+    stay byte-identical to it (tests/test_video_agreement_selector.py pins the
+    two against each other on random latents).
+
+    With a single candidate every distance is 0 by construction."""
+    a = np.stack([np.asarray(v, dtype=np.float64) for v in vids])
+    med = np.median(a, axis=0)
+    return [float(((v - med) ** 2).mean()) for v in a]
+
+
+def select_by_video_agreement(scores) -> int:
+    """The candidate closest to the K-median imagination (ties -> lowest index,
+    matching the offline `min(window, key=...)`)."""
+    return int(np.argmin(np.asarray(scores, dtype=np.float64)))
+
+
 def _cpk_row(cpk: ContactPackage, j: int) -> ContactPackage:
     """Batch row j of a contact package, kept as a (1, ...) package.
 
@@ -76,7 +120,8 @@ class PhantomPolicy:
                  drop_video: bool = False, task_text: str = "",
                  persistent_noise: bool = False, guidance: float = 1.0,
                  parity_fixes: bool = False, k_seeds: int = 1,
-                 close_p: float = 0.5,
+                 close_p: float = 0.5, select_by: str = "default",
+                 agreement_veto: float | None = None,
                  action_time_origin: str = "inference_ready"):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
@@ -107,6 +152,17 @@ class PhantomPolicy:
         # K-seed sampling with contact-consistent selection (P6 / BID 2408.17355)
         self.k_seeds = max(1, int(k_seeds))
         self.close_p = float(close_p)
+        # which rule ranks the K candidates (SELECTORS). "video_agreement" is
+        # the opt-in imagined-future rule: offline over 124 val windows x 4
+        # seeds it moved mean endpoint error 20.04 -> 19.63 mm (v6), 16.25 ->
+        # 15.36 (v6 nfe2), 19.57 -> 19.20 (ftA), 18.68 -> 18.43 (sensor-free
+        # student), and flags catastrophic actions (> 28.2 mm) at AUC 0.64-0.81
+        # where the learned gate and the governor sigma are at chance.
+        self.select_by = select_by
+        # optional plan-level gate on the SELECTED candidate's agreement
+        # distance: above it the plan is marked for rejection and the planner
+        # keeps the previous plan (no new arm behaviour).
+        self.agreement_veto = agreement_veto
         self.action_time_origin = action_time_origin
         self.rf.eval()
 
@@ -119,6 +175,34 @@ class PhantomPolicy:
         if getattr(self, "_action_time_origin", "inference_ready") == "observation" and value != 1:
             raise ValueError("observation action epoch candidate supports K1 only")
         self._k_seeds = value
+
+    @property
+    def select_by(self):
+        # policies built without the selector setting (tests, legacy loaders)
+        # rank with the default contact-consistent rule
+        return getattr(self, "_select_by", "default")
+
+    @select_by.setter
+    def select_by(self, value):
+        value = "default" if value is None else str(value)
+        if value not in SELECTORS:
+            raise ValueError(f"select_by must be one of {SELECTORS}, got {value!r}")
+        self._select_by = value
+
+    @property
+    def agreement_veto(self):
+        return getattr(self, "_agreement_veto", None)
+
+    @agreement_veto.setter
+    def agreement_veto(self, value):
+        if value is None:
+            self._agreement_veto = None
+            return
+        value = float(value)
+        if not (value > 0.0):
+            raise ValueError("agreement_veto must be a positive distance "
+                             f"(the K-median MSE threshold), got {value!r}")
+        self._agreement_veto = value
 
     @property
     def action_time_origin(self):
@@ -260,6 +344,47 @@ class PhantomPolicy:
                                                  * 1000, 2) if K else 0.0,
                       "k_rejected": int(K - keep.size), "k_pick": pick}
 
+    def _check_video_agreement(self) -> None:
+        """Refuse the combinations for which the score does not exist, rather
+        than ranking constants: K=1 makes every distance 0 by construction, and
+        --drop-video deletes the VIDEO_GEN frames the score is computed on (the
+        sampler then denoises a SHORTER sequence, so this layout's frame slice
+        would not even address the imagined frames)."""
+        if self.k_seeds < 2:
+            raise ValueError("select_by='video_agreement' needs --k-seeds >= 2:"
+                             " with one candidate the agreement distance is 0 "
+                             "by construction and ranks nothing")
+        if self.drop_video:
+            raise ValueError("select_by='video_agreement' is incompatible with "
+                             "drop_video: there is no imagined future to score")
+
+    def _select_video_agreement(self, pred: PhantomPrediction) -> tuple[int, dict]:
+        """Agreement selection over the K imagined futures (GT-free).
+
+        Take each candidate's denoised VIDEO_GEN x0 latents, form their
+        elementwise median, and keep the candidate closest to it — the seed
+        whose imagined future the other seeds agree with. Offline this is the
+        only one of the deploy-time scores (learned ACC gate, governor sigma)
+        that separates catastrophic actions from the rest at all."""
+        self._check_video_agreement()
+        scores = video_agreement_scores(
+            video_gen_latents(pred.x_final_B_C_T_H_W, self.pm.layout))
+        pick = select_by_video_agreement(scores)
+        diag = {"k_seeds": len(scores), "k_pick": pick,
+                "k_selection": "video_agreement",
+                # the K distances: the only record of how much the seeds
+                # disagreed on this replan, and what a veto threshold is read
+                # off (kept by the planner trace's numeric-list filter)
+                "video_agreement": [float(v) for v in scores],
+                "video_agreement_pick": float(scores[pick]),
+                "video_agreement_spread": float(max(scores) - min(scores))}
+        thr = self.agreement_veto
+        if thr is not None:
+            diag["agreement_veto_threshold"] = float(thr)
+            # read by PlannerLoop.run: True => do not submit this plan
+            diag["agreement_vetoed"] = bool(scores[pick] > float(thr))
+        return pick, diag
+
     @torch.no_grad()
     def replan(self, obs: ObsSnapshot, prev_plan: Plan | None,
                tcp_pose: np.ndarray) -> Plan:
@@ -293,6 +418,8 @@ class PhantomPolicy:
             # deliberately permits one sample only; no new ranking heuristic.
             j, sel = 0, {"k_seeds": 1, "k_pick": 0,
                          "k_selection": "single_sample_no_selection"}
+        elif self.select_by == "video_agreement":
+            j, sel = self._select_video_agreement(pred)
         else:
             j, sel = self._select_seed(acts_K, 1.0 - float(p_evt0[0]),
                                        prev_plan, t_exec0, rate)

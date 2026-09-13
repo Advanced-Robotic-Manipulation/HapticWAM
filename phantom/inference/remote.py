@@ -51,7 +51,14 @@ DEFAULT_PORT = 7777
 # model reload (all consumed at replan time, none change tensor shapes).
 CONFIGURABLE = ("nfe", "guidance", "k_seeds", "parity_fixes",
                 "persistent_noise", "task_text", "drop_video", "close_p",
-                "action_time_origin")
+                "select_by", "agreement_veto", "action_time_origin")
+
+#: Settings whose None is a VALUE ("off"), not "leave the server's default".
+#: Every other key is dropped when the client sends None (nfe=None means "the
+#: checkpoint's own nfe"), so without this list an arm that ran with a
+#: threshold would leave it armed on the warm server for the NEXT attach —
+#: the silent cross-arm carry-over the condition tags exist to make impossible.
+RESET_WHEN_NONE = ("agreement_veto",)
 
 
 def plan_to_wire(plan: Plan) -> dict:
@@ -139,7 +146,7 @@ class RemotePolicy:
                 " — another run_deploy (possibly Ctrl-Z'd) owns it. Bring it "
                 "to the foreground and end it; nothing was sent to the robot.")
         cfg = {k: v for k, v in (config or {}).items()
-               if k in CONFIGURABLE and v is not None}
+               if k in CONFIGURABLE and (v is not None or k in RESET_WHEN_NONE)}
         self.info = self._call("configure", cfg)
         effective_origin = self.info.get("effective", {}).get("action_time_origin", "inference_ready")
         if effective_origin is None and str(self.info.get("policy_kind", "phantom")) == "lerobot":
