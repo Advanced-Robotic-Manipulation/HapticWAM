@@ -73,9 +73,10 @@ read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # 09-12 forensics: a multi-episode launch increments the seed per episode, so the second arm of the
 # cell never shares a seed and 142 episodes produced ZERO teacher-vs-student pairs. Paired cells are
 # one episode per launch; PICK_ALLOW_MULTI=1 is the explicit opt-out for solo/diagnostic runs.
-if [ "$EPS" -gt 1 ] && [ -z "$PICK_ALLOW_MULTI" ]; then
-  echo "!! $EPS episodes in one launch breaks the pairing (seed advances per episode). Paired cells = 1 episode."
-  echo "!! Re-run with 1, or PICK_ALLOW_MULTI=1 ./PICK.sh $m for a deliberate solo run."; exit 3
+# 09-13 evening: the hard stop is gone (operator request); multi-episode launches are allowed
+# and only warned about, since seeds still advance per episode within one launch.
+if [ "$EPS" -gt 1 ]; then
+  echo "!! note: $EPS episodes in one launch advance the seed per episode (seed 100+cell, +1 each); pairing across arms needs 1 per launch."
 fi
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
