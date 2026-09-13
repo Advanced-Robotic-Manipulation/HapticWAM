@@ -6,10 +6,10 @@
 #   ./serve_bg.sh stop 2     stop the server of menu row 2 (ours only; kills by pid of the listener)
 # Ports: 7776 + menu row (same as SERVE.sh and PICK.sh, which attaches by checkpoint sha).
 SELF=$(readlink -f "$0"); BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
-labels=(); ckpts=(); systems=(); n=0
-while IFS=$'\t' read -r label ckpt note system; do
+labels=(); ckpts=(); systems=(); extras=(); n=0
+while IFS=$'\t' read -r label ckpt note system extra; do
   [ -z "$label" ] && continue; case "$label" in \#*) continue;; esac
-  n=$((n+1)); labels[$n]=$label; ckpts[$n]=$ckpt; systems[$n]=${system:-teacher}
+  n=$((n+1)); labels[$n]=$label; ckpts[$n]=$ckpt; systems[$n]=${system:-teacher}; extras[$n]=$extra
 done < "$TSV"
 [ "$n" -gt 0 ] || { echo "no rows in $TSV"; exit 1; }
 cd "$BASE/phantom" || exit 1
@@ -39,7 +39,7 @@ esac
 mkdir -p "$BASE/logs"
 started=()
 for m in "$@"; do
-  L=${labels[$m]}; C=${ckpts[$m]}; S=${systems[$m]}
+  L=${labels[$m]}; C=${ckpts[$m]}; S=${systems[$m]}; X=${extras[$m]}
   [ -n "$C" ] || { echo "bad menu number $m (1..$n)"; continue; }
   [ -e "$C" ] || { echo "checkpoint missing on disk: $BASE/phantom/$C"; continue; }
   PORT=$((7776 + m)); LOG=$BASE/logs/serve_${L}.log
@@ -54,8 +54,10 @@ for m in "$@"; do
     nohup "$PY" -m phantom.scripts.lerobot_server --ckpt "$C" --port $PORT --hardware configs/hardware.nuc.yaml \
         --policy-type "$PT" --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
   else
+  # optional 5th MODELS.tsv column: extra policy_server flags (e.g. "--flex --compile" for the
+  # ~2x inference levers, docs/results/inference_levers_20260912); recorded in the server's info
   nohup .venv/bin/python -m phantom.scripts.policy_server --ckpt "$C" --system "$S" \
-      --hardware configs/hardware.nuc.yaml --port $PORT > "$LOG" 2>&1 &
+      --hardware configs/hardware.nuc.yaml --port $PORT $X > "$LOG" 2>&1 &
   fi
   echo "$L ($S) starting on :$PORT, pid $!, log $LOG"
   started+=("$m")

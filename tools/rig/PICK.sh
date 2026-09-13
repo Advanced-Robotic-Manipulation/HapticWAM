@@ -11,7 +11,7 @@ echo "== PHANTOM rig launcher =="
 echo "-- models --"
 i=0
 labels=(); ckpts=(); systems=()
-while IFS=$'	' read -r label ckpt note system; do
+while IFS=$'	' read -r label ckpt note system extra; do
   [ -z "$label" ] && continue
   case "$label" in \#*) continue;; esac
   i=$((i+1)); labels[$i]=$label; ckpts[$i]=$ckpt; systems[$i]=${system:-teacher}
