@@ -25,6 +25,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 import numpy as np
+
+from phantom.sim.task_objects import object_config
 from scipy.spatial.transform import Rotation
 
 from phantom.sim.kinematics import JOINT_NAMES, forward_pose, inverse_kinematics
@@ -144,7 +146,7 @@ def initialize(
         raise ValueError("tool_world_quaternion must represent a rotation")
     tool_rotation = Rotation.from_quat((quaternion / norm)[[1, 2, 3, 0]])
     gripper = cfg["gripper"]
-    packet_size = _vector(cfg["waffle"]["size"], 3, "packet size")
+    packet_size = _vector(object_config(cfg)["size"], 3, "packet size")
     if np.any(packet_size <= 0):
         raise ValueError("packet dimensions must be positive")
     width = float(packet_size[1])

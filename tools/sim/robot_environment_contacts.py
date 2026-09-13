@@ -39,9 +39,14 @@ def _validate_paths(robot_paths, environment_paths):
         )
     if not environment or len(environment) != len(set(environment)):
         raise ValueError("nonempty unique explicit environment paths required")
-    if any(p not in ENVIRONMENT_PATHS for p in environment):
+    if any(
+        p not in ENVIRONMENT_PATHS
+        and p not in ("/World/Carton", "/World/Egg")
+        and re.fullmatch(r"/World/EggFixture(?:/[A-Za-z0-9_]+)+", p) is None
+        for p in environment
+    ):
         raise ValueError(
-            "environment filters must be explicit table/mat/bin/packet paths"
+            "environment filters must be explicit table/mat/bin/object/egg-fixture paths, no patterns"
         )
     return robots, environment
 

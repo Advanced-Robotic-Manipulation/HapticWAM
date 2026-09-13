@@ -1,0 +1,86 @@
+[
+  {
+    "asset": "assets/sim/carton/top.png",
+    "source_frame": "artifacts/isaac_objects/carton_evidence/ep_teacher_Carton_1789329478_000_00000.jpg",
+    "source_sha256": "ad474cb933769ea2004b4a1dd5137989ba4d3a938900656b88249af7f5aaf89e",
+    "source_corners_xy": [
+      [
+        276,
+        374
+      ],
+      [
+        305,
+        366
+      ],
+      [
+        314,
+        393
+      ],
+      [
+        284,
+        403
+      ]
+    ],
+    "output_shape": [
+      256,
+      256
+    ],
+    "notes": "Genuine RGB top panel from Sep13 real initial frame; +Y at image top. Blurred source ~30px across; rectification does not add detail. Folded corners flatten into one plane."
+  },
+  {
+    "asset": "assets/sim/carton/front.png",
+    "source_frame": "artifacts/isaac_objects/carton_evidence/nuc_Carton_reference.jpg",
+    "source_sha256": "016d7fab946145730b9270d514528f1d6a8151a5a37b121886f094ded181ea86",
+    "source_corners_xy": [
+      [
+        285.5,
+        403.5
+      ],
+      [
+        315,
+        395
+      ],
+      [
+        319,
+        414
+      ],
+      [
+        291.5,
+        418
+      ]
+    ],
+    "output_shape": [
+      192,
+      512
+    ],
+    "notes": "Genuine local-Y visible panel from nuc:/media/nuc/kostya_drive/references/Carton.jpg, image top+Z. Unoccluded ground-plane base; foreshortened ~29x19 source pixels. Silver/cyan printed panel, scene illumination baked; no invented lettering."
+  },
+  {
+    "asset": "assets/sim/carton/left.png",
+    "source_frame": "artifacts/isaac_objects/carton_evidence/nuc_Carton_reference.jpg",
+    "source_sha256": "016d7fab946145730b9270d514528f1d6a8151a5a37b121886f094ded181ea86",
+    "source_corners_xy": [
+      [
+        280.5,
+        371
+      ],
+      [
+        285.5,
+        403.5
+      ],
+      [
+        291.5,
+        418
+      ],
+      [
+        286.4,
+        391
+      ]
+    ],
+    "output_shape": [
+      192,
+      512
+    ],
+    "notes": "Narrow visible local-X panel from nuc:/media/nuc/kostya_drive/references/Carton.jpg, image top+Z. Far bottom corner is predicted by upright cuboid fit (not directly visible); low-confidence peripheral face. No fabricated unseen face printing."
+  }
+]

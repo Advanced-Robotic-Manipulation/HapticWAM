@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from phantom.sim.geometry import bin_geometry, mount_plate_geometry, table_hole_centers
+from phantom.sim.task_objects import object_config, object_identity, orientation_wxyz
 
 
 def elliptical_prism_mesh(size, segments=48):
@@ -332,7 +333,9 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     yellow = material("CableLabels", (0.94, 0.72, 0.009), 0.4)
     gel = material("TactileShell", (0.79, 0.90, 0.92), 0.3)
     wafer = material("WaferWrapper", (0.82, 0.51, 0.27), 0.34)
-    texpath = repo / cfg["waffle"].get("texture", "assets/sim/waffles/packet_top.png")
+    w = object_config(cfg)
+    kind, object_path = object_identity(cfg)
+    texpath = repo / w.get("texture", "assets/sim/waffles/packet_top.png")
     wafer_top = material(
         "WaferPrintedTop",
         (1, 1, 1),
@@ -356,7 +359,6 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
     table_phys = physics_material("TableContact", cfg["table"]["friction"])
     mat_phys = physics_material("MatContact", cfg["mat"]["friction"])
     bin_phys = physics_material("BinContact", cfg["bin"]["friction"])
-    w = cfg["waffle"]
     object_phys = physics_material(
         "PacketContact", w["static_friction"], w["dynamic_friction"], w["restitution"]
     )
@@ -514,53 +516,36 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
             grid,
         )
     b = cfg["bin"]
-    if bin_geometry(b).yaw:
+    if b.get("enabled", True) and bin_geometry(b).yaw:
         # Rotate all physical and visual pieces together; containment scoring
         # uses the same configured yaw in BinGeometry.to_interior_frame.
         bin_frame = UsdGeom.Xform.Define(stage, "/World/Bin")
         bin_frame.AddTranslateOp().Set(Gf.Vec3d(*map(float, b["center"])))
         bin_frame.AddRotateZOp().Set(math.degrees(float(b["yaw"])))
         b = {**b, "center": [0., 0., 0.]}
-    build_bin_primitives(box, b, blue, bin_phys)
+    support_paths = []
+    if b.get("enabled", True):
+        build_bin_primitives(box, b, blue, bin_phys)
+        support_paths = [f"/World/Bin/{name}" for name in ("Bottom", "Left", "Right", "Front", "Back")]
+    if cfg.get("egg_fixture"):
+        from phantom.sim.egg_fixture import build_egg_fixture
+        support_paths = build_egg_fixture(stage, cfg["egg_fixture"], material, box, collider, mat_phys)
 
     # Packet geometry has separate rendering and collision meshes.
-    obj = UsdGeom.Xform.Define(stage, "/World/Waffle")
+    obj = UsdGeom.Xform.Define(stage, object_path)
     obj.AddTranslateOp().Set(Gf.Vec3d(*w["center"]))
-    obj.AddOrientOp().Set(
-        Gf.Quatf(math.cos(w["yaw"] / 2), 0, 0, math.sin(w["yaw"] / 2))
-    )
+    obj.AddOrientOp().Set(Gf.Quatf(*map(float, orientation_wxyz(w))))
     UsdPhysics.RigidBodyAPI.Apply(obj.GetPrim())
     UsdPhysics.MassAPI.Apply(obj.GetPrim()).CreateMassAttr(w["mass"])
     rb = PhysxSchema.PhysxRigidBodyAPI.Apply(obj.GetPrim())
     rb.CreateEnableCCDAttr(True)
     rb.CreateLinearDampingAttr(0.015)
     rb.CreateAngularDampingAttr(0.02)
-    box("/World/Waffle/Body", [0, 0, 0], w["size"], wafer, True, object_phys)
-    wx, wy, wz = w["size"]
-    top = UsdGeom.Mesh.Define(stage, "/World/Waffle/PrintedTop")
-    top.CreatePointsAttr(
-        [
-            (-wx / 2, -wy / 2, wz / 2 + 0.0001),
-            (wx / 2, -wy / 2, wz / 2 + 0.0001),
-            (wx / 2, wy / 2, wz / 2 + 0.0001),
-            (-wx / 2, wy / 2, wz / 2 + 0.0001),
-        ]
-    )
-    top.CreateFaceVertexCountsAttr([4])
-    top.CreateFaceVertexIndicesAttr([0, 1, 2, 3])
-    top.CreateSubdivisionSchemeAttr("none")
-    UsdGeom.PrimvarsAPI(top).CreatePrimvar(
-        "st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.vertex
-    ).Set([(0, 0), (1, 0), (1, 1), (0, 1)])
-    bind(top.GetPrim(), wafer_top)
-    for side, sign in (("Left", -1), ("Right", 1)):
-        for i in range(12):
-            box(
-                f"/World/Waffle/{side}Crimp_{i}",
-                [sign * (wx / 2 + 0.001), -wy / 2 + (i + 0.5) * wy / 12, 0],
-                [0.004, wy / 24, wz * 0.8],
-                wafer,
-            )
+    if kind != "waffle":
+        from phantom.sim.task_object_usd import build_task_object
+        build_task_object(stage, repo, object_path, w, material, box, collider, object_phys)
+    else:
+        build_waffle_visual(stage, w, box, bind, wafer, wafer_top, object_phys)
 
     robot = stage.DefinePrim("/World/Robot", "Xform")
     robot.GetReferences().AddReference(robot_usd)
@@ -723,5 +708,40 @@ def build_scene(stage, repo: Path, output: Path, cfg: dict, robot_usd: str):
         "gripper_body_paths": gripper_body_paths,
         "gripper_articulation": articulation_report,
         "joint_paths": joint_paths,
-        "waffle_path": "/World/Waffle",
+        "object_path": object_path,
+        "object_kind": kind,
+        "support_paths": support_paths,
+        "environment_paths": ["/World/Bench/Slab", "/World/Mat/Base", *support_paths, object_path],
+        "waffle_path": object_path,  # compatibility alias for existing trace consumers
     }
+
+
+def build_waffle_visual(stage, w, box, bind, wafer, wafer_top, object_phys):
+    """Preserve historical wafer mesh and wrapper appearance exactly."""
+    from pxr import UsdGeom, Sdf
+    box("/World/Waffle/Body", [0, 0, 0], w["size"], wafer, True, object_phys)
+    wx, wy, wz = w["size"]
+    top = UsdGeom.Mesh.Define(stage, "/World/Waffle/PrintedTop")
+    top.CreatePointsAttr(
+        [
+            (-wx / 2, -wy / 2, wz / 2 + 0.0001),
+            (wx / 2, -wy / 2, wz / 2 + 0.0001),
+            (wx / 2, wy / 2, wz / 2 + 0.0001),
+            (-wx / 2, wy / 2, wz / 2 + 0.0001),
+        ]
+    )
+    top.CreateFaceVertexCountsAttr([4])
+    top.CreateFaceVertexIndicesAttr([0, 1, 2, 3])
+    top.CreateSubdivisionSchemeAttr("none")
+    UsdGeom.PrimvarsAPI(top).CreatePrimvar(
+        "st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.vertex
+    ).Set([(0, 0), (1, 0), (1, 1), (0, 1)])
+    bind(top.GetPrim(), wafer_top)
+    for side, sign in (("Left", -1), ("Right", 1)):
+        for i in range(12):
+            box(
+                f"/World/Waffle/{side}Crimp_{i}",
+                [sign * (wx / 2 + 0.001), -wy / 2 + (i + 0.5) * wy / 12, 0],
+                [0.004, wy / 24, wz * 0.8],
+                wafer,
+            )

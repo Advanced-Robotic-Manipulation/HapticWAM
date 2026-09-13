@@ -9,6 +9,8 @@ is an audited setup claim: this helper cannot discover omitted physical bodies.
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 
 
@@ -84,14 +86,19 @@ class PacketSupportViews:
         max_contact_count=1024,
     ):
         self.packet_path = str(packet_path)
+        if self.packet_path not in ("/World/Waffle", "/World/Carton", "/World/Egg"):
+            raise ValueError("packet actor must be an exact supported object path, no patterns")
         self.bin_paths = list(dict.fromkeys(map(str, bin_paths)))
         self.robot_paths = list(dict.fromkeys(map(str, robot_paths)))
         if not self.bin_paths or not self.robot_paths:
             raise ValueError("explicit nonempty bin and robot body filters required")
-        if not all(path.startswith("/World/Bin/") for path in self.bin_paths):
-            raise ValueError("bin body filters must be physical /World/Bin/ paths")
         if not all(
-            path == "/World/Robot" or path.startswith("/World/Robot/")
+            re.fullmatch(r"/World/(?:Bin|EggFixture)(?:/[A-Za-z0-9_]+)+", path)
+            for path in self.bin_paths
+        ):
+            raise ValueError("bin/support body filters must be exact physical /World/Bin/ or /World/EggFixture/ paths, no patterns")
+        if not all(
+            re.fullmatch(r"/World/Robot(?:/[A-Za-z0-9_]+)*", path)
             for path in self.robot_paths
         ):
             raise ValueError(
@@ -137,4 +144,9 @@ class PacketSupportViews:
             bin_paths=self.bin_paths,
             robot_paths=self.robot_paths,
         )
+        if any(path.startswith("/World/EggFixture/") for path in self.bin_paths):
+            result["support_semantics"] = (
+                "Legacy packet_bin_normal_force field reports explicit egg fixture support; "
+                "it is not a bin placement success signal"
+            )
         return result

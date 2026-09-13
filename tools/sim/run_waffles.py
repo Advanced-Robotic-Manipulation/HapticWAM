@@ -20,6 +20,8 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
+from phantom.sim.task_objects import object_config, object_identity, orientation_wxyz
+
 
 def arguments():
     p = argparse.ArgumentParser(description=__doc__)
@@ -310,7 +312,9 @@ def validate_adaptive_policy_experiment(args, cfg):
         "policy_config_sha256": hashlib.sha256(policy_bytes).hexdigest(),
         "declared_policy_settings": settings,
         "hardware_transfer_qualified": False,
-        "success_source": "Independent packet state and bin support, not controller FINISH",
+        "success_source": ("Independent packet state and bin support, not controller FINISH"
+                           if cfg.get("bin", {}).get("enabled", True) else
+                           "Egg holder task scoring is not implemented; controller FINISH is not task success"),
     }
 
 
@@ -646,6 +650,8 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
+    if args.mode == "policy" and args.policy_server == "scripted" and object_identity(cfg)[0] != "waffle":
+        raise ValueError("The scripted expert is waffle-specific; use a task-matched PHANTOM policy server for Carton/egg")
     from phantom.sim.gripper_articulation import is_adaptive
 
     if is_adaptive(cfg):
@@ -665,10 +671,10 @@ def main():
         cfg["physics"]["render_hz"] = args.render_hz
     if args.friction_scale <= 0:
         raise ValueError("friction-scale must be positive")
-    cfg["waffle"]["static_friction"] *= args.friction_scale
-    cfg["waffle"]["dynamic_friction"] *= args.friction_scale
-    cfg["waffle"]["center"][0] += args.object_offset[0]
-    cfg["waffle"]["center"][1] += args.object_offset[1]
+    object_config(cfg)["static_friction"] *= args.friction_scale
+    object_config(cfg)["dynamic_friction"] *= args.friction_scale
+    object_config(cfg)["center"][0] += args.object_offset[0]
+    object_config(cfg)["center"][1] += args.object_offset[1]
     data = np.load(args.episode / "replay.npz", allow_pickle=False)
     duration = (
         float(data["t"][-1])
@@ -787,7 +793,7 @@ def run(app, args, cfg, data, duration):
         root = paths["robot_path"]
     robot = world.scene.add(SingleArticulation(prim_path=root, name="ur3"))
     packet = world.scene.add(
-        SingleRigidPrim(prim_path=paths["waffle_path"], name="waffle")
+        SingleRigidPrim(prim_path=paths["object_path"], name=paths["object_kind"])
     )
     tool_body = SingleRigidPrim(
         prim_path=paths["tool_path"], name="tool_feedback", reset_xform_properties=False
@@ -809,10 +815,7 @@ def run(app, args, cfg, data, duration):
 
         support_views = PacketSupportViews(
             paths["waffle_path"],
-            [
-                f"/World/Bin/{name}"
-                for name in ("Bottom", "Left", "Right", "Front", "Back")
-            ],
+            paths["support_paths"],
             [
                 str(prim.GetPath())
                 for prim in stage.Traverse()
@@ -832,6 +835,7 @@ def run(app, args, cfg, data, duration):
                 if prim.HasAPI(UsdPhysics.RigidBodyAPI)
                 and str(prim.GetPath()).startswith(paths["robot_path"] + "/")
             ],
+            environment_paths=paths["environment_paths"],
             rigid_prim_cls=RigidPrim,
         )
     gripper_wrist = None
@@ -852,13 +856,8 @@ def run(app, args, cfg, data, duration):
         from tools.sim.gel_contact import GelContactViews, GelSurfaceGeometry
 
         environment_paths = [
-            paths["waffle_path"],
-            "/World/Bench/Slab",
-            "/World/Mat/Base",
-            *[
-                f"/World/Bin/{name}"
-                for name in ("Bottom", "Left", "Right", "Front", "Back")
-            ],
+            paths["object_path"],
+            *[p for p in paths["environment_paths"] if p != paths["object_path"]],
             *[
                 str(prim.GetPath())
                 for prim in stage.Traverse()
@@ -872,6 +871,7 @@ def run(app, args, cfg, data, duration):
             environment_paths,
             rigid_prim_cls=RigidPrim,
             coverage=args.gel_contact_coverage,
+            convex_support_filter_paths=(paths["object_path"],),
             geometry=GelSurfaceGeometry(**cfg["gripper"]["gel_geometry"])
             if articulated_gripper else None,
         )
@@ -1071,10 +1071,9 @@ def run(app, args, cfg, data, duration):
     # World.reset() initializes physics at the imported articulation's default
     # pose before measured q0 is assigned. Clear any packet impulse from that
     # transient pose as part of initial conditions, before settling/t=0.
-    yaw = float(cfg["waffle"]["yaw"])
     packet.set_world_pose(
-        position=np.asarray(cfg["waffle"]["center"]),
-        orientation=np.array([np.cos(yaw / 2), 0, 0, np.sin(yaw / 2)]),
+        position=np.asarray(object_config(cfg)["center"]),
+        orientation=orientation_wxyz(object_config(cfg)),
     )
     packet.set_linear_velocity(np.zeros(3))
     packet.set_angular_velocity(np.zeros(3))
@@ -1138,10 +1137,13 @@ def run(app, args, cfg, data, duration):
         np.savez_compressed(args.output / "robot_settling.npz", samples=robot_settling,
                             **({"native_finger_samples": native_finger_settling} if adaptive_gripper else {}))
         world.render()
-    camera.get_rgba()
+    initialization_rgba = camera.get_rgba()
+    if initialization_rgba is not None and initialization_rgba.size:
+        cv2.imwrite(str(args.output / "initialization.png"),
+                    cv2.cvtColor(initialization_rgba[:, :, :3], cv2.COLOR_RGB2BGR))
     settled_position = np.asarray(packet.get_world_pose()[0])
     next_progress_check_t = 0.0
-    settling_error = float(np.linalg.norm(settled_position - cfg["waffle"]["center"]))
+    settling_error = float(np.linalg.norm(settled_position - object_config(cfg)["center"]))
     initialization = {
         "adaptive_passive_joints": adaptive_gripper,
         "initial_finger_seed_rad": qfull[fingers].tolist() if adaptive_gripper else None,
@@ -1153,7 +1155,7 @@ def run(app, args, cfg, data, duration):
         ).hexdigest()
         if args.policy_initial_state
         else None,
-        "configured_packet_center_m": cfg["waffle"]["center"],
+        "configured_packet_center_m": object_config(cfg)["center"],
         "settled_packet_center_m": settled_position.tolist(),
         "settling_displacement_m": settling_error,
         "packet_velocity_m_s": np.asarray(packet.get_linear_velocity()).tolist(),
@@ -1206,19 +1208,20 @@ def run(app, args, cfg, data, duration):
         )
     # Save the initial scene after physics has written the joint pose to USD.
     # The flattened USD and packaged USDZ can also be opened in the Isaac GUI.
+    scene_filename = ("waffles" if paths["object_kind"] == "waffle" else paths["object_kind"]) + "_scene"
     if not args.skip_stage_export or args.save_stage_only:
-        stage.GetRootLayer().Export(str(args.output / "waffles_scene.usda"))
-        stage.Flatten().Export(str(args.output / "waffles_scene.usd"))
+        stage.GetRootLayer().Export(str(args.output / f"{scene_filename}.usda"))
+        stage.Flatten().Export(str(args.output / f"{scene_filename}.usd"))
         from pxr import UsdUtils
 
         if not UsdUtils.CreateNewUsdzPackage(
-            str(args.output / "waffles_scene.usd"),
-            str(args.output / "waffles_scene.usdz"),
+            str(args.output / f"{scene_filename}.usd"),
+            str(args.output / f"{scene_filename}.usdz"),
         ):
             raise RuntimeError("Could not package standalone waffles_scene.usdz")
     if args.save_stage_only:
         print(
-            "PHANTOM_SCENE_SAVED", str(args.output / "waffles_scene.usdz"), flush=True
+            "PHANTOM_SCENE_SAVED", str(args.output / f"{scene_filename}.usdz"), flush=True
         )
         inspect_gui()
         return
@@ -2219,6 +2222,8 @@ def run(app, args, cfg, data, duration):
         np.savez_compressed(
             args.output / "sim_trace.npz",
             **{k: np.asarray(v) for k, v in trace.items()},
+            object_position=np.asarray(trace["waffle_position"]),
+            object_orientation_wxyz=np.asarray(trace["waffle_orientation_wxyz"]),
         )
         if args.mode == "policy":
             np.savez_compressed(
@@ -2266,6 +2271,8 @@ def run(app, args, cfg, data, duration):
             json.loads((args.output / "adaptive_policy_experiment.json").read_text())
             if adaptive_gripper and args.mode == "policy" else None
         ),
+        "task_object": {"kind": paths["object_kind"], "prim_path": paths["object_path"],
+                        "config": object_config(cfg), "legacy_trace_alias": "waffle"},
         "object_dynamics": {
             "rigid_body_dynamic": True,
             "kinematic": False,
@@ -2333,7 +2340,7 @@ def run(app, args, cfg, data, duration):
         "gel_contact_coverage": args.gel_contact_coverage
         if gel_views is not None
         else None,
-        "packet_support_source": "Independent PhysX normal-contact sums from the free packet to all robot rigid bodies and the five bin colliders; not exposed to policy or release controller"
+        "packet_support_source": "Independent PhysX normal-contact sums from the free object to robot bodies and explicit scene support colliders. Legacy bin-named fields represent fixture support in egg scenes; they do not score placement. Not exposed to policy or release controller"
         if support_views is not None
         else None,
         "packet_support_filter_paths": {

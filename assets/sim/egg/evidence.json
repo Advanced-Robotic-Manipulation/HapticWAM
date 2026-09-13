@@ -1,0 +1,28 @@
+{
+  "texture": {
+    "source": "artifacts/isaac_objects/egg_evidence/ep_egg_1785777201_004__f00408.jpg",
+    "source_sha256": "aede8799771c2334f996a4a8a1361caeaa4ffadf427aa218e21604188e7f8cf2",
+    "crop_quad_pixels": [
+      [
+        240.0,
+        322.0
+      ],
+      [
+        289.0,
+        322.0
+      ],
+      [
+        288.0,
+        447.0
+      ],
+      [
+        230.0,
+        447.0
+      ]
+    ],
+    "output": "assets/sim/egg/tray_lid.png",
+    "warning": "Rectified real RGB crop retains historical illumination; print is not reconstructed or invented."
+  },
+  "status": "image_estimated_not_measured",
+  "reference_episode": "/home/physicalai/phantom-icra-2027/data/val_eval/tasks/egg/ep_egg_1785777201_004"
+}

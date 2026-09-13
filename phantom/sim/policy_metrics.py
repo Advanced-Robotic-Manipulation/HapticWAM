@@ -22,6 +22,8 @@ from itertools import product
 
 import numpy as np
 
+from phantom.sim.task_objects import object_config
+
 from phantom.sim.geometry import bin_geometry
 
 DEFAULT_THRESHOLDS = {
@@ -234,6 +236,9 @@ def evaluate_policy_trace(
         },
     }
     invalid = result["invalid_reasons"]
+    if not config.get("bin", {}).get("enabled", True):
+        invalid.append("bin_placement_metric_not_applicable_to_this_task")
+        return result
     if run.get("mode") != "policy":
         invalid.append("run_mode_is_not_policy")
     provenance = run.get("object_dynamics", {})
@@ -341,7 +346,7 @@ def evaluate_policy_trace(
     q = q / norms[:, None]
     rotation = _rotations(q)
     position = arrays["waffle_position"]
-    size = np.asarray(config["waffle"]["size"], float)
+    size = np.asarray(object_config(config)["size"], float)
     geometry = bin_geometry(config["bin"])
     if size.shape != (3,) or not np.isfinite(size).all() or (size <= 0).any():
         raise ValueError("Object must have finite positive physical dimensions")

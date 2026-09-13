@@ -1,0 +1,47 @@
+"""Geometric/dynamic preconditions for the new task scenes (CPU)."""
+import json
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+import pytest
+from scipy.spatial import ConvexHull
+
+from phantom.sim.task_objects import egg_mesh, object_config, object_identity, orientation_wxyz
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_egg_is_closed_convex_asymmetric_shell_with_physical_volume():
+    vertices, faces = egg_mesh([.043, .043, .057])
+    edges = Counter((int(a), int(b)) for f in faces for a,b in zip(f, np.roll(f,-1)))
+    assert all(n == 1 and edges[(b,a)] == 1 for (a,b),n in edges.items())
+    np.testing.assert_allclose(np.ptp(vertices, axis=0), [.043,.043,.057], atol=1e-12)
+    triangles = vertices[faces]
+    volume = np.einsum('ij,ij->i', triangles[:,0], np.cross(triangles[:,1],triangles[:,2])).sum()/6
+    assert volume == pytest.approx(ConvexHull(vertices).volume, rel=1e-10)
+    assert 45e-6 < volume < 65e-6  # 45–65ml for the intended egg envelope
+    radius = np.linalg.norm(vertices[:,:2], axis=1)
+    assert vertices[radius.argmax(),2] < 0  # broad end differs from an ellipsoid
+
+
+def test_scene_rig_is_identical_to_working_waffle_baseline():
+    baseline = json.loads((ROOT/'docs/results/sim_zoo_20260912/inputs/scene.json').read_text())
+    for task in ('carton','egg'):
+        cfg = json.loads((ROOT/f'configs/sim/{task}.json').read_text())
+        for key in ('camera','gripper','physics','robot_mount','table'):
+            assert cfg[key] == baseline[key], (task,key)
+        assert object_identity(cfg) == (task, '/World/'+task.title())
+        assert object_config(cfg)['mass'] > 0
+        assert np.linalg.norm(orientation_wxyz(object_config(cfg))) == pytest.approx(1)
+    assert not cfg['bin']['enabled']  # egg scene must not add the waffle bin
+
+
+def test_legacy_waffle_and_explicit_egg_pose_are_distinct():
+    legacy = {'waffle': {'size':[.17,.035,.09], 'mass':.035, 'yaw':.3}}
+    assert object_identity(legacy) == ('waffle','/World/Waffle')
+    np.testing.assert_allclose(orientation_wxyz(legacy['waffle']), [np.cos(.15),0,0,np.sin(.15)])
+    tilted = {'size':[.043,.043,.057], 'rpy':[np.pi/2,0,0]}
+    np.testing.assert_allclose(orientation_wxyz(tilted), [np.sqrt(.5),np.sqrt(.5),0,0], atol=1e-15)
+    with pytest.raises(ValueError, match='one task object'):
+        object_config({**legacy,'object':tilted})

@@ -88,7 +88,14 @@ def interpolate(ts: np.ndarray, values: np.ndarray, times: np.ndarray) -> np.nda
 
 
 def export_episode(
-    episode: Path, out: Path, split: str, fps: float, max_seconds: float | None = None
+    episode: Path,
+    out: Path,
+    split: str,
+    fps: float,
+    max_seconds: float | None = None,
+    *,
+    allowed_task: str = "waffles",
+    exclude_actions: bool = False,
 ) -> dict:
     import cv2
     from scipy.spatial.transform import Rotation, Slerp
@@ -106,8 +113,11 @@ def export_episode(
     reader = EpisodeReader(episode)
     meta_bytes = (episode / "meta.json").read_bytes()
     meta = json.loads(meta_bytes)
-    if str(meta.get("task", "")).lower() not in ("waffles", "waffles_fail"):
-        raise ValueError(f"Not a waffles episode: {episode}")
+    allowed_task = allowed_task.lower()
+    if allowed_task not in ("waffles", "carton", "egg"):
+        raise ValueError(f"Unsupported replay task: {allowed_task}")
+    if str(meta.get("task", "")).lower() not in (allowed_task, f"{allowed_task}_fail"):
+        raise ValueError(f"Not a {allowed_task} episode: {episode}")
     modes = meta.get("driver_modes", {})
     if modes.get("drivers") != "real" or any(
         v != "real" for v in modes.get("overrides", {}).values()
@@ -122,7 +132,8 @@ def export_episode(
     stamps = {
         name: checked_timestamps(reader.ts(name), name)
         for name in reader.streams()
-        if name in NUMERIC_STREAMS or name.startswith("camera_")
+        if (name in NUMERIC_STREAMS or name.startswith("camera_"))
+        and not (exclude_actions and name.startswith("actions"))
     }
     # Only render inside common observed support; never endpoint-extrapolate.
     t0 = max(stamps[s][0] for s in required)
@@ -252,6 +263,7 @@ def export_episode(
         "samples": samples,
         "source_meta_unchanged": (episode / "meta.json").read_bytes() == meta_bytes,
         "source_zarr_open_mode": "r",
+        "action_streams_explicitly_omitted": [name for name in reader.streams() if exclude_actions and name.startswith("actions")],
         "synchronization": {
             "timestamps": "Zarr ts already in MasterClock domain; no second clock-offset application",
             "grid": "intersection of measured q, qd, TCP, gripper and RGB timestamp support",

@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+
+from phantom.sim.task_objects import object_config
 from scipy.spatial.transform import Rotation
 
 from phantom.sim.contact_probe import ContactProbe
@@ -118,7 +120,7 @@ def initialize(packet, robot, finger_ids, qfull, cfg, tool_world_position, tool_
     if not is_articulated(cfg):
         raise ValueError('This probe requires the articulated W2L configuration')
     repo = Path(__file__).resolve().parents[2]
-    width = float(cfg['waffle']['size'][1])
+    width = float(object_config(cfg)['size'][1])
     # A small initial clearance limits free fall before the force-limited
     # closure. The target overtravel is a declared synthetic loading condition.
     initial_command = closure_for_gap(repo, cfg, width + .0004)

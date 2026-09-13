@@ -1,0 +1,587 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.00025,
+    "render_hz": 15,
+    "solver_position_iterations": 128,
+    "solver_velocity_iterations": 8,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.1,
+      -0.037500000000000006
+    ],
+    "size": [
+      1.7,
+      1.2,
+      0.05
+    ],
+    "hole_pitch": 0.05,
+    "hole_radius": 0.0055,
+    "top_z": -0.0125,
+    "friction": 0.55,
+    "grid_origin_xy": [
+      -0.9644390170881325,
+      0.5216767944318121
+    ],
+    "grid_yaw": -0.016781155522956927
+  },
+  "mat": {
+    "center": [
+      -0.356320003669502,
+      -0.015434292101509539,
+      -0.011
+    ],
+    "size": [
+      0.4,
+      0.7,
+      0.003
+    ],
+    "grid_pitch": 0.085,
+    "friction": 0.7,
+    "frame_model": "local_planar",
+    "yaw": -0.012480137585766337,
+    "grid_origin_xy": [
+      -0.12625787032875044,
+      0.27981598759730686
+    ]
+  },
+  "bin": {
+    "center": [
+      -0.39052377006030875,
+      0.06490764411969535,
+      -0.009500000000000001
+    ],
+    "friction": 0.4,
+    "geometry_model": "rectangular_envelope",
+    "outer_size": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "opening_size": [
+      0.36,
+      0.26
+    ],
+    "floor_thickness": 0.004,
+    "yaw": -0.012089355098796523,
+    "enabled": false
+  },
+  "gripper": {
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.0017016676138155162,
+      0.038595568388700485,
+      0.04787348955869675
+    ],
+    "pad_friction": 1.0,
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": 0.0,
+    "geometry_source": "Supplier W2L CAD with opening corrected from unloaded lip measurements and independent metal screw registration; preserve nominal linkage and measured35mm packet",
+    "contact_shape": "ellipse",
+    "model": "robotiq_2f85_w2l_adaptive_v2",
+    "gel_geometry": {
+      "pad_thickness_m": 0.0017023373024049053,
+      "active_size_yz_m": [
+        0.027,
+        0.036
+      ],
+      "active_center_yz_m": [
+        0.0,
+        0.0
+      ],
+      "inner_face_tolerance_m": 0.0003
+    },
+    "articulation": {
+      "angle_at_touch_rad": 0.8,
+      "bare_gripper_mass_kg": 0.925,
+      "drive_stiffness_nm_rad": 12.0,
+      "drive_damping_nm_s_rad": 0.16,
+      "drive_max_torque_nm": 1.7,
+      "mounts": {
+        "left": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.08
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            1.5707963267948966
+          ]
+        },
+        "right": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.08
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            -1.5707963267948966
+          ]
+        }
+      },
+      "mount_status": "Unloaded RGB lip/CAD estimate: +5.5mm outward per sensor; nominal gripper yaw0 supported by metal-cap registration. Axial placement and exact installed bracket remain provisional.",
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      },
+      "driver_force_distribution": "equal_split"
+    }
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "cx": 337.8138732910156,
+    "cy": 249.65126037597656,
+    "position": [
+      -0.35399058583569004,
+      -0.44643379477503714,
+      0.9535
+    ],
+    "target": [
+      -0.3491143716535526,
+      -0.016208984538463922,
+      0.05079138965436125
+    ],
+    "world_from_cv": [
+      [
+        0.9999720414746357,
+        -0.005669109656577374,
+        0.00487621418213748,
+        -0.35399058583569004
+      ],
+      [
+        -0.007215535335001398,
+        -0.9026929426481264,
+        0.4302248102365732,
+        -0.44643379477503714
+      ],
+      [
+        0.0019627325028448834,
+        -0.4302479662810364,
+        -0.9027086103456388,
+        0.9535
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "Connected D435 factory RGB K; camera normal from 50mm table lattice at measured963mm above mat; UR registration from wrist caps and photo mount/mat constraints.",
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": [],
+    "factory_profile": {
+      "path": "docs/results/d435_factory_calibration_20260908/d435_rgb_profile.json",
+      "sha256": "22d05713a0b2181c20111ce646f01323173d9b17b3d621708f69bd807b32d687",
+      "serial": "944622074411",
+      "sdk_distortion_model": "distortion.inverse_brown_conrady",
+      "zero_coefficients_make_pinhole_equivalent": true
+    }
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Rig scale from measured table/mat pitch, factory D435 K and measured waffle-era support geometry. Current task object and fixture dimensions/poses are image estimates; see docs/results/task_scenes_20260913/evidence_manifest.json.",
+    "physics": "Task object rigid-body approximation; mass/friction are unmeasured priors. Shell fracture/carton crushing and tactile transfer uncalibrated.",
+    "camera": "Factory RGB K read from matching D435 serial; zero SDK coefficients. Extrinsics estimated using metric grid and measuredheight; UR registration uses nominal CAD wrist faces and photo plate/mat alignment. Historical radiometry and rolling-shutter motion are not calibrated."
+  },
+  "calibration": {
+    "revision": "egg_aug22_rgb_layout_20260913_v1",
+    "status": "image_estimated_task_geometry_current_shared_rig",
+    "measurement_manifest": "docs/measurements/setup_20260908/revision_02/measurements.json",
+    "packet_orientation": "Task object orientation is image-estimated; see object yaw/rpy and initial_support_note. The waffle dimensions are not dimensions of this task object.",
+    "box_model": "Blue box disabled for egg; open tray and holder geometry is image-estimated, not measured.",
+    "frame_warning": "MountX200/Y150mm, yaw aligned with table/mat by photo hypothesis; base centered on plate. TableZ\u221212.5mm and mat3mm retained estimates.",
+    "validation": "docs/results/d435_factory_calibration_20260908/registration.json",
+    "camera_warning": "Factory K fixed. Camera tilt from metric table grid; noisy forearm volume-center correspondence excluded. No policy success claim.",
+    "gripper_validation": "docs/results/w2l_opening_width_20260909/README.md",
+    "opening_width": {
+      "inner_gap_at_POS0_m": 0.0912976626975951,
+      "symmetric_outward_per_sensor_m": 0.0055,
+      "fit_aperture_offset_m": 0.010955,
+      "approximate_sensitivity_half_range_m": 0.005,
+      "source": "Unloaded7073 housing/front-cover lip landmarks; measured cameraK; nominalCAD and screw-derived orientation; no loaded35mm sample or task outcome enters fit",
+      "root_yaw_rad": 0.0,
+      "root_translation_m": [
+        0,
+        0,
+        0
+      ],
+      "root_translation_note": "Camera/UR nuisance translation from screwfit is not asserted to be a physical off-axis flange mount",
+      "closed_endpoint_note": "RawPOS-to-angle gain and0.8radlimit retained; pad_touch_command is a legacy range label. Corrected modeledclosedgap stayspositive; unloadedendpoint/force/adaptivecalibration remains pending.",
+      "parallel_assumption_warning": "91.3mm is the uniform free-plane opening of this candidate, conditional on parallel pads. Actual gap must be measured at multiple longitudinal stations and matched POS. No passive hinge parameters have been validated."
+    },
+    "parent_static_config": {
+      "path": "configs/sim/waffles_w2l_opening_corrected_20260909.json",
+      "sha256": "002cffd1e93f07f9f8a097ba927c390f53e6bfa05b1decdabdfbb289899ecf3f"
+    },
+    "native_topology": {
+      "source": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "motor_settings": "Existing12/.16/1.7 unchanged; reference actuator/armature not imported",
+      "spring_reference": "Reference spring rest angle2.62rad may lie beyond the physicaljointlimit; this is a torque-drive reference, never an initialization position",
+      "initialization": "Loop-consistent geometricseed then2sforce-drive settling before t0 in measured dynamics; no passive position resets duringtrial",
+      "registration": "Static sensor geometry retained as a conditional hypothesis; shared image-registration residual remains unresolved"
+    },
+    "native_seed_opening_POS0": {
+      "profile_mm": {
+        "full_gel_proximal": 91.29546289759615,
+        "active_proximal": 91.29546289759615,
+        "center": 91.29546289759612,
+        "active_distal": 91.2954628975961,
+        "full_gel_distal": 91.2954628975961
+      },
+      "relative_face_angle_rad": 0.0,
+      "scope": "Geometric seed, not loaded or force-equilibrium aperture"
+    }
+  },
+  "robot_mount": {
+    "size": [
+      0.2,
+      0.15,
+      0.0125
+    ],
+    "yaw": -0.016781155522956927
+  },
+  "task": "egg",
+  "scene_provenance": {
+    "rig_baseline": "docs/results/sim_zoo_20260912/inputs/scene.json",
+    "rig_baseline_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+    "reconstruction": "real RGB object/fixture geometry; inherited factory D435 intrinsics and registered extrinsics",
+    "object_dimensions": "image estimates, not tape measurements",
+    "physics": "uncalibrated rigid-body mass/friction/compliance priors; no crushing/fracture",
+    "layout_variant": {
+      "name": "aug22_alternative_layout",
+      "parent_config": "configs/sim/egg.json",
+      "parent_sha256": "4d702d5c0df15fee316f4f64f4003cf07ede3f7d170d4de5ad2cd84d93d7b09d",
+      "reference_episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_162344_egg/ep_egg_1787405044_000",
+      "primary_reference_episode": "/home/physicalai/phantom-icra-2027/data/val_eval/tasks/egg/ep_egg_1785777201_004",
+      "source_reference_photo": {
+        "path": "/media/nuc/kostya_drive/references/egg.jpg",
+        "local_copy": "artifacts/isaac_objects/egg_evidence/nuc_reference_egg.jpg",
+        "sha256": "5721a6815b351be8785364b77b126f865a7f582cc44bff842fb8ecf07e24cee2",
+        "relationship": "Approximately same shifted layout as Aug22, not pixel-identical, photograph gripper partly hides egg"
+      },
+      "status": "image_estimated_layout_variant_not_measured",
+      "layout_evidence": {
+        "path": "artifacts/isaac_objects/egg_evidence/layout_variants.json",
+        "sha256": "385105894842619251eb7568a3b6e9aaf33ec66508a0e24d58f7f238d32ed6f8"
+      },
+      "fit_reference": {
+        "path": "artifacts/isaac_objects/egg_evidence/mat_fit_aug22.json",
+        "sha256": "6aed6434d1b48c4a1ddea6b1268e2e8e5b7c000901cade6162d58ade6fcc570b"
+      },
+      "fit_snapshot": {
+        "method": "fit yaw and XY grid origin with fixed85mm pitch to6 manual intersection centers using existing D435 pinhole projection;6 other points withheld",
+        "reference_episode": "ep_egg_1787405044_000",
+        "reference_frame": 0,
+        "metric_grid_pitch_m": 0.085,
+        "mat_top_z_m": -0.0095,
+        "camera_config": "configs/sim/waffles_d435_factory_20260908_r4.json",
+        "fit": {
+          "grid_origin_world_xy": [
+            -0.4790759901799761,
+            0.26593557926152045
+          ],
+          "yaw": -0.012480137585766337,
+          "train_rmse_px": 2.1284946072562265,
+          "holdout_rmse_px": 2.083950057087262,
+          "all_rmse_px": 2.1063400881093304,
+          "max_error_px": 2.876908132650039
+        },
+        "landmarks": [
+          {
+            "col": 0,
+            "row": 0,
+            "observed_uv": [
+              271.4,
+              132.7
+            ],
+            "predicted_uv": [
+              269.31909502052883,
+              131.6587022133261
+            ],
+            "error_px": 2.32690064551964,
+            "partition": "train"
+          },
+          {
+            "col": 1,
+            "row": 0,
+            "observed_uv": [
+              313.6,
+              132.9
+            ],
+            "predicted_uv": [
+              313.3865735972493,
+              131.90068033659583
+            ],
+            "error_px": 1.0218564571686926,
+            "partition": "holdout"
+          },
+          {
+            "col": 2,
+            "row": 0,
+            "observed_uv": [
+              356.1,
+              133.2
+            ],
+            "predicted_uv": [
+              357.4571970090006,
+              132.14267572841152
+            ],
+            "error_px": 1.7204413202809878,
+            "partition": "train"
+          },
+          {
+            "col": 3,
+            "row": 0,
+            "observed_uv": [
+              399.0,
+              133.6
+            ],
+            "predicted_uv": [
+              401.530965592437,
+              132.3846883906218
+            ],
+            "error_px": 2.8076269584810123,
+            "partition": "holdout"
+          },
+          {
+            "col": 0,
+            "row": 1,
+            "observed_uv": [
+              269.0,
+              169.1
+            ],
+            "predicted_uv": [
+              266.8796254263618,
+              168.85001493094427
+            ],
+            "error_px": 2.1350599212392285,
+            "partition": "holdout"
+          },
+          {
+            "col": 1,
+            "row": 1,
+            "observed_uv": [
+              313.2,
+              169.3
+            ],
+            "predicted_uv": [
+              312.36249083344427,
+              169.1011351913136
+            ],
+            "error_px": 0.8607954554937761,
+            "partition": "train"
+          },
+          {
+            "col": 2,
+            "row": 1,
+            "observed_uv": [
+              356.7,
+              169.6
+            ],
+            "predicted_uv": [
+              357.8487063458009,
+              169.35227394830358
+            ],
+            "error_px": 1.175114660606527,
+            "partition": "holdout"
+          },
+          {
+            "col": 3,
+            "row": 1,
+            "observed_uv": [
+              400.5,
+              170.0
+            ],
+            "predicted_uv": [
+              403.33827233358045,
+              169.60343120395785
+            ],
+            "error_px": 2.8658430957682457,
+            "partition": "train"
+          },
+          {
+            "col": 0,
+            "row": 2,
+            "observed_uv": [
+              266.8,
+              207.6
+            ],
+            "predicted_uv": [
+              264.2782463901756,
+              208.5097432026928
+            ],
+            "error_px": 2.6808345647406675,
+            "partition": "train"
+          },
+          {
+            "col": 1,
+            "row": 2,
+            "observed_uv": [
+              312.6,
+              207.7
+            ],
+            "predicted_uv": [
+              311.27043633589744,
+              208.7707063145854
+            ],
+            "error_px": 1.707088617791983,
+            "partition": "holdout"
+          },
+          {
+            "col": 2,
+            "row": 2,
+            "observed_uv": [
+              357.0,
+              208.0
+            ],
+            "predicted_uv": [
+              358.26620243086165,
+              209.0316892860128
+            ],
+            "error_px": 1.6332946393084058,
+            "partition": "train"
+          },
+          {
+            "col": 3,
+            "row": 2,
+            "observed_uv": [
+              402.5,
+              208.5
+            ],
+            "predicted_uv": [
+              405.2655450833062,
+              209.29269211924222
+            ],
+            "error_px": 2.876908132650039,
+            "partition": "holdout"
+          }
+        ]
+      },
+      "applied_fixture_translation_xy_m": [
+        0.043670933922972444,
+        0.020050201556899988
+      ],
+      "applied_holder_translation_xy_m": [
+        -0.0003079442211806338,
+        0.041166379697926025
+      ],
+      "reference_target_holder_index": 1,
+      "uncertainty_m": 0.01,
+      "support_note": "Only horizontal fixture/object translations applied. Final48mm shell support height, bowl geometry, materials, robot/gripper/camera and physics inherited unchanged from parent. Runtime initialization and 0.3 s driven preview passed; see docs/results/task_scenes_20260913/validation/initial_checks.json. No grasp validation."
+    }
+  },
+  "object": {
+    "kind": "egg",
+    "center": [
+      -0.29195044906552925,
+      -0.15422719383978967,
+      0.03785000000000053
+    ],
+    "size": [
+      0.048,
+      0.048,
+      0.057
+    ],
+    "yaw": 0,
+    "mass": 0.06,
+    "static_friction": 0.45,
+    "dynamic_friction": 0.32,
+    "restitution": 0.02,
+    "color": [
+      0.4,
+      0.17,
+      0.055
+    ],
+    "taper": 0.17,
+    "initial_support_note": "Centered in upper-right second cell,0.5mm above computed nonpenetrating ovoid/bowl support.48mm diameter from unobstructed NUC teleop view; length57mm estimated; no pose writes during dynamics."
+  },
+  "egg_fixture": {
+    "center": [
+      -0.31992906607702754,
+      -0.20194979844310001,
+      -0.0095
+    ],
+    "yaw": -0.01,
+    "columns": 2,
+    "rows": 5,
+    "cell_pitch_xy": [
+      0.055,
+      0.048
+    ],
+    "cup_radius_m": 0.022,
+    "cup_bottom_radius_m": 0.012,
+    "height_m": 0.032,
+    "wall_thickness_m": 0.0015,
+    "pulp_color": [
+      0.38,
+      0.46,
+      0.26
+    ],
+    "lid": {
+      "enabled": true,
+      "side": -1,
+      "width_m": 0.11,
+      "height_m": 0.018,
+      "texture": "assets/sim/egg/tray_lid.png"
+    },
+    "holders": {
+      "centers": [
+        [
+          -0.40735160890288424,
+          0.05532572494578408,
+          -0.0095
+        ],
+        [
+          -0.3625828716451485,
+          0.05504557399544713,
+          -0.0095
+        ],
+        [
+          -0.40656755229675323,
+          0.008255049236922496,
+          -0.0095
+        ],
+        [
+          -0.3626627938907783,
+          0.007976003282494759,
+          -0.0095
+        ]
+      ],
+      "height_m": 0.02,
+      "outer_radius_m": 0.0225,
+      "inner_radius_m": 0.0175,
+      "bottom_radius_m": 0.012,
+      "wall_thickness_m": 0.0015
+    }
+  }
+}

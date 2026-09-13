@@ -230,7 +230,7 @@ def blue_bin_mask(bgr):
     return labels == chosen
 
 
-def compare_videos(real, sim, real_video, sim_video, out, fps, tactile_reference=None):
+def compare_videos(real, sim, real_video, sim_video, out, fps, tactile_reference=None, *, measure_bin=True):
     import cv2
 
     rr, sr = VideoReader(real_video), VideoReader(sim_video)
@@ -303,7 +303,8 @@ def compare_videos(real, sim, real_video, sim_video, out, fps, tactile_reference
                     / 255
                 )
             )
-            rm, sm = blue_bin_mask(reference), blue_bin_mask(rendered)
+            rm, sm = (blue_bin_mask(reference), blue_bin_mask(rendered)) if measure_bin else (
+                np.zeros(reference.shape[:2], bool), np.zeros(rendered.shape[:2], bool))
             union = (rm | sm).sum()
             ious.append(float((rm & sm).sum() / union) if union else None)
             if rm.any() and sm.any():
@@ -395,6 +396,8 @@ def compare_videos(real, sim, real_video, sim_video, out, fps, tactile_reference
         }
         if tactile is not None:
             result["tactile"] = tactile.save(out)
+        if not measure_bin:
+            result["blue_bin_silhouette"] = {"status": "not_applicable", "reason": "egg task has tray and holders, no blue bin"}
         return result
     finally:
         rr.close()
@@ -456,6 +459,7 @@ def main():
             args.out,
             args.fps,
             args.tactile_reference,
+            measure_bin=str(manifest.get("meta", {}).get("task", "")).lower().removesuffix("_fail") != "egg",
         )
     else:
         result["image"] = {
