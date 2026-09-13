@@ -481,6 +481,7 @@ class ChunkExecutor:
                         g_sent = max(g_sent, latch)
                     if self.release_controller is not None and self._last_grip_command is not None:
                         g_sent = self._last_grip_command
+                    g_sent = self._recorded_grip(g_sent)
                     if g_sent != a[6]:
                         a = np.array(a, copy=True)
                         a[6] = g_sent
@@ -704,6 +705,16 @@ class ChunkExecutor:
 
     placement_descent = None       # class default: the supervisor is opt-in
     _descent_latch_block = False   # supervisor denies the latch (re)arming
+    _descent_grip_sent = None      # aperture the supervisor actually sent this tick (None = policy's)
+
+    def _recorded_grip(self, g_sent: float) -> float:
+        """The gripper value written to STREAM_ACTIONS / _grip_hist: while the
+        descend-then-release supervisor overrides the aperture (forced open,
+        retract), the command that GOES OUT is the supervisor's, not the plan's
+        (deep preflight 09-13 S1: the plan's closed value was recorded for the
+        11-23 rows of every supervised release)."""
+        g = self._descent_grip_sent
+        return g_sent if g is None else float(g)
 
     def _apply_placement_descent(self, t, target, grip):
         """Descend-then-release supervisor (rig 09-12): crate-region z floor,
@@ -753,6 +764,7 @@ class ChunkExecutor:
                      float(sup.z_max_since_latch), sup.dwell_since,
                      decision.overrode, decision.grip)
         out_grip = grip if decision.grip is None else float(decision.grip)
+        self._descent_grip_sent = None if decision.grip is None else float(decision.grip)
         return decision.target, out_grip, bool(decision.overrode)
 
     def _descent_blocks_latch(self) -> bool:
@@ -1093,6 +1105,7 @@ class ChunkExecutor:
                 time.sleep(wait)
 
     def _reset_arm_episode_state(self) -> None:
+        self._descent_grip_sent = None
         """Per-episode driver bookkeeping that would otherwise leak across the
         episodes of one process (the arm object is shared): the control-loss
         snapshot, and the servo-limiter hit/hold counters that every later

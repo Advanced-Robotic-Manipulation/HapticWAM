@@ -601,3 +601,14 @@ def test_the_episode_tag_names_the_supervisor(monkeypatch, tmp_path):
     carton = _main(monkeypatch, tmp_path, task="Carton",
                    argv=("--placement-descent", CONFIG_PATH))
     assert "descent:118mm" in carton["episode"]["tags"]
+
+
+def test_recorded_grip_follows_the_supervisor_override():
+    """S1 (deep preflight 09-13): STREAM_ACTIONS must carry the aperture that went out."""
+    from phantom.deploy.executor import ChunkExecutor
+    ex = ChunkExecutor.__new__(ChunkExecutor)
+    assert ex._recorded_grip(0.62) == 0.62                 # no supervisor override -> plan value
+    ex._descent_grip_sent = 0.10
+    assert ex._recorded_grip(0.62) == 0.10                 # forced open recorded as sent
+    ex._descent_grip_sent = None
+    assert ex._recorded_grip(0.62) == 0.62
