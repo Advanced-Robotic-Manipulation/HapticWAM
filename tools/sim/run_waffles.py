@@ -256,7 +256,13 @@ def validate_adaptive_policy_experiment(args, cfg):
         raise ValueError("Adaptive teacher experiment requires measured_baseline_proxy and gripper_contact_proxy")
     if args.gel_contact_coverage != "manifold_patch_v2":
         raise ValueError("Adaptive teacher experiment requires the replay-tested manifold_patch_v2 mapping")
-    if (not args.save_policy_observations or not args.record_gel_contacts
+    if args.policy_server == "scripted" and args.save_policy_observations:
+        # data generation: the per-replan observation dumps (~90 MB per trial) duplicate
+        # the rendered video + traces the exporter reads; they filled /dev/shm during the
+        # 2026-09-13 campaign, so the scripted expert never writes them
+        args.save_policy_observations = False
+    if ((not args.save_policy_observations and args.policy_server != "scripted")
+            or not args.record_gel_contacts
             or not args.record_packet_support or not args.record_robot_environment_contacts):
         raise ValueError(
             "Adaptive teacher experiment requires policy observations, gel contacts, "
