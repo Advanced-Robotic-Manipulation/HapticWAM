@@ -33,9 +33,9 @@ case "${1:-warm}" in
       echo "!! less than 17 GB available even counting our own servers: another job holds the 5090. Do NOT kill it — wait for it or ask."; exit 3
     fi
     warm 1 2          # the pre-registered pair: teacher v6 vs pad-free student
-    warm 4 5 6        # baselines, each only if it fits
+    warm 4 5          # baselines (pi0.5, dp), each only if it fits; 6 xvla is off the rig (needs 3 camera views)
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
-  baselines) warm 4 5 6; ./serve_bg.sh status;;
+  baselines) warm 4 5; ./serve_bg.sh status;;
   blockc) ./serve_bg.sh stop 2; ./serve_bg.sh stop 4; ./serve_bg.sh stop 5; ./serve_bg.sh stop 6; warm 3; ./serve_bg.sh status;;
   status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB (our servers hold $(ours_mib) MiB)"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;
   stop) shift; [ $# -eq 0 ] && set -- 1 2 3 4 5 6 7 8; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
