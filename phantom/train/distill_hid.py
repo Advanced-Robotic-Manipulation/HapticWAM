@@ -250,6 +250,13 @@ def main(argv=None) -> int:
     ap.add_argument("--w-sigma", type=float, default=None,
                     help="weight of the student sigma-head NLL vs GT (0 = head "
                          "untrained, round 1)")
+    # haptic-imagination ablation (09-13): the three distillation terms that carry the
+    # teacher's IMAGINED contact into the student (traj_distill on the contact package,
+    # event_distill on the event band) vs plain action matching (behavior_match).
+    # 0 drops a term; None keeps the shipped weight (HIDConfig).
+    ap.add_argument("--w-traj", type=float, default=None, help="traj_distill weight (contact package); 0 = off")
+    ap.add_argument("--w-event", type=float, default=None, help="event_distill weight (event band); 0 = off")
+    ap.add_argument("--w-behavior", type=float, default=None, help="behavior_match weight (action velocity matching); 0 = off")
     ap.add_argument("--split", default="train", choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default "
                          "train; 'all' reproduces the pre-2026-08-30 behaviour "

@@ -81,7 +81,8 @@ def apply_overrides(cfg, args, compute=None):
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
                  "eval_every", "ema_decay", "event_band_weight",
                  "split", "grasp_frac", "photo_aug", "commit_band_weight",
-                 "wrench_baseline_rows", "teacher_nfe", "w_sigma"):
+                 "wrench_baseline_rows", "teacher_nfe", "w_sigma",
+                 "w_traj", "w_event", "w_behavior"):
         v = getattr(args, name, None)
         if v is not None and hasattr(cfg, name):
             updates[name] = v

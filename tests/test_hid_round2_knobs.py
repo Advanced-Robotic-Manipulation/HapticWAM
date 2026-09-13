@@ -134,3 +134,31 @@ def test_distill_cli_accepts_ckpt_and_eval_cadence():
     out = subprocess.run([sys.executable, "-m", "phantom.train.distill_hid", "--help"],
                          capture_output=True, text=True).stdout
     assert "--ckpt-every" in out and "--eval-every" in out
+
+
+def test_haptic_imagination_weights_drop_their_terms(pair_and_batch):
+    """--w-traj 0 --w-event 0: the imagined-contact terms leave the total; behavior_match + grounding stay."""
+    teacher, student, batch = pair_and_batch
+    cfg = HIDConfig(tiny=True, synthetic=True, w_traj=0.0, w_event=0.0)
+    cut = distill_step(student.rf, teacher.rf, batch, cfg, "cpu")
+    zero = torch.zeros(())
+    expect = (cfg.w_behavior * cut["behavior_match"]
+              + cfg.w_ground * (cut["action_v_mse"] + cut.get("video_v_mse", zero) + cut["wrist_mse"]))
+    if "acc_gate_bce" in cut:
+        expect = expect + 0.2 * cut["acc_gate_bce"] + 0.5 * cut["acc_event_ce"]
+    assert torch.isfinite(cut["total"])
+    assert torch.allclose(cut["total"], expect, rtol=1e-4, atol=1e-5), (cut["total"], expect)
+    assert cut["traj_distill"] > 0 and cut["event_distill"] >= 0    # still computed and logged, just unweighted
+
+
+def test_haptic_weight_flags_reach_the_config():
+    import argparse
+    from phantom.train.train_teacher import apply_overrides
+    ns = argparse.Namespace(synthetic=True, tiny=True, device="cpu", run_name="", max_steps=None,
+                            batch_size=None, grad_accum=None, num_workers=None, w_traj=0.0, w_event=0.0,
+                            w_behavior=None, w_sigma=None, teacher_nfe=None, lr=None, lr_new_modules=None,
+                            warmup_steps=None, ckpt_every=None, eval_every=None, ema_decay=None,
+                            event_band_weight=None, split=None, grasp_frac=None, photo_aug=None,
+                            commit_band_weight=None, wrench_baseline_rows=None)
+    cfg = apply_overrides(HIDConfig(), ns)
+    assert cfg.w_traj == 0.0 and cfg.w_event == 0.0 and cfg.w_behavior == 1.0
