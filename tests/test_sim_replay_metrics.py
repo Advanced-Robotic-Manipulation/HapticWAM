@@ -264,3 +264,46 @@ def test_synchronized_tactile_video_keeps_video_grid_and_native_image_times(tmp_
         assert int(capture.get(cv2.CAP_PROP_FRAME_COUNT)) == 5
         assert int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)) == height
         capture.release()
+
+
+def test_sim_tactile_uses_displayed_frame_without_advancing_native_tactile(tmp_path):
+    """A 0.167 ms snap must not display a whole 66.7 ms-old force sample."""
+    import cv2
+
+    from tools.sim.compare_replay import compare_videos
+
+    tactile = tmp_path / "tactile"
+    _tactile_fixture(tactile)
+    with np.load(tactile / "tactile.npz") as saved:
+        data = dict(saved)
+    for side in ["left", "right"]:
+        data[f"{side}_image_t"] = np.array([.1, .2001])
+        data[f"{side}_wrench_t"] = np.array([.1, .2001])
+        data[f"{side}_wrench"] = np.array([[1., 0, 0, 0, 0, 0], [9., 0, 0, 0, 0, 0]])
+    np.savez(tactile / "tactile.npz", **data)
+    video = tmp_path / "video.mp4"
+    writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"mp4v"), 15, (640, 480))
+    assert writer.isOpened()
+    for _ in range(5):
+        writer.write(np.zeros((480, 640, 3), np.uint8))
+    writer.release()
+    real = trace(np.arange(5) / 15)
+    sim = trace(real["t"] + np.array([0, .000167, .000167, .000167, .000167]))
+    real["t0_master"] = np.asarray(100.)
+    sim["frame_t"] = sim["t"].copy()
+    sim["pad_force"] = np.zeros((5, 2, 3))
+    sim["pad_packet_normal_force"] = np.repeat(np.arange(5)[:, None], 2, axis=1)
+    compare_videos(real, sim, video, video, tmp_path, 15, tactile)
+    report = json.loads((tmp_path / "tactile_alignment.json").read_text())
+    row = report["alignment"][3]  # Common time .2, displayed simulation time .200167.
+    assert row["t"] == pytest.approx(.2)
+    assert row["sim_force_index"] == 3
+    assert row["left_pressure_force_N"] == 3
+    assert row["sim_force_age_s"] == 0
+    assert row["sim_force_query_t"] == row["sim_displayed_frame_t"] == sim["t"][3]
+    assert row["sim_force_sample_t"] == sim["t"][3]
+    assert row["sim_force_time_offset_from_common_s"] == pytest.approx(.000167)
+    # A real tactile image/wrench at .2001 remains future at common time .2.
+    assert row["left_image_index"] == row["right_image_index"] == 0
+    assert row["left_real_force_norm"] == row["right_real_force_norm"] == 1
+    assert "displayed simulation frame" in report["sim_force_sampling"]

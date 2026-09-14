@@ -45,3 +45,22 @@ def test_legacy_waffle_and_explicit_egg_pose_are_distinct():
     np.testing.assert_allclose(orientation_wxyz(tilted), [np.sqrt(.5),np.sqrt(.5),0,0], atol=1e-15)
     with pytest.raises(ValueError, match='one task object'):
         object_config({**legacy,'object':tilted})
+
+
+def test_printed_carton_capacity_rules_out_impossible_image_fit():
+    carton = {'kind': 'carton', 'size': [.04047906, .0445497, .113196],
+              'mass': .27, 'nominal_capacity_ml': 250}
+    with pytest.raises(ValueError, match='exterior bounding volume'):
+        object_config({'object': carton})
+    # A taller old hypothesis is still too small; changing mass cannot fix it.
+    with pytest.raises(ValueError, match='exterior bounding volume'):
+        object_config({'object': {**carton, 'size': [.04047906, .0445497, .125099]}})
+    plausible = {**carton, 'size': [.045, .05, .125]}
+    assert object_config({'object': plausible}) == plausible
+
+
+@pytest.mark.parametrize('capacity', [0, -250, float('nan'), float('inf')])
+def test_carton_capacity_must_be_finite_and_positive(capacity):
+    with pytest.raises(ValueError, match='finite positive capacity'):
+        object_config({'object': {'kind': 'carton', 'size': [.05, .05, .12],
+                                  'nominal_capacity_ml': capacity}})

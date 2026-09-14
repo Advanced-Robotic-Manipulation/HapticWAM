@@ -40,6 +40,14 @@ def arguments():
     )
     p.add_argument("--duration", type=float, default=None)
     p.add_argument(
+        "--replay-arm-velocity-reference", action="store_true",
+        help="Dynamics only: pair measured q targets with native measured qd velocity targets in the unchanged force drives; offline tracking diagnostic",
+    )
+    p.add_argument(
+        "--replay-gripper-commands", type=Path,
+        help="Dynamics only: explicitly audited teleop last-sent gripper command sidecar bound to this prepared replay; sampled command timing remains approximate",
+    )
+    p.add_argument(
         "--command-trace",
         type=Path,
         help="Recorded drive-submission JSONL for command_replay mechanics diagnostics",
@@ -643,6 +651,10 @@ def load_command_replay(args, cfg):
 
 def main():
     args = arguments()
+    if getattr(args, "replay_arm_velocity_reference", False) and args.mode != "dynamics":
+        raise ValueError("--replay-arm-velocity-reference requires dynamics mode")
+    if getattr(args, "replay_gripper_commands", None) is not None and args.mode != "dynamics":
+        raise ValueError("--replay-gripper-commands requires dynamics mode")
     if args.command_finger_hold_at is not None and args.mode != "command_replay":
         raise ValueError("--command-finger-hold-at requires command_replay mode")
     if args.servo_reach_limiter and args.mode != "policy":
@@ -687,6 +699,19 @@ def main():
     )
     if duration <= 0:
         raise ValueError("duration must be positive")
+    replay_arm_velocity = None
+    if getattr(args, "replay_arm_velocity_reference", False):
+        from phantom.sim.measured_replay import MeasuredArmVelocityReference
+
+        replay_arm_velocity = MeasuredArmVelocityReference(data, mode=args.mode, duration=duration)
+    replay_gripper_commands = None
+    if getattr(args, "replay_gripper_commands", None) is not None:
+        from phantom.sim.measured_replay import SampledGripperCommands
+
+        replay_gripper_commands = SampledGripperCommands(
+            args.replay_gripper_commands, reference_path=args.episode / "replay.npz",
+            reference_t0=float(data["t0_master"]), initial_closure=float(data["gripper"][0, 0]),
+            mode=args.mode)
     for delay in (args.observation_delay_s, args.inference_delay_add_s):
         if not np.isfinite(delay) or delay < 0:
             raise ValueError(
@@ -708,7 +733,8 @@ def main():
     )
     exit_code = 0
     try:
-        run(app, args, cfg, data, duration)
+        run(app, args, cfg, data, duration, replay_arm_velocity=replay_arm_velocity,
+            replay_gripper_commands=replay_gripper_commands)
     except BaseException:  # noqa: BLE001 - preserve failures before Kit exits the process
         import traceback
 
@@ -720,7 +746,7 @@ def main():
         app.close(exit_code=exit_code)
 
 
-def run(app, args, cfg, data, duration):
+def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_gripper_commands=None):
     import cv2
     import omni.usd
     from isaacsim.core.api import World
@@ -1677,7 +1703,9 @@ def run(app, args, cfg, data, duration):
                     desired[ids], desired[fingers] = targets
             elif args.mode in ("replay", "dynamics"):
                 desired[ids] = interp("q", t)
-                desired[fingers] = finger_target(interp("gripper", t)[0])
+                desired[fingers] = finger_target(
+                    replay_gripper_commands.at(t) if replay_gripper_commands is not None
+                    else interp("gripper", t)[0])
                 if args.mode == "replay":
                     robot.set_joint_positions(desired)
                     robot.set_joint_velocities(np.zeros_like(desired))
@@ -2023,7 +2051,13 @@ def run(app, args, cfg, data, duration):
                                  "measured_tcp": tcp}, pause=world.pause)
                         raise
                 else:
-                    robot.apply_action(ArticulationAction(joint_positions=desired))
+                    if replay_arm_velocity is not None:
+                        velocity_targets = np.zeros_like(desired)
+                        velocity_targets[ids] = replay_arm_velocity.at(t)
+                        robot.apply_action(ArticulationAction(
+                            joint_positions=desired, joint_velocities=velocity_targets))
+                    else:
+                        robot.apply_action(ArticulationAction(joint_positions=desired))
             if pending_execution is not None:
                 audit.executed(pending_execution)
                 pending_execution = None
@@ -2138,6 +2172,10 @@ def run(app, args, cfg, data, duration):
                 trace["tcp"].append(tcp_measured(actual[ids]))
                 trace["tcp_nominal_fk"].append(forward_pose(actual[ids]))
                 trace["target_q"].append(desired[ids].copy())
+                if replay_arm_velocity is not None:
+                    trace.setdefault("target_qd", []).append(replay_arm_velocity.at(t))
+                if replay_gripper_commands is not None:
+                    trace.setdefault("recorded_gripper_target", []).append(replay_gripper_commands.at(t))
                 measured_closure = finger_closure(actual[fingers])
                 target_closure = finger_closure(desired[fingers])
                 trace.setdefault("finger_q", []).append(actual[fingers].copy())
@@ -2256,6 +2294,8 @@ def run(app, args, cfg, data, duration):
                 policy.close()
     report = {
         "mode": args.mode,
+        "arm_replay_velocity_reference": replay_arm_velocity.metadata if replay_arm_velocity is not None else None,
+        "sampled_gripper_command_reference": replay_gripper_commands.metadata if replay_gripper_commands is not None else None,
         "command_replay": recorded_commands.metadata
         if recorded_commands is not None
         else None,

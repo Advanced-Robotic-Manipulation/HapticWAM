@@ -18,6 +18,15 @@ def object_config(config: dict) -> dict:
         raise ValueError("Object size must contain three finite positive dimensions")
     if "mass" in obj and (not np.isfinite(obj["mass"]) or obj["mass"] <= 0):
         raise ValueError("Object mass must be finite and positive")
+    if "nominal_capacity_ml" in obj:
+        capacity = float(obj["nominal_capacity_ml"])
+        if obj.get("kind") != "carton" or not np.isfinite(capacity) or capacity <= 0:
+            raise ValueError("nominal_capacity_ml requires a carton and a finite positive capacity")
+        # The liquid must fit even inside the exterior bounding box. Passing
+        # this necessary bound does not identify XYZ, wall thickness, folds,
+        # headspace, or the mass/density of the contents.
+        if float(np.prod(size)) * 1e6 + 1e-9 < capacity:
+            raise ValueError("Carton exterior bounding volume is smaller than nominal_capacity_ml")
     return obj
 
 

@@ -211,13 +211,31 @@ class TactilePanels:
                 raise ValueError(f"{side}: tactile frame/timestamp mismatch")
         self.rows = []
 
-    def render(self, t, *, scene_width=640):
+    def render(self, t, *, scene_width=640, sim_time=None):
+        """Keep native tactile causal at t; align proxy to displayed sim time.
+
+        Offline comparison can display a nearest simulation frame slightly
+        after the common video grid. Sampling its force at that exact frame
+        time avoids accidentally showing the preceding full-frame sample.
+        Callers without an explicit simulation time retain previous behavior.
+        """
         import cv2
 
         w, h = scene_width // 2, 240
         row = np.zeros((h + 60, scene_width * 2, 3), dtype=np.uint8)
-        fi, force_age = previous_sample(self.sim_t, t)
-        alignment = {"t": float(t), "sim_force_index": fi, "sim_force_age_s": force_age}
+        force_time = float(t if sim_time is None else sim_time)
+        if not np.isfinite(force_time):
+            raise ValueError("Simulation force query time must be finite")
+        fi, force_age = previous_sample(self.sim_t, force_time)
+        alignment = {
+            "t": float(t),
+            "sim_displayed_frame_t": None if sim_time is None else force_time,
+            "sim_force_query_t": force_time,
+            "sim_force_sample_t": float(self.sim_t[fi]) if fi >= 0 else None,
+            "sim_force_index": fi,
+            "sim_force_age_s": force_age,
+            "sim_force_time_offset_from_common_s": float(self.sim_t[fi] - t) if fi >= 0 else None,
+        }
         for index, side in enumerate(SIDES):
             image_t = self.data[f"{side}_image_t"]
             sample, age = previous_sample(image_t, t)
@@ -330,6 +348,7 @@ class TactilePanels:
             "native_streams": self.manifest["streams"],
             "frames": len(self.rows),
             "sampling": "Previous native tactile observation, never a future frame; stale samples visibly marked",
+            "sim_force_sampling": "Previous simulation force at the displayed simulation frame timestamp when supplied; otherwise at common video time. Force age is relative to this explicit query time; signed offset from common time is saved separately.",
             "stale_after_s": self.max_age_s,
             "sim_force_source": self.force_source,
             "pressure_source": "packet normal contact force"

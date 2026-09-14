@@ -321,7 +321,7 @@ def compare_videos(real, sim, real_video, sim_video, out, fps, tactile_reference
                 rendered,
             )
             if tactile is not None:
-                tactile_row = tactile.render(time, scene_width=width)
+                tactile_row = tactile.render(time, scene_width=width, sim_time=st[b])
                 panel[38 + height :] = tactile_row
                 tactile_writer.write(tactile_row)
             for x, label in (
