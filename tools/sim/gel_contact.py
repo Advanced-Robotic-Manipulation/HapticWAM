@@ -108,6 +108,11 @@ class GelSurfaceGeometry:
     # evidence that a 2 mm air gap is compressed gel. Force remains measured.
     support_max_separation_m: float = 0.002
     support_minimum_normal_agreement: float = 0.99
+    # Opt-in bound from sensor layer geometry, not a force fit. Native PhysX
+    # reports can locate a contact on the penetrating object surface. Recover
+    # its undeformed gel-face location only within this physical layer depth.
+    # Zero preserves historical rigid-plane selection exactly.
+    maximum_compression_m: float = 0.0
 
     def __post_init__(self):
         x = np.r_[
@@ -128,6 +133,11 @@ class GelSurfaceGeometry:
             raise ValueError("support separation must be finite and nonnegative")
         if not 0 < self.support_minimum_normal_agreement <= 1:
             raise ValueError("support normal agreement must lie in (0,1]")
+        if (
+            not np.isfinite(self.maximum_compression_m)
+            or not 0 <= self.maximum_compression_m <= self.pad_thickness_m
+        ):
+            raise ValueError("maximum compression must lie between zero and pad thickness")
 
 
 def select_gel_contacts(
@@ -207,7 +217,7 @@ def select_gel_contacts(
         raise RuntimeError("loaded PhysX contact has zero normal")
     alignment = abs(local_normals[:, 0]) / np.maximum(lengths, 1e-9)
     separations = None
-    if coverage == "manifold_patch_v2" and separation_data is not None:
+    if (coverage == "manifold_patch_v2" or g.maximum_compression_m > 0) and separation_data is not None:
         separation_buffer = np.asarray(separation_data).reshape(-1)
         if len(ids) and ids[-1] >= len(separation_buffer):
             raise RuntimeError("PhysX separation range exceeds buffer")
@@ -215,8 +225,28 @@ def select_gel_contacts(
         if not np.isfinite(separations).all():
             raise RuntimeError("nonfinite populated PhysX contact separation")
     # Left pad is positiveX: inner face at−thickness/2; right is the reverse.
-    face_x = (-1 if side == "left" else 1) * g.pad_thickness_m / 2
-    face = abs(local[:, 0] - face_x) <= g.inner_face_tolerance_m
+    inner_sign = -1 if side == "left" else 1
+    face_x = inner_sign * g.pad_thickness_m / 2
+    rigid_face = abs(local[:, 0] - face_x) <= g.inner_face_tolerance_m
+    inward_depth = -inner_sign * (local[:, 0] - face_x)
+    recovered_face = np.zeros(len(ids), dtype=bool)
+    projected_surface = None
+    if g.maximum_compression_m > 0 and separations is not None:
+        # Orient either PhysX actor's normal toward the pad's inner half-space.
+        # Negative separation then projects a penetrating object contact back
+        # to the original gel surface. Do not move its optical Y/Z location,
+        # enlarge the active ellipse, synthesize force, or observe backing here.
+        oriented_normals = local_normals / np.maximum(lengths[:, None], 1e-9)
+        oriented_normals *= np.where(inner_sign * oriented_normals[:, 0] >= 0, 1, -1)[:, None]
+        projected_surface = local - separations[:, None] * oriented_normals
+        recovered_face = (
+            (separations < 0)
+            & (-separations <= g.maximum_compression_m)
+            & (inward_depth >= 0)
+            & (inward_depth <= g.maximum_compression_m)
+            & (abs(projected_surface[:, 0] - face_x) <= g.inner_face_tolerance_m)
+        )
+    face = rigid_face | recovered_face
     centered_yz = local[:, 1:3] - np.asarray(g.active_center_yz_m)
     ellipse = (
         np.sum((centered_yz / (np.asarray(g.active_size_yz_m) / 2)) ** 2, axis=1) <= 1
@@ -411,8 +441,16 @@ def select_gel_contacts(
                 "point_inside_active_gel_by_contact": point_accepted[rows].tolist(),
                 "gel_force_fraction_by_contact": fractions[rows].tolist(),
                 "coverage": patch_diagnostics.get(column, {"method": "point"}),
+                "inner_face_before_compression_correction_by_contact": rigid_face[rows].tolist(),
+                "inner_face_after_compression_correction_by_contact": face[rows].tolist(),
+                "inside_active_ellipse_by_contact": ellipse[rows].tolist(),
+                "normal_aligned_by_contact": aligned[rows].tolist(),
+                "inward_depth_from_nominal_face_m": inward_depth[rows].tolist(),
             }
         )
+        if projected_surface is not None:
+            by_filter[-1]["separation_projected_surface_pad_m"] = projected_surface[rows].tolist()
+            by_filter[-1]["separation_by_contact_m"] = separations[rows].tolist()
         if coverage == "manifold_patch_v2":
             by_filter[-1].update(
                 {
@@ -457,6 +495,24 @@ def select_gel_contacts(
         "contact_filter_column_count": filter_count,
         "filter_labels_match_columns": labels_match,
         "per_filter_contacts": by_filter,
+        "inner_face_compression_model": {
+            "maximum_compression_m": g.maximum_compression_m,
+            "rigid_face_tolerance_m": g.inner_face_tolerance_m,
+            "separation_available": separations is not None,
+            "newly_eligible_inner_face_normal_force_n": float(weights[face & ~rigid_face].sum()),
+            "newly_eligible_inner_face_inside_active_ellipse_normal_force_n": float(weights[face & ~rigid_face & ellipse & aligned].sum()),
+            "scope": "Gel-body contacts only; active ellipse and force unchanged; backing loads excluded",
+        },
+        "independent_contact_rejection_n": {
+            # These overlap deliberately: ordered reasons otherwise hide that
+            # a compressed contact can also be outside the optical area.
+            "outside_rigid_inner_face": float(weights[~rigid_face].sum()),
+            "outside_corrected_inner_face": float(weights[~face].sum()),
+            "outside_active_ellipse": float(weights[~ellipse].sum()),
+            "normal_not_aligned": float(weights[~aligned].sum()),
+            "outside_rigid_face_and_active_ellipse": float(weights[~rigid_face & ~ellipse].sum()),
+            "overlapping_categories": True,
+        },
         "coverage_mode": coverage,
         "coverage_assumption": "point selection"
         if coverage == "point"

@@ -3,7 +3,9 @@
 The topology/origins come from the pinned Menagerie reference. Installed sensor
 mounts, passive response and motor calibration remain provisional. This module
 preserves PHANTOM motor settings and component masses; it does not import the
-reference's actuator gains, force cap, armature or root mounting offset.
+reference's actuator gains, force cap or root mounting offset. The reference's
+joint armature is a separate opt-in numerical port diagnostic, disabled by
+default; its values are not measured installed-hardware inertia.
 
 ``joint_targets`` returns a closed-loop initialization/direct-replay pose.
 ``drive_targets`` returns actuator rest targets: passive coordinates must never
@@ -91,6 +93,44 @@ def passive_settings(cfg):
         "spring_stiffness_nm_rad": _finite(value.get("spring_stiffness_nm_rad", .05), "spring stiffness", 0.),
         "spring_damping_nm_s_rad": _finite(value.get("spring_damping_nm_s_rad", .00125), "spring damping", 0.),
         "spring_reference_rad": _finite(value.get("spring_reference_rad", 2.62), "spring reference"),
+    }
+
+
+def joint_velocity_limits(cfg):
+    """Keep motor speed at 2 rad/s; optionally separate passive joint limits.
+
+    The historical URDF applied the motor limit to all eight coordinates.
+    A larger passive limit is a numerical sensitivity setting, not a measured
+    hardware speed or permission to relax position/loop integrity gates.
+    """
+    passive = _positive(_settings(cfg).get("passive_max_velocity_rad_s", 2.),
+                        "passive_max_velocity_rad_s")
+    return {name: 2. if name in DRIVERS else passive for name in JOINT_NAMES}
+
+
+def armature_settings(cfg):
+    """Add only pinned joint-space inertia; preserve nominal rigid-body inertia.
+
+    The reference assigns 0.005 kg m^2 to each driver and 0.001 kg m^2 to
+    each passive coordinate. PhysX revolute armature uses those SI units
+    directly, without the angular conversion required for drive gains.
+    This does not port the MJCF actuator, damping or soft-constraint solver.
+    """
+    model = _settings(cfg).get("armature_model", "none")
+    if model not in ("none", "pinned_mjcf_v1"):
+        raise ValueError("armature_model must be none or pinned_mjcf_v1")
+    enabled = model == "pinned_mjcf_v1"
+    return {
+        "armature_model": model,
+        "joint_armature_kg_m2": {
+            name: (.005 if name in DRIVERS else .001) if enabled else 0.
+            for name in JOINT_NAMES
+        },
+        "armature_transfer": {
+            "source_reference_sha256": REFERENCE_SHA256 if enabled else None,
+            "scope": "Additive diagonal joint-space inertia; rigid-body mass/COM/inertia unchanged. Numerical reference-port diagnostic, not measured hardware inertia or exact MJCF dynamics.",
+            "unported": "Native actuator law, driver damping and soft limit/equality-constraint solver parameters remain unimported",
+        },
     }
 
 
@@ -281,6 +321,8 @@ def append_gripper_urdf(root, repo, cfg):
         root_mount_pose,
     )
     settings = _settings(cfg)
+    velocity_limits = joint_velocity_limits(cfg)
+    armature = armature_settings(cfg)
     _verify_reference(repo)
     mounts = settings.get("mounts", {})
     if any(s not in mounts for s in ("left", "right")):
@@ -330,7 +372,8 @@ def append_gripper_urdf(root, repo, cfg):
         if kind == "revolute":
             ET.SubElement(j, "axis", xyz="1 0 0")
             lo, hi = LIMITS[name]
-            ET.SubElement(j, "limit", lower=str(lo), upper=str(hi), effort="1000", velocity="2.0")
+            ET.SubElement(j, "limit", lower=str(lo), upper=str(hi), effort="1000",
+                          velocity=str(velocity_limits[name]))
             if name == DRIVERS[1]:
                 ET.SubElement(j, "mimic", joint=MASTER, multiplier="1", offset="0")
         append(j)
@@ -358,9 +401,11 @@ def append_gripper_urdf(root, repo, cfg):
         "master_joint": MASTER, "pad_links": ["left_pad", "right_pad"], "sensor_links": sensor_names,
         "bare_gripper_mass_kg": moving_mass + base_mass, "mounts": copy.deepcopy(mounts),
         "loop_constraints": loop_specs(), "joint_limits_rad": dict(LIMITS),
+        "joint_max_velocity_rad_s": velocity_limits,
+        **armature,
         "follower_mesh_offset_m": FOLLOWER_MESH_OFFSET.tolist(), "native_reference_sha256": REFERENCE_SHA256,
         "mechanical_model": "Native adaptive loop topology; geometry seed distinct from passive force dynamics; installed mounts and response uncalibrated",
-        "inertia_model": "Existing nominal moving-link masses/inertias and CAD sensor masses retained; base mass allocation unchanged; native MJCF armature not imported",
+        "inertia_model": "Existing nominal moving-link masses/inertias and CAD sensor masses retained; base mass allocation unchanged; joint-space armature selection reported separately",
         "root_transform": {"xyz_m": root_xyz, "rpy_rad": root_rpy,
                            "correction_xyz_rotvec": settings.get("root_correction_xyz_rotvec", [0.] * 6),
                            "semantics": "Installation yaw followed by explicit local CAD-root correction; native reference base_mount offset is not imported"},
@@ -375,6 +420,8 @@ def configure_gripper_physics(stage, joint_paths, cfg):
     """
     from pxr import Gf, Sdf, UsdPhysics
     passive, drivers = passive_settings(cfg), driver_settings(cfg)
+    velocity_limits = joint_velocity_limits(cfg)
+    armature = armature_settings(cfg)
     paths = {n: joint_paths[n] for n in JOINT_NAMES}
     prims = {n: stage.GetPrimAtPath(str(p)) for n,p in paths.items()}
     if len(set(map(str,paths.values()))) != 8 or not all(p.IsA(UsdPhysics.RevoluteJoint) for p in prims.values()):
@@ -383,6 +430,16 @@ def configure_gripper_physics(stage, joint_paths, cfg):
     if any(a not in ("X","Y","Z") for a in axes.values()):
         raise ValueError("Unsupported native revolute joint axis")
     for name, prim in prims.items():
+        prim.AddAppliedSchema("PhysxJointAPI")
+        # Set zero explicitly when disabled so a reused imported stage cannot
+        # silently retain a previous opt-in. Armature units are kg m^2, not
+        # per-degree coefficients; no angular conversion is appropriate.
+        prim.CreateAttribute("physxJoint:armature", Sdf.ValueTypeNames.Float).Set(
+            armature["joint_armature_kg_m2"][name])
+        # Author explicitly as well as in URDF so reused imported assets obey
+        # the selected limits. USD angular speed uses degrees per second.
+        prim.CreateAttribute("physxJoint:maxJointVelocity", Sdf.ValueTypeNames.Float).Set(
+            math.degrees(velocity_limits[name]))
         prim.RemoveAppliedSchema("NewtonMimicAPI")
         for property_name in list(prim.GetPropertyNames()):
             if property_name.startswith(("newton:mimic", "physxMimicJoint:")):
@@ -454,6 +511,8 @@ def configure_gripper_physics(stage, joint_paths, cfg):
         "model": MODEL, "master_joint": MASTER, "mimic_joints": [DRIVERS[1]],
         "coupling": "Only driver symmetry; all native couplers/followers/spring links are passive",
         "loop_constraints": loops, "passive_spring": {**passive, "torque_cap": "unlimited native spring response"},
+        "joint_max_velocity_rad_s": velocity_limits,
+        **armature,
         "driver_force_distribution": drivers["distribution"],
         "common_mode_drive": drivers["common_mode_drive"],
         "driver_drives": drivers["driver_drives"],
@@ -472,5 +531,5 @@ def configure_gripper_physics(stage, joint_paths, cfg):
             "force_law_scope": "Constitutive PD laws evaluated at identical states, including scalar torque clipping; not an actual implicit-solver torque readback or a bound on future trajectories",
         },
         "structural_collision_filters": filtered, "opposing_sensor_contacts_disabled": False,
-        "solver_transfer": "Native point equality represented by excluded PhysX spherical joints; reference soft-constraint solver parameters and armature not copied",
+        "solver_transfer": "Native point equality represented by excluded PhysX spherical joints; reference soft-constraint solver parameters not copied; joint-space armature selection reported separately",
     }

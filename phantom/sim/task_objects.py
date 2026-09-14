@@ -30,6 +30,10 @@ def object_config(config: dict) -> dict:
                     or not 32 <= resolution <= 512):
                 raise ValueError("Egg sdf_resolution must be an integer from 32 through 512")
     profile_volume = None
+    if "contact_compliance" in obj:
+        from phantom.sim.carton_compliance import compliance_spec
+
+        compliance_spec(obj)
     if "carton_profile" in obj:
         if obj.get("kind") != "carton":
             raise ValueError("carton_profile requires a carton object")

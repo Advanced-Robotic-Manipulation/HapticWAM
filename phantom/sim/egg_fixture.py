@@ -63,6 +63,30 @@ def support_pad_spec(cfg):
     max_compression = _positive(pad["max_compression_m"], "support_pad max compression")
     if max_compression >= thickness/2:
         raise ValueError("support_pad max compression must be less than half its thickness")
+    profile = pad.get("top_profile", {"model": "flat_cylinder_v1"})
+    if not isinstance(profile, dict):
+        raise ValueError("support_pad top_profile must be a mapping")
+    model = profile.get("model")
+    if model not in ("flat_cylinder_v1", "parabolic_mesh_v1"):
+        raise ValueError("Unsupported support_pad top_profile model")
+    if model == "flat_cylinder_v1":
+        if set(profile) != {"model"}:
+            raise ValueError("flat_cylinder_v1 accepts no shape parameters")
+        top_profile = {"model": model, "central_depth_m": 0.}
+    else:
+        if set(profile) - {"model", "central_depth_m", "segments", "radial_bands"}:
+            raise ValueError("Unsupported support_pad top_profile parameter")
+        depth = float(profile.get("central_depth_m", .002))
+        if not np.isfinite(depth) or depth < 0 or depth >= max_compression:
+            raise ValueError("support_pad central depth must be nonnegative and above the internal stop")
+        tessellation = []
+        for key, default, low, high in [("segments", 64, 8, 256), ("radial_bands", 8, 1, 64)]:
+            value = float(profile.get(key, default))
+            if not np.isfinite(value) or value != int(value) or not low <= value <= high:
+                raise ValueError(f"support_pad {key} must be an integer in [{low},{high}]")
+            tessellation.append(int(value))
+        top_profile = {"model": model, "central_depth_m": depth,
+                       "segments": tessellation[0], "radial_bands": tessellation[1]}
     stiffness = _positive(pad["stiffness_n_m"], "support_pad stiffness")
     damping = _positive(pad["damping_n_s_m"], "support_pad damping")
     friction = _positive(pad.get("friction", .55), "support_pad friction")
@@ -79,7 +103,52 @@ def support_pad_spec(cfg):
         "friction": friction, "color": color.tolist(),
         "uncompressed_top_local_z_m": wall+thickness,
         "rigid_floor_local_z_m": wall,
+        "top_profile": top_profile,
+        "uncompressed_center_top_local_z_m": wall+thickness-top_profile["central_depth_m"],
+        "center_clearance_to_stop_m": max_compression-top_profile["central_depth_m"],
     }
+
+
+def support_pad_mesh(spec):
+    """Watertight elliptic pad with an opt-in parabolic depression.
+
+    The rigid visual/collision surface models a preformed support shape, not
+    deforming foam. Zero depth deliberately supplies the same triangle-mesh
+    contact algorithm as a flat control; it does not use the legacy cylinder.
+    The mesh is local to ``center_local_m`` and requires collision ``none``.
+    """
+    profile = spec["top_profile"]
+    if profile["model"] != "parabolic_mesh_v1":
+        raise ValueError("support_pad_mesh requires parabolic_mesh_v1")
+    n, bands = profile["segments"], profile["radial_bands"]
+    rx, ry = np.asarray(spec["footprint_xy_m"])/2
+    thickness, depth = spec["thickness_m"], profile["central_depth_m"]
+    vertices = [[0., 0., thickness/2-depth]]
+    faces = []
+    for band in range(1, bands+1):
+        r = band/bands
+        z = thickness/2-depth*(1-r*r)
+        for i in range(n):
+            a = 2*np.pi*i/n
+            vertices.append([rx*r*np.cos(a), ry*r*np.sin(a), z])
+    for i in range(n):
+        faces.append([0, 1+i, 1+(i+1)%n])
+    for band in range(1, bands):
+        inner, outer = 1+(band-1)*n, 1+band*n
+        for i in range(n):
+            j = (i+1)%n
+            faces.extend([[inner+i, outer+i, outer+j], [inner+i, outer+j, inner+j]])
+    outer, bottom = 1+(bands-1)*n, len(vertices)
+    for i in range(n):
+        a = 2*np.pi*i/n
+        vertices.append([rx*np.cos(a), ry*np.sin(a), -thickness/2])
+    center = len(vertices)
+    vertices.append([0., 0., -thickness/2])
+    for i in range(n):
+        j = (i+1)%n
+        faces.extend([[outer+i, bottom+i, bottom+j],
+                      [outer+i, bottom+j, outer+j], [center, bottom+j, bottom+i]])
+    return np.asarray(vertices), np.asarray(faces, dtype=np.int32)
 
 
 def build_support_pad(stage, cfg, material, collider):
@@ -106,16 +175,29 @@ def build_support_pad(stage, cfg, material, collider):
     compliant.CreateCompliantContactStiffnessAttr(spec["stiffness_n_m"])
     compliant.CreateCompliantContactDampingAttr(spec["damping_n_s_m"])
     compliant.CreateCompliantContactAccelerationSpringAttr(False)
-    pad = UsdGeom.Cylinder.Define(stage, path)
-    pad.CreateRadiusAttr(1.)
-    pad.CreateHeightAttr(spec["thickness_m"])
-    pad.CreateAxisAttr("Z")
+    if spec["top_profile"]["model"] == "flat_cylinder_v1":
+        pad = UsdGeom.Cylinder.Define(stage, path)
+        pad.CreateRadiusAttr(1.)
+        pad.CreateHeightAttr(spec["thickness_m"])
+        pad.CreateAxisAttr("Z")
+    else:
+        points, faces = support_pad_mesh(spec)
+        pad = UsdGeom.Mesh.Define(stage, path)
+        pad.CreatePointsAttr(points.tolist())
+        pad.CreateFaceVertexCountsAttr([3]*len(faces))
+        pad.CreateFaceVertexIndicesAttr(faces.ravel().tolist())
+        pad.CreateSubdivisionSchemeAttr("none")
+        pad.CreateExtentAttr([Gf.Vec3f(*points.min(0)), Gf.Vec3f(*points.max(0))])
+        UsdPhysics.MeshCollisionAPI.Apply(pad.GetPrim()).CreateApproximationAttr("none")
     pad.AddTranslateOp().Set(Gf.Vec3d(*spec["center_local_m"]))
-    pad.AddScaleOp().Set(Gf.Vec3f(spec["footprint_xy_m"][0]/2,
-                                   spec["footprint_xy_m"][1]/2, 1.))
+    if spec["top_profile"]["model"] == "flat_cylinder_v1":
+        pad.AddScaleOp().Set(Gf.Vec3f(spec["footprint_xy_m"][0]/2,
+                                       spec["footprint_xy_m"][1]/2, 1.))
     UsdShade.MaterialBindingAPI.Apply(pad.GetPrim()).Bind(appearance)
     collider(pad.GetPrim(), contact)
     pad.GetPrim().SetCustomDataByKey("support_model", "uncalibrated force-based compliant contact; static visual; internal stop bounds compression")
+    pad.GetPrim().SetCustomDataByKey("support_top_profile", spec["top_profile"]["model"])
+    pad.GetPrim().SetCustomDataByKey("center_clearance_to_stop_m", spec["center_clearance_to_stop_m"])
     hard = UsdShade.Material.Define(stage, "/World/Looks/EggSourceSupportPadStopContact")
     hard_physics = UsdPhysics.MaterialAPI.Apply(hard.GetPrim())
     hard_physics.CreateStaticFrictionAttr(spec["friction"])

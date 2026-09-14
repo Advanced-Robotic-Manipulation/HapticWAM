@@ -88,9 +88,26 @@ def runtime_readback(stage, articulation_root, joint_paths, robot, names, indice
         return {key: getattr(action, key, None) for key in
                 ("joint_indices", "joint_positions", "joint_velocities", "joint_efforts")}
 
+    def armatures():
+        # Read the solver's additive joint inertia, not the authored USD value.
+        # A missing/invalid tensor getter stays unavailable; never substitute
+        # zero or a configured armature and label it a native measurement.
+        values = robot._articulation_view._physics_view.get_dof_armatures()
+        if hasattr(values, "detach"):
+            values = values.detach().cpu().numpy()
+        values = np.asarray(values)
+        if values.ndim != 2 or values.shape[0] != 1:
+            raise RuntimeError("Expected one articulation in native armature readback")
+        if len(names) != len(indices):
+            raise RuntimeError("Armature joint names and indices must match")
+        selected = values[0, indices]
+        if not np.isfinite(selected).all() or (selected < 0).any():
+            raise RuntimeError("Native armature must be finite and nonnegative")
+        return dict(zip(names, selected))
+
     return {
         "read_only": True,
-        "units": "USD angular positions/limits/velocities use degrees; USD angular gains are per degree. Live DOF positions/velocities/gains use radians. Force drive limits are N m.",
+        "units": "USD angular positions/limits/velocities use degrees; USD angular gains are per degree. Live DOF positions/velocities/gains use radians. Force drive limits are N m. USD and live revolute armature use kg m^2 directly.",
         "usd_articulation": _prim_attributes(stage.GetPrimAtPath(articulation_root), ("physxArticulation:",)),
         "usd_physics_scenes": {str(p.GetPath()): _prim_attributes(p, ("physxScene:", "physics:"))
                                for p in stage.Traverse() if p.GetTypeName() == "PhysicsScene"},
@@ -99,6 +116,7 @@ def runtime_readback(stage, articulation_root, joint_paths, robot, names, indice
             "position_iterations": read_diagnostic(lambda: robot.get_solver_position_iteration_count()),
             "velocity_iterations": read_diagnostic(lambda: robot.get_solver_velocity_iteration_count()),
             "dof_properties": read_diagnostic(properties),
+            "armatures_kg_m2": read_diagnostic(armatures),
             "controller_gains": read_diagnostic(lambda: robot.get_articulation_controller().get_gains()),
             "applied_action_all_dofs": read_diagnostic(applied_action),
             "measured_joint_efforts_nm": read_diagnostic(lambda: robot.get_measured_joint_efforts(joint_indices=indices)),

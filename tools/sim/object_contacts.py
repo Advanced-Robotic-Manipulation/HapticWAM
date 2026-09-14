@@ -19,6 +19,10 @@ on the conservative point fallback until patch contiguity is validated.
 """
     if obj.get("kind") == "egg" and obj.get("collision_approximation", "convexHull") != "convexHull":
         return ()
+    if obj.get("contact_compliance") is not None:
+        # Soft outer envelope plus inset core are separate native manifolds.
+        # A single rigid body is insufficient to justify one pressure patch.
+        return ()
     return (str(object_path),)
 
 

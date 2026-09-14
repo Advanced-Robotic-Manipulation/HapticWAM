@@ -423,3 +423,139 @@ def test_bad_settings_fail_explicitly(cfg):
     cfg['gripper']['articulation']['angle_at_touch_rad']=.8
     cfg['gripper']['articulation']['native_passive']={'spring_damping_nm_s_rad':-.1}
     with pytest.raises(ValueError):native.drive_targets(.5,cfg)
+
+
+def test_passive_speed_opt_in_changes_only_six_speed_limits(cfg):
+    original, default_meta = build(cfg)
+    explicit = copy.deepcopy(cfg)
+    explicit['gripper']['articulation']['passive_max_velocity_rad_s'] = 2.
+    assert ET.tostring(build(explicit)[0]) == ET.tostring(original)
+    assert set(default_meta['joint_max_velocity_rad_s'].values()) == {2.}
+
+    candidate = copy.deepcopy(cfg)
+    candidate['gripper']['articulation']['passive_max_velocity_rad_s'] = 20.
+    changed, metadata = build(candidate)
+    for joint in changed.findall("joint[@type='revolute']"):
+        name = joint.get('name')
+        expected = 2. if name in native.DRIVERS else 20.
+        assert float(joint.find('limit').get('velocity')) == expected
+        assert metadata['joint_max_velocity_rad_s'][name] == expected
+        joint.find('limit').set('velocity', '2.0')
+    assert ET.tostring(changed) == ET.tostring(original)
+    for closure in [0., .2, .5, 1.]:
+        np.testing.assert_array_equal(native.drive_targets(closure, candidate), native.drive_targets(closure, cfg))
+        np.testing.assert_array_equal(native.joint_targets(closure, candidate), native.joint_targets(closure, cfg))
+
+
+@pytest.mark.parametrize('bad', [0., -1., float('nan'), float('inf'), float('-inf')])
+def test_invalid_passive_speed_rejected_before_scene_creation(cfg, bad):
+    cfg['gripper']['articulation']['passive_max_velocity_rad_s'] = bad
+    with pytest.raises(ValueError, match='passive_max_velocity_rad_s'):
+        build(cfg)
+
+
+def test_usd_passive_speed_reconfiguration_keeps_all_other_physics(cfg):
+    stage, paths = usd_stage(cfg)
+    original = native.configure_gripper_physics(stage, paths, cfg)
+    before = stage.GetRootLayer().ExportToString()
+    cfg['gripper']['articulation']['passive_max_velocity_rad_s'] = 20.
+    candidate = native.configure_gripper_physics(stage, paths, cfg)
+    for name, path in paths.items():
+        speed = stage.GetPrimAtPath(path).GetAttribute('physxJoint:maxJointVelocity')
+        expected = 2. if name in native.DRIVERS else 20.
+        assert speed.Get() == pytest.approx(math.degrees(expected))
+        speed.Set(math.degrees(2.))
+    assert stage.GetRootLayer().ExportToString() == before
+    candidate.pop('joint_max_velocity_rad_s')
+    original.pop('joint_max_velocity_rad_s')
+    assert candidate == original
+
+
+def test_pinned_armature_matches_reference_without_changing_rigid_body_model(cfg):
+    original_cfg = copy.deepcopy(cfg)
+    original, original_meta = build(cfg)
+    candidate = copy.deepcopy(cfg)
+    candidate['gripper']['articulation']['armature_model'] = 'pinned_mjcf_v1'
+    changed, metadata = build(candidate)
+    reference = ET.parse(native._verify_reference(REPO)).getroot()
+    classes = {
+        **dict.fromkeys(native.DRIVERS, 'driver'),
+        **dict.fromkeys(native.SPRINGS, 'spring_link'),
+        **dict.fromkeys(native.FOLLOWERS, 'follower'),
+        **dict.fromkeys(native.COUPLERS, 'coupler'),
+    }
+    expected = {
+        name: float(reference.find(f".//default[@class='{kind}']/joint").get('armature'))
+        for name, kind in classes.items()
+    }
+    assert metadata['armature_model'] == 'pinned_mjcf_v1'
+    assert metadata['joint_armature_kg_m2'] == expected
+    assert metadata['armature_transfer']['source_reference_sha256'] == native.REFERENCE_SHA256
+    assert set(original_meta['joint_armature_kg_m2'].values()) == {0.}
+    # Armature is authored after URDF import. All link/sensor masses, COMs,
+    # inertias, joint limits, speeds, poses and topology stay byte-identical.
+    assert ET.tostring(changed) == ET.tostring(original)
+    for closure in [0., .2, .5, 1.]:
+        np.testing.assert_array_equal(native.drive_targets(closure, candidate), native.drive_targets(closure, cfg))
+        np.testing.assert_array_equal(native.joint_targets(closure, candidate), native.joint_targets(closure, cfg))
+    assert native.driver_settings(candidate) == native.driver_settings(cfg)
+    assert native.passive_settings(candidate) == native.passive_settings(cfg)
+    assert native.joint_velocity_limits(candidate) == dict.fromkeys(native.JOINT_NAMES, 2.)
+    assert cfg == original_cfg
+
+
+def test_armature_default_is_zero_and_explicit_none_is_identical(cfg):
+    original, original_meta = build(cfg)
+    stage, paths = usd_stage(cfg)
+    metadata = native.configure_gripper_physics(stage, paths, cfg)
+    before = stage.GetRootLayer().ExportToString()
+    for path in paths.values():
+        prim = stage.GetPrimAtPath(path)
+        assert 'PhysxJointAPI' in prim.GetMetadata('apiSchemas').GetAppliedItems()
+        value = prim.GetAttribute('physxJoint:armature')
+        assert value.HasAuthoredValueOpinion()
+        assert value.Get() == 0.
+    cfg['gripper']['articulation']['armature_model'] = 'none'
+    explicit, explicit_meta = build(cfg)
+    assert ET.tostring(explicit) == ET.tostring(original)
+    assert explicit_meta == original_meta
+    assert native.configure_gripper_physics(stage, paths, cfg) == metadata
+    assert stage.GetRootLayer().ExportToString() == before
+
+
+def test_usd_armature_changes_only_eight_values_and_resets_reused_stage(cfg):
+    stage, paths = usd_stage(cfg)
+    original_meta = native.configure_gripper_physics(stage, paths, cfg)
+    before = stage.GetRootLayer().ExportToString()
+    cfg['gripper']['articulation']['armature_model'] = 'pinned_mjcf_v1'
+    candidate_meta = native.configure_gripper_physics(stage, paths, cfg)
+    for name, path in paths.items():
+        prim = stage.GetPrimAtPath(path)
+        assert 'PhysxJointAPI' in prim.GetMetadata('apiSchemas').GetAppliedItems()
+        value = prim.GetAttribute('physxJoint:armature')
+        # kg m^2 is direct in USD. A radians/degrees conversion must fail.
+        assert value.Get() == pytest.approx(.005 if name in native.DRIVERS else .001)
+        value.Set(0.)
+    assert stage.GetRootLayer().ExportToString() == before
+    for key in ('armature_model', 'joint_armature_kg_m2', 'armature_transfer'):
+        candidate_meta.pop(key)
+        original_meta.pop(key)
+    assert candidate_meta == original_meta
+    # Apply the candidate again, then remove the config key: a previously
+    # imported/configured asset must not leak nonzero armature into defaults.
+    native.configure_gripper_physics(stage, paths, cfg)
+    cfg['gripper']['articulation'].pop('armature_model')
+    native.configure_gripper_physics(stage, paths, cfg)
+    assert stage.GetRootLayer().ExportToString() == before
+
+
+@pytest.mark.parametrize('bad', ['native', 'pinned_mjcf', '', None, 0, False, [], {}])
+def test_unknown_armature_model_fails_before_authoring(cfg, bad):
+    stage, paths = usd_stage(cfg)
+    before = stage.GetRootLayer().ExportToString()
+    cfg['gripper']['articulation']['armature_model'] = bad
+    with pytest.raises(ValueError, match='armature_model'):
+        build(cfg)
+    with pytest.raises(ValueError, match='armature_model'):
+        native.configure_gripper_physics(stage, paths, cfg)
+    assert stage.GetRootLayer().ExportToString() == before

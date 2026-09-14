@@ -2165,7 +2165,8 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                 trace["frame_t"].append(t)
                 trace["physics_t"].append(world.current_time - physics_origin)
                 trace["q"].append(actual[ids].copy())
-                trace["qd"].append(robot.get_joint_velocities()[ids].copy())
+                actual_velocity = robot.get_joint_velocities()
+                trace["qd"].append(actual_velocity[ids].copy())
                 trace["tcp"].append(tcp_measured(actual[ids]))
                 trace["tcp_nominal_fk"].append(forward_pose(actual[ids]))
                 trace["target_q"].append(desired[ids].copy())
@@ -2176,6 +2177,10 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                 measured_closure = finger_closure(actual[fingers])
                 target_closure = finger_closure(desired[fingers])
                 trace.setdefault("finger_q", []).append(actual[fingers].copy())
+                # Native velocity at this same camera sample supports loaded
+                # drive diagnostics without differencing sparsely saved q.
+                # This is state telemetry, not an actuator-torque measurement.
+                trace.setdefault("finger_qd", []).append(actual_velocity[fingers].copy())
                 trace.setdefault("target_finger_q", []).append(desired[fingers].copy())
                 status = measured_gripper_status(
                     measured_closure,
@@ -2350,6 +2355,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
         "gripper_articulation": paths["gripper_articulation"],
         "finger_joint_names": list(finger_names),
         "finger_joint_units": "radians" if articulated_gripper else "metres",
+        "finger_velocity_trace": "Native joint velocity sampled alongside finger_q at camera rate; radians/s for articulated grippers, metres/s for sliders. No implicit actuator torque is inferred or reported by this field.",
         "gripper_feedback_source": "measured master joint angle" if articulated_gripper else "mean of two measured sliders",
         "finger_target_semantics": (
             "Direct replay: nominal eight-joint kinematic pose, not measured passive angles"

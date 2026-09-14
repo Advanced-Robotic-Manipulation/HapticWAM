@@ -20,7 +20,7 @@ while (($#)); do
 Usage: launch_task_scene.sh --task carton|egg --episode PREPARED --output OUTPUT [runner options]
 
 Selects the reviewed clean teleoperation fit scene and runs Isaac headless.
-Carton uses carton_teleop_side_profile_fit.json (full 250 ml; wider folded body).
+Carton uses carton_teleop_compliant_fit.json (full 250 ml; folded compliant body).
 Egg uses egg_teleop_supported_fit.json (compound egg; compliant source insert).
 Both use common motor K48/D0.32 with the unchanged total torque limit.
 These are reconstruction diagnostics; contact/task transfer remains unqualified.
@@ -34,7 +34,7 @@ EOF
   esac
 done
 case "$TASK" in
-  carton) SCENE_CONFIG="carton_teleop_side_profile_fit.json" ;;
+  carton) SCENE_CONFIG="carton_teleop_compliant_fit.json" ;;
   egg) SCENE_CONFIG="egg_teleop_supported_fit.json" ;;
   *) echo "A supported --task is required: carton or egg" >&2; exit 2 ;;
 esac

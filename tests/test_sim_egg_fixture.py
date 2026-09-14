@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from phantom.sim.egg_fixture import cup_shell_mesh, tray_web_mesh, support_pad_spec
+from phantom.sim.egg_fixture import cup_shell_mesh, tray_web_mesh, support_pad_spec, support_pad_mesh
 from tools.sim.object_support import PacketSupportViews
 from tools.sim.robot_environment_contacts import _validate_paths
 
@@ -153,3 +153,59 @@ def test_invalid_support_pad_cannot_fill_cavity_or_hide_uncertain_physics(field,
     cfg["support_pad"][field] = value
     with pytest.raises(ValueError, match=match):
         support_pad_spec(cfg)
+
+
+@pytest.mark.parametrize("depth", [0., .002])
+def test_opt_in_parabolic_pad_has_real_cavity_shared_watertight_geometry(depth):
+    cfg = _support_cfg()
+    cfg['support_pad']['thickness_m'] = .022
+    cfg['support_pad']['top_profile'] = {'model': 'parabolic_mesh_v1', 'central_depth_m': depth}
+    spec = support_pad_spec(cfg)
+    vertices, faces = support_pad_mesh(spec)
+    assert spec['center_clearance_to_stop_m'] == pytest.approx(.005-depth)
+    assert spec['uncompressed_center_top_local_z_m'] == pytest.approx(.0235-depth)
+    edges = {}
+    for face in faces:
+        for a,b in zip(face,np.roll(face,-1)):
+            edges.setdefault(tuple(sorted((a,b))),[]).append((a,b))
+    assert all(len(e)==2 and e[0]==e[1][::-1] for e in edges.values())
+    assert max(_vertical_intersections(vertices,faces,[0.,0.])) == pytest.approx(.011-depth)
+    assert max(_vertical_intersections(vertices,faces,[.005,0.])) == pytest.approx(.011-.75*depth)
+    triangles=vertices[faces]
+    cross=np.cross(triangles[:,1]-triangles[:,0],triangles[:,2]-triangles[:,0])
+    assert np.linalg.norm(cross,axis=1).min()>1e-10
+    volume=np.einsum('ij,ij->i',triangles[:,0],np.cross(triangles[:,1],triangles[:,2])).sum()/6
+    assert volume>0
+    assert np.all(vertices[:,:2].min(0)==pytest.approx([-.010,-.009]))
+    assert np.all(vertices[:,:2].max(0)==pytest.approx([.010,.009]))
+    if depth:
+        # Convexification must not be used: it would fill this physical2mm dip.
+        rim=vertices[1+7*64:1+8*64]
+        assert np.allclose(rim[:,2]-vertices[0,2],depth)
+
+
+@pytest.mark.parametrize("profile,match", [
+    ({'model':'parabolic_mesh_v1','central_depth_m':.005},'internal stop'),
+    ({'model':'parabolic_mesh_v1','central_depth_m':-.001},'nonnegative'),
+    ({'model':'parabolic_mesh_v1','central_depth_m':float('nan')},'nonnegative'),
+    ({'model':'parabolic_mesh_v1','segments':7},'segments'),
+    ({'model':'parabolic_mesh_v1','segments':64.5},'segments'),
+    ({'model':'parabolic_mesh_v1','radial_bands':0},'radial_bands'),
+    ({'model':'parabolic_mesh_v1','adhesion':True},'parameter'),
+    ({'model':'flat_cylinder_v1','central_depth_m':.002},'no shape'),
+    ({'model':'convex_hull'},'Unsupported'),
+    ('parabolic_mesh_v1','mapping'),
+])
+def test_pad_profile_cannot_silently_fill_cavity_or_hide_bottoming(profile,match):
+    cfg=_support_cfg();cfg['support_pad']['top_profile']=profile
+    with pytest.raises(ValueError,match=match):
+        support_pad_spec(cfg)
+
+
+def test_absent_profile_preserves_old_flat_pad_without_mesh_conversion():
+    spec=support_pad_spec(_support_cfg())
+    assert spec['top_profile']['model']=='flat_cylinder_v1'
+    assert spec['uncompressed_center_top_local_z_m']==spec['uncompressed_top_local_z_m']
+    assert spec['center_clearance_to_stop_m']==spec['max_compression_m']
+    with pytest.raises(ValueError,match='requires'):
+        support_pad_mesh(spec)

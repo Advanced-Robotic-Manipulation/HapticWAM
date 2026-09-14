@@ -71,6 +71,11 @@ def build_task_object(stage, repo, path, obj, material, box, collider, physics):
     if "carton_profile" in obj:
         from phantom.sim.carton_geometry import carton_face_uv, carton_mesh
 
+        if obj.get("contact_compliance") is not None:
+            from phantom.sim.carton_compliance import build_bounded_core
+
+            physics = build_bounded_core(stage, path, obj, collider)
+
         points, triangles, face_labels = carton_mesh(size, obj["carton_profile"])
         mesh = UsdGeom.Mesh.Define(stage, path + "/Body")
         mesh.CreatePointsAttr(points.tolist())

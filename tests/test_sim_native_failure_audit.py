@@ -79,6 +79,43 @@ def test_runtime_readback_preserves_stage_and_names_effective_joint_limits(missi
     json.dumps(report, allow_nan=False)
 
 
+@pytest.mark.parametrize("bad", [None, "getter", "nonfinite", "negative", "multiple_articulations"])
+def test_armature_readback_uses_named_native_values_without_usd_fallback(bad):
+    from pxr import Sdf, Usd, UsdPhysics
+
+    stage = Usd.Stage.CreateInMemory()
+    stage.DefinePrim("/Robot", "Xform")
+    names, indices = ["passive", "motor"], np.array([3, 1])
+    paths = {}
+    for name in names:
+        prim = UsdPhysics.RevoluteJoint.Define(stage, "/Robot/" + name).GetPrim()
+        paths[name] = str(prim.GetPath())
+        prim.CreateAttribute("physxJoint:armature", Sdf.ValueTypeNames.Float).Set(99.)
+    values = np.array([[0., .005, 0., .001]])
+    if bad == "nonfinite":
+        values[0, 3] = np.nan
+    elif bad == "negative":
+        values[0, 3] = -.001
+    elif bad == "multiple_articulations":
+        values = np.repeat(values, 2, axis=0)
+    def getter():
+        if bad == "getter":
+            raise RuntimeError("native getter unavailable")
+        return values
+    robot = SimpleNamespace(_articulation_view=SimpleNamespace(
+        _physics_view=SimpleNamespace(get_dof_armatures=getter)))
+    before = stage.GetRootLayer().ExportToString()
+    report = runtime_readback(stage, "/Robot", paths, robot, names, indices)
+    assert stage.GetRootLayer().ExportToString() == before
+    armature = report["live_readbacks"]["armatures_kg_m2"]
+    if bad is None:
+        assert armature == {"available": True, "value": {"passive": .001, "motor": .005}}
+    else:
+        assert armature["available"] is False
+        assert "value" not in armature
+    json.dumps(report, allow_nan=False)
+
+
 @pytest.mark.parametrize("velocity_error", [False, True])
 def test_runner_preserves_mechanical_gate_when_readbacks_or_contacts_fail(tmp_path, monkeypatch, velocity_error):
     from phantom.sim import gripper_adaptive
