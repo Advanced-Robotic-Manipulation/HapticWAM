@@ -7,12 +7,19 @@ from phantom.sim.scripted_expert import ExpertParams, ScriptedExpertPolicy, PHAS
 NO_JITTER = dict(rot_jitter_rad=0.0, place_jitter_m=0.0, z_place_jitter_m=0.0)
 
 
-def drive(policy, tcp0, seconds=60.0, dt=0.2):
-    """Idealised executor: apply the first dt worth of each plan, then replan."""
+def drive(policy, tcp0, seconds=60.0, dt=0.2, held=None):
+    """Idealised executor: apply the first dt worth of each plan, then replan.
+
+    `held` = a dict {"z": ...} the test's object-pose function reads: while the expert holds
+    the object (settle..place_descend) the object hangs 3.5 cm below the TCP, so the
+    touchdown release only fires at the real place height (a fixed object would look
+    like a dropped one)."""
     p = policy.p
     rate = p.action_rate_hz
     tcp = np.array(tcp0, dtype=float); t = 0.0; trace = []
     while t < seconds and policy.phase != "done":
+        if held is not None and policy.phase in ("settle", "lift", "carry", "place_descend"):
+            held["xyz"] = np.array([tcp[0], tcp[1], tcp[2] - 0.035])
         plan = policy.replan(SimpleNamespace(t=t), None, tcp)
         assert plan.actions.shape == (p.horizon, 7) and np.isfinite(plan.actions).all()
         assert np.all(np.linalg.norm(plan.actions[:, :3], axis=1) <= p.v_travel / rate + 1e-9)   # per-step speed cap
@@ -29,8 +36,9 @@ def drive(policy, tcp0, seconds=60.0, dt=0.2):
 def test_expert_runs_through_all_phases_and_places_in_the_bin():
     packet = np.array([-0.399, -0.273, 0.0355])
     bin_xy = np.array([-0.3905, 0.0649])
-    pol = ScriptedExpertPolicy(lambda: packet, bin_xy, ExpertParams(**NO_JITTER))
-    trace = drive(pol, [-0.386, -0.315, 0.351, -1.02, -1.86, 1.54])
+    held = {"xyz": packet.copy()}
+    pol = ScriptedExpertPolicy(lambda: held["xyz"], bin_xy, ExpertParams(**NO_JITTER))
+    trace = drive(pol, [-0.386, -0.315, 0.351, -1.02, -1.86, 1.54], held=held)
     phases = [ph for _, ph, _, _, _ in trace]
     assert pol.phase == "done"
     assert all(p in PHASES for p in phases) and phases.index("close") < phases.index("lift") < phases.index("open")
@@ -96,3 +104,20 @@ def test_deliberate_miss_reopens_and_regrasps_on_target():
     miss_events = [e for e in pol.events if e["event"] == "miss"]
     assert len(miss_events) == 1
     assert phases.index("regrasp_open") < phases.index("carry")
+
+
+def test_touchdown_release_opens_when_the_object_stops_following():
+    packet = np.array([-0.399, -0.273, 0.0355]); bin_xy = np.array([-0.3905, 0.0649])
+    obj = {"z": 0.20}
+    pol = ScriptedExpertPolicy(lambda: np.array([bin_xy[0], bin_xy[1] - 0.015, obj["z"]]), bin_xy,
+                               ExpertParams(**NO_JITTER, z_place_m=0.05))
+    pol.phase, pol.phase_t0, pol.grasp_xyz = "place_descend", 0.0, packet.copy()
+    tcp = np.array([bin_xy[0], bin_xy[1] - 0.015, 0.25, *pol.p.rot_release]); t = 0.0
+    opened_at = None
+    while t < 10 and pol.phase in ("place_descend",):
+        plan = pol.replan(SimpleNamespace(t=t), None, tcp)
+        tcp[:6] += plan.actions[:2, :6].sum(axis=0); t += 0.2
+        # the object hangs 5 cm below the TCP until it meets a support at z 0.12
+        obj["z"] = max(0.12, tcp[2] - 0.05)
+    assert pol.phase == "open" and tcp[2] > 0.15, (pol.phase, tcp[2])   # opened well above the 0.05 target
+    assert any(e["event"] == "touchdown" for e in pol.events)

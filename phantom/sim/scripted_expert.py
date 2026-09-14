@@ -68,6 +68,14 @@ class ExpertParams:
     # on target. (0, 0) = no deliberate miss.
     miss_offset_xy_m: tuple[float, float] = (0.0, 0.0)
     miss_lift_check_m: float = 0.01     # object must have risen this much by the end of the lift
+    # touchdown release: during the place descent, open as soon as the object has stopped
+    # descending (it is supported) while the TCP still moves down — before the target height
+    # if the support comes early. Egg lane 2026-09-14: descending to a fixed height pressed
+    # the egg onto the holder ring (20 N, mechanics stop); a fixed height 1.5 cm higher
+    # bounced it off. Real rig 09-12: the in-box wrench stops were the same thing.
+    touchdown_release: bool = True
+    touchdown_tcp_travel_m: float = 0.006   # TCP descent over which the object must not follow
+    touchdown_object_tol_m: float = 0.0015
 
 
 PHASES = ("pregrasp", "descend", "close", "settle", "lift", "regrasp_open", "carry", "place_descend", "open", "retreat", "done")
@@ -144,6 +152,7 @@ class ScriptedExpertPolicy:
         self.events = []
         self.attempt = 1
         self.packet_z_at_close = None
+        self._td_ref = None                 # (tcp_z, packet_z) reference for the touchdown check
         self._aim_offset = np.asarray(self.p.miss_offset_xy_m, dtype=float)
 
     def remote_reset(self, seed=None):
@@ -274,8 +283,21 @@ class ScriptedExpertPolicy:
             self._advance(t, "pregrasp")
         elif self.phase == "carry" and pos_ok:
             self._advance(t, "place_descend")
-        elif self.phase == "place_descend" and pos_ok:
-            self._advance(t, "open")
+        elif self.phase == "place_descend":
+            touched = False
+            if p.touchdown_release and self.phase_t0 is not None and el > 0.3:
+                if self._td_ref is None:
+                    self._td_ref = (float(tcp[2]), float(packet[2]))
+                tcp_drop = self._td_ref[0] - float(tcp[2]); obj_drop = self._td_ref[1] - float(packet[2])
+                if tcp_drop >= p.touchdown_tcp_travel_m:
+                    touched = obj_drop < tcp_drop - p.touchdown_tcp_travel_m + p.touchdown_object_tol_m and \
+                        (obj_drop < p.touchdown_object_tol_m or obj_drop < 0.5 * tcp_drop)
+                    if not touched:
+                        self._td_ref = (float(tcp[2]), float(packet[2]))   # slide the window
+            if pos_ok or touched:
+                if touched:
+                    self._event(t, "touchdown", tcp_z=float(tcp[2]), packet_z=float(packet[2]))
+                self._advance(t, "open")
         elif self.phase == "open" and el >= p.open_s + p.hold_after_open_s:
             self._advance(t, "retreat")
         elif self.phase == "retreat" and pos_ok:
