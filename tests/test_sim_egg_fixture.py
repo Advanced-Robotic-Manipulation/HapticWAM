@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from phantom.sim.egg_fixture import cup_shell_mesh, tray_web_mesh
+from phantom.sim.egg_fixture import cup_shell_mesh, tray_web_mesh, support_pad_spec
 from tools.sim.object_support import PacketSupportViews
 from tools.sim.robot_environment_contacts import _validate_paths
 
@@ -102,3 +102,54 @@ def test_new_object_and_fixture_contact_paths_remain_exact(object_path):
             _validate_paths([actor], [bad])
         with pytest.raises(ValueError):
             PacketSupportViews(object_path, [bad], [actor], rigid_prim_cls=capture)
+
+
+def _support_cfg():
+    return {
+        "columns": 2, "rows": 5, "cell_pitch_xy": [.055, .048],
+        "cup_bottom_radius_m": .012, "wall_thickness_m": .0015,
+        "height_m": .032,
+        "support_pad": {"cell": [1, 3], "footprint_xy_m": [.020, .018],
+                        "thickness_m": .020, "max_compression_m": .005, "stiffness_n_m": 300.,
+                        "damping_n_s_m": 5.},
+    }
+
+
+def test_support_pad_is_local_to_one_cavity_with_known_rest_surface():
+    cfg = _support_cfg()
+    spec = support_pad_spec(cfg)
+    assert spec["cell"] == [1, 3]
+    assert spec["center_local_m"] == pytest.approx([.0275, .048, .0115])
+    assert spec["uncompressed_top_local_z_m"] == pytest.approx(.0215)
+    assert spec["rigid_floor_local_z_m"] == pytest.approx(.0015)
+    assert spec["bottoming_top_local_z_m"] == pytest.approx(.0165)
+    assert spec["uncompressed_top_local_z_m"] - spec["rigid_floor_local_z_m"] == pytest.approx(.020)
+    # Sample the complete footprint against every side of the exact48-gon floor.
+    angle = np.arange(1024)*2*np.pi/1024
+    ellipse = np.c_[np.cos(angle)*.010, np.sin(angle)*.009]
+    normals = np.c_[np.cos((np.arange(48)+.5)*2*np.pi/48),
+                    np.sin((np.arange(48)+.5)*2*np.pi/48)]
+    assert np.max(ellipse @ normals.T) < .012*np.cos(np.pi/48)
+    path = "/World/EggFixture/Tray/Cell_1_3/SupportPad"
+    assert _validate_paths(["/World/Robot/left_pad"], [path])[1] == [path]
+    assert support_pad_spec({}) is None
+    assert support_pad_spec({"support_pad": {"enabled": False}}) is None
+
+
+@pytest.mark.parametrize("field,value,match", [
+    ("cell", [1, 5], "valid"), ("cell", [.5, 3], "valid"),
+    ("cell", [1, float("nan")], "valid"),
+    ("footprint_xy_m", [.024, .018], "polygonal"),
+    ("footprint_xy_m", [.020, 0.], "polygonal"),
+    ("thickness_m", .031, "rim"), ("thickness_m", -.001, "positive"),
+    ("max_compression_m", .010, "half"),
+    ("stiffness_n_m", 0., "positive"),
+    ("damping_n_s_m", float("inf"), "positive"),
+    ("color", [1., -.1, .5], "color"),
+    ("model", "attached_egg", "Unsupported"),
+])
+def test_invalid_support_pad_cannot_fill_cavity_or_hide_uncertain_physics(field, value, match):
+    cfg = _support_cfg()
+    cfg["support_pad"][field] = value
+    with pytest.raises(ValueError, match=match):
+        support_pad_spec(cfg)

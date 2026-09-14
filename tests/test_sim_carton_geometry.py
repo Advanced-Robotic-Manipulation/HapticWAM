@@ -49,6 +49,37 @@ def test_profile_print_coordinates_follow_historical_face_orientation():
     assert np.isfinite(carton_face_uv(p,size,'top')).all()
 
 
+def test_octagonal_side_profile_preserves_end_widths_without_xy_corner_cuts():
+    # Side silhouette has eight corners, with a long flat body and two bevels.
+    # The horizontal cross-sections remain rectangles, not octagons.
+    size = np.array([.050, .045, .130])
+    p = {'model': 'rectangular_sections_v1',
+         'sections': [[-.5,.92,1],[-.4,1,1],[.4,1,1],[.5,.92,1]]}
+    v, f, labels = carton_mesh(size, p)
+    assert v.shape == (16,3)
+    np.testing.assert_allclose(np.ptp(v[:4],axis=0), [.046,.045,0])
+    np.testing.assert_allclose(np.ptp(v[4:8],axis=0), [.050,.045,0])
+    np.testing.assert_allclose(np.ptp(v[-4:],axis=0), [.046,.045,0])
+    # Two trapezoidal bevel bands plus the constant rectangular body.
+    expected = .045 * (.050*.104 + (.046+.050)/2*.026)
+    assert carton_envelope_volume(size,p) == pytest.approx(expected,rel=1e-12)
+    triangles = v[f]
+    assert (np.linalg.norm(np.cross(triangles[:,1]-triangles[:,0],
+                                   triangles[:,2]-triangles[:,0]),axis=1) > 0).all()
+    edges = Counter((int(a),int(b)) for face in f for a,b in zip(face,np.roll(face,-1)))
+    assert all(count == 1 and edges[(b,a)] == 1 for (a,b),count in edges.items())
+    assert len(labels) == len(f)
+    object_config({'object': {'kind':'carton','size':size.tolist(),'mass':.27,
+                             'nominal_capacity_ml':250,'carton_profile':p}})
+
+
+def test_rectangular_section_model_rejects_implicit_horizontal_chamfers():
+    with pytest.raises(ValueError,match='zero XY'):
+        carton_mesh([.05,.045,.13],
+                    {'model':'rectangular_sections_v1','corner_cut_xy_m':[.002,.002],
+                     'sections':[[-.5,1,1],[.5,1,1]]})
+
+
 @pytest.mark.parametrize('sections',[[[-.4,1,1],[.5,1,1]],[[-.5,.9,.9],[.5,.9,.9]],
                                      [[-.5,1,1],[.5,1.1,1]], [[-.5,1,1],[-.5,1,1]]])
 def test_profile_rejects_invalid_sections(sections):

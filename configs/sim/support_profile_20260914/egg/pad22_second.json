@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.00025,
+    "render_hz": 15,
+    "solver_position_iterations": 128,
+    "solver_velocity_iterations": 8,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.1,
+      -0.037500000000000006
+    ],
+    "size": [
+      1.7,
+      1.2,
+      0.05
+    ],
+    "hole_pitch": 0.05,
+    "hole_radius": 0.0055,
+    "top_z": -0.0125,
+    "friction": 0.55,
+    "grid_origin_xy": [
+      -0.9644390170881325,
+      0.5216767944318121
+    ],
+    "grid_yaw": -0.016781155522956927
+  },
+  "mat": {
+    "center": [
+      -0.3611269425491768,
+      -0.03755130517942312,
+      -0.011
+    ],
+    "size": [
+      0.4,
+      0.7,
+      0.003
+    ],
+    "grid_pitch": 0.085,
+    "friction": 0.7,
+    "frame_model": "local_planar",
+    "yaw": -0.014660951110025437,
+    "grid_origin_xy": [
+      -0.12405198767163338,
+      0.280732040389427
+    ]
+  },
+  "bin": {
+    "center": [
+      -0.39052377006030875,
+      0.06490764411969535,
+      -0.009500000000000001
+    ],
+    "friction": 0.4,
+    "geometry_model": "rectangular_envelope",
+    "outer_size": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "opening_size": [
+      0.36,
+      0.26
+    ],
+    "floor_thickness": 0.004,
+    "yaw": -0.012089355098796523,
+    "enabled": false
+  },
+  "gripper": {
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.0017016676138155162,
+      0.038595568388700485,
+      0.04787348955869675
+    ],
+    "pad_friction": 1.0,
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": 0.0,
+    "geometry_source": "Supplier W2L CAD; root and axial sensor mounting registered to precontact teleop metal caps and white sensor walls. Installed dimensions and motor/contact response remain image-estimated.",
+    "contact_shape": "ellipse",
+    "model": "robotiq_2f85_w2l_adaptive_v2",
+    "gel_geometry": {
+      "pad_thickness_m": 0.0017023373024049053,
+      "active_size_yz_m": [
+        0.027,
+        0.036
+      ],
+      "active_center_yz_m": [
+        0.0,
+        0.0
+      ],
+      "inner_face_tolerance_m": 0.0003
+    },
+    "articulation": {
+      "angle_at_touch_rad": 0.8,
+      "bare_gripper_mass_kg": 0.925,
+      "drive_stiffness_nm_rad": 48.0,
+      "drive_damping_nm_s_rad": 0.32,
+      "drive_max_torque_nm": 1.7,
+      "mounts": {
+        "left": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            1.5707963267948966
+          ]
+        },
+        "right": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            -1.5707963267948966
+          ]
+        }
+      },
+      "mount_status": "Image-estimated axial mount with independently registered metal gripper root; see scene_provenance.gripper_registration. No object/pick outcome used for fitting.",
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      },
+      "driver_force_distribution": "equal_split",
+      "root_correction_xyz_rotvec": [
+        0.011393389195031378,
+        0.0074528151847574635,
+        0.005756471181264976,
+        0.007564015225908943,
+        -0.0037834315939320054,
+        0.060237041308632784
+      ]
+    },
+    "visual_materials": {
+      "cover": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "bottom_cap": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "connector": [
+        0.018,
+        0.022,
+        0.02,
+        1.0
+      ],
+      "cable_stub": [
+        0.012,
+        0.015,
+        0.014,
+        1.0
+      ]
+    }
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "cx": 337.8138732910156,
+    "cy": 249.65126037597656,
+    "position": [
+      -0.35399058583569004,
+      -0.44643379477503714,
+      0.9535
+    ],
+    "target": [
+      -0.3491143716535526,
+      -0.016208984538463922,
+      0.05079138965436125
+    ],
+    "world_from_cv": [
+      [
+        0.9999720414746357,
+        -0.005669109656577374,
+        0.00487621418213748,
+        -0.35399058583569004
+      ],
+      [
+        -0.007215535335001398,
+        -0.9026929426481264,
+        0.4302248102365732,
+        -0.44643379477503714
+      ],
+      [
+        0.0019627325028448834,
+        -0.4302479662810364,
+        -0.9027086103456388,
+        0.9535
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "Connected D435 factory RGB K; camera normal from 50mm table lattice at measured963mm above mat; UR registration from wrist caps and photo mount/mat constraints.",
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": [],
+    "factory_profile": {
+      "path": "docs/results/d435_factory_calibration_20260908/d435_rgb_profile.json",
+      "sha256": "22d05713a0b2181c20111ce646f01323173d9b17b3d621708f69bd807b32d687",
+      "serial": "944622074411",
+      "sdk_distortion_model": "distortion.inverse_brown_conrady",
+      "zero_coefficients_make_pinhole_equivalent": true
+    }
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Knownsourcepad added. Thickness,centering,circularfootprint anddensificationstopareuncertain; unchangedeggdimensions andXY remainimageestimates.",
+    "physics": "Rigidunfractured60gegg; compliantcontactproxy K300,D5 and5mmbottominglimit areunmeasured. Sameforce/materialparametersonallreferencetransfers; noattachmentorholdingconstraint.",
+    "camera": "Factory RGB K read from matching D435 serial; zero SDK coefficients. Extrinsics estimated using metric grid and measuredheight; UR registration uses nominal CAD wrist faces and photo plate/mat alignment. Historical radiometry and rolling-shutter motion are not calibrated."
+  },
+  "calibration": {
+    "revision": "teleop_contact_reconstruction_20260914",
+    "status": "geometry_and_motor_feedback_corrections; reliable_acquisition_unresolved",
+    "measurement_manifest": "docs/measurements/setup_20260908/revision_02/measurements.json",
+    "camera": "Connected D435 factory RGB intrinsics; grid/image-estimated extrinsics. Historical radiometry and rolling shutter remain uncalibrated.",
+    "rig": "UR3 CB3 nominal kinematics and 180 mm TCP; W2L root and sensor mounts from precontact image registration. Installed compliance and loaded contact geometry remain uncertain.",
+    "gripper_registration": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
+    "native_topology": {
+      "source": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "motor_settings": "Common K48 Nm/rad, D0.32 Nm s/rad; total torque cap1.7 Nm with equal split (each24/0.16/0.85). These are simulator force-drive settings, not hardware register values.",
+      "passive_settings": "K0.05 Nm/rad, D0.00125 Nm s/rad, rest angle2.62 rad; unchanged from frozen parent.",
+      "validation": "docs/results/task_scene_contact_fit_20260914/rig/motor_gain_mechanics_v2/README.md",
+      "scope": "Bounded free motion and mirrored asymmetric hard-contact fixture passed; does not establish calibrated loaded contact or all historical full-arm qualifications."
+    },
+    "arm": "K3500/D180 retained. Higher-arm-gain treatment did not pass paired selection gate.",
+    "historical_metadata": "Full calibration ancestry remains in the immutable parent config identified by path and SHA256 under scene_provenance."
+  },
+  "robot_mount": {
+    "size": [
+      0.2,
+      0.15,
+      0.0125
+    ],
+    "yaw": -0.016781155522956927
+  },
+  "task": "egg",
+  "scene_provenance": {
+    "revision": "source_support_20260914",
+    "parent_config": "configs/sim/egg_teleop_contact_second.json",
+    "parent_sha256": "187b54a64693a289c1b7ad1483ffcf399900c92ba15422ea4352ba2678bf5e69",
+    "source_episode": "/home/physicalai/phantom-icra-2027/data/val_eval/tasks/egg/ep_egg_1785777411_009",
+    "reference_role": "development_second",
+    "gripper_registration": {
+      "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
+      "scope": "Root and sensor mounting from historical precontact image registration, unchanged from frozen parent. This field describes mounting only; current motor settings are numeric gripper.articulation fields."
+    },
+    "changed": "One source-cell compliant contact pad with distinct high-strainstop, and onlyegginitialZ to clearit. Same48mmcompoundegg,XY,orientation,mass,objectfriction,rig,camera,controller andactualcommands.",
+    "evidence": "docs/results/task_scene_support_profile_20260914/egg_evidence/README.md",
+    "pad_existence": "Userconfirmed; whiteinsert independentlyvisible afterpickup inbothoriginalteleopepisodes.",
+    "dimensions": "20mmcircularfootprint fromapproximately20.6-21.4mmimagebackprojection;18/22/26mmunloadedheighthypotheses; notmetricmeasurements fromconceptualdrawing.",
+    "contact_model": "K300N/m,D5Ns/mpercontact;5mmmaximumcompression implements unmeasured high-strainbottoming, not a measured buriedplate. Staticvisualmeshdoesnotdeform.",
+    "report": "docs/results/task_scene_support_profile_20260914/README.md"
+  },
+  "object": {
+    "kind": "egg",
+    "center": [
+      -0.3356213829885017,
+      -0.17427739539668965,
+      0.043000000000000003
+    ],
+    "size": [
+      0.048,
+      0.048,
+      0.057
+    ],
+    "yaw": 0,
+    "mass": 0.06,
+    "static_friction": 0.45,
+    "dynamic_friction": 0.32,
+    "restitution": 0.02,
+    "color": [
+      0.4,
+      0.17,
+      0.055
+    ],
+    "taper": 0.17,
+    "initial_support_note": "Free egg initialized0.5mm above uncompressed source pad, or previouscupstartifhigher. Nativephysics settles it; no laterposewrites. Sourcewhiteinsert isvisible afterteleoppickup. Padding thickness/compression are image-supported uncertainty hypotheses.",
+    "collision_approximation": "compound_convex_v1"
+  },
+  "egg_fixture": {
+    "center": [
+      -0.3636,
+      -0.222,
+      -0.0095
+    ],
+    "yaw": -0.01,
+    "columns": 2,
+    "rows": 5,
+    "cell_pitch_xy": [
+      0.055,
+      0.048
+    ],
+    "cup_radius_m": 0.022,
+    "cup_bottom_radius_m": 0.012,
+    "height_m": 0.032,
+    "wall_thickness_m": 0.0015,
+    "pulp_color": [
+      0.38,
+      0.46,
+      0.26
+    ],
+    "lid": {
+      "enabled": true,
+      "side": -1,
+      "width_m": 0.11,
+      "height_m": 0.018,
+      "texture": "assets/sim/egg/tray_lid.png"
+    },
+    "holders": {
+      "centers": [
+        [
+          -0.4070436646817036,
+          0.014159345247858057,
+          -0.0095
+        ],
+        [
+          -0.3622749274239679,
+          0.013879194297521102,
+          -0.0095
+        ],
+        [
+          -0.4062596080755726,
+          -0.03291133046100353,
+          -0.0095
+        ],
+        [
+          -0.3623548496695977,
+          -0.033190376415431266,
+          -0.0095
+        ]
+      ],
+      "height_m": 0.02,
+      "outer_radius_m": 0.0225,
+      "inner_radius_m": 0.0175,
+      "bottom_radius_m": 0.012,
+      "wall_thickness_m": 0.0015
+    },
+    "web_model": "rounded_perforated_v2",
+    "outer_corner_radius_m": 0.014,
+    "diamond_opening_half_xy_m": [
+      0.011,
+      0.014
+    ],
+    "support_pad": {
+      "model": "compliant_contact_v1",
+      "cell": [
+        1,
+        3
+      ],
+      "footprint_xy_m": [
+        0.02,
+        0.02
+      ],
+      "thickness_m": 0.022,
+      "stiffness_n_m": 300.0,
+      "damping_n_s_m": 5.0,
+      "max_compression_m": 0.005,
+      "friction": 0.55,
+      "color": [
+        0.88,
+        0.87,
+        0.82
+      ]
+    }
+  },
+  "provenance": {
+    "frozen_parent_config": "configs/sim/contact_fit_20260914/motor_tracking/egg_second.json",
+    "frozen_parent_sha256": "9483a1372d2d8d55ee9a2825d00bdf3f68c447269f3da4e77ace284e9c1f4b49",
+    "campaign_report": "docs/results/task_scene_contact_fit_20260914/README.md"
+  }
+}

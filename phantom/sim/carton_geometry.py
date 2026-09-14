@@ -11,7 +11,10 @@ import numpy as np
 def carton_mesh(size, profile):
     """Return vertices, outward triangles and per-triangle source-face labels.
 
-    Eight vertices form each chamfered section; z fractions span [-.5,.5].
+    Four or eight vertices form each rectangular or chamfered section;
+    z fractions span [-.5,.5]. A side-view octagon can use rectangular
+    sections with a wider constant-width body and inset top/bottom ends.
+    It does not require cutting the horizontal cross-section corners.
     Section scales are relative to the declared maximum exterior dimensions.
     Concave profiles are rejected rather than silently filled by a convex hull.
     """
@@ -20,38 +23,49 @@ def carton_mesh(size, profile):
     size = np.asarray(size, float)
     if size.shape != (3,) or not np.isfinite(size).all() or np.any(size <= 0):
         raise ValueError("Carton size must contain three finite positive dimensions")
-    if profile.get('model') != 'chamfered_sections_v1':
+    model = profile.get('model')
+    if model not in ('chamfered_sections_v1', 'rectangular_sections_v1'):
         raise ValueError("Unsupported carton profile model")
     chamfer = np.asarray(profile.get('corner_cut_xy_m', [0., 0.]), float)
+    rectangular = model == 'rectangular_sections_v1'
+    if (chamfer.shape != (2,) or not np.isfinite(chamfer).all()
+            or (rectangular and np.any(chamfer != 0))
+            or (not rectangular and np.any(chamfer <= 0))):
+        raise ValueError("Rectangular sections require zero XY corner cuts; chamfered sections require positive cuts")
     sections = np.asarray(profile.get('sections', []), float)
-    if (chamfer.shape != (2,) or not np.isfinite(chamfer).all() or np.any(chamfer <= 0)
-            or sections.ndim != 2 or sections.shape[1:] != (3,) or len(sections) < 2
+    if (sections.ndim != 2 or sections.shape[1:] != (3,) or len(sections) < 2
             or not np.isfinite(sections).all() or np.any(np.diff(sections[:, 0]) <= 0)
             or not np.isclose(sections[0, 0], -.5, rtol=0, atol=1e-12)
             or not np.isclose(sections[-1, 0], .5, rtol=0, atol=1e-12)
             or np.any(sections[:, 1:] <= 0) or np.any(sections[:, 1:] > 1)
             or not np.allclose(sections[:, 1:].max(axis=0), 1, rtol=0, atol=1e-12)):
-        raise ValueError("Carton profile needs positive corner cuts and increasing z/xy-scale sections spanning full bounds")
+        raise ValueError("Carton profile needs increasing z/xy-scale sections spanning full bounds")
     vertices = []
     for z, sx, sy in sections:
         hx, hy = size[:2] * [sx, sy] / 2
         cx, cy = chamfer * [sx, sy]
         if cx >= hx or cy >= hy:
             raise ValueError("Corner cuts must be smaller than each section half-width")
+        if rectangular:
+            vertices.extend([[hx, hy, z*size[2]], [-hx, hy, z*size[2]],
+                             [-hx, -hy, z*size[2]], [hx, -hy, z*size[2]]])
+            continue
         vertices.extend([[hx, hy-cy, z*size[2]], [hx-cx, hy, z*size[2]],
                          [-hx+cx, hy, z*size[2]], [-hx, hy-cy, z*size[2]],
                          [-hx, -hy+cy, z*size[2]], [-hx+cx, -hy, z*size[2]],
                          [hx-cx, -hy, z*size[2]], [hx, -hy+cy, z*size[2]]])
     triangles, labels = [], []
-    edge_faces = ['back', 'back', 'left', 'left', 'front', 'front', 'right', 'right']
+    edge_faces = (['back', 'left', 'front', 'right'] if rectangular else
+                  ['back', 'back', 'left', 'left', 'front', 'front', 'right', 'right'])
+    n = len(edge_faces)
     for row in range(len(sections)-1):
-        for i in range(8):
-            a, b = row*8+i, row*8+(i+1)%8
-            triangles.extend([[a,b,b+8], [a,b+8,a+8]])
+        for i in range(n):
+            a, b = row*n+i, row*n+(i+1)%n
+            triangles.extend([[a,b,b+n], [a,b+n,a+n]])
             labels.extend([edge_faces[i]]*2)
-    for i in range(1, 7):
+    for i in range(1, n-1):
         triangles.append([0,i+1,i]);labels.append('bottom')
-        offset = (len(sections)-1)*8
+        offset = (len(sections)-1)*n
         triangles.append([offset,offset+i,offset+i+1]);labels.append('top')
     vertices, triangles = np.asarray(vertices), np.asarray(triangles, dtype=np.int32)
     hull_volume = ConvexHull(vertices).volume

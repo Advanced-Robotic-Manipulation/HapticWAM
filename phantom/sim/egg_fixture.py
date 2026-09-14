@@ -3,6 +3,10 @@
 These fixtures are static, watertight triangle shells. In particular their
 collision approximation is ``none``: a convex hull would fill every cavity.
 No pulp deformation, egg cracking, or measured material response is claimed.
+An optional, separately parameterized compliant support pad occupies one source
+cell only. Its contact indentation approximates softness; its visual mesh does
+not deform. An explicit internal rigid stop bounds indentation before a contact
+can penetrate through the pad's mid-plane; this is a foam-bottoming proxy.
 All dimensions are metres. ``center`` is the tray bed's floor datum in world
 coordinates; its local +Y follows the five-cell axis. Holder centers are world
 floor positions and do not inherit tray yaw or translation.
@@ -21,6 +25,116 @@ def _positive(value, name):
     if not np.isfinite(value) or value <= 0:
         raise ValueError(f"{name} must be finite and positive")
     return value
+
+
+def support_pad_spec(cfg):
+    """Validate the optional, image-estimated pad without changing old fixtures.
+
+    Stiffness/damping are force-based *per-contact* PhysX parameters, not measured
+    bulk foam properties. The ellipse is inside the 48-sided cup's floor even
+    at its widest axis; no pad geometry spans another cup or the tray opening.
+    The returned center is in tray-local coordinates, including the cup floor.
+    """
+    pad = cfg.get("support_pad")
+    if pad is None or pad.get("enabled", True) is False:
+        return None
+    if pad.get("model", "compliant_contact_v1") != "compliant_contact_v1":
+        raise ValueError("Unsupported egg support_pad model")
+    cell = np.asarray(pad["cell"], float)
+    counts = np.array([cfg.get("columns", 2), cfg.get("rows", 5)], int)
+    if (cell.shape != (2,) or not np.isfinite(cell).all()
+            or np.any(cell != np.floor(cell)) or np.any(cell < 0)
+            or np.any(cell >= counts)):
+        raise ValueError("support_pad.cell must index one valid [column,row]")
+    pitch = np.asarray(cfg.get("cell_pitch_xy", [.057, .048]), float)
+    if pitch.shape != (2,) or not np.isfinite(pitch).all() or np.any(pitch <= 0):
+        raise ValueError("support_pad requires a positive finite cell pitch")
+    footprint = np.asarray(pad["footprint_xy_m"], float)
+    bottom_radius = _positive(cfg.get("cup_bottom_radius_m", .012), "bottom radius")
+    if (footprint.shape != (2,) or not np.isfinite(footprint).all()
+            or np.any(footprint <= 0)
+            or footprint.max()/2 > bottom_radius*math.cos(math.pi/48)):
+        raise ValueError("support_pad footprint must fit inside the polygonal cup floor")
+    wall = _positive(cfg.get("wall_thickness_m", .0015), "wall")
+    height = _positive(cfg.get("height_m", .032), "cup height")
+    thickness = _positive(pad["thickness_m"], "support_pad thickness")
+    if thickness > height-wall:
+        raise ValueError("support_pad thickness must leave its top at or below the cup rim")
+    max_compression = _positive(pad["max_compression_m"], "support_pad max compression")
+    if max_compression >= thickness/2:
+        raise ValueError("support_pad max compression must be less than half its thickness")
+    stiffness = _positive(pad["stiffness_n_m"], "support_pad stiffness")
+    damping = _positive(pad["damping_n_s_m"], "support_pad damping")
+    friction = _positive(pad.get("friction", .55), "support_pad friction")
+    color = np.asarray(pad.get("color", [.72, .71, .64]), float)
+    if color.shape != (3,) or not np.isfinite(color).all() or np.any((color < 0) | (color > 1)):
+        raise ValueError("support_pad color must contain three values in [0,1]")
+    return {
+        "cell": cell.astype(int).tolist(),
+        "center_local_m": [*((cell-(counts-1)/2)*pitch).tolist(), wall+thickness/2],
+        "footprint_xy_m": footprint.tolist(), "thickness_m": thickness,
+        "max_compression_m": max_compression,
+        "bottoming_top_local_z_m": wall+thickness-max_compression,
+        "stiffness_n_m": stiffness, "damping_n_s_m": damping,
+        "friction": friction, "color": color.tolist(),
+        "uncompressed_top_local_z_m": wall+thickness,
+        "rigid_floor_local_z_m": wall,
+    }
+
+
+def build_support_pad(stage, cfg, material, collider):
+    """Author a fixed compliant-contact pad, returning its exact fixture paths.
+
+    The pad has no rigid body, articulation, drive or joint, and performs no
+    writes to an egg. An internal hard stop approximates foam bottoming before
+    deep interpenetration could flip the compliant convex contact normal.
+    """
+    spec = support_pad_spec(cfg)
+    if spec is None:
+        return []
+    from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics, UsdShade
+
+    column, row = spec["cell"]
+    path = f"/World/EggFixture/Tray/Cell_{column}_{row}/SupportPad"
+    appearance = material("EggSourceSupportPad", spec["color"], roughness=.95)
+    contact = UsdShade.Material.Define(stage, "/World/Looks/EggSourceSupportPadContact")
+    physics = UsdPhysics.MaterialAPI.Apply(contact.GetPrim())
+    physics.CreateStaticFrictionAttr(spec["friction"])
+    physics.CreateDynamicFrictionAttr(spec["friction"])
+    physics.CreateRestitutionAttr(0.)
+    compliant = PhysxSchema.PhysxMaterialAPI.Apply(contact.GetPrim())
+    compliant.CreateCompliantContactStiffnessAttr(spec["stiffness_n_m"])
+    compliant.CreateCompliantContactDampingAttr(spec["damping_n_s_m"])
+    compliant.CreateCompliantContactAccelerationSpringAttr(False)
+    pad = UsdGeom.Cylinder.Define(stage, path)
+    pad.CreateRadiusAttr(1.)
+    pad.CreateHeightAttr(spec["thickness_m"])
+    pad.CreateAxisAttr("Z")
+    pad.AddTranslateOp().Set(Gf.Vec3d(*spec["center_local_m"]))
+    pad.AddScaleOp().Set(Gf.Vec3f(spec["footprint_xy_m"][0]/2,
+                                   spec["footprint_xy_m"][1]/2, 1.))
+    UsdShade.MaterialBindingAPI.Apply(pad.GetPrim()).Bind(appearance)
+    collider(pad.GetPrim(), contact)
+    pad.GetPrim().SetCustomDataByKey("support_model", "uncalibrated force-based compliant contact; static visual; internal stop bounds compression")
+    hard = UsdShade.Material.Define(stage, "/World/Looks/EggSourceSupportPadStopContact")
+    hard_physics = UsdPhysics.MaterialAPI.Apply(hard.GetPrim())
+    hard_physics.CreateStaticFrictionAttr(spec["friction"])
+    hard_physics.CreateDynamicFrictionAttr(spec["friction"])
+    hard_physics.CreateRestitutionAttr(0.)
+    stop_path = f"/World/EggFixture/Tray/Cell_{column}_{row}/SupportPadStop"
+    stop_height = spec["thickness_m"]-spec["max_compression_m"]
+    stop = UsdGeom.Cylinder.Define(stage, stop_path)
+    stop.CreateRadiusAttr(1.)
+    stop.CreateHeightAttr(stop_height)
+    stop.CreateAxisAttr("Z")
+    stop.AddTranslateOp().Set(Gf.Vec3d(*spec["center_local_m"][:2],
+                                     spec["rigid_floor_local_z_m"]+stop_height/2))
+    stop.AddScaleOp().Set(Gf.Vec3f(spec["footprint_xy_m"][0]/2,
+                                  spec["footprint_xy_m"][1]/2, 1.))
+    stop.CreateVisibilityAttr(UsdGeom.Tokens.invisible)
+    collider(stop.GetPrim(), hard)
+    stop.GetPrim().SetCustomDataByKey("support_model", "unmeasured foam-bottoming approximation; maximum contact indentation")
+    return [path, stop_path]
 
 
 def cup_shell_mesh(bottom_radius, top_radius, height, wall, segments=48):
@@ -159,6 +273,8 @@ def build_egg_fixture(stage, cfg, material, box, collider, mat_phys):
     from pxr import Gf, Sdf, UsdGeom, UsdPhysics, UsdShade
 
     f = cfg
+    # Validate before authoring any scene objects, including the disabled path.
+    support_pad_spec(f)
     center = np.asarray(f["center"], float)
     yaw = float(f.get("yaw", 0.))
     pitch = np.asarray(f.get("cell_pitch_xy", [.057, .048]), float)
@@ -235,6 +351,7 @@ def build_egg_fixture(stage, cfg, material, box, collider, mat_phys):
                     f.get("outer_corner_radius_m", .014),
                     f.get("diamond_opening_half_xy_m", [.011, .014]))
             mesh(f"/World/EggFixture/Tray/Cell_{column}_{row}/Web", web_v, web_f, cell)
+    collider_paths.extend(build_support_pad(stage, f, material, collider))
     # Molded separators visible between the two rows of cups. Closed tapered
     # cones sit on the existing web; no sheet spans a cup's opening.
     peak_height = _positive(f.get("separator_height_m", .043), "separator_height_m")

@@ -1295,6 +1295,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
     policy_gel_normal_trace = []
     policy_gel_contact_diagnostics = []
     robot_environment_contact_trace = []
+    packet_support_trace = []
     measured_sensor_proxy = None
     next_control = 0.0
     wrist_bias = np.zeros(6)
@@ -2203,6 +2204,19 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                     support = support_views.get_all(dt)
                     for key in ("packet_robot_normal_force", "packet_bin_normal_force"):
                         trace.setdefault(key, []).append(support[key])
+                    # Retain the existing query's individual support labels:
+                    # aggregate fixture force cannot distinguish a compliant
+                    # source insert from its bottoming stop or a destination.
+                    # This adds no physics step, contact query or feedback.
+                    packet_support_trace.append({
+                        "t": t,
+                        "physics_t": trace["physics_t"][-1],
+                        **{key: support[key] for key in (
+                            "packet_robot_normal_force", "packet_bin_normal_force",
+                            "populated_unique_contact_count",
+                            "duplicate_filter_contact_indices", "per_filter_contacts",
+                        )},
+                    })
                 if robot_environment_views is not None:
                     robot_environment_contact_trace.append(
                         {"t": t, **robot_environment_views.get_all(dt)}
@@ -2281,6 +2295,10 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
         if robot_environment_views is not None:
             (args.output / "robot_environment_contact_trace.json").write_text(
                 json.dumps(robot_environment_contact_trace, indent=2) + "\n"
+            )
+        if support_views is not None:
+            (args.output / "packet_support_trace.json").write_text(
+                json.dumps(packet_support_trace, indent=2) + "\n"
             )
         try:
             if audit is not None:
@@ -2400,6 +2418,15 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
             "environment_paths": robot_environment_views.environment_paths,
             "policy_or_safety_feedback": False,
             "self_collision_observed": False,
+        }
+    if support_views is not None:
+        report["packet_support_contact_diagnostic"] = {
+            "file": "packet_support_trace.json",
+            "sampling": "saved scene frames at configured camera fps; same t as sim_trace; each force uses only current physics-step impulses",
+            "configured_frame_rate_hz": fps,
+            "force_semantics": "per-filter sum of positive normal magnitudes; explicit support collider paths distinguish compliant pad, bottoming stop, tray and holder",
+            "policy_or_safety_feedback": False,
+            "extra_physics_steps_or_contact_queries": False,
         }
     if probe is not None:
         positions = np.asarray(trace["waffle_position"])

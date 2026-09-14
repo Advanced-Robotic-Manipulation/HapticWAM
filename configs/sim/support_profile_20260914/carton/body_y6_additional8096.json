@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.00025,
+    "render_hz": 15,
+    "solver_position_iterations": 128,
+    "solver_velocity_iterations": 8,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.1,
+      -0.037500000000000006
+    ],
+    "size": [
+      1.7,
+      1.2,
+      0.05
+    ],
+    "hole_pitch": 0.05,
+    "hole_radius": 0.0055,
+    "top_z": -0.0125,
+    "friction": 0.55,
+    "grid_origin_xy": [
+      -0.9644390170881325,
+      0.5216767944318121
+    ],
+    "grid_yaw": -0.016781155522956927
+  },
+  "mat": {
+    "center": [
+      -0.3553179049367156,
+      -0.2367460116331834,
+      -0.011000000000000001
+    ],
+    "size": [
+      0.4,
+      0.38,
+      0.003
+    ],
+    "grid_pitch": 0.085,
+    "friction": 0.7,
+    "frame_model": "local_planar",
+    "yaw": -0.008915071616459587,
+    "grid_origin_xy": [
+      -0.03949566789022466,
+      0.0075523360591647146
+    ]
+  },
+  "bin": {
+    "center": [
+      -0.39052377006030875,
+      0.06490764411969535,
+      -0.009500000000000001
+    ],
+    "friction": 0.4,
+    "geometry_model": "rectangular_envelope",
+    "outer_size": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "opening_size": [
+      0.36,
+      0.26
+    ],
+    "floor_thickness": 0.004,
+    "yaw": -0.012089355098796523
+  },
+  "gripper": {
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.0017016676138155162,
+      0.038595568388700485,
+      0.04787348955869675
+    ],
+    "pad_friction": 1.0,
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": 0.0,
+    "geometry_source": "Supplier W2L CAD; root and axial sensor mounting registered to precontact teleop metal caps and white sensor walls. Installed dimensions and motor/contact response remain image-estimated.",
+    "contact_shape": "ellipse",
+    "model": "robotiq_2f85_w2l_adaptive_v2",
+    "gel_geometry": {
+      "pad_thickness_m": 0.0017023373024049053,
+      "active_size_yz_m": [
+        0.027,
+        0.036
+      ],
+      "active_center_yz_m": [
+        0.0,
+        0.0
+      ],
+      "inner_face_tolerance_m": 0.0003
+    },
+    "articulation": {
+      "angle_at_touch_rad": 0.8,
+      "bare_gripper_mass_kg": 0.925,
+      "drive_stiffness_nm_rad": 48.0,
+      "drive_damping_nm_s_rad": 0.32,
+      "drive_max_torque_nm": 1.7,
+      "mounts": {
+        "left": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            1.5707963267948966
+          ]
+        },
+        "right": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            -1.5707963267948966
+          ]
+        }
+      },
+      "mount_status": "Image-estimated axial mount with independently registered metal gripper root; see scene_provenance.gripper_registration. No object/pick outcome used for fitting.",
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      },
+      "driver_force_distribution": "equal_split",
+      "root_correction_xyz_rotvec": [
+        0.011393389195031378,
+        0.0074528151847574635,
+        0.005756471181264976,
+        0.007564015225908943,
+        -0.0037834315939320054,
+        0.060237041308632784
+      ]
+    },
+    "visual_materials": {
+      "cover": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "bottom_cap": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "connector": [
+        0.018,
+        0.022,
+        0.02,
+        1.0
+      ],
+      "cable_stub": [
+        0.012,
+        0.015,
+        0.014,
+        1.0
+      ]
+    }
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "cx": 337.8138732910156,
+    "cy": 249.65126037597656,
+    "position": [
+      -0.35399058583569004,
+      -0.44643379477503714,
+      0.9535
+    ],
+    "target": [
+      -0.3491143716535526,
+      -0.016208984538463922,
+      0.05079138965436125
+    ],
+    "world_from_cv": [
+      [
+        0.9999720414746357,
+        -0.005669109656577374,
+        0.00487621418213748,
+        -0.35399058583569004
+      ],
+      [
+        -0.007215535335001398,
+        -0.9026929426481264,
+        0.4302248102365732,
+        -0.44643379477503714
+      ],
+      [
+        0.0019627325028448834,
+        -0.4302479662810364,
+        -0.9027086103456388,
+        0.9535
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "Connected D435 factory RGB K; camera normal from 50mm table lattice at measured963mm above mat; UR registration from wrist caps and photo mount/mat constraints.",
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": [],
+    "factory_profile": {
+      "path": "docs/results/d435_factory_calibration_20260908/d435_rgb_profile.json",
+      "sha256": "22d05713a0b2181c20111ce646f01323173d9b17b3d621708f69bd807b32d687",
+      "serial": "944622074411",
+      "sdk_distortion_model": "distortion.inverse_brown_conrady",
+      "zero_coefficients_make_pinhole_equivalent": true
+    }
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Rig scale from measured table/mat pitch, factory D435 K and measured waffle-era support geometry. Current task object and fixture dimensions/poses are image estimates; see docs/results/task_scenes_20260913/evidence_manifest.json.",
+    "physics": "Task object rigid-body approximation; mass/friction are unmeasured priors. Shell fracture/carton crushing and tactile transfer uncalibrated.",
+    "camera": "Factory RGB K read from matching D435 serial; zero SDK coefficients. Extrinsics estimated using metric grid and measuredheight; UR registration uses nominal CAD wrist faces and photo plate/mat alignment. Historical radiometry and rolling-shutter motion are not calibrated."
+  },
+  "calibration": {
+    "revision": "teleop_contact_reconstruction_20260914",
+    "status": "geometry_and_motor_feedback_corrections; reliable_acquisition_unresolved",
+    "measurement_manifest": "docs/measurements/setup_20260908/revision_02/measurements.json",
+    "camera": "Connected D435 factory RGB intrinsics; grid/image-estimated extrinsics. Historical radiometry and rolling shutter remain uncalibrated.",
+    "rig": "UR3 CB3 nominal kinematics and 180 mm TCP; W2L root and sensor mounts from precontact image registration. Installed compliance and loaded contact geometry remain uncertain.",
+    "gripper_registration": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
+    "native_topology": {
+      "source": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "motor_settings": "Common K48 Nm/rad, D0.32 Nm s/rad; total torque cap1.7 Nm with equal split (each24/0.16/0.85). These are simulator force-drive settings, not hardware register values.",
+      "passive_settings": "K0.05 Nm/rad, D0.00125 Nm s/rad, rest angle2.62 rad; unchanged from frozen parent.",
+      "validation": "docs/results/task_scene_contact_fit_20260914/rig/motor_gain_mechanics_v2/README.md",
+      "scope": "Bounded free motion and mirrored asymmetric hard-contact fixture passed; does not establish calibrated loaded contact or all historical full-arm qualifications."
+    },
+    "arm": "K3500/D180 retained. Higher-arm-gain treatment did not pass paired selection gate.",
+    "historical_metadata": "Full calibration ancestry remains in the immutable parent config identified by path and SHA256 under scene_provenance."
+  },
+  "robot_mount": {
+    "size": [
+      0.2,
+      0.15,
+      0.0125
+    ],
+    "yaw": -0.016781155522956927
+  },
+  "task": "carton",
+  "scene_provenance": {
+    "revision": "carton_side_profile_20260914_additional8096",
+    "parent_config": "configs/sim/contact_fit_20260914/motor_tracking/carton_8096.json",
+    "parent_sha256": "2ce3b6975e2a229349dc665a14d5c965881dc8eecc87ce16bf92e13d48c8c755",
+    "shape_parent_config": "configs/sim/support_profile_20260914/carton/body_y6_fit.json",
+    "shape_parent_sha256": "3f401a8534b7ec0c73277912b8da8fb3bbc7798c6fca1b53c978ff1c02d17597",
+    "source_episode": "ep_carton_1787398096_003",
+    "reference_role": "previously reviewed development transfer; not reserved confirmation",
+    "gripper_registration": {
+      "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
+      "scope": "Root and sensor mounting from historical precontact image registration, unchanged from frozen parent. This field describes mounting only; current motor settings are numeric gripper.articulation fields."
+    },
+    "changed": "Transfer unchanged Y6 body profile onto frozen8096 layout. Camera, pose, trajectory, commands, mechanics, mass and friction remain unchanged.",
+    "report": "docs/results/task_scene_support_profile_20260914/carton_runs/README.md",
+    "qualification": "Functional sensitivity with substantial measured loaded-POS mismatch on fit; no calibrated geometry or teacher tactile claim."
+  },
+  "object": {
+    "kind": "carton",
+    "center": [
+      -0.4084513962851954,
+      -0.2472491035763543,
+      0.055260778201335466
+    ],
+    "size": [
+      0.04612153309773228,
+      0.05119787062412537,
+      0.12952155640267093
+    ],
+    "yaw": 0.19824032893140126,
+    "mass": 0.27,
+    "static_friction": 0.8,
+    "dynamic_friction": 0.7,
+    "restitution": 0.01,
+    "face_textures": {
+      "top": "assets/sim/carton/top.png",
+      "front": "assets/sim/carton/front.png",
+      "left": "assets/sim/carton/left.png"
+    },
+    "mass_prior_range_kg": [
+      0.255,
+      0.285
+    ],
+    "mass_note": "User confirms FULL250ml.0.270kg nominal is assumed250ml x1.04g/ml dairy density +10g packaging; range0.255-0.285kg is sensitivity, not measurement. No calibrated liquid/slosh or carton compliance model.",
+    "dimensions_note": "User-confirmed side silhouette; Y+6 mm versus historical end width, Y+2 mm versus preceding Y4 body. An unmeasured, bounded preload sensitivity, not a dimension inferred from replay success. Top/bottom footprints and 10 mm fold bands remain unchanged.",
+    "nominal_capacity_ml": 250,
+    "carton_profile": {
+      "model": "rectangular_sections_v1",
+      "sections": [
+        [
+          -0.5,
+          1.0,
+          0.8828076260426992
+        ],
+        [
+          -0.422792774594903,
+          1.0,
+          1.0
+        ],
+        [
+          0.422792774594903,
+          1.0,
+          1.0
+        ],
+        [
+          0.5,
+          1.0,
+          0.8828076260426992
+        ]
+      ]
+    }
+  }
+}

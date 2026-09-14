@@ -20,8 +20,8 @@ while (($#)); do
 Usage: launch_task_scene.sh --task carton|egg --episode PREPARED --output OUTPUT [runner options]
 
 Selects the reviewed clean teleoperation fit scene and runs Isaac headless.
-Carton uses carton_teleop_contact_fit.json (full 250 ml; fitted friction).
-Egg uses egg_teleop_contact_fit.json (audited compound collider).
+Carton uses carton_teleop_side_profile_fit.json (full 250 ml; wider folded body).
+Egg uses egg_teleop_supported_fit.json (compound egg; compliant source insert).
 Both use common motor K48/D0.32 with the unchanged total torque limit.
 These are reconstruction diagnostics; contact/task transfer remains unqualified.
 For a session-specific reconstruction, pass --config PATH to override that default.
@@ -34,8 +34,8 @@ EOF
   esac
 done
 case "$TASK" in
-  carton) SCENE_CONFIG="carton_teleop_contact_fit.json" ;;
-  egg) SCENE_CONFIG="egg_teleop_contact_fit.json" ;;
+  carton) SCENE_CONFIG="carton_teleop_side_profile_fit.json" ;;
+  egg) SCENE_CONFIG="egg_teleop_supported_fit.json" ;;
   *) echo "A supported --task is required: carton or egg" >&2; exit 2 ;;
 esac
 exec "$REPO_ROOT/tools/sim/launch_waffles.sh" \
