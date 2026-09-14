@@ -208,3 +208,26 @@ def test_arms_match_label_or_sha_tags_not_only_ckpt_basename(tmp_path):
     # the legacy basename spec still works when it is unambiguous
     pairs, _ = S.pair_episodes(eps, "ckpt:pretrained_model", "label:dp")
     assert pairs == [] or all(p["a"] is not None for p in pairs)
+
+
+def test_pairs_cli_joins_several_deploy_days(tmp_path):
+    """Teacher on day 1, student on day 2 under the same cell numbers: the CLI
+    given both folders forms the (task, seed) pairs across the days."""
+    import json as _json
+    d1, d2 = tmp_path / "20260913", tmp_path / "20260914"
+    _ep(d1, "ep_teacher_waffles_1_000", task="waffles", seed=101, ckpt="BEST.pt", success=True)
+    _ep(d1, "ep_teacher_waffles_2_000", task="waffles", seed=102, ckpt="BEST.pt", success=False)
+    _ep(d2, "ep_student_waffles_3_000", task="waffles", seed=101, ckpt="student_002000.pt",
+        success=False, notes="operator: f grasp")
+    _ep(d2, "ep_student_waffles_4_000", task="waffles", seed=102, ckpt="student_002000.pt", success=True)
+    out = tmp_path / "pairs.json"
+    rc = S.main(["pairs", str(d1), str(d2), "--arm-a", "ckpt:BEST.pt",
+                 "--arm-b", "ckpt:student_002000.pt", "--json-out", str(out)])
+    assert rc == 0
+    res = _json.loads(out.read_text())
+    assert res["n_episodes_seen"] == 4
+    assert sorted((p["seed"], p["a"], p["b"]) for p in res["pairs"]) == [(101, 3, 1), (102, 0, 3)]
+    # one folder still works exactly as before
+    rc = S.main(["pairs", str(d1), "--arm-a", "ckpt:BEST.pt", "--arm-b", "ckpt:student_002000.pt",
+                 "--json-out", str(out)])
+    assert rc == 0 and _json.loads(out.read_text())["pairs"] == []

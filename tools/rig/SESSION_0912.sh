@@ -6,14 +6,15 @@
 #   ./SESSION_0912.sh stop       stop OUR servers (by pid of the menu ports; never anything else)
 #   ./SESSION_0912.sh baselines  warm only 4 5 6 (after the pair is done, if they did not fit before)
 #   ./SESSION_0912.sh blockc     Block C: stop 2 4 5 6 (keeps 1 v6), warm 3 stu_v6_r2
+#   ./SESSION_0912.sh monday     09-14: warm 9 (v6_simft2k, --flex --compile) + 2 (stu_ftA_r2), then 1 (v6) if it fits
 # Never kills another user's process: if the GPU is held by someone else it says so and exits.
 cd "$(dirname "$0")"
 free_mib() { nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits | awk -F', ' '{print $1-$2}'; }
-declare -A NEED=( [1]=7000 [2]=7000 [3]=7000 [4]=8500 [5]=2500 [6]=3000 [7]=7000 [8]=7000 )   # measured 09-12: v6 6.6 · stu 6.4 · pi05 7.9 · dp 1.8 · xvla 2.4 GB
+declare -A NEED=( [1]=7000 [2]=7000 [3]=7000 [4]=8500 [5]=2500 [6]=3000 [7]=7000 [8]=7000 [9]=7500 [10]=7500 )   # measured 09-12: v6 6.6 · stu 6.4 · pi05 7.9 · dp 1.8 · xvla 2.4 GB
 listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
 ours_mib() {  # GPU memory held by OUR menu servers (so the gate only counts other people's jobs)
   local t=0 pid m
-  for r in 1 2 3 4 5 6 7 8 9; do
+  for r in 1 2 3 4 5 6 7 8 9 10; do
     pid=$(ss -ltnp 2>/dev/null | grep ":$((7776 + r)) " | grep -oE "pid=[0-9]+" | head -1 | cut -d= -f2)
     [ -n "$pid" ] && { m=$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits | awk -F', ' -v p="$pid" '$1==p{print $2}'); t=$((t + ${m:-0})); }
   done; echo $t
@@ -36,8 +37,16 @@ case "${1:-warm}" in
     warm 4 5          # baselines (pi0.5, dp), each only if it fits; 6 xvla is off the rig (needs 3 camera views)
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   baselines) warm 4 5; ./serve_bg.sh status;;
+  monday)
+    F=$(free_mib); O=$(ours_mib); echo "GPU free: $F MiB (our warm servers hold $O MiB)"
+    if [ $((F + O)) -lt 15000 ]; then
+      echo "!! less than 15 GB available even counting our own servers: another job holds the 5090. Do NOT kill it — wait for it or ask."; exit 3
+    fi
+    warm 9 2          # Block P: Ilya's sim-expert teacher vs the pad-free student (RUN_SHEET_0914.md)
+    warm 1            # base v6, only if it fits (three Cosmos servers is the ceiling)
+    ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   blockc) ./serve_bg.sh stop 2; ./serve_bg.sh stop 4; ./serve_bg.sh stop 5; ./serve_bg.sh stop 6; warm 3; ./serve_bg.sh status;;
   status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB (our servers hold $(ours_mib) MiB)"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;
-  stop) shift; [ $# -eq 0 ] && set -- 1 2 3 4 5 6 7 8; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
+  stop) shift; [ $# -eq 0 ] && set -- 1 2 3 4 5 6 7 8 9 10; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
   *) sed -n 2,9p "$0";;
 esac

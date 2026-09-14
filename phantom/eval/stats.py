@@ -344,7 +344,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("pairs", help="paired sign test over rig episodes")
-    p.add_argument("root", type=Path)
+    p.add_argument("root", type=Path, nargs="+",
+                   help="deploy day folder(s); several folders join across days by (task, seed) "
+                        "— cell seeds repeat across days, so only give the days that ran the SAME cells")
     p.add_argument("--arm-a", required=True, help="arm A tag: label:<menu row> (preferred), ckpt_sha:<12hex> or ckpt:<basename>")
     p.add_argument("--arm-b", required=True, help="arm B tag, e.g. label:stu_ftA_r2")
     p.add_argument("--task", default=None)
@@ -362,7 +364,7 @@ def main(argv=None) -> int:
         if args.hw is not None:
             from phantom.config.hardware import load_hardware
             hw = load_hardware(args.hw)
-        eps = load_episodes(args.root, hw)
+        eps = [e for r in args.root for e in load_episodes(r, hw)]
         pairs, diag = pair_episodes(eps, args.arm_a, args.arm_b, args.task)
         res = {"arm_a": args.arm_a, "arm_b": args.arm_b, "task": args.task,
                "ordinal": "rule (0-2) + operator (3)" if hw is not None else "operator notes",
