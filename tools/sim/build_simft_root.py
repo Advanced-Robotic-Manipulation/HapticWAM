@@ -71,8 +71,12 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--task", default="waffles")
-    ap.add_argument("--sim-root", type=Path, required=True, help="export root (tasks/<task>/ep_sim_*)")
-    ap.add_argument("--deploy-roots", type=Path, nargs="*", default=[], help="dirs holding ep_* deploy rollouts")
+    ap.add_argument("--sim-root", type=Path, nargs="+", required=True, help="export root(s) (tasks/<task>/ep_sim_*)")
+    ap.add_argument("--real-root", type=Path, nargs="*", default=[],
+                    help="root(s) of real TELEOP demos laid out as tasks/<task>/ep_* (e.g. the NUC copy); "
+                         "symlinked as-is, split=train; failure demos keep their <task>_fail meta")
+    ap.add_argument("--tasks", nargs="*", default=None, help="tasks to include (default: every tasks/<task> found)")
+    ap.add_argument("--deploy-roots", type=Path, nargs="*", default=[], help="dirs holding ep_* deploy rollouts (task = --task only)")
     ap.add_argument("--val-root", type=Path, default=None, help="data root whose manifests/all.jsonl val rows are reused")
     ap.add_argument("--norm-stats", type=Path, required=True)
     ap.add_argument("--hardware", default="configs/hardware.nuc.yaml")
@@ -83,21 +87,45 @@ def main(argv=None) -> int:
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s %(message)s")
     hw = load_hardware(args.hardware, quiet=True)
     root = args.root
-    tasks = root / "tasks" / args.task
-    tasks.mkdir(parents=True, exist_ok=True)
     rows = []
+    task_names = args.tasks or sorted({d.name for r in list(args.sim_root) + list(args.real_root)
+                                       for d in (r / "tasks").glob("*") if d.is_dir()})
+    for task in task_names:
+        tasks = root / "tasks" / task
+        tasks.mkdir(parents=True, exist_ok=True)
+        sim_eps = []
+        for sroot in args.sim_root:
+            sim_eps += sorted(p for p in (sroot / "tasks" / task).glob("ep_sim_*") if (p / "meta.json").exists())
+        sim_eps = [p for p in sim_eps if EpisodeMeta.load(p / "meta.json").status == "finalized"]
+        if args.max_sim:
+            sim_eps = sim_eps[: args.max_sim]
+        for ep in sim_eps:
+            dst = tasks / ep.name
+            if not dst.exists():
+                os.symlink(ep.resolve(), dst)
+            rows.append({"episode": ep.name, "task": task, "success": True, "failure_demo": False, "split": "train",
+                         "session": "sim_expert", "path": f"tasks/{task}/{ep.name}"})
+        n_real = 0
+        for rroot in args.real_root:
+            for ep in sorted((rroot / "tasks" / task).glob("ep_*")):
+                if not (ep / "meta.json").exists():
+                    continue
+                meta = EpisodeMeta.load(ep / "meta.json")
+                if str(meta.status or "finalized") != "finalized":
+                    continue
+                dst = tasks / ep.name
+                if not dst.exists():
+                    os.symlink(ep.resolve(), dst)
+                fail = str(meta.task).endswith("_fail") or meta.success is False
+                rows.append({"episode": ep.name, "task": meta.task, "success": bool(meta.success),
+                             "failure_demo": fail, "split": "train", "session": "real_teleop",
+                             "path": f"tasks/{task}/{ep.name}"})
+                n_real += 1
+        log.info("%s: sim episodes %d, real teleop episodes %d", task, len(sim_eps), n_real)
 
-    sim_eps = sorted(p for p in (args.sim_root / "tasks" / args.task).glob("ep_sim_*") if (p / "meta.json").exists())
-    sim_eps = [p for p in sim_eps if EpisodeMeta.load(p / "meta.json").status == "finalized"]
-    if args.max_sim:
-        sim_eps = sim_eps[: args.max_sim]
-    for ep in sim_eps:
-        dst = tasks / ep.name
-        if not dst.exists():
-            os.symlink(ep.resolve(), dst)
-        rows.append({"episode": ep.name, "task": args.task, "success": True, "failure_demo": False, "split": "train",
-                     "session": "sim_expert", "path": f"tasks/{args.task}/{ep.name}"})
-    log.info("sim episodes: %d", len(sim_eps))
+    task = args.task
+    tasks = root / "tasks" / task
+    tasks.mkdir(parents=True, exist_ok=True)
 
     cands = []
     for droot in args.deploy_roots:
@@ -127,13 +155,15 @@ def main(argv=None) -> int:
         mf = args.val_root / "manifests" / "all.jsonl"
         for l in mf.read_text().splitlines():
             r = json.loads(l)
-            if r.get("split") != "val" or r.get("task") != args.task:
+            if r.get("split") != "val" or r.get("task") not in task_names:
                 continue
             src = (args.val_root / r["path"]).resolve()
-            dst = tasks / src.name
+            vdir = root / "tasks" / r["task"]
+            vdir.mkdir(parents=True, exist_ok=True)
+            dst = vdir / src.name
             if not dst.exists():
                 os.symlink(src, dst)
-            rows.append({**r, "path": f"tasks/{args.task}/{src.name}"})
+            rows.append({**r, "path": f"tasks/{r['task']}/{src.name}"})
         log.info("val episodes: %d", sum(r["split"] == "val" for r in rows))
 
     (root / "manifests").mkdir(exist_ok=True)
