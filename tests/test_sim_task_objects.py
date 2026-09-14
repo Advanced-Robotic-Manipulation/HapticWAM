@@ -64,3 +64,22 @@ def test_carton_capacity_must_be_finite_and_positive(capacity):
     with pytest.raises(ValueError, match='finite positive capacity'):
         object_config({'object': {'kind': 'carton', 'size': [.05, .05, .12],
                                   'nominal_capacity_ml': capacity}})
+
+
+def test_sdf_opt_in_keeps_egg_geometry_and_rejects_ignored_settings():
+    egg = {"kind": "egg", "size": [.048, .048, .057], "mass": .06}
+    assert object_config({"object": egg}) == egg
+    compound = {**egg, "collision_approximation": "compound_convex_v1"}
+    assert object_config({"object": compound}) == compound
+    sdf = {**egg, "collision_approximation": "sdf", "sdf_resolution": 256}
+    assert object_config({"object": sdf})["size"] == egg["size"]
+    for invalid in ({**egg, "sdf_resolution": 256},
+                    {**compound, "sdf_resolution": 256},
+                    {**compound, "kind": "carton"},
+                    {**egg, "collision_approximation": "unknown"},
+                    {**sdf, "kind": "carton"},
+                    {**sdf, "sdf_resolution": 0},
+                    {**sdf, "sdf_resolution": 256.5},
+                    {**sdf, "sdf_resolution": True}):
+        with pytest.raises(ValueError):
+            object_config({"object": invalid})

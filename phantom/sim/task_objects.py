@@ -18,6 +18,24 @@ def object_config(config: dict) -> dict:
         raise ValueError("Object size must contain three finite positive dimensions")
     if "mass" in obj and (not np.isfinite(obj["mass"]) or obj["mass"] <= 0):
         raise ValueError("Object mass must be finite and positive")
+    if "collision_approximation" in obj or "sdf_resolution" in obj:
+        approximation = obj.get("collision_approximation", "convexHull")
+        if obj.get("kind") != "egg" or approximation not in ("convexHull", "sdf", "compound_convex_v1"):
+            raise ValueError("Explicit task collision approximation requires an egg and a supported mesh backend")
+        if "sdf_resolution" in obj and approximation != "sdf":
+            raise ValueError("sdf_resolution requires collision_approximation=sdf")
+        if approximation == "sdf":
+            resolution = obj.get("sdf_resolution", 256)
+            if (isinstance(resolution, bool) or not isinstance(resolution, (int, np.integer))
+                    or not 32 <= resolution <= 512):
+                raise ValueError("Egg sdf_resolution must be an integer from 32 through 512")
+    profile_volume = None
+    if "carton_profile" in obj:
+        if obj.get("kind") != "carton":
+            raise ValueError("carton_profile requires a carton object")
+        from phantom.sim.carton_geometry import carton_envelope_volume
+
+        profile_volume = carton_envelope_volume(size, obj["carton_profile"])
     if "nominal_capacity_ml" in obj:
         capacity = float(obj["nominal_capacity_ml"])
         if obj.get("kind") != "carton" or not np.isfinite(capacity) or capacity <= 0:
@@ -27,6 +45,8 @@ def object_config(config: dict) -> dict:
         # headspace, or the mass/density of the contents.
         if float(np.prod(size)) * 1e6 + 1e-9 < capacity:
             raise ValueError("Carton exterior bounding volume is smaller than nominal_capacity_ml")
+        if profile_volume is not None and profile_volume * 1e6 + 1e-9 < capacity:
+            raise ValueError("Carton shaped envelope volume is smaller than nominal_capacity_ml")
     return obj
 
 
@@ -42,8 +62,8 @@ def egg_mesh(size, rings=40, segments=64, taper=0.17):
     """Closed asymmetric ovoid, long axis local Z and pointed end at +Z.
 
     Exact XYZ bounds; outward triangles with shared poles. The broad end is
-    rounded, unlike a scaled sphere. Taper is an image estimate. Convex-hull
-    collision keeps rolling/contact geometry close to the rendered surface.
+    rounded, unlike a scaled sphere. Taper is an image estimate. Native collision
+    fidelity is checked separately; a single cooked hull can be too coarse.
     """
     size = np.asarray(size, float)
     if size.shape != (3,) or (size <= 0).any() or not np.isfinite(size).all():

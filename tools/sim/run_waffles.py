@@ -21,6 +21,11 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 from phantom.sim.task_objects import object_config, object_identity, orientation_wxyz
+from tools.sim.object_contacts import (
+    PAD_OBJECT_CONTACT_CAPACITY,
+    convex_support_paths,
+    summarize_pad_object_contacts,
+)
 
 
 def arguments():
@@ -830,7 +835,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
             name=f"pad_{i}",
             track_contact_forces=True,
             contact_filter_prim_paths_expr=[paths["waffle_path"]],
-            max_contact_count=64,
+            max_contact_count=PAD_OBJECT_CONTACT_CAPACITY,
             reset_xform_properties=False,
         )
         for i, p in enumerate(paths["pad_paths"])
@@ -897,7 +902,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
             environment_paths,
             rigid_prim_cls=RigidPrim,
             coverage=args.gel_contact_coverage,
-            convex_support_filter_paths=(paths["object_path"],),
+            convex_support_filter_paths=convex_support_paths(paths["object_path"], object_config(cfg)),
             geometry=GelSurfaceGeometry(**cfg["gripper"]["gel_geometry"])
             if articulated_gripper else None,
         )
@@ -2132,23 +2137,14 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                         .reshape(-1, 3)
                         .sum(axis=0)
                     )
-                    force_data, points, _, _, counts, starts = (
-                        pad.get_contact_force_data(dt=dt)
+                    contact = summarize_pad_object_contacts(
+                        pad.get_contact_force_data(dt=dt),
+                        max_contact_count=PAD_OBJECT_CONTACT_CAPACITY,
                     )
-                    contact_ids = [
-                        j
-                        for count, first in zip(
-                            np.asarray(counts).ravel(), np.asarray(starts).ravel()
-                        )
-                        for j in range(int(first), int(first + count))
-                    ]
-                    contact_counts.append(len(contact_ids))
-                    weights = np.abs(np.asarray(force_data).ravel()[contact_ids])
-                    packet_normal_forces.append(float(weights.sum()))
-                    if weights.sum() > 1e-8:
-                        centroid = np.average(
-                            np.asarray(points)[contact_ids], axis=0, weights=weights
-                        )
+                    contact_counts.append(contact["contact_count"])
+                    packet_normal_forces.append(contact["normal_force_n"])
+                    if contact["centroid_world_m"] is not None:
+                        centroid = contact["centroid_world_m"]
                         local = (
                             Rotation.from_quat(orientation[[1, 2, 3, 0]])
                             .inv()
@@ -2344,6 +2340,9 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
             if adaptive_gripper else "nominal coupled gripper targets"
         ),
         "gel_geometry": cfg["gripper"].get("gel_geometry") if articulated_gripper else None,
+        "pad_object_contact_data_capacity": PAD_OBJECT_CONTACT_CAPACITY,
+        "pad_object_contact_data_validation": "Exact one-body pair, populated finite buffers and nonzero loaded normals; capacity saturation raises",
+        "gel_convex_support_filter_paths": list(convex_support_paths(paths["object_path"], object_config(cfg))),
         "contact_trace_source": (
             "PhysX contacts between separate supplier wear-layer rigid bodies and packet; "
             "hard sensor housings/adapters/linkage are separate actors. Active optical-area "

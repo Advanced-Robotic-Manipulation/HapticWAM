@@ -1,0 +1,441 @@
+{
+  "schema_version": 1,
+  "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+  "physics": {
+    "dt": 0.00025,
+    "render_hz": 15,
+    "solver_position_iterations": 128,
+    "solver_velocity_iterations": 8,
+    "joint_stiffness": 3500,
+    "joint_damping": 180,
+    "finger_stiffness": 1800,
+    "finger_damping": 25,
+    "finger_force_N": 15,
+    "forearm_collision_approximation": "convexDecomposition"
+  },
+  "table": {
+    "center": [
+      -0.23,
+      0.1,
+      -0.037500000000000006
+    ],
+    "size": [
+      1.7,
+      1.2,
+      0.05
+    ],
+    "hole_pitch": 0.05,
+    "hole_radius": 0.0055,
+    "top_z": -0.0125,
+    "friction": 0.55,
+    "grid_origin_xy": [
+      -0.9644390170881325,
+      0.5216767944318121
+    ],
+    "grid_yaw": -0.016781155522956927
+  },
+  "mat": {
+    "center": [
+      -0.3553179049367156,
+      -0.2367460116331834,
+      -0.011000000000000001
+    ],
+    "size": [
+      0.4,
+      0.38,
+      0.003
+    ],
+    "grid_pitch": 0.085,
+    "friction": 0.7,
+    "frame_model": "local_planar",
+    "yaw": -0.008915071616459587,
+    "grid_origin_xy": [
+      -0.03949566789022466,
+      0.0075523360591647146
+    ]
+  },
+  "bin": {
+    "center": [
+      -0.39052377006030875,
+      0.06490764411969535,
+      -0.009500000000000001
+    ],
+    "friction": 0.4,
+    "geometry_model": "rectangular_envelope",
+    "outer_size": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "opening_size": [
+      0.36,
+      0.26
+    ],
+    "floor_thickness": 0.004,
+    "yaw": -0.012089355098796523
+  },
+  "gripper": {
+    "pad_touch_command": 0.9,
+    "pad_size": [
+      0.0017016676138155162,
+      0.038595568388700485,
+      0.04787348955869675
+    ],
+    "pad_friction": 1.0,
+    "compliant_stiffness": 12000,
+    "compliant_damping": 30,
+    "yaw": 0.0,
+    "geometry_source": "Supplier W2L CAD; root and axial sensor mounting registered to precontact teleop metal caps and white sensor walls. Installed dimensions and motor/contact response remain image-estimated.",
+    "contact_shape": "ellipse",
+    "model": "robotiq_2f85_w2l_adaptive_v2",
+    "gel_geometry": {
+      "pad_thickness_m": 0.0017023373024049053,
+      "active_size_yz_m": [
+        0.027,
+        0.036
+      ],
+      "active_center_yz_m": [
+        0.0,
+        0.0
+      ],
+      "inner_face_tolerance_m": 0.0003
+    },
+    "articulation": {
+      "angle_at_touch_rad": 0.8,
+      "bare_gripper_mass_kg": 0.925,
+      "drive_stiffness_nm_rad": 12.0,
+      "drive_damping_nm_s_rad": 0.16,
+      "drive_max_torque_nm": 1.7,
+      "mounts": {
+        "left": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            1.5707963267948966
+          ]
+        },
+        "right": {
+          "xyz": [
+            0.0,
+            -0.0217011,
+            0.09007997886316
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            -1.5707963267948966
+          ]
+        }
+      },
+      "mount_status": "Image-estimated axial mount with independently registered metal gripper root; see scene_provenance.gripper_registration. No object/pick outcome used for fitting.",
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      },
+      "driver_force_distribution": "equal_split",
+      "root_correction_xyz_rotvec": [
+        0.011393389195031378,
+        0.0074528151847574635,
+        0.005756471181264976,
+        0.007564015225908943,
+        -0.0037834315939320054,
+        0.060237041308632784
+      ]
+    },
+    "visual_materials": {
+      "cover": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "bottom_cap": [
+        0.025,
+        0.03,
+        0.028,
+        1.0
+      ],
+      "connector": [
+        0.018,
+        0.022,
+        0.02,
+        1.0
+      ],
+      "cable_stub": [
+        0.012,
+        0.015,
+        0.014,
+        1.0
+      ]
+    }
+  },
+  "camera": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "cx": 337.8138732910156,
+    "cy": 249.65126037597656,
+    "position": [
+      -0.35399058583569004,
+      -0.44643379477503714,
+      0.9535
+    ],
+    "target": [
+      -0.3491143716535526,
+      -0.016208984538463922,
+      0.05079138965436125
+    ],
+    "world_from_cv": [
+      [
+        0.9999720414746357,
+        -0.005669109656577374,
+        0.00487621418213748,
+        -0.35399058583569004
+      ],
+      [
+        -0.007215535335001398,
+        -0.9026929426481264,
+        0.4302248102365732,
+        -0.44643379477503714
+      ],
+      [
+        0.0019627325028448834,
+        -0.4302479662810364,
+        -0.9027086103456388,
+        0.9535
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source": "Connected D435 factory RGB K; camera normal from 50mm table lattice at measured963mm above mat; UR registration from wrist caps and photo mount/mat constraints.",
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": [],
+    "factory_profile": {
+      "path": "docs/results/d435_factory_calibration_20260908/d435_rgb_profile.json",
+      "sha256": "22d05713a0b2181c20111ce646f01323173d9b17b3d621708f69bd807b32d687",
+      "serial": "944622074411",
+      "sdk_distortion_model": "distortion.inverse_brown_conrady",
+      "zero_coefficients_make_pinhole_equivalent": true
+    }
+  },
+  "lighting": {
+    "dome_intensity": 650,
+    "key_intensity": 1800,
+    "key_position": [
+      -0.1,
+      -0.5,
+      1.8
+    ]
+  },
+  "uncertainty": {
+    "geometry": "Rig scale from measured table/mat pitch, factory D435 K and measured waffle-era support geometry. Current task object and fixture dimensions/poses are image estimates; see docs/results/task_scenes_20260913/evidence_manifest.json.",
+    "physics": "Task object rigid-body approximation; mass/friction are unmeasured priors. Shell fracture/carton crushing and tactile transfer uncalibrated.",
+    "camera": "Factory RGB K read from matching D435 serial; zero SDK coefficients. Extrinsics estimated using metric grid and measuredheight; UR registration uses nominal CAD wrist faces and photo plate/mat alignment. Historical radiometry and rolling-shutter motion are not calibrated."
+  },
+  "calibration": {
+    "revision": "carton_clean_teleop_imageheight_heldout_20260914_v1",
+    "status": "image_only_height_candidate_pending_dynamic_validation",
+    "measurement_manifest": "docs/measurements/setup_20260908/revision_02/measurements.json",
+    "packet_orientation": "Task object orientation is image-estimated; see object yaw/rpy and initial_support_note. The waffle dimensions are not dimensions of this task object.",
+    "box_model": "Measured envelope/opening/height; rectangular untapered sides approximate the rim/body profile. Floor4mm is retained estimate, giving186mm depth.",
+    "frame_warning": "MountX200/Y150mm, yaw aligned with table/mat by photo hypothesis; base centered on plate. TableZ\u221212.5mm and mat3mm retained estimates.",
+    "validation": "docs/results/d435_factory_calibration_20260908/registration.json",
+    "camera_warning": "Factory K fixed. Camera tilt from metric table grid; noisy forearm volume-center correspondence excluded. No policy success claim.",
+    "gripper_validation": "docs/results/w2l_opening_width_20260909/README.md",
+    "opening_width": {
+      "inner_gap_at_POS0_m": 0.0912976626975951,
+      "symmetric_outward_per_sensor_m": 0.0055,
+      "fit_aperture_offset_m": 0.010955,
+      "approximate_sensitivity_half_range_m": 0.005,
+      "source": "Unloaded7073 housing/front-cover lip landmarks; measured cameraK; nominalCAD and screw-derived orientation; no loaded35mm sample or task outcome enters fit",
+      "root_yaw_rad": 0.0,
+      "root_translation_m": [
+        0,
+        0,
+        0
+      ],
+      "root_translation_note": "Camera/UR nuisance translation from screwfit is not asserted to be a physical off-axis flange mount",
+      "closed_endpoint_note": "RawPOS-to-angle gain and0.8radlimit retained; pad_touch_command is a legacy range label. Corrected modeledclosedgap stayspositive; unloadedendpoint/force/adaptivecalibration remains pending.",
+      "parallel_assumption_warning": "91.3mm is the uniform free-plane opening of this candidate, conditional on parallel pads. Actual gap must be measured at multiple longitudinal stations and matched POS. No passive hinge parameters have been validated."
+    },
+    "parent_static_config": {
+      "path": "configs/sim/waffles_w2l_opening_corrected_20260909.json",
+      "sha256": "002cffd1e93f07f9f8a097ba927c390f53e6bfa05b1decdabdfbb289899ecf3f"
+    },
+    "native_topology": {
+      "source": "assets/sim/robotiq/adaptive_reference/2f85.xml",
+      "motor_settings": "Existing12/.16/1.7 unchanged; reference actuator/armature not imported",
+      "spring_reference": "Reference spring rest angle2.62rad may lie beyond the physicaljointlimit; this is a torque-drive reference, never an initialization position",
+      "initialization": "Loop-consistent geometricseed then2sforce-drive settling before t0 in measured dynamics; no passive position resets duringtrial",
+      "registration": "Static sensor geometry retained as a conditional hypothesis; shared image-registration residual remains unresolved"
+    },
+    "native_seed_opening_POS0": {
+      "profile_mm": {
+        "full_gel_proximal": 91.29546289759615,
+        "active_proximal": 91.29546289759615,
+        "center": 91.29546289759612,
+        "active_distal": 91.2954628975961,
+        "full_gel_distal": 91.2954628975961
+      },
+      "relative_face_angle_rad": 0.0,
+      "scope": "Geometric seed, not loaded or force-equilibrium aperture"
+    }
+  },
+  "robot_mount": {
+    "size": [
+      0.2,
+      0.15,
+      0.0125
+    ],
+    "yaw": -0.016781155522956927
+  },
+  "task": "carton",
+  "scene_provenance": {
+    "rig_baseline": "docs/results/sim_zoo_20260912/inputs/scene.json",
+    "rig_baseline_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+    "reconstruction": "real RGB object/fixture geometry; inherited factory D435 intrinsics and registered extrinsics",
+    "object_dimensions": "40.48x44.55mm footprint from independent NUC image;113.196mm height from fit initial RGB, independently corroborated by113.700mm settled-bin estimate; image estimates with unresolved uncertainty.",
+    "physics": "uncalibrated rigid-body mass/friction/compliance priors; no crushing/fracture",
+    "episode_layout": {
+      "episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_150330_carton/ep_carton_1787400259_001",
+      "split": "heldout",
+      "review": "All native RGB frames reviewed for hand/object correction; none observed. Both recordings visibly pick, carry and release upright into bin.",
+      "initial_frame": 0,
+      "dimension_source": "docs/results/task_scene_replay_20260914/carton/initial_height_audit.json",
+      "fit_scope": "Shared height from fit initial RGB top and visible base corner; each episode initial XY/yaw from its own top/base corners. Fixed footprint, mat, rig, camera and physics; no simulated outcome objective.",
+      "heldout_definition": "Held out from geometry/material/controller fitting; episode-specific initial pose is measured from its first RGB frame, not excluded from initialization observation. Policy-training overlap not audited."
+    },
+    "gripper_registration": {
+      "base_config": "configs/sim/carton_teleop_heldout.json",
+      "base_config_sha256": "86f21f55283dac30d1c81b0b3a1ecea853b3565379c4579fd719365c0f6615b2",
+      "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
+      "recommendation_sha256": "724fd04138fdea74a7d38be918d8ed2d7706eb862000ae21d5876d609317a8cd",
+      "frame": "tool0 @ Rz(-pi/2+gripper.yaw) @ T(root_xyz,Rotation.from_rotvec(root_rotvec)) @ nominal_gripper_chain",
+      "scope": "Fit to metal caps and exterior sensor sidewalls in egg precontact RGB; transferred unchanged to held-out episode and Carton. Physical validation is reported separately.",
+      "preserved": "Robot joints/TCP, camera, object/fixture shape and pose, encoder-to-angle mapping, force drives, contact materials and timestep"
+    },
+    "image_height_candidate": {
+      "parent_config": "configs/sim/carton_teleop_registered_heldout.json",
+      "parent_config_sha256": "99b00bf4ecabcdcebaad6c44774f3a065775d45ef500997ea9736bae6519b1b7",
+      "audit": "docs/results/task_scene_replay_20260914/carton/initial_height_audit.json",
+      "audit_sha256": "5bbed7565496b886cec4668282fa06e4bb5f64e1ba8888c23dce4fa8e36b230f",
+      "height_source_split": "fit",
+      "shared_height_m": 0.11319600871430395,
+      "initial_top_corners_uv": [
+        [
+          281.0,
+          365.0
+        ],
+        [
+          307.0,
+          359.0
+        ],
+        [
+          315.0,
+          390.0
+        ],
+        [
+          286.0,
+          399.0
+        ]
+      ],
+      "initial_visible_front_left_base_corner_uv": [
+        291.5,
+        413.0
+      ],
+      "base_corner_uncertainty_px": 3.0,
+      "pose_fit_scope": "Fit reuses complete XY/yaw/height image solution; heldout optimizes only its initial XY/yaw with fit height fixed.",
+      "preserved": "Camera; robot and sensor mounting; gripper mapping and mechanics; object footprint/mass/material; mat/table/bin; physics and controller.",
+      "interpretation": "Bounded image-favored alternative to125.099mm, not proof that earlier height was wrong or that this candidate reproduces grasp. Do not select final geometry from task success alone."
+    },
+    "teleop_scene_revision": {
+      "revision": "clean_teleop_reconstruction_v2",
+      "parent_config": "configs/sim/carton_teleop_imageheight_heldout.json",
+      "parent_sha256": "d98fbcec51b35a043f874d8e32d879f3c430f8947456a1b658058c8c872ee943",
+      "appearance_evidence": "docs/results/task_scene_replay_20260914/rig/proposed_w2l_visual_materials.json",
+      "appearance_evidence_sha256": "a1024b892408df0a6b47f2280811fce079701382ed8a310c257875ee7a02a5fd",
+      "changes": "Dark sensor cover/base/cable materials only; image-supported carton height/pose preserved.",
+      "validation": "docs/results/task_scene_replay_20260914/README.md",
+      "scope": "Physical replay results and remaining image errors are reported separately; this provenance is not a policy qualification."
+    },
+    "capacity_consistency": {
+      "audit": "docs/results/task_scene_consistency_20260914/carton/capacity_constrained_fit.json",
+      "capacity_source": "User confirms intact full250ml Parmalat; user photo reads250ml",
+      "outer_bbox_volume_ml": 270,
+      "nominal_outer_volume": true,
+      "geometry_selection": "Same clean fit frame0/326 calibrated corners; no contact point, replay success or teacher behavior in objective",
+      "filled_mass_measured": false
+    },
+    "contact_fit_experiment": {
+      "campaign": "task_scene_contact_fit_20260914",
+      "candidate": "friction085",
+      "parameters": {
+        "extra_xy_mm": 0,
+        "profile": null,
+        "friction": [
+          0.8,
+          0.7
+        ]
+      },
+      "selection": "Candidate outcomes on reused fit episodes may guide selection; new reserved episodes cannot guide fitting.",
+      "unchanged": "Measured trajectories and clocks; full250ml assumption and270g mass; scene camera/rig/support; native force limits and physics step.",
+      "warning": "Simulation success is an exploratory calibration result until it transfers to additional clean teleop episodes."
+    },
+    "shared_pose_bias_screen": {
+      "parent_config": "configs/sim/carton_contact_friction085_heldout.json",
+      "parent_sha256": "b48697acbddf728f72ae7936ca49380f665740b296143dd7bc84d09f6b0dda7a",
+      "bias_world_m": [
+        0.003,
+        0.001,
+        0
+      ],
+      "audit": "docs/results/task_scene_contact_fit_20260914/carton/shared_pose_screen_protocol.json",
+      "scope": "Fixed nominal initial image pose plus one shared XY bias. No XY/yaw re-optimization. Both old episodes are fitting/screening evidence, despite the historical heldout filename. No new reference simulator outcomes read.",
+      "selection": "Run both biases on old second for16s; test the same candidate on old fit. Preserve all outcomes. Prefer the smallest bias consistent with contact acquisition and both-reference image residuals; never select an independent outcome-derived bias per episode. Initial diagnostics are fitting results. A candidate may be transferred to fresh image-fitted references only with the exact same shared bias and frozen shape/material/mechanics."
+    }
+  },
+  "object": {
+    "kind": "carton",
+    "center": [
+      -0.40366984078741397,
+      -0.2438190292222453,
+      0.055260778201335466
+    ],
+    "size": [
+      0.04612153309773228,
+      0.045197870624125364,
+      0.12952155640267093
+    ],
+    "yaw": 0.2340462830142351,
+    "mass": 0.27,
+    "static_friction": 0.8,
+    "dynamic_friction": 0.7,
+    "restitution": 0.01,
+    "face_textures": {
+      "top": "assets/sim/carton/top.png",
+      "front": "assets/sim/carton/front.png",
+      "left": "assets/sim/carton/left.png"
+    },
+    "mass_prior_range_kg": [
+      0.255,
+      0.285
+    ],
+    "mass_note": "User confirms FULL250ml.0.270kg nominal is assumed250ml x1.04g/ml dairy density +10g packaging; range0.255-0.285kg is sensitivity, not measurement. No calibrated liquid/slosh or carton compliance model.",
+    "dimensions_note": "Exploratory contact-fit candidate under user authorization. Nominal image-fitted initial center/yaw held fixed for isolation; changed shape/width is not a measured reconstruction.",
+    "nominal_capacity_ml": 250
+  }
+}
