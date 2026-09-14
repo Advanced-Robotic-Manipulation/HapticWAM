@@ -197,7 +197,14 @@ EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.p
 #    Egg/whiteboard: no bounds (their demo starts sit entirely outside y <= -0.28).
 # PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
 SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
-case "$TASK" in waffles|Carton) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28";; esac
+# 09-14 success envelope (188 episodes, 09-12+09-13, rule ordinal): placed starts sit higher — waffles z in
+# [0.325, 0.362] places 0.24 vs 0.13 outside; Carton z >= 0.285 (weaker, n=8 placed); x carries nothing;
+# y <= -0.28 confirmed on the unbounded 09-12 day (0.18 vs 0.08). Deterministic clamp: a paired cell keeps
+# the same start on both arms.
+case "$TASK" in
+  waffles) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.325";;
+  Carton)  SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.285";;
+esac
 # 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
 # the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
 [ -z "$LEROBOT_TYPE" ] && SESSION_EXTRA="$SESSION_EXTRA --agreement-shadow"
