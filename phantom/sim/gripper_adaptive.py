@@ -250,7 +250,7 @@ def coupling_residuals(values, cfg):
     return {"right_outer_knuckle_joint": float(q[3] - q[0])}
 
 
-def mechanical_diagnostics(values):
+def mechanical_diagnostics(values, threshold_overrides=None):
     """Check one measured eight-joint state before another physics step.
 
     Frozen qualification tolerances apply to actual positions, never spring
@@ -267,6 +267,11 @@ def mechanical_diagnostics(values):
         "joint_limit_violation_max_rad": .002,
         "loop_closure_max_m": .001,
     }
+    if threshold_overrides:
+        unknown = set(threshold_overrides) - set(thresholds)
+        if unknown:
+            raise ValueError(f"unknown mechanics threshold override(s): {sorted(unknown)}")
+        thresholds.update({k: float(v) for k, v in threshold_overrides.items()})
     violations = {
         name: float(max(lo - value, value - hi, 0.))
         for name, value in zip(JOINT_NAMES, q) for lo, hi in [LIMITS[name]]

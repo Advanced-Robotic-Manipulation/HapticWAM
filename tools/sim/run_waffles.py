@@ -70,6 +70,9 @@ def arguments():
         type=float,
         help="Override media/trace sampling rate for tuning runs",
     )
+    p.add_argument("--mechanics-coupling-max-rad", type=float, default=None,
+                   help="override the native gripper coupling gate (default 0.005 rad); data generation "
+                        "at 1 ms physics uses 0.01 (2026-09-14 speed settings, pads masked)")
     p.add_argument("--expert-params", type=Path, default=None,
                    help="JSON overrides for phantom.sim.scripted_expert.ExpertParams (--policy-server scripted)")
     p.add_argument(
@@ -271,6 +274,11 @@ def validate_adaptive_policy_experiment(args, cfg):
         raise ValueError("Adaptive teacher experiment requires measured_baseline_proxy and gripper_contact_proxy")
     if args.gel_contact_coverage != "manifold_patch_v2":
         raise ValueError("Adaptive teacher experiment requires the replay-tested manifold_patch_v2 mapping")
+    if args.policy_server == "scripted" and not args.record_robot_environment_contacts:
+        # data generation: the robot-environment contact query per frame is diagnostic only
+        # (the exporter reads gel contacts + packet support); skipping it is part of the
+        # 2026-09-14 speed settings for the scripted expert
+        pass
     if args.policy_server == "scripted" and args.save_policy_observations:
         # data generation: the per-replan observation dumps (~90 MB per trial) duplicate
         # the rendered video + traces the exporter reads; they filled /dev/shm during the
@@ -278,7 +286,8 @@ def validate_adaptive_policy_experiment(args, cfg):
         args.save_policy_observations = False
     if ((not args.save_policy_observations and args.policy_server != "scripted")
             or not args.record_gel_contacts
-            or not args.record_packet_support or not args.record_robot_environment_contacts):
+            or not args.record_packet_support
+            or (not args.record_robot_environment_contacts and args.policy_server != "scripted")):
         raise ValueError(
             "Adaptive teacher experiment requires policy observations, gel contacts, "
             "packet-support and robot-environment contact records"
@@ -1020,6 +1029,10 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
         return closure_from_joint_positions(values, cfg)
 
     native_mechanics_monitor = {"enabled": adaptive_gripper, "checks": 0}
+    mechanics_overrides = ({"coupling_max_abs_rad": float(args.mechanics_coupling_max_rad)}
+                           if getattr(args, "mechanics_coupling_max_rad", None) is not None else None)
+    if mechanics_overrides:
+        native_mechanics_monitor["threshold_overrides"] = dict(mechanics_overrides)
     from phantom.sim.native_failure_audit import (
         NativeFailureHistory, json_value, read_diagnostic, runtime_readback,
     )
@@ -1040,7 +1053,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
             velocity_read_error=velocity_readback.get("error"),
         )
         try:
-            diagnostic = mechanical_diagnostics(values)
+            diagnostic = mechanical_diagnostics(values, threshold_overrides=mechanics_overrides)
         except ValueError as error:
             diagnostic = {"passed": False, "error": str(error)}
         native_mechanics_monitor["checks"] += 1
