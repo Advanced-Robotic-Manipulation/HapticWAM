@@ -101,8 +101,16 @@ class ScriptedExpertPolicy:
     guidance = 1.0
     action_time_origin = "inference_ready"
 
-    def __init__(self, packet_pose_fn, bin_center_xy, params: ExpertParams | None = None, *, rng_seed: int = 0):
+    def __init__(self, packet_pose_fn, bin_center_xy, params: ExpertParams | None = None, *, rng_seed: int = 0,
+                 pad_midpoint_fn=None):
         self.packet_pose_fn = packet_pose_fn          # () -> (xyz base frame)
+        # () -> xyz of the midpoint between the two pads (base frame). The pads sit off the TCP
+        # by up to ~3 cm laterally depending on the tool orientation and the finger closure
+        # (egg smoke 2026-09-14: pads 2.7 cm beside a 48 mm egg at the demo orientation), so
+        # the expert steers the PAD midpoint onto the object and derives the TCP target from
+        # the currently measured offset. None = aim the TCP itself (waffle behaviour).
+        self.pad_midpoint_fn = pad_midpoint_fn
+        self._pad_offset_xy = np.zeros(2)
         self.bin_center_xy = np.asarray(bin_center_xy, dtype=float)[:2]
         self.base_params = params or ExpertParams()
         self.p = self.base_params
@@ -166,11 +174,12 @@ class ScriptedExpertPolicy:
     def _target(self, tcp, packet):
         """Cartesian target for the current phase; None = hold in place."""
         p = self.p
+        c = self._pad_offset_xy          # TCP target = object - (pad midpoint - TCP), xy
         if self.phase == "pregrasp":
-            return np.array([packet[0] + self._aim_offset[0], packet[1] + self._aim_offset[1],
+            return np.array([packet[0] + self._aim_offset[0] - c[0], packet[1] + self._aim_offset[1] - c[1],
                              max(p.z_pregrasp_m, packet[2] + p.grasp_height_above_center_m + 0.10)])
         if self.phase == "descend":
-            return np.array([packet[0] + self._aim_offset[0], packet[1] + self._aim_offset[1],
+            return np.array([packet[0] + self._aim_offset[0] - c[0], packet[1] + self._aim_offset[1] - c[1],
                              packet[2] + p.grasp_height_above_center_m])
         if self.phase in ("close", "settle"):
             return None
@@ -183,10 +192,10 @@ class ScriptedExpertPolicy:
             return np.array([g[0], g[1], p.z_lift_m])
         if self.phase == "carry":
             xy = self._place_xy()
-            return np.array([xy[0], xy[1], p.z_carry_m])
+            return np.array([xy[0] - c[0], xy[1] - c[1], p.z_carry_m])
         if self.phase == "place_descend":
             xy = self._place_xy()
-            return np.array([xy[0], xy[1], p.z_place_m])
+            return np.array([xy[0] - c[0], xy[1] - c[1], p.z_place_m])
         if self.phase in ("open", "regrasp_open"):
             return None
         if self.phase == "retreat":
@@ -278,6 +287,10 @@ class ScriptedExpertPolicy:
         t = float(obs.t)
         tcp = np.asarray(tcp_pose, dtype=float)
         packet = np.asarray(self.packet_pose_fn(), dtype=float)[:3]
+        if self.pad_midpoint_fn is not None:
+            mid = np.asarray(self.pad_midpoint_fn(), dtype=float)[:3]
+            if np.isfinite(mid).all():
+                self._pad_offset_xy = mid[:2] - tcp[:2]
         self._step_phase(t, tcp, packet)
         H, dt = p.horizon, 1.0 / p.action_rate_hz
         actions = np.zeros((H, 7), dtype=np.float32)
@@ -310,4 +323,5 @@ class ScriptedExpertPolicy:
                                latency_s=p.latency_s, _cpk_token=None,
                                diag={"expert_phase": self.phase, "attempt": self.attempt, "packet_xyz": packet.tolist(),
                                      "target_xyz": None if target is None else [float(v) for v in target],
+                                     "pad_offset_xy": [float(v) for v in self._pad_offset_xy],
                                      "rot_target": None if rot_target is None else [float(v) for v in rot_target]})

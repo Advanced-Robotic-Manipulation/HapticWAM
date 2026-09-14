@@ -1,4 +1,34 @@
-{"_comment": "Carton expert profile from the 20 val teleop demos (2026-09-14): upright 250 ml carton grasped at TCP z 0.104 (centre 0.055), close 0.62, carry apex 0.34, release into the bin at z 0.127 offset (-0.036, +0.006) from the bin centre",
- "grasp_height_above_center_m": 0.049, "grip_close": 0.62, "z_pregrasp_m": 0.22, "z_lift_m": 0.22, "z_carry_m": 0.34, "z_place_m": 0.127, "z_retreat_m": 0.25,
- "place_offset_xy_m": [-0.036, 0.006],
- "rot_descend": [-1.24, -1.73, 1.45], "rot_grasp": [-1.473, -1.687, 1.375], "rot_carry": [-1.68, -1.43, 1.10], "rot_release": [-1.884, -1.176, 0.831]}
+{
+ "_comment": "Carton expert profile from the 20 val teleop demos (2026-09-14): upright 250 ml carton grasped at TCP z 0.104 (centre 0.055), close 0.62, carry apex 0.34, release into the bin at z 0.127 offset (-0.036, +0.006) from the bin centre | 09-14: close 0.48 (0.62 strained the finger linkage past its joint limits on the 46-51 mm body at both physics rates; measured closure on the carton is ~0.40)",
+ "grasp_height_above_center_m": 0.049,
+ "grip_close": 0.48,
+ "z_pregrasp_m": 0.22,
+ "z_lift_m": 0.22,
+ "z_carry_m": 0.34,
+ "z_place_m": 0.127,
+ "z_retreat_m": 0.25,
+ "place_offset_xy_m": [
+  -0.036,
+  0.006
+ ],
+ "rot_descend": [
+  -1.24,
+  -1.73,
+  1.45
+ ],
+ "rot_grasp": [
+  -1.473,
+  -1.687,
+  1.375
+ ],
+ "rot_carry": [
+  -1.68,
+  -1.43,
+  1.1
+ ],
+ "rot_release": [
+  -1.884,
+  -1.176,
+  0.831
+ ]
+}

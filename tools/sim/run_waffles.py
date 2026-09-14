@@ -1523,9 +1523,11 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                     goal_xy = np.asarray(cfg["egg_fixture"]["holders"]["centers"][3], dtype=float)[:2]
                 else:
                     goal_xy = np.asarray(cfg["bin"]["center"], dtype=float)[:2]
+                def _pad_midpoint():
+                    return np.mean([np.asarray(pad.get_world_poses()[0]).reshape(-1, 3)[0] for pad in pads], axis=0)
                 policy = ScriptedExpertPolicy(
                     lambda: np.asarray(packet.get_world_pose()[0], dtype=float),
-                    goal_xy, expert_params, rng_seed=int(args.seed or 0))
+                    goal_xy, expert_params, rng_seed=int(args.seed or 0), pad_midpoint_fn=_pad_midpoint)
             else:
                 host, port = args.policy_server.rsplit(":", 1)
                 policy = RemoteSimulationPolicy(
