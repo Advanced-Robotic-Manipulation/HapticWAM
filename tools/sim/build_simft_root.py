@@ -96,7 +96,8 @@ def main(argv=None) -> int:
         sim_eps = []
         for sroot in args.sim_root:
             sim_eps += sorted(p for p in (sroot / "tasks" / task).glob("ep_sim_*") if (p / "meta.json").exists())
-        sim_eps = [p for p in sim_eps if EpisodeMeta.load(p / "meta.json").status == "finalized"]
+        sim_eps = [p for p in sim_eps
+                   if (m := EpisodeMeta.load(p / "meta.json")).status == "finalized" and m.success is True]
         if args.max_sim:
             sim_eps = sim_eps[: args.max_sim]
         for ep in sim_eps:
