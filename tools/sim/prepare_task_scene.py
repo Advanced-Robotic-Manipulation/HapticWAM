@@ -9,12 +9,29 @@ requires explicit all-real driver provenance, and never edits the episode.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
+
+
+def check_reference_policy(meta: dict, *, allow_policy_rollout: bool = False) -> None:
+    """Require explicit teleoperation provenance for task reconstruction.
+
+    This classifies acquisition only. It cannot establish whether a person's
+    hand moved an object: the complete RGB recording needs visual review.
+    """
+    if str(meta.get("policy", "")).strip().lower() != "teleop" and not allow_policy_rollout:
+        raise ValueError(
+            "Task references default to explicitly labelled teleop episodes. "
+            "This recording has policy=" + repr(meta.get("policy")) + ". "
+            "Use --allow-policy-rollout only for a deliberate deployment diagnostic; "
+            "review the full RGB recording for manual object interventions."
+        )
+
 
 def main(argv: list[str] | None = None) -> None:
     from tools.sim.prepare_waffles import export_episode
@@ -26,6 +43,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--split", choices=("fit", "heldout"), default="heldout")
     parser.add_argument("--fps", type=float, default=15.0)
     parser.add_argument("--max-seconds", type=float)
+    parser.add_argument("--allow-policy-rollout", action="store_true",
+                        help="Explicitly allow a non-teleop reference for a deployment diagnostic")
     parser.add_argument("--measured-only", action="store_true",
                         help="Explicitly omit proposal/action audit streams; preserve measured motion/RGB/native clocks")
     args = parser.parse_args(argv)
@@ -33,6 +52,10 @@ def main(argv: list[str] | None = None) -> None:
         parser.error("--fps must be in (0, 125]")
     if args.max_seconds is not None and args.max_seconds <= 0:
         parser.error("--max-seconds must be positive")
+    check_reference_policy(
+        json.loads((args.episode / "meta.json").read_text()),
+        allow_policy_rollout=args.allow_policy_rollout,
+    )
     export_episode(
         args.episode,
         args.out,

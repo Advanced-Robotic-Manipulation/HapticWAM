@@ -114,6 +114,46 @@ def test_right_geometry_rotates_inside_aligned_link_frame(candidate):
     np.testing.assert_allclose(np.fromstring(right.get('rpy'),sep=' '),[0,0,math.pi])
 
 
+@pytest.mark.parametrize('model', [MODEL, 'robotiq_2f85_w2l_adaptive_v2'])
+def test_task_visual_colors_preserve_cad_physics_and_default_scene(candidate, model):
+    repo, cfg = candidate
+    cfg['gripper']['model'] = model
+    manifest = repo/'assets/sim/dmtac_w2l/geometry.json'
+    original_bytes = manifest.read_bytes()
+    baseline, _ = build(candidate)
+    cfg['gripper']['visual_materials'] = {'housing': [.025, .030, .028, 1.]}
+    changed, _ = build(candidate)
+    for side in ('left', 'right'):
+        color = changed.find(f"link[@name='{side}_sensor_housing']/visual/material/color")
+        np.testing.assert_allclose(np.fromstring(color.get('rgba'), sep=' '), [.025, .030, .028, 1.])
+    # Removing visual color leaves byte-identical authored geometry, transforms,
+    # collision, inertia, linkage and all other visual properties in both trees.
+    for tree in (baseline, changed):
+        for material in tree.findall('.//visual/material'):
+            color = material.find('color')
+            if color is not None:
+                material.remove(color)
+    assert ET.tostring(changed) == ET.tostring(baseline)
+    assert manifest.read_bytes() == original_bytes
+    del cfg['gripper']['visual_materials']
+    restored, _ = build(candidate)
+    for side in ('left', 'right'):
+        color = restored.find(f"link[@name='{side}_sensor_housing']/visual/material/color")
+        np.testing.assert_allclose(np.fromstring(color.get('rgba'), sep=' '), [.82, .88, .90, 1.])
+
+
+@pytest.mark.parametrize('overrides', [
+    None, [], {'missing_component': [0., 0., 0., 1.]},
+    {'housing': [0., 0., 0.]}, {'housing': [0., float('nan'), 0., 1.]},
+    {'housing': [1.01, 0., 0., 1.]}, {'housing': 'black'},
+])
+def test_invalid_visual_material_overrides_fail_explicitly(candidate, overrides):
+    _, cfg = candidate
+    cfg['gripper']['visual_materials'] = overrides
+    with pytest.raises(ValueError, match='visual_materials'):
+        build(candidate)
+
+
 def test_physx_mimics_have_correct_sign_single_drive_units_and_local_filters(candidate):
     pytest.importorskip('pxr.Usd')
     from pxr import Usd,UsdGeom,UsdPhysics,Sdf

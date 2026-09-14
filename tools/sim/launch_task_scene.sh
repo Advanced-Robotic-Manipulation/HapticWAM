@@ -19,7 +19,8 @@ while (($#)); do
       cat <<'EOF'
 Usage: launch_task_scene.sh --task carton|egg --episode PREPARED --output OUTPUT [runner options]
 
-Selects configs/sim/<task>.json and runs the existing Isaac headless launcher.
+Selects configs/sim/<task>_teleop_reconstruction_fit.json and runs Isaac headless.
+These defaults correspond to the reviewed clean teleoperation fit episodes.
 For a session-specific reconstruction, pass --config PATH to override that default.
 All remaining options are forwarded to run_waffles.py; see launch_waffles.sh --help.
 Set ISAAC_SIM_ROOT to use a different Isaac installation. No hardware is launched.
@@ -34,4 +35,4 @@ case "$TASK" in
   *) echo "A supported --task is required: carton or egg" >&2; exit 2 ;;
 esac
 exec "$REPO_ROOT/tools/sim/launch_waffles.sh" \
-  --config "$REPO_ROOT/configs/sim/$TASK.json" "${RUN_ARGS[@]}"
+  --config "$REPO_ROOT/configs/sim/${TASK}_teleop_reconstruction_fit.json" "${RUN_ARGS[@]}"

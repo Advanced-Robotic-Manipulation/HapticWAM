@@ -85,6 +85,70 @@ def _round_rectangle(size, radius, segments=48):
     return np.asarray(points)
 
 
+def tray_web_mesh(column, row, columns, rows, pitch, cup_outer_radius,
+                  height, wall, corner_radius=.014, opening_half_xy=(.011, .014)):
+    """Closed material web with rounded perimeter and open diamond junctions.
+
+    The 2x5 tray's four dark inter-row diamonds are image-estimated apertures.
+    Each neighboring cell loses one quarter of that opening. Cup centers,
+    bowl walls, and their support heights are independent of this web. The
+    exterior and collision mesh are identical; no convex hull fills the holes.
+    Returned vertices use the cell's local XY origin and the tray's Z datum.
+    """
+    pitch, opening = np.asarray(pitch, float), np.asarray(opening_half_xy, float)
+    if (pitch.shape != (2,) or opening.shape != (2,)
+            or not np.isfinite(pitch).all() or not np.isfinite(opening).all()
+            or np.any(pitch <= 0) or np.any(opening <= 0)
+            or min(columns, rows) < 1 or not 0 <= column < columns
+            or not 0 <= row < rows):
+        raise ValueError("Need positive pitch/apertures and a valid tray cell")
+    radius = _positive(cup_outer_radius, "cup outer radius")
+    h, t = _positive(height, "height"), _positive(wall, "wall")
+    rounding = _positive(corner_radius, "corner radius")
+    if t >= h or radius >= pitch.min()/2:
+        raise ValueError("Need wall < height and cup rim inside its cell")
+    cell = (np.array([column, row]) - (np.array([columns, rows])-1)/2) * pitch
+    # Outward half-plane normals. Every permitted point satisfies n.p <= d.
+    normals = [np.array(x, float) for x in [(1, 0), (-1, 0), (0, 1), (0, -1)]]
+    offsets = [pitch[0]/2, pitch[0]/2, pitch[1]/2, pitch[1]/2]
+    outline = _round_rectangle(pitch * [columns, rows], rounding, 64) - cell
+    for a, b in zip(outline, np.roll(outline, -1, axis=0)):
+        edge = b-a
+        normal = np.array([edge[1], -edge[0]])
+        normals.append(normal)
+        offsets.append(float(normal @ a))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            junction = np.array([column + (sx+1)//2, row + (sy+1)//2])
+            if 0 < junction[0] < columns and 0 < junction[1] < rows:
+                normals.append(np.array([sx, sy]) / opening)
+                offsets.append(float(np.sum(pitch / (2*opening)) - 1))
+    normals, offsets = np.asarray(normals), np.asarray(offsets)
+    if np.any(offsets <= radius * np.linalg.norm(normals, axis=1)):
+        raise ValueError("Tray rounding or diamond aperture intersects a cup rim")
+
+    polygon = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]]) * pitch/2
+    for normal, offset in zip(normals, offsets):
+        clipped = []
+        for a, b in zip(polygon, np.roll(polygon, -1, axis=0)):
+            da, db = normal @ a - offset, normal @ b - offset
+            if da <= 1e-12:
+                clipped.append(a)
+            if (da < -1e-12 and db > 1e-12) or (da > 1e-12 and db < -1e-12):
+                clipped.append(a + da/(da-db) * (b-a))
+        polygon = np.asarray(clipped)
+    # Include every true perimeter/aperture corner as well as circular-rim
+    # samples. This avoids a coarse angular grid rounding over a diamond tip.
+    angles = np.mod(np.arctan2(polygon[:, 1], polygon[:, 0]), math.tau)
+    angles = np.unique(np.round(np.r_[angles, np.arange(48)*math.tau/48], 12))
+    directions = np.c_[np.cos(angles), np.sin(angles)]
+    projections = directions @ normals.T
+    bounds = np.divide(offsets, projections, out=np.full_like(projections, np.inf),
+                       where=projections > 1e-12)
+    outer = directions * bounds.min(axis=1)[:, None]
+    return _ring_solid(radius * directions, outer, h, t)
+
+
 def build_egg_fixture(stage, cfg, material, box, collider, mat_phys):
     """Author the optional egg fixture and return its collider paths/estimates.
 
@@ -158,15 +222,23 @@ def build_egg_fixture(stage, cfg, material, box, collider, mat_phys):
     outer = direction * ray_scale[:, None]
     shell_v, shell_f = cup_shell_mesh(bottom_radius, radius, height, wall)
     web_v, web_f = _ring_solid(inner, outer, height, wall)
+    web_model = f.get("web_model", "rectangular_web_v1")
+    if web_model not in ("rectangular_web_v1", "rounded_perforated_v2"):
+        raise ValueError(f"Unknown egg tray web_model: {web_model}")
     for row in range(rows):
         for column in range(columns):
             cell = [(column - (columns - 1) / 2) * pitch[0], (row - (rows - 1) / 2) * pitch[1], 0.]
             mesh(f"/World/EggFixture/Tray/Cell_{column}_{row}/Bowl", shell_v, shell_f, cell)
+            if web_model == "rounded_perforated_v2":
+                web_v, web_f = tray_web_mesh(
+                    column, row, columns, rows, pitch, radius+wall, height, wall,
+                    f.get("outer_corner_radius_m", .014),
+                    f.get("diamond_opening_half_xy_m", [.011, .014]))
             mesh(f"/World/EggFixture/Tray/Cell_{column}_{row}/Web", web_v, web_f, cell)
     # Molded separators visible between the two rows of cups. Closed tapered
     # cones sit on the existing web; no sheet spans a cup's opening.
     peak_height = _positive(f.get("separator_height_m", .043), "separator_height_m")
-    if peak_height > height:
+    if web_model == "rectangular_web_v1" and peak_height > height:
         pv, pf = cup_shell_mesh(.003, .010, peak_height - height, min(wall, (peak_height-height)/3), 12)
         pv[:, 2] = peak_height - height - pv[:, 2]
         pf = pf[:, ::-1]

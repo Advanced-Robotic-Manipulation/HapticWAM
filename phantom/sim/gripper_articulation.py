@@ -137,6 +137,28 @@ def _rpy(matrix):
     return [math.atan2(matrix[2,1], matrix[2,2]), pitch, math.atan2(matrix[1,0], matrix[0,0])]
 
 
+def root_mount_pose(cfg):
+    """Tool0-to-gripper pose, including an optional image-registered correction.
+
+    The correction is XYZ metres followed by a rotation vector in radians,
+    expressed AFTER the historical installation yaw in the nominal CAD root
+    frame. It changes the common physical parent of all gripper components;
+    arm kinematics/TCP and finger linkage coordinates are unaffected. Identity
+    remains the default for historical scenes.
+    """
+    from scipy.spatial.transform import Rotation
+
+    correction = np.asarray(_settings(cfg).get("root_correction_xyz_rotvec", [0.] * 6), float)
+    if correction.shape != (6,) or not np.isfinite(correction).all():
+        raise ValueError("root_correction_xyz_rotvec must contain finite XYZ metres and rotvec radians")
+    yaw = -math.pi / 2 + float(cfg["gripper"].get("yaw", 0.))
+    if not math.isfinite(yaw):
+        raise ValueError("gripper yaw must be finite")
+    installed = Rotation.from_euler("z", yaw).as_matrix()
+    rotation = installed @ Rotation.from_rotvec(correction[3:]).as_matrix()
+    return (installed @ correction[:3]).tolist(), _rpy(rotation)
+
+
 def _pose_element(parent, xyz, rpy=(0,0,0)):
     numbers = np.r_[xyz, rpy].astype(float)
     if numbers.shape != (6,) or not np.isfinite(numbers).all():
@@ -166,6 +188,12 @@ def _nominal(repo):
 
 
 def load_sensor_geometry(repo, cfg):
+    """Load immutable CAD data with optional scene-specific visual colors.
+
+    Overrides affect only the URDF visual material consumed by ``_part_link``.
+    The source manifest, collision meshes, masses and attachment frames retain
+    their CAD values; omitted overrides preserve historical scene appearance.
+    """
     settings = _settings(cfg)
     path = Path(repo)/settings.get("geometry_manifest", "assets/sim/dmtac_w2l/geometry.json")
     data = json.loads(path.read_text())
@@ -175,6 +203,22 @@ def load_sensor_geometry(repo, cfg):
     ids = [p["id"] for p in parts]
     if len(ids) != len(set(ids)) or any(not re.fullmatch(r"[a-zA-Z][a-zA-Z0-9_]*", x) for x in ids):
         raise ValueError("Sensor part ids must be unique URDF-safe names")
+    overrides = cfg["gripper"].get("visual_materials", {})
+    if not isinstance(overrides, dict):
+        raise ValueError("gripper.visual_materials must map sensor part IDs to RGBA")
+    unknown = set(overrides) - set(ids)
+    if unknown:
+        raise ValueError(f"Unknown gripper.visual_materials part IDs: {sorted(map(str, unknown))}")
+    for part in parts:
+        if part["id"] not in overrides:
+            continue
+        try:
+            color = np.asarray(overrides[part["id"]], dtype=float)
+        except (TypeError, ValueError) as error:
+            raise ValueError("gripper.visual_materials values must be finite normalized RGBA[4]") from error
+        if color.shape != (4,) or not np.isfinite(color).all() or np.any((color < 0) | (color > 1)):
+            raise ValueError("gripper.visual_materials values must be finite normalized RGBA[4]")
+        part["rgba"] = color.tolist()
     return data
 
 
@@ -266,7 +310,7 @@ def append_gripper_urdf(root, repo, cfg):
         append(link)
     mount = ET.Element("joint",name="tool_gripper",type="fixed")
     ET.SubElement(mount,"parent",link="tool0"); ET.SubElement(mount,"child",link="gripper_housing")
-    _pose_element(mount,[0,0,0],[0,0,-math.pi/2+cfg["gripper"].get("yaw",0)])
+    _pose_element(mount, *root_mount_pose(cfg))
     append(mount)
     for old in source.findall("joint"):
         if old.find("child").get("link").endswith("_pad"):

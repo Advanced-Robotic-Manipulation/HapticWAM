@@ -93,6 +93,37 @@ def test_initialization_closes_both_loops_across_full_encoder_range(cfg):
     assert end[1]==pytest.approx(.8)
 
 
+def test_registered_root_moves_all_physical_components_without_changing_linkage(cfg):
+    original, _ = build(cfg)
+    correction = np.array([.0114, .0075, .0058, .0076, -.0038, .0602])
+    cfg['gripper']['articulation']['root_correction_xyz_rotvec'] = correction.tolist()
+    registered, metadata = build(cfg)
+    delta = np.eye(4)
+    delta[:3, :3] = Rotation.from_rotvec(correction[3:]).as_matrix()
+    delta[:3, 3] = correction[:3]
+    installed = origin(original.find("joint[@name='tool_gripper']/origin"))
+    expected = installed @ delta @ np.linalg.inv(installed)
+    for closure in [0., .2, .5, .9]:
+        state = native.joint_targets(closure, cfg)
+        before, after = fk(original, state), fk(registered, state)
+        for name in before.keys() - {'tool0'}:
+            np.testing.assert_allclose(after[name], expected @ before[name], atol=1e-12)
+        assert max(closure_errors(after)) < 1e-9
+    # Mesh/inertial origins and every joint except the common mount are identical.
+    for element in original:
+        if element.get('name') != 'tool_gripper':
+            other = registered.find(f"{element.tag}[@name='{element.get('name')}']")
+            assert ET.tostring(element) == ET.tostring(other)
+    assert metadata['root_transform']['correction_xyz_rotvec'] == correction.tolist()
+
+
+@pytest.mark.parametrize('correction', [[0.] * 5, [0.] * 7, [0., 0., float('nan'), 0., 0., 0.]])
+def test_invalid_root_registration_is_rejected(cfg, correction):
+    cfg['gripper']['articulation']['root_correction_xyz_rotvec'] = correction
+    with pytest.raises(ValueError, match='root_correction_xyz_rotvec'):
+        build(cfg)
+
+
 def test_passive_motion_is_observable_and_cannot_be_faked_by_mimics(cfg):
     root,_ = build(cfg)
     q=native.joint_targets(.5,cfg)

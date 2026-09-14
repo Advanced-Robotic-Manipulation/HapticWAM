@@ -278,6 +278,7 @@ def append_gripper_urdf(root, repo, cfg):
         _part_link,
         _pose_element,
         load_sensor_geometry,
+        root_mount_pose,
     )
     settings = _settings(cfg)
     _verify_reference(repo)
@@ -334,7 +335,8 @@ def append_gripper_urdf(root, repo, cfg):
                 ET.SubElement(j, "mimic", joint=MASTER, multiplier="1", offset="0")
         append(j)
 
-    joint("tool_gripper", "tool0", "gripper_housing", [0,0,0], [0,0,-math.pi/2 + cfg["gripper"].get("yaw",0)], "fixed")
+    root_xyz, root_rpy = root_mount_pose(cfg)
+    joint("tool_gripper", "tool0", "gripper_housing", root_xyz, root_rpy, "fixed")
     for side, sign in (("left", -1), ("right", 1)):
         yaw = math.pi if sign < 0 else 0.
         joint(MASTER if side == "left" else DRIVERS[1], "gripper_housing", side+"_outer_knuckle", [0,sign*.0306011,.054904], [0,0,yaw])
@@ -359,7 +361,9 @@ def append_gripper_urdf(root, repo, cfg):
         "follower_mesh_offset_m": FOLLOWER_MESH_OFFSET.tolist(), "native_reference_sha256": REFERENCE_SHA256,
         "mechanical_model": "Native adaptive loop topology; geometry seed distinct from passive force dynamics; installed mounts and response uncalibrated",
         "inertia_model": "Existing nominal moving-link masses/inertias and CAD sensor masses retained; base mass allocation unchanged; native MJCF armature not imported",
-        "root_transform": "Existing PHANTOM tool installation yaw only; native reference base_mount Z offset omitted",
+        "root_transform": {"xyz_m": root_xyz, "rpy_rad": root_rpy,
+                           "correction_xyz_rotvec": settings.get("root_correction_xyz_rotvec", [0.] * 6),
+                           "semantics": "Installation yaw followed by explicit local CAD-root correction; native reference base_mount offset is not imported"},
     }
 
 
