@@ -181,6 +181,14 @@ def test_selector_rows_are_parsed_and_pick_coincides_with_the_default(tmp_path):
         assert r["agreement_of_pick"] == min(r["agreement"])
         assert r["task"] == "egg" and r["label"] == "v6_selector"
     assert sel[0]["spread"] == 0.4
+    # a selector-only report has nothing to say about disagreement — the rule
+    # is the pick there — and says so instead of dividing by zero
+    from tools.rig.analysis.agreement_outcome import analyze, print_report
+    res = analyze(sel, n_boot=50)
+    assert res["disagreement"]["n_comparable_replans"] == 0
+    assert res["disagreement"]["n_selector_replans"] == 2
+    assert np.isnan(res["episodes"][0]["disagree_rate"])
+    print_report(res)
 
 
 def test_missing_shadow_keys_and_missing_trace_yield_no_records_not_a_crash(tmp_path):
@@ -318,8 +326,11 @@ def test_length_matching_removes_the_duration_confound(tmp_path):
     assert L["median_replans_failed"] == 4 and L["median_replans_placed"] == 20
     assert L["auc_n_replans"]["not_placed"]["auc"] == 0.0         # duration alone separates
     m = L["matched"]["4"]
-    assert m["n_records"] == 16 and m["n_short"] == 0
-    assert m["groups"]["pooled"]["auc"]["not_placed"]["features"]["mean_of_pick"]["auc"] == 1.0
+    assert m["n_short"] == 0 and m["n_reaching"] == 4
+    for rule in ("truncate", "drop_short"):
+        r = m["rules"][rule]
+        assert r["n_records"] == 16 and r["n_episodes"] == 4
+        assert r["groups"]["pooled"]["auc"]["not_placed"]["features"]["mean_of_pick"]["auc"] == 1.0
 
     # truncation keeps the FIRST replans by trace index, and short episodes whole
     t = truncate_records(recs, 4)
@@ -329,6 +340,60 @@ def test_length_matching_removes_the_duration_confound(tmp_path):
     assert truncate_records(recs, None) == recs
     feats = episode_features(recs, first_n=4)
     assert [f["n_replans"] for f in feats] == [4, 4, 4, 4]
+
+
+def test_both_length_matching_rules_are_reported_and_drop_short_loses_the_failures(tmp_path):
+    """The second fork under length matching: truncate-and-keep leaves exposure
+    unequal, drop-short matches it by deleting the SHORT episodes — which are
+    the failures. At an N nearly every episode reaches the two rules coincide,
+    which is what makes a small N the honest operating point; at a large N the
+    positive count collapses and the report must show that, not hide it."""
+    from tools.rig.analysis.agreement_outcome import analyze, truncate_records
+
+    root = tmp_path / "20260915"
+    # 6 short failures (4 replans) and 4 long placements (20 replans)
+    for i in range(6):
+        d = root / f"ep_short_waffles_{i}_000"
+        _meta(d, task="waffles", seed=300 + i, label="v6_simft2k", ckpt="v6.pt",
+              stop="safety_stop", success=False, notes="operator: f")
+        _trace(d, [_row(10.0 + j, _shadow_diag(0.5 + 0.01 * j, disagree=False))
+                   for j in range(4)])
+    for i in range(4):
+        d = root / f"ep_long_waffles_{i}_000"
+        _meta(d, task="waffles", seed=400 + i, label="v6_simft2k", ckpt="v6.pt",
+              stop="finish", success=True)
+        _trace(d, [_row(10.0 + j, _shadow_diag(0.2 + 0.01 * j, disagree=False))
+                   for j in range(20)])
+    recs, _ = day_records(root)
+    L = analyze(recs, n_boot=100, matched=(4, 10))["length"]
+
+    # N=4: every episode reaches it, so the two rules are the SAME sample
+    m4 = L["matched"]["4"]
+    assert m4["n_reaching"] == 10 and m4["n_short"] == 0
+    a4 = {k: m4["rules"][k]["groups"]["pooled"]["auc"]["not_placed"] for k in m4["rules"]}
+    assert a4["truncate"]["n_pos"] == a4["drop_short"]["n_pos"] == 6
+    assert (a4["truncate"]["features"]["mean_of_pick"]["auc"]
+            == a4["drop_short"]["features"]["mean_of_pick"]["auc"] == 1.0)
+    assert m4["rules"]["drop_short"]["n_episodes_dropped"] == 0
+
+    # N=10: drop-short deletes every failure, so its AUC cannot be computed at
+    # all — the whole positive class is gone, and the counts say so
+    m10 = L["matched"]["10"]
+    assert m10["n_reaching"] == 4 and m10["n_short"] == 6
+    t10 = m10["rules"]["truncate"]["groups"]["pooled"]["auc"]["not_placed"]
+    d10 = m10["rules"]["drop_short"]["groups"]["pooled"]["auc"]["not_placed"]
+    assert t10["n_pos"] == 6 and t10["n_neg"] == 4
+    assert d10["n_pos"] == 0 and d10["n_neg"] == 4
+    assert np.isnan(d10["features"]["mean_of_pick"]["auc"])
+    assert m10["rules"]["drop_short"]["n_episodes_dropped"] == 6
+
+    # the rule is selectable for the primary tables too
+    assert len(truncate_records(recs, 10, drop_short=True)) == 40
+    assert len(truncate_records(recs, 10, drop_short=False)) == 4 * 10 + 6 * 4
+    prim = analyze(recs, n_boot=50, first_n=10, drop_short=True)
+    assert prim["match_rule"] == "drop_short" and prim["n_episodes"] == 4
+    assert analyze(recs, n_boot=50, first_n=10)["n_episodes"] == 10
+    assert [f["n_replans"] for f in episode_features(recs, first_n=10, drop_short=True)] == [10] * 4
 
 
 def test_the_permutation_fallback_matches_scipy_when_scipy_is_absent(tmp_path, monkeypatch):
@@ -374,6 +439,11 @@ def test_jsonl_records_merge_as_a_replay_source(tmp_path):
     assert res["sources"] == {"replay": 3, "shadow": len(recs)}
     assert "source:replay" in res["groups"] and "day:replay" in res["groups"]
     assert res["n_episodes"] == 5
+    # a replayed row CAN disagree (its trace_pick is what the rig played), so
+    # it is counted with the shadow rows, unlike a selector row
+    d = res["disagreement"]
+    assert d["n_comparable_replans"] == len(recs) + 3
+    assert d["n_shadow_replans"] == len(recs) and d["n_other_replans"] == 3
 
 
 def test_cli_prints_a_table_and_writes_json(tmp_path, capsys):

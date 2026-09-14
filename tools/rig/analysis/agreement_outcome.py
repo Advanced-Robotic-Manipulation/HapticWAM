@@ -248,7 +248,7 @@ def episode_key(rec: dict) -> tuple:
     return (rec.get("day"), rec.get("episode"))
 
 
-def truncate_records(records, first_n: int | None):
+def truncate_records(records, first_n: int | None, drop_short: bool = False):
     """The first `first_n` accepted replans of every episode (by trace index).
 
     LENGTH MATCHING. Episode duration is confounded with outcome: a failure is
@@ -256,33 +256,49 @@ def truncate_records(records, first_n: int | None):
     and place, and the late phases are where the imagined futures diverge
     anyway. Any feature pooled over a whole episode therefore reads partly as
     "how long did this episode last". Comparing the SAME opening window of
-    every episode removes that channel. Episodes shorter than `first_n` are
-    kept whole (they are the failures — dropping them would reintroduce the
-    same bias) and counted by `n_short` in the report."""
+    every episode removes that channel.
+
+    Two rules, and NEITHER is clean — the report prints both:
+
+    * truncate (default) keeps every episode, so an 8-replan failure and a
+      92-replan placement both contribute, but the short one contributes fewer
+      replans: exposure is still unequal, which is the very confound the
+      matching is for.
+    * `drop_short` removes the episodes with fewer than `first_n` replans, so
+      exposure matches exactly — at the cost of deleting the short episodes,
+      which are overwhelmingly the FAILURES. The AUC is then computed on a
+      different population, and the positive count falls as N grows.
+
+    They agree wherever nearly every episode reaches `first_n`, which is what
+    makes a small N the honest operating point. `n_short` / `n_reaching` in the
+    report say how far apart the two samples are."""
     if first_n is None:
         return list(records)
+    n = max(0, int(first_n))
     by: dict[tuple, list[dict]] = defaultdict(list)
     for r in records:
         by[episode_key(r)].append(r)
     out = []
     for rs in by.values():
+        if drop_short and len(rs) < n:
+            continue
         rs = sorted(rs, key=lambda r: (r.get("i") if r.get("i") is not None else 0))
-        out.extend(rs[:max(0, int(first_n))])
+        out.extend(rs[:n])
     return out
 
 
 def episode_features(records, percentile: float = 90.0, threshold: float | None = None,
-                     first_n: int | None = None) -> list[dict]:
+                     first_n: int | None = None, drop_short: bool = False) -> list[dict]:
     """One row per episode: the per-replan agreement distances summarised.
 
     `threshold` is the POOLED cut `frac_above` counts against — pass the value
     from `pooled_threshold` so the fraction is comparable across episodes; the
-    default derives it from `records` themselves. `first_n` length-matches the
-    episodes first (see `truncate_records`), which is how these features should
-    be read whenever failures and placements have different durations.
-    Episodes keep their outcome, stop, task and label, including unlabeled ones
-    (outcome None), which every caller is free to list and every AUC drops."""
-    records = truncate_records(records, first_n)
+    default derives it from `records` themselves. `first_n` (with `drop_short`)
+    length-matches the episodes first — see `truncate_records`, which documents
+    why that matters and why the two rules disagree. Episodes keep their
+    outcome, stop, task and label, including unlabeled ones (outcome None),
+    which every caller is free to list and every AUC drops."""
+    records = truncate_records(records, first_n, drop_short)
     if threshold is None:
         threshold = pooled_threshold(records, percentile)
     by: dict[tuple, list[dict]] = defaultdict(list)
@@ -295,8 +311,11 @@ def episode_features(records, percentile: float = 90.0, threshold: float | None 
         ofp = np.asarray([_num(r["agreement_of_pick"]) for r in rs], dtype=float)
         spr = np.asarray([_num(r["spread"]) if _num(r["spread"]) is not None else np.nan
                           for r in rs], dtype=float)
+        # only rows where the two rules CAN differ: a selector row's pick is
+        # the agreement rule's own, so counting it would dilute the rate
         dis = [int(r["pick"] != r["trace_pick"]) for r in rs
-               if r.get("pick") is not None and r.get("trace_pick") is not None]
+               if r.get("pick") is not None and r.get("trace_pick") is not None
+               and str(r.get("source")) != "selector"]
         row = {"day": key[0], "episode": key[1], "task": first.get("task"),
                "seed": first.get("seed"), "ckpt": first.get("ckpt"),
                "label": first.get("label"), "outcome": first.get("outcome"),
@@ -510,15 +529,19 @@ def groups(records) -> list[tuple[str, list[dict]]]:
 
 def disagreement_summary(records, feats) -> dict:
     """How often the agreement rule would have kept another candidate, overall
-    and split by outcome. Only shadow rows can disagree; selector rows are the
-    agreement rule's own pick, so they are counted separately, never mixed in."""
-    shad = [r for r in records if r.get("source") == "shadow"
+    and split by outcome.
+
+    Counted over every row where the two rules CAN differ — shadow rows, and a
+    replay tool's rows, whose `trace_pick` is what the rig actually played.
+    Selector rows are excluded, never mixed in: there the agreement rule IS the
+    pick, so it agrees with itself by construction."""
+    shad = [r for r in records if r.get("source") != "selector"
             and r.get("pick") is not None and r.get("trace_pick") is not None]
     d = np.asarray([int(r["pick"] != r["trace_pick"]) for r in shad], dtype=float)
-    out = {"n_shadow_replans": int(d.size),
+    out = {"n_comparable_replans": int(d.size),
+           "n_shadow_replans": int(sum(1 for r in shad if r.get("source") == "shadow")),
            "n_selector_replans": int(sum(1 for r in records if r.get("source") == "selector")),
-           "n_other_replans": int(sum(1 for r in records
-                                      if r.get("source") not in ("shadow", "selector"))),
+           "n_other_replans": int(sum(1 for r in shad if r.get("source") != "shadow")),
            "disagree_rate": float(np.mean(d)) if d.size else float("nan")}
     # per-episode rates by outcome (episode-level, so one long episode cannot
     # dominate the comparison)
@@ -573,34 +596,47 @@ def length_summary(records, feats, percentile: float = 90.0, n_boot: int = 1000,
                                               n_boot=n_boot, seed=seed)
     out["matched"] = {}
     for N in matched:
-        recs = truncate_records(records, int(N))
-        thr = pooled_threshold(recs, percentile)
-        gf_all = episode_features(recs, percentile, thr)
-        entry = {"n": int(N), "threshold": thr, "n_records": len(recs),
-                 "n_episodes": len(gf_all),
-                 "n_short": int(sum(1 for f in feats if f["n_replans"] < int(N))),
-                 "groups": {}}
-        for name, rs in groups(recs):
-            entry["groups"][name] = {"n_episodes": len({episode_key(r) for r in rs}),
-                                     "n_records": len(rs),
-                                     "auc": group_auc(episode_features(rs, percentile, thr),
-                                                      n_boot=n_boot, seed=seed)}
-        out["matched"][str(int(N))] = entry
+        N = int(N)
+        entry = {"n": N,
+                 "n_short": int(sum(1 for f in feats if f["n_replans"] < N)),
+                 "n_reaching": int(sum(1 for f in feats if f["n_replans"] >= N)),
+                 "rules": {}}
+        # BOTH matching rules, because neither is clean: "truncate" keeps every
+        # episode at unequal exposure, "drop_short" matches exposure by deleting
+        # the short episodes — which are the failures. Where the two agree, the
+        # choice does not matter; where they do not, the reader must see both.
+        for rule, drop in (("truncate", False), ("drop_short", True)):
+            recs = truncate_records(records, N, drop_short=drop)
+            thr = pooled_threshold(recs, percentile)
+            r_entry = {"threshold": thr, "n_records": len(recs),
+                       "n_episodes": len({episode_key(r) for r in recs}),
+                       "n_episodes_dropped": len(feats) - len({episode_key(r) for r in recs}),
+                       "groups": {}}
+            for name, rs in groups(recs):
+                r_entry["groups"][name] = {
+                    "n_episodes": len({episode_key(r) for r in rs}), "n_records": len(rs),
+                    "auc": group_auc(episode_features(rs, percentile, thr),
+                                     n_boot=n_boot, seed=seed)}
+            entry["rules"][rule] = r_entry
+        out["matched"][str(N)] = entry
     return out
 
 
 def analyze(records, percentile: float = 90.0, n_boot: int = 1000, seed: int = 0,
-            window: int = 3, first_n: int | None = None, matched=(5, 10)) -> dict:
+            window: int = 3, first_n: int | None = None, matched=(5, 10),
+            drop_short: bool = False) -> dict:
     """The whole report as plain JSON-able data. With `first_n` every table is
-    computed on the first N replans of each episode instead of whole episodes;
-    the length-matched section is reported either way."""
-    records = truncate_records(records, first_n)
+    computed on the first N replans of each episode instead of whole episodes
+    (`drop_short` picks the matching rule); the length-matched section, which
+    prints both rules, is reported either way."""
+    records = truncate_records(records, first_n, drop_short)
     thr = pooled_threshold(records, percentile)
     feats = episode_features(records, percentile, thr)
     res = {"n_records": len(records), "n_episodes": len(feats),
            "percentile": float(percentile), "threshold": thr,
            "n_boot": int(n_boot), "seed": int(seed),
            "first_n": None if first_n is None else int(first_n),
+           "match_rule": ("drop_short" if drop_short else "truncate") if first_n else None,
            "sources": {s: int(sum(1 for r in records if r.get("source") == s))
                        for s in sorted({str(r.get("source")) for r in records})},
            "episodes": feats,
@@ -649,6 +685,33 @@ def _print_auc_table(groups_dict: dict, target: str, only=None, indent: str = ""
         print(f"{indent}{name[:22]:22s} {a['n_pos']:3d} {a['n_neg']:3d} {cells}")
 
 
+#: the features the side-by-side length-matched table shows (the full set for
+#: both rules is in --json-out)
+_COMPARE = ("mean_of_pick", "pctl_of_pick", "frac_above", "disagree_rate")
+
+
+def _print_rule_comparison(trunc: dict, drop: dict, target: str, indent: str = "") -> None:
+    """One row per group: the same AUCs under both length-matching rules, with
+    each rule's own n+/n- so a shrinking positive count is visible, not
+    inferred."""
+    cols = " ".join(f"{_FEATURE_ABBR[f]:>6s}" for f in _COMPARE)
+    print(f"{indent}{'':22s} {'--- truncate: keep all ---':>{9 + len(cols)}s}   "
+          f"{'--- drop short ---':>{9 + len(cols)}s}")
+    print(f"{indent}{'group':22s} {'n+':>3s} {'n-':>3s} {cols}   {'n+':>3s} {'n-':>3s} {cols}")
+    for name in trunc:
+        cells = []
+        for g in (trunc.get(name), drop.get(name)):
+            if g is None:
+                cells.append(f"{'-':>3s} {'-':>3s} " + " ".join(f"{'-':>6s}" for _ in _COMPARE))
+                continue
+            a = g["auc"][target]
+            body = (" ".join(_f(a["features"][f]["auc"]) for f in _COMPARE)
+                    if a["n_pos"] and a["n_neg"]
+                    else f"{'(one class — no AUC)':>{len(cols)}s}")
+            cells.append(f"{a['n_pos']:3d} {a['n_neg']:3d} {body}")
+        print(f"{indent}{name[:22]:22s} {cells[0]}   {cells[1]}")
+
+
 def _print_length(res: dict) -> None:
     """The duration confound and the length-matched tables."""
     L = res.get("length")
@@ -671,20 +734,25 @@ def _print_length(res: dict) -> None:
               f"[{a['lo']:.3f}, {a['hi']:.3f}] {tail}")
     for key in sorted(L.get("matched", {}), key=int):
         m = L["matched"][key]
+        tr, ds = m["rules"]["truncate"], m["rules"]["drop_short"]
         print(f"\n  length-matched: first {m['n']} accepted replans of every episode "
-              f"({m['n_records']} replans, {m['n_episodes']} episodes, "
-              f"{m['n_short']} shorter than {m['n']} and kept whole)")
+              f"— {m['n_reaching']} of {L['n_episodes']} episodes reach {m['n']}, "
+              f"{m['n_short']} are shorter")
+        print(f"  two rules, neither clean: TRUNC keeps all {tr['n_episodes']} episodes at "
+              f"unequal exposure; DROP matches exposure over {ds['n_episodes']} episodes by "
+              f"deleting the {ds['n_episodes_dropped']} short ones, which are mostly the "
+              f"failures — watch n+ fall")
         for target, title in _TARGETS:
             print(f"  AUC vs {title}")
-            _print_auc_table(m["groups"], target, indent="    ")
+            _print_rule_comparison(tr["groups"], ds["groups"], target, indent="    ")
 
 
 def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
     src = ", ".join(f"{k} {v}" for k, v in res["sources"].items()) or "none"
     print(f"agreement records: {res['n_records']} accepted replans over "
           f"{res['n_episodes']} episodes ({src})"
-          + (f" — LENGTH-MATCHED to the first {res['first_n']} replans of each episode"
-             if res.get("first_n") else ""))
+          + (f" — LENGTH-MATCHED to the first {res['first_n']} replans of each episode "
+             f"({res.get('match_rule')})" if res.get("first_n") else ""))
     pct = res["percentile"]
     print(f"pooled p{pct:g} threshold on agreement_of_pick = {res['threshold']:.6g}")
     for d in load_diag or []:
@@ -737,10 +805,15 @@ def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
               f"p = {p['p']:.4g} ({p['method']})")
 
     d = res["disagreement"]
-    print(f"\nagreement vs default pick: disagreed on {d['disagree_rate']:.1%} of "
-          f"{d['n_shadow_replans']} shadow replans"
-          + (f"; {d['n_selector_replans']} selector replans are the agreement pick by definition"
-             if d["n_selector_replans"] else ""))
+    tail = (f"; {d['n_selector_replans']} selector replans are excluded — there the "
+            f"agreement rule IS the pick" if d["n_selector_replans"] else "")
+    if not d["n_comparable_replans"]:
+        print("\nagreement vs default pick: no replan can answer it — every record is a "
+              "selector row, or none carries both picks" + tail)
+    else:
+        print(f"\nagreement vs default pick: disagreed on {d['disagree_rate']:.1%} of "
+              f"{d['n_comparable_replans']} replans where the two rules can differ "
+              f"({d['n_shadow_replans']} shadow, {d['n_other_replans']} replayed)" + tail)
     if np.isfinite(d.get("diff_failed_minus_placed", np.nan)):
         t = d.get("test", {})
         print(f"  per-episode rate: failed {d['mean_rate_failed']:.1%} "
@@ -778,7 +851,14 @@ def main(argv=None) -> int:
                          "episode — failures are stopped early, so whole-episode features "
                          "partly measure duration (see the length section, always printed)")
     ap.add_argument("--matched", type=int, nargs="*", default=(5, 10),
-                    help="the N values the length-matched section reports (default 5 10)")
+                    help="the N values the length-matched section reports (default 5 10). Prefer "
+                         "an N nearly every episode reaches: there the two matching rules agree "
+                         "and the choice between them cannot change the answer")
+    ap.add_argument("--drop-short", action="store_true",
+                    help="with --first-n, DROP the episodes shorter than N instead of keeping "
+                         "them truncated — exposure then matches exactly, at the cost of "
+                         "deleting episodes that are mostly failures (both rules are always "
+                         "printed side by side in the length section)")
     args = ap.parse_args(argv)
     if not args.day_dir and args.jsonl is None:
         ap.error("give at least one deploy day folder, or --jsonl")
@@ -801,7 +881,7 @@ def main(argv=None) -> int:
 
     res = analyze(records, percentile=args.percentile, n_boot=args.n_boot,
                   seed=args.seed, window=args.window, first_n=args.first_n,
-                  matched=args.matched)
+                  matched=args.matched, drop_short=args.drop_short)
     res["inputs"] = {"day_dirs": [str(d) for d in args.day_dir],
                      "hw": str(args.hw) if args.hw else None,
                      "jsonl": str(args.jsonl) if args.jsonl else None,
