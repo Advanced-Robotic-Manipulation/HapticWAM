@@ -143,7 +143,8 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
     if result.get("stage_name") == "placed" and not args.no_export:
         exp_cmd = [args.python, str(Path(args.runtime) / "tools/sim/export_expert_episode.py"),
                    "--trial", str(out), "--out-root", args.out_root, "--hardware", args.hardware,
-                   "--idle-tactile-from", args.idle_tactile_from, "--task", args.task]
+                   "--idle-tactile-from", args.idle_tactile_from, "--task", args.task,
+                   "--name", f"ep_sim_{args.task}_{raw_root.name}_{name}"]
         p = subprocess.run(exp_cmd, cwd=args.runtime, capture_output=True, text=True, env=env)
         (out / "export.log").write_text(p.stdout + p.stderr)
         row["exported"] = p.returncode == 0
