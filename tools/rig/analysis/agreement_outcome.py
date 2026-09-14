@@ -538,11 +538,20 @@ def disagreement_summary(records, feats) -> dict:
     shad = [r for r in records if r.get("source") != "selector"
             and r.get("pick") is not None and r.get("trace_pick") is not None]
     d = np.asarray([int(r["pick"] != r["trace_pick"]) for r in shad], dtype=float)
+    # CHANCE. Two rules picking independently among K candidates coincide 1/K
+    # of the time, so the disagreement rate to beat is 1 - mean(1/K) — 0.75 at
+    # K=4. A raw rate near three quarters is not "the rules nearly always
+    # differ", it is "the shadow pick is unrelated to the default pick".
+    ks = np.asarray([float(r.get("k_seeds") or len(r.get("agreement") or ())) for r in shad],
+                    dtype=float)
+    ks = ks[ks >= 1]
     out = {"n_comparable_replans": int(d.size),
            "n_shadow_replans": int(sum(1 for r in shad if r.get("source") == "shadow")),
            "n_selector_replans": int(sum(1 for r in records if r.get("source") == "selector")),
            "n_other_replans": int(sum(1 for r in shad if r.get("source") != "shadow")),
-           "disagree_rate": float(np.mean(d)) if d.size else float("nan")}
+           "disagree_rate": float(np.mean(d)) if d.size else float("nan"),
+           "chance_disagree_rate": float(np.mean(1.0 - 1.0 / ks)) if ks.size else float("nan"),
+           "k_seeds": sorted({int(k) for k in ks})}
     # per-episode rates by outcome (episode-level, so one long episode cannot
     # dominate the comparison)
     fail = [f["disagree_rate"] for f in feats
@@ -553,11 +562,29 @@ def disagreement_summary(records, feats) -> dict:
               and np.isfinite(f.get("disagree_rate", np.nan))]
     out.update(n_failed_episodes=len(fail), n_placed_episodes=len(placed),
                mean_rate_failed=float(np.mean(fail)) if fail else float("nan"),
-               mean_rate_placed=float(np.mean(placed)) if placed else float("nan"))
+               mean_rate_placed=float(np.mean(placed)) if placed else float("nan"),
+               median_rate_failed=float(np.median(fail)) if fail else float("nan"),
+               median_rate_placed=float(np.median(placed)) if placed else float("nan"))
     out["diff_failed_minus_placed"] = (out["mean_rate_failed"] - out["mean_rate_placed"]
                                        if fail and placed else float("nan"))
     if fail and placed:
         out["test"] = mannwhitney(fail, placed)
+    # the same split on the OTHER failure definition, so a null on one cannot be
+    # mistaken for a null on both
+    hard = [f["disagree_rate"] for f in feats if str(f.get("stop")) in HARD_STOPS
+            and np.isfinite(f.get("disagree_rate", np.nan))]
+    soft = [f["disagree_rate"] for f in feats
+            if f.get("stop") is not None and str(f.get("stop")) not in HARD_STOPS
+            and np.isfinite(f.get("disagree_rate", np.nan))]
+    out.update(n_hard_stop_episodes=len(hard), n_no_hard_stop_episodes=len(soft),
+               mean_rate_hard_stop=float(np.mean(hard)) if hard else float("nan"),
+               mean_rate_no_hard_stop=float(np.mean(soft)) if soft else float("nan"),
+               median_rate_hard_stop=float(np.median(hard)) if hard else float("nan"),
+               median_rate_no_hard_stop=float(np.median(soft)) if soft else float("nan"))
+    out["diff_hard_minus_rest"] = (out["mean_rate_hard_stop"] - out["mean_rate_no_hard_stop"]
+                                   if hard and soft else float("nan"))
+    if hard and soft:
+        out["test_hard_stop"] = mannwhitney(hard, soft)
     # pooled replan-level rates, for the record
     for key, sel in (("pooled_rate_failed", lambda o: o is not None and o < 3),
                      ("pooled_rate_placed", lambda o: o is not None and o == 3)):
@@ -811,16 +838,29 @@ def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
         print("\nagreement vs default pick: no replan can answer it — every record is a "
               "selector row, or none carries both picks" + tail)
     else:
+        ch = d.get("chance_disagree_rate", float("nan"))
+        ks = "/".join(str(k) for k in d.get("k_seeds") or ()) or "?"
         print(f"\nagreement vs default pick: disagreed on {d['disagree_rate']:.1%} of "
               f"{d['n_comparable_replans']} replans where the two rules can differ "
               f"({d['n_shadow_replans']} shadow, {d['n_other_replans']} replayed)" + tail)
-    if np.isfinite(d.get("diff_failed_minus_placed", np.nan)):
-        t = d.get("test", {})
-        print(f"  per-episode rate: failed {d['mean_rate_failed']:.1%} "
-              f"(n={d['n_failed_episodes']}) vs placed {d['mean_rate_placed']:.1%} "
-              f"(n={d['n_placed_episodes']}), diff {d['diff_failed_minus_placed']:+.1%}, "
+        if np.isfinite(ch):
+            print(f"  chance for K={ks} is {ch:.1%} — two rules picking independently among K "
+                  f"candidates coincide 1/K of the time, so read this rate against that, "
+                  f"not against 0")
+    for key, label, n_a, n_b, diff, test in (
+            ("failed_minus_placed", ("failed", "placed"), "n_failed_episodes",
+             "n_placed_episodes", "diff_failed_minus_placed", "test"),
+            ("hard_minus_rest", ("hard stop", "other stops"), "n_hard_stop_episodes",
+             "n_no_hard_stop_episodes", "diff_hard_minus_rest", "test_hard_stop")):
+        if not np.isfinite(d.get(diff, np.nan)):
+            continue
+        a_key = "mean_rate_failed" if key.startswith("failed") else "mean_rate_hard_stop"
+        b_key = "mean_rate_placed" if key.startswith("failed") else "mean_rate_no_hard_stop"
+        t = d.get(test, {})
+        print(f"  per-episode rate: {label[0]} {d[a_key]:.1%} (n={d[n_a]}) vs {label[1]} "
+              f"{d[b_key]:.1%} (n={d[n_b]}), diff {d[diff]:+.1%}, "
               f"p = {t.get('p', float('nan')):.4g} ({t.get('method', '-')})")
-    else:
+    if not np.isfinite(d.get("diff_failed_minus_placed", np.nan)):
         print("  outcome split unavailable (need both failed and placed episodes "
               "with shadow replans)")
 

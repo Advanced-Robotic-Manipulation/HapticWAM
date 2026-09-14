@@ -271,11 +271,17 @@ def test_auc_over_episodes_ranks_the_failed_episodes_above_the_placed_ones(tmp_p
     assert "task:waffles" in res["groups"] and "task:egg" in res["groups"]
     assert "label:v6_selector" in res["groups"] and "source:selector" in res["groups"]
     assert "day:20260915" not in res["groups"]
-    # disagreement: planted only in the failures
+    # disagreement: planted only in the failures, which are also the hard stops
     d = res["disagreement"]
     assert d["n_selector_replans"] == 2
     assert d["mean_rate_failed"] > d["mean_rate_placed"] == 0.0
     assert d["diff_failed_minus_placed"] > 0
+    assert d["median_rate_failed"] > d["median_rate_placed"] == 0.0
+    # 2 hard stops vs 3, not 4: the selector episode has no comparable replan,
+    # so it has no disagreement rate to average
+    assert (d["n_hard_stop_episodes"], d["n_no_hard_stop_episodes"]) == (2, 3)
+    assert d["mean_rate_hard_stop"] > d["mean_rate_no_hard_stop"] == 0.0
+    assert d["diff_hard_minus_rest"] > 0 and "test_hard_stop" in d
 
 
 def test_prestop_window_finds_the_rise_into_a_hard_stop(tmp_path):
@@ -444,6 +450,9 @@ def test_jsonl_records_merge_as_a_replay_source(tmp_path):
     d = res["disagreement"]
     assert d["n_comparable_replans"] == len(recs) + 3
     assert d["n_shadow_replans"] == len(recs) and d["n_other_replans"] == 3
+    # K=3 everywhere here, so two independent rules would already differ on 2/3
+    # of the replans: the rate means nothing read against 0
+    assert d["k_seeds"] == [3] and d["chance_disagree_rate"] == pytest.approx(2 / 3)
 
 
 def test_cli_prints_a_table_and_writes_json(tmp_path, capsys):
