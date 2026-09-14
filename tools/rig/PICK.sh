@@ -198,5 +198,8 @@ EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.p
 # PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
 SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
 case "$TASK" in waffles|Carton) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28";; esac
+# 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
+# the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
+[ -z "$LEROBOT_TYPE" ] && SESSION_EXTRA="$SESSION_EXTRA --agreement-shadow"
 [ -z "$PICK_NO_SESSION_EXTRA" ] && EXTRA="$EXTRA $SESSION_EXTRA" && echo ">> session levers: $SESSION_EXTRA"
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0

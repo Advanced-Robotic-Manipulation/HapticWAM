@@ -156,6 +156,7 @@ def _finish_policy(pm, norm, args, payload):
                          close_p=getattr(args, "veto_p_close", 0.5),
                          select_by=getattr(args, "select_by", "default"),
                          agreement_veto=getattr(args, "agreement_veto", None),
+                         agreement_shadow=getattr(args, "agreement_shadow", False),
                          action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
@@ -587,6 +588,14 @@ def build_parser() -> argparse.ArgumentParser:
                          "actions at all (AUC 0.64-0.81 vs ~0.5 for the ACC "
                          "gate and the governor sigma). Needs --k-seeds >= 2 "
                          "and is incompatible with --drop-video")
+    ap.add_argument("--agreement-shadow", action="store_true",
+                    help="diag only: with the DEFAULT selector still choosing "
+                         "the chunk, also record the K imagined-future "
+                         "agreement distances and the candidate "
+                         "--select-by video_agreement would have kept "
+                         "(planner_trace diag video_agreement_shadow*). "
+                         "Never changes an action; needs --k-seeds >= 2 and "
+                         "no --drop-video, otherwise it records nothing.")
     ap.add_argument("--agreement-veto", type=float, default=None, metavar="MSE",
                     help="with --select-by video_agreement: when the SELECTED "
                          "candidate's distance to the K-median imagination "
@@ -1175,7 +1184,8 @@ def main(argv=None) -> int:
                    drop_video=args.drop_video,
                    close_p=getattr(args, "veto_p_close", 0.5),
                    select_by=getattr(args, "select_by", "default"),
-                   agreement_veto=getattr(args, "agreement_veto", None))
+                   agreement_veto=getattr(args, "agreement_veto", None),
+                   agreement_shadow=bool(getattr(args, "agreement_shadow", False)))
         if getattr(args, "action_time_origin", None) is not None:
             cfg["action_time_origin"] = args.action_time_origin
         try:
@@ -1293,6 +1303,7 @@ def main(argv=None) -> int:
     deploy_overrides["select_by"] = str(getattr(args, "select_by", "default"))
     if getattr(args, "agreement_veto", None) is not None:
         deploy_overrides["agreement_veto"] = float(args.agreement_veto)
+    deploy_overrides["agreement_shadow"] = bool(getattr(args, "agreement_shadow", False))
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
@@ -1320,7 +1331,8 @@ def main(argv=None) -> int:
                  f"sel:{getattr(args, 'select_by', 'default')}",
                  (f"aveto:{args.agreement_veto:g}"
                   if getattr(args, "agreement_veto", None) is not None
-                  else "aveto:off")]
+                  else "aveto:off"),
+                 f"ashadow:{'on' if getattr(args, 'agreement_shadow', False) else 'off'}"]
     veto = build_veto(args, stats, z_floor)
     # always tagged (on by default since 09-11) so an A/B arm is reconstructible
     cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile or 'off'}")

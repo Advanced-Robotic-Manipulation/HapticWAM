@@ -51,7 +51,8 @@ DEFAULT_PORT = 7777
 # model reload (all consumed at replan time, none change tensor shapes).
 CONFIGURABLE = ("nfe", "guidance", "k_seeds", "parity_fixes",
                 "persistent_noise", "task_text", "drop_video", "close_p",
-                "select_by", "agreement_veto", "action_time_origin")
+                "select_by", "agreement_veto", "agreement_shadow",
+                "action_time_origin")
 
 #: Settings whose None is a VALUE ("off"), not "leave the server's default".
 #: Every other key is dropped when the client sends None (nfe=None means "the

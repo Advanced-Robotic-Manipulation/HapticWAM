@@ -418,3 +418,84 @@ def test_the_policy_constructor_takes_the_selector():
     sig = inspect.signature(PhantomPolicy.__init__)
     assert sig.parameters["select_by"].default == "default"
     assert sig.parameters["agreement_veto"].default is None
+
+
+# ---------------------------------------------------------------------------
+# 7. the shadow score (--agreement-shadow): diag only, the default rule picks
+# ---------------------------------------------------------------------------
+
+def _shadow_policy(hw, x, dz):
+    pol = _fake_policy(hw, lambda batch, **k: _pred_with_video(x, hw=hw, dz=dz),
+                       k_seeds=x.shape[0])
+    pol.pm = SimpleNamespace(layout=_Layout())
+    pol.agreement_shadow = True
+    return pol
+
+
+def test_the_shadow_records_the_agreement_rule_without_using_it():
+    """With the shadow on, the default rule still chooses the chunk (field by
+    field the same plan) and the diag carries the K distances plus the
+    candidate the imagined-future rule WOULD have kept."""
+    hw = make_small_hw()
+    x = _latents(K=4, seed=3)
+    x[3] *= 0.001                    # agreement would pick 3 ...
+    dz = [-0.005, -0.001, -0.004, -0.0005]   # ... the default rule picks 0
+    plain = _fake_policy(hw, lambda batch, **k: _pred_with_video(x, hw=hw, dz=dz),
+                         k_seeds=4)
+    plain.pm = SimpleNamespace(layout=_Layout())
+    assert plain.agreement_shadow is False    # off unless asked for
+    a = plain.replan(_snap(hw), None, np.zeros(6))
+    b = _shadow_policy(hw, x, dz).replan(_snap(hw), None, np.zeros(6))
+    assert a.diag["k_pick"] == b.diag["k_pick"] == 0
+    assert "k_selection" not in b.diag          # the default rule ran
+    assert np.array_equal(a.actions, b.actions)
+    assert np.array_equal(a.sigma, b.sigma) and a.gate == b.gate
+    assert b.diag["video_agreement_shadow"] == pytest.approx(_expected(x))
+    assert b.diag["video_agreement_shadow_pick"] == 3
+    assert b.diag["video_agreement_shadow_agrees"] == 0
+    assert b.diag["video_agreement_shadow_of_pick"] == pytest.approx(_expected(x)[0])
+    assert "video_agreement_shadow" not in a.diag
+
+
+def test_the_shadow_reaches_the_planner_trace_and_never_costs_a_replan():
+    hw = make_small_hw()
+    x = _latents(K=3, seed=5)
+    pol = _shadow_policy(hw, x, dz=[-0.005, -0.001, -0.004])
+    loop = PlannerLoop(hw, pol, _Snaps(hw), _Ex())
+    loop.run(max_replans=1)
+    d = loop.trace[0]["diag"]
+    assert d["video_agreement_shadow"] == pytest.approx(_expected(x))
+    assert d["video_agreement_shadow_pick"] in (0, 1, 2)
+    assert loop.trace[0]["accepted"] is True
+
+    class _Explode(_Layout):
+        def has(self, g):
+            raise RuntimeError("no imagined frames here")
+
+    broken = _shadow_policy(hw, x, dz=[-0.005, -0.001, -0.004])
+    broken.pm = SimpleNamespace(layout=_Explode())
+    plan = broken.replan(_snap(hw), None, np.zeros(6))   # scored nothing, still planned
+    assert plan.actions.shape == (hw.control.chunk_horizon, hw.control.action_dim)
+    assert "video_agreement_shadow_error" in plan.diag
+    assert "video_agreement_shadow" not in plan.diag
+
+
+def test_the_shadow_is_silent_with_one_seed_or_no_imagination():
+    hw = make_small_hw()
+    one = _fake_policy(hw, lambda batch, **k: _pred_with_video(_latents(K=1), hw=hw),
+                       k_seeds=1)
+    one.pm = SimpleNamespace(layout=_Layout()); one.agreement_shadow = True
+    assert "video_agreement_shadow" not in one.replan(_snap(hw), None, np.zeros(6)).diag
+    dv = _shadow_policy(hw, _latents(K=2), dz=[-0.005, -0.001])
+    dv.drop_video = True
+    assert "video_agreement_shadow" not in dv.replan(_snap(hw), None, np.zeros(6)).diag
+
+
+def test_the_shadow_is_configurable_on_the_policy_server_and_tagged():
+    from phantom.inference import remote
+    assert "agreement_shadow" in remote.CONFIGURABLE
+    from phantom.scripts import run_deploy
+    ap = run_deploy.build_parser()
+    act = ap._option_string_actions["--agreement-shadow"]
+    assert act.default is False and act.const is True    # store_true, off by default
+    assert "--agreement-veto" in ap._option_string_actions

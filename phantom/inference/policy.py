@@ -122,6 +122,7 @@ class PhantomPolicy:
                  parity_fixes: bool = False, k_seeds: int = 1,
                  close_p: float = 0.5, select_by: str = "default",
                  agreement_veto: float | None = None,
+                 agreement_shadow: bool = False,
                  action_time_origin: str = "inference_ready"):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
@@ -163,6 +164,12 @@ class PhantomPolicy:
         # distance: above it the plan is marked for rejection and the planner
         # keeps the previous plan (no new arm behaviour).
         self.agreement_veto = agreement_veto
+        # opt-in SHADOW scoring (--agreement-shadow): with the default rule
+        # still choosing the chunk, also compute the K agreement distances and
+        # record which candidate the imagined-future rule WOULD have kept
+        # (diag only, never the pick) — the rig-side record of how often the
+        # two rules disagree and how agreement relates to the outcome.
+        self.agreement_shadow = agreement_shadow
         self.action_time_origin = action_time_origin
         self.rf.eval()
 
@@ -188,6 +195,15 @@ class PhantomPolicy:
         if value not in SELECTORS:
             raise ValueError(f"select_by must be one of {SELECTORS}, got {value!r}")
         self._select_by = value
+
+    @property
+    def agreement_shadow(self) -> bool:
+        # absent on policies built before the flag existed => off
+        return bool(getattr(self, "_agreement_shadow", False))
+
+    @agreement_shadow.setter
+    def agreement_shadow(self, value):
+        self._agreement_shadow = bool(value)
 
     @property
     def agreement_veto(self):
@@ -385,6 +401,24 @@ class PhantomPolicy:
             diag["agreement_vetoed"] = bool(scores[pick] > float(thr))
         return pick, diag
 
+    def _shadow_video_agreement(self, pred: PhantomPrediction, pick: int) -> dict:
+        """Diag-only companion of the default rule (opt-in, --agreement-shadow):
+        the K agreement distances and the candidate the imagined-future rule
+        would have kept, next to the default rule's actual pick. Nothing here
+        touches the chosen chunk; a failure to score is recorded, not raised,
+        so the shadow can never cost a replan."""
+        try:
+            scores = video_agreement_scores(
+                video_gen_latents(pred.x_final_B_C_T_H_W, self.pm.layout))
+            spick = select_by_video_agreement(scores)
+            return {"video_agreement_shadow": [float(v) for v in scores],
+                    "video_agreement_shadow_pick": int(spick),
+                    "video_agreement_shadow_agrees": int(spick == int(pick)),
+                    "video_agreement_shadow_of_pick": float(scores[int(pick)]),
+                    "video_agreement_shadow_spread": float(max(scores) - min(scores))}
+        except Exception as e:  # noqa: BLE001 — diag only
+            return {"video_agreement_shadow_error": str(e)[:160]}
+
     @torch.no_grad()
     def replan(self, obs: ObsSnapshot, prev_plan: Plan | None,
                tcp_pose: np.ndarray) -> Plan:
@@ -423,6 +457,8 @@ class PhantomPolicy:
         else:
             j, sel = self._select_seed(acts_K, 1.0 - float(p_evt0[0]),
                                        prev_plan, t_exec0, rate)
+            if self.agreement_shadow and self.k_seeds > 1 and not self.drop_video:
+                sel.update(self._shadow_video_agreement(pred, j))
         actions = acts_K[j]
         diag = {"nfe": self.nfe, "guidance": self.guidance,
                 "event_logits": pred.event_logits_B_Tc_E[j].float().cpu().numpy()}
