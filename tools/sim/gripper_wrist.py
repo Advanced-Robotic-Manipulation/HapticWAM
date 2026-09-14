@@ -67,7 +67,7 @@ def aggregate_gripper_wrench(
         for contact in actor["contacts"]:
             if (
                 contact["actor_path"] != path
-                or contact["filter_path"] not in ENVIRONMENT_PATHS
+                or contact["filter_path"] not in set(report.get("environment_paths", ENVIRONMENT_PATHS))
             ):
                 raise RuntimeError(
                     "wrist contact must identify an external environment body"
@@ -117,14 +117,19 @@ class GripperContactWrist:
     """Construct before World.reset; initialize after reset; sample control-rate."""
 
     def __init__(
-        self, housing_path, pad_paths, *, rigid_prim_cls=None, additional_actor_paths=()
+        self, housing_path, pad_paths, *, rigid_prim_cls=None, additional_actor_paths=(),
+        environment_paths=None,
     ):
         self.actor_paths = gripper_actor_paths(
             housing_path, pad_paths, additional_actor_paths=additional_actor_paths
         )
-        self.reader = RobotEnvironmentContactViews(
-            self.actor_paths, rigid_prim_cls=rigid_prim_cls
-        )
+        # environment_paths: the scene's own list (task scenes name their object
+        # /World/Carton or /World/Egg and the egg scene has fixture prims instead of a
+        # bin); the module default is the waffle scene's list
+        kwargs = {"rigid_prim_cls": rigid_prim_cls}
+        if environment_paths is not None:
+            kwargs["environment_paths"] = list(environment_paths)
+        self.reader = RobotEnvironmentContactViews(self.actor_paths, **kwargs)
 
     def initialize(self):
         self.reader.initialize()

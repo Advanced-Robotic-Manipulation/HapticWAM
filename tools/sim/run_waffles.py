@@ -70,6 +70,9 @@ def arguments():
         type=float,
         help="Override media/trace sampling rate for tuning runs",
     )
+    p.add_argument("--mechanics-joint-limit-max-rad", type=float, default=None,
+                   help="override the native finger joint-limit gate (default 0.002 rad); 1 ms physics with a "
+                        "wide object (Carton) overshoots the finger limits by ~4 mrad")
     p.add_argument("--mechanics-coupling-max-rad", type=float, default=None,
                    help="override the native gripper coupling gate (default 0.005 rad); data generation "
                         "at 1 ms physics uses 0.01 (2026-09-14 speed settings, pads masked)")
@@ -676,8 +679,7 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(args.config.read_text())
-    if args.mode == "policy" and args.policy_server == "scripted" and object_identity(cfg)[0] != "waffle":
-        raise ValueError("The scripted expert is waffle-specific; use a task-matched PHANTOM policy server for Carton/egg")
+            # (2026-09-14) the scripted expert takes a per-task profile (--expert-params, configs/sim/expert/<task>.json)
     from phantom.sim.gripper_articulation import is_adaptive
 
     if is_adaptive(cfg):
@@ -888,6 +890,7 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                 p for p in paths["gripper_body_paths"]
                 if p not in [str(housing.GetPath()), *paths["pad_paths"]]
             ] if articulated_gripper else (),
+            environment_paths=paths["environment_paths"],
         )
     gel_views = None
     if args.record_gel_contacts or (
@@ -1029,8 +1032,12 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
         return closure_from_joint_positions(values, cfg)
 
     native_mechanics_monitor = {"enabled": adaptive_gripper, "checks": 0}
-    mechanics_overrides = ({"coupling_max_abs_rad": float(args.mechanics_coupling_max_rad)}
-                           if getattr(args, "mechanics_coupling_max_rad", None) is not None else None)
+    mechanics_overrides = {}
+    if getattr(args, "mechanics_coupling_max_rad", None) is not None:
+        mechanics_overrides["coupling_max_abs_rad"] = float(args.mechanics_coupling_max_rad)
+    if getattr(args, "mechanics_joint_limit_max_rad", None) is not None:
+        mechanics_overrides["joint_limit_violation_max_rad"] = float(args.mechanics_joint_limit_max_rad)
+    mechanics_overrides = mechanics_overrides or None
     if mechanics_overrides:
         native_mechanics_monitor["threshold_overrides"] = dict(mechanics_overrides)
     from phantom.sim.native_failure_audit import (

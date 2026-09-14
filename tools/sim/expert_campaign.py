@@ -45,6 +45,13 @@ def draw_episode(i: int, seed: int, pool: list[dict], band: np.ndarray, band_fra
     dxy = np.clip(rng.normal(0.0, packet_xy_sigma, 2), -packet_xy_max, packet_xy_max)
     dyaw = float(np.clip(rng.normal(0.0, yaw_sigma_deg), -yaw_max_deg, yaw_max_deg))
     obj["center"] = [float(obj["center"][0] + dxy[0]), float(obj["center"][1] + dxy[1]), float(obj["center"][2])]
+    if "egg_fixture" in cfg:
+        # the egg rests on the tray's compliant insert: move the whole fixture (tray, insert,
+        # holders) with the egg, and keep its yaw (the ovoid has no meaningful yaw)
+        fx = cfg["egg_fixture"]
+        fx["center"] = [float(fx["center"][0] + dxy[0]), float(fx["center"][1] + dxy[1]), float(fx["center"][2])]
+        fx["holders"]["centers"] = [[float(c[0] + dxy[0]), float(c[1] + dxy[1]), float(c[2])] for c in fx["holders"]["centers"]]
+        dyaw = 0.0
     obj["yaw"] = float(obj.get("yaw", 0.0) + math.radians(dyaw))
     if textures and "texture" in obj:
         obj["texture"] = str(rng.choice(textures))
@@ -85,8 +92,7 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
            "--tactile", "measured_baseline_proxy", "--tactile-baseline", args.tactile_baseline,
            "--wrist", "gripper_contact_proxy", "--gel-contact-coverage", "manifold_patch_v2",
            "--skip-stage-export", "--policy-initial-state", str(state_path), "--policy-delivery-clock", "native",
-           "--placement-release-config", str(inputs / "placement_release.json"),
-           "--boundary-projection-config", str(inputs / "boundary_projection__D3.json"),
+           *args.guards.split(),
            "--servo-reach-limiter", "--servo-constraint-hold-s", "2.5", "--experimental-adaptive-policy",
            "--record-gel-contacts", "--record-packet-support",
            "--no-progress-stop-s", "25"]
@@ -99,6 +105,8 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
         cmd += ["--expert-params", str(ep_params)]
     if args.mechanics_coupling_max_rad is not None:
         cmd += ["--mechanics-coupling-max-rad", str(args.mechanics_coupling_max_rad)]
+    if args.mechanics_joint_limit_max_rad is not None:
+        cmd += ["--mechanics-joint-limit-max-rad", str(args.mechanics_joint_limit_max_rad)]
     if args.record_robot_environment_contacts:
         cmd += ["--record-robot-environment-contacts"]
     t0 = time.time()
@@ -170,8 +178,12 @@ def main(argv=None) -> int:
     ap.add_argument("--duration", type=float, default=40.0)
     ap.add_argument("--task", default="waffles")
     ap.add_argument("--expert-params", default=None, help="expert profile json (configs/sim/expert/<task>.json)")
+    ap.add_argument("--guards", default="", help="extra runner flags, e.g. the waffle boundary projection and "
+                    "placement-release configs (the task scenes run without them: the boundary anchor is the "
+                    "waffle workspace and the release volume is the bin)")
     ap.add_argument("--miss-frac", type=float, default=0.15, help="share of episodes with a deliberate first-grasp miss")
     ap.add_argument("--mechanics-coupling-max-rad", type=float, default=None)
+    ap.add_argument("--mechanics-joint-limit-max-rad", type=float, default=None)
     ap.add_argument("--record-robot-environment-contacts", action="store_true")
     ap.add_argument("--episode", default=DEFAULT_EPISODE)
     ap.add_argument("--tactile-baseline", default=DEFAULT_TACTILE_BASELINE)
