@@ -120,7 +120,8 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
                                  STREAM_GRIPPER, NormStats, tactile_stream)
 from phantom.inference.policy import (ObsSnapshot, PhantomPolicy, Plan,
-                                      _cpk_row)
+                                      _cpk_row, select_by_video_agreement,
+                                      video_agreement_scores, video_gen_latents)
 from phantom.train import common as C
 from phantom.train.builder import build_model
 
@@ -545,6 +546,93 @@ def seed_for_episode(ep: RigEpisode, args) -> tuple[int, str]:
     return episode_seed(args.seed, ep.path.name), "name"
 
 
+# ---------------------------------------------------------------------------
+# --dump-agreement: the imagined-future disagreement, on real rig states
+# ---------------------------------------------------------------------------
+# `video_agreement_scores(video_gen_latents(...))` is the deploy-time score the
+# offline terminal_eval sweep flags catastrophic actions with (AUC 0.80). It is
+# a pure function of the SAME `pred` this tool already samples, so dumping it
+# per replan costs one extra CPU reduction and changes nothing else: with
+# --dump-agreement absent not one line below runs.
+
+_EP_STATS: dict[str, dict[str, dict]] = {}
+
+
+def _episode_stats(ep_path: Path, hw) -> dict:
+    """`phantom.eval.stats.load_episodes` record for ONE episode (or {}).
+
+    Loaded (and cached) a whole day directory at a time: the outcome for stages
+    0-2 comes from the tactile rule, which reads the streams, so this is the
+    expensive part and it must not be repeated per replan."""
+    from phantom.eval.stats import load_episodes
+    root = str(ep_path.parent)
+    day = _EP_STATS.get(root)
+    if day is None:
+        day = {Path(e["path"]).name: e for e in load_episodes(Path(root), hw)}
+        _EP_STATS[root] = day
+    return day.get(ep_path.name) or {}
+
+
+def _tag_value(rec: dict, prefix: str) -> str | None:
+    """The BARE value of an arm tag, e.g. `label:stu_ftA_r2` -> `stu_ftA_r2`.
+
+    Bare, not the whole tag: tools/rig/analysis/agreement_outcome.py reads
+    these two columns off the meta tags this way, and a record only merges into
+    its `--jsonl` if the spelling matches exactly."""
+    for t in sorted(rec.get("arm_tags") or ()):
+        if t.startswith(prefix):
+            return t[len(prefix):] or None
+    return None
+
+
+def agreement_context(ep: RigEpisode, hw, ckpt: str | None) -> dict:
+    """The episode-level half of a --dump-agreement record (constant per
+    episode): identity, arm, and the labelled outcome/stop it ended at.
+
+    `ckpt` is the episode's own `ckpt:<basename>` tag — the checkpoint the RIG
+    ran — and falls back to the basename of `--ckpt` only when the episode
+    carries no such tag. The two are the same string whenever the replay is
+    pointed at the checkpoint that produced the episode, which is the only way
+    this dump is interpretable; `label:` is what distinguishes two arms that
+    both load a `student_002000.pt`."""
+    rec = _episode_stats(ep.path, hw)
+    seed = rec.get("seed") if rec else None
+    return {"episode": ep.path.name,
+            "day": ep.path.parent.name,
+            "task": rec.get("task") or ep.meta.task,
+            "seed": None if seed is None else int(seed),
+            "ckpt": _tag_value(rec, "ckpt:") or (Path(ckpt).name if ckpt else "tiny"),
+            "label": _tag_value(rec, "label:"),
+            "outcome": rec.get("outcome"),
+            "stop": rec.get("stop")}
+
+
+def agreement_record(*, episode: str, day: str, task, seed, ckpt: str, label,
+                     outcome, stop, i: int, t: float, scores, trace_pick) -> dict:
+    """One JSONL line: the K agreement distances at one accepted replan.
+
+    `pick` is `select_by_video_agreement(scores)` — the candidate the imagined
+    -future rule WOULD keep — which is not in general the chunk the rig played
+    (`trace_pick`, the default selector's `diag.k_pick`).
+
+    The key set and its order are `RECORD_KEYS` of
+    tools/rig/analysis/agreement_outcome.py, which merges these lines through
+    its `--jsonl`: `i` indexes the planner_trace ROW (what `t_master` indexes),
+    not the accepted replans, and `source` is "replay" to separate these from
+    that tool's own shadow/selector rows."""
+    s = [float(v) for v in scores]
+    pick = select_by_video_agreement(s)
+    return {"episode": episode, "day": day, "task": task,
+            "seed": None if seed is None else int(seed),
+            "ckpt": ckpt, "label": label,
+            "outcome": None if outcome is None else int(outcome), "stop": stop,
+            "i": int(i), "t": float(t), "k_seeds": len(s), "agreement": s,
+            "pick": int(pick), "agreement_of_pick": float(s[pick]),
+            "spread": float(max(s) - min(s)),
+            "trace_pick": None if trace_pick is None else int(trace_pick),
+            "source": "replay"}
+
+
 def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
     hw = policy.hw
     teacher = not policy.pm.layout.student
@@ -594,6 +682,10 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
     policy.reset_episode()
     log.info("%s: seed %d (%s)", ep.path.name, seed,
              "recorded seed:<n>" if seed_src == "meta" else "base + episode name")
+    dump_path = getattr(args, "dump_agreement", None)
+    dump_fh = open(dump_path, "a", encoding="utf-8") if dump_path else None
+    dump_ctx = (agreement_context(ep, hw, getattr(args, "ckpt", None))
+                if dump_fh is not None else {})
     prev_fields = None
     prev_cpk = None
     prev_actions = None          # last ACCEPTED trace chunk (deploy's prev_plan)
@@ -651,6 +743,21 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
                 prev_cpk_step=cpk_step,
                 reuse_noise=policy.persistent_noise,
                 k_seeds=k_arg)
+        if dump_fh is not None:
+            # diag only: scored off the SAME pred, never fed back, and a
+            # failure here is recorded rather than raised so the dump can
+            # never cost a replan (policy._shadow_video_agreement's rule)
+            try:
+                scores = video_agreement_scores(
+                    video_gen_latents(pred.x_final_B_C_T_H_W, policy.pm.layout))
+            except Exception as e:                          # noqa: BLE001
+                log.warning("%s replan %d: agreement not scored (%s: %s)",
+                            ep.path.name, i, type(e).__name__, e)
+            else:
+                dump_fh.write(json.dumps(agreement_record(
+                    **dump_ctx, i=i, t=t, scores=scores,
+                    trace_pick=(r.get("diag") or {}).get("k_pick"))) + "\n")
+                dump_fh.flush()
         acts = [np.asarray(policy.norm.denormalize(
             "action", pred.actions_B_H_A[k].float().cpu()), dtype=np.float64)
             for k in range(seeds)]
@@ -705,6 +812,8 @@ def replay_episode(policy: PhantomPolicy, ep: RigEpisode, args) -> dict:
                  row["close_step"], row["grip_max"],
                  "" if row["trace_comparable"] else "  [VETOED chunk, trace_* is "
                  "the veto's arithmetic — no actions_pre_veto in this trace]")
+    if dump_fh is not None:
+        dump_fh.close()
     if n_vetoed:
         log.warning("%s: %d/%d replayed replans compare against a VETO-REWRITTEN "
                     "chunk (pre-F9 trace); their trace_in_spread is not a G0 "
@@ -780,6 +889,15 @@ def main() -> int:
                     help="re-encode the scene frame at this JPEG quality (image-fragility probe)")
     ap.add_argument("--merge-lora", action="store_true",
                     help="fold LoRA into the base weights exactly as run_deploy does")
+    ap.add_argument("--dump-agreement", default=None, metavar="OUT.jsonl",
+                    help="ALSO append, per accepted replan, one JSON line with "
+                         "the K imagined-future agreement distances "
+                         "(policy.video_agreement_scores), the candidate the "
+                         "agreement rule would keep, and the episode's labelled "
+                         "outcome/stop. Diag only: the replayed chunks, the "
+                         "conditioning and --out are untouched. The file is "
+                         "TRUNCATED at start-up, so give each run its own path "
+                         "and concatenate")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
     RigEpisode.jpeg_quality = args.jpeg_quality
@@ -795,6 +913,12 @@ def main() -> int:
         args.seeds = 8
     if args.seeds < 1:
         raise SystemExit("--seeds must be >= 1")
+
+    if args.dump_agreement:
+        # replay_episode APPENDS (one handle per episode); the run owns the file
+        p = Path(args.dump_agreement)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("", encoding="utf-8")
 
     hw = load_hardware(args.hardware, quiet=True)
     policy = build_policy(args, hw)

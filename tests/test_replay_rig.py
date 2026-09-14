@@ -701,3 +701,123 @@ def test_replay_deploy_path_runs_on_cpu_and_reads_the_recorded_seed(
         "--seed-from-meta", "--deploy-rng"])
     with pytest.raises(SystemExit):
         rdp.main()
+
+
+# ---------------------------------------------------------------------------
+# 5. --dump-agreement (2026-09-14): the imagined-future disagreement on the
+#    rig's OWN recorded states, per accepted replan. Two things have to hold:
+#    the flag's absence must leave the tool byte-identical, and the JSONL must
+#    carry the agreed schema with the episode's labelled outcome attached.
+# ---------------------------------------------------------------------------
+
+DUMP_KEYS = ["episode", "day", "task", "seed", "ckpt", "label", "outcome",
+             "stop", "i", "t", "k_seeds", "agreement", "pick",
+             "agreement_of_pick", "spread", "trace_pick", "source"]
+
+
+def test_agreement_record_schema_and_pick():
+    """The record builder alone (no weights, no GPU): exact key set and order,
+    and `pick`/`agreement_of_pick`/`spread` read off the K distances."""
+    import replay_rig
+    rec = replay_rig.agreement_record(
+        episode="ep_0001", day="20260913", task="whiteboard", seed=7,
+        ckpt="teacher_002000.pt", label="v6_simft2k", outcome=1,
+        stop="safety_stop", i=3, t=12.5, scores=[0.4, 0.1, 0.9, 0.2],
+        trace_pick=2)
+    assert list(rec) == DUMP_KEYS
+    assert rec["k_seeds"] == 4 and rec["pick"] == 1
+    assert rec["agreement_of_pick"] == pytest.approx(0.1)
+    assert rec["spread"] == pytest.approx(0.8)
+    assert rec["trace_pick"] == 2 and rec["source"] == "replay"
+    assert json.loads(json.dumps(rec)) == rec          # JSONL-serializable
+    # the nullable columns stay null rather than becoming 0/""
+    rec = replay_rig.agreement_record(
+        episode="ep_0002", day="20260912", task=None, seed=None, ckpt="tiny",
+        label=None, outcome=None, stop=None, i=0, t=0.0, scores=[1.0, 1.0],
+        trace_pick=None)
+    assert rec["seed"] is None and rec["outcome"] is None
+    assert rec["label"] is None and rec["stop"] is None
+    assert rec["trace_pick"] is None
+    assert rec["spread"] == 0.0 and rec["pick"] == 0   # ties -> lowest index
+
+
+def test_agreement_context_reads_the_episode_label(mock_deploy_episode, tmp_path):
+    """The episode-level half comes from phantom.eval.stats, so the arm tags
+    that disambiguate two same-basename checkpoints survive into the dump."""
+    import replay_rig
+    hw, ep_path, _, _ = mock_deploy_episode
+    ep_dir = _copy_episode(ep_path, tmp_path / "20260913", name="ep_ctx")
+    _set_tags(ep_dir, ["seed:4242", "ckpt:student_002000.pt",
+                       "label:stu_ftA_r2", "stop:safety_stop"])
+    replay_rig._EP_STATS.clear()
+    ctx = replay_rig.agreement_context(
+        replay_rig.RigEpisode(ep_dir, hw), hw, "runs/x/student_002000.pt")
+    replay_rig._EP_STATS.clear()
+    assert ctx["episode"] == "ep_ctx" and ctx["day"] == "20260913"
+    # BARE tag values, the spelling agreement_outcome.py's --jsonl merges on
+    assert ctx["seed"] == 4242 and ctx["label"] == "stu_ftA_r2"
+    assert ctx["ckpt"] == "student_002000.pt"          # the `ckpt:` tag value
+    assert ctx["stop"] == "safety_stop"
+    assert set(ctx) == {"episode", "day", "task", "seed", "ckpt", "label",
+                        "outcome", "stop"}
+
+
+@pytest.mark.skipif(not _cosmos_available(), reason="cosmos repo not importable")
+def test_dump_agreement_writes_one_line_per_replan_and_changes_nothing(
+        mock_deploy_episode, tmp_path, monkeypatch):
+    """End-to-end through main(): the dump has one line per accepted replan,
+    and the run WITHOUT the flag is identical to the run with it."""
+    import replay_rig
+    hw, ep_path, _, hw_yaml = mock_deploy_episode
+    dump = tmp_path / "agree" / "dump.jsonl"
+    # --tiny builds a RANDOM backbone (load_base=False), so the two runs are
+    # only comparable from the same global torch seed
+    torch.manual_seed(0)
+    with_dump = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "a.json",
+                         "--dump-agreement", str(dump))
+    torch.manual_seed(0)
+    without = _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "b.json")
+    # byte-identical apart from the recorded --out path itself
+    assert with_dump["episodes"] == without["episodes"]
+
+    trace = json.loads((ep_path / "planner_trace.json").read_text())
+    n_accepted = sum(1 for r in trace if r["accepted"])
+    lines = [json.loads(l) for l in dump.read_text().splitlines() if l.strip()]
+    assert len(lines) == n_accepted
+    assert [r["i"] for r in lines] == [i for i, r in enumerate(trace)
+                                       if r["accepted"]]
+    for r in lines:
+        assert list(r) == DUMP_KEYS
+        assert r["episode"] == ep_path.name and r["ckpt"] == "tiny"
+        assert r["k_seeds"] == 2 and len(r["agreement"]) == 2
+        assert all(np.isfinite(v) and v >= 0.0 for v in r["agreement"])
+        assert r["pick"] == int(np.argmin(r["agreement"]))
+        assert r["agreement_of_pick"] == pytest.approx(min(r["agreement"]))
+        assert r["spread"] == pytest.approx(max(r["agreement"])
+                                            - min(r["agreement"]))
+        assert r["source"] == "replay"
+    # a second run TRUNCATES rather than appending to the same path
+    _run_cli(monkeypatch, hw_yaml, [ep_path], tmp_path / "c.json",
+             "--dump-agreement", str(dump))
+    assert len([l for l in dump.read_text().splitlines() if l.strip()]) == n_accepted
+
+
+def test_dump_records_merge_into_agreement_outcome(tmp_path):
+    """The dump is only useful if tools/rig/analysis/agreement_outcome.py can
+    read it back through --jsonl: same RECORD_KEYS in the same order, bare
+    `label`/`ckpt` tag values, and `source` "replay"."""
+    import importlib
+    import replay_rig
+    ao = importlib.import_module("rig.analysis.agreement_outcome")
+    assert list(ao.RECORD_KEYS) == DUMP_KEYS
+    rec = replay_rig.agreement_record(
+        episode="ep_0001", day="20260913", task="Carton", seed=104,
+        ckpt="teacher_002000.pt", label="v6_simft2k", outcome=0,
+        stop="safety_stop", i=7, t=1.5, scores=[0.4, 0.1, 0.9, 0.2],
+        trace_pick=2)
+    p = tmp_path / "recs.jsonl"
+    p.write_text(json.dumps(rec) + "\n")
+    got, diag = ao.read_jsonl(p)
+    assert diag["n"] == 1 and diag["n_skipped"] == 0
+    # nothing is dropped or re-derived on the way in
+    assert got[0] == rec
