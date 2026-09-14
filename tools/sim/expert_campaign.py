@@ -33,7 +33,7 @@ DEFAULT_TACTILE_BASELINE = ("/home/physicalai/phantom-icra-2027/sim/waffles/runs
 
 def draw_episode(i: int, seed: int, pool: list[dict], band: np.ndarray, band_frac: float, scene: dict,
                  textures: list[str], holdout: set[str], *, packet_xy_sigma: float, packet_xy_max: float,
-                 yaw_sigma_deg: float, yaw_max_deg: float, light_frac: float) -> dict:
+                 yaw_sigma_deg: float, yaw_max_deg: float, light_frac: float, miss_frac: float = 0.0) -> dict:
     rng = np.random.default_rng([seed, i])
     use_band = rng.uniform() < band_frac
     idx = [k for k in range(len(pool)) if band[k] == use_band and pool[k]["episode"] not in holdout]
@@ -41,18 +41,24 @@ def draw_episode(i: int, seed: int, pool: list[dict], band: np.ndarray, band_fra
         idx = [k for k in range(len(pool)) if pool[k]["episode"] not in holdout]
     start = pool[int(rng.choice(idx))]
     cfg = json.loads(json.dumps(scene))
+    obj = cfg["object"] if "object" in cfg else cfg["waffle"]     # task scenes (carton/egg) vs the waffle scene
     dxy = np.clip(rng.normal(0.0, packet_xy_sigma, 2), -packet_xy_max, packet_xy_max)
     dyaw = float(np.clip(rng.normal(0.0, yaw_sigma_deg), -yaw_max_deg, yaw_max_deg))
-    cfg["waffle"]["center"] = [float(cfg["waffle"]["center"][0] + dxy[0]),
-                               float(cfg["waffle"]["center"][1] + dxy[1]), float(cfg["waffle"]["center"][2])]
-    cfg["waffle"]["yaw"] = float(cfg["waffle"]["yaw"] + math.radians(dyaw))
-    if textures:
-        cfg["waffle"]["texture"] = str(rng.choice(textures))
+    obj["center"] = [float(obj["center"][0] + dxy[0]), float(obj["center"][1] + dxy[1]), float(obj["center"][2])]
+    obj["yaw"] = float(obj.get("yaw", 0.0) + math.radians(dyaw))
+    if textures and "texture" in obj:
+        obj["texture"] = str(rng.choice(textures))
     for key in ("dome_intensity", "key_intensity"):
         cfg["lighting"][key] = float(cfg["lighting"][key] * float(rng.uniform(1 - light_frac, 1 + light_frac)))
+    # recovery case: a deliberate first-grasp miss (2-4 cm off), the expert reopens and re-grasps
+    miss = [0.0, 0.0]
+    if rng.uniform() < miss_frac:
+        ang = rng.uniform(0, 2 * math.pi); r = rng.uniform(0.02, 0.04)
+        miss = [float(r * math.cos(ang)), float(r * math.sin(ang))]
     return {"index": i, "seed": int(seed + i), "start": start, "band": bool(use_band), "scene": cfg,
+            "expert_overrides": {"miss_offset_xy_m": miss} if miss != [0.0, 0.0] else {},
             "draw": {"packet_dxy_m": [float(v) for v in dxy], "packet_dyaw_deg": dyaw,
-                     "texture": cfg["waffle"].get("texture"),
+                     "texture": obj.get("texture"), "miss_offset_xy_m": miss,
                      "dome": cfg["lighting"]["dome_intensity"], "key": cfg["lighting"]["key_intensity"]}}
 
 
@@ -82,11 +88,19 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
            "--placement-release-config", str(inputs / "placement_release.json"),
            "--boundary-projection-config", str(inputs / "boundary_projection__D3.json"),
            "--servo-reach-limiter", "--servo-constraint-hold-s", "2.5", "--experimental-adaptive-policy",
-           "--save-policy-observations", "--record-gel-contacts", "--record-packet-support",
-           "--record-robot-environment-contacts",
+           "--record-gel-contacts", "--record-packet-support",
            "--no-progress-stop-s", "25"]
-    if args.expert_params:
-        cmd += ["--expert-params", args.expert_params]
+    profile = json.loads(Path(args.expert_params).read_text()) if args.expert_params else {}
+    profile = {k: v for k, v in profile.items() if not k.startswith("_")}
+    profile.update(ep.get("expert_overrides", {}))
+    if profile:
+        ep_params = out / "expert_params.json"
+        ep_params.write_text(json.dumps(profile, indent=1))
+        cmd += ["--expert-params", str(ep_params)]
+    if args.mechanics_coupling_max_rad is not None:
+        cmd += ["--mechanics-coupling-max-rad", str(args.mechanics_coupling_max_rad)]
+    if args.record_robot_environment_contacts:
+        cmd += ["--record-robot-environment-contacts"]
     t0 = time.time()
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
     with open(out / "isaac.log", "w") as log:
@@ -96,6 +110,24 @@ def run_episode(ep: dict, args, raw_root: Path) -> dict:
                  "--output", str(out / "trial_result.json")]
     subprocess.run(score_cmd, cwd=args.runtime, stdout=open(out / "score.log", "w"), stderr=subprocess.STDOUT, env=env)
     result = json.loads((out / "trial_result.json").read_text()) if (out / "trial_result.json").exists() else {}
+    if ep["scene"].get("task") == "egg" and (out / "sim_trace.npz").exists():
+        # the runner scores bin placement only: egg = final egg centre within the holder-3 ring,
+        # resting (low speed), gripper open, no pad-object force at the end
+        z = np.load(out / "sim_trace.npz")
+        pos = np.asarray(z["waffle_position"]); grip = np.asarray(z["gripper"])[:, 0]
+        pad = np.abs(np.asarray(z["pad_packet_normal_force"])).max(axis=1)
+        hold = np.asarray(ep["scene"]["egg_fixture"]["holders"]["centers"][3], dtype=float)
+        tail = slice(max(0, len(pos) - 8), len(pos))
+        dxy = float(np.linalg.norm(pos[-1, :2] - hold[:2]))
+        speed = float(np.linalg.norm(np.diff(pos[tail], axis=0), axis=1).max()) if len(pos) > 8 else 1.0
+        placed = dxy <= 0.02 and -0.03 <= float(pos[-1, 2] - hold[2]) <= 0.06 and speed < 0.003 \
+            and float(grip[-1]) < 0.35 and float(pad[tail].max()) < 0.05
+        result["egg_holder"] = {"dxy_m": dxy, "dz_m": float(pos[-1, 2] - hold[2]), "tail_speed": speed,
+                                "final_grip": float(grip[-1]), "tail_pad_force_n": float(pad[tail].max()),
+                                "placed": bool(placed)}
+        if placed:
+            result["stage_name"] = "placed"
+        (out / "trial_result.json").write_text(json.dumps(result, indent=1))
     row = {"index": ep["index"], "trial": str(out), "rc": rc, "wall_s": round(time.time() - t0, 1),
            "stage": result.get("stage_name"), "stop": result.get("stop_reason"), "status": result.get("status"),
            "duration_s": result.get("duration_s"), "band": ep["band"], "start": ep["start"]["episode"],
@@ -137,7 +169,10 @@ def main(argv=None) -> int:
     ap.add_argument("--light-frac", type=float, default=0.15)
     ap.add_argument("--duration", type=float, default=40.0)
     ap.add_argument("--task", default="waffles")
-    ap.add_argument("--expert-params", default=None)
+    ap.add_argument("--expert-params", default=None, help="expert profile json (configs/sim/expert/<task>.json)")
+    ap.add_argument("--miss-frac", type=float, default=0.15, help="share of episodes with a deliberate first-grasp miss")
+    ap.add_argument("--mechanics-coupling-max-rad", type=float, default=None)
+    ap.add_argument("--record-robot-environment-contacts", action="store_true")
     ap.add_argument("--episode", default=DEFAULT_EPISODE)
     ap.add_argument("--tactile-baseline", default=DEFAULT_TACTILE_BASELINE)
     ap.add_argument("--python", default=DEFAULT_PY)
@@ -163,7 +198,7 @@ def main(argv=None) -> int:
         ep = draw_episode(i, args.seed, pool, band, args.band_frac, scene, args.textures, set(args.holdout),
                           packet_xy_sigma=args.packet_xy_sigma, packet_xy_max=args.packet_xy_max,
                           yaw_sigma_deg=args.yaw_sigma_deg, yaw_max_deg=args.yaw_max_deg,
-                          light_frac=args.light_frac)
+                          light_frac=args.light_frac, miss_frac=args.miss_frac)
         if args.dry_run:
             print(json.dumps({"index": i, "start": ep["start"]["episode"], "band": ep["band"], **ep["draw"]}))
             continue

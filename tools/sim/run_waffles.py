@@ -1511,9 +1511,14 @@ def run(app, args, cfg, data, duration, *, replay_arm_velocity=None, replay_grip
                 # the plan grid is the deployment action grid: rate/horizon from the hardware config
                 expert_params = ExpertParams(**{"action_rate_hz": float(hw.control.action_rate_hz),
                                                 "horizon": int(hw.control.chunk_horizon), **expert_overrides})
+                if cfg.get("task") == "egg":
+                    # egg goes from the tray to the lower-right white holder (index 3)
+                    goal_xy = np.asarray(cfg["egg_fixture"]["holders"]["centers"][3], dtype=float)[:2]
+                else:
+                    goal_xy = np.asarray(cfg["bin"]["center"], dtype=float)[:2]
                 policy = ScriptedExpertPolicy(
                     lambda: np.asarray(packet.get_world_pose()[0], dtype=float),
-                    np.asarray(cfg["bin"]["center"], dtype=float)[:2], expert_params, rng_seed=int(args.seed or 0))
+                    goal_xy, expert_params, rng_seed=int(args.seed or 0))
             else:
                 host, port = args.policy_server.rsplit(":", 1)
                 policy = RemoteSimulationPolicy(

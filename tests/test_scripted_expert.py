@@ -76,3 +76,23 @@ def test_rotvec_nearest_picks_the_short_representation():
     far = ref * (1.0 + 2 * np.pi / np.linalg.norm(ref))       # same rotation, angle + 2π
     near = rotvec_nearest(ref, far)
     assert np.allclose(near, ref, atol=1e-9)
+
+
+def test_deliberate_miss_reopens_and_regrasps_on_target():
+    packet = np.array([-0.399, -0.273, 0.0355])
+    lifted = {"z": packet[2]}
+    pol = ScriptedExpertPolicy(lambda: np.array([packet[0], packet[1], lifted["z"]]), (-0.3905, 0.0649),
+                               ExpertParams(**NO_JITTER, miss_offset_xy_m=(0.03, 0.0)))
+    # first descent aims 3 cm off; the packet never rises on the lift -> regrasp
+    tcp = np.array([-0.386, -0.315, 0.351, -1.02, -1.86, 1.54]); t = 0.0; phases = []
+    while t < 60 and pol.phase != "done":
+        plan = pol.replan(SimpleNamespace(t=t), None, tcp)
+        tcp[:6] += plan.actions[:2, :6].sum(axis=0); phases.append(pol.phase)
+        if pol.phase in ("carry", "place_descend") and pol.attempt == 2:
+            lifted["z"] = tcp[2] - 0.035          # second grasp holds: the packet follows the TCP
+        t += 0.2
+    first_close = next(pose for ph, pose in zip(phases, [tcp]) if ph == "close") if False else None
+    assert "regrasp_open" in phases and pol.attempt == 2 and pol.phase == "done"
+    miss_events = [e for e in pol.events if e["event"] == "miss"]
+    assert len(miss_events) == 1
+    assert phases.index("regrasp_open") < phases.index("carry")

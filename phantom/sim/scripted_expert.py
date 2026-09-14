@@ -63,9 +63,14 @@ class ExpertParams:
     rot_jitter_rad: float = 0.08
     place_jitter_m: float = 0.015
     z_place_jitter_m: float = 0.01
+    # recovery case (campaign-drawn): the FIRST grasp aims this far off the object, closes on
+    # air or a corner, the lift finds the object still down, the expert reopens and re-grasps
+    # on target. (0, 0) = no deliberate miss.
+    miss_offset_xy_m: tuple[float, float] = (0.0, 0.0)
+    miss_lift_check_m: float = 0.01     # object must have risen this much by the end of the lift
 
 
-PHASES = ("pregrasp", "descend", "close", "settle", "lift", "carry", "place_descend", "open", "retreat", "done")
+PHASES = ("pregrasp", "descend", "close", "settle", "lift", "regrasp_open", "carry", "place_descend", "open", "retreat", "done")
 
 
 def rotvec_nearest(reference: np.ndarray, rotvec: np.ndarray) -> np.ndarray:
@@ -129,6 +134,9 @@ class ScriptedExpertPolicy:
         self.phase_t0 = None
         self.grasp_xyz = None
         self.events = []
+        self.attempt = 1
+        self.packet_z_at_close = None
+        self._aim_offset = np.asarray(self.p.miss_offset_xy_m, dtype=float)
 
     def remote_reset(self, seed=None):
         if seed is not None:
@@ -159,9 +167,11 @@ class ScriptedExpertPolicy:
         """Cartesian target for the current phase; None = hold in place."""
         p = self.p
         if self.phase == "pregrasp":
-            return np.array([packet[0], packet[1], max(p.z_pregrasp_m, packet[2] + p.grasp_height_above_center_m + 0.10)])
+            return np.array([packet[0] + self._aim_offset[0], packet[1] + self._aim_offset[1],
+                             max(p.z_pregrasp_m, packet[2] + p.grasp_height_above_center_m + 0.10)])
         if self.phase == "descend":
-            return np.array([packet[0], packet[1], packet[2] + p.grasp_height_above_center_m])
+            return np.array([packet[0] + self._aim_offset[0], packet[1] + self._aim_offset[1],
+                             packet[2] + p.grasp_height_above_center_m])
         if self.phase in ("close", "settle"):
             return None
         if self.phase == "lift":
@@ -177,7 +187,7 @@ class ScriptedExpertPolicy:
         if self.phase == "place_descend":
             xy = self._place_xy()
             return np.array([xy[0], xy[1], p.z_place_m])
-        if self.phase == "open":
+        if self.phase in ("open", "regrasp_open"):
             return None
         if self.phase == "retreat":
             return np.array([tcp[0], tcp[1], p.z_retreat_m])
@@ -218,7 +228,7 @@ class ScriptedExpertPolicy:
             return p.grip_open + (p.grip_close - p.grip_open) * min(1.0, el / p.close_s)
         if self.phase in ("settle", "lift", "carry", "place_descend"):
             return p.grip_close
-        if self.phase == "open":
+        if self.phase in ("open", "regrasp_open"):
             return p.grip_close - (p.grip_close - p.grip_open) * min(1.0, el / p.open_s)
         return p.grip_open
 
@@ -236,13 +246,23 @@ class ScriptedExpertPolicy:
         if self.phase == "pregrasp" and reached:
             self._advance(t, "descend")
         elif self.phase == "descend" and pos_ok:
-            self.grasp_xyz = tcp[:3].copy(); self._advance(t, "close")
+            self.grasp_xyz = tcp[:3].copy(); self.packet_z_at_close = float(packet[2]); self._advance(t, "close")
         elif self.phase == "close" and el >= p.close_s:
             self._advance(t, "settle")
         elif self.phase == "settle" and el >= p.hold_after_close_s:
             self._advance(t, "lift")
         elif self.phase == "lift" and pos_ok:
-            self._advance(t, "carry")
+            lifted = self.packet_z_at_close is None or (float(packet[2]) - self.packet_z_at_close) >= p.miss_lift_check_m
+            if lifted or self.attempt >= 2:
+                self._advance(t, "carry")
+            else:
+                # missed (deliberate recovery case or a real slip): reopen, re-aim on target
+                self._event(t, "miss", packet_dz=float(packet[2]) - self.packet_z_at_close)
+                self.attempt += 1
+                self._aim_offset = np.zeros(2)
+                self._advance(t, "regrasp_open")
+        elif self.phase == "regrasp_open" and el >= p.open_s + 0.2:
+            self._advance(t, "pregrasp")
         elif self.phase == "carry" and pos_ok:
             self._advance(t, "place_descend")
         elif self.phase == "place_descend" and pos_ok:
@@ -276,18 +296,18 @@ class ScriptedExpertPolicy:
             if rot_target is not None:
                 rdelta = rot_target - rot
                 rdist = float(np.linalg.norm(rdelta))
-                gripped = self.phase in ("settle", "lift", "carry", "place_descend")
+                gripped = self.phase in ("settle", "lift", "carry", "place_descend", "regrasp_open")
                 cap = (p.w_max_gripped_rad_s if gripped else p.w_max_rad_s) * dt
                 rstep = rdelta if rdist <= cap else rdelta * (cap / rdist)
                 actions[k, 3:6] = rstep
                 rot = rot + rstep
             actions[k, 6] = self._grip(t + p.latency_s + k * dt)
         kind = {"close": "onset", "settle": "hold", "lift": "hold", "carry": "hold", "place_descend": "hold",
-                "open": "release"}.get(self.phase, "none")
+                "open": "release", "regrasp_open": "release"}.get(self.phase, "none")
         return SimpleNamespace(t_created=t, t0_pose=tcp.copy(), actions=actions,
                                action_times=t + p.latency_s + np.arange(H) / p.action_rate_hz,
                                sigma=np.zeros(H, dtype=np.float32), gate=1.0, p_evt=self._p_evt(kind), cpk=None,
                                latency_s=p.latency_s, _cpk_token=None,
-                               diag={"expert_phase": self.phase, "packet_xyz": packet.tolist(),
+                               diag={"expert_phase": self.phase, "attempt": self.attempt, "packet_xyz": packet.tolist(),
                                      "target_xyz": None if target is None else [float(v) for v in target],
                                      "rot_target": None if rot_target is None else [float(v) for v in rot_target]})
