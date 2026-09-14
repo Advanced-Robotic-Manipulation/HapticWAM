@@ -286,6 +286,51 @@ def test_prestop_window_finds_the_rise_into_a_hard_stop(tmp_path):
     assert w["n_pre"] == len(FAIL1) + len(FAIL2)
 
 
+def test_length_matching_removes_the_duration_confound(tmp_path):
+    """The trap the pooled AUC walks into: a failure is stopped after a few
+    reaching replans, a placement runs on through the phases where the
+    imaginations diverge anyway. Here the PLACED episodes are long and their
+    LATE replans score high, so whole-episode features call them the failures;
+    the same episodes compared over their first 4 replans do not."""
+    from tools.rig.analysis.agreement_outcome import analyze, truncate_records
+
+    root = tmp_path / "20260915"
+    for i, (seed, ok) in enumerate([(201, False), (202, False), (203, True), (204, True)]):
+        d = root / f"ep_len_waffles_{i}_000"
+        _meta(d, task="waffles", seed=seed, label="v6_simft2k", ckpt="v6.pt",
+              stop="finish" if ok else "safety_stop", success=ok,
+              notes="" if ok else "operator: f")
+        if ok:      # long: 4 quiet replans, then 16 loud ones
+            vals = [0.20, 0.22, 0.24, 0.26] + [2.0 + 0.01 * j for j in range(16)]
+        else:       # short: stopped early, and already noisier than the openings
+            vals = [0.50, 0.55, 0.60, 0.65]
+        _trace(d, [_row(10.0 + j, _shadow_diag(v, disagree=False))
+                   for j, v in enumerate(vals)])
+    recs, _ = day_records(root)
+
+    whole = analyze(recs, n_boot=200)["groups"]["pooled"]["auc"]["not_placed"]
+    assert whole["features"]["mean_of_pick"]["auc"] == 0.0        # exactly backwards
+    matched = analyze(recs, n_boot=200, first_n=4)["groups"]["pooled"]["auc"]["not_placed"]
+    assert matched["features"]["mean_of_pick"]["auc"] == 1.0
+    # the same comparison is reported without --first-n, under "length"
+    res = analyze(recs, n_boot=200, matched=(4,))
+    L = res["length"]
+    assert L["median_replans_failed"] == 4 and L["median_replans_placed"] == 20
+    assert L["auc_n_replans"]["not_placed"]["auc"] == 0.0         # duration alone separates
+    m = L["matched"]["4"]
+    assert m["n_records"] == 16 and m["n_short"] == 0
+    assert m["groups"]["pooled"]["auc"]["not_placed"]["features"]["mean_of_pick"]["auc"] == 1.0
+
+    # truncation keeps the FIRST replans by trace index, and short episodes whole
+    t = truncate_records(recs, 4)
+    assert len(t) == 16
+    assert sorted(r["i"] for r in t if r["episode"] == "ep_len_waffles_2_000") == [0, 1, 2, 3]
+    assert len(truncate_records(recs, 99)) == len(recs)
+    assert truncate_records(recs, None) == recs
+    feats = episode_features(recs, first_n=4)
+    assert [f["n_replans"] for f in feats] == [4, 4, 4, 4]
+
+
 def test_the_permutation_fallback_matches_scipy_when_scipy_is_absent(tmp_path, monkeypatch):
     """scipy is optional: without it the same U statistic is tested by
     permutation, and both paths must tell the same story."""

@@ -27,13 +27,25 @@ where streams allow) and to the stop reason, and asks three questions:
    candidate than the default rule, and is that more frequent in the episodes
    that failed?
 
+READ THE LENGTH SECTION FIRST. Episode duration is confounded with outcome: a
+failure is stopped a few replans into the reach while a placement runs through
+grasp, lift and place, and the late phases are where the imagined futures
+diverge anyway. So a whole-episode feature partly measures "how long did this
+run". The report always prints duration alone scored as if it were a feature,
+plus the whole AUC table recomputed on the first N replans of every episode;
+`--first-n N` length-matches every table in the report instead.
+
 Nothing here is an arm: it is hindsight over recorded diags. An AUC near 0.5 is
 the honest answer that the score carries no episode-level signal, and the
 bootstrap CI is what says whether ~20 episodes could tell the difference.
 
     tools/rig/analysis/agreement_outcome.py data/episodes/deploy/20260915 \
         --hw configs/hardware.nuc.yaml [--jsonl replay_records.jsonl] \
-        [--json-out agreement_outcome.json] [--percentile 90]
+        [--json-out agreement_outcome.json] [--percentile 90] [--first-n 5]
+
+Deploy days that ran before `--agreement-shadow` shipped carry no agreement
+numbers at all; for those the replay tool's --jsonl is the only source, and it
+may be given with no day folder.
 
 `episode_features`, `auc_ci` and `prestop_test` are pure (numpy only, scipy
 optional) so the replay tool can import them and feed its own records, which
@@ -236,16 +248,41 @@ def episode_key(rec: dict) -> tuple:
     return (rec.get("day"), rec.get("episode"))
 
 
-def episode_features(records, percentile: float = 90.0, threshold: float | None = None
-                     ) -> list[dict]:
+def truncate_records(records, first_n: int | None):
+    """The first `first_n` accepted replans of every episode (by trace index).
+
+    LENGTH MATCHING. Episode duration is confounded with outcome: a failure is
+    stopped a few replans into the reach, a placement runs through grasp, lift
+    and place, and the late phases are where the imagined futures diverge
+    anyway. Any feature pooled over a whole episode therefore reads partly as
+    "how long did this episode last". Comparing the SAME opening window of
+    every episode removes that channel. Episodes shorter than `first_n` are
+    kept whole (they are the failures — dropping them would reintroduce the
+    same bias) and counted by `n_short` in the report."""
+    if first_n is None:
+        return list(records)
+    by: dict[tuple, list[dict]] = defaultdict(list)
+    for r in records:
+        by[episode_key(r)].append(r)
+    out = []
+    for rs in by.values():
+        rs = sorted(rs, key=lambda r: (r.get("i") if r.get("i") is not None else 0))
+        out.extend(rs[:max(0, int(first_n))])
+    return out
+
+
+def episode_features(records, percentile: float = 90.0, threshold: float | None = None,
+                     first_n: int | None = None) -> list[dict]:
     """One row per episode: the per-replan agreement distances summarised.
 
     `threshold` is the POOLED cut `frac_above` counts against — pass the value
     from `pooled_threshold` so the fraction is comparable across episodes; the
-    default derives it from `records` themselves. Episodes keep their outcome,
-    stop, task and label, including unlabeled ones (outcome None), which every
-    caller is free to list and every AUC drops."""
-    records = list(records)
+    default derives it from `records` themselves. `first_n` length-matches the
+    episodes first (see `truncate_records`), which is how these features should
+    be read whenever failures and placements have different durations.
+    Episodes keep their outcome, stop, task and label, including unlabeled ones
+    (outcome None), which every caller is free to list and every AUC drops."""
+    records = truncate_records(records, first_n)
     if threshold is None:
         threshold = pooled_threshold(records, percentile)
     by: dict[tuple, list[dict]] = defaultdict(list)
@@ -506,15 +543,64 @@ def disagreement_summary(records, feats) -> dict:
     return out
 
 
+def length_summary(records, feats, percentile: float = 90.0, n_boot: int = 1000,
+                   seed: int = 0, matched=(5, 10)) -> dict:
+    """How much of every AUC above is really episode DURATION, and what the
+    same numbers look like length-matched.
+
+    Two readings: the replan count alone scored as if it were a feature (an AUC
+    far from 0.5 means duration by itself separates the outcomes, so any
+    feature correlated with it inherits that separation), and the whole AUC
+    table recomputed on the first N replans of every episode."""
+    n = np.asarray([f["n_replans"] for f in feats], dtype=float)
+    out = {"n_episodes": len(feats), "matched_n": [int(v) for v in matched]}
+    for key, sel in (("failed", lambda f: f["outcome"] is not None and int(f["outcome"]) < 3),
+                     ("placed", lambda f: f["outcome"] is not None and int(f["outcome"]) == 3),
+                     ("hard_stop", lambda f: str(f["stop"]) in HARD_STOPS),
+                     ("other_stop", lambda f: f["stop"] is not None
+                      and str(f["stop"]) not in HARD_STOPS)):
+        v = [f["n_replans"] for f in feats if sel(f)]
+        out[f"median_replans_{key}"] = float(np.median(v)) if v else float("nan")
+        out[f"n_{key}"] = len(v)
+    # duration alone, scored exactly like a feature (higher n = LONGER, so an
+    # AUC well below 0.5 is the early-stop signature of a failure)
+    tg = _targets(feats)
+    out["auc_n_replans"] = {}
+    for target, labels in tg.items():
+        keep = [i for i, v in enumerate(labels) if v is not None]
+        out["auc_n_replans"][target] = auc_ci([n[i] for i in keep],
+                                              [labels[i] for i in keep],
+                                              n_boot=n_boot, seed=seed)
+    out["matched"] = {}
+    for N in matched:
+        recs = truncate_records(records, int(N))
+        thr = pooled_threshold(recs, percentile)
+        gf_all = episode_features(recs, percentile, thr)
+        entry = {"n": int(N), "threshold": thr, "n_records": len(recs),
+                 "n_episodes": len(gf_all),
+                 "n_short": int(sum(1 for f in feats if f["n_replans"] < int(N))),
+                 "groups": {}}
+        for name, rs in groups(recs):
+            entry["groups"][name] = {"n_episodes": len({episode_key(r) for r in rs}),
+                                     "n_records": len(rs),
+                                     "auc": group_auc(episode_features(rs, percentile, thr),
+                                                      n_boot=n_boot, seed=seed)}
+        out["matched"][str(int(N))] = entry
+    return out
+
+
 def analyze(records, percentile: float = 90.0, n_boot: int = 1000, seed: int = 0,
-            window: int = 3) -> dict:
-    """The whole report as plain JSON-able data."""
-    records = list(records)
+            window: int = 3, first_n: int | None = None, matched=(5, 10)) -> dict:
+    """The whole report as plain JSON-able data. With `first_n` every table is
+    computed on the first N replans of each episode instead of whole episodes;
+    the length-matched section is reported either way."""
+    records = truncate_records(records, first_n)
     thr = pooled_threshold(records, percentile)
     feats = episode_features(records, percentile, thr)
     res = {"n_records": len(records), "n_episodes": len(feats),
            "percentile": float(percentile), "threshold": thr,
            "n_boot": int(n_boot), "seed": int(seed),
+           "first_n": None if first_n is None else int(first_n),
            "sources": {s: int(sum(1 for r in records if r.get("source") == s))
                        for s in sorted({str(r.get("source")) for r in records})},
            "episodes": feats,
@@ -528,6 +614,10 @@ def analyze(records, percentile: float = 90.0, n_boot: int = 1000, seed: int = 0
         if len(res["sources"]) > 1:
             res["prestop"][f"source:{s}"] = prestop_test(
                 [r for r in records if str(r.get("source")) == s], window=window, seed=seed)
+    res["length"] = length_summary(records, feats, percentile=percentile,
+                                   n_boot=n_boot, seed=seed,
+                                   matched=[int(v) for v in matched
+                                            if first_n is None or int(v) < int(first_n)])
     return res
 
 
@@ -540,10 +630,61 @@ def _f(v, w=6, p=3) -> str:
     return ("-" if not np.isfinite(v) else f"{v:.{p}f}").rjust(w)
 
 
+_TARGETS = (("not_placed", "not placed (outcome < 3; unlabeled dropped)"),
+            ("hard_stop", f"hard stop ({'/'.join(HARD_STOPS)})"))
+
+
+def _print_auc_table(groups_dict: dict, target: str, only=None, indent: str = "") -> None:
+    head = " ".join(f"{_FEATURE_ABBR[f]:>6s}" for f in FEATURES)
+    print(f"{indent}{'group':22s} {'n+':>3s} {'n-':>3s} {head}")
+    for name, g in groups_dict.items():
+        if only is not None and not only(name):
+            continue
+        a = g["auc"][target]
+        if a["n_pos"] == 0 or a["n_neg"] == 0:
+            print(f"{indent}{name[:22]:22s} {a['n_pos']:3d} {a['n_neg']:3d} "
+                  f"  (one class only — no AUC)")
+            continue
+        cells = " ".join(_f(a["features"][f]["auc"]) for f in FEATURES)
+        print(f"{indent}{name[:22]:22s} {a['n_pos']:3d} {a['n_neg']:3d} {cells}")
+
+
+def _print_length(res: dict) -> None:
+    """The duration confound and the length-matched tables."""
+    L = res.get("length")
+    if not L:
+        return
+    print(f"\nepisode length vs outcome: failed episodes ran a median "
+          f"{L['median_replans_failed']:.0f} replans (n={L['n_failed']}), placed "
+          f"{L['median_replans_placed']:.0f} (n={L['n_placed']}); hard-stopped "
+          f"{L['median_replans_hard_stop']:.0f} (n={L['n_hard_stop']}), other stops "
+          f"{L['median_replans_other_stop']:.0f} (n={L['n_other_stop']})")
+    tail = (f"— already length-matched to the first {res['first_n']} replans, so this is "
+            f"the residual" if res.get("first_n") else
+            "— every feature above is correlated with it, so read the whole-episode "
+            "tables with that in mind")
+    for target, _title in _TARGETS:
+        a = L["auc_n_replans"][target]
+        if not np.isfinite(a["auc"]):
+            continue
+        print(f"  duration ALONE as a predictor of {target}: AUC {a['auc']:.3f} "
+              f"[{a['lo']:.3f}, {a['hi']:.3f}] {tail}")
+    for key in sorted(L.get("matched", {}), key=int):
+        m = L["matched"][key]
+        print(f"\n  length-matched: first {m['n']} accepted replans of every episode "
+              f"({m['n_records']} replans, {m['n_episodes']} episodes, "
+              f"{m['n_short']} shorter than {m['n']} and kept whole)")
+        for target, title in _TARGETS:
+            print(f"  AUC vs {title}")
+            _print_auc_table(m["groups"], target, indent="    ")
+
+
 def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
     src = ", ".join(f"{k} {v}" for k, v in res["sources"].items()) or "none"
     print(f"agreement records: {res['n_records']} accepted replans over "
-          f"{res['n_episodes']} episodes ({src})")
+          f"{res['n_episodes']} episodes ({src})"
+          + (f" — LENGTH-MATCHED to the first {res['first_n']} replans of each episode"
+             if res.get("first_n") else ""))
     pct = res["percentile"]
     print(f"pooled p{pct:g} threshold on agreement_of_pick = {res['threshold']:.6g}")
     for d in load_diag or []:
@@ -571,26 +712,18 @@ def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
               f"{_f(f['max_of_pick'], 7, 4)} {_f(f['mean_spread'], 7, 4)} "
               f"{_f(f['frac_above'])} {_f(f['disagree_rate'])}")
 
-    for target, title in (("not_placed", "not placed (outcome < 3; unlabeled dropped)"),
-                          ("hard_stop", f"hard stop ({'/'.join(HARD_STOPS)})")):
+    for target, title in _TARGETS:
         print(f"\nAUC vs {title} — higher feature = more failure; "
               f"{res['n_boot']} bootstrap resamples over episodes")
-        head = " ".join(f"{_FEATURE_ABBR[f]:>6s}" for f in FEATURES)
-        print(f"{'group':22s} {'n+':>3s} {'n-':>3s} {head}")
-        for name, g in res["groups"].items():
-            a = g["auc"][target]
-            if a["n_pos"] == 0 or a["n_neg"] == 0:
-                print(f"{name[:22]:22s} {a['n_pos']:3d} {a['n_neg']:3d} "
-                      f"  (one class only — no AUC)")
-                continue
-            cells = " ".join(_f(a["features"][f]["auc"]) for f in FEATURES)
-            print(f"{name[:22]:22s} {a['n_pos']:3d} {a['n_neg']:3d} {cells}")
+        _print_auc_table(res["groups"], target)
         pooled = res["groups"]["pooled"]["auc"][target]
         if pooled["n_pos"] and pooled["n_neg"]:
             print("  pooled 95% CI: " + "  ".join(
                 f"{_FEATURE_ABBR[f]} {pooled['features'][f]['auc']:.2f} "
                 f"[{pooled['features'][f]['lo']:.2f}, {pooled['features'][f]['hi']:.2f}]"
                 for f in FEATURES if np.isfinite(pooled["features"][f]["auc"])))
+
+    _print_length(res)
 
     for name, p in res["prestop"].items():
         if p["n_pre"] == 0 or p["n_rest"] == 0:
@@ -623,8 +756,10 @@ def print_report(res: dict, load_diag: list[dict] | None = None) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("day_dir", nargs="+", type=Path,
-                    help="deploy day folder(s), e.g. data/episodes/deploy/20260915")
+    ap.add_argument("day_dir", nargs="*", type=Path,
+                    help="deploy day folder(s), e.g. data/episodes/deploy/20260915. Days that "
+                         "ran before --agreement-shadow shipped carry no agreement numbers and "
+                         "contribute nothing; for those, --jsonl alone is a complete input")
     ap.add_argument("--hw", type=Path, default=None,
                     help="hardware yaml: outcome stages 0-2 come from the tactile rule on the "
                          "recorded streams (omit = operator notes only)")
@@ -638,7 +773,15 @@ def main(argv=None) -> int:
                     help="replans before a hard stop in the pre-stop window test")
     ap.add_argument("--n-boot", type=int, default=1000)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--first-n", type=int, default=None,
+                    help="length-match EVERY table to the first N accepted replans of each "
+                         "episode — failures are stopped early, so whole-episode features "
+                         "partly measure duration (see the length section, always printed)")
+    ap.add_argument("--matched", type=int, nargs="*", default=(5, 10),
+                    help="the N values the length-matched section reports (default 5 10)")
     args = ap.parse_args(argv)
+    if not args.day_dir and args.jsonl is None:
+        ap.error("give at least one deploy day folder, or --jsonl")
 
     hw = None
     if args.hw is not None:
@@ -657,7 +800,8 @@ def main(argv=None) -> int:
                           "no_agreement": [], "n_skipped_lines": jd["n_skipped"]})
 
     res = analyze(records, percentile=args.percentile, n_boot=args.n_boot,
-                  seed=args.seed, window=args.window)
+                  seed=args.seed, window=args.window, first_n=args.first_n,
+                  matched=args.matched)
     res["inputs"] = {"day_dirs": [str(d) for d in args.day_dir],
                      "hw": str(args.hw) if args.hw else None,
                      "jsonl": str(args.jsonl) if args.jsonl else None,
