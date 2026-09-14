@@ -76,6 +76,7 @@ class ExpertParams:
     touchdown_release: bool = True
     touchdown_tcp_travel_m: float = 0.006   # TCP descent over which the object must not follow
     touchdown_object_tol_m: float = 0.0015
+    touchdown_stall_s: float = 0.6          # no descent progress for this long during the place descent = touchdown
 
 
 PHASES = ("pregrasp", "descend", "close", "settle", "lift", "regrasp_open", "carry", "place_descend", "open", "retreat", "done")
@@ -153,6 +154,7 @@ class ScriptedExpertPolicy:
         self.attempt = 1
         self.packet_z_at_close = None
         self._td_ref = None                 # (tcp_z, packet_z) reference for the touchdown check
+        self._td_stall = None               # (t, tcp_z) of the last real descent progress
         self._aim_offset = np.asarray(self.p.miss_offset_xy_m, dtype=float)
 
     def remote_reset(self, seed=None):
@@ -294,6 +296,13 @@ class ScriptedExpertPolicy:
                         (obj_drop < p.touchdown_object_tol_m or obj_drop < 0.5 * tcp_drop)
                     if not touched:
                         self._td_ref = (float(tcp[2]), float(packet[2]))   # slide the window
+                # a rigidly held object (Carton) stops the whole arm when it meets the floor:
+                # no TCP travel, no object travel, target not reached -> that is the touchdown
+                if not touched:
+                    if self._td_stall is None or float(tcp[2]) < self._td_stall[1] - 0.002:
+                        self._td_stall = (float(t), float(tcp[2]))
+                    elif float(t) - self._td_stall[0] >= p.touchdown_stall_s:
+                        touched = True
             if pos_ok or touched:
                 if touched:
                     self._event(t, "touchdown", tcp_z=float(tcp[2]), packet_z=float(packet[2]))
