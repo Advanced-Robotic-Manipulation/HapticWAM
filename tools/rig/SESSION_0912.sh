@@ -7,6 +7,7 @@
 #   ./SESSION_0912.sh baselines  warm only 4 5 6 (after the pair is done, if they did not fit before)
 #   ./SESSION_0912.sh blockc     Block C: stop 2 4 5 6 (keeps 1 v6), warm 3 stu_v6_r2
 #   ./SESSION_0912.sh monday     09-14: warm 9 (v6_simft2k, --flex --compile) + 2 (stu_ftA_r2), then 1 (v6) if it fits
+#   (09-15 uses the same 'monday' mode — RUN_SHEET_0915.md)
 # Never kills another user's process: if the GPU is held by someone else it says so and exits.
 cd "$(dirname "$0")"
 free_mib() { nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits | awk -F', ' '{print $1-$2}'; }
