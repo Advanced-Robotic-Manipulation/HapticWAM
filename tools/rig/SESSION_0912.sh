@@ -10,11 +10,11 @@
 # Never kills another user's process: if the GPU is held by someone else it says so and exits.
 cd "$(dirname "$0")"
 free_mib() { nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits | awk -F', ' '{print $1-$2}'; }
-declare -A NEED=( [1]=7000 [2]=7000 [3]=7000 [4]=8500 [5]=2500 [6]=3000 [7]=7000 [8]=7000 [9]=7500 [10]=7500 )   # measured 09-12: v6 6.6 · stu 6.4 · pi05 7.9 · dp 1.8 · xvla 2.4 GB
+declare -A NEED=( [1]=7000 [2]=7000 [3]=7000 [4]=8500 [5]=2500 [6]=3000 [7]=7000 [8]=7000 [9]=7500 [10]=7500 [11]=7000 )   # measured 09-12: v6 6.6 · stu 6.4 · pi05 7.9 · dp 1.8 · xvla 2.4 GB
 listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
 ours_mib() {  # GPU memory held by OUR menu servers (so the gate only counts other people's jobs)
   local t=0 pid m
-  for r in 1 2 3 4 5 6 7 8 9 10; do
+  for r in 1 2 3 4 5 6 7 8 9 10 11; do
     pid=$(ss -ltnp 2>/dev/null | grep ":$((7776 + r)) " | grep -oE "pid=[0-9]+" | head -1 | cut -d= -f2)
     [ -n "$pid" ] && { m=$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits | awk -F', ' -v p="$pid" '$1==p{print $2}'); t=$((t + ${m:-0})); }
   done; echo $t
@@ -47,6 +47,6 @@ case "${1:-warm}" in
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   blockc) ./serve_bg.sh stop 2; ./serve_bg.sh stop 4; ./serve_bg.sh stop 5; ./serve_bg.sh stop 6; warm 3; ./serve_bg.sh status;;
   status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB (our servers hold $(ours_mib) MiB)"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;
-  stop) shift; [ $# -eq 0 ] && set -- 1 2 3 4 5 6 7 8 9 10; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
+  stop) shift; [ $# -eq 0 ] && set -- 1 2 3 4 5 6 7 8 9 10 11; for r in "$@"; do ./serve_bg.sh stop "$r"; done;;
   *) sed -n 2,9p "$0";;
 esac
