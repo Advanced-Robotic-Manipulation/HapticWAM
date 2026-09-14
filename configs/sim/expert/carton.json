@@ -1,7 +1,7 @@
 {
  "_comment": "Carton expert profile from the 20 val teleop demos (2026-09-14): upright 250 ml carton grasped at TCP z 0.104 (centre 0.055), close 0.62, carry apex 0.34, release into the bin at z 0.127 offset (-0.036, +0.006) from the bin centre | 09-14: close 0.48 (0.62 strained the finger linkage past its joint limits on the 46-51 mm body at both physics rates; measured closure on the carton is ~0.40)",
  "grasp_height_above_center_m": 0.049,
- "grip_close": 0.48,
+ "grip_close": 0.42,
  "z_pregrasp_m": 0.22,
  "z_lift_m": 0.22,
  "z_carry_m": 0.34,

@@ -241,14 +241,17 @@ def main(argv=None) -> int:
     ap.add_argument("--task", default="waffles")
     ap.add_argument("--text", default=None)
     ap.add_argument("--include-failed", action="store_true")
+    ap.add_argument("--name", default=None, help="episode directory name (single --trial only)")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s %(message)s")
     hw = load_hardware(args.hardware, quiet=True)
     n = 0
     for trial in args.trial:
+        if args.name and len(args.trial) != 1:
+            raise SystemExit("--name applies to a single --trial")
         if export_trial(trial, args.out_root, hw, idle_src=args.idle_tactile_from, task=args.task,
-                        text=args.text, include_failed=args.include_failed) is not None:
+                        text=args.text, include_failed=args.include_failed, name=args.name) is not None:
             n += 1
     log.info("exported %d/%d trials", n, len(args.trial))
     return 0
