@@ -1,7 +1,7 @@
 {
- "_comment": "Egg expert profile from the 17 val teleop demos (2026-09-14): egg on the tray insert grasped at TCP z 0.072 (centre 0.043), gentle close 0.55, low carry 0.21, release at z 0.08 over holder 3 (the sim fixture's holder centre; demo release offset ~0) | 09-14 smoke: pads closed above the egg (pad span z 0.043-0.091 vs egg top 0.070); grasp height lowered to +0.015 so the pads straddle the equator, close 0.62 (drive force is capped at 15 N) | 09-14 egg lanes: +0.015 clipped the tray rim (wrench_limit stops at z 0.061 on 3/4 starts) -> +0.022, contact speed 0.015 | 09-14 egg2 lanes: drops during the turning carry and bounces off the holder ring from a 2 cm drop -> close 0.66, carry turn 0.2 rad/s, release at 0.065 (1 cm above the ring) | touchdown release: descend toward 0.06 and open when the egg stops following the pads",
+ "_comment": "Egg expert profile from the 17 val teleop demos (2026-09-14): egg on the tray insert grasped at TCP z 0.072 (centre 0.043), gentle close 0.55, low carry 0.21, release at z 0.08 over holder 3 (the sim fixture's holder centre; demo release offset ~0) | 09-14 smoke: pads closed above the egg (pad span z 0.043-0.091 vs egg top 0.070); grasp height lowered to +0.015 so the pads straddle the equator, close 0.62 (drive force is capped at 15 N) | 09-14 egg lanes: +0.015 clipped the tray rim (wrench_limit stops at z 0.061 on 3/4 starts) -> +0.022, contact speed 0.015 | 09-14 egg2 lanes: drops during the turning carry and bounces off the holder ring from a 2 cm drop -> close 0.66, carry turn 0.2 rad/s, release at 0.065 (1 cm above the ring) | touchdown release: descend toward 0.06 and open when the egg stops following the pads | 0.66 crushed (27-44 N mechanics stops) -> 0.60",
  "grasp_height_above_center_m": 0.022,
- "grip_close": 0.66,
+ "grip_close": 0.6,
  "z_pregrasp_m": 0.16,
  "z_lift_m": 0.15,
  "z_carry_m": 0.21,
