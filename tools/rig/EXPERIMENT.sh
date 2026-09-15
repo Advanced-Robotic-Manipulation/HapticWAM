@@ -42,6 +42,13 @@ disk_check() {
   echo ">> disk free on the box: ${free:-?} GB (a rig episode is ~0.25 GB; 120 launches ~ 30 GB)"
   [ -n "$free" ] && [ "$free" -lt 30 ] && echo "!! under 30 GB free — the sim campaign is filling the disk; ask Ilya before launching"; return 0; }
 show() { echo; ./serve_bg.sh status; echo ">> PICK.sh rows for this block: $*"; }
+snap() {  # scene screenshot (training reference vs live camera) saved next to the takes and shown on the box screen
+  local label=$1 c0=$2 c1=$3 dir="$OUT/screenshots" f
+  mkdir -p "$dir"; f="$dir/$(date +%H%M%S)_${label}_${TASK}_cells${c0}-${c1}.png"
+  if "$BASE/phantom/.venv/bin/python" "$BASE/snap.py" "$TASK" >/dev/null 2>&1 && [ -s /tmp/snap.png ]; then
+    cp /tmp/snap.png "$f"; echo ">> screenshot saved: $f"
+    DISPLAY=${DISPLAY:-:1} bash -c 'pkill -f "eog" 2>/dev/null; setsid nohup eog -f "$0" >/dev/null 2>&1 < /dev/null &' "$f"
+  else echo "!! screenshot skipped (camera busy or snap.py failed)"; fi; }
 case "${1:-}" in
   P)     disk_check; T=$(need v6_simft2k) || exit 1; S=${STUDENT:-$(warm_student)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
          echo ">> Block P student: $S (a warm stu_simft_* row is kept; STUDENT=<label> overrides)"
@@ -87,6 +94,7 @@ case "${1:-}" in
            while [ "$c" -le "$N" ]; do
              n=$BATCH; [ $((c + n - 1)) -gt "$N" ] && n=$((N - c + 1))
              echo; echo "=============== $L (row $r): $TASK cells $c..$((c + n - 1)) ($n episodes) ==============="
+             snap "$L" "$c" "$((c + n - 1))"
              PICK_TASK=$TASK PICK_PRESET=1 PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT" PICK_GO=1 ./PICK.sh "$r" \
                || { echo "!! launch of $L at cell $c ended with an error. Fix, then resume: EXP_ONLY=$L EXP_FROM=$c ./EXPERIMENT.sh run $STAGE"; exit 1; }
              c=$((c + n))
