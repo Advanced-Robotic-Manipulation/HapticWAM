@@ -192,7 +192,7 @@ EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.p
 #    into the 45 N wrench guard; replay converts 5 of 19 non-placements) + 0.35 s latch release dwell
 #  - homing start bound y <= -0.28 m on waffles/Carton only (4-day analysis, 382 episodes: the start-y effect
 #    holds on every day/task/model — box-side starts score 0.35 vs 1.66; the bad starts are INSIDE the demo
-#    ±1σ draw, so this is a disclosed workaround). Egg/whiteboard: no bounds yet (09-15: egg under analysis).
+#    ±1σ draw, so this is a disclosed workaround). Egg: its own box since 09-15 (below). Whiteboard: none.
 # PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
 # 09-15: folded into EXTRA BEFORE the confirmation so the operator sees the levers before launching.
 SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
@@ -200,9 +200,14 @@ SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --gri
 # [0.325, 0.362] places 0.24 vs 0.13 outside; Carton z >= 0.285 (weaker, n=8 placed); x carries nothing;
 # y <= -0.28 confirmed on the unbounded 09-12 day (0.18 vs 0.08). Deterministic clamp: a paired cell keeps
 # the same start on both arms.
+# 09-15 egg (70 deploy episodes, 0 placements ever): the only signal is the LIFT proxy — all 5 held lifts
+# (>50 mm, carried over the box) started at y <= -225 mm and z <= 280 mm (4/11 inside vs 1/52 outside,
+# Fisher p = 0.0025; within one day+checkpoint 4/7 vs 0/10, p = 0.015). Egg's demo start is 46-70 mm lower
+# than waffles/Carton, so the bound is a z CEILING, not a floor; y <= -0.28 is unreachable for egg draws.
 case "$TASK" in
   waffles) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.325";;
   Carton)  SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.285";;
+  egg)     SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.225,z_max=0.280";;
 esac
 # 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
 # the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
