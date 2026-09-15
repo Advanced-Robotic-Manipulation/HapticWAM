@@ -85,7 +85,7 @@ case "${1:-}" in
   T1)    T=$(need "$ANCHOR") || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
          [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
          stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
-  FINAL) disk_check; T=$(need "$ANCHOR") || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
+  FINAL) disk_check; T=$(need "$ANCHOR") || exit 1; S=$(need "${STUDENT:-stu_simft_001000}") || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
   run)    # ONE SCRIPT: warm the stage, then launch PICK.sh for every model of the stage on the waffles cell plan,
@@ -96,7 +96,7 @@ case "${1:-}" in
          OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
          case $STAGE in
            M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp xvla"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
-           T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="stu_simft_001000"; N=$NCORE;;
+           T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="${STUDENT:-stu_simft_001000}"; N=$NCORE;;
            *) echo "!! unknown stage $STAGE"; exit 2;;
          esac
          [ -n "${EXP_ONLY:-}" ] && MODELS=$EXP_ONLY
