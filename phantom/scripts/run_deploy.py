@@ -886,8 +886,8 @@ def operator_stop_requested(line: str, *, last_enter_t: float | None = None,
     return False
 
 VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated / [r]edo "
-                  "(r = recorded but NOT counted, the same cell runs again; "
-                  "append d for DAMAGE, e.g. 'fd') / Enter=skip, "
+                  "(r = this take is DELETED as if it never ran, the same cell "
+                  "runs again; append d for DAMAGE, e.g. 'fd') / Enter=skip, "
                   "then optional notes "
                   # a let-go stop releases the fingers itself (executor._halt);
                   # this is the manual path if it could not reach the gripper
@@ -951,15 +951,13 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
         return ""
     note = f"operator: {ans}" + (" DAMAGE" if damage else "")
     if c == "r":
-        # REDO (rig 09-15): the operator rejects the take — wrong placement,
-        # a false start, a hand in the way. The recording is kept for the
-        # paper's logs but counts nowhere: success stays None, status stays
-        # 'aborted', the `redo` tag keeps it out of training
-        # (NON_TRAINING_TAGS) and `stats pairs` sees no outcome. The caller
-        # re-runs the SAME episode index — same seed, same cell.
-        recorder.relabel(ep_path, success=None, status="aborted",
-                         tags=["redo"], remove_tags=["unlabeled"],
-                         damage=damage, notes=f"{note} REDO (not counted; same cell again)")
+        # REDO (rig 09-15, Mikhail): the operator rejects the take — wrong
+        # placement, a false start, a hand in the way. The take must not
+        # exist: the recorder DELETES the episode directory (discard=True,
+        # confined to its out_root), so no lister, pairing or upload can
+        # ever see it. The caller re-runs the SAME episode index — same
+        # seed, same cell.
+        recorder.relabel(ep_path, discard=True)
         return c
     if c == "c":
         recorder.relabel(ep_path, success=None, status="aborted",
@@ -1693,7 +1691,7 @@ def main(argv=None) -> int:
                 verdict = label_episode(rt.recorder, Path(res.episode_path), ans)
                 if verdict == "r" and not res.fatal_reason:
                     pending.insert(0, i)
-                    log.info("REDO: %s recorded but NOT counted — episode %d/%d "
+                    log.info("REDO: %s DELETED as if it never ran — episode %d/%d "
                              "runs again with the same seed %d",
                              Path(res.episode_path).name, i + 1, args.episodes,
                              ep_seed)

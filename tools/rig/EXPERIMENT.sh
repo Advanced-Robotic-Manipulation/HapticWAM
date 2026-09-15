@@ -31,10 +31,12 @@ disk_check() {
 show() { echo; ./serve_bg.sh status; echo ">> PICK.sh rows for this block: $*"; }
 case "${1:-}" in
   P)     disk_check; T=$(need v6_simft2k) || exit 1; S=${STUDENT:-$(newest stu_simft_)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
-         SR=$(need "$S") || exit 1
-         stop_ours_except "$T" "$SR"; warm_rows "$T" "$SR"; show "teacher v6_simft2k = $T   student $S = $SR";;
+         SR=$(need "$S") || exit 1; MT=$(row_of v6_simft_mt1500)
+         # keep the multitask teacher warm if it already is (Block M follows P on the same cells); three servers is the ceiling
+         stop_ours_except "$T" "$SR" "$MT"; warm_rows "$T" "$SR"; [ -n "$MT" ] && warm_rows "$MT"
+         show "teacher v6_simft2k = $T   student $S = $SR${MT:+   (multitask teacher $MT stays warm for Block M if it fit)}";;
   M)     T=$(need v6_simft2k) || exit 1; MT=$(need v6_simft_mt1500) || exit 1
-         warm_rows "$T" "$MT"; show "multitask teacher v6_simft_mt1500 = $MT (one launch per cell, pairs against row $T's Block P episodes)";;
+         warm_rows "$T" "$MT"; show "multitask teacher v6_simft_mt1500 = $MT (one launch per Block P cell, pairs against row $T's Block P episodes)";;
   SV)    T=$(need v6_simft2k) || exit 1; warm_rows "$T"; show "row $T with preset 4 + the flags in RUN_SHEET_0915.md (S: --select-by video_agreement; V: + --agreement-veto THR; N: no --terminal-veto)";;
   PB)    MT=$(need v6_simft_mt1500) || exit 1; MS=${MT_STUDENT:-$(newest stu_mt_)}; [ -n "$MS" ] || { echo "!! no stu_mt_* row yet — fetch_student.sh hid_mt 000500 first"; exit 1; }
          MSR=$(need "$MS") || exit 1; T=$(row_of v6_simft2k)
