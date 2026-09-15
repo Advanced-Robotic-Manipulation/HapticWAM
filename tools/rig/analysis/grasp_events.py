@@ -41,6 +41,19 @@ placed_crushed   placed, peak load above the clean band
     grasp_success  (Level A) = contact_no_hold + held_dropped + held_at_cut
                                + placed_clean + placed_crushed
     haptic_success (Level B) = placed_clean
+    under_grasp              = contact_no_hold + held_dropped
+    over_grasp               = pinch peak above the crush threshold, any class
+
+UNDER- AND OVER-GRASP
+---------------------
+The two levels say WHERE the pick was lost; these two say HOW.  An
+**under-grasp** touched the pack and did not deliver it: Level A evidence,
+but no two-pad hold carried through to a placement.  An **over-grasp**
+squeezed past the crush band, placed or not — so it is read off
+`pad_peak_pinch_n`, the peak of max(left, right) over the samples where BOTH
+pads are engaged, which exists even for a take with no hold window.  Requiring
+both pads is what keeps a one-sided push against the table or the crate wall
+(10+ N on one pad, nothing on the other) out of the count.
 
 `held_at_cut` is not in the original six: the recorder stops as soon as the
 planner returns (`DeploymentRuntime.run_episode`), so a take that was still
@@ -135,13 +148,16 @@ REOPEN_DROP = 0.15
 PLATEAU_S = 2.0
 
 #: LEVEL A.  Single-pad load, newtons, that counts as the pads having felt the
-#: object after a close.  PROVENANCE (20260915_experiment): with the gripper
-#: demonstrably open and clear of the pack — every sample before the first
-#: close, 61 takes, ~7100 samples per pad — the clean RIGHT pad never exceeds
-#: 2.28 N and the pooled p99 is 1.80 N.  2.5 N is just above that ceiling.
-#: (The left pad has a longer pre-close tail because it brushes the pack during
-#: the reach; that is real contact, not noise, and it is excluded by the fact
-#: that Level A is only evaluated from the first close onward.)
+#: object after a close.  PROVENANCE, re-derived on the FULL 20260915_experiment
+#: waffles set (80 takes, the 61 of them with a close, 12656 pre-close samples
+#: per pad): with the gripper open and clear of the pack the RIGHT pad reads
+#: p99 = 1.04 N, p99.9 = 1.83 N and never exceeds 2.38 N, so 2.5 N is just
+#: above its ceiling.  The LEFT pad is NOT a noise sample — it reaches 13.6 N
+#: before a close on 7 of those 61 takes, always with the right pad at ~0.05 N,
+#: which is one-sided brushing against the pack or the table during the reach,
+#: not sensor noise.  The threshold is therefore set from the right pad, and
+#: the left pad's excursions are kept out by evaluating Level A only from the
+#: first close onward.
 CONTACT_A_N = 2.5
 
 #: LEVEL A, second signal: the vendor SDK contact area above zero.  The RIGHT
@@ -153,24 +169,27 @@ AREA_A = 0.0
 #: LEVEL A, third signal: fraction of the post-close window with gOBJ == 2.
 OBJ2_FRAC_A = 0.2
 
-#: Both pads must reach this for a two-pad HOLD (Level B).  PROVENANCE: the
-#: whole-take peak of min(left, right) is <= 4.9 N for every take the operator
-#: failed without a grasp and >= 6.1 N for every take the operator placed;
-#: 5.0 N sits in that empty gap, and `--sweep` shows the class counts are flat
-#: over 2.5-6.0 N, so it is not a tuned number.
+#: Both pads must reach this for a two-pad HOLD (Level B).  PROVENANCE on the
+#: full 80-take set: the whole-take peak of min(left, right) is >= 6.10 N for
+#: every one of the 35 takes the operator scored a clean success, and the
+#: largest operator failure BELOW that floor is 4.89 N, so 5.0 N still sits in
+#: an empty interval.  It is a NECESSARY condition, not a sufficient one: 9 of
+#: the 40 operator failures also clear 5 N (up to 18.65 N) and are excluded at
+#: the lift and placement stages instead.  `--sweep` shows the two headline
+#: counts are flat over 3.0-6.0 N, so it is not a tuned number.
 CONTACT_HOLD_N = 5.0
 
-#: Crush threshold.  DERIVED AT RUN TIME from the clean-placement distribution
-#: of the reference arm (default: the arm with the most clean placements, i.e.
-#: the teacher) as mean + `CRUSH_SD_K` * sd, over that arm's placements the
-#: operator did NOT tag `crushed`.  `--crush-n` overrides with a fixed value.
-#: k = 3 rather than 2: on this session the teacher's clean band is
-#: mean 11.75, sd 1.33, so k=2 gives 14.4 N, which sits BELOW two pi05
-#: placements (15.1 N) the operator scored clean and would charge that arm with
-#: two crushes that never happened; k=3 gives 15.7 N, above every clean
-#: placement on every arm (max 15.1) and below both operator-tagged crushes
-#: (17.0 and 21.4 N).  The report prints k=2, k=3 and the flat 18 N side by
-#: side so the choice is visible and reversible.
+#: Crush threshold.  DERIVED AT RUN TIME as mean + `CRUSH_SD_K` * sd over the
+#: POOLED clean placements of EVERY arm (`--crush-ref pooled`, the default) —
+#: the placements no operator force flag touched.  `--crush-ref arm` restores
+#: the old single-arm behaviour and `--crush-n` overrides with a fixed value.
+#: Pooling matters on this session: the teacher's clean band is 11.75 +- 1.33 N
+#: but the student's is 14.85 +- 1.94 N, so a teacher-only k=3 band (15.7 N)
+#: would charge the student with 7 crushes the operator never saw.  The pooled
+#: band is 13.48 +- 2.19 N over 35 placements, giving 20.0 N at k=3; every
+#: clean placement on every arm peaks at or below 17.7 N.  The report prints
+#: k=2, k=3 and a flat 18 N side by side, plus the +-2 N sensitivity of every
+#: count, so the choice is visible and reversible.
 CRUSH_SD_K = 3.0
 
 PAD_WINDOW_S = 1.5        # window after a close in which that close is scored
@@ -189,6 +208,16 @@ GRASP_OK_CLASSES = {"contact_no_hold", "held_dropped", "held_at_cut",
                     "placed_clean", "placed_crushed"}
 #: Level B is satisfied by exactly one class.
 HAPTIC_OK_CLASSES = {"placed_clean"}
+
+#: UNDER-GRASP.  The close touched the pack — Level A contact or the gOBJ
+#: stall bit — but the take never carried a two-pad hold through to a
+#: placement.  `contact_no_hold` never got a sustained two-pad hold off the
+#: table at all; `held_dropped` got one and lost it in the air.  Both are
+#: "engaged the pack, did not deliver it", which is the failure mode the
+#: OVER-grasp count is contrasted against, so they share a bucket.
+#: `held_at_cut` is deliberately NOT here: the recording ended mid-carry, so
+#: whether it would have delivered was never observed.
+UNDER_GRASP_CLASSES = {"contact_no_hold", "held_dropped"}
 
 
 # ---------------------------------------------------------------------------
@@ -319,6 +348,28 @@ def pad_load(wrench: np.ndarray, ts: np.ndarray, t_zero: float | None
     return np.linalg.norm(f - base, axis=1)
 
 
+def pinch_peak(lf: np.ndarray, lts: np.ndarray, rf: np.ndarray,
+               rts: np.ndarray, t_from: float, t_to: float,
+               engaged_n: float, rate_hz: float = CONTACT_RATE_HZ) -> float:
+    """Peak of max(left, right) over the samples where BOTH pads are engaged.
+
+    "Engaged" is the Level A single-pad threshold on BOTH pads at once, which
+    is the weakest evidence that the pack is actually between the fingers.
+    Returns 0.0 when the two pads are never loaded together, so a take that
+    only ever pushed one pad against something cannot register an over-grasp.
+    """
+    n = int(max(0.0, t_to - t_from) * rate_hz)
+    if n < 2:
+        return 0.0
+    grid = t_from + np.arange(n) / rate_hz
+    l = np.array([at_time(lts, lf, t) for t in grid])
+    r = np.array([at_time(rts, rf, t) for t in grid])
+    both = (l >= engaged_n) & (r >= engaged_n)
+    if not both.any():
+        return 0.0
+    return float(np.maximum(l, r)[both].max())
+
+
 def longest_run(mask: np.ndarray, grid: np.ndarray, gap_s: float
                 ) -> tuple[int, int] | None:
     """(start, end) indices of the longest True run in `mask`, bridging gaps.
@@ -361,9 +412,12 @@ class TakeRow:
     policy: str = ""
     verdict: str = ""               # operator: s / f / crushed / unlabeled
     operator_placed: bool = False   # meta.success is True (crushes included)
+    op_force_flag: bool = False     # operator saw excessive force (advisory)
     cls: str = ""                   # emitted as the `class` CSV column
     grasp_success: bool = False     # LEVEL A
     haptic_success: bool = False    # LEVEL B
+    under_grasp: bool = False       # touched the pack, never delivered it
+    over_grasp: bool = False        # squeezed above the crush band, placed or not
     crush: bool = False
     n_closes: int = 0
     close_src: str = ""             # actions[:,6] (command) or gripper[:,0]
@@ -378,6 +432,9 @@ class TakeRow:
     pad_peak_min_n: float = 0.0     # min(L, R) peak over the hold
     pad_peak_take_n: float = 0.0    # max(L, R) peak anywhere in the take
     pad_peak_take_min_n: float = 0.0  # min(L, R) peak — what the hold rule uses
+    pad_peak_pinch_n: float = 0.0   # max(L, R) while BOTH pads are engaged —
+                                    # the over-grasp measure, defined for takes
+                                    # that squeezed without ever placing
     area_peak_after_close: float = 0.0
     hold_s: float = 0.0
     lift_mm: float = 0.0
@@ -402,15 +459,34 @@ class TakeRow:
         return {("class" if k == "cls" else k): v for k, v in d.items()}
 
 
+#: Tags the operator uses to say "I saw excessive force on this take".
+#: `crushed` / `crushed_then_failed` were VERDICTS — a take tagged that way was
+#: not a clean success.  `op_crushed` replaced `crushed` at 20:05 MSK on
+#: 2026-09-15, when the operator re-filed those takes as successes with the
+#: note "crush is decided by the pad-force threshold": it is now an ADVISORY
+#: flag (the operator saw something) rather than a verdict, and the crush call
+#: belongs to the threshold.  Both kinds are kept out of the clean-placement
+#: band either way, because a take the operator flagged is not evidence of
+#: what a pack that survived intact feels like.
+OP_FORCE_FLAGS = ("crushed", "crushed_then_failed", "op_crushed")
+#: ...of which these two also override the success verdict.
+OP_CRUSH_VERDICTS = ("crushed", "crushed_then_failed")
+
+
 def operator_verdict(meta: dict) -> str:
     """s / f / crushed / crushed_then_failed / unlabeled, from meta + tags."""
     for t in meta.get("tags") or []:
-        if t in ("crushed", "crushed_then_failed"):
+        if t in OP_CRUSH_VERDICTS:
             return t
     success = meta.get("success")
     if success is None:
         return "unlabeled"
     return "s" if success else "f"
+
+
+def operator_flagged_force(meta: dict) -> bool:
+    """True when the operator flagged excessive force, in any tag vintage."""
+    return any(t in OP_FORCE_FLAGS for t in meta.get("tags") or [])
 
 
 # ---------------------------------------------------------------------------
@@ -441,6 +517,7 @@ def analyse_episode(ep: Path, *, contact_a_n: float = CONTACT_A_N,
         policy=str(meta.get("policy") or ""),
         verdict=operator_verdict(meta),
         operator_placed=meta.get("success") is True,
+        op_force_flag=operator_flagged_force(meta),
         notes=str(meta.get("notes") or "").replace("\n", " ")[:120],
         stop_reason=str(stop.get("stopped_reason") or ""),
         n_replans=int(stop.get("n_replans") or 0),
@@ -490,6 +567,19 @@ def analyse_episode(ep: Path, *, contact_a_n: float = CONTACT_A_N,
                                           rf.max(initial=0.0))), 2)
     row.pad_peak_take_min_n = round(float(min(lf.max(initial=0.0),
                                               rf.max(initial=0.0))), 2)
+
+    # --- the OVER-grasp measure -------------------------------------------
+    # The crush flag on a placement reads the peak over the hold window, which
+    # only exists for takes that got a hold.  A take can squeeze the pack hard
+    # and still never place it (dp cell 12 on this session), so the over-grasp
+    # count needs a peak that is defined for every take with a close.  It is
+    # the peak of max(L, R) restricted to the samples where BOTH pads are
+    # engaged: that excludes a one-sided push against the table or the crate
+    # wall, which loads a single pad to 10+ N with nothing between the fingers.
+    if closes:
+        row.pad_peak_pinch_n = round(
+            pinch_peak(lf, lw[1], rf, rw[1], float(cmd_ts[closes[0][0]]),
+                       t_end, contact_a_n, rate_hz), 2)
 
     # --- per-close detail --------------------------------------------------
     for k, (ci, ri) in enumerate(closes, start=1):
@@ -635,7 +725,7 @@ def analyse_episode(ep: Path, *, contact_a_n: float = CONTACT_A_N,
 
 
 def finalise(row: TakeRow, crush_n: float = float("inf")) -> TakeRow:
-    """Apply the crush split and derive the two outcome levels."""
+    """Apply the crush split and derive the outcome levels and the two errors."""
     row.crush = bool(row.pad_peak_n > crush_n)
     if row.cls == "placed_clean" and row.crush:
         row.cls = "placed_crushed"
@@ -643,6 +733,10 @@ def finalise(row: TakeRow, crush_n: float = float("inf")) -> TakeRow:
         row.cls = "placed_clean"
     row.grasp_success = row.cls in GRASP_OK_CLASSES
     row.haptic_success = row.cls in HAPTIC_OK_CLASSES
+    row.under_grasp = row.cls in UNDER_GRASP_CLASSES
+    # over-grasp is a load question, not a class question: a take that squeezed
+    # past the band counts whether or not it went on to place the pack
+    row.over_grasp = bool(max(row.pad_peak_pinch_n, row.pad_peak_n) > crush_n)
     return row
 
 
@@ -655,8 +749,7 @@ def clean_band(rows: list[TakeRow], ref_arm: str | None = None
     a CLEAN-placement band rather than a circular definition of crushing.
     The reference arm defaults to whichever arm placed most often.
     """
-    placed = [r for r in rows if r.cls in ("placed_clean", "placed_crushed")
-              and r.verdict not in ("crushed", "crushed_then_failed")]
+    placed = clean_placements(rows)
     if ref_arm is None:
         counts = Counter(r.arm for r in placed)
         if not counts:
@@ -669,9 +762,52 @@ def clean_band(rows: list[TakeRow], ref_arm: str | None = None
     return ref_arm, peaks, float(a.mean()), float(a.std(ddof=1))
 
 
+def clean_placements(rows: list[TakeRow]) -> list[TakeRow]:
+    """Placements the operator did NOT tag `crushed` — the clean-band sample."""
+    return [r for r in rows if r.cls in ("placed_clean", "placed_crushed")
+            and not r.op_force_flag]
+
+
+def pooled_band(rows: list[TakeRow]) -> tuple[list[float], float, float,
+                                              dict[str, tuple[int, float, float]]]:
+    """(peaks, mean, sd, per-arm {arm: (n, mean, sd)}) over ALL arms.
+
+    Deriving the band from one reference arm makes the threshold that arm's
+    own habit: on this session the teacher's clean placements sit ~3 N below
+    the student's, so a teacher-only band charges the student with crushes the
+    operator never saw.  Pooling every arm's clean placements makes the band a
+    property of "a waffle pack that survived", not of one policy.
+    """
+    placed = clean_placements(rows)
+    peaks = sorted(r.pad_peak_n for r in placed)
+    per_arm: dict[str, tuple[int, float, float]] = {}
+    for arm in {r.arm for r in placed}:
+        vals = np.array([r.pad_peak_n for r in placed if r.arm == arm])
+        per_arm[arm] = (len(vals), float(vals.mean()),
+                        float(vals.std(ddof=1)) if len(vals) > 1 else 0.0)
+    if len(peaks) < 2:
+        return peaks, (peaks[0] if peaks else 0.0), 0.0, per_arm
+    a = np.array(peaks)
+    return peaks, float(a.mean()), float(a.std(ddof=1)), per_arm
+
+
 def apply_crush_threshold(rows: list[TakeRow], crush_n: float) -> None:
     for r in rows:
         finalise(r, crush_n)
+
+
+def counts_at(rows: list[TakeRow], crush_n: float) -> dict:
+    """Every headline count at a given crush threshold (for the ±2 N table)."""
+    apply_crush_threshold(rows, crush_n)
+    out = {"haptic": sum(r.haptic_success for r in rows),
+           "over": sum(r.over_grasp for r in rows),
+           "under": sum(r.under_grasp for r in rows),
+           "grasp": sum(r.grasp_success for r in rows)}
+    for arm in sorted({r.arm for r in rows}):
+        sub = [r for r in rows if r.arm == arm]
+        out[f"haptic:{arm}"] = sum(r.haptic_success for r in sub)
+        out[f"over:{arm}"] = sum(r.over_grasp for r in sub)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -686,19 +822,26 @@ def cross_check(row: TakeRow) -> TakeRow:
     the ones worth re-watching on video.
     """
     why = []
-    crushed_tag = row.verdict in ("crushed", "crushed_then_failed")
-    if row.operator_placed and not crushed_tag and not row.haptic_success:
+    crushed_tag = row.verdict in OP_CRUSH_VERDICTS
+    # a take the operator flagged for force and the threshold also calls a
+    # crush is AGREEMENT, even though it is not a Level B success
+    flagged_crush = row.op_force_flag and row.cls == "placed_crushed"
+    if (row.operator_placed and not crushed_tag and not row.haptic_success
+            and not flagged_crush):
         why.append(f"operator placed it, sensors say {row.cls}")
     if row.operator_placed and crushed_tag and row.cls != "placed_crushed":
         why.append(f"operator placed it crushed, sensors say {row.cls}")
     if not row.operator_placed and row.cls in ("placed_clean", "placed_crushed"):
         why.append(f"operator did not place it, sensors say {row.cls}")
-    if crushed_tag and not row.crush:
-        why.append(f"tagged {row.verdict} but peak hold load only "
-                   f"{row.pad_peak_n} N")
-    if row.crush and not crushed_tag:
-        why.append(f"peak hold load {row.pad_peak_n} N above the crush band, "
-                   f"no crush tag")
+    # the force flag is advisory once the operator hands the crush call to the
+    # threshold, so a mismatch is reported but is not a verdict disagreement
+    if row.op_force_flag and not row.over_grasp:
+        why.append(f"operator flagged excessive force, pinch peak only "
+                   f"{max(row.pad_peak_pinch_n, row.pad_peak_n):.1f} N")
+    if row.over_grasp and not row.op_force_flag:
+        why.append(f"pinch peak "
+                   f"{max(row.pad_peak_pinch_n, row.pad_peak_n):.1f} N above "
+                   f"the crush band, operator flagged nothing")
     row.agree = not why
     row.disagreement = "; ".join(why)
     return row
@@ -737,32 +880,38 @@ def headline_lines(rows: list[TakeRow]) -> list[str]:
         g = sum(r.grasp_success for r in sub)
         h = sum(r.haptic_success for r in sub)
         o = sum(r.operator_placed for r in sub)
+        u = sum(r.under_grasp for r in sub)
+        v = sum(r.over_grasp for r in sub)
         out.append(f"**{a}**: grasp {g}/{n}, haptic {h}/{n}, "
-                   f"operator placed {o}/{n}")
+                   f"under {u}/{n}, over {v}/{n}, operator placed {o}/{n}")
     return out
 
 
 def per_arm_table(rows: list[TakeRow]) -> str:
     present = [c for c in CLASSES if any(r.cls == c for r in rows)]
     present += sorted({r.cls for r in rows} - set(CLASSES))
-    head = ("| arm | n | grasp (A) | haptic (B) | operator placed | "
+    head = ("| arm | n | grasp (A) | haptic (B) | under | over | never closed | "
+            "operator placed | operator force flag | "
             + " | ".join(present) + " |")
-    sep = "|" + "---|" * (len(present) + 5)
+    sep = "|" + "---|" * (len(present) + 9)
     lines = [head, sep]
-    for a in arm_order(rows):
-        sub = [r for r in rows if r.arm == a]
+
+    def body(sub, name, bold=False):
         cnt = Counter(r.cls for r in sub)
-        lines.append(
-            f"| `{a}` | {len(sub)} | {sum(r.grasp_success for r in sub)} | "
-            f"{sum(r.haptic_success for r in sub)} | "
-            f"{sum(r.operator_placed for r in sub)} | "
-            + " | ".join(str(cnt.get(c, 0)) for c in present) + " |")
-    cnt = Counter(r.cls for r in rows)
-    lines.append(
-        f"| **all** | **{len(rows)}** | **{sum(r.grasp_success for r in rows)}** "
-        f"| **{sum(r.haptic_success for r in rows)}** "
-        f"| **{sum(r.operator_placed for r in rows)}** | "
-        + " | ".join(f"**{cnt.get(c, 0)}**" for c in present) + " |")
+        f = (lambda v: f"**{v}**") if bold else str
+        vals = [len(sub), sum(r.grasp_success for r in sub),
+                sum(r.haptic_success for r in sub),
+                sum(r.under_grasp for r in sub),
+                sum(r.over_grasp for r in sub),
+                sum(r.cls == "never_reached" for r in sub),
+                sum(r.operator_placed for r in sub),
+                sum(r.op_force_flag for r in sub)]
+        return (f"| {name} | " + " | ".join(f(v) for v in vals) + " | "
+                + " | ".join(f(cnt.get(c, 0)) for c in present) + " |")
+
+    for a in arm_order(rows):
+        lines.append(body([r for r in rows if r.arm == a], f"`{a}`"))
+    lines.append(body(rows, "**all**", bold=True))
     return "\n".join(lines)
 
 
@@ -779,8 +928,8 @@ def threshold_section(rows: list[TakeRow], contact_a_n: float,
     bad = sorted(r.pad_peak_take_min_n for r in rows if r.verdict == "f")
     below = [x for x in bad if ok and x < ok[0]]
     all_clean = sorted(r.pad_peak_n for r in rows if r.cls == "placed_clean")
-    crushed = sorted(r.pad_peak_n for r in rows
-                     if r.verdict in ("crushed", "crushed_then_failed"))
+    crushed = sorted(max(r.pad_peak_pinch_n, r.pad_peak_n)
+                     for r in rows if r.op_force_flag)
     crushed_held = [x for x in crushed if x > 0]
 
     if ok and below and below[-1] < contact_hold_n < ok[0]:
@@ -817,14 +966,23 @@ def threshold_section(rows: list[TakeRow], contact_a_n: float,
         f"| Level B placement | controller release gate | "
         f"`placement_descent.release_gate_z_m`, or a non-zero `releases` "
         f"count |",
-        f"| Crush | {crush_n:.1f} N | {crush_src} |",
+        f"| Crush / over-grasp | {crush_n:.1f} N | {crush_src} |",
+        "",
+        "**Under-grasp** = a close that put the pads on the pack (Level A "
+        "contact or the gOBJ stall bit) but never carried a two-pad hold "
+        "through to a placement: `contact_no_hold` + `held_dropped`. "
+        "**Over-grasp** = peak load above the crush threshold while BOTH pads "
+        "were engaged, whether or not the pack was then placed; a one-sided "
+        "push against the table or the crate wall does not count.",
         "",
     ]
     if peaks:
         k2, k3 = mean + 2 * sd, mean + 3 * sd
+        whose = ("every arm's clean placements, pooled" if ref_arm == "pooled"
+                 else f"`{ref_arm}`'s clean placements")
         out += [
-            f"The crush band comes from `{ref_arm}`, the arm with the most "
-            f"clean placements (n={len(peaks)}): mean {mean:.2f} N, sd "
+            f"The crush band comes from {whose} "
+            f"(n={len(peaks)}): mean {mean:.2f} N, sd "
             f"{sd:.2f} N. Candidate cut-offs, with what each does to this "
             f"session:",
             "",
@@ -861,6 +1019,47 @@ def threshold_section(rows: list[TakeRow], contact_a_n: float,
         "the aperture.",
     ]
     return "\n".join(out)
+
+
+def per_arm_band_table(rows: list[TakeRow]) -> str:
+    """Peak two-pad load on each arm's clean placements, and the pooled row."""
+    peaks, mean, sd, per_arm = pooled_band(rows)
+    lines = ["| arm | clean placements | mean peak N | sd N | range N |",
+             "|---|---|---|---|---|"]
+    placed = clean_placements(rows)
+    for a in arm_order(rows):
+        n, m, s = per_arm.get(a, (0, 0.0, 0.0))
+        if not n:
+            lines.append(f"| `{a}` | 0 | — | — | — |")
+            continue
+        vals = sorted(r.pad_peak_n for r in placed if r.arm == a)
+        lines.append(f"| `{a}` | {n} | {m:.2f} | "
+                     + (f"{s:.2f}" if n > 1 else "—")
+                     + f" | {vals[0]:.1f}–{vals[-1]:.1f} |")
+    lines.append(f"| **pooled** | **{len(peaks)}** | **{mean:.2f}** | "
+                 f"**{sd:.2f}** | "
+                 + (f"**{peaks[0]:.1f}–{peaks[-1]:.1f}**" if peaks else "—")
+                 + " |")
+    return "\n".join(lines)
+
+
+def crush_sensitivity_table(rows: list[TakeRow], crush_n: float) -> str:
+    """Every count this threshold moves, at the chosen value and at ±2 N."""
+    arms = arm_order(rows)
+    lines = ["| crush N | haptic (B) total | over-grasps total | "
+             + " | ".join(f"B `{a}`" for a in arms) + " | "
+             + " | ".join(f"over `{a}`" for a in arms) + " |",
+             "|" + "---|" * (3 + 2 * len(arms))]
+    for v in (crush_n - 2.0, crush_n, crush_n + 2.0):
+        c = counts_at(rows, v)
+        mark = " **(chosen)**" if abs(v - crush_n) < 1e-9 else ""
+        lines.append(f"| {v:.1f}{mark} | {c['haptic']} | {c['over']} | "
+                     + " | ".join(str(c[f'haptic:{a}']) for a in arms) + " | "
+                     + " | ".join(str(c[f'over:{a}']) for a in arms) + " |")
+    apply_crush_threshold(rows, crush_n)      # leave the rows as we found them
+    lines += ["", "The Level A grasp count and the under-grasp count do not "
+              "appear here because neither depends on the crush threshold."]
+    return "\n".join(lines)
 
 
 def sweep_table(eps: list[Path], contact_hold_ns, contact_a_n: float,
@@ -905,6 +1104,19 @@ def write_markdown(path: Path, rows: list[TakeRow], src: Path,
         "",
         threshold_section(rows, contact_a_n, contact_hold_n, crush_n, band,
                           crush_src),
+        "",
+        "### The clean-placement band, per arm and pooled",
+        "",
+        "The crush threshold is derived from the pooled sample, not from one "
+        "reference arm: the arms differ by ~3 N in how hard they squeeze a "
+        "pack that survives, so a single-arm band would charge the harder arm "
+        "with crushes the operator never saw.",
+        "",
+        per_arm_band_table(rows),
+        "",
+        "### Sensitivity of every count to ±2 N on the crush threshold",
+        "",
+        crush_sensitivity_table(rows, crush_n),
         "",
     ]
     if sweep:
@@ -975,8 +1187,27 @@ def write_markdown(path: Path, rows: list[TakeRow], src: Path,
 # CLI
 # ---------------------------------------------------------------------------
 
-def episode_dirs(root: Path) -> list[Path]:
-    return sorted(p for p in root.glob("ep_*") if (p / "meta.json").exists())
+def episode_dirs(root: Path, task: str | None = None,
+                 exclude_arms: tuple[str, ...] = ()) -> list[Path]:
+    """Every `ep_*/` with a meta.json, optionally filtered to one task/arms.
+
+    A deploy folder accumulates takes: the rig moves on to the next task in the
+    same directory, and a run can be aborted under a throwaway label.  Both
+    filters are here so a session can be analysed without moving files around
+    on the rig.
+    """
+    eps = sorted(p for p in root.glob("ep_*") if (p / "meta.json").exists())
+    if not task and not exclude_arms:
+        return eps
+    out = []
+    for p in eps:
+        meta = read_json(p / "meta.json")
+        if task and str(meta.get("task") or "") != task:
+            continue
+        if tag_map(meta.get("tags")).get("label", "") in exclude_arms:
+            continue
+        out.append(p)
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1000,19 +1231,28 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--crush-sd-k", type=float, default=CRUSH_SD_K,
                     help="k in mean + k*sd for the derived crush threshold")
     ap.add_argument("--ref-arm", default=None,
-                    help="arm whose clean placements define the crush band "
-                         "(default: the arm that placed most often)")
+                    help="arm whose clean placements define the crush band; "
+                         "only used with --crush-ref arm")
+    ap.add_argument("--crush-ref", choices=("pooled", "arm"), default="pooled",
+                    help="derive the crush band from every arm's clean "
+                         "placements (pooled, the default) or from one "
+                         "reference arm's")
     ap.add_argument("--lift-min-mm", type=float, default=LIFT_MIN_MM)
     ap.add_argument("--rule", action="store_true",
                     help="also run phantom.eval.grasp_label on each take")
     ap.add_argument("--sweep", action="store_true",
                     help="add a hold-threshold sensitivity table to --md")
+    ap.add_argument("--task", default=None,
+                    help="only takes whose meta.task is this (e.g. waffles)")
+    ap.add_argument("--exclude-arm", action="append", default=[],
+                    help="drop this `label:` arm; repeatable")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
 
-    eps = episode_dirs(a.folder)
+    eps = episode_dirs(a.folder, a.task, tuple(a.exclude_arm))
     if not eps:
-        print(f"no ep_*/ with meta.json under {a.folder}", file=sys.stderr)
+        print(f"no matching ep_*/ with meta.json under {a.folder}",
+              file=sys.stderr)
         return 2
 
     # pass 1: classify with no crush split, so the placements that define the
@@ -1020,16 +1260,22 @@ def main(argv: list[str] | None = None) -> int:
     rows = [analyse_episode(ep, contact_a_n=a.contact_a_n,
                             contact_hold_n=a.contact_hold_n,
                             lift_min_mm=a.lift_min_mm) for ep in eps]
-    band = clean_band(rows, a.ref_arm)
-    ref_arm, peaks, mean, sd = band
+    if a.crush_ref == "pooled":
+        peaks, mean, sd, _ = pooled_band(rows)
+        band = ("pooled", peaks, mean, sd)
+        band_src = f"all {len({r.arm for r in rows})} arms' clean placements"
+    else:
+        band = clean_band(rows, a.ref_arm)
+        _, peaks, mean, sd = band
+        band_src = f"`{band[0]}`'s clean placements"
     if a.crush_n is not None:
         crush_n = a.crush_n
         crush_src = "fixed on the command line"
     elif len(peaks) >= 2:
         crush_n = mean + a.crush_sd_k * sd
-        crush_src = (f"mean + {a.crush_sd_k:g} sd of `{ref_arm}`'s "
-                     f"{len(peaks)} clean placements "
-                     f"({mean:.2f} + {a.crush_sd_k:g} x {sd:.2f})")
+        crush_src = (f"mean + {a.crush_sd_k:g} sd over {band_src} "
+                     f"(n={len(peaks)}: {mean:.2f} + {a.crush_sd_k:g} × "
+                     f"{sd:.2f})")
     else:
         crush_n = 18.0
         crush_src = "fallback: too few clean placements to derive a band"

@@ -388,7 +388,9 @@ def test_untagged_crush_is_flagged(tmp_path):
     assert r.crush is True
     assert r.cls == "placed_crushed"
     assert r.agree is False
-    assert "no crush tag" in r.disagreement
+    # wording follows the 20:05 MSK retag: the operator flags force, the
+    # threshold decides the crush, so the mismatch is named from the flag
+    assert "operator flagged nothing" in r.disagreement
 
 
 def test_crush_tag_without_the_load_is_flagged(tmp_path):
@@ -398,7 +400,7 @@ def test_crush_tag_without_the_load_is_flagged(tmp_path):
     r = ge.cross_check(ge.finalise(ge.analyse_episode(ep), 16.0))
     assert r.crush is False
     assert r.agree is False
-    assert "tagged crushed" in r.disagreement
+    assert "operator flagged excessive force" in r.disagreement
 
 
 def test_missing_area_streams_are_tolerated(tmp_path):
@@ -455,3 +457,193 @@ def test_cli_writes_csv_and_markdown(tmp_path):
 
 def test_cli_rejects_an_empty_folder(tmp_path):
     assert ge.main([str(tmp_path), "--csv", str(tmp_path / "o.csv")]) == 2
+
+
+# ---------------------------------------------------------------------------
+# under-grasp / over-grasp and the pooled crush band
+# ---------------------------------------------------------------------------
+
+def test_under_grasp_covers_touch_without_delivery(tmp_path):
+    """contact_no_hold and held_dropped are under-grasps; a placement is not."""
+    under = make_episode(tmp_path, "ep_ug1", closes=[(6.0, 1e9)],
+                         contact=(6.2, 14.0, 3.0), success=False)
+    dropped = make_episode(tmp_path, "ep_ug2", closes=[(6.0, 1e9)],
+                           contact=(6.2, 12.0, 11.0), z_profile=PICK_DROP,
+                           success=False)
+    placed = make_episode(tmp_path, "ep_ug3", closes=[(6.0, 1e9)],
+                          contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                          success=True)
+    a, b, c = (ge.finalise(ge.analyse_episode(e), 20.0)
+               for e in (under, dropped, placed))
+    assert a.cls == "contact_no_hold" and a.under_grasp is True
+    assert b.cls == "held_dropped" and b.under_grasp is True
+    assert c.cls == "placed_clean" and c.under_grasp is False
+    # every under-grasp is a Level A success and a Level B failure
+    for r in (a, b):
+        assert r.grasp_success is True and r.haptic_success is False
+
+
+def test_never_reached_is_not_an_under_grasp(tmp_path):
+    """No close at all is a reach failure, not a grasp that was too light."""
+    ep = make_episode(tmp_path, "ep_ug4", closes=[], success=False)
+    r = ge.finalise(ge.analyse_episode(ep), 20.0)
+    assert r.cls == "never_reached"
+    assert r.under_grasp is False and r.over_grasp is False
+
+
+def test_held_at_cut_is_not_an_under_grasp(tmp_path):
+    """The recording ended mid-carry, so non-delivery was never observed."""
+    ep = make_episode(tmp_path, "ep_ug5", closes=[(6.0, 1e9)],
+                      contact=(6.2, 19.9, 11.0),
+                      z_profile=ramp([(0, 300), (6, 80), (12, 320), (20, 320)]),
+                      success=True)
+    r = ge.finalise(ge.analyse_episode(ep), 20.0)
+    assert r.cls == "held_at_cut"
+    assert r.under_grasp is False
+
+
+def test_over_grasp_fires_on_a_take_that_never_placed(tmp_path):
+    """A hard squeeze with no placement still counts as an over-grasp.
+
+    This is the case the placement-only crush flag misses: `pad_peak_n` is 0
+    because there is no hold window, so the count has to come from the pinch
+    peak instead.
+    """
+    # a hard squeeze too brief to register as a hold, so there is no hold
+    # window and `pad_peak_n` stays 0 — exactly the dp cell 12 shape
+    ep = make_episode(tmp_path, "ep_og1", closes=[(6.0, 1e9)],
+                      contact=(6.2, 6.4, 22.0), success=False)
+    r = ge.finalise(ge.analyse_episode(ep), 16.0)
+    assert r.cls == "contact_no_hold"          # squeezed, never lifted it
+    assert r.hold_s < ge.MIN_HOLD_S
+    assert r.pad_peak_n == 0.0                 # no hold window to measure
+    assert r.pad_peak_pinch_n > 16.0
+    assert r.over_grasp is True
+    assert r.crush is False                    # crush stays a placement flag
+
+
+def test_over_grasp_ignores_a_one_sided_push(tmp_path):
+    """One pad loaded to 25 N with the other at zero is not a pinch."""
+    ep = make_episode(tmp_path, "ep_og2", closes=[(6.0, 1e9)],
+                      area=(0, 0, 0), left_offset=0.0, success=False)
+    # rewrite the left pad alone with a hard one-sided load
+    g = zarr.open(str(ep / "tactile_left_wrench.zarr"), mode="r+")
+    ts = np.asarray(g["ts"][:])
+    data = np.asarray(g["data"][:])
+    data[(ts - T0 >= 6.2) & (ts - T0 <= 14.0), 2] = -25.0
+    g["data"][:] = data
+    r = ge.finalise(ge.analyse_episode(ep), 16.0)
+    assert r.pad_peak_take_n > 20.0            # the raw peak is there
+    assert r.pad_peak_pinch_n == 0.0           # but the right pad never engaged
+    assert r.over_grasp is False
+
+
+def test_pooled_band_uses_every_arm(tmp_path):
+    """The band is the pooled clean placements, and per-arm means come out."""
+    rows = []
+    for i, n in enumerate([10.0, 11.0, 12.0]):
+        ep = make_episode(tmp_path, f"ep_pb_t{i}", closes=[(6.0, 1e9)],
+                          contact=(6.2, 14.0, n), z_profile=PICK_PLACE,
+                          success=True, tags=["label:teach", f"seed:10{i}"])
+        rows.append(ge.analyse_episode(ep))
+    for i, n in enumerate([14.0, 15.0, 16.0]):
+        ep = make_episode(tmp_path, f"ep_pb_s{i}", closes=[(6.0, 1e9)],
+                          contact=(6.2, 14.0, n), z_profile=PICK_PLACE,
+                          success=True, tags=["label:stud", f"seed:11{i}"])
+        rows.append(ge.analyse_episode(ep))
+    peaks, mean, sd, per_arm = ge.pooled_band(rows)
+    assert len(peaks) == 6
+    assert mean == pytest.approx(13.0, abs=0.3)
+    assert per_arm["teach"][0] == 3 and per_arm["stud"][0] == 3
+    assert per_arm["teach"][1] < per_arm["stud"][1]
+    # the single-arm band would be ~3 N lower and would flag the other arm
+    _, _, t_mean, t_sd = ge.clean_band(rows, "teach")
+    assert t_mean + 3 * t_sd < max(peaks)
+    assert mean + 3 * sd > max(peaks)
+
+
+def test_crush_sensitivity_table_brackets_the_chosen_value(tmp_path):
+    rows = []
+    for i, n in enumerate([11.0, 12.0, 13.0, 19.0]):
+        ep = make_episode(tmp_path, f"ep_cs{i}", closes=[(6.0, 1e9)],
+                          contact=(6.2, 14.0, n), z_profile=PICK_PLACE,
+                          success=True, tags=["label:armA", f"seed:10{i}"])
+        rows.append(ge.analyse_episode(ep))
+    md = ge.crush_sensitivity_table(rows, 18.0)
+    assert "16.0" in md and "18.0 **(chosen)**" in md and "20.0" in md
+    # the rows are left classified at the chosen value, not at the last probe
+    ge.apply_crush_threshold(rows, 18.0)
+    assert sum(r.over_grasp for r in rows) == 1
+
+
+# ---------------------------------------------------------------------------
+# the 20:05 MSK retag: `crushed` -> advisory `op_crushed`
+# ---------------------------------------------------------------------------
+
+def test_op_crushed_is_advisory_not_a_verdict(tmp_path):
+    """`op_crushed` leaves the success verdict alone but flags the force."""
+    ep = make_episode(tmp_path, "ep_oc1", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                      success=True,
+                      tags=["label:testarm", "seed:101", "op_crushed"])
+    r = ge.finalise(ge.analyse_episode(ep), 20.0)
+    assert r.verdict == "s"            # NOT "crushed": success still stands
+    assert r.op_force_flag is True
+    assert r.operator_placed is True
+    # the older tag vintage still overrides the verdict
+    ep2 = make_episode(tmp_path, "ep_oc2", closes=[(6.0, 1e9)],
+                       contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                       success=True,
+                       tags=["label:testarm", "seed:102", "crushed"])
+    r2 = ge.finalise(ge.analyse_episode(ep2), 20.0)
+    assert r2.verdict == "crushed" and r2.op_force_flag is True
+
+
+def test_op_crushed_take_is_kept_out_of_the_clean_band(tmp_path):
+    """A flagged take is not evidence of what an intact pack feels like."""
+    rows = []
+    for i, n in enumerate([10.0, 11.0, 12.0]):
+        ep = make_episode(tmp_path, f"ep_ocb{i}", closes=[(6.0, 1e9)],
+                          contact=(6.2, 14.0, n), z_profile=PICK_PLACE,
+                          success=True, tags=["label:teach", f"seed:10{i}"])
+        rows.append(ge.analyse_episode(ep))
+    ep = make_episode(tmp_path, "ep_ocb9", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 30.0), z_profile=PICK_PLACE,
+                      success=True,
+                      tags=["label:teach", "seed:109", "op_crushed"])
+    rows.append(ge.analyse_episode(ep))
+    peaks, mean, sd, _ = ge.pooled_band(rows)
+    assert len(peaks) == 3 and max(peaks) < 13.0
+
+
+def test_force_flag_mismatch_is_reported_both_ways(tmp_path):
+    """Flagged but under the band, and over the band but unflagged."""
+    flagged_light = make_episode(tmp_path, "ep_fm1", closes=[(6.0, 1e9)],
+                                 contact=(6.2, 14.0, 11.0),
+                                 z_profile=PICK_PLACE, success=True,
+                                 tags=["label:a", "seed:101", "op_crushed"])
+    quiet_heavy = make_episode(tmp_path, "ep_fm2", closes=[(6.0, 1e9)],
+                               contact=(6.2, 14.0, 24.0),
+                               z_profile=PICK_PLACE, success=True,
+                               tags=["label:a", "seed:102"])
+    a = ge.cross_check(ge.finalise(ge.analyse_episode(flagged_light), 20.0))
+    b = ge.cross_check(ge.finalise(ge.analyse_episode(quiet_heavy), 20.0))
+    assert a.agree is False and "flagged excessive force" in a.disagreement
+    assert b.agree is False and "operator flagged nothing" in b.disagreement
+
+
+def test_flagged_take_the_threshold_also_calls_a_crush_agrees(tmp_path):
+    """Operator flagged the force, threshold confirms it: not a disagreement.
+
+    The take is still a Level B failure — it just is not a case where the
+    sensors and the human tell different stories, which is what the
+    disagreement list is for.
+    """
+    ep = make_episode(tmp_path, "ep_ag1", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 24.0), z_profile=PICK_PLACE,
+                      success=True,
+                      tags=["label:a", "seed:101", "op_crushed"])
+    r = ge.cross_check(ge.finalise(ge.analyse_episode(ep), 20.0))
+    assert r.cls == "placed_crushed" and r.over_grasp is True
+    assert r.haptic_success is False
+    assert r.agree is True and r.disagreement == ""
