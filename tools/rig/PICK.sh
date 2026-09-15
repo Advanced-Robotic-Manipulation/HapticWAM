@@ -49,7 +49,7 @@ if [ -n "$LEROBOT_TYPE" ]; then
   EXTRA="--max-play-steps 16 --grip-play-steps 16 --min-replan-s 0.5 --max-episode-s 150 --max-replans 400"; PRESET=LEROBOT_$LEROBOT_TYPE
   echo "  ($LEROBOT_TYPE row: preset fixed to LEROBOT = nfe $NFE, plays 16/16, replan >= 0.5 s, no veto)"
 else
-read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}
+if [ -n "${PICK_PRESET:-}" ]; then p=$PICK_PRESET; echo "preset: $p (PICK_PRESET)"; else read -p "preset [$DEFAULT_PRESET]: " p; p=${p:-$DEFAULT_PRESET}; fi
 fi
 case $p in
   lerobot) ;;
@@ -62,7 +62,7 @@ case $p in
   7) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --boundary-projection-config configs/boundary_projection_d3.json --placement-release-config configs/placement_release_descent_sim_waffles.json --placement-controller-profile minimal_v5"; PRESET=PLACEMENT_FIX;;   # sim zoo 09-12: boundary v3 + 2 cm apex cap + descend-then-release; release volume = sim waffle scene, UNVERIFIED on the rig
   *) echo "bad choice"; exit 1;;
 esac
-read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}
+if [ -n "${PICK_TASK:-}" ]; then TASK=$PICK_TASK; echo "task: $TASK (PICK_TASK)"; else read -p "task [waffles]: " TASK; TASK=${TASK:-waffles}; fi
 # the grasp rule and the pairing key are case-sensitive (Z_MAX_MM: waffles Carton egg whiteboard)
 case "$(echo "$TASK" | tr "A-Z" "a-z")" in waffles) TASK=waffles;; carton) TASK=Carton;; egg) TASK=egg;; whiteboard|sponge|marker) TASK=whiteboard;;
   *) echo "!! unknown task '$TASK' — use one of: waffles Carton egg whiteboard"; exit 1;; esac
@@ -103,7 +103,7 @@ else
   PROPOSE=$(( LAST > 0 ? LAST + 1 : 1 )); WHY="first $TASK cell today"
 fi
 echo ">> $WHY"
-read -p "cell number [Enter = $PROPOSE]: " CELL
+if [ -n "${PICK_CELL:-}" ]; then CELL=$PICK_CELL; echo "cell: $CELL (PICK_CELL)"; else read -p "cell number [Enter = $PROPOSE]: " CELL; fi
 CELL=${CELL:-$PROPOSE}
 [[ "$CELL" =~ ^[0-9]+$ ]] && [ "$CELL" -ge 1 ] || { echo "cell must be a positive integer (start at 1)"; exit 1; }
 echo "$CELL" > "$CELLF"
@@ -112,7 +112,7 @@ DEF_EPS=1
 if [ "$LASTT" -gt 0 ] && [ "$CELL" = "$LASTT" ] && [ "${NARMS:-0}" -lt 2 ] && [ "${ALREADY:-0}" = 0 ] && [ "${EPSL:-1}" -gt 1 ]; then
   DEF_EPS=$EPSL; echo ">> the other arm ran $EPSL episodes on cell $CELL — the same count pairs them (seeds $((100 + CELL))..$((100 + CELL + EPSL - 1)))"
 fi
-read -p "episodes [$DEF_EPS]: " EPS; EPS=${EPS:-$DEF_EPS}
+if [ -n "${PICK_EPS:-}" ]; then EPS=$PICK_EPS; echo "episodes: $EPS (PICK_EPS)"; else read -p "episodes [$DEF_EPS]: " EPS; EPS=${EPS:-$DEF_EPS}; fi
 [[ "$EPS" =~ ^[0-9]+$ ]] && [ "$EPS" -ge 1 ] || { echo "episodes must be a positive integer"; exit 1; }
 if [ "$EPS" -gt 1 ]; then
   echo "!! note: $EPS episodes in one launch use seeds $((100 + CELL)) .. $((100 + CELL + EPS - 1)) (one per episode). The OTHER arm pairs only if it is"
@@ -122,7 +122,7 @@ fi
 printf "%s\t%s\t%s\t%s\n" "$CELL" "$TASK" "$MODEL" "$EPS" >> "$RUNS"
 SEED=$((100 + CELL))
 EXTRA="$EXTRA --seed $SEED"
-read -p "append flags (Enter for none): " MORE
+if [ -n "${PICK_MORE+x}" ]; then MORE=$PICK_MORE; [ -n "$MORE" ] && echo "append flags: $MORE (PICK_MORE)"; else read -p "append flags (Enter for none): " MORE; fi
 [ -n "$MORE" ] && EXTRA="$EXTRA $MORE"
 
 # attach to a warm policy server when one holds the SAME model (start one in
@@ -231,7 +231,7 @@ echo ">>            joint gate must be green; stay attended until a gripper rele
 echo ">>            during an episode: press Enter TWICE (within 1.5 s) or type  x  + Enter to end it cleanly"
 echo ">>            (motion stops, gripper stays). A single Enter is ignored (stray newlines, 09-04)."
 echo ">>            DO NOT use the robot E-stop to end an episode: it kills the control script (pendant reset)."
-read -p "Enter to launch (Ctrl-C to abort) "
+if [ -n "${PICK_GO:-}" ]; then echo ">> launching (PICK_GO)"; else read -p "Enter to launch (Ctrl-C to abort) "; fi
 # Use the launcher from this same checkout; parent-directory copies can lag
 # behind a git pull and previously left the fixed controller disabled.
 LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"

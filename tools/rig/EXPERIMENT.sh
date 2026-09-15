@@ -5,10 +5,13 @@
 #   ./EXPERIMENT.sh SV      Blocks S/V and N : row 9 only (nothing new warmed)
 #   ./EXPERIMENT.sh PB      Block P-B : 14 + newest stu_mt_* row (MT_STUDENT=<label> overrides); stops the rest of ours
 #   ./EXPERIMENT.sh E       Block E   : 12 stu_nowrist_4k + 2 stu_ftA_r2 next to 9; stops 14 and the mt student
-#   ./EXPERIMENT.sh B       Block C   : baselines 4 pi05 + 5 dp next to 9 (one launch per cell); X-VLA cannot run on the rig (3 views)
+#   ./EXPERIMENT.sh B       Block C   : baselines 4 pi05 + 5 dp + 6 xvla next to 9 (X-VLA sees one of its three views; reported as is)
 #   ./EXPERIMENT.sh T1      Block C   : base teacher 1 v6 next to 9 (never with row 10)
 #   ./EXPERIMENT.sh FINAL   the evening students: 9 + stu_simft_001000 (+ stu_mt_001000 with FINAL_MT=1); stops everything else of ours
-#   ./EXPERIMENT.sh status | stop
+#   ./EXPERIMENT.sh run <stage>   ONE SCRIPT: warm the stage AND launch PICK.sh for each of its models on the waffles cell plan
+#                           (20 episodes per core arm, 10 per comparison arm, batches of 10, all takes into
+#                           data/episodes/deploy/<day>_experiment/); only homing Enter + verdict prompts remain.
+#   ./EXPERIMENT.sh status | stop | list | next
 # Rows are resolved by LABEL from MODELS.tsv, so the row numbers fetch_student.sh appends do not matter; each block prints
 # the PICK.sh row numbers to use. Never kills another user's process (SESSION_0912.sh / serve_bg.sh stop only our menu ports).
 set -u
@@ -63,6 +66,34 @@ case "${1:-}" in
   FINAL) disk_check; T=$(need v6_simft2k) || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
+  run)    # ONE SCRIPT: warm the stage, then launch PICK.sh for every model of the stage on the waffles cell plan,
+          # every take into its own experiment folder ($EXP_OUT). Only the deploy prompts remain (homing Enter,
+          # verdicts). Resume after an interruption with EXP_FROM=<cell> (and EXP_ONLY=<label> for one model).
+          #   EXP_TASK=waffles EXP_N_CORE=20 EXP_N_CMP=10 EXP_BATCH=10 EXP_OUT=<dir> ./EXPERIMENT.sh run <stage>
+         STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
+         OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
+         case $STAGE in
+           M) MODELS="v6_simft2k v6_simft_mt1500"; N=$NCORE;;  B) MODELS="pi05 dp xvla"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
+           T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="stu_simft_001000"; N=$NCORE;;
+           *) echo "!! unknown stage $STAGE"; exit 2;;
+         esac
+         [ -n "${EXP_ONLY:-}" ] && MODELS=$EXP_ONLY
+         "$0" "$STAGE" || { echo "!! warm-up failed — nothing launched"; exit 1; }
+         echo "$STAGE" > "$BASE/.experiment_stage"
+         echo; echo ">> RUN $STAGE: task $TASK, $N episodes per model in batches of $BATCH, recordings -> $OUT"; echo ">> models: $MODELS"
+         for L in $MODELS; do
+           r=$(row_of "$L"); [ -n "$r" ] || { echo "!! no row for $L"; exit 1; }
+           c=${EXP_FROM:-1}
+           while [ "$c" -le "$N" ]; do
+             n=$BATCH; [ $((c + n - 1)) -gt "$N" ] && n=$((N - c + 1))
+             echo; echo "=============== $L (row $r): $TASK cells $c..$((c + n - 1)) ($n episodes) ==============="
+             PICK_TASK=$TASK PICK_PRESET=1 PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT" PICK_GO=1 ./PICK.sh "$r" \
+               || { echo "!! launch of $L at cell $c ended with an error. Fix, then resume: EXP_ONLY=$L EXP_FROM=$c ./EXPERIMENT.sh run $STAGE"; exit 1; }
+             c=$((c + n))
+           done
+           echo ">> $L done ($N episodes). Placed so far in $OUT: $(grep -l '"success": true' "$OUT"/ep_*/meta.json 2>/dev/null | wc -l | tr -d ' ') of $(ls -d "$OUT"/ep_* 2>/dev/null | wc -l | tr -d ' ') takes"
+         done
+         echo; echo ">> STAGE $STAGE COMPLETE. Next: ./EXPERIMENT.sh run <next stage>   (order: M B E T1 P FINAL)";;
   next)   # sequential mode: advance through the evening's order, one stage per call (state in $BASE/.experiment_stage)
          ORDER="M B E T1 P FINAL"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
          nxt=""; if [ -z "$cur" ]; then nxt=${ORDER%% *}; else found=0; for s in $ORDER; do [ "$found" = 1 ] && { nxt=$s; break; }; [ "$s" = "$cur" ] && found=1; done; fi
