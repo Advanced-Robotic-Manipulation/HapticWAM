@@ -207,7 +207,11 @@ SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --gri
 case "$TASK" in
   waffles) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.325";;
   Carton)  SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.285";;
-  egg)     SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.225,z_max=0.280";;
+  # 09-15 15:15: the one egg GRAB today (ep_teacher_egg_1789471598_004, row 14, marked 'c' after a safety stop):
+  # both pads loaded (L 11 N / R 18 N), gripper closed at 2.1 s, held 15 s, lifted 135 mm, carried over the box.
+  # It started at x -348, y -255, z 263 mm — inside the lift envelope above. Box of +-15 mm around that start
+  # (y draws never go below -255, so y effectively sits in [-255, -240]).
+  egg)     SESSION_EXTRA="$SESSION_EXTRA --home-bounds x_min=-0.363,x_max=-0.333,y_min=-0.270,y_max=-0.240,z_min=0.248,z_max=0.278";;
 esac
 # 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
 # the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
