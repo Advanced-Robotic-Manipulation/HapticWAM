@@ -64,11 +64,11 @@ case "${1:-}" in
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
   next)   # sequential mode: advance through the evening's order, one stage per call (state in $BASE/.experiment_stage)
-         ORDER="M P B E T1 FINAL"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
+         ORDER="M B E T1 P FINAL"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
          nxt=""; if [ -z "$cur" ]; then nxt=${ORDER%% *}; else found=0; for s in $ORDER; do [ "$found" = 1 ] && { nxt=$s; break; }; [ "$s" = "$cur" ] && found=1; done; fi
          [ -n "$nxt" ] || { echo ">> all stages done ($ORDER). Use an explicit stage to repeat one."; exit 0; }
          echo ">> stage $nxt (after: ${cur:-start}); order = $ORDER"; echo "$nxt" > "$SF"; exec "$0" "$nxt";;
-  list)   echo "order: M  P  B  E  T1  FINAL   (current: $(cat "$BASE/.experiment_stage" 2>/dev/null || echo none))"
+  list)   echo "order: M  B  E  T1  P  FINAL   (current: $(cat "$BASE/.experiment_stage" 2>/dev/null || echo none))"
          echo "  M     row 9 sim-expert teacher + row 14 multitask teacher"
          echo "  P     + newest stu_simft_* student (arm B of the paired table)"
          echo "  B     row 9 + pi0.5 + diffusion policy + X-VLA"
