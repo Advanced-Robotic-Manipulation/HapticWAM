@@ -1738,6 +1738,15 @@ def main(argv=None) -> int:
                 while True:
                     ans = input(VERDICT_PROMPT).strip()
                     code, dmg = parse_verdict(ans)
+                    if not code and not os.environ.get("PHANTOM_ALLOW_SKIP_VERDICT"):
+                        # rig 09-15 19:10: a stray Enter (the double-Enter stop,
+                        # a scrolled safety message) answered the prompt with
+                        # nothing and two experiment takes were filed
+                        # aborted + unlabeled without anyone noticing. In an
+                        # experiment a verdict is mandatory; skipping is opt-in.
+                        print("a verdict is required: s / f / c / r "
+                              "(set PHANTOM_ALLOW_SKIP_VERDICT=1 to allow Enter=skip)")
+                        continue
                     if code == "r" and dmg:
                         # a redo DELETES the take, so damage could never be
                         # recorded on it: keep damaged takes as contaminated
