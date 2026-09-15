@@ -885,8 +885,9 @@ def operator_stop_requested(line: str, *, last_enter_t: float | None = None,
         return 0.0 <= now - last_enter_t <= DOUBLE_ENTER_S
     return False
 
-VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated "
-                  "(append d for DAMAGE, e.g. 'fd') / Enter=skip, "
+VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated / [r]edo "
+                  "(r = recorded but NOT counted, the same cell runs again; "
+                  "append d for DAMAGE, e.g. 'fd') / Enter=skip, "
                   "then optional notes "
                   # a let-go stop releases the fingers itself (executor._halt);
                   # this is the manual path if it could not reach the gripper
@@ -913,7 +914,7 @@ def parse_verdict(ans: str) -> tuple[str, bool]:
         return "", False
     code, _, _note = ans.partition(" ")
     c = code[:1].lower()
-    if c not in ("s", "f", "c"):
+    if c not in ("s", "f", "c", "r"):
         return "", False
     damage = len(code) == 2 and code[1].lower() == "d"
     return c, damage
@@ -949,6 +950,17 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
                     "skipped" if not ans else f"unrecognized {ans!r}")
         return ""
     note = f"operator: {ans}" + (" DAMAGE" if damage else "")
+    if c == "r":
+        # REDO (rig 09-15): the operator rejects the take — wrong placement,
+        # a false start, a hand in the way. The recording is kept for the
+        # paper's logs but counts nowhere: success stays None, status stays
+        # 'aborted', the `redo` tag keeps it out of training
+        # (NON_TRAINING_TAGS) and `stats pairs` sees no outcome. The caller
+        # re-runs the SAME episode index — same seed, same cell.
+        recorder.relabel(ep_path, success=None, status="aborted",
+                         tags=["redo"], remove_tags=["unlabeled"],
+                         damage=damage, notes=f"{note} REDO (not counted; same cell again)")
+        return c
     if c == "c":
         recorder.relabel(ep_path, success=None, status="aborted",
                          tags=["contaminated"], remove_tags=["unlabeled"],
@@ -1430,7 +1442,11 @@ def main(argv=None) -> int:
                            placement_descent=placement_descent,
                            **({"controller_profile": args.placement_controller_profile}
                               if args.placement_controller_profile is not None else {})) as rt:
-        for i in range(args.episodes):
+        # a 'redo' verdict puts the same index back at the head of the queue,
+        # so the take is re-run with the SAME seed (same cell, same start)
+        pending = list(range(args.episodes))
+        while pending:
+            i = pending.pop(0)
             # ONE seed per episode, drawn before anything random happens: the
             # sampler noise AND the homing jitter come from it. The jitter used
             # to run on its own unseeded default_rng (+-27 mm per axis on
@@ -1674,7 +1690,13 @@ def main(argv=None) -> int:
                     while select.select([sys.stdin], [], [], 0)[0]:
                         sys.stdin.readline()
                 ans = input(VERDICT_PROMPT).strip()
-                label_episode(rt.recorder, Path(res.episode_path), ans)
+                verdict = label_episode(rt.recorder, Path(res.episode_path), ans)
+                if verdict == "r" and not res.fatal_reason:
+                    pending.insert(0, i)
+                    log.info("REDO: %s recorded but NOT counted — episode %d/%d "
+                             "runs again with the same seed %d",
+                             Path(res.episode_path).name, i + 1, args.episodes,
+                             ep_seed)
             elif res.episode_path:
                 log.warning("episode %s got no operator verdict (%s) — left "
                             "status='aborted' + tag 'unlabeled', excluded from "

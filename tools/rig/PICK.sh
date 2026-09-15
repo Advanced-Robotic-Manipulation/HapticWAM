@@ -76,7 +76,9 @@ read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # 09-13 evening: the hard stop is gone (operator request); multi-episode launches are allowed
 # and only warned about, since seeds still advance per episode within one launch.
 if [ "$EPS" -gt 1 ]; then
-  echo "!! note: $EPS episodes in one launch advance the seed per episode (seed 100+cell, +1 each); pairing across arms needs 1 per launch."
+  echo "!! note: $EPS episodes in one launch use seeds $((100 + 0))+cell .. +cell+$((EPS - 1)) (one per episode). The OTHER arm pairs only if it is"
+  echo "!!       launched on the SAME cell with the SAME count — press Enter at the cell prompt, PICK proposes exactly that."
+  echo "!!       Verdict r (redo) re-runs the same seed inside the batch without counting it."
 fi
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
@@ -177,6 +179,8 @@ if [ "$PRESET" = BOUNDED_REACH ]; then
 fi
 echo ">> reminders: both arms of cell $CELL share seed $SEED (same placement!); type the next cell number when the placement changes;"
 echo ">>            a censored end (control_lost / servo_hold_timeout / servo_branch_fault) = re-run this cell, same number;"
+echo ">>            verdict  r  = REDO: the take is recorded for the logs but NOT counted; in a batch the same seed runs again,"
+echo ">>            with 1 episode per launch relaunch the same cell number. Use it for a bad placement / false start."
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
 echo ">>            during an episode: press Enter TWICE (within 1.5 s) or type  x  + Enter to end it cleanly"
 echo ">>            (motion stops, gripper stays). A single Enter is ignored (stray newlines, 09-04)."
