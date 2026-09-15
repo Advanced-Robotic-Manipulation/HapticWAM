@@ -225,8 +225,9 @@ if [ "$PRESET" = BOUNDED_REACH ]; then
 fi
 echo ">> reminders: both arms of cell $CELL share seed $SEED (same placement!); type the next cell number when the placement changes;"
 echo ">>            a censored end (control_lost / servo_hold_timeout / servo_branch_fault) = re-run this cell, same number;"
-echo ">>            verdict  r  = REDO: the take is DELETED as if it never ran; in a batch the same seed runs again,"
-echo ">>            with 1 episode per launch relaunch the same cell number. Use it for a bad placement / false start."
+echo ">>            verdicts: s placed | f failed | c CRUSHED (placed, but too hard on the object; counts as placed,"
+echo ">>            tagged for the haptic benchmark) | r REDO: the take is DELETED as if it never ran and the same"
+echo ">>            seed runs again (bad placement, false start, hand in frame). Append d for damage (fd, cd)."
 echo ">>            joint gate must be green; stay attended until a gripper release is seen working."
 echo ">>            during an episode: press Enter TWICE (within 1.5 s) or type  x  + Enter to end it cleanly"
 echo ">>            (motion stops, gripper stays). A single Enter is ignored (stray newlines, 09-04)."

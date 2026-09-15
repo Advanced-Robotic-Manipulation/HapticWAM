@@ -54,6 +54,22 @@ def test_other_verdicts_still_promote():
     assert kw["success"] is True and kw["status"] == "finalized"
 
 
+def test_crushed_is_a_placed_take_with_a_tag():
+    # rig 09-15: 'c' = did the task, but too hard on the object
+    from phantom.data.schema import NON_TRAINING_TAGS
+    rec = FakeRecorder()
+    ep = Path("/tmp/ep_teacher_waffles_1_002")
+    assert parse_verdict("crushed") == ("c", False) and parse_verdict("cd") == ("c", True)
+    assert label_episode(rec, ep, "c squeezed it") == "c"
+    (_, kw), = rec.calls
+    assert kw["success"] is True and kw["status"] == "finalized"
+    assert "crushed" in kw["tags"] and "unlabeled" in kw["remove_tags"] and "CRUSHED" in kw["notes"]
+    assert "crushed" in NON_TRAINING_TAGS
+    assert "[c]rushed" in VERDICT_PROMPT and "contaminated" not in VERDICT_PROMPT
+    meta = {"status": "finalized", "success": True, "tags": ["crushed", "label:v6_simft2k"]}
+    assert S.episode_outcome(meta) == S.ORDINAL["placed"]
+
+
 def test_redo_requeues_the_same_index():
     # the loop discipline of run_deploy.main: a redo puts the same index back
     # at the head, so the same seed runs again before the next episode

@@ -890,9 +890,9 @@ def operator_stop_requested(line: str, *, last_enter_t: float | None = None,
         return 0.0 <= now - last_enter_t <= DOUBLE_ENTER_S
     return False
 
-VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]ontaminated / [r]edo "
-                  "(r = this take is DELETED as if it never ran, the same cell "
-                  "runs again; append d for DAMAGE, e.g. 'fd') / Enter=skip, "
+VERDICT_PROMPT = ("outcome? [s]uccess / [f]ail / [c]rushed (did it, but too "
+                  "hard on the object) / [r]edo (this take is DELETED as if it "
+                  "never ran, the same cell runs again) / Enter=skip, "
                   "then optional notes "
                   # a let-go stop releases the fingers itself (executor._halt);
                   # this is the manual path if it could not reach the gripper
@@ -975,9 +975,15 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
                              notes=f"{note} REDO (delete failed)")
         return c
     if c == "c":
-        recorder.relabel(ep_path, success=None, status="aborted",
-                         tags=["contaminated"], remove_tags=["unlabeled"],
-                         damage=damage, notes=f"{note} CONTAMINATED")
+        # CRUSHED (rig 09-15, Mikhail): the take did the task correctly but
+        # squeezed the object too hard. It IS a success for the closed-loop
+        # ordinal (placed) and carries the `crushed` tag so the haptic
+        # benchmark can correlate the operator's eye with the pad forces;
+        # the tag keeps it out of training (NON_TRAINING_TAGS). The old
+        # 'contaminated' verdict is gone: a spoiled take is a redo ('r').
+        recorder.relabel(ep_path, success=True, status="finalized",
+                         tags=["crushed"], remove_tags=["unlabeled"],
+                         damage=damage, notes=f"{note} CRUSHED (placed, too much force)")
         return c
     recorder.relabel(ep_path, success=(c == "s"), status="finalized",
                      remove_tags=["unlabeled"], damage=damage, notes=note)
@@ -1709,8 +1715,8 @@ def main(argv=None) -> int:
                         # a redo DELETES the take, so damage could never be
                         # recorded on it: keep damaged takes as contaminated
                         print("'rd' refused: a redo deletes the take, so damage "
-                              "cannot be recorded on it. Use 'cd' (contaminated "
-                              "+ damage, kept on disk) or plain 'r'.")
+                              "cannot be recorded on it. Use 'fd' / 'cd' (kept "
+                              "on disk, damage flagged) or plain 'r'.")
                         continue
                     if code == "r":
                         # 'r' and 'f' are neighbours on the keyboard and a

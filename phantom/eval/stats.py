@@ -186,7 +186,10 @@ def load_episodes(root: Path, hw=None) -> list[dict]:
                     "seed": episode_seed(meta), "arm": episode_arm(meta),
                     "arm_tags": episode_arm_tags(meta),
                     "outcome": outcome, "outcome_info": info,
-                    "stop": episode_stop(meta)})
+                    "stop": episode_stop(meta),
+                    # rig 09-15 verdict 'c': placed, but too much force on the
+                    # object — counts as placed here, flagged for the haptic benchmark
+                    "crushed": "crushed" in (meta.get("tags", []) or [])})
     return out
 
 
@@ -221,6 +224,7 @@ def pair_episodes(eps: list[dict], arm_a: str, arm_b: str, task: str | None = No
                           "a_path": a["path"], "b_path": b["path"],
                           "a_source": a.get("outcome_info", {}).get("source"),
                           "b_source": b.get("outcome_info", {}).get("source"),
+                          "a_crushed": bool(a.get("crushed")), "b_crushed": bool(b.get("crushed")),
                           "reruns": len(arms[arm_a]) + len(arms[arm_b]) - 2})
         else:
             unpaired.append({"task": key[0], "seed": key[1], "have": sorted(arms)})
