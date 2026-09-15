@@ -95,7 +95,13 @@ case "${1:-}" in
           # verdicts). Resume after an interruption with EXP_FROM=<cell> (and EXP_ONLY=<label> for one model).
           #   EXP_TASK=waffles EXP_N_CORE=20 EXP_N_CMP=10 EXP_BATCH=10 EXP_OUT=<dir> ./EXPERIMENT.sh run <stage>
          STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9|NV>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
-         OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
+         # The experiment folder is sticky across midnight: the first run of a session writes it to
+         # $BASE/data/episodes/deploy/.experiment_out and later runs reuse it (EXP_OUT overrides;
+         # delete that file to start a new folder on a new day).
+         STICKY=$BASE/data/episodes/deploy/.experiment_out
+         OUT=${EXP_OUT:-$(cat "$STICKY" 2>/dev/null || true)}
+         [ -n "$OUT" ] || OUT=$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment
+         mkdir -p "$OUT"; echo "$OUT" > "$STICKY"
          case $STAGE in
            M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
            T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="${STUDENT:-stu_simft_001000}"; N=$NCORE;;
