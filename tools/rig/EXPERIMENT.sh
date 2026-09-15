@@ -17,6 +17,7 @@
 set -u
 cd "$(dirname "$(readlink -f "$0")")"   # works through the ~/phantom-icra-2027/EXPERIMENT.sh symlink too
 BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
+ANCHOR=${EXP_ANCHOR:-v6_simft_mt1500}   # the teacher every arm pairs against (16:40: Ilya's multitask teacher; EXP_ANCHOR=v6_simft2k for the 09-13 one)
 listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
 warm_student() {  # the Block P student: a stu_simft_* row that is already warm wins (never switch arms mid-block), else the newest
   local r=0 label rest
@@ -50,37 +51,38 @@ snap() {  # scene screenshot (training reference vs live camera) saved next to t
     DISPLAY=${DISPLAY:-:1} bash -c 'pkill -f "eog" 2>/dev/null; setsid nohup eog -f "$0" >/dev/null 2>&1 < /dev/null &' "$f"
   else echo "!! screenshot skipped (camera busy or snap.py failed)"; fi; }
 case "${1:-}" in
-  P)     disk_check; T=$(need v6_simft2k) || exit 1; S=${STUDENT:-$(warm_student)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
+  P)     disk_check; T=$(need "$ANCHOR") || exit 1; S=${STUDENT:-$(warm_student)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
          echo ">> Block P student: $S (a warm stu_simft_* row is kept; STUDENT=<label> overrides)"
          SR=$(need "$S") || exit 1; MT=$(row_of v6_simft_mt1500)
          # keep the multitask teacher warm if it already is (Block M follows P on the same cells); three servers is the ceiling
          stop_ours_except "$T" "$SR" "$MT"; warm_rows "$T" "$SR"; [ -n "$MT" ] && warm_rows "$MT"
          show "teacher v6_simft2k = $T   student $S = $SR${MT:+   (multitask teacher $MT stays warm for Block M if it fit)}";;
-  M)     T=$(need v6_simft2k) || exit 1; MT=$(need v6_simft_mt1500) || exit 1
-         warm_rows "$T" "$MT"; show "multitask teacher v6_simft_mt1500 = $MT (one launch per Block P cell, pairs against row $T's Block P episodes)";;
-  SV)    T=$(need v6_simft2k) || exit 1; warm_rows "$T"; show "row $T with preset 4 + the flags in RUN_SHEET_0915.md (S: --select-by video_agreement; V: + --agreement-veto THR; N: no --terminal-veto)";;
+  M)     T=$(need "$ANCHOR") || exit 1; warm_rows "$T"; show "anchor teacher $ANCHOR = $T (the arm every other arm pairs against)";;
+  S9)    T=$(need "$ANCHOR") || exit 1; S9=$(need v6_simft2k) || exit 1
+         stop_ours_except "$T" "$S9"; warm_rows "$T" "$S9"; show "09-13 sim-expert teacher v6_simft2k = $S9 (optional, one launch per cell, pairs against $ANCHOR)";;
+  SV)    T=$(need "$ANCHOR") || exit 1; warm_rows "$T"; show "row $T with preset 4 + the flags in RUN_SHEET_0915.md (S: --select-by video_agreement; V: + --agreement-veto THR; N: no --terminal-veto)";;
   PB)    MT=$(need v6_simft_mt1500) || exit 1; MS=${MT_STUDENT:-$(newest stu_mt_)}; [ -n "$MS" ] || { echo "!! no stu_mt_* row yet — fetch_student.sh hid_mt 000500 first"; exit 1; }
-         MSR=$(need "$MS") || exit 1; T=$(row_of v6_simft2k)
+         MSR=$(need "$MS") || exit 1; T=$(row_of "$ANCHOR")
          stop_ours_except "$T" "$MT" "$MSR"; warm_rows "$MT" "$MSR"; show "multitask teacher = $MT   its student $MS = $MSR";;
-  E)     T=$(need v6_simft2k) || exit 1; W=$(need stu_nowrist_4k) || exit 1; F=$(need stu_ftA_r2) || exit 1
+  E)     T=$(need "$ANCHOR") || exit 1; W=$(need stu_nowrist_4k) || exit 1; F=$(need stu_ftA_r2) || exit 1
          stop_ours_except "$T" "$W" "$F"; warm_rows "$T" "$W" "$F"; show "wrist-masked student = $W   ftA student = $F (one launch per cell, vs row $T's Block P episodes)";;
-  B)     T=$(need v6_simft2k) || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1; XV=$(need xvla) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB, X-VLA 3 GB; ~20 GB total)
+  B)     T=$(need "$ANCHOR") || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1; XV=$(need xvla) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB, X-VLA 3 GB; ~20 GB total)
          stop_ours_except "$T" "$P" "$DPR" "$XV"; warm_rows "$T" "$P" "$DPR" "$XV"
          show "pi0.5 = $P   diffusion policy = $DPR   X-VLA = $XV (one launch per cell, vs row $T's Block P episodes; X-VLA sees only the scene camera of its 3 declared views — reported as is)";;
-  T1)    T=$(need v6_simft2k) || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
+  T1)    T=$(need "$ANCHOR") || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
          [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
          stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
-  FINAL) disk_check; T=$(need v6_simft2k) || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
+  FINAL) disk_check; T=$(need "$ANCHOR") || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
   run)    # ONE SCRIPT: warm the stage, then launch PICK.sh for every model of the stage on the waffles cell plan,
           # every take into its own experiment folder ($EXP_OUT). Only the deploy prompts remain (homing Enter,
           # verdicts). Resume after an interruption with EXP_FROM=<cell> (and EXP_ONLY=<label> for one model).
           #   EXP_TASK=waffles EXP_N_CORE=20 EXP_N_CMP=10 EXP_BATCH=10 EXP_OUT=<dir> ./EXPERIMENT.sh run <stage>
-         STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
+         STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
          OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
          case $STAGE in
-           M) MODELS="v6_simft2k v6_simft_mt1500"; N=$NCORE;;  B) MODELS="pi05 dp xvla"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
+           M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp xvla"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
            T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="stu_simft_001000"; N=$NCORE;;
            *) echo "!! unknown stage $STAGE"; exit 2;;
          esac
@@ -101,14 +103,15 @@ case "${1:-}" in
            done
            echo ">> $L done ($N episodes). Placed so far in $OUT: $(grep -l '"success": true' "$OUT"/ep_*/meta.json 2>/dev/null | wc -l | tr -d ' ') of $(ls -d "$OUT"/ep_* 2>/dev/null | wc -l | tr -d ' ') takes"
          done
-         echo; echo ">> STAGE $STAGE COMPLETE. Next: ./EXPERIMENT.sh run <next stage>   (order: M B E T1 P FINAL)";;
+         echo; echo ">> STAGE $STAGE COMPLETE. Next: ./EXPERIMENT.sh run <next stage>   (order: M B E T1 P FINAL, S9 optional)";;
   next)   # sequential mode: advance through the evening's order, one stage per call (state in $BASE/.experiment_stage)
-         ORDER="M B E T1 P FINAL"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
+         ORDER="M B E T1 P FINAL S9"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
          nxt=""; if [ -z "$cur" ]; then nxt=${ORDER%% *}; else found=0; for s in $ORDER; do [ "$found" = 1 ] && { nxt=$s; break; }; [ "$s" = "$cur" ] && found=1; done; fi
          [ -n "$nxt" ] || { echo ">> all stages done ($ORDER). Use an explicit stage to repeat one."; exit 0; }
          echo ">> stage $nxt (after: ${cur:-start}); order = $ORDER"; echo "$nxt" > "$SF"; exec "$0" "$nxt";;
-  list)   echo "order: M  B  E  T1  P  FINAL   (current: $(cat "$BASE/.experiment_stage" 2>/dev/null || echo none))"
-         echo "  M     row 9 sim-expert teacher + row 14 multitask teacher"
+  list)   echo "order: M  B  E  T1  P  FINAL  S9   (current: $(cat "$BASE/.experiment_stage" 2>/dev/null || echo none))"
+         echo "  M     anchor teacher: $ANCHOR (EXP_ANCHOR overrides)"
+         echo "  S9    optional: row 9, the 09-13 sim-expert teacher, 20 episodes"
          echo "  P     + newest stu_simft_* student (arm B of the paired table)"
          echo "  B     row 9 + pi0.5 + diffusion policy + X-VLA"
          echo "  E     row 9 + stu_nowrist_4k + stu_ftA_r2"
