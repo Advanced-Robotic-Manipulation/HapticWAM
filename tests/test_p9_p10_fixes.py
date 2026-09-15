@@ -181,13 +181,17 @@ def test_a_verdict_promotes_the_episode_back(rollout, ans, success):
     assert m.notes.startswith("operator:")
 
 
-def test_contaminated_keeps_success_none_and_stays_out_of_training(rollout):
+def test_crushed_is_placed_but_stays_out_of_training(rollout):
+    # rig 09-15: 'c' = crushed (did the task, too much force). It is a
+    # success for the closed-loop ordinal, tagged for the haptic benchmark,
+    # and NOT a training demo (it would teach over-squeezing). The former
+    # 'contaminated' verdict is gone — a spoiled take is a redo ('r').
     recorder, ep = rollout
-    assert RD.label_episode(recorder, ep, "c hand in frame") == "c"
+    assert RD.label_episode(recorder, ep, "c squeezed it") == "c"
     m = _meta(ep)
-    assert m.success is None                 # NOT a deliberate failure demo
+    assert m.success is True and m.status == "finalized"
     assert not is_failure_demo(m)
-    assert "contaminated" in m.tags and "unlabeled" not in m.tags
+    assert "crushed" in m.tags and "unlabeled" not in m.tags
     assert not is_trainable_episode(m)
 
 
