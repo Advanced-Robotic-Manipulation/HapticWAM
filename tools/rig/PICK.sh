@@ -56,7 +56,8 @@ case $p in
   1) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200"; PRESET=LEVERS;;   # pose plays the whole chunk (09-08: the turn to the box lives in the tail); gripper capped at the validated head (tail openings flapped the fingers)
   2) NFE=5; EXTRA=""; PRESET=PLAIN;;
   3) NFE=5; EXTRA="--terminal-veto --parity-fixes"; PRESET=VETO;;
-  4) read -p "nfe [5]: " NFE; NFE=${NFE:-5}; read -p "flags: " EXTRA; PRESET=CUSTOM;;
+  4) if [ -n "${PICK_NFE:-}" ]; then NFE=$PICK_NFE; else read -p "nfe [5]: " NFE; NFE=${NFE:-5}; fi
+     if [ -n "${PICK_FLAGS+x}" ]; then EXTRA=$PICK_FLAGS; echo "flags: $EXTRA (PICK_FLAGS)"; else read -p "flags: " EXTRA; fi; PRESET=CUSTOM;;
   5) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile bounded_v1"; PRESET=BOUNDED_REACH;;
   6) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --servo-reach-profile none"; PRESET=NO_REACH_LIMITER;;
   7) NFE=1; EXTRA="--terminal-veto --parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200 --boundary-projection-config configs/boundary_projection_d3.json --placement-release-config configs/placement_release_descent_sim_waffles.json --placement-controller-profile minimal_v5"; PRESET=PLACEMENT_FIX;;   # sim zoo 09-12: boundary v3 + 2 cm apex cap + descend-then-release; release volume = sim waffle scene, UNVERIFIED on the rig

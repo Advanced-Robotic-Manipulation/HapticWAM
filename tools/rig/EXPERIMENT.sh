@@ -85,6 +85,8 @@ case "${1:-}" in
   T1)    T=$(need "$ANCHOR") || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
          [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
          stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
+  NV)    T=$(need "$ANCHOR") || exit 1; S=$(need "${STUDENT:?STUDENT=<label> required}") || exit 1
+         stop_ours_except "$T" "$S"; warm_rows "$T" "$S"; show "student $STUDENT = $S with the terminal veto OFF (preset 4, nfe 1, same levers)";;
   FINAL) disk_check; T=$(need "$ANCHOR") || exit 1; S=$(need "${STUDENT:-stu_simft_001000}") || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
@@ -92,14 +94,17 @@ case "${1:-}" in
           # every take into its own experiment folder ($EXP_OUT). Only the deploy prompts remain (homing Enter,
           # verdicts). Resume after an interruption with EXP_FROM=<cell> (and EXP_ONLY=<label> for one model).
           #   EXP_TASK=waffles EXP_N_CORE=20 EXP_N_CMP=10 EXP_BATCH=10 EXP_OUT=<dir> ./EXPERIMENT.sh run <stage>
-         STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
+         STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9|NV>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
          OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
          case $STAGE in
            M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
            T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="${STUDENT:-stu_simft_001000}"; N=$NCORE;;
+           NV) MODELS="${STUDENT:?STUDENT=<label> required}"; N=$NCORE;;
            *) echo "!! unknown stage $STAGE"; exit 2;;
          esac
          [ -n "${EXP_ONLY:-}" ] && MODELS=$EXP_ONLY
+         PRESET=1; NFE=""; FLAGS=""
+         if [ "$STAGE" = NV ]; then PRESET=4; NFE=1; FLAGS="--parity-fixes --k-seeds 4 --max-play-steps 16 --grip-play-steps 10 --max-episode-s 150 --max-replans 200"; fi
          "$0" "$STAGE" || { echo "!! warm-up failed — nothing launched"; exit 1; }
          echo "$STAGE" > "$BASE/.experiment_stage"
          echo; echo ">> RUN $STAGE: task $TASK, $N episodes per model in batches of $BATCH, recordings -> $OUT"; echo ">> models: $MODELS"
@@ -111,7 +116,7 @@ case "${1:-}" in
              n=$BATCH; [ $((c + n - 1)) -gt "$N" ] && n=$((N - c + 1))
              echo; echo "=============== $L (row $r): $TASK cells $c..$((c + n - 1)) ($n episodes) ==============="
              snap "$L" "$c" "$((c + n - 1))"
-             PICK_TASK=$TASK PICK_PRESET=1 PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT" PICK_GO=1 ./PICK.sh "$r" \
+             PICK_TASK=$TASK PICK_PRESET=$PRESET PICK_NFE=$NFE PICK_FLAGS="$FLAGS" PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT" PICK_GO=1 ./PICK.sh "$r" \
                || { echo "!! launch of $L at cell $c ended with an error. Fix, then resume: EXP_ONLY=$L EXP_FROM=$c ./EXPERIMENT.sh run $STAGE"; exit 1; }
              c=$((c + n))
            done
