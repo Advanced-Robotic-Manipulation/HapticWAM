@@ -54,15 +54,29 @@ case "${1:-}" in
          stop_ours_except "$T" "$MT" "$MSR"; warm_rows "$MT" "$MSR"; show "multitask teacher = $MT   its student $MS = $MSR";;
   E)     T=$(need v6_simft2k) || exit 1; W=$(need stu_nowrist_4k) || exit 1; F=$(need stu_ftA_r2) || exit 1
          stop_ours_except "$T" "$W" "$F"; warm_rows "$T" "$W" "$F"; show "wrist-masked student = $W   ftA student = $F (one launch per cell, vs row $T's Block P episodes)";;
-  B)     T=$(need v6_simft2k) || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB)
-         stop_ours_except "$T" "$P" "$DPR"; warm_rows "$T" "$P" "$DPR"; show "pi0.5 = $P   diffusion policy = $DPR (one launch per cell, vs row $T's Block P episodes; X-VLA needs 3 camera views — offline only)";;
+  B)     T=$(need v6_simft2k) || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1; XV=$(need xvla) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB, X-VLA 3 GB; ~20 GB total)
+         stop_ours_except "$T" "$P" "$DPR" "$XV"; warm_rows "$T" "$P" "$DPR" "$XV"
+         show "pi0.5 = $P   diffusion policy = $DPR   X-VLA = $XV (one launch per cell, vs row $T's Block P episodes; X-VLA sees only the scene camera of its 3 declared views — reported as is)";;
   T1)    T=$(need v6_simft2k) || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
          [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
          stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
   FINAL) disk_check; T=$(need v6_simft2k) || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
+  next)   # sequential mode: advance through the evening's order, one stage per call (state in $BASE/.experiment_stage)
+         ORDER="M P B E T1 FINAL"; SF=$BASE/.experiment_stage; cur=$(cat "$SF" 2>/dev/null || echo "")
+         nxt=""; if [ -z "$cur" ]; then nxt=${ORDER%% *}; else found=0; for s in $ORDER; do [ "$found" = 1 ] && { nxt=$s; break; }; [ "$s" = "$cur" ] && found=1; done; fi
+         [ -n "$nxt" ] || { echo ">> all stages done ($ORDER). Use an explicit stage to repeat one."; exit 0; }
+         echo ">> stage $nxt (after: ${cur:-start}); order = $ORDER"; echo "$nxt" > "$SF"; exec "$0" "$nxt";;
+  list)   echo "order: M  P  B  E  T1  FINAL   (current: $(cat "$BASE/.experiment_stage" 2>/dev/null || echo none))"
+         echo "  M     row 9 sim-expert teacher + row 14 multitask teacher"
+         echo "  P     + newest stu_simft_* student (arm B of the paired table)"
+         echo "  B     row 9 + pi0.5 + diffusion policy + X-VLA"
+         echo "  E     row 9 + stu_nowrist_4k + stu_ftA_r2"
+         echo "  T1    row 9 + base teacher v6"
+         echo "  FINAL row 9 + stu_simft_001000 (+ stu_mt_001000 with FINAL_MT=1)"
+         echo "  (PB = multitask student, only on a GO; SV = pilots on row 9)";;
   status) ./SESSION_0912.sh status; disk_check;;
   stop)   ./SESSION_0912.sh stop;;
-  *) sed -n 2,11p "$0"; exit 2;;
+  *) sed -n 2,13p "$0"; echo "  ./EXPERIMENT.sh next | list   sequential mode"; exit 2;;
 esac
