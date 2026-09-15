@@ -599,8 +599,12 @@ def test_op_crushed_is_advisory_not_a_verdict(tmp_path):
     assert r2.verdict == "crushed" and r2.op_force_flag is True
 
 
-def test_op_crushed_take_is_kept_out_of_the_clean_band(tmp_path):
-    """A flagged take is not evidence of what an intact pack feels like."""
+def test_the_band_is_sensor_only_by_default(tmp_path):
+    """The operator's eye must not shape the threshold it is compared against.
+
+    Default: every classified placement is in the band sample, flagged or not.
+    `exclude_flagged=True` is the stricter opt-in sample.
+    """
     rows = []
     for i, n in enumerate([10.0, 11.0, 12.0]):
         ep = make_episode(tmp_path, f"ep_ocb{i}", closes=[(6.0, 1e9)],
@@ -612,8 +616,10 @@ def test_op_crushed_take_is_kept_out_of_the_clean_band(tmp_path):
                       success=True,
                       tags=["label:teach", "seed:109", "op_crushed"])
     rows.append(ge.analyse_episode(ep))
-    peaks, mean, sd, _ = ge.pooled_band(rows)
-    assert len(peaks) == 3 and max(peaks) < 13.0
+    peaks, _, _, _ = ge.pooled_band(rows)
+    assert len(peaks) == 4 and max(peaks) == 30.0     # sensor-only default
+    strict, _, _, _ = ge.pooled_band(rows, exclude_flagged=True)
+    assert len(strict) == 3 and max(strict) < 13.0
 
 
 def test_force_flag_mismatch_is_reported_both_ways(tmp_path):
@@ -647,3 +653,70 @@ def test_flagged_take_the_threshold_also_calls_a_crush_agrees(tmp_path):
     assert r.cls == "placed_crushed" and r.over_grasp is True
     assert r.haptic_success is False
     assert r.agree is True and r.disagreement == ""
+
+
+def test_robust_band_ignores_the_outlier_the_mean_band_chases(tmp_path):
+    """mean + 3 sd is dragged up by a crush in its own sample; the MAD is not."""
+    peaks = [10.0, 11.0, 12.0, 13.0, 14.0]
+    import numpy as np
+    clean_mean = float(np.mean(peaks)) + 3 * float(np.std(peaks, ddof=1))
+    med, mad_sd = ge.robust_band(peaks)
+    with_outlier = peaks + [40.0]
+    dirty_mean = (float(np.mean(with_outlier))
+                  + 3 * float(np.std(with_outlier, ddof=1)))
+    med2, mad_sd2 = ge.robust_band(with_outlier)
+    # the mean band moves a long way, the robust one barely at all
+    assert dirty_mean - clean_mean > 20.0
+    assert abs((med2 + 3 * mad_sd2) - (med + 3 * mad_sd)) < 5.0
+
+
+def test_band_gap_reports_the_empty_interval(tmp_path):
+    assert ge.band_gap([9.0, 12.0, 17.7, 21.4], 20.0) == (17.7, 21.4)
+    assert ge.band_gap([9.0, 12.0], 20.0) is None      # nothing above
+    assert ge.band_gap([25.0, 30.0], 20.0) is None     # nothing below
+
+
+def test_outcome_table_conditions_over_force_on_operator_placements(tmp_path):
+    """'of which over-force' counts only takes the operator scored placed."""
+    rows = []
+    # operator placed, sensors say over-force
+    ep = make_episode(tmp_path, "ep_ot1", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 24.0), z_profile=PICK_PLACE,
+                      success=True, tags=["label:a", "seed:101"])
+    rows.append(ge.analyse_episode(ep))
+    # operator FAILED it, sensors also say over-force: must NOT be counted
+    ep = make_episode(tmp_path, "ep_ot2", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 26.0), z_profile=PICK_PLACE,
+                      success=False, tags=["label:a", "seed:102"])
+    rows.append(ge.analyse_episode(ep))
+    # operator placed, load inside the band
+    ep = make_episode(tmp_path, "ep_ot3", closes=[(6.0, 1e9)],
+                      contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                      success=True, tags=["label:a", "seed:103"])
+    rows.append(ge.analyse_episode(ep))
+    ge.apply_crush_threshold(rows, 20.0)
+    md = ge.outcome_table(rows)
+    assert "placed (operator)" in md and "op_crushed" in md
+    body = [l for l in md.splitlines() if l.startswith("| `a`")][0]
+    n, placed, over = [c.strip() for c in body.split("|")[2:5]]
+    assert (n, placed, over) == ("3", "2", "1")
+
+
+def test_eye_vs_sensor_table_lists_both_kinds_of_flag(tmp_path):
+    rows = []
+    eye_only = make_episode(tmp_path, "ep_ev1", closes=[(6.0, 1e9)],
+                            contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                            success=True,
+                            tags=["label:a", "seed:101", "op_crushed"])
+    sensor_only = make_episode(tmp_path, "ep_ev2", closes=[(6.0, 1e9)],
+                               contact=(6.2, 14.0, 24.0), z_profile=PICK_PLACE,
+                               success=True, tags=["label:a", "seed:102"])
+    quiet = make_episode(tmp_path, "ep_ev3", closes=[(6.0, 1e9)],
+                         contact=(6.2, 14.0, 11.0), z_profile=PICK_PLACE,
+                         success=True, tags=["label:a", "seed:103"])
+    rows = [ge.analyse_episode(e) for e in (eye_only, sensor_only, quiet)]
+    ge.apply_crush_threshold(rows, 20.0)
+    md = ge.eye_vs_sensor_table(rows)
+    assert "ep_ev1" in md and "ep_ev2" in md
+    assert "ep_ev3" not in md          # neither flagged it
+    assert "agree on 0 of these 2 takes" in md

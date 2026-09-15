@@ -179,17 +179,25 @@ OBJ2_FRAC_A = 0.2
 #: counts are flat over 3.0-6.0 N, so it is not a tuned number.
 CONTACT_HOLD_N = 5.0
 
-#: Crush threshold.  DERIVED AT RUN TIME as mean + `CRUSH_SD_K` * sd over the
-#: POOLED clean placements of EVERY arm (`--crush-ref pooled`, the default) —
-#: the placements no operator force flag touched.  `--crush-ref arm` restores
-#: the old single-arm behaviour and `--crush-n` overrides with a fixed value.
-#: Pooling matters on this session: the teacher's clean band is 11.75 +- 1.33 N
-#: but the student's is 14.85 +- 1.94 N, so a teacher-only k=3 band (15.7 N)
-#: would charge the student with 7 crushes the operator never saw.  The pooled
-#: band is 13.48 +- 2.19 N over 35 placements, giving 20.0 N at k=3; every
-#: clean placement on every arm peaks at or below 17.7 N.  The report prints
-#: k=2, k=3 and a flat 18 N side by side, plus the +-2 N sensitivity of every
-#: count, so the choice is visible and reversible.
+#: Crush threshold.  THE CRUSH LABEL IS DECIDED BY THIS THRESHOLD ALONE, from
+#: the pad-force data, applied uniformly to every arm; the operator's eye is
+#: not the crush label (Mikhail, 2026-09-15 20:05 MSK).  An `op_crushed` tag is
+#: advisory and is reported in its own column, never used to classify — and it
+#: does not shape the band either, since letting the eye drop takes from the
+#: sample would let it shape the threshold it is later compared against.
+#: DERIVED AT RUN TIME as mean + `CRUSH_SD_K` * sd over the POOLED placements of
+#: EVERY arm (`--crush-ref pooled`, the default); `--band-excludes-flagged`
+#: switches to the stricter sample, `--crush-ref arm` restores the old
+#: single-arm behaviour, `--crush-n` overrides with a fixed value.
+#: Pooling matters on this session: the teacher's placements average 12.44 N and
+#: the student's 14.85 N, so a teacher-only k=3 band (15.7 N) would charge the
+#: student with 7 crushes nobody saw.  The pooled sensor-only band is
+#: 13.69 +- 2.53 N over 36 placements, giving 21.3 N at k=3.  That number is not
+#: load-bearing: the placement peaks are EMPTY between 17.7 N and 21.4 N, and
+#: mean+3sd (21.27), median+3*MAD-sd (21.16) and the flagged-excluded mean+3sd
+#: (20.03) all land in that gap and give identical counts.  The report prints
+#: the estimators, the gap and the +-2 N sensitivity of every count side by
+#: side, so the choice is visible and reversible.
 CRUSH_SD_K = 3.0
 
 PAD_WINDOW_S = 1.5        # window after a close in which that close is scored
@@ -749,7 +757,7 @@ def clean_band(rows: list[TakeRow], ref_arm: str | None = None
     a CLEAN-placement band rather than a circular definition of crushing.
     The reference arm defaults to whichever arm placed most often.
     """
-    placed = clean_placements(rows)
+    placed = clean_placements(rows, exclude_flagged=True)
     if ref_arm is None:
         counts = Counter(r.arm for r in placed)
         if not counts:
@@ -762,23 +770,36 @@ def clean_band(rows: list[TakeRow], ref_arm: str | None = None
     return ref_arm, peaks, float(a.mean()), float(a.std(ddof=1))
 
 
-def clean_placements(rows: list[TakeRow]) -> list[TakeRow]:
-    """Placements the operator did NOT tag `crushed` — the clean-band sample."""
-    return [r for r in rows if r.cls in ("placed_clean", "placed_crushed")
-            and not r.op_force_flag]
+def clean_placements(rows: list[TakeRow],
+                     exclude_flagged: bool = False) -> list[TakeRow]:
+    """The placements the crush band is derived from.
+
+    By DEFAULT this is every take the sensors classified as a placement, with
+    no operator input at all: the crush label is decided by the pad-force
+    threshold from the sensor data alone, uniformly for every arm, and the
+    operator's eye is not allowed to shape the threshold it is later compared
+    against.  `exclude_flagged=True` drops the takes the operator flagged for
+    force, which is the stricter sample; on the 2026-09-15 waffles session the
+    two differ by 1 take and give the same counts (see the report).
+    """
+    placed = [r for r in rows if r.cls in ("placed_clean", "placed_crushed")]
+    if exclude_flagged:
+        placed = [r for r in placed if not r.op_force_flag]
+    return placed
 
 
-def pooled_band(rows: list[TakeRow]) -> tuple[list[float], float, float,
-                                              dict[str, tuple[int, float, float]]]:
+def pooled_band(rows: list[TakeRow], exclude_flagged: bool = False
+                ) -> tuple[list[float], float, float,
+                           dict[str, tuple[int, float, float]]]:
     """(peaks, mean, sd, per-arm {arm: (n, mean, sd)}) over ALL arms.
 
     Deriving the band from one reference arm makes the threshold that arm's
-    own habit: on this session the teacher's clean placements sit ~3 N below
-    the student's, so a teacher-only band charges the student with crushes the
-    operator never saw.  Pooling every arm's clean placements makes the band a
-    property of "a waffle pack that survived", not of one policy.
+    own habit: on this session the teacher's placements sit ~3 N below the
+    student's, so a teacher-only band charges the student with crushes nobody
+    saw.  Pooling every arm's placements makes the band a property of "a waffle
+    pack that got placed", not of one policy.
     """
-    placed = clean_placements(rows)
+    placed = clean_placements(rows, exclude_flagged)
     peaks = sorted(r.pad_peak_n for r in placed)
     per_arm: dict[str, tuple[int, float, float]] = {}
     for arm in {r.arm for r in placed}:
@@ -789,6 +810,35 @@ def pooled_band(rows: list[TakeRow]) -> tuple[list[float], float, float,
         return peaks, (peaks[0] if peaks else 0.0), 0.0, per_arm
     a = np.array(peaks)
     return peaks, float(a.mean()), float(a.std(ddof=1)), per_arm
+
+
+def robust_band(peaks: list[float]) -> tuple[float, float]:
+    """(median, sd-equivalent from the MAD) — an outlier-resistant band.
+
+    A mean + k*sd band computed over a sample that CONTAINS the crushes is
+    self-defeating: the outlier inflates the sd and drags the threshold up to
+    just below itself.  The MAD-based scale does not move, so reporting both
+    shows whether the threshold is an artefact of the outlier or a real gap.
+    """
+    if len(peaks) < 2:
+        return (peaks[0] if peaks else 0.0), 0.0
+    a = np.array(peaks, dtype=float)
+    med = float(np.median(a))
+    return med, float(np.median(np.abs(a - med)) * 1.4826)
+
+
+def band_gap(peaks: list[float], crush_n: float) -> tuple[float, float] | None:
+    """The empty interval the threshold sits in: (highest below, lowest above).
+
+    This is the evidence that matters far more than the estimator: if every
+    candidate threshold falls in the same gap, the choice between them cannot
+    change a single count.
+    """
+    below = [x for x in peaks if x <= crush_n]
+    above = [x for x in peaks if x > crush_n]
+    if not below or not above:
+        return None
+    return max(below), min(above)
 
 
 def apply_crush_threshold(rows: list[TakeRow], crush_n: float) -> None:
@@ -885,6 +935,56 @@ def headline_lines(rows: list[TakeRow]) -> list[str]:
         out.append(f"**{a}**: grasp {g}/{n}, haptic {h}/{n}, "
                    f"under {u}/{n}, over {v}/{n}, operator placed {o}/{n}")
     return out
+
+
+def outcome_table(rows: list[TakeRow]) -> str:
+    """Placed / over-force / under-grasp / never-closed, plus the eye column.
+
+    "Placed (operator)" is the human verdict; "over-force (sensors)" is the
+    pad-force threshold applied to those same placements, with no human input.
+    The `op_crushed` column is the operator's eye kept SEPARATE so the two can
+    be compared rather than mixed.
+    """
+    lines = ["| arm | n | placed (operator) | of which over-force (sensors) | "
+             "under-grasp: contact, no hold | (also) held then dropped | "
+             "never closed | operator `op_crushed` (eye only) |",
+             "|" + "---|" * 8]
+
+    def body(sub, name, bold=False):
+        f = (lambda v: f"**{v}**") if bold else str
+        placed = [r for r in sub if r.operator_placed]
+        vals = [len(sub), len(placed),
+                sum(r.over_grasp for r in placed),
+                sum(r.cls == "contact_no_hold" for r in sub),
+                sum(r.cls == "held_dropped" for r in sub),
+                sum(r.cls == "never_reached" for r in sub),
+                sum(r.op_force_flag for r in sub)]
+        return f"| {name} | " + " | ".join(f(v) for v in vals) + " |"
+
+    for a in arm_order(rows):
+        lines.append(body([r for r in rows if r.arm == a], f"`{a}`"))
+    lines.append(body(rows, "**all**", bold=True))
+    return "\n".join(lines)
+
+
+def eye_vs_sensor_table(rows: list[TakeRow]) -> str:
+    """Every take either the operator's eye or the threshold called excessive."""
+    flagged = [r for r in rows if r.op_force_flag or r.over_grasp]
+    if not flagged:
+        return "Neither the operator nor the threshold flagged any take."
+    lines = ["| take | arm | cell | operator verdict | `op_crushed` (eye) | "
+             "over-force (sensors) | pinch peak N | class |", "|" + "---|" * 8]
+    for r in sorted(flagged, key=lambda r: (r.arm, int(r.cell or 0))):
+        peak = max(r.pad_peak_pinch_n, r.pad_peak_n)
+        lines.append(f"| `{r.episode}` | `{r.arm}` | {r.cell} | {r.verdict} | "
+                     f"{'yes' if r.op_force_flag else 'no'} | "
+                     f"{'YES' if r.over_grasp else 'no'} | {peak:.1f} | "
+                     f"{r.cls} |")
+    agree = sum(r.op_force_flag == r.over_grasp for r in flagged)
+    lines += ["", f"Eye and sensor agree on {agree} of these {len(flagged)} "
+              f"takes. The sensor call is the crush label; the eye column is "
+              f"reported so the disagreement is visible, not to override it."]
+    return "\n".join(lines)
 
 
 def per_arm_table(rows: list[TakeRow]) -> str:
@@ -996,6 +1096,20 @@ def threshold_section(rows: list[TakeRow], contact_a_n: float,
             caught = sum(x > v for x in crushed_held)
             out.append(f"| {name} | {v:.1f} N | {wrong} | {caught}/"
                        f"{len(crushed_held)} |")
+        med, mad_sd = robust_band(peaks)
+        gap = band_gap(peaks, crush_n)
+        out += ["",
+                f"Estimators, all on the same pooled sample: mean + 3 sd = "
+                f"{mean + 3 * sd:.2f} N, median + 3 MAD-sd = "
+                f"{med + 3 * mad_sd:.2f} N (outlier-resistant, so it does not "
+                f"chase a crush that is inside its own sample)."]
+        if gap:
+            out += ["",
+                    f"**What actually decides the counts is the gap, not the "
+                    f"estimator.** The placement peaks are empty between "
+                    f"{gap[0]:.1f} N and {gap[1]:.1f} N, and the chosen "
+                    f"{crush_n:.1f} N sits inside that interval, so any "
+                    f"threshold in it gives identical counts."]
         out += ["",
                 "Clean placements across all arms peak at "
                 + (f"{all_clean[0]:.1f}-{all_clean[-1]:.1f} N"
@@ -1024,7 +1138,7 @@ def threshold_section(rows: list[TakeRow], contact_a_n: float,
 def per_arm_band_table(rows: list[TakeRow]) -> str:
     """Peak two-pad load on each arm's clean placements, and the pooled row."""
     peaks, mean, sd, per_arm = pooled_band(rows)
-    lines = ["| arm | clean placements | mean peak N | sd N | range N |",
+    lines = ["| arm | placements | mean peak N | sd N | range N |",
              "|---|---|---|---|---|"]
     placed = clean_placements(rows)
     for a in arm_order(rows):
@@ -1105,12 +1219,14 @@ def write_markdown(path: Path, rows: list[TakeRow], src: Path,
         threshold_section(rows, contact_a_n, contact_hold_n, crush_n, band,
                           crush_src),
         "",
-        "### The clean-placement band, per arm and pooled",
+        "### The placement force band, per arm and pooled",
         "",
-        "The crush threshold is derived from the pooled sample, not from one "
-        "reference arm: the arms differ by ~3 N in how hard they squeeze a "
-        "pack that survives, so a single-arm band would charge the harder arm "
-        "with crushes the operator never saw.",
+        "The crush threshold is decided by the pad-force data alone and "
+        "applied uniformly to every arm. It is derived from the pooled "
+        "placements, not from one reference arm: the arms differ by ~3 N in "
+        "how hard they squeeze a pack they place, so a single-arm band would "
+        "charge the harder arm with crushes nobody saw. No operator "
+        "judgement enters the band.",
         "",
         per_arm_band_table(rows),
         "",
@@ -1125,6 +1241,18 @@ def write_markdown(path: Path, rows: list[TakeRow], src: Path,
                   "whole range, so the chosen value is not a tuned number.", ""]
     lines += [
         "## Outcome by arm",
+        "",
+        outcome_table(rows),
+        "",
+        "Crush is decided by the pad-force threshold from the sensor data "
+        "alone, applied uniformly to every arm. The operator's `op_crushed` "
+        "mark is advisory and is reported in its own column.",
+        "",
+        "### Where the eye and the threshold disagree",
+        "",
+        eye_vs_sensor_table(rows),
+        "",
+        "### Full class breakdown",
         "",
     ] + [f"- {ln}" for ln in headline_lines(rows)] + [
         "",
@@ -1233,6 +1361,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ref-arm", default=None,
                     help="arm whose clean placements define the crush band; "
                          "only used with --crush-ref arm")
+    ap.add_argument("--band-excludes-flagged", action="store_true",
+                    help="drop operator-flagged takes from the crush-band "
+                         "sample; default keeps the band sensor-only")
     ap.add_argument("--crush-ref", choices=("pooled", "arm"), default="pooled",
                     help="derive the crush band from every arm's clean "
                          "placements (pooled, the default) or from one "
@@ -1261,9 +1392,11 @@ def main(argv: list[str] | None = None) -> int:
                             contact_hold_n=a.contact_hold_n,
                             lift_min_mm=a.lift_min_mm) for ep in eps]
     if a.crush_ref == "pooled":
-        peaks, mean, sd, _ = pooled_band(rows)
+        peaks, mean, sd, _ = pooled_band(rows, a.band_excludes_flagged)
         band = ("pooled", peaks, mean, sd)
-        band_src = f"all {len({r.arm for r in rows})} arms' clean placements"
+        band_src = (f"all {len({r.arm for r in rows})} arms' placements"
+                    + (", operator-flagged takes excluded"
+                       if a.band_excludes_flagged else " (sensor-only)"))
     else:
         band = clean_band(rows, a.ref_arm)
         _, peaks, mean, sd = band
