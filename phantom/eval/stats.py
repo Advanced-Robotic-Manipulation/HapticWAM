@@ -132,7 +132,12 @@ def episode_seed(meta: dict) -> int | None:
     return None
 
 
-ARM_TAG_PREFIXES = ("label:", "ckpt_sha:", "ckpt:")
+# veto:/sel:/aveto: (rig 09-15) let two PRESETS of the same model pair on
+# cells reserved for that contrast — e.g. `--arm-a veto:pc0.50/pn0.90/r3
+# --arm-b veto:off` for the contact-future veto ablation (Block N). Only
+# meaningful on cells no other model ran, since the spec matches every model
+# that carries the tag.
+ARM_TAG_PREFIXES = ("label:", "ckpt_sha:", "ckpt:", "veto:", "sel:", "aveto:")
 
 
 def episode_arm(meta: dict) -> str | None:

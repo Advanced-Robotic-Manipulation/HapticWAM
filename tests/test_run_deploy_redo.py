@@ -71,3 +71,17 @@ def test_redo_requeues_the_same_index():
         if next(verdicts) == "r":
             pending.insert(0, i)
     assert order == [0, 1, 1, 2]
+
+
+def test_preset_tags_can_name_an_arm_on_reserved_cells():
+    # Block N (rig 09-15): the same model under two presets on cells nobody
+    # else ran; the veto:/sel:/aveto: tags identify the arms
+    on = {"tags": ["label:v6_simft2k", "ckpt_sha:1df9fc93510c", "veto:pc0.50/pn0.90/r3", "sel:default"]}
+    off = {"tags": ["label:v6_simft2k", "ckpt_sha:1df9fc93510c", "veto:off", "sel:default"]}
+    assert "veto:pc0.50/pn0.90/r3" in S.episode_arm_tags(on) and "veto:off" in S.episode_arm_tags(off)
+    def ep(meta, outcome, seed):
+        return {"task": "waffles", "seed": seed, "arm": "label:v6_simft2k", "arm_tags": S.episode_arm_tags(meta),
+                "outcome": outcome, "outcome_info": {"source": "operator"}, "path": f"p{seed}{outcome}"}
+    eps = [ep(on, 3, 131), ep(off, 0, 131), ep(on, 0, 132), ep(off, 0, 132)]
+    pairs, _ = S.pair_episodes(eps, "veto:pc0.50/pn0.90/r3", "veto:off")
+    assert [(p["seed"], p["a"], p["b"]) for p in pairs] == [(131, 3, 0), (132, 0, 0)]
