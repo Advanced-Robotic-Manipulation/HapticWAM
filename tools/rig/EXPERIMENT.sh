@@ -79,9 +79,9 @@ case "${1:-}" in
          stop_ours_except "$T" "$MT" "$MSR"; warm_rows "$MT" "$MSR"; show "multitask teacher = $MT   its student $MS = $MSR";;
   E)     T=$(need "$ANCHOR") || exit 1; W=$(need stu_nowrist_4k) || exit 1; F=$(need stu_ftA_r2) || exit 1
          stop_ours_except "$T" "$W" "$F"; warm_rows "$T" "$W" "$F"; show "wrist-masked student = $W   ftA student = $F (one launch per cell, vs row $T's Block P episodes)";;
-  B)     T=$(need "$ANCHOR") || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1; XV=$(need xvla) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB, X-VLA 3 GB; ~20 GB total)
-         stop_ours_except "$T" "$P" "$DPR" "$XV"; warm_rows "$T" "$P" "$DPR" "$XV"
-         show "pi0.5 = $P   diffusion policy = $DPR   X-VLA = $XV (one launch per cell, vs row $T's Block P episodes; X-VLA sees only the scene camera of its 3 declared views — reported as is)";;
+  B)     T=$(need "$ANCHOR") || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1   # baselines next to the anchor (pi0.5 7.9 GB own venv, DP 1.8 GB); X-VLA dropped 19:15 (not task-directed)
+         stop_ours_except "$T" "$P" "$DPR"; warm_rows "$T" "$P" "$DPR"
+         show "pi0.5 = $P   diffusion policy = $DPR (one launch per cell, vs the anchor's episodes)";;
   T1)    T=$(need "$ANCHOR") || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
          [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
          stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
@@ -95,7 +95,7 @@ case "${1:-}" in
          STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
          OUT=${EXP_OUT:-$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment}; mkdir -p "$OUT"
          case $STAGE in
-           M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp xvla"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
+           M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
            T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="${STUDENT:-stu_simft_001000}"; N=$NCORE;;
            *) echo "!! unknown stage $STAGE"; exit 2;;
          esac
@@ -127,7 +127,7 @@ case "${1:-}" in
          echo "  M     anchor teacher: $ANCHOR (EXP_ANCHOR overrides)"
          echo "  S9    optional: row 9, the 09-13 sim-expert teacher, 20 episodes"
          echo "  P     + newest stu_simft_* student (arm B of the paired table)"
-         echo "  B     row 9 + pi0.5 + diffusion policy + X-VLA"
+         echo "  B     anchor + pi0.5 + diffusion policy"
          echo "  E     row 9 + stu_nowrist_4k + stu_ftA_r2"
          echo "  T1    row 9 + base teacher v6"
          echo "  FINAL row 9 + stu_simft_001000 (+ stu_mt_001000 with FINAL_MT=1)"
