@@ -192,6 +192,13 @@ _RECONNECT_TRIES = 3
 _SCRIPT_START_TIMEOUT_S = 5.0
 
 
+def _control_script_dead(exc: BaseException) -> bool:
+    """True for the UR driver's 'moveL rejected - control script not running'
+    (pendant popup / protective stop / Local mode) — the case recover_control
+    exists for, when it happens BETWEEN episodes (rig 09-15)."""
+    return "control script not running" in str(exc)
+
+
 def recover_control(arm, reason: str) -> bool:
     """Rebuild the RTDE control session between episodes. True if the arm is
     servo-able again.
@@ -1576,7 +1583,20 @@ def main(argv=None) -> int:
                                     start_bounds=home_bounds)
                                 start_tag = _start_req_tag(homed) or start_tag
                                 continue
-                            except Exception:
+                            except Exception as exc:
+                                if _control_script_dead(exc):
+                                    # rig 09-15 17:15: the UR program died BETWEEN
+                                    # episodes (pendant popup), so every auto-home
+                                    # was rejected and the gate loop had no way to
+                                    # rebuild control — the operator had to abort
+                                    # the batch. Rebuild it here (blocks on the
+                                    # pendant fix) and give homing its attempts back.
+                                    log.error("auto-home rejected: the UR control "
+                                              "script is not running — rebuilding "
+                                              "control (clear the pendant first)")
+                                    if recover_control(rt.rig.arm, "control_lost"):
+                                        home_attempt = -1
+                                        continue
                                 log.exception("auto-home FAILED — manual fix")
                         log.error("START GATE: %.1f sigma from the demo start "
                                   "(worst axis: %s, max %.1f) or gripper "
@@ -1585,6 +1605,13 @@ def main(argv=None) -> int:
                                   "Ctrl-C aborts.",
                                   worst, worst_ax, args.max_start_sigma)
                         input("re-check when ready...")
+                        if not getattr(rt.rig.arm, "program_running", lambda: True)():
+                            # same dead-script case after a manual fix at the
+                            # pendant: rebuild control and let auto-home retry
+                            log.error("UR control script still not running — "
+                                      "rebuilding control")
+                            if recover_control(rt.rig.arm, "control_lost"):
+                                home_attempt = -1
                     while True:
                         input(f"{ep_tag}: place the object, confirm the scene "
                               "is safe. Enter to START EPISODE...")

@@ -103,9 +103,10 @@ case "${1:-}" in
          "$0" "$STAGE" || { echo "!! warm-up failed — nothing launched"; exit 1; }
          echo "$STAGE" > "$BASE/.experiment_stage"
          echo; echo ">> RUN $STAGE: task $TASK, $N episodes per model in batches of $BATCH, recordings -> $OUT"; echo ">> models: $MODELS"
+         FROM=${EXP_FROM:-1}
          for L in $MODELS; do
            r=$(row_of "$L"); [ -n "$r" ] || { echo "!! no row for $L"; exit 1; }
-           c=${EXP_FROM:-1}
+           c=$FROM; FROM=1      # EXP_FROM applies to the first model only; the following models start at cell 1
            while [ "$c" -le "$N" ]; do
              n=$BATCH; [ $((c + n - 1)) -gt "$N" ] && n=$((N - c + 1))
              echo; echo "=============== $L (row $r): $TASK cells $c..$((c + n - 1)) ($n episodes) ==============="
