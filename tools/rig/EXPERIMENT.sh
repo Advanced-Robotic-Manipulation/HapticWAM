@@ -34,10 +34,23 @@ need() { local r; r=$(row_of "$1"); [ -n "$r" ] || { echo "!! no menu row labell
 warm_rows() { ./SESSION_0912.sh rows "$@"; }
 stop_ours_except() {  # stop OUR servers (menu ports only) whose row is not in the keep list
   local keep=" $* " r
+  local stopped=0
   for r in $(seq 1 "$(nrows)"); do
     case "$keep" in *" $r "*) continue;; esac
-    ss -ltn 2>/dev/null | grep -q ":$((7776 + r)) " && ./serve_bg.sh stop "$r"
-  done; }
+    ss -ltn 2>/dev/null | grep -q ":$((7776 + r)) " && { ./serve_bg.sh stop "$r"; stopped=1; }
+  done
+  # 17:05 lesson: a stopped server releases its GPU memory a few seconds after the kill; warming the next
+  # model immediately OOM'd pi0.5. Wait until nvidia-smi shows the memory back (up to 30 s).
+  if [ "$stopped" = 1 ]; then
+    local i=0 prev=-1 used
+    while [ $i -lt 15 ]; do
+      sleep 2; i=$((i + 1))
+      used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -1)
+      [ $i -ge 3 ] && [ "$used" = "$prev" ] && break     # two equal readings after 6 s = released
+      prev=$used
+    done
+    echo ">> GPU memory settled after ${i}x2 s: ${used} MiB used"
+  fi; }
 disk_check() {
   local free; free=$(df -BG --output=avail "$BASE" 2>/dev/null | tail -1 | tr -d ' G')
   echo ">> disk free on the box: ${free:-?} GB (a rig episode is ~0.25 GB; 120 launches ~ 30 GB)"
