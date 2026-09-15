@@ -10,12 +10,19 @@
 #   ./SESSION_0912.sh rows 9 17 14   09-15: warm exactly these menu rows, in this order, each only if it fits
 #   (09-15: EXPERIMENT.sh drives this per block — RUN_SHEET_0915.md)
 # Never kills another user's process: if the GPU is held by someone else it says so and exits.
-cd "$(dirname "$0")"
+cd "$(dirname "$(readlink -f "$0")")"
 TSV=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}/MODELS.tsv
 NROWS=$(awk -F'\t' '!/^#/ && $1!=""' "$TSV" 2>/dev/null | wc -l | tr -d ' '); NROWS=${NROWS:-13}
 ALL_ROWS=$(seq 1 "$NROWS" | tr '\n' ' ')
 free_mib() { nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits | awk -F', ' '{print $1-$2}'; }
-declare -A NEED=( [1]=7000 [2]=7000 [3]=7000 [4]=8500 [5]=2500 [6]=3000 [7]=7000 [8]=7000 [9]=7500 [10]=7500 [11]=7000 [12]=7000 [13]=7500 )   # measured 09-12: v6 6.6 · stu 6.4 · pi05 7.9 · dp 1.8 · xvla 2.4 GB
+# GPU need per row, derived from the live menu (measured: v6 6.6 GB, student 6.4, --flex --compile teacher 7.6, pi05 7.9, dp 1.8, xvla 2.5)
+declare -A NEED=(); _r=0
+while IFS=$'\t' read -r _label _ckpt _note _system _extra; do
+  [ -z "$_label" ] && continue; case "$_label" in \#*) continue;; esac
+  _r=$((_r + 1)); _n=7000; [ -n "$_extra" ] && _n=8000
+  case "$_label" in pi05) _n=8500;; dp) _n=2500;; xvla) _n=3000;; esac
+  NEED[$_r]=$_n
+done < "$TSV"
 listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
 ours_mib() {  # GPU memory held by OUR menu servers (so the gate only counts other people's jobs)
   local t=0 pid m
@@ -55,6 +62,11 @@ case "${1:-warm}" in
     shift; [ $# -gt 0 ] || { echo "usage: ./SESSION_0912.sh rows <menu row> [row ...]"; exit 2; }
     F=$(free_mib); O=$(ours_mib); echo "GPU free: $F MiB (our warm servers hold $O MiB); menu has $NROWS rows"
     nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader
+    T=0; for r in "$@"; do listening "$r" || T=$((T + ${NEED[$r]:-7500})); done
+    if [ "$T" -gt 0 ] && [ "$F" -lt "$T" ]; then
+      echo "!! rows $* need ~$T MiB more, only $F MiB free: another job holds the 5090 (or our other servers do)."
+      echo "!! Do NOT kill anyone else's job — wait for it, ask, or stop a finished row of ours. Nothing warmed (no half-warm blocks)."; exit 3
+    fi
     warm "$@"
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   status) ./serve_bg.sh status; echo "GPU free: $(free_mib) MiB (our servers hold $(ours_mib) MiB)"; nvidia-smi --query-compute-apps=pid,used_memory,process_name --format=csv,noheader;;

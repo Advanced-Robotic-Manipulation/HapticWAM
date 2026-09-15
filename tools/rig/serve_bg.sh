@@ -31,7 +31,11 @@ case "${1:-}" in
   stop)
     shift; for m in "$@"; do
       PORT=$((7776 + m)); PID=$(listener_pid $PORT)
-      [ -n "$PID" ] && { kill "$PID" && echo "stopped ${labels[$m]} (pid $PID, :$PORT)"; } || echo "nothing on :$PORT"
+      [ -n "$PID" ] || { echo "nothing on :$PORT"; continue; }
+      # 09-15: never stop a server a run_deploy is attached to (FORCE=1 overrides)
+      ST=$(timeout 20 .venv/bin/python -m phantom.scripts.policy_server --probe --port $PORT 2>/dev/null | head -1)
+      case "$ST" in *busy*) [ -z "${FORCE:-}" ] && { echo "!! ${labels[$m]} on :$PORT is BUSY (an episode is running) — NOT stopped (FORCE=1 to override)"; continue; };; esac
+      kill "$PID" && echo "stopped ${labels[$m]} (pid $PID, :$PORT)"
     done; exit 0;;
   all) set -- $(seq 1 $n);;
 esac

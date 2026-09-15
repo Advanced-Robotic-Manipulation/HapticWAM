@@ -10,8 +10,16 @@
 # Rows are resolved by LABEL from MODELS.tsv, so the row numbers fetch_student.sh appends do not matter; each block prints
 # the PICK.sh row numbers to use. Never kills another user's process (SESSION_0912.sh / serve_bg.sh stop only our menu ports).
 set -u
-cd "$(dirname "$0")"
+cd "$(dirname "$(readlink -f "$0")")"   # works through the ~/phantom-icra-2027/EXPERIMENT.sh symlink too
 BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
+listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
+warm_student() {  # the Block P student: a stu_simft_* row that is already warm wins (never switch arms mid-block), else the newest
+  local r=0 label rest
+  while IFS=$'\t' read -r label rest; do
+    [ -z "$label" ] && continue; case "$label" in \#*) continue;; esac
+    r=$((r + 1)); case "$label" in stu_simft_*) listening "$r" && { echo "$label"; return; };; esac
+  done < "$TSV"
+  newest stu_simft_; }
 nrows() { awk -F'\t' '!/^#/ && $1!=""' "$TSV" | wc -l | tr -d ' '; }
 row_of() { awk -F'\t' -v l="$1" '!/^#/ && $1!="" {n++; if ($1==l) {print n; exit}}' "$TSV"; }
 newest() {  # newest row label with this prefix, by the zero-padded step in the label (stu_simft_001000 > stu_simft_000500)
@@ -30,7 +38,8 @@ disk_check() {
   [ -n "$free" ] && [ "$free" -lt 30 ] && echo "!! under 30 GB free — the sim campaign is filling the disk; ask Ilya before launching"; return 0; }
 show() { echo; ./serve_bg.sh status; echo ">> PICK.sh rows for this block: $*"; }
 case "${1:-}" in
-  P)     disk_check; T=$(need v6_simft2k) || exit 1; S=${STUDENT:-$(newest stu_simft_)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
+  P)     disk_check; T=$(need v6_simft2k) || exit 1; S=${STUDENT:-$(warm_student)}; [ -n "$S" ] || { echo "!! no stu_simft_* row yet — fetch_student.sh hid_simft 000500 first"; exit 1; }
+         echo ">> Block P student: $S (a warm stu_simft_* row is kept; STUDENT=<label> overrides)"
          SR=$(need "$S") || exit 1; MT=$(row_of v6_simft_mt1500)
          # keep the multitask teacher warm if it already is (Block M follows P on the same cells); three servers is the ceiling
          stop_ours_except "$T" "$SR" "$MT"; warm_rows "$T" "$SR"; [ -n "$MT" ] && warm_rows "$MT"

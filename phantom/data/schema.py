@@ -207,7 +207,7 @@ def is_failure_demo(meta: "EpisodeMeta") -> bool:
 #                  demonstration (success stays None so is_failure_demo() does
 #                  not misread it as a deliberate failure), so the tag is the
 #                  only thing standing between it and full-weight training.
-NON_TRAINING_TAGS: tuple[str, ...] = ("contaminated", "unlabeled")
+NON_TRAINING_TAGS: tuple[str, ...] = ("contaminated", "unlabeled", "redo")
 
 # Provenance tag written by tools/rederive_rollout_actions.py once a POLICY
 # rollout's `actions` stream has been rebuilt as the measured delta-EE on the

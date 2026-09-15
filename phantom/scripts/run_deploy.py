@@ -270,6 +270,11 @@ def parse_home_bounds(spec: str) -> dict:
         if k not in {f"{a}_{m}" for a in "xyz" for m in ("min", "max")}:
             raise SystemExit(f"--home-bounds: unknown key {k!r} (use x/y/z _min/_max)")
         out[k] = float(v)
+    for a in "xyz":
+        lo, hi = out.get(f"{a}_min"), out.get(f"{a}_max")
+        if lo is not None and hi is not None and lo > hi:
+            # fail at launch, not inside move_to_start with the arm homed
+            raise SystemExit(f"--home-bounds: {a}_min {lo} > {a}_max {hi}")
     return out
 
 
@@ -958,6 +963,16 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
         # ever see it. The caller re-runs the SAME episode index — same
         # seed, same cell.
         recorder.relabel(ep_path, discard=True)
+        if Path(ep_path).exists():
+            # the delete failed (locked / busy directory): keep it out of
+            # every index anyway — aborted + 'redo' (NON_TRAINING_TAGS,
+            # outcome None for stats) — and say so loudly
+            log.error("REDO: %s could NOT be deleted — marked aborted + "
+                      "'redo' (excluded from training, pairing and upload)",
+                      Path(ep_path).name)
+            recorder.relabel(ep_path, success=None, status="aborted",
+                             tags=["redo"], remove_tags=["unlabeled"],
+                             notes=f"{note} REDO (delete failed)")
         return c
     if c == "c":
         recorder.relabel(ep_path, success=None, status="aborted",
@@ -1687,7 +1702,24 @@ def main(argv=None) -> int:
                 if sys.stdin.isatty():
                     while select.select([sys.stdin], [], [], 0)[0]:
                         sys.stdin.readline()
-                ans = input(VERDICT_PROMPT).strip()
+                while True:
+                    ans = input(VERDICT_PROMPT).strip()
+                    code, dmg = parse_verdict(ans)
+                    if code == "r" and dmg:
+                        # a redo DELETES the take, so damage could never be
+                        # recorded on it: keep damaged takes as contaminated
+                        print("'rd' refused: a redo deletes the take, so damage "
+                              "cannot be recorded on it. Use 'cd' (contaminated "
+                              "+ damage, kept on disk) or plain 'r'.")
+                        continue
+                    if code == "r":
+                        # 'r' and 'f' are neighbours on the keyboard and a
+                        # deleted take is ~0.25 GB of evidence: one keystroke
+                        ok = input("DELETE this take and run the same cell "
+                                   "again? [y/N] ").strip().lower()
+                        if ok not in ("y", "yes"):
+                            continue
+                    break
                 verdict = label_episode(rt.recorder, Path(res.episode_path), ans)
                 if verdict == "r" and not res.fatal_reason:
                     pending.insert(0, i)

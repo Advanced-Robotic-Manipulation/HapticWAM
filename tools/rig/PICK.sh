@@ -10,14 +10,18 @@ TSV=$BASE/MODELS.tsv
 echo "== PHANTOM rig launcher =="
 echo "-- models --"
 i=0
-labels=(); ckpts=(); systems=()
+labels=(); ckpts=(); systems=(); extras=()
 while IFS=$'	' read -r label ckpt note system extra; do
   [ -z "$label" ] && continue
   case "$label" in \#*) continue;; esac
-  i=$((i+1)); labels[$i]=$label; ckpts[$i]=$ckpt; systems[$i]=${system:-teacher}
+  i=$((i+1)); labels[$i]=$label; ckpts[$i]=$ckpt; systems[$i]=${system:-teacher}; extras[$i]=$extra
   printf "  %d) %-6s %s%s\n" "$i" "$label" "$note" "$([ "${system:-teacher}" = student ] && echo '  [STUDENT: sensor-free]')"
 done < "$TSV"
-read -p "model [1]: " m; m=${m:-1}
+# 09-15: the row may be given on the command line (./PICK.sh 9, ./PICK.sh stu_simft_000500); a label is accepted too
+m=${1:-}
+if [ -z "$m" ]; then read -p "model [1]: " m; m=${m:-1}; fi
+if ! [[ "$m" =~ ^[0-9]+$ ]]; then for j in $(seq 1 $i); do [ "${labels[$j]}" = "$m" ] && { m=$j; break; }; done; fi
+[[ "$m" =~ ^[0-9]+$ ]] || { echo "bad choice: $m (a menu number or an exact label)"; exit 1; }
 CKPT=${ckpts[$m]}; MODEL=${labels[$m]}; SYSTEM=${systems[$m]:-teacher}
 [ -n "$CKPT" ] || { echo "bad choice"; exit 1; }
 [ -e "$BASE/phantom/$CKPT" ] || { echo "checkpoint missing on disk: $BASE/phantom/$CKPT"; exit 1; }
@@ -69,17 +73,10 @@ if [ -n "$LEROBOT_TYPE" ]; then
   # the brick; tell the policy it is 23 mm lower than it is (policy-side only, recorded in overrides)
   [ "$TASK" = whiteboard ] && [ "$LEROBOT_TYPE" = pi05 ] && EXTRA="$EXTRA --policy-z-offset-m -0.023"
 fi
-read -p "episodes [1]: " EPS; EPS=${EPS:-1}
 # 09-12 forensics: a multi-episode launch increments the seed per episode, so the second arm of the
-# cell never shares a seed and 142 episodes produced ZERO teacher-vs-student pairs. Paired cells are
-# one episode per launch; PICK_ALLOW_MULTI=1 is the explicit opt-out for solo/diagnostic runs.
-# 09-13 evening: the hard stop is gone (operator request); multi-episode launches are allowed
-# and only warned about, since seeds still advance per episode within one launch.
-if [ "$EPS" -gt 1 ]; then
-  echo "!! note: $EPS episodes in one launch use seeds $((100 + 0))+cell .. +cell+$((EPS - 1)) (one per episode). The OTHER arm pairs only if it is"
-  echo "!!       launched on the SAME cell with the SAME count — press Enter at the cell prompt, PICK proposes exactly that."
-  echo "!!       Verdict r (redo) DELETES the take and re-runs the same seed inside the batch."
-fi
+# cell never shares a seed and 142 episodes produced ZERO teacher-vs-student pairs. 09-13 evening: the
+# hard stop is gone (operator request); multi-episode launches are allowed. 09-15: the episodes prompt
+# moved BELOW the cell proposal so that the other arm of a batch defaults to the same count (same seeds).
 # Paired cells: the seed is 100 + cell, the SAME for both arms of a cell
 # (sampler noise + start jitter both come from it). The last cell used is
 # remembered per day, so the second arm of a cell just presses Enter; type
@@ -110,6 +107,18 @@ read -p "cell number [Enter = $PROPOSE]: " CELL
 CELL=${CELL:-$PROPOSE}
 [[ "$CELL" =~ ^[0-9]+$ ]] && [ "$CELL" -ge 1 ] || { echo "cell must be a positive integer (start at 1)"; exit 1; }
 echo "$CELL" > "$CELLF"
+# episodes per launch: defaults to the batch size the OTHER arm ran on this cell (same seeds -> pairs), else 1
+DEF_EPS=1
+if [ "$LASTT" -gt 0 ] && [ "$CELL" = "$LASTT" ] && [ "${NARMS:-0}" -lt 2 ] && [ "${ALREADY:-0}" = 0 ] && [ "${EPSL:-1}" -gt 1 ]; then
+  DEF_EPS=$EPSL; echo ">> the other arm ran $EPSL episodes on cell $CELL — the same count pairs them (seeds $((100 + CELL))..$((100 + CELL + EPSL - 1)))"
+fi
+read -p "episodes [$DEF_EPS]: " EPS; EPS=${EPS:-$DEF_EPS}
+[[ "$EPS" =~ ^[0-9]+$ ]] && [ "$EPS" -ge 1 ] || { echo "episodes must be a positive integer"; exit 1; }
+if [ "$EPS" -gt 1 ]; then
+  echo "!! note: $EPS episodes in one launch use seeds $((100 + CELL)) .. $((100 + CELL + EPS - 1)) (one per episode). The OTHER arm pairs only if it is"
+  echo "!!       launched on the SAME cell with the SAME count — press Enter at both prompts, PICK proposes exactly that."
+  echo "!!       Verdict r (redo) DELETES the take and re-runs the same seed inside the batch."
+fi
 printf "%s\t%s\t%s\t%s\n" "$CELL" "$TASK" "$MODEL" "$EPS" >> "$RUNS"
 SEED=$((100 + CELL))
 EXTRA="$EXTRA --seed $SEED"
@@ -160,6 +169,12 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
   if [ -z "$ATTACHED" ] && [ -n "$LEROBOT_TYPE" ]; then
     echo "!! $LEROBOT_TYPE runs only through its warm server: ./serve_bg.sh $m  (lerobot_server), then re-run PICK."; exit 3
   fi
+  if [ -z "$ATTACHED" ] && [ -n "${extras[$m]}" ]; then
+    # 09-15: rows served with extra flags (--flex --compile) must never run in-process: that would be a
+    # different policy from the paired takes that went through the warm server.
+    echo "!! row $m ($MODEL) is served with [${extras[$m]}] — an in-process launch would run a different policy."
+    echo "!! Warm it first: ./serve_bg.sh $m   (or ./EXPERIMENT.sh <block>), then re-run PICK."; exit 3
+  fi
   if [ -z "$ATTACHED" ]; then
     if [ -n "$FOUND" ]; then
       echo ">> NOTE: running servers hold [$FOUND ] but you picked $CKPT."
@@ -171,6 +186,28 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
   fi
 fi
 
+EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.py pairs by it)
+# 09-13 session levers, applied to EVERY row (both arms of a cell, phantom and LeRobot alike):
+#  - descend-then-release placement supervisor (rig 09-12: policies plunged through the demo release band
+#    into the 45 N wrench guard; replay converts 5 of 19 non-placements) + 0.35 s latch release dwell
+#  - homing start bound y <= -0.28 m on waffles/Carton only (4-day analysis, 382 episodes: the start-y effect
+#    holds on every day/task/model — box-side starts score 0.35 vs 1.66; the bad starts are INSIDE the demo
+#    ±1σ draw, so this is a disclosed workaround). Egg/whiteboard: no bounds yet (09-15: egg under analysis).
+# PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
+# 09-15: folded into EXTRA BEFORE the confirmation so the operator sees the levers before launching.
+SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
+# 09-14 success envelope (188 episodes, 09-12+09-13, rule ordinal): placed starts sit higher — waffles z in
+# [0.325, 0.362] places 0.24 vs 0.13 outside; Carton z >= 0.285 (weaker, n=8 placed); x carries nothing;
+# y <= -0.28 confirmed on the unbounded 09-12 day (0.18 vs 0.08). Deterministic clamp: a paired cell keeps
+# the same start on both arms.
+case "$TASK" in
+  waffles) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.325";;
+  Carton)  SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.285";;
+esac
+# 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
+# the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
+[ -z "$LEROBOT_TYPE" ] && SESSION_EXTRA="$SESSION_EXTRA --agreement-shadow"
+if [ -z "$PICK_NO_SESSION_EXTRA" ]; then EXTRA="$EXTRA $SESSION_EXTRA"; echo ">> session levers: $SESSION_EXTRA"; else echo "!! session levers DISABLED (PICK_NO_SESSION_EXTRA)"; fi
 echo
 echo ">> $MODEL ($CKPT, system=$SYSTEM) | $PRESET | $TASK x$EPS | CELL $CELL (seed $SEED) | nfe=$NFE | extra: [$EXTRA]"
 if [ "$PRESET" = BOUNDED_REACH ]; then
@@ -191,26 +228,4 @@ read -p "Enter to launch (Ctrl-C to abort) "
 LAUNCHER="$BASE/phantom/tools/rig/GO_ANY.sh"
 [ -f "$LAUNCHER" ] || { echo "missing tracked launcher: $LAUNCHER"; exit 1; }
 [ -n "$LEROBOT_TYPE" ] && SYSTEM=student
-EXTRA="$EXTRA --tag label:$MODEL"     # menu row label on every episode (stats.py pairs by it)
-# 09-13 session levers, applied to EVERY row (both arms of a cell, phantom and LeRobot alike):
-#  - descend-then-release placement supervisor (rig 09-12: policies plunged through the demo release band
-#    into the 45 N wrench guard; replay converts 5 of 19 non-placements) + 0.35 s latch release dwell
-#  - homing start bound y <= -0.28 m on waffles/Carton only (4-day analysis, 382 episodes: the start-y effect
-#    holds on every day/task/model — box-side starts score 0.35 vs 1.66; the z effect was the Carton task in
-#    disguise, so no z bound; the bad starts are INSIDE the demo ±1σ draw, so this is a disclosed workaround).
-#    Egg/whiteboard: no bounds (their demo starts sit entirely outside y <= -0.28).
-# PICK_NO_SESSION_EXTRA=1 disables them (attribution runs only).
-SESSION_EXTRA="--placement-descent configs/placement_descent_rig_0913.json --grip-latch-release-s 0.35"
-# 09-14 success envelope (188 episodes, 09-12+09-13, rule ordinal): placed starts sit higher — waffles z in
-# [0.325, 0.362] places 0.24 vs 0.13 outside; Carton z >= 0.285 (weaker, n=8 placed); x carries nothing;
-# y <= -0.28 confirmed on the unbounded 09-12 day (0.18 vs 0.08). Deterministic clamp: a paired cell keeps
-# the same start on both arms.
-case "$TASK" in
-  waffles) SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.325";;
-  Carton)  SESSION_EXTRA="$SESSION_EXTRA --home-bounds y_max=-0.28,z_min=0.285";;
-esac
-# 09-14: PHANTOM rows also record the imagined-future agreement of the K seeds per replan (diag only,
-# the default rule still picks the chunk) — the rig-side record for the world-model reliability claim.
-[ -z "$LEROBOT_TYPE" ] && SESSION_EXTRA="$SESSION_EXTRA --agreement-shadow"
-[ -z "$PICK_NO_SESSION_EXTRA" ] && EXTRA="$EXTRA $SESSION_EXTRA" && echo ">> session levers: $SESSION_EXTRA"
 CKPT="$CKPT" SYSTEM="$SYSTEM" EXTRA="$EXTRA" exec bash "$LAUNCHER" "$TASK" "$EPS" "$NFE" 1.0
