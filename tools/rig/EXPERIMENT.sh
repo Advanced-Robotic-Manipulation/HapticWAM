@@ -5,6 +5,8 @@
 #   ./EXPERIMENT.sh SV      Blocks S/V and N : row 9 only (nothing new warmed)
 #   ./EXPERIMENT.sh PB      Block P-B : 14 + newest stu_mt_* row (MT_STUDENT=<label> overrides); stops the rest of ours
 #   ./EXPERIMENT.sh E       Block E   : 12 stu_nowrist_4k + 2 stu_ftA_r2 next to 9; stops 14 and the mt student
+#   ./EXPERIMENT.sh B       Block C   : baselines 4 pi05 + 5 dp next to 9 (one launch per cell); X-VLA cannot run on the rig (3 views)
+#   ./EXPERIMENT.sh T1      Block C   : base teacher 1 v6 next to 9 (never with row 10)
 #   ./EXPERIMENT.sh FINAL   the evening students: 9 + stu_simft_001000 (+ stu_mt_001000 with FINAL_MT=1); stops everything else of ours
 #   ./EXPERIMENT.sh status | stop
 # Rows are resolved by LABEL from MODELS.tsv, so the row numbers fetch_student.sh appends do not matter; each block prints
@@ -52,6 +54,11 @@ case "${1:-}" in
          stop_ours_except "$T" "$MT" "$MSR"; warm_rows "$MT" "$MSR"; show "multitask teacher = $MT   its student $MS = $MSR";;
   E)     T=$(need v6_simft2k) || exit 1; W=$(need stu_nowrist_4k) || exit 1; F=$(need stu_ftA_r2) || exit 1
          stop_ours_except "$T" "$W" "$F"; warm_rows "$T" "$W" "$F"; show "wrist-masked student = $W   ftA student = $F (one launch per cell, vs row $T's Block P episodes)";;
+  B)     T=$(need v6_simft2k) || exit 1; P=$(need pi05) || exit 1; DPR=$(need dp) || exit 1   # baselines next to row 9 (pi0.5 7.9 GB own venv, DP 1.8 GB)
+         stop_ours_except "$T" "$P" "$DPR"; warm_rows "$T" "$P" "$DPR"; show "pi0.5 = $P   diffusion policy = $DPR (one launch per cell, vs row $T's Block P episodes; X-VLA needs 3 camera views — offline only)";;
+  T1)    T=$(need v6_simft2k) || exit 1; V=$(need v6) || exit 1; F10=$(row_of v6_fast)                  # base teacher v6 (never together with row 10, same checkpoint)
+         [ -n "$F10" ] && listening "$F10" && ./serve_bg.sh stop "$F10"
+         stop_ours_except "$T" "$V"; warm_rows "$T" "$V"; show "base teacher v6 = $V (one launch per cell, vs row $T's Block P episodes)";;
   FINAL) disk_check; T=$(need v6_simft2k) || exit 1; S=$(need stu_simft_001000) || exit 1; keep="$T $S"; MS=""
          if [ "${FINAL_MT:-0}" = 1 ]; then MS=$(need stu_mt_001000) || exit 1; keep="$keep $MS"; fi
          stop_ours_except $keep; warm_rows $keep; show "teacher v6_simft2k = $T   1000-step student = $S${MS:+   mt 1000-step student = $MS}";;
