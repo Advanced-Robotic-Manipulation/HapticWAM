@@ -284,6 +284,8 @@ def test_run_deploy_tags_the_mode_and_records_it():
     assert 'deploy_overrides["null_imagination"]' in src
     # the server owns it: adopted when unset, refused when it disagrees
     assert 'policy.info.get("null_imagination"' in src
+    # in-process mode: the flag reaches the policy that does the replanning
+    assert 'null_imagination=getattr(args, "null_imagination", "none")' in src
 
 
 def test_server_reports_the_mode_and_it_is_not_per_launch_configurable():
