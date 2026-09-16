@@ -381,6 +381,35 @@ def test_pin_contact_x0_default_changes_nothing(tiny_rf):
 
 
 @cosmos
+def test_deploy_hook_and_offline_evaluator_agree_bit_for_bit(tiny_rf):
+    """The offline arm swaps the MODEL's layout for the whole run
+    (`tools/terminal_eval.py`: `pm.rf.layout = contact_pinned_layout(...)`);
+    deploy wraps the layout per call. Same helper, but the two entry points
+    have to land on the same actions or the rig cells cannot be read against
+    the offline table — so compare them on one window, bitwise."""
+    hw, teacher, batch = tiny_rf
+    rf = teacher.rf
+    original = rf.layout
+    try:
+        with torch.no_grad():
+            _fresh(rf)
+            deploy = rf.sample(batch, nfe=2, pin_contact_x0=True)
+            rf.layout = contact_pinned_layout(original)   # the evaluator's way
+            _fresh(rf)
+            offline = rf.sample(batch, nfe=2)
+    finally:
+        rf.layout = original
+    assert torch.equal(deploy.actions_B_H_A, offline.actions_B_H_A)
+    assert torch.equal(deploy.x_final_B_C_T_H_W, offline.x_final_B_C_T_H_W)
+    assert torch.equal(deploy.governor_sigma_B_Tc, offline.governor_sigma_B_Tc)
+    # and the restore actually restored: the next plain sample is the free one
+    with torch.no_grad():
+        _fresh(rf)
+        free = rf.sample(batch, nfe=2)
+    assert not torch.equal(free.actions_B_H_A, deploy.actions_B_H_A)
+
+
+@cosmos
 def test_pin_contact_x0_holds_the_contact_frames_at_the_zero_package(tiny_rf):
     hw, teacher, batch = tiny_rf
     rf = teacher.rf
