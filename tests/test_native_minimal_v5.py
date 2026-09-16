@@ -387,6 +387,9 @@ def test_cli_parser_defaults_and_explicit_profile_flag():
         "Path": Path,
         "SYSTEM_MODES": ("teacher", "student"),
         "DEFAULT_MAX_REPLANS": 40,
+        # phantom.inference.policy.NULL_IMAGINATION_MODES, mirrored here for
+        # the same reason SYSTEM_MODES is: build_parser is exec'd in isolation
+        "NULL_IMAGINATION_MODES": ("none", "prev_cpk", "contact_zero"),
         "torch": SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: False)),
     }
     exec(  # noqa: S102 - trusted checked-in control AST

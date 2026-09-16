@@ -239,6 +239,11 @@ class PolicyServer:
                 # a silent no-op and must be refused at attach; audit 09-10)
                 "policy_kind": str(getattr(self.policy, "policy_kind", "phantom")),
                 "inference_levers": dict(self.levers),
+                # the deploy imagination probe (--null-imagination), owned by
+                # the SERVER: a launch adopts it and tags null:<mode>, it is
+                # never per-launch configurable (see CONFIGURABLE)
+                "null_imagination": str(getattr(self.policy, "null_imagination",
+                                                "none") or "none"),
                 "owner": o["id"] if o else None,
                 "owner_since": o["since"] if o else None}
 

@@ -18,6 +18,7 @@ import argparse
 import logging
 import sys
 
+from phantom.inference.policy import NULL_IMAGINATION_MODES
 from phantom.inference.remote import (DEFAULT_PORT, PHANTOM_AUTHKEY,
                                       PolicyServer, RemotePolicy)
 
@@ -82,6 +83,16 @@ def main() -> int:
                     help="torch.compile mode: default | reduce-overhead (cudagraphs) | max-autotune")
     ap.add_argument("--flex", action="store_true",
                     help="FlexAttention self-attention with a block mask (needs the flex kernels)")
+    # CAUSAL PROBE (not a latency lever): corrupt the imagined contact package
+    # for every replan this server serves. Owned here, not per launch —
+    # serve_bg.sh passes the MODELS.tsv extras column to THIS process, and
+    # run_deploy adopts (and tags) whatever `info` reports.
+    ap.add_argument("--null-imagination", choices=NULL_IMAGINATION_MODES,
+                    default="none",
+                    help="none | prev_cpk (zero ContactPackage as the ACC "
+                         "intent channel on every replan) | contact_zero "
+                         "(CONTACT frames cond-pinned to the zero package). "
+                         "Same mechanics as tools/terminal_eval.py --null")
     ap.add_argument("--terminal-veto", action="store_true", default=True,
                     help="assert the ACC head exists at load (veto launches "
                          "must not discover its absence mid-session)")
@@ -114,6 +125,18 @@ def main() -> int:
     levers = {"compile": bool(args.compile), "compile_mode": args.compile_mode if args.compile else None,
               "flex": bool(args.flex), "fp8": False}
     log.info("inference levers: %s", levers)
+    # startup banner: this one changes the PLANS, not the latency — every
+    # replan this server serves is a probe arm until it is restarted
+    null_imag = str(getattr(policy, "null_imagination", "none") or "none")
+    if null_imag == "none":
+        log.info("imagination null: none (intact model)")
+    else:
+        log.warning("IMAGINATION NULL: %s — every replan this server serves has "
+                    "its imagined contact package corrupted (%s). Attached "
+                    "launches adopt and tag null:%s.", null_imag,
+                    "zero ContactPackage on the ACC intent channel"
+                    if null_imag == "prev_cpk" else
+                    "CONTACT frames cond-pinned to the zero package", null_imag)
     srv = PolicyServer(policy, ckpt=args.ckpt, ckpt_sha=sha, levers=levers)
     if not args.no_warmup:
         srv.warmup(hw, teacher=(args.system == "teacher"))

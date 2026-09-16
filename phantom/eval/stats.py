@@ -137,7 +137,12 @@ def episode_seed(meta: dict) -> int | None:
 # --arm-b veto:off` for the contact-future veto ablation (Block N). Only
 # meaningful on cells no other model ran, since the spec matches every model
 # that carries the tag.
-ARM_TAG_PREFIXES = ("label:", "ckpt_sha:", "ckpt:", "veto:", "sel:", "aveto:")
+ARM_TAG_PREFIXES = ("label:", "ckpt_sha:", "ckpt:", "veto:", "sel:", "aveto:",
+                    # the deploy imagination probe (run_deploy
+                    # --null-imagination): `null:prev_cpk` and `null:none` are
+                    # the SAME checkpoint, so nothing else in the tag set tells
+                    # the two arms apart
+                    "null:")
 
 
 def episode_arm(meta: dict) -> str | None:

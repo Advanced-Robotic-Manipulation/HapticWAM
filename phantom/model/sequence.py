@@ -15,6 +15,7 @@ through this class — no slicing arithmetic anywhere else.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import fields as dc_fields
 from enum import Enum
 
 import numpy as np
@@ -227,3 +228,34 @@ class SequenceLayout:
         return (f"SequenceLayout(student={self.student}, drop_video={self.drop_video}, "
                 f"video_attend={self.video_attend}, "
                 f"T={self.t_total}, tokens={self.n_tokens})\n" + "\n".join(rows))
+
+
+def contact_pinned_layout(layout: SequenceLayout) -> SequenceLayout:
+    """`layout` with the CONTACT frames added to the FRAME_REPLACE cond mask,
+    i.e. held at their x0 through every denoise step instead of being
+    co-denoised from noise.
+
+    The one mechanism behind BOTH pinned arms of REVIEW_SYNTHESIS P7 — offline
+    (`tools/terminal_eval.py --null contact_zero|contact_gt`) and at deploy
+    (`run_deploy --null-imagination contact_zero`, via `rf.sample(
+    pin_contact_x0=True)`). What the frames are pinned TO is whatever the
+    batch's `cpk_*` keys hold: the GT package offline under `--null
+    contact_gt`, the zero package everywhere else (the deploy batch's
+    placeholders are zeros, so deploy can only ever pin to zeros).
+
+    Idempotent: wrapping an already-pinned layout returns it unchanged."""
+    if getattr(layout, "contact_pinned", False):
+        return layout
+
+    class _ContactPinned(type(layout)):
+        #: not a dataclass field (no annotation) — a marker for the guard above
+        contact_pinned = True
+
+        def cond_mask_T(self):
+            m = super().cond_mask_T()
+            if self.has(FrameGroup.CONTACT):
+                m[self.frame_slice(FrameGroup.CONTACT)] = True
+            return m
+
+    vals = {f.name: getattr(layout, f.name) for f in dc_fields(layout)}
+    return _ContactPinned(**vals)

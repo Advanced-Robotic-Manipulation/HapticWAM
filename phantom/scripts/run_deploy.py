@@ -49,7 +49,7 @@ from phantom.config.paths import load_paths
 from phantom.data.schema import NormStats
 from phantom.deploy.planner import SYSTEM_MODES, WRIST_MASKED_MODES
 from phantom.deploy.runtime import DeploymentRuntime
-from phantom.inference.policy import PhantomPolicy
+from phantom.inference.policy import NULL_IMAGINATION_MODES, PhantomPolicy
 from phantom.train import common as C
 from phantom.train.builder import build_model
 
@@ -157,6 +157,7 @@ def _finish_policy(pm, norm, args, payload):
                          select_by=getattr(args, "select_by", "default"),
                          agreement_veto=getattr(args, "agreement_veto", None),
                          agreement_shadow=getattr(args, "agreement_shadow", False),
+                         null_imagination=getattr(args, "null_imagination", "none") or "none",
                          action_time_origin=getattr(args, "action_time_origin", None) or "inference_ready")
     # checkpoint property, not a flag: which wrench zero offset the model was
     # trained WITHOUT (0 for v4/v5). SnapshotBuilder mirrors it (v6 data fix).
@@ -600,6 +601,24 @@ def build_parser() -> argparse.ArgumentParser:
                          "actions at all (AUC 0.64-0.81 vs ~0.5 for the ACC "
                          "gate and the governor sigma). Needs --k-seeds >= 2 "
                          "and is incompatible with --drop-video")
+    ap.add_argument("--null-imagination",
+                    choices=NULL_IMAGINATION_MODES, default=None,
+                    help="CAUSAL PROBE — corrupt the student's IMAGINED contact "
+                         "package at inference, the deploy twin of "
+                         "tools/terminal_eval.py --null (same code). none = the "
+                         "shipped path. prev_cpk = every replan, the first "
+                         "included, hands the ACC intent channel a ZERO "
+                         "ContactPackage, so nothing the model anticipated "
+                         "about contact reaches the actions. contact_zero = the "
+                         "CONTACT frames are cond-pinned to the zero package at "
+                         "every denoise step, so the ACTION queries attend a "
+                         "contact block nothing was imagined into. Pair a "
+                         "nulled arm cell-by-cell against the intact student; "
+                         "the mode is always tagged null:<mode>. With "
+                         "--policy-server the SERVER owns this setting (the "
+                         "MODELS.tsv extras column reaches the server, not this "
+                         "launch): omitting the flag ADOPTS and tags the "
+                         "server's mode, naming a different one is refused")
     ap.add_argument("--agreement-shadow", action="store_true",
                     help="diag only: with the DEFAULT selector still choosing "
                          "the chunk, also record the K imagined-future "
@@ -1253,6 +1272,26 @@ def main(argv=None) -> int:
                           effective_sel, args.select_by)
                 policy.close()
                 return 3
+            # The imagination null lives in the SERVER's policy: serve_bg.sh
+            # passes the MODELS.tsv extras column to policy_server, never to
+            # this launch, so an omitted flag ADOPTS the server's mode (and
+            # tags it). An explicit, different mode is refused — a launch
+            # cannot switch the probe on or off on a warm server.
+            server_null = str(policy.info.get("null_imagination", "none") or "none")
+            if args.null_imagination is None:
+                args.null_imagination = server_null
+            elif str(args.null_imagination) != server_null:
+                log.error("policy server runs with --null-imagination %s but "
+                          "this launch asked for %s — the arm would not be the "
+                          "one the tags claim. Restart the server with the "
+                          "matching flag, or drop the flag to adopt the "
+                          "server's.", server_null, args.null_imagination)
+                policy.close()
+                return 3
+            if server_null != "none":
+                log.warning("policy server IMAGINATION NULL active: %s — every "
+                            "replan it serves is a probe arm (tagged null:%s)",
+                            server_null, server_null)
             if policy.info.get("policy_kind") == "lerobot" and args.terminal_veto:
                 log.error("--terminal-veto cannot run on a LeRobot policy server "
                           "(no ACC head: every close would be 'allowed' while the "
@@ -1342,6 +1381,11 @@ def main(argv=None) -> int:
     if getattr(args, "agreement_veto", None) is not None:
         deploy_overrides["agreement_veto"] = float(args.agreement_veto)
     deploy_overrides["agreement_shadow"] = bool(getattr(args, "agreement_shadow", False))
+    # the imagination probe, resolved: in server mode `args.null_imagination`
+    # was adopted from (or checked against) the server above, so it is the mode
+    # that actually produced every replan
+    null_imagination = str(getattr(args, "null_imagination", None) or "none")
+    deploy_overrides["null_imagination"] = null_imagination
     cond_tags = [f"nfe{policy.nfe}", f"g{policy.guidance}",
                  "pnoise" if args.persistent_noise else "freshnoise",
                  f"ckpt:{Path(ckpt_real).name}", f"git:{sha}",
@@ -1370,7 +1414,11 @@ def main(argv=None) -> int:
                  (f"aveto:{args.agreement_veto:g}"
                   if getattr(args, "agreement_veto", None) is not None
                   else "aveto:off"),
-                 f"ashadow:{'on' if getattr(args, 'agreement_shadow', False) else 'off'}"]
+                 f"ashadow:{'on' if getattr(args, 'agreement_shadow', False) else 'off'}",
+                 # ALWAYS tagged, `null:none` included: a probe arm and its
+                 # intact partner differ in nothing else, so the pair is only
+                 # readable if both sides say which they are
+                 f"null:{null_imagination}"]
     veto = build_veto(args, stats, z_floor)
     # always tagged (on by default since 09-11) so an A/B arm is reconstructible
     cond_tags.append(f"servo_reach_profile:{args.servo_reach_profile or 'off'}")

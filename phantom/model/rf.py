@@ -31,7 +31,8 @@ from phantom.model.ace.heads import EventReadout, SigmaHead
 from phantom.model.ace.packing import (CH_EVENT, _CH_WRIST, ActionPacker, ContactPackage,
                                        ContactPacker, sigma_group_channels)
 from phantom.model.acc import AccInputs, AccOutput
-from phantom.model.sequence import FrameGroup, SequenceLayout
+from phantom.model.sequence import (FrameGroup, SequenceLayout,
+                                    contact_pinned_layout)
 
 
 @dataclass
@@ -478,7 +479,8 @@ class PhantomRectifiedFlow(nn.Module):
                drop_video: bool | None = None,
                guidance_scale: float = 1.0,
                reuse_noise: bool = False,
-               k_seeds: int = 1) -> PhantomPrediction:
+               k_seeds: int = 1,
+               pin_contact_x0: bool = False) -> PhantomPrediction:
         """Few-NFE Euler sampling of the joint sequence (the per-replan denoise).
 
         guidance_scale > 1 applies observation-guidance (classifier-free):
@@ -511,7 +513,19 @@ class PhantomRectifiedFlow(nn.Module):
         latency on a NUC-class card — which fights P4's L <= 0.5 s target
         head-on; the documented fallbacks are K=2-3, a lower --nfe, or scoring
         only every other replan. The 5090 figures in the research notes are
-        NOT the rig's."""
+        NOT the rig's.
+
+        pin_contact_x0=True cond-PINS the CONTACT frames to their x0 (the
+        packed contact package the batch carries) through every denoise step
+        instead of co-denoising them from noise: the deploy half of
+        `tools/terminal_eval.py --null contact_zero`, reusing the evaluator's
+        own `contact_pinned_layout`. The deploy batch's `cpk_*` placeholders
+        are zeros, so at deploy this pins the head to "no contact, and you may
+        not imagine any". It is inherited by the nested ACC anticipation sample
+        (so an episode's FIRST replan is pinned too, exactly as offline, where
+        the evaluator swaps the model's layout for the whole run). Default
+        False leaves the layout object, the noise draw and every tensor
+        untouched — the shipped path is byte-identical."""
         nfe = nfe or self.mc.nfe
         drop_video = self.mc.drop_video_at_inference if drop_video is None else drop_video
         if drop_video and self.mc.video_attend:
@@ -527,6 +541,13 @@ class PhantomRectifiedFlow(nn.Module):
         layout = (SequenceLayout.build(self.bb, self.mc, self.hw,
                                        student=self.layout.student, drop_video=True)
                   if drop_video else self.layout)
+        # `--null contact_zero`: pin the CONTACT frames. Inherited from an
+        # enclosing sample() so the ACC two-pass inner anticipation runs under
+        # the same layout the offline evaluator gives it.
+        _prev_pin = getattr(self, "_pin_contact_x0", False)
+        pin_contact_x0 = bool(pin_contact_x0) or _prev_pin
+        if pin_contact_x0:
+            layout = contact_pinned_layout(layout)
         # When the caller supplies the TRUE previous-replan package (every
         # deploy replan after the first), the ACC two-pass inner sample that
         # build_x0 would run to *predict* that package is overwritten below —
@@ -536,10 +557,12 @@ class PhantomRectifiedFlow(nn.Module):
         _prev_flag = getattr(self, "_in_anticipation_pass", False)
         if prev_cpk is not None:
             self._in_anticipation_pass = True
+        self._pin_contact_x0 = pin_contact_x0
         try:
             x0, cond_mask, acc_inputs = self.build_x0(batch, layout, encode_gen=False)
         finally:
             self._in_anticipation_pass = _prev_flag
+            self._pin_contact_x0 = _prev_pin
         x0_null = acc_null = ctx_null = None
         if guidance_scale != 1.0:
             # The null branch's prev_cpk summary is DISCARDED (align_guidance_acc

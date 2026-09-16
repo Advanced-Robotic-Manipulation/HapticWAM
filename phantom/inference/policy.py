@@ -35,6 +35,25 @@ from phantom.train.builder import PhantomModel
 #: "video_agreement" — the imagined-future agreement rule below
 SELECTORS = ("default", "video_agreement")
 
+#: Deploy-time causal probe on the IMAGINED contact package — the rig-side
+#: twin of `tools/terminal_eval.py --null`, with identical mechanics (the
+#: evaluator's `zero_package` / `contact_pinned_layout` are the same objects).
+#: The student has no tactile pads, so its contact package is pure imagination;
+#: corrupting it at inference and pairing cell-by-cell against the intact
+#: student is the deploy answer to "does the imagination carry the actions?".
+#:
+#: "none"         — the shipped path, byte-identical (the default)
+#: "prev_cpk"     — every replan hands ACC a ZERO ContactPackage as the
+#:                  previous replan's package, at the usual `prev_cpk_step`.
+#:                  Including the FIRST replan, so the two-pass inner
+#:                  anticipation that would otherwise predict one is bypassed
+#:                  too: the ACC intent channel carries no contact all episode.
+#: "contact_zero" — the CONTACT frames are cond-PINNED to the zero package at
+#:                  every denoise step (`rf.sample(pin_contact_x0=True)`), so
+#:                  the ACTION queries attend a contact block the model was not
+#:                  allowed to imagine anything into.
+NULL_IMAGINATION_MODES = ("none", "prev_cpk", "contact_zero")
+
 
 @dataclass
 class ObsSnapshot:
@@ -123,7 +142,8 @@ class PhantomPolicy:
                  close_p: float = 0.5, select_by: str = "default",
                  agreement_veto: float | None = None,
                  agreement_shadow: bool = False,
-                 action_time_origin: str = "inference_ready"):
+                 action_time_origin: str = "inference_ready",
+                 null_imagination: str = "none"):
         # task_text: the per-episode instruction (pipeline.md input l). Must
         # match a key of the text-embedding cache the teacher trained with;
         # empty keeps the v2 empty-string conditioning.
@@ -171,6 +191,9 @@ class PhantomPolicy:
         # two rules disagree and how agreement relates to the outcome.
         self.agreement_shadow = agreement_shadow
         self.action_time_origin = action_time_origin
+        # deploy-time causal probe on the student's IMAGINED contact package
+        # (the ACC channel). See NULL_IMAGINATION_MODES.
+        self.null_imagination = null_imagination
         self.rf.eval()
 
     @property
@@ -219,6 +242,19 @@ class PhantomPolicy:
             raise ValueError("agreement_veto must be a positive distance "
                              f"(the K-median MSE threshold), got {value!r}")
         self._agreement_veto = value
+
+    @property
+    def null_imagination(self) -> str:
+        # policies built before the probe existed => off
+        return getattr(self, "_null_imagination", "none")
+
+    @null_imagination.setter
+    def null_imagination(self, value):
+        value = "none" if value is None else str(value)
+        if value not in NULL_IMAGINATION_MODES:
+            raise ValueError("null_imagination must be one of "
+                             f"{NULL_IMAGINATION_MODES}, got {value!r}")
+        self._null_imagination = value
 
     @property
     def action_time_origin(self):
@@ -432,13 +468,23 @@ class PhantomPolicy:
                 obs.t, prev_plan, self.latent_dt)
         elif self.parity_fixes and prev_plan is not None:
             cpk_step = int(round(float(prev_plan.latency_s) / self.latent_dt))
+        null_imag = self.null_imagination
+        if null_imag == "prev_cpk":
+            # EVERY replan, the first included: a zero package is still a
+            # package, so rf.sample takes the cheap branch and skips the inner
+            # anticipation sample it would otherwise run on replan 1. The step
+            # index is left exactly as computed above — the probe nulls the
+            # package's CONTENT, not the parity alignment.
+            previous_cpk = self.rf.c_pack.zero_package(
+                batch=1, device=self.rf.device, dtype=torch.float32)
         pred: PhantomPrediction = self.rf.sample(
             batch, nfe=self.nfe, guidance_scale=self.guidance,
             prev_cpk=previous_cpk,
             prev_cpk_step=cpk_step,
             drop_video=self.drop_video,
             reuse_noise=self.persistent_noise,
-            k_seeds=self.k_seeds)
+            k_seeds=self.k_seeds,
+            pin_contact_x0=(null_imag == "contact_zero"))
         rate = self.hw.control.action_rate_hz
         latency = time.perf_counter() - t_start
         t_exec0 = (obs.t if self.action_time_origin == "observation"

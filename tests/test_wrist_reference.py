@@ -123,11 +123,22 @@ def test_native_cli_respects_yaml_until_explicit_override():
             isinstance(t, ast.Name) and t.id == "DEFAULT_MAX_REPLANS" for t in n.targets
         )
     )
+    policy_src = ast.parse((ROOT / "phantom/inference/policy.py").read_text())
+    null_modes = next(
+        n
+        for n in policy_src.body
+        if isinstance(n, ast.Assign)
+        and any(
+            isinstance(t, ast.Name) and t.id == "NULL_IMAGINATION_MODES"
+            for t in n.targets
+        )
+    )
     ns = {
         "argparse": argparse,
         "Path": Path,
         "SYSTEM_MODES": ast.literal_eval(modes.value),
         "DEFAULT_MAX_REPLANS": ast.literal_eval(default.value),
+        "NULL_IMAGINATION_MODES": ast.literal_eval(null_modes.value),
         "torch": SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: False)),
     }
     exec(compile(ast.Module(body=[node], type_ignores=[]), "run_deploy.py", "exec"), ns)  # noqa: S102 -- trusted local parser, no model import

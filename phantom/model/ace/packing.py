@@ -31,7 +31,7 @@ import torch.nn.functional as F
 
 from phantom.config.hardware import HardwareConfig
 from phantom.config.model import N_EVENTS
-from phantom.model.sequence import SequenceLayout
+from phantom.model.sequence import FrameGroup, SequenceLayout
 
 _MAX_FINGERS = 2
 _PER_FINGER_CH = 5   # d_disp(3) + d_fz(1) + mask(1)
@@ -262,6 +262,46 @@ class ContactPacker:
 
     def summary_dim(self) -> int:
         return N_EVENTS + self.hw.n_fingers * (1 + 1 + 1 + 2 + 6) + 6
+
+    def zero_package(self, batch: int = 1, horizon: int | None = None, *,
+                     device=None, dtype=torch.float32) -> ContactPackage:
+        """An all-zero ContactPackage shaped exactly like `unpack`'s output.
+
+        `event` is FLOAT probabilities (all zero), never a long class id:
+        `unpack` returns probs, so `zero_package(a_predicted_package)` and this
+        constructor hand `flatten_summary` the same E zeros. A long zero would
+        one-hot to class 0 — "contact_none with probability 1", an assertion
+        rather than the absence of one — and the deploy null would then differ
+        from the offline `--null prev_cpk` arm it is paired against.
+
+        `horizon` defaults to the layout's CONTACT frame count."""
+        if horizon is None:
+            sl = self.layout.frame_slice(FrameGroup.CONTACT)
+            horizon = sl.stop - sl.start
+        B, Tc, Fn = int(batch), int(horizon), self.hw.n_fingers
+        cph, cpw = self.cph, self.cpw
+        kw = {"device": device, "dtype": dtype}
+        return ContactPackage(
+            event=torch.zeros(B, Tc, N_EVENTS, **kw),
+            d_disp=torch.zeros(B, Tc, Fn, 3, cph, cpw, **kw),
+            d_fz=torch.zeros(B, Tc, Fn, cph, cpw, **kw),
+            mask=torch.zeros(B, Tc, Fn, cph, cpw, **kw),
+            cop=torch.zeros(B, Tc, Fn, 2, **kw),
+            slip=torch.zeros(B, Tc, Fn, **kw),
+            wrench=torch.zeros(B, Tc, Fn, 6, **kw),
+            wrist=torch.zeros(B, Tc, 6, **kw))
+
+
+def zero_package(pkg: ContactPackage) -> ContactPackage:
+    """Copy of a ContactPackage with every tensor field zeroed (dtypes kept).
+
+    The offline `--null prev_cpk` mechanism (`tools/terminal_eval.py`): the
+    previous replan's PREDICTED package, zeroed, so the ACC intent channel
+    carries no anticipated contact. Deploy's first replan has no predicted
+    package to zero and builds one with `ContactPacker.zero_package` instead —
+    the two agree field by field (tests/test_null_imagination.py)."""
+    return ContactPackage(**{f.name: torch.zeros_like(getattr(pkg, f.name))
+                             for f in fields(pkg)})
 
 
 class ActionPacker:

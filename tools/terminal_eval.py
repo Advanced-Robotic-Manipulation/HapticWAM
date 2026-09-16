@@ -77,7 +77,6 @@ tactile-teacher premise does not survive and the paper pivots.
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import json
 from pathlib import Path
 
@@ -88,8 +87,9 @@ from phantom.config.hardware import load_hardware
 from phantom.config.paths import load_paths
 from phantom.data.schema import NormStats
 from phantom.data.windows import WindowSampler
+from phantom.model.ace.packing import zero_package
 from phantom.model.rf import PhantomRectifiedFlow
-from phantom.model.sequence import FrameGroup
+from phantom.model.sequence import FrameGroup, contact_pinned_layout
 from phantom.train import common as C
 from phantom.train.builder import build_model
 
@@ -260,26 +260,10 @@ def _zeroed_keys(mode: str) -> set[str]:
     return set()
 
 
-def zero_package(pkg):
-    """Copy of a ContactPackage with every tensor field zeroed."""
-    fields = {f.name: getattr(pkg, f.name) for f in dataclasses.fields(pkg)}
-    return type(pkg)(**{k: (torch.zeros_like(v) if torch.is_tensor(v) else v)
-                        for k, v in fields.items()})
-
-
-def contact_pinned_layout(layout):
-    """`layout` with the CONTACT frames added to the FRAME_REPLACE cond mask,
-    i.e. held at their x0 through every denoise step.
-
-    x0 is whatever the batch's `cpk_*` keys hold: the GT package under
-    `--null contact_gt`, zeros under `--null contact_zero`."""
-    class _ContactPinned(type(layout)):
-        def cond_mask_T(self):
-            m = super().cond_mask_T()
-            m[self.frame_slice(FrameGroup.CONTACT)] = True
-            return m
-    vals = {f.name: getattr(layout, f.name) for f in dataclasses.fields(layout)}
-    return _ContactPinned(**vals)
+#: both P7 mechanics now live in the model package so DEPLOY runs the same code
+#: (`run_deploy --null-imagination`): `zero_package` is `--null prev_cpk`'s
+#: zeroed intent package, `contact_pinned_layout` is `contact_zero`/`contact_gt`'s
+#: cond-pin. Re-exported here under their historical names.
 
 
 # ---------------------------------------------------------------------------
