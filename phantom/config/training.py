@@ -102,6 +102,31 @@ class HIDConfig(CommonTrainConfig):
     w_feature_align: float = 0.1
     dagger_round: int = 0                        # 0 = offline; 1,2 = DAgger rounds
     max_steps: int = 30_000
+    # traj_distill target space (code-defect review 2026-09-18):
+    #   "roundtrip"    — pack(unpack(teacher CONTACT frames)), what every
+    #                    shipped checkpoint was distilled against;
+    #   "raw_latents"  — the teacher's raw CONTACT latents, which carry no
+    #                    re-packed CoP bump on no-contact steps.
+    traj_target: Literal["roundtrip", "raw_latents"] = "roundtrip"
+    # action grounding on on-policy DAgger rollouts (code-defect review
+    # 2026-09-18): "failure_demo" = the shipped rule (a `success is False`
+    # verdict zeroes the action weight, so a judged rollout grounds nothing);
+    # "teacher_supervised" = a verdict-judged POLICY rollout keeps its
+    # per-episode weight, deliberate failure demos still at 0.
+    rollout_action_weight: Literal["failure_demo", "teacher_supervised"] = "failure_demo"
+    # sha256[:12] of the teacher checkpoint this student was distilled from.
+    # Recorded so a --resume can accept the SAME teacher at a different path
+    # (rental workspaces move) and refuse a different one.
+    teacher_ckpt_sha12: str = ""
+    # ... and the data recipe, for the same reason the teacher carries it
+    # (revalidation 2026-08-31 #8): these four were read straight off `args`
+    # and reached NO part of the student checkpoint, so a --resume that
+    # forgot them silently reverted the window recipe to train/0.0/0.0/1.0
+    # (code-defect review 2026-09-18 (c)).
+    split: str = "train"                 # manifest subset the run trains on
+    grasp_frac: float = 0.0              # windows anchored in the pre-close band
+    photo_aug: float = 0.0               # scene-camera photometric jitter strength
+    commit_band_weight: float = 1.0      # ACTION-loss multiplier in the commit band
 
 
 @dataclass(frozen=True)

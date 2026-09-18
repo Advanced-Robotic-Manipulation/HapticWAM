@@ -197,6 +197,22 @@ def trainable_state_dicts(model: torch.nn.Module) -> tuple[dict, dict]:
     return lora, phantom
 
 
+def file_sha12(path: Path | str) -> str:
+    """sha256[:12] of a file, streamed — the content identity of a checkpoint.
+
+    A recipe that records a teacher only by PATH ties the student to the
+    workspace layout of the box it was trained on; a rental that mounts the
+    same checkpoint elsewhere then cannot resume. The hash lets a resume
+    accept a RELOCATED teacher and still refuse a DIFFERENT one
+    (code-defect review 2026-09-18 (d))."""
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 22), b""):
+            h.update(chunk)
+    return h.hexdigest()[:12]
+
+
 def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                             hw: HardwareConfig, bb: BackboneConfig,
                             mc: PhantomModelConfig, train_cfg: CommonTrainConfig,
@@ -311,7 +327,8 @@ def load_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
                   if _norm_shape(saved_shapes.get(k)) != _norm_shape(v)}
     assert not mismatches, (
         f"hardware shape-relevant fields changed since this checkpoint was trained: "
-        f"{mismatches} — retrain or restore configs/hardware.yaml")
+        f"{mismatches} (checkpoint value, this run's value) — "
+        f"{_shape_drift_hint(mismatches)}")
     if payload["configs"]["hardware_hash"] != hw.config_hash():
         log.warning("hardware config VALUES differ from checkpoint provenance "
                     "(shape-compatible — proceeding)")
@@ -347,6 +364,42 @@ def _norm_shape(v):
     if isinstance(v, (list, tuple)):
         return tuple(_norm_shape(x) for x in v)
     return v
+
+
+#: shape-relevant field -> the hardware.yaml knob(s) that set it, for the
+#: refusal message. `wrist_window_len` is the one that bites in practice: it is
+#: round(wrist_ft.rate_hz * wrist_ft.window_s), and the repo default
+#: configs/hardware.yaml is the BENCH e-series config at 500 Hz (window 125)
+#: while the rig — and every v5/v6 checkpoint — is configs/hardware.nuc.yaml at
+#: 125 Hz (window 31). Loading a rig checkpoint without `--hardware
+#: configs/hardware.nuc.yaml` therefore refuses on a field nobody set by hand
+#: (code-defect review 2026-09-18 (e)).
+_SHAPE_FIELD_SOURCE = {
+    "wrist_window_len": "wrist_ft.rate_hz x wrist_ft.window_s",
+    "wrist_ft_dim": "wrist_ft.dim",
+    "field": "tactile.field",
+    "field_ch": "tactile.field_ch",
+    "keyframe_ds": "recording.keyframe_ds",
+    "n_fingers": "tactile.sensors",
+    "wrench_dim": "tactile.wrench_dim",
+    "ur_state_dim": "arm.dof",
+    "contact_state_dim": "tactile/gripper state layout",
+    "action_dim": "control.action_dim",
+    "chunk_horizon": "control.chunk_horizon",
+    "cpk_shape": "derived.cpk_downsample x tactile.field",
+}
+
+
+def _shape_drift_hint(mismatches: dict) -> str:
+    src = ", ".join(f"{k} <- {_SHAPE_FIELD_SOURCE[k]}"
+                    for k in sorted(mismatches) if k in _SHAPE_FIELD_SOURCE)
+    hint = (f"set by {src}. " if src else "")
+    return (hint + "This checkpoint was trained under a DIFFERENT hardware "
+            "config: pass the one it was trained with (the rig/v6 lineage is "
+            "`--hardware configs/hardware.nuc.yaml`; the repo default "
+            "configs/hardware.yaml is the 500 Hz bench e-series config, whose "
+            "wrist_window_len is 125 against the rig's 31), or restore the "
+            "config and retrain.")
 
 
 # ---------------------------------------------------------------------------

@@ -73,6 +73,56 @@ def hid_weights(teacher_pred, cfg: HIDConfig) -> torch.Tensor:
     return (s * c).detach()
 
 
+def teacher_sample_layout(teacher_rf, t_pred):
+    """The SequenceLayout `teacher_rf.sample()` produced `t_pred` under.
+
+    `sample()` rebuilds a drop_video layout when `mc.drop_video_at_inference`
+    is set, so slicing `t_pred.x_final_B_C_T_H_W` with `teacher_rf.layout`
+    would silently mis-slice such a checkpoint. Verified against the tensor
+    rather than trusted."""
+    layout = teacher_rf.layout
+    if teacher_rf.mc.drop_video_at_inference:
+        from phantom.model.sequence import SequenceLayout
+        layout = SequenceLayout.build(teacher_rf.bb, teacher_rf.mc, teacher_rf.hw,
+                                      student=layout.student, drop_video=True)
+    t_total = int(t_pred.x_final_B_C_T_H_W.shape[2])
+    if layout.t_total != t_total:
+        raise RuntimeError(
+            f"teacher imagination has T={t_total} frames but the layout "
+            f"reconstructed for it has T={layout.t_total} — refusing to slice "
+            f"the CONTACT frames out of a sequence whose layout is unknown")
+    return layout
+
+
+def traj_distill_target(student_rf, teacher_rf, t_pred, cfg: HIDConfig,
+                        dtype) -> torch.Tensor:
+    """The CONTACT-frame tensor traj_distill regresses the student onto.
+
+    "roundtrip" (default, and what EVERY shipped checkpoint was distilled
+    against) re-packs the teacher's UNPACKED contact package. That round trip
+    is lossy in one way that matters: `ContactPacker.unpack` always returns a
+    finite CoP centroid, and `pack` keys the CoP bump amplitude on NaN
+    (packing.py `amp = (~isnan(cop))`), so every step where the teacher
+    imagined NO contact comes back as a full-amplitude Gaussian bump at an
+    arbitrary point — the exact fiction windows.py removed from the GT side on
+    2026-08-26. It also low-passes d_disp/d_fz through cpk_shape and squashes
+    the saturated event band to ~+-0.6.
+
+    "raw_latents" distils against the teacher's raw CONTACT latents, which is
+    the space `x0_pred_s` already lives in: no CoP fiction, no event squash, no
+    resample. Opt-in, because it changes the objective and therefore the
+    numbers (code-defect review 2026-09-18 (a))."""
+    mode = str(getattr(cfg, "traj_target", "roundtrip") or "roundtrip")
+    if mode == "roundtrip":
+        return student_rf.c_pack.pack(
+            t_pred.cpk.detach().to(student_rf.device)).to(dtype)
+    if mode == "raw_latents":
+        sl_t = teacher_sample_layout(teacher_rf, t_pred).frame_slice(FrameGroup.CONTACT)
+        return t_pred.x_final_B_C_T_H_W[:, :, sl_t].detach().to(
+            student_rf.device, dtype)
+    raise ValueError(f"traj_target={mode!r}: use 'roundtrip' or 'raw_latents'")
+
+
 def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
                  device: str) -> dict:
     batch = C.to_device(batch, device)
@@ -101,9 +151,11 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
 
     parts: dict[str, torch.Tensor] = {}
 
-    # (i) trajectory distillation on the CONTACT frames (teacher-packed target)
-    cpk_target = student_rf.c_pack.pack(t_pred.cpk.detach().to(student_rf.device)) \
-        .to(x0_s.dtype)
+    # (i) trajectory distillation on the CONTACT frames. cfg.traj_target picks
+    # the target space: "roundtrip" (default, shipped) re-packs the teacher's
+    # unpacked package; "raw_latents" takes the teacher's CONTACT latents
+    # directly. Same slice, same masking, same w_tau either way.
+    cpk_target = traj_distill_target(student_rf, teacher_rf, t_pred, cfg, x0_s.dtype)
     sl = layout_s.frame_slice(FrameGroup.CONTACT)
     d = (x0_pred_s[:, :, sl].float() - cpk_target.float()) ** 2
     parts["traj_distill"] = (d.mean(dim=(1, 3, 4)) * w_tau).mean()
@@ -201,6 +253,38 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
     return parts
 
 
+def reconcile_teacher_ckpt(saved_train: dict, cfg: HIDConfig, args, *,
+                           log=log) -> dict:
+    """Let `--resume` accept the SAME teacher at a DIFFERENT path.
+
+    The recipe lock compares `teacher_ckpt` as a raw string, so a student was
+    permanently tied to the absolute workspace path of the box that trained it
+    — `/workspace/phantom-hid/runs/teacher/...` — and could not be resumed on
+    a rental that mounts the identical checkpoint elsewhere. From 2026-09-18
+    the recipe also records `teacher_ckpt_sha12`; when the hash matches, the
+    relocated path is accepted with a warning. A DIFFERENT hash is a different
+    teacher and still refuses (review 2026-09-18 (d))."""
+    saved_path = saved_train.get("teacher_ckpt")
+    if saved_path is None or saved_path == cfg.teacher_ckpt:
+        return saved_train
+    if not cfg.teacher_ckpt:
+        raise SystemExit(
+            "--resume without --teacher-ckpt: the teacher is what supplies the "
+            "model config and the imagination target, so it must be named "
+            f"(the checkpoint was distilled from {saved_path!r})")
+    saved_sha = str(saved_train.get("teacher_ckpt_sha12") or "")
+    if not saved_sha:
+        return saved_train          # checkpoint predates the hash: path rules
+    if saved_sha != cfg.teacher_ckpt_sha12:
+        return saved_train          # a DIFFERENT teacher: let the lock refuse
+    log.warning("--resume: teacher checkpoint RELOCATED — recipe recorded %r, "
+                "this run uses %r; sha256[:12] %s matches, accepting",
+                saved_path, cfg.teacher_ckpt, saved_sha)
+    saved = dict(saved_train)
+    saved["teacher_ckpt"] = cfg.teacher_ckpt
+    return saved
+
+
 def eps_stack(eps_by_group: dict, layout) -> torch.Tensor:
     parts = [eps_by_group[s.group] for s in layout.slots]
     return torch.cat(parts, dim=2)
@@ -208,9 +292,10 @@ def eps_stack(eps_by_group: dict, layout) -> torch.Tensor:
 
 # ---------------------------------------------------------------------------
 
-def main(argv=None) -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    ap = argparse.ArgumentParser()
+def build_parser(ap: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
+    """distill_hid's CLI. Split out of `main` so a test can go
+    argparse -> HIDConfig -> effect without launching a run."""
+    ap = ap or argparse.ArgumentParser()
     add_common_args(ap)
     ap.add_argument("--teacher-ckpt", default="")
     ap.add_argument("--ckpt-every", type=int, default=None,
@@ -240,10 +325,51 @@ def main(argv=None) -> int:
     # the teachers were trained with --grasp-frac 0.3 --photo-aug 1.0; the
     # student must see the same window recipe (review 2026-09-05: uniform t0
     # gave the pre-close commit band ~5-10% of windows instead of 30%+ and
-    # collection lighting only)
-    ap.add_argument("--grasp-frac", type=float, default=0.0)
-    ap.add_argument("--photo-aug", type=float, default=0.0)
-    ap.add_argument("--commit-band-weight", type=float, default=1.0)
+    # collection lighting only).
+    # All four default to None so `--resume` can tell "the operator chose the
+    # default" from "nobody said anything"; the dataclass carries the real
+    # default (0.0 / 0.0 / 1.0 / train), unchanged (review 2026-09-18 (c)).
+    ap.add_argument("--grasp-frac", type=float, default=None,
+                    help="fraction of windows anchored in the 1.5 s before the "
+                         "first gripper close (default 0 = uniform). Persisted "
+                         "in the student checkpoint and restored on --resume.")
+    ap.add_argument("--photo-aug", type=float, default=None,
+                    help="scene-camera photometric jitter strength (default 0 = "
+                         "off). Persisted in the checkpoint and restored on "
+                         "--resume.")
+    ap.add_argument("--commit-band-weight", type=float, default=None,
+                    help="ACTION-loss multiplier for windows in the pre-close "
+                         "commit band (default 1.0 = off). Persisted in the "
+                         "checkpoint and restored on --resume.")
+    ap.add_argument("--traj-target", default=None,
+                    choices=["roundtrip", "raw_latents"],
+                    help="target space of traj_distill. roundtrip (DEFAULT, and "
+                         "what every shipped v5/v6 student was distilled "
+                         "against): pack(unpack(teacher package)) — a lossy "
+                         "round trip that paints a full-amplitude CoP bump on "
+                         "every step the teacher imagined as NO-contact, "
+                         "because the packer keys the bump amplitude on NaN and "
+                         "unpack never returns NaN. raw_latents: the teacher's "
+                         "raw CONTACT latents (detached), the space the "
+                         "student's x0 already lives in — no CoP fiction, no "
+                         "event-band squash, no cpk_shape resample. Changes the "
+                         "objective, so it is NOT resume-compatible with a "
+                         "roundtrip student. Recorded in the checkpoint.")
+    ap.add_argument("--rollout-action-weight", default=None,
+                    choices=["failure_demo", "teacher_supervised"],
+                    help="action grounding on on-policy (DAgger) rollouts. "
+                         "failure_demo (DEFAULT, shipped): `is_failure_demo` "
+                         "fires on a `success is False` verdict, so a rollout "
+                         "the operator judged failed gets action_weight 0 — in "
+                         "round 2 that was ~92%% of the 99 rollouts, i.e. the "
+                         "overlay grounded no actions at all. "
+                         "teacher_supervised: a POLICY rollout marked failed "
+                         "ONLY by the verdict keeps its per-episode weight "
+                         "(deliberate failure demos and rollouts whose actions "
+                         "are still the executor proposal stay at 0). "
+                         "behavior_match and traj_distill ignore action_weight "
+                         "and are unaffected either way. Recorded in the "
+                         "checkpoint.")
     ap.add_argument("--teacher-nfe", type=int, default=None,
                     help="teacher imagination NFE: 0 = nfe//2 (round 1), -1 = the "
                          "teacher's own nfe, N = N")
@@ -257,11 +383,17 @@ def main(argv=None) -> int:
     ap.add_argument("--w-traj", type=float, default=None, help="traj_distill weight (contact package); 0 = off")
     ap.add_argument("--w-event", type=float, default=None, help="event_distill weight (event band); 0 = off")
     ap.add_argument("--w-behavior", type=float, default=None, help="behavior_match weight (action velocity matching); 0 = off")
-    ap.add_argument("--split", default="train", choices=["train", "val", "all"],
+    ap.add_argument("--split", default=None, choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default "
                          "train; 'all' reproduces the pre-2026-08-30 behaviour "
-                         "of training on the held-out val episodes too)")
-    args = ap.parse_args(argv)
+                         "of training on the held-out val episodes too). "
+                         "Persisted in the checkpoint and restored on --resume.")
+    return ap
+
+
+def main(argv=None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    args = build_parser().parse_args(argv)
 
     rank, world = C.setup_ddp()   # EARLY: "cuda" resolves per-rank from here on
     profile = load_compute(args.compute)
@@ -272,8 +404,14 @@ def main(argv=None) -> int:
     paths = load_paths()
     paths.validate(require_cosmos=not args.tiny)
     cfg = apply_overrides(HIDConfig(), args, compute=comp)
+    # the teacher is recorded by PATH *and* by content hash: the path is what
+    # the operator typed, the hash is what a --resume can match after the
+    # rental workspace moved (review 2026-09-18 (d))
+    teacher_sha = (C.file_sha12(args.teacher_ckpt) if args.teacher_ckpt
+                   and Path(args.teacher_ckpt).exists() else "")
     cfg = dataclasses.replace(cfg, teacher_ckpt=args.teacher_ckpt,
-                              dagger_round=args.dagger_round)
+                              dagger_round=args.dagger_round,
+                              teacher_ckpt_sha12=teacher_sha)
     out_dir = paths.runs_root / "hid" / f"{cfg.run_name}_r{cfg.dagger_round}"
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
@@ -342,7 +480,12 @@ def main(argv=None) -> int:
         # rule (revalidation 2026-08-31 #8), which this program skipped
         # (verify 09-05 #2)
         from phantom.train.train_teacher import restore_train_config_on_resume
-        cfg = restore_train_config_on_resume(cfg, resume_payload["configs"].get("train") or {}, args)
+        saved_train = reconcile_teacher_ckpt(
+            resume_payload["configs"].get("train") or {}, cfg, args)
+        cfg = restore_train_config_on_resume(cfg, saved_train, args)
+        # the hash of the teacher this segment ACTUALLY loaded, not the
+        # checkpoint's record of an earlier path
+        cfg = dataclasses.replace(cfg, teacher_ckpt_sha12=teacher_sha)
         log.info("resuming student from %s at step %d", args.resume,
                  int(resume_payload.get("step", 0)))
 
@@ -351,29 +494,33 @@ def main(argv=None) -> int:
     # PERSIST them in this program's checkpoint (verify 09-05 #1)
     cfg = dataclasses.replace(cfg, wrench_baseline_rows=C.wrench_baseline_rows_of(payload))
     sampler_s = WindowSampler(hw, student.bb, norm, student=False, seed=cfg.seed,
-                              wrench_baseline_rows=cfg.wrench_baseline_rows)
+                              wrench_baseline_rows=cfg.wrench_baseline_rows,
+                              rollout_action_weight=cfg.rollout_action_weight)
     # note: student windows still carry tactile targets (labels come from the
     # rig's sensors during training); the student MODEL just never sees the
     # tactile inputs — its layout has no OBS_GEL/OBS_MECH frames.
     # the manifest split, exactly as train_teacher does it: without
     # `episodes=` WindowDataset falls through to list_episodes(root) and the
     # student trains on its own validation set (validation 2026-08-30 F10)
-    train_eps = C.manifest_split(data_root, args.split)
+    # the window recipe comes off CFG, not off args: that is what a --resume
+    # restores from the checkpoint (review 2026-09-18 (c))
+    train_eps = C.manifest_split(data_root, cfg.split)
     ds = C.WindowDataset(data_root, sampler_s, episodes=train_eps,
-                         grasp_frac=args.grasp_frac, photo_aug=args.photo_aug,
-                         commit_band_weight=args.commit_band_weight)
+                         grasp_frac=cfg.grasp_frac, photo_aug=cfg.photo_aug,
+                         commit_band_weight=cfg.commit_band_weight)
     for extra in args.extra_data:
         ds.index += sampler_s.build_index(Path(extra))
     log.info("HID dataset: %d windows (round %d, split=%s, grasp_frac=%.2f, "
-             "photo_aug=%.2f)", len(ds), cfg.dagger_round, args.split,
-             args.grasp_frac, args.photo_aug)
+             "photo_aug=%.2f, traj_target=%s, rollout_action_weight=%s)",
+             len(ds), cfg.dagger_round, cfg.split, cfg.grasp_frac,
+             cfg.photo_aug, cfg.traj_target, cfg.rollout_action_weight)
     loader = C.make_loader(ds, cfg)   # AFTER the --extra-data index merge
 
     # held-out evaluation, exactly as train_teacher builds it: without a
     # val_loader train_loop's eval_every is dead and no checkpoint can be
     # selected on anything but the teacher-matching training loss
     val_loader = None
-    if args.split == "train":
+    if cfg.split == "train":
         val_eps = C.manifest_split(data_root, "val")
         if val_eps:
             val_ds = C.WindowDataset(data_root, sampler_s, episodes=val_eps,

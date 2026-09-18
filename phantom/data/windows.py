@@ -33,10 +33,27 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
                                  STREAM_ARM_QD, STREAM_ARM_TCP_POSE,
                                  STREAM_ARM_TCP_SPEED, STREAM_CAMERA_SCENE,
                                  STREAM_GRIPPER, EpisodeMeta, NormStats,
-                                 is_failure_demo, is_trainable_episode,
+                                 is_deliberate_failure_demo, is_failure_demo,
+                                 is_policy_rollout, is_trainable_episode,
                                  needs_rederive, tactile_stream)
 
 log = logging.getLogger(__name__)
+
+#: `action_weight` policy for ON-POLICY (DAgger) rollouts:
+#:   "failure_demo"       — the shipped rule: `is_failure_demo` fires on a
+#:                          `success is False` verdict, so every judged-failed
+#:                          rollout grounds NO actions. Every v5/v6 student
+#:                          was distilled under this.
+#:   "teacher_supervised" — a POLICY rollout that is failure-marked ONLY by the
+#:                          verdict keeps its per-episode weight, so its
+#:                          re-derived actions ground the action term on
+#:                          on-policy states. Deliberate failure demos (SOP
+#:                          tag / `<task>_fail`) still ground nothing, and a
+#:                          rollout whose actions are still the executor
+#:                          PROPOSAL (no tools/rederive_rollout_actions.py) is
+#:                          left at 0 — imitating the pre-clamp proposal is the
+#:                          defect F13 fixed.
+ROLLOUT_ACTION_WEIGHT_MODES = ("failure_demo", "teacher_supervised")
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +171,13 @@ class _EpisodeCache:
 
 class WindowSampler:
     def __init__(self, hw, bb, norm: NormStats, *, student: bool = False,
-                 seed: int = 0, wrench_baseline_rows: int = 0):
+                 seed: int = 0, wrench_baseline_rows: int = 0,
+                 rollout_action_weight: str = "failure_demo"):
+        if rollout_action_weight not in ROLLOUT_ACTION_WEIGHT_MODES:
+            raise ValueError(
+                f"rollout_action_weight={rollout_action_weight!r}: use one of "
+                f"{ROLLOUT_ACTION_WEIGHT_MODES}")
+        self.rollout_action_weight = rollout_action_weight
         self.hw = hw
         self.bb = bb
         self.norm = norm
@@ -492,8 +515,20 @@ class WindowSampler:
         # (1.0 demos and recoveries, >1 to oversample a small on-policy
         # rollout pool). It can only scale a window that is already allowed to
         # supervise actions — a failure demo stays at 0 whatever it says.
+        #
+        # `rollout_action_weight="teacher_supervised"` (opt-in) carves ONE
+        # case out of that rule: an on-policy POLICY rollout whose only
+        # failure marker is the operator's verdict is not a staged failure,
+        # and zeroing it is what made the round-2 DAgger overlay inert. It
+        # still needs re-derived actions to be worth grounding (F13).
         meta = c.reader.meta
         ew = getattr(meta, "weight", 1.0)
         ew = 1.0 if ew is None else max(0.0, float(ew))
         w["action_weight"] = 0.0 if is_failure_demo(meta) else ew
+        if (w["action_weight"] == 0.0
+                and self.rollout_action_weight == "teacher_supervised"
+                and is_policy_rollout(meta)
+                and not is_deliberate_failure_demo(meta)
+                and not needs_rederive(c.reader.path, meta)):
+            w["action_weight"] = ew
         return w

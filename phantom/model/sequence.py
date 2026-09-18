@@ -1,11 +1,22 @@
 """SequenceLayout — the single source of truth for the extended latent-frame
 axis of the PHANTOM diffusion sequence (pipeline.md §6b/§6e).
 
-Teacher (defaults):                          Student (student=True):
+Teacher (repo defaults):                     Student (student=True):
     [VIDEO_COND | VIDEO_GEN x3 |                 [VIDEO_COND | VIDEO_GEN x3 |
      OBS_GEL | OBS_MECH | OBS_PROPRIO |           OBS_PROPRIO |
-     CONTACT x3 | ACTION x3]                      CONTACT x3 | ACTION x3]
-    T=13 -> 4160 tokens                          T=11 -> 3520 tokens
+     CONTACT x3 | ACTION x4]                      CONTACT x3 | ACTION x4]
+    T=14 -> 4480 tokens                          T=12 -> 3840 tokens
+
+    video_cond  [0:1)                            video_cond  [0:1)
+    video_gen   [1:4)                            video_gen   [1:4)
+    obs_gel     [4:5)                            obs_proprio [4:5)
+    obs_mech    [5:6)                            contact     [5:8)
+    obs_proprio [6:7)                            action      [8:12)
+    contact     [7:10)
+    action      [10:14)
+
+(OBS_MECH is mc.contact_obs_frames frames — 1 by default; ACTION is
+hw.control.chunk_horizon // bb.actions_per_latent_frame — 4 on this rig.)
 
 All frames are (lat_ch, lat_h, lat_w) latents through the pretrained patch
 embedder. Everything that indexes the T axis or the flattened token axis goes
