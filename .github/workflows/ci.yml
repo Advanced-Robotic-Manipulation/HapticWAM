@@ -35,5 +35,7 @@ jobs:
 
       # `python -m pytest` (not bare `pytest`): the tests import `tools.sim.*`,
       # which only resolves with the repo root on sys.path.
+      # `-m "not slow"` drops the multi-minute spawned-rank tests, which cannot
+      # beat the 300 s pytest-timeout on a 2-core runner; they still run locally.
       - name: Run tests
-        run: python -m pytest -q -rs
+        run: python -m pytest -q -rs -m "not slow"

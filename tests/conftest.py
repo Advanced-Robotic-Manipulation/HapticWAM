@@ -120,6 +120,11 @@ _CAPABILITIES: dict[str, tuple[bool, str]] = {
 def pytest_configure(config: pytest.Config) -> None:
     for name in _CAPABILITIES:
         config.addinivalue_line("markers", f"{name}: skipped when unavailable")
+    config.addinivalue_line(
+        "markers",
+        "slow: minutes-long test (spawned ranks, real training loops). Runs by "
+        "default; CI deselects it with -m 'not slow'.",
+    )
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items) -> None:

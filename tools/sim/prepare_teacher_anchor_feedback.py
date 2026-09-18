@@ -16,7 +16,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 MODULE = "tools/sim/deployment_filters.py"
 BASE_SHA = "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675"
-DONOR_SHA = "c0bf8fec9d260e9fe19629dcf80118aa5ad6609e041d695c2aab2decf0074584"
+DONOR_SHA = "e2bbd88272eae4f84c0403becf3e066f0490041e82af1db7cefe8a541a65b0d2"
 
 
 def sha(value):
@@ -43,8 +43,15 @@ def transform(base, donor):
         )
         return {n.name: ast.dump(n) for n in cls.body if isinstance(n, ast.FunctionDef)}
 
+    # __call__ is what this overlay rewrites. __init__ is exempt as well: the
+    # live donor's __init__ gained the `controller_profile` argument for
+    # minimal_v5 in abd02da, which only selects a placement controller and
+    # validates its pairing with `implementation`. The archived fd4a032 veto
+    # semantics live in the decision/history methods below, which stay pinned
+    # byte-for-byte.
+    exempt = ("__call__", "__init__")
     old, new = methods(base), methods(result)
-    assert all(new[name] == value for name, value in old.items() if name != "__call__")
+    assert all(new[name] == value for name, value in old.items() if name not in exempt)
     assert set(new) - set(old) == {"feedback_source", "_feedback"}
     return result
 

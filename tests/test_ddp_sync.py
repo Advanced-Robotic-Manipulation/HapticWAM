@@ -35,6 +35,7 @@ def _worker(rank: int, world: int, port: int, q):
     q.put((rank, torch.cat([p.detach().flatten() for p in model.parameters()])))
 
 
+@pytest.mark.slow  # spawns two gloo ranks; ~4 min, deselected in CI
 @pytest.mark.skipif(sys.platform == "win32", reason="gloo spawn")
 def test_ddp_ranks_stay_in_sync():
     ctx = mp.get_context("spawn")
