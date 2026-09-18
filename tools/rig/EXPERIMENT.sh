@@ -101,7 +101,7 @@ case "${1:-}" in
          STICKY=$BASE/data/episodes/deploy/.experiment_out
          OUT=${EXP_OUT:-$(cat "$STICKY" 2>/dev/null || true)}
          [ -n "$OUT" ] || OUT=$BASE/data/episodes/deploy/$(date +%Y%m%d)_experiment
-         mkdir -p "$OUT"; echo "$OUT" > "$STICKY"
+         mkdir -p "$OUT"; [ -n "${EXP_OUT:-}" ] || echo "$OUT" > "$STICKY"   # an explicit EXP_OUT is a one-off (e.g. video takes) and does not move the sticky folder
          case $STAGE in
            M) MODELS="$ANCHOR"; N=$NCORE;;  S9) MODELS="v6_simft2k"; N=$NCORE;;  B) MODELS="pi05 dp"; N=$NCMP;;  E) MODELS="stu_ftA_r2 stu_nowrist_4k"; N=$NCMP;;
            T1) MODELS="v6"; N=$NCORE;;  P) MODELS="${STUDENT:-$(warm_student)}"; N=$NCORE;;  FINAL) MODELS="${STUDENT:-stu_simft_001000}"; N=$NCORE;;
