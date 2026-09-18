@@ -458,6 +458,10 @@ class PlannerLoop:
     # the latch was unbounded and reopened a real grasp any time later in the
     # episode (VALIDATION_0830 P0 #3).
     VETO_RECOVERY_REPLANS = 1
+    # pad-free deploy (rig 09-18): no pad ring exists, so the p_none recovery
+    # below would run WITHOUT its pad-load veto and reopen real grasps on the
+    # model's opinion alone (the 09-04 hazard). DeploymentRuntime sets this.
+    pad_free = False
 
     def _note_executed_close(self, state: dict, n: int) -> None:
         """Latch the replan index of a close the EXECUTOR actually entered.
@@ -546,6 +550,12 @@ class PlannerLoop:
             rec["action"] = "recovery_skipped_floor_close"
             log.info("terminal veto: high p_none (%.2f) after a FLOOR-ONLY "
                      "close — recovery suppressed, latch cleared", p_none)
+            return rec
+        if idx is not None and p_none > v.p_none and self.pad_free:
+            state["closed_idx"] = None
+            rec["action"] = "recovery_skipped_padfree"
+            log.info("terminal veto: high p_none (%.2f) after a close, pad-free "
+                     "(no pad-load veto available) — recovery suppressed", p_none)
             return rec
         if idx is not None and p_none > v.p_none:
             # tactile veto over the model's opinion (verification 09-04): with

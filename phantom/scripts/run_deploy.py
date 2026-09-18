@@ -501,6 +501,15 @@ def build_parser() -> argparse.ArgumentParser:
                     help="deployment wrist guard reference (default: hardware YAML, "
                          "legacy rolling_calm); experimental episode_fixed requires "
                          "a reviewed unloaded start and physical bias qualification")
+    ap.add_argument("--pad-free", action="store_true",
+                    help="never open, read or record the tactile pads (no pad worker, "
+                         "no tactile_* ring): a gripper WITHOUT pads runs. Inert: the "
+                         "aperture latch (so also the descent supervisor's forced "
+                         "release), the fingertip e-stop, the pad-stale stop, and BOTH "
+                         "veto recoveries (the p_none one loses its pad-load veto, so "
+                         "it is suppressed). The veto's close mask stays. Refused "
+                         "with --system teacher, --lift-complete-z and "
+                         "--placement-release-config. Episodes carry the tag padfree:on")
     ap.add_argument("--no-grip-latch", action="store_true",
                     help="disable the aperture latch (commanded closure may "
                          "not decrease once both pads carry load)")
@@ -1143,6 +1152,23 @@ def main(argv=None) -> int:
     if conflict is not None:
         log.error("%s", conflict)
         return 2
+    if getattr(args, "pad_free", False):
+        # refuse BEFORE any device opens: each of these is a pad consumer
+        from phantom.deploy.planner import TACTILE_INPUT_MODES
+        clash = [why for bad, why in (
+            (args.system in TACTILE_INPUT_MODES,
+             f"--system {args.system} (its model input is the pads)"),
+            (float(args.lift_complete_z) > 0, "--lift-complete-z (a pad-load detector)"),
+            (getattr(args, "placement_release_config", None) is not None,
+             "--placement-release-config (completes a release on pad unload)")) if bad]
+        if clash:
+            log.error("--pad-free cannot be combined with: %s", "; ".join(clash))
+            return 2
+        log.warning("PAD-FREE deploy: the tactile pads are never opened, read or recorded. "
+                    "Inert: aperture latch (and with it the descent supervisor's forced release), "
+                    "fingertip e-stop, pad-stale stop, both veto recoveries. Staying on: the wrist "
+                    "wrench guard, the veto's close mask, the descent z floor. There is no success "
+                    "auto-stop: end the episode by hand.")
     # lift_complete thresholds reach the TICK-RATE detector in SafetyMonitor
     # through hw.safety (the per-replan closure below stays as a fallback)
     hw = hw.model_copy(update={"safety": hw.safety.model_copy(update={
@@ -1402,6 +1428,7 @@ def main(argv=None) -> int:
                  # paired cell cannot silently mix the two controllers
                  (f"descent:{round(placement_descent.release_z_m * 1000)}mm"
                   if placement_descent is not None else "descent:off"),
+                 *(["padfree:on"] if getattr(args, "pad_free", False) else []),
                  # deploy levers (review 2026-08-28) — ALWAYS tagged, on or off,
                  # so an A/B arm can never be reconstructed from memory alone
                  f"parity:{'on' if args.parity_fixes else 'off'}",
@@ -1514,6 +1541,7 @@ def main(argv=None) -> int:
                            release_config=release_config,
                            boundary_config=boundary_config,
                            placement_descent=placement_descent,
+                           pad_free=bool(getattr(args, "pad_free", False)),
                            **({"controller_profile": args.placement_controller_profile}
                               if args.placement_controller_profile is not None else {})) as rt:
         # a 'redo' verdict puts the same index back at the head of the queue,

@@ -81,7 +81,10 @@ def new_session_id() -> str:
     return f"{int(time.time()) % 10_000_000}-{os.getpid()}-{secrets.token_hex(4)}"
 
 
-def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, SharedRingBuffer]:
+def build_session_rings(hw: HardwareConfig, session_id: str, *,
+                        tactile: bool = True) -> dict[str, SharedRingBuffer]:
+    """`tactile=False` (pad-free deploy): no `tactile_*` ring is allocated, so
+    every pad consumer sees "no ring" instead of a silent zero."""
     r, t = hw.recording, hw.tactile
     f_dtype = "float16" if r.field_dtype == "float16" else "float32"
     rings: dict[str, SharedRingBuffer] = {}
@@ -93,7 +96,7 @@ def build_session_rings(hw: HardwareConfig, session_id: str) -> dict[str, Shared
         shm_name = "ph" + hashlib.md5(f"{session_id}_{name}".encode()).hexdigest()[:22]
         rings[name] = SharedRingBuffer(shm_name, cap, fields, create=True)
 
-    for s in t.sensors:
+    for s in (t.sensors if tactile else ()):
         make(f"tactile_{s.name}", t.rate_hz, {
             "fields_ds": ((r.field_ds.h, r.field_ds.w, t.field_ch), f_dtype),
             "wrench": ((t.wrench_dim,), "float32"),
@@ -472,11 +475,15 @@ class SensorSession:
     arm_worker: "ArmStateWorker | None" = None
 
     @classmethod
-    def start(cls, hw: HardwareConfig, rig, session_id: str) -> "SensorSession":
-        rings = build_session_rings(hw, session_id)
+    def start(cls, hw: HardwareConfig, rig, session_id: str, *,
+              tactile: bool = True) -> "SensorSession":
+        """`tactile=False` is the pad-free deploy mode: no pad worker is
+        spawned (the DM-Tac devices are never opened, so a gripper without
+        pads runs) and no `tactile_*` ring exists."""
+        rings = build_session_rings(hw, session_id, tactile=tactile)
         session_t0 = getattr(rig.arm, "_t0", time.perf_counter())
-        workers = [TactileWorker(hw, s.name, i, rings, session_t0)
-                   for i, s in enumerate(hw.tactile.sensors)]
+        workers = ([TactileWorker(hw, s.name, i, rings, session_t0)
+                    for i, s in enumerate(hw.tactile.sensors)] if tactile else [])
         pollers = []
         arm_worker = None
         if hw.mode.resolve("arm") == "mock":

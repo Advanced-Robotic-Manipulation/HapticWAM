@@ -176,8 +176,15 @@ class DeploymentRuntime:
                  min_replan_s: float = 0.0, policy_z_offset_m: float = 0.0,
                  grip_play_steps: int | None = None,
                  controller_profile: str | None = None,
-                 record_tail_s: float = 0.0):
-        """`base_hw` is the config as LOADED FROM YAML, before run_deploy's
+                 record_tail_s: float = 0.0,
+                 pad_free: bool = False):
+        """`pad_free` (rig 09-18): the tactile pads are never opened, read or
+        recorded — no pad worker, no `tactile_*` ring. Every pad-driven
+        harness safeguard (aperture latch, fingertip e-stop, the veto's
+        tactile recovery, the pad-stale stop) is thereby inert, and a gripper
+        WITHOUT pads runs. Refused for a policy whose model input is the pads.
+
+        `base_hw` is the config as LOADED FROM YAML, before run_deploy's
         per-task safety overrides (z floor / hitbox / TCP speed cap, applied
         with model_copy). Episodes are stamped with ITS config_hash so a
         rollout matches the demos recorded on the same rig — otherwise every
@@ -191,6 +198,16 @@ class DeploymentRuntime:
         self.deploy_overrides = dict(deploy_overrides or {})
         self.policy = policy
         self.mode = mode
+        self.pad_free = bool(pad_free)
+        if self.pad_free:
+            from phantom.deploy.planner import TACTILE_INPUT_MODES
+            if mode in TACTILE_INPUT_MODES:
+                raise ValueError(f"pad-free deploy is impossible for --system {mode}: "
+                                 "its model input is the tactile pads")
+            if release_config is not None:
+                raise ValueError("pad-free deploy cannot run the placement release "
+                                 "controller: it completes a release on pad unload")
+            self.deploy_overrides["pad_mode"] = "padfree"   # absent = pads read (every earlier episode)
         self.out_root = Path(out_root)
         # deploy levers (review 2026-08-28), both default OFF so the rig A/B
         # can attribute each one; run_deploy tags every episode with the state
@@ -242,7 +259,8 @@ class DeploymentRuntime:
         clock = (IdentityClock() if self.hw.mode.resolve("arm") == "mock"
                  else MasterClock.calibrate(self.rig.arm))
         self.session = SensorSession.start(self.hw, self.rig,
-                                           session_id=new_session_id())
+                                           session_id=new_session_id(),
+                                           tactile=not self.pad_free)
         self.recorder = EpisodeRecorder(self.session, clock, self.out_root)
         return self
 
@@ -319,6 +337,7 @@ class DeploymentRuntime:
                               cpk_log=cpk_log,
                               **({"min_replan_s": self.min_replan_s} if self.min_replan_s > 0 else {}),
                               **({"policy_z_offset_m": self.policy_z_offset_m} if self.policy_z_offset_m else {}))
+        planner.pad_free = self.pad_free
 
         # the executor thread owns + polls the gripper, so it must run BEFORE
         # ring warm-up — the snapshot hard-requires gripper state (no silent

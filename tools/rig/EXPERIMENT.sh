@@ -94,6 +94,8 @@ case "${1:-}" in
           # every take into its own experiment folder ($EXP_OUT). Only the deploy prompts remain (homing Enter,
           # verdicts). Resume after an interruption with EXP_FROM=<cell> (and EXP_ONLY=<label> for one model).
           #   EXP_TASK=waffles EXP_N_CORE=20 EXP_N_CMP=10 EXP_BATCH=10 EXP_OUT=<dir> ./EXPERIMENT.sh run <stage>
+          # EXP_MORE="<run_deploy flags>" is appended to every launch of the run, e.g. EXP_MORE=--pad-free for a
+          # student on a gripper WITHOUT tactile pads (pads never opened/read/recorded; episodes tagged padfree:on).
          STAGE=${2:?usage: ./EXPERIMENT.sh run <M|B|E|T1|P|FINAL|S9|NV>}; TASK=${EXP_TASK:-waffles}; NCORE=${EXP_N_CORE:-20}; NCMP=${EXP_N_CMP:-10}; BATCH=${EXP_BATCH:-10}
          # The experiment folder is sticky across midnight: the first run of a session writes it to
          # $BASE/data/episodes/deploy/.experiment_out and later runs reuse it (EXP_OUT overrides;
@@ -114,6 +116,7 @@ case "${1:-}" in
          "$0" "$STAGE" || { echo "!! warm-up failed — nothing launched"; exit 1; }
          echo "$STAGE" > "$BASE/.experiment_stage"
          echo; echo ">> RUN $STAGE: task $TASK, $N episodes per model in batches of $BATCH, recordings -> $OUT"; echo ">> models: $MODELS"
+         [ -n "${EXP_MORE:-}" ] && echo ">> extra run_deploy flags on every launch: $EXP_MORE"
          FROM=${EXP_FROM:-1}
          for L in $MODELS; do
            r=$(row_of "$L"); [ -n "$r" ] || { echo "!! no row for $L"; exit 1; }
@@ -122,7 +125,7 @@ case "${1:-}" in
              n=$BATCH; [ $((c + n - 1)) -gt "$N" ] && n=$((N - c + 1))
              echo; echo "=============== $L (row $r): $TASK cells $c..$((c + n - 1)) ($n episodes) ==============="
              snap "$L" "$c" "$((c + n - 1))"
-             PICK_TASK=$TASK PICK_PRESET=$PRESET PICK_NFE=$NFE PICK_FLAGS="$FLAGS" PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT" PICK_GO=1 ./PICK.sh "$r" \
+             PICK_TASK=$TASK PICK_PRESET=$PRESET PICK_NFE=$NFE PICK_FLAGS="$FLAGS" PICK_CELL=$c PICK_EPS=$n PICK_MORE="--out $OUT${EXP_MORE:+ $EXP_MORE}" PICK_GO=1 ./PICK.sh "$r" \
                || { echo "!! launch of $L at cell $c ended with an error. Fix, then resume: EXP_ONLY=$L EXP_FROM=$c ./EXPERIMENT.sh run $STAGE"; exit 1; }
              c=$((c + n))
            done
