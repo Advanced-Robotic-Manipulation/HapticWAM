@@ -321,6 +321,7 @@ def test_parity_snapshot_uses_measured_dt_and_consecutive_frame_reactive(
     assert legacy.contact_state.shape == parity.contact_state.shape
 
 
+@pytest.mark.requires_cosmos_repo
 def test_parity_fixes_reaches_the_batch_and_is_recorded(mock_deploy_episode,
                                                         tmp_path, monkeypatch):
     """End to end through main(): the flag is recorded and the default
@@ -369,6 +370,7 @@ def test_parity_fixes_reaches_the_batch_and_is_recorded(mock_deploy_episode,
     assert torch.allclose(b_par[0], torch.from_numpy(want), atol=1e-6)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_parity_tag_mismatch_is_warned(mock_deploy_episode, tmp_path,
                                        monkeypatch, caplog):
     """`parity:on` episodes replayed without the flag silently condition on
@@ -384,6 +386,7 @@ def test_parity_tag_mismatch_is_warned(mock_deploy_episode, tmp_path,
 
 # --- seeding ----------------------------------------------------------------
 
+@pytest.mark.requires_cosmos_repo
 def test_seeding_is_per_episode_not_per_run(mock_deploy_episode, tmp_path,
                                             monkeypatch):
     """The generator used to be seeded ONCE before the episode loop, so every
@@ -416,6 +419,7 @@ def test_seeding_is_per_episode_not_per_run(mock_deploy_episode, tmp_path,
     assert got["seed_base"] == 1000 and got["seed_from_meta"] is False
 
 
+@pytest.mark.requires_cosmos_repo
 def test_seed_from_meta_reproduces_the_recorded_draw(mock_deploy_episode,
                                                      tmp_path, monkeypatch):
     """`run_deploy` records `seed:<n>` per episode since ba61354 — the
@@ -449,6 +453,7 @@ def test_seed_from_meta_reproduces_the_recorded_draw(mock_deploy_episode,
     assert replay_rig.meta_parity(replay_rig.RigEpisode(a1, hw).meta) is False
 
 
+@pytest.mark.requires_cosmos_repo
 def test_seed_from_meta_refuses_a_pre_fix_episode(mock_deploy_episode, tmp_path,
                                                   monkeypatch):
     """`seed:none` / no tag = no recorded draw; replaying it under some other
@@ -482,6 +487,7 @@ def _tag_k(ep: Path, k: int, seed: int = 4242) -> None:
     _set_tags(ep, ["nfe5", f"seed:{seed}", "parity:off", f"kseeds:{k}"])
 
 
+@pytest.mark.requires_cosmos_repo
 def test_seed_from_meta_takes_k_from_the_kseeds_tag_and_expands_like_deploy(
         mock_deploy_episode, tmp_path, monkeypatch):
     """`run_deploy` tags `kseeds:<K>` and deploy hands rf.sample a B=1 batch,
@@ -509,6 +515,7 @@ def test_seed_from_meta_takes_k_from_the_kseeds_tag_and_expands_like_deploy(
     assert calls and all(c == (1, 2) for c in calls), calls
 
 
+@pytest.mark.requires_cosmos_repo
 def test_seed_from_meta_scores_the_trace_against_the_executed_k_pick(
         mock_deploy_episode, tmp_path, monkeypatch):
     """`diag.k_pick` names WHICH of the K the selector executed (k_pick != 0 in
@@ -537,6 +544,7 @@ def test_seed_from_meta_scores_the_trace_against_the_executed_k_pick(
         assert "head_dz_std" in r and len(r["seed_head_dz"]) == 3
 
 
+@pytest.mark.requires_cosmos_repo
 def test_seeds_that_disagree_with_the_recorded_kseeds_is_a_hard_failure(
         mock_deploy_episode, tmp_path, monkeypatch):
     """F16's rule: a flag that contradicts the recording is refused, not warned."""
@@ -551,6 +559,7 @@ def test_seeds_that_disagree_with_the_recorded_kseeds_is_a_hard_failure(
 
 # --- the veto's arithmetic is not a model sample ----------------------------
 
+@pytest.mark.requires_cosmos_repo
 def test_actions_pre_veto_is_what_the_trace_columns_measure(mock_deploy_episode,
                                                             tmp_path, monkeypatch):
     """On a vetoed replan `trace["actions"]` is the veto's rewrite (scripted

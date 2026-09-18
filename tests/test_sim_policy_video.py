@@ -2,9 +2,15 @@
 
 import json
 
-import cv2
 import numpy as np
 import pytest
+
+# Panel rendering is OpenCV-only; a plain CI runner installs no cv2 (see the
+# `requires_cv2` marker in tests/conftest.py — a marker cannot rescue a
+# module-level import, so this module skips at collection time instead).
+cv2 = pytest.importorskip(
+    "cv2", reason="needs OpenCV (pip install '.[sim]'); absent on a plain CI runner"
+)
 
 from tools.sim import make_policy_video as video
 

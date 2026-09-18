@@ -73,6 +73,7 @@ def test_compliance_is_not_implicitly_applied_to_egg_or_legacy_carton():
         compliance_spec(obj)
 
 
+@pytest.mark.requires_usd
 def test_explicit_null_compliance_builds_the_same_rigid_usd_as_absent():
     from pxr import Usd, UsdGeom, UsdPhysics, UsdShade
     from phantom.sim.task_object_usd import build_task_object

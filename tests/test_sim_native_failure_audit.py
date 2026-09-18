@@ -36,6 +36,7 @@ def test_nonfinite_failure_evidence_and_getter_failure_are_json_safe():
     assert report == {"available": False, "error": "RuntimeError: unavailable tensor"}
 
 
+@pytest.mark.requires_usd
 @pytest.mark.parametrize("missing_iteration_getter", [False, True])
 def test_runtime_readback_preserves_stage_and_names_effective_joint_limits(missing_iteration_getter):
     from pxr import Sdf, Usd, UsdPhysics
@@ -79,6 +80,7 @@ def test_runtime_readback_preserves_stage_and_names_effective_joint_limits(missi
     json.dumps(report, allow_nan=False)
 
 
+@pytest.mark.requires_usd
 @pytest.mark.parametrize("bad", [None, "getter", "nonfinite", "negative", "multiple_articulations"])
 def test_armature_readback_uses_named_native_values_without_usd_fallback(bad):
     from pxr import Sdf, Usd, UsdPhysics

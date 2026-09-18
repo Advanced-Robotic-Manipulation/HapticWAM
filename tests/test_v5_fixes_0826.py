@@ -36,6 +36,7 @@ def tiny():
     return hw, pm, ds
 
 
+@pytest.mark.requires_cosmos_repo
 def test_window_cop_keeps_nan_for_no_contact(tiny):
     hw, pm, ds = tiny
     cops = torch.cat([ds[i]["cpk_cop"].reshape(-1, 2) for i in range(len(ds))])
@@ -45,6 +46,7 @@ def test_window_cop_keeps_nan_for_no_contact(tiny):
     assert finite.numel() and torch.all(finite.abs() <= 1.0)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_packer_nan_cop_means_no_bump(tiny):
     hw, pm, ds = tiny
     batch = C.collate_windows([ds[0]])
@@ -59,6 +61,7 @@ def test_packer_nan_cop_means_no_bump(tiny):
     assert (x_zero - x_nan).abs().max() > 0.5, "(0,0) CoP must pack a centre bump"
 
 
+@pytest.mark.requires_cosmos_repo
 def test_event_band_is_supervised(tiny):
     hw, pm, ds = tiny
     batch = C.collate_windows([ds[0], ds[1]])
@@ -146,6 +149,7 @@ def test_intake_manifest_skips_non_finalized(tmp_path):
     assert [r["episode"] for r in rows] == ["ep_ok"]
 
 
+@pytest.mark.requires_cosmos_repo
 def test_event_band_weight_override(tiny):
     hw, pm, ds = tiny
     batch = C.collate_windows([ds[0], ds[1]])

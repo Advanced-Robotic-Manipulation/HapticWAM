@@ -299,6 +299,7 @@ def _split_root(tmp_path) -> Path:
     return tasks
 
 
+@pytest.mark.requires_data_root
 def test_distill_hid_trains_on_the_train_split(tmp_path, monkeypatch):
     from phantom.train import distill_hid as DH
     _stub_program(monkeypatch, DH)
@@ -310,6 +311,7 @@ def test_distill_hid_trains_on_the_train_split(tmp_path, monkeypatch):
     assert [p.name for p in eps] == ["ep_train_a"]
 
 
+@pytest.mark.requires_data_root
 def test_finetune_hids_trains_on_the_train_split(tmp_path, monkeypatch):
     from phantom.train import finetune_hids as FH
     _stub_program(monkeypatch, FH)
@@ -320,6 +322,7 @@ def test_finetune_hids_trains_on_the_train_split(tmp_path, monkeypatch):
     assert [p.name for p in _CapturedDataset.seen["episodes"]] == ["ep_train_a"]
 
 
+@pytest.mark.requires_data_root
 def test_both_hid_programs_can_still_ask_for_every_episode(tmp_path, monkeypatch):
     from phantom.train import distill_hid as DH
     _stub_program(monkeypatch, DH)

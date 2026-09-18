@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # The cosmos-predict2.5 submodule is deliberately NOT initialised: its
+        # source tree (and the ~4.8 GB Cosmos-Predict2.5-2B weights) cannot live
+        # on a CI runner. Tests that need them carry the `requires_cosmos_repo` /
+        # `requires_cosmos_weights` markers and skip — see tests/conftest.py.
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # the rig venv's interpreter (dmrobotics needs 3.8-3.11)
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      # CPU-only wheels: the default PyPI wheel drags in the whole CUDA stack
+      # (~2.5 GB) which this runner has no GPU for.
+      - name: Install CPU PyTorch
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+
+      # `[train]` + `[cosmos]` are the import-time deps of phantom.train /
+      # phantom.backbone; scipy comes from `[sim]`. Deliberately NOT installed:
+      # `[hw]` (no rig), rerun (`[viz]`), opencv and matplotlib — tests needing
+      # OpenCV carry the `requires_cv2` marker and skip.
+      - name: Install phantom
+        run: pip install -e ".[dev,train,cosmos]" scipy
+
+      # `python -m pytest` (not bare `pytest`): the tests import `tools.sim.*`,
+      # which only resolves with the repo root on sys.path.
+      - name: Run tests
+        run: python -m pytest -q -rs

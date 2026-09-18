@@ -54,6 +54,7 @@ def tiny_time_true():
     return pm, C.collate_windows([ds[0]])
 
 
+@pytest.mark.requires_cosmos_repo
 def test_time_true_reaches_phantom_rope(tiny_time_true, monkeypatch):
     """Only 'append' may use the backbone's standard sequential rope."""
     pm, batch = tiny_time_true
@@ -73,6 +74,7 @@ def test_time_true_reaches_phantom_rope(tiny_time_true, monkeypatch):
         "_phantom_rope")
 
 
+@pytest.mark.requires_cosmos_repo
 def test_cond_dropout_gated_on_training(tiny_time_true, monkeypatch):
     """cond_dropout_p=1.0: dropout must fire in train and NEVER in eval —
     otherwise every val_* metric is contaminated by unconditional windows."""
@@ -99,6 +101,7 @@ def test_cond_dropout_gated_on_training(tiny_time_true, monkeypatch):
     assert calls["n"] == 1, "eval mode must NEVER apply conditioning dropout"
 
 
+@pytest.mark.requires_cosmos_repo
 def test_dropout_preserves_video_targets_nulls_cond(tiny_time_true):
     """Causal-VAE fix: under conditioning dropout the VIDEO_GEN target
     latents must be IDENTICAL to the clean batch's (real video encode), and
@@ -214,6 +217,7 @@ def _count_sample_calls(pm, batch, monkeypatch, **kw):
     return calls["n"], pred
 
 
+@pytest.mark.requires_cosmos_repo
 def test_two_pass_inner_sample_skipped_when_prev_cpk_given(tiny_two_pass, monkeypatch):
     """Deploy passes the TRUE previous-replan package; the ACC inner sample
     that build_x0 would run to predict it is overwritten anyway. It cost

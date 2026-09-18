@@ -181,6 +181,7 @@ def test_no_stall_when_arm_follows():
     assert len(loop.trace) == 6
 
 
+@pytest.mark.requires_cosmos_repo
 def test_grasp_weighted_windows_anchor_before_close(tmp_path):
     """grasp_frac=1.0 must draw every resampled t0 inside the pre-close band."""
     import zarr
@@ -229,6 +230,7 @@ def test_grasp_weighted_windows_anchor_before_close(tmp_path):
     assert ds0.grasp_frac == 0.0 and ds0._close_cache == {}
 
 
+@pytest.mark.requires_cosmos_repo
 def test_photo_aug_perturbs_video_only_on_train(tmp_path):
     import torch
     from phantom.config.hardware import load_hardware

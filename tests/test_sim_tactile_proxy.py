@@ -24,6 +24,7 @@ def proxy(tmp_path):
     return MeasuredBaselineTactileProxy(path), data
 
 
+@pytest.mark.requires_cv2
 def test_no_contact_preserves_observed_baseline_and_release(proxy):
     model, baseline = proxy
     model.synthesize([3, 4], tangential_displacement_sdk_mm=[[1, 0], [0, 1]])
@@ -40,6 +41,7 @@ def test_no_contact_preserves_observed_baseline_and_release(proxy):
     np.testing.assert_array_equal(result.area, [0.25, 0.25])
 
 
+@pytest.mark.requires_cv2
 @pytest.mark.parametrize("uv", [[[0, 0], [0.1, -0.2]], [[1, 1], [-1, -1]]])
 def test_normal_and_shear_force_conservation_at_both_resolutions(proxy, uv):
     model, _ = proxy
@@ -53,6 +55,7 @@ def test_normal_and_shear_force_conservation_at_both_resolutions(proxy, uv):
     )
 
 
+@pytest.mark.requires_cv2
 def test_contact_position_moves_force_centroid_in_sdk_image_axes(proxy):
     model, _ = proxy
     result = model.synthesize([2, 2], [[-0.4, 0.3], [0.4, -0.3]])
@@ -69,6 +72,7 @@ def test_contact_position_moves_force_centroid_in_sdk_image_axes(proxy):
         np.testing.assert_allclose(centroid, uv, atol=0.003)
 
 
+@pytest.mark.requires_cv2
 def test_depth_in_mm_scales_with_force_without_safety_hiding_cap(proxy):
     model, _ = proxy
     one = model.synthesize([1, 1])
@@ -80,6 +84,7 @@ def test_depth_in_mm_scales_with_force_without_safety_hiding_cap(proxy):
     assert np.all(many.depth_peaks_mm > 0.6)
 
 
+@pytest.mark.requires_cv2
 def test_torque_uses_contact_lever_arm_and_raw_sdk_torque_units(proxy):
     model, _ = proxy
     center = model.synthesize([2, 2])
@@ -93,6 +98,7 @@ def test_torque_uses_contact_lever_arm_and_raw_sdk_torque_units(proxy):
     )
 
 
+@pytest.mark.requires_cv2
 def test_sensor_warp_preserves_image_range_and_has_no_added_brightness_blob(proxy):
     model, data = proxy
     frame = model.synthesize(
@@ -107,6 +113,7 @@ def test_sensor_warp_preserves_image_range_and_has_no_added_brightness_blob(prox
     assert sensor["right"]["t"] == 1.25
 
 
+@pytest.mark.requires_cv2
 def test_optional_measured_contact_area_is_in_square_millimetres(proxy):
     model, _ = proxy
     result = model.synthesize([2, 3], contact_area_mm2=[4, 7])

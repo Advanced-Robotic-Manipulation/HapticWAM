@@ -280,6 +280,7 @@ def usd_stage(cfg):
     return stage, paths
 
 
+@pytest.mark.requires_usd
 def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
     from pxr import UsdPhysics
     stage, paths = usd_stage(cfg)
@@ -320,6 +321,7 @@ def test_usd_native_loops_passive_springs_and_only_driver_coupling(cfg):
     assert len(second['loop_constraints'])==2
 
 
+@pytest.mark.requires_usd
 def test_equal_split_changes_only_two_motor_drives_and_preserves_default(cfg):
     from pxr import UsdPhysics
     before = copy.deepcopy(cfg)
@@ -454,6 +456,7 @@ def test_invalid_passive_speed_rejected_before_scene_creation(cfg, bad):
         build(cfg)
 
 
+@pytest.mark.requires_usd
 def test_usd_passive_speed_reconfiguration_keeps_all_other_physics(cfg):
     stage, paths = usd_stage(cfg)
     original = native.configure_gripper_physics(stage, paths, cfg)
@@ -504,6 +507,7 @@ def test_pinned_armature_matches_reference_without_changing_rigid_body_model(cfg
     assert cfg == original_cfg
 
 
+@pytest.mark.requires_usd
 def test_armature_default_is_zero_and_explicit_none_is_identical(cfg):
     original, original_meta = build(cfg)
     stage, paths = usd_stage(cfg)
@@ -523,6 +527,7 @@ def test_armature_default_is_zero_and_explicit_none_is_identical(cfg):
     assert stage.GetRootLayer().ExportToString() == before
 
 
+@pytest.mark.requires_usd
 def test_usd_armature_changes_only_eight_values_and_resets_reused_stage(cfg):
     stage, paths = usd_stage(cfg)
     original_meta = native.configure_gripper_physics(stage, paths, cfg)
@@ -549,6 +554,7 @@ def test_usd_armature_changes_only_eight_values_and_resets_reused_stage(cfg):
     assert stage.GetRootLayer().ExportToString() == before
 
 
+@pytest.mark.requires_usd
 @pytest.mark.parametrize('bad', ['native', 'pinned_mjcf', '', None, 0, False, [], {}])
 def test_unknown_armature_model_fails_before_authoring(cfg, bad):
     stage, paths = usd_stage(cfg)

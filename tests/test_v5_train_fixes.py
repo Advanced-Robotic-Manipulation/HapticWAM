@@ -29,6 +29,7 @@ def tiny():
     return hw, pm
 
 
+@pytest.mark.requires_cosmos_repo
 def test_ema_keys_are_state_dict_keys(tiny):
     hw, pm = tiny
     ema = C.EMA(pm.rf, 0.999)
@@ -41,6 +42,7 @@ def test_ema_keys_are_state_dict_keys(tiny):
     assert not any(C._SAC_INFIX in k for k in ema.shadow)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_load_ema_reaches_lora_tensors(tiny):
     hw, pm = tiny
     ema = C.EMA(pm.rf, 0.999)
@@ -56,6 +58,7 @@ def test_load_ema_reaches_lora_tensors(tiny):
     assert all(torch.all(sd[k] == 0.25) for k in sd if "phantom_" in k)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_ema_resume_accepts_prefixed_legacy_keys(tiny):
     hw, pm = tiny
     ema = C.EMA(pm.rf, 0.999)
@@ -69,6 +72,7 @@ def test_ema_resume_accepts_prefixed_legacy_keys(tiny):
     assert all(torch.all(v == 0.5) for v in ema.shadow.values())
 
 
+@pytest.mark.requires_cosmos_repo
 def test_load_ema_refuses_unmapped_tensors(tiny):
     hw, pm = tiny
     ema = C.EMA(pm.rf, 0.999)

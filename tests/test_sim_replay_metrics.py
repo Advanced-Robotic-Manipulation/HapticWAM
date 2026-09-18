@@ -174,6 +174,7 @@ def test_tactile_previous_sample_never_uses_a_future_image():
     assert previous_sample(ts, 0.31) == (1, 0.0)
 
 
+@pytest.mark.requires_cv2
 def test_tactile_contact_uv_moves_the_force_proxy_to_the_observed_contact():
     from tools.sim.tactile_panels import force_proxy
 
@@ -202,6 +203,7 @@ def _tactile_fixture(path):
     (path / "manifest.json").write_text(json.dumps({"streams": {}}))
 
 
+@pytest.mark.requires_cv2
 def test_tactile_panels_prefer_packet_normal_force_and_mark_missing_stale_images(
     tmp_path,
 ):
@@ -231,6 +233,7 @@ def test_tactile_panels_prefer_packet_normal_force_and_mark_missing_stale_images
     assert result["fresh_image_frames"] == {"left": 1, "right": 0}
 
 
+@pytest.mark.requires_cv2
 def test_synchronized_tactile_video_keeps_video_grid_and_native_image_times(tmp_path):
     import cv2
 
@@ -266,6 +269,7 @@ def test_synchronized_tactile_video_keeps_video_grid_and_native_image_times(tmp_
         capture.release()
 
 
+@pytest.mark.requires_cv2
 def test_sim_tactile_uses_displayed_frame_without_advancing_native_tactile(tmp_path):
     """A 0.167 ms snap must not display a whole 66.7 ms-old force sample."""
     import cv2

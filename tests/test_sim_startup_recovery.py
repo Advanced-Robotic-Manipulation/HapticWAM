@@ -6,7 +6,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import pytest
+
 MODULE = Path(__file__).parents[1] / "docs/results/teacher_scene_v10_20260908/recover_startup_timeout.py"
+if not MODULE.is_file():  # frozen run evidence is not part of a slim checkout
+    pytest.skip(f"missing run evidence: {MODULE.name}", allow_module_level=True)
 spec = importlib.util.spec_from_file_location("startup_recovery", MODULE)
 recovery = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(recovery)
@@ -64,6 +68,7 @@ class StartupRecovery(unittest.TestCase):
             write(self.output / name, {})
         (self.base / "execute_after_gpu_free.log").write_text("TimeoutExpired after 900 seconds\n")
 
+    @pytest.mark.requires_linux
     def test_explicit_recovery_preserves_bytes_and_completed_trials(self):
         original = recovery.hashes(self.d)
         preview = recovery.recover(self.base)

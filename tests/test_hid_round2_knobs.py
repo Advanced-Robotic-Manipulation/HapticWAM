@@ -44,6 +44,7 @@ def _sigma_grad(student):
                if p.grad is not None)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_round1_defaults_leave_the_sigma_head_without_gradient(pair_and_batch):
     teacher, student, batch = pair_and_batch
     student.rf.zero_grad(set_to_none=True)
@@ -53,6 +54,7 @@ def test_round1_defaults_leave_the_sigma_head_without_gradient(pair_and_batch):
     assert _sigma_grad(student) == 0.0, "round-1 recipe must be reproducible: no sigma gradient"
 
 
+@pytest.mark.requires_cosmos_repo
 def test_w_sigma_trains_the_student_sigma_head_and_nothing_else(pair_and_batch):
     teacher, student, batch = pair_and_batch
     student.rf.zero_grad(set_to_none=True)
@@ -70,6 +72,7 @@ def test_w_sigma_trains_the_student_sigma_head_and_nothing_else(pair_and_batch):
     assert trunk == [], f"NLL leaked into the trunk via {len(trunk)} params"
 
 
+@pytest.mark.requires_cosmos_repo
 def test_teacher_nfe_out_of_range_is_refused(pair_and_batch):
     teacher, student, batch = pair_and_batch
     with pytest.raises(ValueError):
@@ -88,6 +91,7 @@ def test_distill_resume_restores_the_recipe():
     assert "restore_train_config_on_resume(cfg, saved_train, args)" in src
 
 
+@pytest.mark.requires_cosmos_repo
 def test_teacher_nfe_knob_selects_the_sampling_steps(pair_and_batch, monkeypatch):
     teacher, student, batch = pair_and_batch
     seen, depth = [], [0]
@@ -139,6 +143,7 @@ def test_distill_cli_accepts_ckpt_and_eval_cadence():
     assert "--ckpt-every" in out and "--eval-every" in out
 
 
+@pytest.mark.requires_cosmos_repo
 def test_haptic_imagination_weights_drop_their_terms(pair_and_batch):
     """--w-traj 0 --w-event 0: the imagined-contact terms leave the total; behavior_match + grounding stay."""
     teacher, student, batch = pair_and_batch
