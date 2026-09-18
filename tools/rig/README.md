@@ -19,6 +19,9 @@ steps, without those opt-ins; the tested simulator candidate used 10.
   `GO_v5_<task>.sh` are thin wrappers pinned to the v4 / staged-v5 DEMO.pt symlinks.
 - `stage_v5.sh`, `SNAP_ANY.sh`, `GRIPPER_OPEN.sh`, `GRIPPER_RESET.sh`, `screenshot_*.sh` — ops helpers.
 - `probe_rig.py` — read-only pre-session wiring probe (RTDE, Robotiq :63352, RealSense).
+- `box/` — the operator scripts that only existed on the box: `snap.py` (the frame grabber
+  `SNAP_ANY.sh` calls), `fetch_student.sh`, the pi0.5 baseline install, the hub mirroring
+  scripts and the offline replay batteries. See `box/README.md`.
 
 Session recipe + safety rules: `docs/rig_session_v5.md` (mirrored on the box as
 `RIG_SESSION_V5_README.md`).
