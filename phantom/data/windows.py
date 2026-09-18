@@ -40,20 +40,23 @@ from phantom.data.schema import (STREAM_ACTIONS, STREAM_ARM_FT, STREAM_ARM_Q,
 log = logging.getLogger(__name__)
 
 #: `action_weight` policy for ON-POLICY (DAgger) rollouts:
-#:   "failure_demo"       — the shipped rule: `is_failure_demo` fires on a
-#:                          `success is False` verdict, so every judged-failed
-#:                          rollout grounds NO actions. Every v5/v6 student
-#:                          was distilled under this.
-#:   "teacher_supervised" — a POLICY rollout that is failure-marked ONLY by the
-#:                          verdict keeps its per-episode weight, so its
-#:                          re-derived actions ground the action term on
-#:                          on-policy states. Deliberate failure demos (SOP
-#:                          tag / `<task>_fail`) still ground nothing, and a
-#:                          rollout whose actions are still the executor
-#:                          PROPOSAL (no tools/rederive_rollout_actions.py) is
-#:                          left at 0 — imitating the pre-clamp proposal is the
-#:                          defect F13 fixed.
-ROLLOUT_ACTION_WEIGHT_MODES = ("failure_demo", "teacher_supervised")
+#:   "failure_demo"    — the shipped rule: `is_failure_demo` fires on a
+#:                       `success is False` verdict, so every judged-failed
+#:                       rollout grounds NO actions. Every v5/v6 student was
+#:                       distilled under this.
+#:   "judged_rollouts" — a POLICY rollout that is failure-marked ONLY by the
+#:                       verdict keeps its per-episode weight, so its own
+#:                       re-derived actions ground the action term on
+#:                       on-policy states. Deliberate failure demos (SOP tag /
+#:                       `<task>_fail`) still ground nothing, and a rollout
+#:                       whose actions are still the executor PROPOSAL (no
+#:                       tools/rederive_rollout_actions.py) is left at 0 —
+#:                       imitating the pre-clamp proposal is the defect F13
+#:                       fixed.
+#: The mode is named for WHICH EPISODES it re-admits, not for a supervisor:
+#: it grounds the rollout's OWN re-derived (measured delta-EE) actions on the
+#: episodes a verdict judged, and no teacher ever relabels them.
+ROLLOUT_ACTION_WEIGHT_MODES = ("failure_demo", "judged_rollouts")
 
 
 # ---------------------------------------------------------------------------
@@ -516,7 +519,7 @@ class WindowSampler:
         # rollout pool). It can only scale a window that is already allowed to
         # supervise actions — a failure demo stays at 0 whatever it says.
         #
-        # `rollout_action_weight="teacher_supervised"` (opt-in) carves ONE
+        # `rollout_action_weight="judged_rollouts"` (opt-in) carves ONE
         # case out of that rule: an on-policy POLICY rollout whose only
         # failure marker is the operator's verdict is not a staged failure,
         # and zeroing it is what made the round-2 DAgger overlay inert. It
@@ -526,7 +529,7 @@ class WindowSampler:
         ew = 1.0 if ew is None else max(0.0, float(ew))
         w["action_weight"] = 0.0 if is_failure_demo(meta) else ew
         if (w["action_weight"] == 0.0
-                and self.rollout_action_weight == "teacher_supervised"
+                and self.rollout_action_weight == "judged_rollouts"
                 and is_policy_rollout(meta)
                 and not is_deliberate_failure_demo(meta)
                 and not needs_rederive(c.reader.path, meta)):

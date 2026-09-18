@@ -111,9 +111,11 @@ class HIDConfig(CommonTrainConfig):
     # action grounding on on-policy DAgger rollouts (code-defect review
     # 2026-09-18): "failure_demo" = the shipped rule (a `success is False`
     # verdict zeroes the action weight, so a judged rollout grounds nothing);
-    # "teacher_supervised" = a verdict-judged POLICY rollout keeps its
-    # per-episode weight, deliberate failure demos still at 0.
-    rollout_action_weight: Literal["failure_demo", "teacher_supervised"] = "failure_demo"
+    # "judged_rollouts" = a verdict-judged POLICY rollout keeps its
+    # per-episode weight, deliberate failure demos still at 0. Named for the
+    # EPISODES it re-admits: what gets grounded is the rollout's own
+    # re-derived (measured delta-EE) actions, never a teacher relabel.
+    rollout_action_weight: Literal["failure_demo", "judged_rollouts"] = "failure_demo"
     # sha256[:12] of the teacher checkpoint this student was distilled from.
     # Recorded so a --resume can accept the SAME teacher at a different path
     # (rental workspaces move) and refuse a different one.

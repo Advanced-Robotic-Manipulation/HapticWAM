@@ -290,6 +290,65 @@ def eps_stack(eps_by_group: dict, layout) -> torch.Tensor:
     return torch.cat(parts, dim=2)
 
 
+#: Teacher model-config flags that change how `training_step` noises a batch
+#: but which `prepare_denoise` — the entry point BOTH sides of the
+#: distillation go through — does not implement. Distilling a teacher that
+#: sets one of them is not "slightly off": the teacher is evaluated under a
+#: noising scheme it was never trained for, and nothing raises.
+UNSUPPORTED_TEACHER_DENOISE_FLAGS = ("action_t_max_of_two", "contact_self_forcing")
+
+
+def refuse_unsupported_teacher_flags(mc, *, allow: bool = False, log=log) -> None:
+    """Refuse a teacher whose recorded config sets a denoise flag this
+    program cannot honour (code-defect audit 2026-09-18, "Not addressed here").
+
+    `RF.training_step` applies `action_t_max_of_two` (ACTION frames noised at
+    max of two timestep draws) and `contact_self_forcing` (the CONTACT frames
+    the ACTION frames are denoised alongside are the model's OWN two-pass
+    prediction, not the co-noised GT). `RF.prepare_denoise`, which distill_hid
+    uses for the student AND for the teacher's shared-noise branch, implements
+    neither: it builds one `t_B_T` from the single draw and always noises the
+    GT `x0`. So a teacher trained with either flag is queried off-distribution
+    and its `behavior_match` target is not the velocity field it learned —
+    silently, since the flags are recorded in the checkpoint and simply read
+    back as inert.
+
+    Dormant for the paper: all three checked-in `saved_model_config` dumps of
+    `runs/teacher_v6/teacher_020000.pt` (sha256 4812cfbf0127..., under
+    docs/results/teacher_{followthrough_20260909,recovery_20260910}/) record
+    BOTH flags as False, matching the shipped launch recipe
+    (`tools/provision_v5.sh` / `tools/provision_distill_v6.sh` pass
+    `--no-action-t-max-of-two`; `--contact-self-forcing` was dropped from the
+    FT-A bundle on 2026-08-30). So this never fires on a v6 distillation. It
+    fires on the NEXT teacher that turns one on, which is the point — note
+    that `train_teacher`'s CLI DEFAULT for `action_t_max_of_two` is True, so a
+    teacher trained without `--no-action-t-max-of-two` will trip it.
+
+    `--allow-unsupported-teacher-flags` downgrades the refusal to a warning for
+    whoever wants the old (silent) behaviour deliberately."""
+    if mc is None:
+        return
+    on = [f for f in UNSUPPORTED_TEACHER_DENOISE_FLAGS if bool(getattr(mc, f, False))]
+    if not on:
+        return
+    msg = (f"teacher checkpoint sets {', '.join(on)}=True, and "
+           f"distill_hid cannot honour it: `RF.prepare_denoise` — the noising "
+           f"path BOTH the student and the teacher's shared-noise branch go "
+           f"through — implements neither `action_t_max_of_two` (per-group "
+           f"ACTION timestep = max of two draws) nor `contact_self_forcing` "
+           f"(ACTION frames denoised alongside the model's own predicted "
+           f"contact package), while `RF.training_step` applies both. "
+           f"Distilling this teacher would query it off its training "
+           f"distribution and silently mis-derive the behavior_match target. "
+           f"Retrain the teacher without the flag, teach prepare_denoise to "
+           f"honour it, or pass --allow-unsupported-teacher-flags to proceed "
+           f"anyway (the pre-2026-09-18 behaviour, silent until now).")
+    if allow:
+        log.warning("--allow-unsupported-teacher-flags: %s", msg)
+        return
+    raise ValueError(msg)
+
+
 # ---------------------------------------------------------------------------
 
 def build_parser(ap: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
@@ -356,20 +415,35 @@ def build_parser(ap: argparse.ArgumentParser | None = None) -> argparse.Argument
                          "objective, so it is NOT resume-compatible with a "
                          "roundtrip student. Recorded in the checkpoint.")
     ap.add_argument("--rollout-action-weight", default=None,
-                    choices=["failure_demo", "teacher_supervised"],
+                    choices=["failure_demo", "judged_rollouts"],
                     help="action grounding on on-policy (DAgger) rollouts. "
                          "failure_demo (DEFAULT, shipped): `is_failure_demo` "
                          "fires on a `success is False` verdict, so a rollout "
                          "the operator judged failed gets action_weight 0 — in "
                          "round 2 that was ~92%% of the 99 rollouts, i.e. the "
                          "overlay grounded no actions at all. "
-                         "teacher_supervised: a POLICY rollout marked failed "
+                         "judged_rollouts: a POLICY rollout marked failed "
                          "ONLY by the verdict keeps its per-episode weight "
                          "(deliberate failure demos and rollouts whose actions "
-                         "are still the executor proposal stay at 0). "
+                         "are still the executor proposal stay at 0). The mode "
+                         "is named for the EPISODES it re-admits, not for a "
+                         "supervisor: what it grounds is the rollout's OWN "
+                         "re-derived (measured delta-EE) action stream on the "
+                         "rollouts a verdict judged — it is NOT teacher "
+                         "relabelling, and no teacher action ever enters the "
+                         "GT term. "
                          "behavior_match and traj_distill ignore action_weight "
                          "and are unaffected either way. Recorded in the "
                          "checkpoint.")
+    ap.add_argument("--allow-unsupported-teacher-flags", action="store_true",
+                    help="proceed even when the teacher's recorded config sets "
+                         "action_t_max_of_two or contact_self_forcing, which "
+                         "RF.training_step applies but RF.prepare_denoise (the "
+                         "noising path distillation uses for BOTH models) does "
+                         "not — so the teacher is queried off its training "
+                         "distribution and behavior_match's target is not the "
+                         "velocity field it learned. Off, the run refuses; on, "
+                         "it warns. No v5/v6 teacher sets either flag.")
     ap.add_argument("--teacher-nfe", type=int, default=None,
                     help="teacher imagination NFE: 0 = nfe//2 (round 1), -1 = the "
                          "teacher's own nfe, N = N")
@@ -431,6 +505,11 @@ def main(argv=None) -> int:
             log.info("model config from teacher checkpoint: rope=%s acc=%s "
                      "cond_dropout=%.2f", mc.rope_time_mode,
                      mc.acc.self_anticipation, mc.cond_dropout_p)
+    # BEFORE anything is built or loaded: a teacher whose noising scheme this
+    # program cannot reproduce is refused here, not discovered in the numbers
+    # (code-defect audit 2026-09-18, "Not addressed here")
+    refuse_unsupported_teacher_flags(
+        mc, allow=bool(getattr(args, "allow_unsupported_teacher_flags", False)))
     mc_teacher = dataclasses.replace(mc, student=False) if mc else None
     mc_student = student_model_config(mc, mask_wrist=bool(getattr(args, "mask_wrist", False)))
     if args.loss_video is not None:
