@@ -9,7 +9,9 @@ path is byte-identical to what produced the paper's checkpoints.
     `unpack` never returns NaN)  ->  --traj-target {roundtrip,raw_latents}.
 (b) on-policy DAgger rollouts judged unsuccessful got action_weight 0 through
     `is_failure_demo`, so round 2's rollouts grounded no actions at all
-      ->  --rollout-action-weight {failure_demo,teacher_supervised}.
+      ->  --rollout-action-weight {failure_demo,judged_rollouts} (named for
+    the episodes it re-admits: it grounds the rollouts OWN re-derived actions,
+    never a teacher relabel).
 (c) --grasp-frac / --photo-aug / --commit-band-weight / --split reached no
     part of the student checkpoint, so a --resume that forgot them reverted
     the window recipe silently  ->  HIDConfig fields + the teacher's existing
@@ -22,6 +24,12 @@ path is byte-identical to what produced the paper's checkpoints.
     gate is real; the refusal now says which knob and which config.
 (f) SequenceLayout's docstring described a T=13/11 layout that has not existed
     for a long time (docstring only).
+(g) `prepare_denoise` silently ignores the teacher config's
+    `action_t_max_of_two` / `contact_self_forcing` while `training_step`
+    applies them, so distilling a teacher that sets either queries it off its
+    training distribution  ->  distill_hid refuses such a teacher at
+    teacher-config load, --allow-unsupported-teacher-flags downgrades it to a
+    warning. No v5/v6 teacher sets either flag.
 """
 
 from __future__ import annotations
@@ -228,38 +236,38 @@ def test_a_judged_rollout_grounds_nothing_by_default(rollout_ep):
     assert _weight(hw, ep, "failure_demo") == 0.0
 
 
-def test_teacher_supervised_gives_a_judged_rollout_its_weight(rollout_ep):
+def test_judged_rollouts_gives_a_judged_rollout_its_weight(rollout_ep):
     hw, ep = rollout_ep
     _meta_patch(ep, policy="student_v6", success=False, weight=2.0,
                 tags=["synthetic", "actions_rederived"], status="finalized")
-    assert _weight(hw, ep, "teacher_supervised") == 2.0
+    assert _weight(hw, ep, "judged_rollouts") == 2.0
 
 
-def test_teacher_supervised_still_zeroes_a_deliberate_failure_demo(rollout_ep):
+def test_judged_rollouts_still_zeroes_a_deliberate_failure_demo(rollout_ep):
     hw, ep = rollout_ep
     _meta_patch(ep, policy="student_v6", success=False, weight=2.0,
                 tags=["synthetic", "actions_rederived", "deliberate_failure"])
-    assert _weight(hw, ep, "teacher_supervised") == 0.0
+    assert _weight(hw, ep, "judged_rollouts") == 0.0
     _meta_patch(ep, task="Carton_fail", success=True,
                 tags=["synthetic", "actions_rederived"])
-    assert _weight(hw, ep, "teacher_supervised") == 0.0
+    assert _weight(hw, ep, "judged_rollouts") == 0.0
 
 
-def test_teacher_supervised_still_zeroes_a_teleop_failure_demo(rollout_ep):
+def test_judged_rollouts_still_zeroes_a_teleop_failure_demo(rollout_ep):
     """Not a policy rollout: a teleop demo judged failed keeps the old rule."""
     hw, ep = rollout_ep
     _meta_patch(ep, policy="teleop", task="Carton", success=False, weight=1.0,
                 tags=["synthetic"])
-    assert _weight(hw, ep, "teacher_supervised") == 0.0
+    assert _weight(hw, ep, "judged_rollouts") == 0.0
 
 
-def test_teacher_supervised_still_zeroes_a_rollout_with_proposal_actions(rollout_ep):
+def test_judged_rollouts_still_zeroes_a_rollout_with_proposal_actions(rollout_ep):
     """F13: without tools/rederive_rollout_actions.py the `actions` stream is
     the executor's PRE-CLAMP proposal — grounding it is the defect, not a fix."""
     hw, ep = rollout_ep
     _meta_patch(ep, policy="student_v6", task="Carton", success=False,
                 weight=2.0, tags=["synthetic"])
-    assert _weight(hw, ep, "teacher_supervised") == 0.0
+    assert _weight(hw, ep, "judged_rollouts") == 0.0
 
 
 def test_a_successful_rollout_is_unaffected_by_the_mode(rollout_ep):
@@ -267,7 +275,7 @@ def test_a_successful_rollout_is_unaffected_by_the_mode(rollout_ep):
     _meta_patch(ep, policy="student_v6", task="Carton", success=True,
                 weight=1.5, tags=["synthetic", "actions_rederived"])
     assert _weight(hw, ep, "failure_demo") == 1.5
-    assert _weight(hw, ep, "teacher_supervised") == 1.5
+    assert _weight(hw, ep, "judged_rollouts") == 1.5
 
 
 def test_an_unknown_rollout_mode_is_refused():
@@ -299,11 +307,11 @@ def test_the_new_flags_default_to_the_shipped_recipe():
 
 def test_the_new_flags_reach_the_recipe():
     cfg = _cfg_from_argv(["--traj-target", "raw_latents",
-                          "--rollout-action-weight", "teacher_supervised",
+                          "--rollout-action-weight", "judged_rollouts",
                           "--grasp-frac", "0.3", "--photo-aug", "1.0",
                           "--commit-band-weight", "1.6", "--split", "all"])
     assert cfg.traj_target == "raw_latents"
-    assert cfg.rollout_action_weight == "teacher_supervised"
+    assert cfg.rollout_action_weight == "judged_rollouts"
     assert (cfg.split, cfg.grasp_frac, cfg.photo_aug,
             cfg.commit_band_weight) == ("all", 0.3, 1.0, 1.6)
 
@@ -400,7 +408,7 @@ def test_resume_restores_the_window_recipe_the_cli_forgot(recipe_student,
     ("--commit-band-weight", "1.0", "commit_band_weight"),
     ("--split", "train", "split"),
     ("--traj-target", "raw_latents", "traj_target"),
-    ("--rollout-action-weight", "teacher_supervised", "rollout_action_weight"),
+    ("--rollout-action-weight", "judged_rollouts", "rollout_action_weight"),
 ])
 def test_resume_refuses_a_contradicting_recipe_flag(recipe_student, student_runs,
                                                     flag, value, label):
@@ -509,10 +517,17 @@ def test_a_relocated_teacher_resumes_end_to_end_and_a_different_one_does_not(
     p = dataclasses.replace(load_paths(), runs_root=runs)
     orig_tt, TT.load_paths = TT.load_paths, lambda: p
     try:
-        assert TT.main([*TINY, "--acc-two-pass", "--max-steps", "1",
-                        "--ckpt-every", "1", "--run-name", "cd0918_teacher"]) == 0
-        assert TT.main([*TINY, "--acc-two-pass", "--max-steps", "2",
-                        "--ckpt-every", "2", "--run-name", "cd0918_teacher2"]) == 0
+        # --no-action-t-max-of-two is what tools/provision_v5.sh and
+        # tools/provision_distill_v6.sh pass: a teacher that leaves the
+        # train_teacher DEFAULT (True) on is now refused by distill_hid,
+        # because prepare_denoise cannot reproduce that noising (see
+        # test_distill_refuses_a_teacher_whose_denoise_flags_it_cannot_honour)
+        assert TT.main([*TINY, "--acc-two-pass", "--no-action-t-max-of-two",
+                        "--max-steps", "1", "--ckpt-every", "1",
+                        "--run-name", "cd0918_teacher"]) == 0
+        assert TT.main([*TINY, "--acc-two-pass", "--no-action-t-max-of-two",
+                        "--max-steps", "2", "--ckpt-every", "2",
+                        "--run-name", "cd0918_teacher2"]) == 0
     finally:
         TT.load_paths = orig_tt
     t1 = runs / "teacher" / "cd0918_teacher" / "teacher_000001.pt"
@@ -608,3 +623,166 @@ def test_the_sequence_docstring_matches_the_layout_it_builds():
     for slot in teacher.slots:
         line = f"{slot.group.value:<11} [{slot.t_start}:{slot.t_start + slot.t_len})"
         assert line in doc, line
+
+
+# ===========================================================================
+# (g) a teacher whose denoise flags distill_hid cannot honour is now refused
+#     (the audit's "Not addressed here" item for prepare_denoise)
+# ===========================================================================
+
+def test_the_two_flags_are_the_ones_prepare_denoise_drops():
+    """REPRODUCTION: `RF.training_step` reads both flags; `RF.prepare_denoise`
+    — the path BOTH sides of the distillation are noised through — reads
+    neither. That asymmetry is exactly what the guard refuses."""
+    import inspect
+
+    from phantom.model.rf import PhantomRectifiedFlow as RF
+    from phantom.train.distill_hid import UNSUPPORTED_TEACHER_DENOISE_FLAGS
+
+    train_src = inspect.getsource(RF.training_step)
+    prep_src = inspect.getsource(RF.prepare_denoise)
+    for flag in UNSUPPORTED_TEACHER_DENOISE_FLAGS:
+        assert f"self.mc.{flag}" in train_src, flag
+        assert flag not in prep_src, flag
+    assert set(UNSUPPORTED_TEACHER_DENOISE_FLAGS) == {"action_t_max_of_two",
+                                                      "contact_self_forcing"}
+
+
+@pytest.mark.parametrize("flag", ["action_t_max_of_two", "contact_self_forcing"])
+def test_either_flag_alone_refuses_and_the_message_names_both(flag):
+    """Whichever one is set, the refusal names BOTH flags: the reader needs to
+    know which pair of knobs prepare_denoise is missing, not only the one this
+    teacher happened to trip."""
+    from phantom.train.distill_hid import refuse_unsupported_teacher_flags
+    mc = dataclasses.replace(PhantomModelConfig(), **{flag: True})
+    with pytest.raises(ValueError) as e:
+        refuse_unsupported_teacher_flags(mc)
+    msg = str(e.value)
+    assert "action_t_max_of_two" in msg and "contact_self_forcing" in msg
+    assert "prepare_denoise" in msg
+    assert msg.startswith(f"teacher checkpoint sets {flag}=True")
+
+
+def test_a_clean_teacher_and_no_teacher_at_all_pass_the_guard():
+    """The shipped recipe: both flags False -> silence. `mc=None` (no recorded
+    model config, or no teacher at all) must not raise either."""
+    from phantom.train.distill_hid import refuse_unsupported_teacher_flags
+    mc = PhantomModelConfig()
+    assert (mc.action_t_max_of_two, mc.contact_self_forcing) == (False, False)
+    refuse_unsupported_teacher_flags(mc)
+    refuse_unsupported_teacher_flags(None)
+
+
+@pytest.fixture(scope="module")
+def unsupported_teacher(student_runs):
+    """A tiny teacher that sets BOTH flags: `--contact-self-forcing` explicitly,
+    and `action_t_max_of_two` by simply NOT passing the shipped
+    `--no-action-t-max-of-two` (train_teacher defaults that one to True)."""
+    from phantom.train import train_teacher as TT
+    runs = Path(student_runs)
+    p = dataclasses.replace(load_paths(), runs_root=runs)
+    orig, TT.load_paths = TT.load_paths, lambda: p
+    try:
+        assert TT.main([*TINY, "--acc-two-pass", "--contact-self-forcing",
+                        "--max-steps", "1", "--ckpt-every", "1",
+                        "--run-name", "cd0918_bad_teacher"]) == 0
+    finally:
+        TT.load_paths = orig
+    ck = runs / "teacher" / "cd0918_bad_teacher" / "teacher_000001.pt"
+    saved = torch.load(str(ck), map_location="cpu",
+                       weights_only=False)["configs"]["model"]
+    assert saved["action_t_max_of_two"] is True
+    assert saved["contact_self_forcing"] is True
+    return ck
+
+
+def test_distill_refuses_a_teacher_whose_denoise_flags_it_cannot_honour(
+        unsupported_teacher, student_runs):
+    """ENTRY POINT: the real CLI against a real teacher checkpoint. The refusal
+    fires at teacher-config load — before either model is built and before a
+    single window is read — so no run directory is created."""
+    from phantom.train import distill_hid as DH
+    p = dataclasses.replace(load_paths(), runs_root=Path(student_runs))
+    orig, DH.load_paths = DH.load_paths, lambda: p
+    try:
+        with pytest.raises(ValueError) as e:
+            DH.main([*TINY, "--max-steps", "1", "--ckpt-every", "1",
+                     "--run-name", "cd0918_refuse_flags",
+                     "--teacher-ckpt", str(unsupported_teacher)])
+    finally:
+        DH.load_paths = orig
+    msg = str(e.value)
+    assert "action_t_max_of_two" in msg and "contact_self_forcing" in msg
+    assert "prepare_denoise" in msg
+    assert "--allow-unsupported-teacher-flags" in msg
+    assert not (Path(student_runs) / "hid" / "cd0918_refuse_flags_r0").exists()
+
+
+def test_the_escape_hatch_warns_and_distils_anyway(unsupported_teacher,
+                                                   student_runs):
+    """ENTRY POINT, other path: with --allow-unsupported-teacher-flags the same
+    CLI runs to completion (a student checkpoint lands) and the refusal text is
+    emitted as a warning instead."""
+    msgs = _run_distill(student_runs,
+                        [*TINY, "--max-steps", "1", "--ckpt-every", "1",
+                         "--run-name", "cd0918_allow_flags",
+                         "--allow-unsupported-teacher-flags",
+                         "--teacher-ckpt", str(unsupported_teacher)])
+    assert any("--allow-unsupported-teacher-flags" in m
+               and "action_t_max_of_two" in m
+               and "contact_self_forcing" in m for m in msgs), msgs
+    assert (Path(student_runs) / "hid" / "cd0918_allow_flags_r0" /
+            "student_000001.pt").exists()
+
+
+#: Machine-generated dumps of the v6 teacher's OWN saved `configs.model`
+#: (`tools/sim/policy_server.py` writes `saved_model_config` next to the
+#: checkpoint path and its sha256) — the authoritative record of what the
+#: paper's teacher recorded, since no real checkpoint lives in the repo.
+V6_PROTOCOLS = (
+    "teacher_followthrough_20260909/design/qualification_campaign/frozen/"
+    "v6_20000_nfe1_k4_pose10_open/protocol.json",
+    "teacher_recovery_20260910/finish/genuine8_rate_v4_frozen/"
+    "v6_relative_on_rate_v4/protocol.json",
+    "teacher_recovery_20260910/finish/genuine8_rate_v4_frozen/"
+    "v6_relative_off_rate_v4/protocol.json",
+)
+
+
+@pytest.mark.parametrize("rel", V6_PROTOCOLS)
+def test_the_paper_v6_teacher_sets_neither_flag(rel):
+    """THE PAPER IS UNAFFECTED, from the checkpoint's own record rather than
+    from a launch line: every dumped `saved_model_config` of
+    `runs/teacher_v6/teacher_020000.pt` (sha256 4812cfbf0127...) has both flags
+    False, so the new guard never fires on a v6 distillation."""
+    from phantom.train.distill_hid import (UNSUPPORTED_TEACHER_DENOISE_FLAGS,
+                                           refuse_unsupported_teacher_flags)
+    p = REPO / "docs" / "results" / rel
+    if not p.exists():
+        pytest.skip(f"{rel} not present")
+    blob = json.loads(p.read_text(encoding="utf-8"))
+
+    found = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            if isinstance(o.get("saved_model_config"), dict):
+                found.append(o)
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+
+    walk(blob)
+    assert found, f"no saved_model_config dump in {rel}"
+    for rec in found:
+        assert "teacher_v6/teacher_020000.pt" in str(rec.get("checkpoint", ""))
+        assert str(rec.get("checkpoint_sha256", "")).startswith("4812cfbf0127")
+        smc = rec["saved_model_config"]
+        for flag in UNSUPPORTED_TEACHER_DENOISE_FLAGS:
+            assert smc[flag] is False, (rel, flag)
+        # ...and the guard agrees when handed that exact config
+        refuse_unsupported_teacher_flags(
+            PhantomModelConfig(**{f: smc[f]
+                                  for f in UNSUPPORTED_TEACHER_DENOISE_FLAGS}))
