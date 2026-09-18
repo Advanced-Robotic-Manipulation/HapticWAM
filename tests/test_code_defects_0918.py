@@ -82,6 +82,7 @@ def pair_and_batch(tmp_path_factory):
 # (a) traj_distill target space
 # ===========================================================================
 
+@pytest.mark.requires_cosmos_repo
 def test_the_pack_roundtrip_invents_a_cop_bump_on_a_no_contact_step(pair_and_batch):
     """The defect itself: a contact package whose CoP is NaN (= no contact)
     packs to an EMPTY bump channel, but once it has been through `unpack` the
@@ -105,6 +106,7 @@ def test_the_pack_roundtrip_invents_a_cop_bump_on_a_no_contact_step(pair_and_bat
         f"the teacher imagined no contact (got {amp_roundtrip})")
 
 
+@pytest.mark.requires_cosmos_repo
 def test_default_traj_target_is_the_shipped_pack_roundtrip(pair_and_batch):
     """REGRESSION: the default target tensor is bit-for-bit the expression the
     paper's checkpoints were distilled against."""
@@ -120,6 +122,7 @@ def test_default_traj_target_is_the_shipped_pack_roundtrip(pair_and_batch):
     assert torch.equal(got, want)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_raw_latents_target_is_the_teachers_contact_slice(pair_and_batch):
     teacher, student, batch = pair_and_batch
     b = C.to_device(batch, "cpu")
@@ -140,6 +143,7 @@ def test_raw_latents_target_is_the_teachers_contact_slice(pair_and_batch):
     assert not torch.allclose(got, rt)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_teacher_sample_layout_refuses_a_layout_that_does_not_fit(pair_and_batch):
     teacher, student, batch = pair_and_batch
     b = C.to_device(batch, "cpu")
@@ -152,6 +156,7 @@ def test_teacher_sample_layout_refuses_a_layout_that_does_not_fit(pair_and_batch
         teacher_sample_layout(teacher.rf, short)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_raw_latents_gives_a_finite_step_with_the_same_terms(pair_and_batch):
     """Opt-in: the alternative target trains — same loss terms, all finite,
     gradient reaches the student trunk. (distill_step is not seed-reproducible
@@ -171,6 +176,7 @@ def test_raw_latents_gives_a_finite_step_with_the_same_terms(pair_and_batch):
                for p in student.rf.parameters() if p.requires_grad)
 
 
+@pytest.mark.requires_cosmos_repo
 def test_the_target_reaches_only_the_traj_term(pair_and_batch):
     """`cpk_target` is consumed by traj_distill and nothing else, so the flag
     cannot move behavior_match / event_distill / the grounding terms."""
@@ -181,6 +187,7 @@ def test_the_target_reaches_only_the_traj_term(pair_and_batch):
     assert "x0_pred_s[:, :, sl].float() - cpk_target.float()" in src
 
 
+@pytest.mark.requires_cosmos_repo
 def test_traj_target_is_refused_when_unknown(pair_and_batch):
     teacher, student, batch = pair_and_batch
     b = C.to_device(batch, "cpu")
@@ -366,6 +373,7 @@ def recipe_student(student_runs):
     return ck
 
 
+@pytest.mark.requires_cosmos_repo
 def test_the_student_checkpoint_records_the_window_recipe(recipe_student):
     """REPRODUCTION (audit (c)): `configs.train` had no record of these at all,
     so nothing could be restored."""
@@ -377,6 +385,7 @@ def test_the_student_checkpoint_records_the_window_recipe(recipe_student):
     assert saved["rollout_action_weight"] == "failure_demo"
 
 
+@pytest.mark.requires_cosmos_repo
 def test_resume_restores_the_window_recipe_the_cli_forgot(recipe_student,
                                                           student_runs):
     msgs = _run_distill(student_runs, [*TINY, "--max-steps", "2", "--ckpt-every", "2",
@@ -402,6 +411,7 @@ def test_resume_restores_the_window_recipe_the_cli_forgot(recipe_student,
     ("--traj-target", "raw_latents", "traj_target"),
     ("--rollout-action-weight", "teacher_supervised", "rollout_action_weight"),
 ])
+@pytest.mark.requires_cosmos_repo
 def test_resume_refuses_a_contradicting_recipe_flag(recipe_student, student_runs,
                                                     flag, value, label):
     from phantom.train import distill_hid as DH
@@ -415,6 +425,7 @@ def test_resume_refuses_a_contradicting_recipe_flag(recipe_student, student_runs
         DH.load_paths = orig
 
 
+@pytest.mark.requires_cosmos_repo
 def test_resume_accepts_the_recipe_passed_back_verbatim(recipe_student,
                                                         student_runs):
     msgs = _run_distill(student_runs, [*TINY, "--max-steps", "2",
@@ -423,6 +434,7 @@ def test_resume_accepts_the_recipe_passed_back_verbatim(recipe_student,
     assert not any("drift" in m for m in msgs), msgs
 
 
+@pytest.mark.requires_cosmos_repo
 def test_override_recipe_accepts_the_drift_and_records_it(recipe_student,
                                                           student_runs):
     msgs = _run_distill(student_runs, [*TINY, "--max-steps", "2", "--ckpt-every", "2",
@@ -497,6 +509,7 @@ def test_file_sha12_is_the_content_identity(tmp_path):
     assert len(C.file_sha12(a)) == 12
 
 
+@pytest.mark.requires_cosmos_repo
 def test_a_relocated_teacher_resumes_end_to_end_and_a_different_one_does_not(
         student_runs):
     """The whole path, through both CLIs: tiny teacher -> student distilled
@@ -543,6 +556,7 @@ def test_a_relocated_teacher_resumes_end_to_end_and_a_different_one_does_not(
         DH.load_paths = orig
 
 
+@pytest.mark.requires_cosmos_repo
 def test_the_run_records_the_hash_of_the_teacher_it_loaded(student_runs):
     """No teacher in a tiny smoke run -> empty hash; the field exists and is
     written either way."""
@@ -578,6 +592,7 @@ def test_the_shape_refusal_names_the_knob_and_the_config():
     assert "wrist_ft.rate_hz" in hint and "configs/hardware.nuc.yaml" in hint
 
 
+@pytest.mark.requires_cosmos_repo
 def test_a_rig_checkpoint_is_refused_under_the_bench_config(recipe_student):
     payload = torch.load(str(recipe_student), map_location="cpu", weights_only=False)
     payload["configs"]["hardware_shapes"] = dict(
