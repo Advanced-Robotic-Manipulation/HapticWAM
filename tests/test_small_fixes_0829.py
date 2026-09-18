@@ -388,12 +388,15 @@ def test_no_damage_flag_leaves_the_field_false(labelled):
     assert m.damage is False and "damaged" not in m.tags
 
 
-def test_contaminated_can_also_be_damaged(labelled):
+def test_crushed_can_also_be_damaged(labelled):
+    """Rig 09-15: 'c' is CRUSHED, not contaminated. The take placed the object
+    (success True, `crushed` tag keeps it out of training) and the trailing 'd'
+    still records damage. A spoiled take is now a redo ('r')."""
     recorder, ep = labelled
     assert RD.label_episode(recorder, ep, "cd bumped and cracked") == "c"
     m = EpisodeMeta.load(ep / "meta.json")
-    assert m.damage is True and m.success is None
-    assert "contaminated" in m.tags and "damaged" in m.tags
+    assert m.damage is True and m.success is True
+    assert "crushed" in m.tags and "damaged" in m.tags
 
 
 def test_damage_field_is_backward_compatible(tmp_path):
@@ -406,5 +409,10 @@ def test_damage_field_is_backward_compatible(tmp_path):
     assert "damage" in m.to_dict()
 
 
-def test_the_prompt_advertises_the_flag():
-    assert "d" in RD.VERDICT_PROMPT and "DAMAGE" in RD.VERDICT_PROMPT
+def test_the_prompt_advertises_every_verdict_code():
+    """Rig 09-15 vocabulary: s / f / c(rushed) / r(edo). The trailing-'d'
+    damage flag is documented on label_episode, not advertised here — the
+    prompt is read aloud at the rig and had to stay one line."""
+    for code in ("[s]uccess", "[f]ail", "[c]rushed", "[r]edo"):
+        assert code in RD.VERDICT_PROMPT
+    assert "[d]amage" not in RD.VERDICT_PROMPT

@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
 configs/paths.local.yaml
 configs/compute.local.yaml
 /data/

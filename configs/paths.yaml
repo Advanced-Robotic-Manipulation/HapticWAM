@@ -4,22 +4,27 @@
 #
 # Per-machine values: create configs/paths.local.yaml (gitignored) with any
 # subset of these keys; it is merged over this file at load time.
+#
+# Relative values below are resolved against the REPO ROOT (not the working
+# directory) — see phantom/config/paths.py. Put absolute per-machine locations
+# in paths.local.yaml; nothing machine-specific belongs in this file.
 # ============================================================================
 
 # Cloned official cosmos-predict2.5 repository (imported as a library).
-cosmos_repo: c:/skoltech/research/icra2027/cosmos-predict2.5
+# Default = the `cosmos-predict2.5` git submodule at the repo root.
+cosmos_repo: ./cosmos-predict2.5
 
-# Downloaded Cosmos-Predict2.5-2B weights root.
-cosmos_weights_root: c:/skoltech/research/icra2027/cosmos-predict2.5-2b
+# Downloaded Cosmos-Predict2.5-2B weights root (~4.8 GB, gitignored).
+cosmos_weights_root: ./cosmos-predict2.5-2b
 
 # Relative to cosmos_weights_root:
 cosmos_checkpoint: robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt
 cosmos_empty_text_embedding: robot/action-cond/cr1_empty_string_text_embeddings.pt
 cosmos_tokenizer: tokenizer.pth
 
-# Data + run outputs (created on demand).
-data_root: c:/skoltech/research/icra2027/data
-runs_root: c:/skoltech/research/icra2027/runs
+# Data + run outputs (created on demand; both gitignored at the repo root).
+data_root: ./data
+runs_root: ./runs
 
 # Optional: per-text embedding cache written by phantom.scripts.embed_task_texts
 # (run its --verify gate first). Empty = text conditioning stays on the cached

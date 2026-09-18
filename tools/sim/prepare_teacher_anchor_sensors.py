@@ -21,9 +21,9 @@ RUNNER = "tools/sim/run_waffles.py"
 LAUNCHER = "tools/sim/launch_waffles.sh"
 BASE_RUNNER_SHA = "355c6a76f00c55721ffad8744337863b6962b4777bb7df27ce5ff400dcba91a6"
 MODULE_PINS = {
-    "tools/sim/gel_contact.py": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e",
-    "tools/sim/gripper_wrist.py": "819780c79bfbabb76c4f2b913b5774437255bd31b69e41eb9e05e026ab1c2846",
-    "tools/sim/robot_environment_contacts.py": "7585e9474b681f460300d8b94b9c8bc25529dd45a85683aff83d5de7b87c47d0",
+    "tools/sim/gel_contact.py": "c5e63d9688239c6900a17ced074a5e04869d7f837419448252f0515413020500",
+    "tools/sim/gripper_wrist.py": "bc27ff75d61e015d5ae5ab66f78994e8eea0d184cd92729623a303d1897f720d",
+    "tools/sim/robot_environment_contacts.py": "e4bd0e96f0d71a9f58494c37d8504d49b516ccf128213f91cb5b200c60deb698",
 }
 VARIANTS = {
     "gel_v2": {

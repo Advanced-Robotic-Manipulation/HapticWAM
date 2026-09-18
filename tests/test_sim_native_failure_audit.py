@@ -126,7 +126,11 @@ def test_runner_preserves_mechanical_gate_when_readbacks_or_contacts_fail(tmp_pa
     run = next(n for n in ast.parse(source.read_text()).body if isinstance(n, ast.FunctionDef) and n.name == "run")
     check = next(n for n in run.body if isinstance(n, ast.FunctionDef) and n.name == "check_native_mechanics")
     diagnostic = {"passed": False, "gates": {"joint_coupling": False}, "coupling_max_abs_rad": .006}
-    monkeypatch.setattr(gripper_adaptive, "mechanical_diagnostics", lambda _: diagnostic)
+    # run_waffles' check_native_mechanics passes the campaign's per-joint gate
+    # overrides through (threshold_overrides=mechanics_overrides); the stub has
+    # to accept them, and the exec'd closure needs the name in its globals.
+    monkeypatch.setattr(gripper_adaptive, "mechanical_diagnostics",
+                        lambda _, threshold_overrides=None: diagnostic)
     qd = np.arange(8.) / 10
     def get_velocity():
         if velocity_error:
@@ -142,6 +146,7 @@ def test_runner_preserves_mechanical_gate_when_readbacks_or_contacts_fail(tmp_pa
         "stage": None, "roots": ["/Robot"], "paths": {"joint_paths": {}},
         "gel_views": SimpleNamespace(get_all=lambda _: (_ for _ in ()).throw(RuntimeError("contact failed"))),
         "robot_environment_views": None, "gripper_wrist": None, "dt": .0005,
+        "mechanics_overrides": None,
         "args": SimpleNamespace(output=tmp_path),
     }
     exec(compile(ast.Module(body=[check], type_ignores=[]), str(source), "exec"), environment)

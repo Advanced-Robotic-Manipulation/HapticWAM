@@ -81,8 +81,12 @@ def test_recorded_replay_containment_uses_the_same_rotated_opening(yaw, offset, 
     assert result["gates"]["final_oriented_bin_containment"]["pass"] is inside
     assert result["metrics"]["final_bin"]["contained_fraction"] == float(inside)
     assert result["physical_verdict"] == baseline["physical_verdict"]
-    assert result["metrics"]["final_bin"]["minimum_oriented_corner_z_m"] == (
-        baseline["metrics"]["final_bin"]["minimum_oriented_corner_z_m"]
+    # The rotate/un-rotate round-trip reassociates the same products, so the
+    # two datums can differ by ~1 ULP and do so differently per CPU (arm64 vs
+    # x86-64). The invariant under test is yaw-invariance of the datum, not
+    # bit-identity: 1e-12 m is a million times below the metric's meaning.
+    assert result["metrics"]["final_bin"]["minimum_oriented_corner_z_m"] == pytest.approx(
+        baseline["metrics"]["final_bin"]["minimum_oriented_corner_z_m"], abs=1e-12
     )
 
 

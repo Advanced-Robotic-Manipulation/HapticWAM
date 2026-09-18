@@ -14,9 +14,18 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CONFIGS_DIR = REPO_ROOT / "configs"
 DEFAULT_PATHS_YAML = CONFIGS_DIR / "paths.yaml"
 LOCAL_PATHS_YAML = CONFIGS_DIR / "paths.local.yaml"
+
+
+def _root(value: str | Path) -> Path:
+    """Resolve a paths.yaml entry: relative entries are REPO-root-relative (so
+    the committed defaults work from any working directory and on any machine),
+    absolute entries — what paths.local.yaml normally carries — are used as-is."""
+    p = Path(value)
+    return p if p.is_absolute() else REPO_ROOT / p
 
 
 @dataclass(frozen=True)
@@ -68,14 +77,14 @@ def load_paths(path: str | Path | None = None,
             raise KeyError(f"unknown keys in {local.name}: {sorted(unknown)}")
         raw.update(overrides)
 
-    weights_root = Path(raw["cosmos_weights_root"])
+    weights_root = _root(raw["cosmos_weights_root"])
     return PathsConfig(
-        cosmos_repo=Path(raw["cosmos_repo"]),
+        cosmos_repo=_root(raw["cosmos_repo"]),
         cosmos_weights_root=weights_root,
         cosmos_checkpoint=weights_root / raw["cosmos_checkpoint"],
         cosmos_empty_text_embedding=weights_root / raw["cosmos_empty_text_embedding"],
         cosmos_text_embedding_cache=str(raw.get("cosmos_text_embedding_cache", "") or ""),
         cosmos_tokenizer=weights_root / raw["cosmos_tokenizer"],
-        data_root=Path(raw["data_root"]),
-        runs_root=Path(raw["runs_root"]),
+        data_root=_root(raw["data_root"]),
+        runs_root=_root(raw["runs_root"]),
     )

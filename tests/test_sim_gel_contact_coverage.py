@@ -457,8 +457,15 @@ def test_v1_archived_carry_readouts_remain_exact_and_v2_reports_missing_evidence
         v1 = select_gel_contacts(
             data, [0, 0, 0], [1, 0, 0, 0], coverage="manifold_patch", **kwargs
         )
-        assert v1["normal_force_n"] == row["expected_v1_force_n"]
-        np.testing.assert_array_equal(v1["contact_uv"], row["expected_v1_uv"])
+        assert v1["normal_force_n"] == pytest.approx(
+            row["expected_v1_force_n"], abs=1e-12
+        )
+        # Archived on the x86-64 rig box; the weighted-centroid reduction can
+        # land 1 ULP away on another CPU (observed 5.6e-17 on arm64 macOS).
+        # 1e-12 still pins the readout far tighter than the pad's resolution.
+        np.testing.assert_allclose(
+            v1["contact_uv"], row["expected_v1_uv"], rtol=0, atol=1e-12
+        )
         v2 = select_gel_contacts(
             data, [0, 0, 0], [1, 0, 0, 0], coverage="manifold_patch_v2", **kwargs
         )
