@@ -321,16 +321,26 @@ def test_the_recipe_knobs_are_train_config_fields():
             got["commit_band_weight"]) == ("all", 0.4, 0.7, 1.6)
 
 
-def test_the_hid_programs_still_parse_split_without_a_split_field():
-    """`apply_overrides` is shared: HIDConfig has no data-recipe fields, and
-    distill_hid's own `--split` defaults to a string, not None."""
+def test_the_hid_programs_carry_the_data_recipe_too():
+    """`apply_overrides` is shared. Until 2026-09-18 HIDConfig had NO
+    data-recipe fields, so distill_hid read `--grasp-frac` / `--photo-aug` /
+    `--commit-band-weight` / `--split` straight off `args` and a `--resume`
+    that forgot them reverted the window recipe with no warning (code-defect
+    review (c)). The fields now live on HIDConfig with the SAME defaults, so
+    the lock below covers them for the student as well."""
     from phantom.config.training import HIDConfig
     from phantom.train.train_teacher import apply_overrides
-    assert "split" not in HIDConfig().to_dict()
+    d = HIDConfig().to_dict()
+    assert (d["split"], d["grasp_frac"], d["photo_aug"],
+            d["commit_band_weight"]) == ("train", 0.0, 0.0, 1.0)
     args = SimpleNamespace(synthetic=False, tiny=True, device="cpu",
                            run_name=None, max_steps=None, batch_size=None,
-                           grad_accum=None, num_workers=None, split="train")
-    assert apply_overrides(HIDConfig(), args).to_dict()["run_name"] == "hid"
+                           grad_accum=None, num_workers=None, split=None)
+    cfg = apply_overrides(HIDConfig(), args)
+    assert cfg.to_dict()["run_name"] == "hid" and cfg.split == "train"
+    # ... and a named value still lands in configs.train
+    args.split = "all"
+    assert apply_overrides(HIDConfig(), args).split == "all"
 
 
 @needs_cosmos

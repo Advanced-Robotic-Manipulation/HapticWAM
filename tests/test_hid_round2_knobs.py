@@ -78,11 +78,14 @@ def test_teacher_nfe_out_of_range_is_refused(pair_and_batch):
 
 
 def test_distill_resume_restores_the_recipe():
-    """The teacher's accept/refuse rule now applies to distill_hid too."""
+    """The teacher's accept/refuse rule now applies to distill_hid too — over
+    the saved recipe reconciled by `reconcile_teacher_ckpt` (2026-09-18 (d)).
+    The behavioural coverage lives in tests/test_code_defects_0918.py."""
     import inspect
     from phantom.train import distill_hid as DH
     src = inspect.getsource(DH.main)
-    assert "restore_train_config_on_resume(cfg, resume_payload" in src
+    assert "reconcile_teacher_ckpt(" in src
+    assert "restore_train_config_on_resume(cfg, saved_train, args)" in src
 
 
 def test_teacher_nfe_knob_selects_the_sampling_steps(pair_and_batch, monkeypatch):

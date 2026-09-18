@@ -48,6 +48,13 @@ def add_common_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--compute", default=None,
                     help="compute profile name in configs/compute.yaml, or a path "
                          "to a compute yaml (default: the file's target:)")
+    ap.add_argument("--override-recipe", action="store_true",
+                    help="downgrade the `--resume` recipe-drift REFUSAL to a "
+                         "warning and train with the values this command line "
+                         "names. The resumed checkpoint then continues under a "
+                         "DIFFERENT recipe than the one that produced it — the "
+                         "new checkpoint records what actually governed it, but "
+                         "the run is no longer one reproducible recipe.")
 
 
 def apply_overrides(cfg, args, compute=None):
@@ -82,7 +89,8 @@ def apply_overrides(cfg, args, compute=None):
                  "eval_every", "ema_decay", "event_band_weight",
                  "split", "grasp_frac", "photo_aug", "commit_band_weight",
                  "wrench_baseline_rows", "teacher_nfe", "w_sigma",
-                 "w_traj", "w_event", "w_behavior"):
+                 "w_traj", "w_event", "w_behavior",
+                 "traj_target", "rollout_action_weight"):
         v = getattr(args, name, None)
         if v is not None and hasattr(cfg, name):
             updates[name] = v
@@ -117,7 +125,8 @@ def _train_value_differs(saved, cli) -> bool:
     return saved != cli
 
 
-def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log):
+def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log,
+                                   override: bool | None = None):
     """`--resume` continues ONE run, so its recipe comes back with it.
 
     For every non-operational `configs.train` key: if the CLI did not name it,
@@ -129,7 +138,13 @@ def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log):
     EMA from `cfg.ema_decay`), so a resume with only the model flags re-passed
     reverted the whole recipe to the dataclass defaults and then wrote those
     defaults into the next checkpoint as if they had governed the run
-    (revalidation 2026-08-31 #8)."""
+    (revalidation 2026-08-31 #8).
+
+    `override` (the `--override-recipe` flag) turns the refusal into a warning
+    and keeps the CLI value — for the one case where the operator KNOWS the
+    recipe changes and wants the new checkpoint to record that."""
+    if override is None:
+        override = bool(getattr(args, "override_recipe", False))
     updates: dict = {}
     for key in sorted(cfg.to_dict()):
         if key in RESUME_OPERATIONAL_KEYS:
@@ -150,10 +165,16 @@ def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log):
                          getattr(cfg, key))
             continue
         if _train_value_differs(saved, cli):
+            if override:
+                log.warning("--override-recipe: %s drift ACCEPTED — checkpoint "
+                            "%r, this run %r; the new checkpoint records %r",
+                            label, saved, cli, cli)
+                continue
             raise SystemExit(
                 f"--resume {label} drift: checkpoint {saved!r}, this run "
                 f"{cli!r} — a resume continues ONE run; drop the flag to "
-                f"restore the checkpoint's value, or pass the original one")
+                f"restore the checkpoint's value, pass the original one, or "
+                f"--override-recipe to train under the new value anyway")
     return dataclasses.replace(cfg, **updates) if updates else cfg
 
 
