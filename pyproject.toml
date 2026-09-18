@@ -7,6 +7,7 @@ name = "phantom-robot"
 version = "0.1.0"
 description = "PHANTOM: Predictive Haptic ANTicipation with Occlusion-robust Manipulation (ICRA 2027)"
 requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
 dependencies = [
     "numpy>=1.24",
     "pydantic>=2.5",

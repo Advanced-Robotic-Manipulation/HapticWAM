@@ -19,3 +19,7 @@ configs/data_collect.local.yaml
 
 # Reproducible Isaac replay exports, renders and validation artifacts.
 /artifacts/isaac_waffles/
+
+# run logs written next to the checkout by the rig scripts (serve_bg.sh, EXPERIMENT.sh)
+/logs/
+/logs_*.log
