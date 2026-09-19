@@ -5,7 +5,7 @@ python -m phantom.scripts.collect                 # panel at http://<host>:8899
 python -m phantom.scripts.collect --config configs/data_collect.yaml --host 0.0.0.0
 ```
 
-A ground-up operator application for collecting PHANTOM demonstrations on
+A ground-up operator application for collecting HapticWAM demonstrations on
 the UR3 + Echo exoskeleton rig: device-rate teleop, continuous gripper, a
 latched DM-Tac force safeguard, a live rerun view, a web control panel, and
 session-end offload to an external drive. It sits alongside the reference
@@ -92,7 +92,7 @@ the raw teleop command directly since the streamer already has it).
 
 Chosen per session in the panel wizard:
 
-- **full** — every DM-Tac modality PHANTOM needs (field stack, keyframes,
+- **full** — every DM-Tac modality HapticWAM needs (field stack, keyframes,
   gel image, wrench, area), scene RGB, and full UR3/gripper state; the rerun
   view shows depth/deformation/shear/force-z maps and the gel image per
   finger.

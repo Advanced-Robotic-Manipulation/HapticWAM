@@ -51,7 +51,7 @@ schedule semantics — prefer finishing a run on the target it started on.
 | Output | `runs/tactile_pretrain/tactile_encoder_pretrain.pt` |
 | Scale | single GPU, ~30 k steps, batch 32 |
 
-## (2) `phantom.train.train_teacher` — teacher PHANTOM
+## (2) `phantom.train.train_teacher` — teacher HapticWAM
 
 | | |
 |---|---|
@@ -245,7 +245,7 @@ bench → contact play → (1) pretrain_tactile
 
 | System | Recipe |
 |---|---|
-| Teacher PHANTOM | program (2) |
+| Teacher HapticWAM | program (2) |
 | HID student (ours) | programs (3)+(3b) |
 | Vision-only WAM | program (2) with a layout that drops all tactile+F/T inputs (custom `PhantomModelConfig` variant) |
 | No-distillation control | student-layout model trained with program (2)'s objective from scratch (run `train_teacher` with `student=True` build — critical control) |

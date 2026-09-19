@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phantom-robot"
 version = "0.1.0"
-description = "PHANTOM: Predictive Haptic ANTicipation with Occlusion-robust Manipulation (ICRA 2027)"
+description = "HapticWAM: a haptic world-action model — tactile-conditioned Cosmos teacher distilled into a pad-free student (ICRA 2027)"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 dependencies = [

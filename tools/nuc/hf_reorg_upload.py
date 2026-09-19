@@ -15,7 +15,7 @@ from pathlib import Path
 from huggingface_hub import HfApi
 
 STAGE = Path.home() / "phantom-hf-stage"
-REPO = "armteam/phantom-episodes"
+REPO = "armteam/hapticwam-teleop-raw"
 EXPECTED = {"Carton": 180, "waffles": 180, "egg": 180, "Carton_fail": 20, "waffles_fail": 20, "egg_fail": 20}
 CHUNK = 25                     # episodes per commit (~9.5k files)
 PAUSE_S = 25                   # keeps request rate far below 1000/5min

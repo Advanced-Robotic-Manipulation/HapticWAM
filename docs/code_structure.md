@@ -45,7 +45,7 @@ maps spec → code.
 - `paths.py` — paths schema, local-override merge.
 - `backbone.py` — transcribed frozen Cosmos net kwargs + latent geometry +
   `tiny()` CPU preset + `verify_against_state_dict()` (transcription-drift guard).
-- `model.py` — PHANTOM-specific knobs: layout counts, loss weights λ, LoRA r/α,
+- `model.py` — HapticWAM-specific knobs: layout counts, loss weights λ, LoRA r/α,
   ACC config, `rope_time_mode`, `student` flag; the EVENTS ontology.
 - `training.py` — dataclass configs for the four training programs.
 

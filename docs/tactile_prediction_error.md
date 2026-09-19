@@ -1,6 +1,6 @@
 # Tactile prediction error (TPE)
 
-*Added 2026-09-11. The metric that makes PHANTOM a world-action model in the
+*Added 2026-09-11. The metric that makes HapticWAM a world-action model in the
 evaluation, not only in the architecture.*
 
 Every `PhantomPolicy.replan` generates a **contact package**: the model's

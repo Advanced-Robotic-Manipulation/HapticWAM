@@ -1,10 +1,10 @@
 # pi0.5 baseline
 
 An external VLA baseline (Physical Intelligence pi0.5, via LeRobot) run on the
-PHANTOM rig through OUR deploy loop, so its numbers are comparable with the
+HapticWAM rig through OUR deploy loop, so its numbers are comparable with the
 student's. Two halves, built independently against one shared contract:
 
-* **Export** — PHANTOM episodes to a LeRobot dataset, and the fine-tune.
+* **Export** — HapticWAM episodes to a LeRobot dataset, and the fine-tune.
 * **Deploy adapter** — this document's second half: a policy server that makes
   a LeRobot policy answer `replan()` the way `phantom/deploy/` expects.
 
@@ -57,7 +57,7 @@ Using it on pi05 feeds the model normalised-space garbage.
 ## Export
 
 `tools/export_lerobot.py` writes a LeRobot v3.0 dataset straight from the
-PHANTOM episode store. It does not invent field names: the frame dict is
+HapticWAM episode store. It does not invent field names: the frame dict is
 validated by `lerobot.datasets.utils.validate_frame` against the feature spec
 handed to `LeRobotDataset.create`, so the export is whatever the installed
 lerobot (0.4.4) writes.

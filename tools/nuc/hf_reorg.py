@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HF-only reorg of armteam/phantom-episodes into the canonical tasks/ view.
+"""HF-only reorg of armteam/hapticwam-teleop-raw into the canonical tasks/ view.
 
 Reads the external drive READ-ONLY, stages the flattened layout + manifests +
 dataset card on the local disk, verifies exact counts (180/180/20/20 — aborts
@@ -20,7 +20,7 @@ from pathlib import Path
 DRIVE = Path("/media/nuc/kostya_drive/phantom_episodes")
 STAGE = Path.home() / "phantom-hf-stage"
 QUALITY_CSV = Path.home() / "phantom-icra-2027" / "episode_quality.csv"
-REPO = "armteam/phantom-episodes"
+REPO = "armteam/hapticwam-teleop-raw"
 EXPECTED = {"Carton": 180, "waffles": 180, "egg": 180, "Carton_fail": 20, "waffles_fail": 20, "egg_fail": 20}
 VAL_SESSIONS_PER_SUCCESS_TASK = 2      # last N sessions chronologically -> val
 

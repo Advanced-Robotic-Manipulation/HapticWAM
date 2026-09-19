@@ -145,11 +145,11 @@ elif api.file_exists("armteam/phantom-checkpoints", "dataset_v3_packed/batch_202
     subprocess.run(["rm", p])
     print("recovery sessions unpacked from batch_20260822.tar.zst", flush=True)
 else:
-    sess = [e.path for e in api.list_repo_tree("armteam/phantom-episodes", path_in_repo="archive",
+    sess = [e.path for e in api.list_repo_tree("armteam/hapticwam-teleop-raw", path_in_repo="archive",
                                               repo_type="dataset", recursive=False)
             if "20260822_" in e.path]
     print(f"{len(sess)} recovery sessions on hub — no tarball, slow per-file snapshot", flush=True)
-    snapshot_download("armteam/phantom-episodes", repo_type="dataset",
+    snapshot_download("armteam/hapticwam-teleop-raw", repo_type="dataset",
                       allow_patterns=[p + "/*" for p in sess], max_workers=32,
                       local_dir=f"{W}/data/recovery_raw")
 n_raw = len(glob.glob(f"{raw}/20260822_*/ep_*/meta.json"))

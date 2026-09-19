@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Auto-upload PHANTOM episode sessions to hf.co/datasets/armteam/phantom-episodes.
+"""Auto-upload PHANTOM episode sessions to hf.co/datasets/armteam/hapticwam-teleop-raw.
 
 v3 — hardened after the 2026-08-01 system review (Codex + Opus workflow):
  - single-instance flock (concurrent timer + manual runs cannot clobber the
@@ -33,7 +33,7 @@ from pathlib import Path
 
 os.environ.setdefault("HF_XET_HIGH_PERFORMANCE", "1")   # HF_HUB_ENABLE_HF_TRANSFER is dead in hub 1.x
 
-REPO = "armteam/phantom-episodes"
+REPO = "armteam/hapticwam-teleop-raw"
 HUB_PREFIX = "archive"          # single canonical hub prefix for all copies
 ROOTS = [
     Path("/media/nuc/kostya_drive/phantom_episodes"),   # canonical, scanned first

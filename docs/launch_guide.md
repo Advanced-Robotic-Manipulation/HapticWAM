@@ -97,7 +97,7 @@ behavior is identical to the historical single-GPU path
 # (1) tactile encoder SSL pretrain (single GPU is fine)
 python -m phantom.train.pretrain_tactile --data <contact_play_root>
 
-# (2) teacher PHANTOM
+# (2) teacher HapticWAM
 torchrun --nproc_per_node 8 -m phantom.train.train_teacher \
     --data <episodes_root> --tactile-pretrain runs/tactile_pretrain/tactile_encoder_pretrain.pt \
     --run-name teacher_v1

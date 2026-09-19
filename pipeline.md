@@ -1,4 +1,9 @@
-# PHANTOM — Predictive Haptic ANTicipation with Occlusion-robust Manipulation: Full Pipeline (v2)
+# HapticWAM — Haptic World-Action Model: Full Pipeline (v2)
+
+> Naming: this pipeline was written under the working name **PHANTOM** (Predictive
+> Haptic ANTicipation with Occlusion-robust Manipulation) and renamed to
+> **HapticWAM** on 2026-09-19. The Python package and the CLI keep the name
+> `phantom`; module paths, config keys, checkpoint names and tags are unchanged.
 
 Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 (or 8×A100) cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption — now a config flip: `configs/compute.yaml`.
 
@@ -6,7 +11,7 @@ Module names used throughout:
 
 | Long name | Short name |
 |---|---|
-| Predictive Haptic ANTicipation with Occlusion-robust Manipulation | **PHANTOM** |
+| Haptic World-Action Model (working name until 2026-09-19: PHANTOM) | **HapticWAM** |
 | Heterogeneous Haptic Tokenizer | **HHT** |
 | Anticipatory Contact Coupling | **ACC** |
 | Asymmetric generative head with contact-event reparametrization | **ACE head** |
@@ -71,11 +76,11 @@ Everything is timestamped on one clock (RTDE master); high-rate streams stored n
 
 ---
 
-## 2. Which modalities PHANTOM uses
+## 2. Which modalities HapticWAM uses
 
 **Consume (input) — the full native SDK surface.** $I_t$ (+ $I^w_t$), $l$, $q_t$; from each DM-Tac W2L: $G_t$, the displacement field $D_t$, the force-field stack $F_t$, the 6-axis wrench $f_t$, native contact area $A_t$, plus the derived $(M_t, p_t, s_t)$; and the wrist F/T window $w_{t-k:t}$. **Yes, the wrist F/T goes into the teacher too**: it is (i) the earliest physical precursor of contact — the wrench rises before the fingertip feels anything, exactly what ACC needs; (ii) free on the robot; (iii) the one contact-bearing signal that *survives distillation* — and giving it to the teacher makes the teacher-vs-student comparison isolate exactly the tactile removal.
 
-**Generate (output) — contact mechanics, not tactile pixels.** Next-step scene-RGB latent $\hat I_{t+1}$ (coarse, guidance only, droppable at inference); the structured contact package $\hat c_{t+1} = (\hat e_{t+1}, \Delta\hat D_{t+1}, \Delta\hat f^z_{t+1}, \hat M_{t+1}, \hat p_{t+1}, \hat s_{t+1}, \hat f_{t+1})$ where $\hat e$ is the contact-event token, $\Delta\hat D$ is a downsampled displacement-delta field (e.g., 48×36×3), and $\Delta\hat f^z$ is the downsampled **calibrated normal-force delta** (48×36×1, from the native distributed-force channel — the fragility-relevant quantity, now generated in force units rather than a deformation proxy); next wrist F/T $\hat w_{t+1}$; and the action chunk $a_{t:t+H}$. The gel image is **not** generated — its mechanical content is already in $(D, F, M, p, s, f)$, and generating tactile pixels is the "tactile-as-image fidelity tax" PHANTOM is positioned against. The full-resolution force-field stack $F_t$ is likewise consumed but not generated at full resolution — $\Delta\hat f^z$ carries its safety-critical content.
+**Generate (output) — contact mechanics, not tactile pixels.** Next-step scene-RGB latent $\hat I_{t+1}$ (coarse, guidance only, droppable at inference); the structured contact package $\hat c_{t+1} = (\hat e_{t+1}, \Delta\hat D_{t+1}, \Delta\hat f^z_{t+1}, \hat M_{t+1}, \hat p_{t+1}, \hat s_{t+1}, \hat f_{t+1})$ where $\hat e$ is the contact-event token, $\Delta\hat D$ is a downsampled displacement-delta field (e.g., 48×36×3), and $\Delta\hat f^z$ is the downsampled **calibrated normal-force delta** (48×36×1, from the native distributed-force channel — the fragility-relevant quantity, now generated in force units rather than a deformation proxy); next wrist F/T $\hat w_{t+1}$; and the action chunk $a_{t:t+H}$. The gel image is **not** generated — its mechanical content is already in $(D, F, M, p, s, f)$, and generating tactile pixels is the "tactile-as-image fidelity tax" HapticWAM is positioned against. The full-resolution force-field stack $F_t$ is likewise consumed but not generated at full resolution — $\Delta\hat f^z$ carries its safety-critical content.
 
 ---
 
@@ -99,7 +104,7 @@ and adds it as an attention bias toward tactile tokens, amplifying touch only wh
 
 ### ACC — Anticipatory Contact Coupling
 
-**Design principle (WAM-native).** PHANTOM generates the next-step contact package every replan, so anticipation requires no extra annotation: *the model's own generated future contact is the anticipatory signal.* One fix over v1: to avoid circularity (the gate cannot consume an output of the very forward pass it biases), ACC reads the **previous replan's** prediction:
+**Design principle (WAM-native).** HapticWAM generates the next-step contact package every replan, so anticipation requires no extra annotation: *the model's own generated future contact is the anticipatory signal.* One fix over v1: to avoid circularity (the gate cannot consume an output of the very forward pass it biases), ACC reads the **previous replan's** prediction:
 
 $$e_t = \phi\big(\big[\,w_{t-k:t}\;\Vert\; z^{\text{vis}}_t \;\Vert\; a^{\text{intent}}_t \;\Vert\; \hat c_{t+1|t-1}\,\big]\big)$$
 
@@ -164,7 +169,7 @@ $$\mathcal L = \lambda_a \mathcal L_{\text{act}} + \lambda_v \mathcal L_{\text{v
 
 ### HID — Haptic-Imagination Distillation
 
-Teacher: full PHANTOM (all DM-Tac streams + wrist F/T + vision + proprio). Student: identical architecture with the DM-Tac input path removed (vision + proprio + wrist F/T). The student keeps the ACE head — it still *generates* the contact package; it just can no longer *feel* it. Distill the teacher's imagined future, not a single token:
+Teacher: full HapticWAM (all DM-Tac streams + wrist F/T + vision + proprio). Student: identical architecture with the DM-Tac input path removed (vision + proprio + wrist F/T). The student keeps the ACE head — it still *generates* the contact package; it just can no longer *feel* it. Distill the teacher's imagined future, not a single token:
 
 $$\mathcal L_{\text{HID}} = \sum_{\tau=1}^{T} w_\tau\Big[\, d\big(\hat c^{\,S}_{t+\tau},\; \mathrm{sg}\,\hat c^{\,T}_{t+\tau}\big) \;+\; \mathrm{CE}\big(\hat e^{\,S}_{t+\tau},\; \mathrm{sg}\,\hat e^{\,T}_{t+\tau}\big)\Big], \qquad w_\tau = s_\tau \cdot c_\tau,$$
 
@@ -186,7 +191,7 @@ on the **calibrated normal-force field** (native `getDistributeForce` z-channel;
 
 ---
 
-## 6. PHANTOM — full architecture and data workflow
+## 6. HapticWAM — full architecture and data workflow
 
 ### a) Backbone choice
 
@@ -231,7 +236,7 @@ v1 trained a separate 100–300 M "IDM" action DiT. **Deleted.** Both Cosmos-Pol
 
 Closed loop is **receding-horizon chunks, not per-tick** (~5 NFE ≈ seconds per replan on this backbone — the Cosmos-Policy operating point; v1's per-tick loop was not achievable). Per replan: **(1)** encode current obs (HHT); **(2)** ACC fuses leading signals with the previous replan's $\hat c$ into the typed gate; **(3)** one joint denoise (5 NFE) produces the contact package $\hat c$, next wrist F/T $\hat w$, the action chunk $a_{t:t+H}$ ($H$=16–50), and optionally the video frames (droppable via the ACE attention mask); **(4)** the arm executes the chunk at control rate while the speed governor scales velocity by the contact-group $\sigma$; **(5)** real captured sensors replace the imagined ones as new context (AR grounding — errors cannot compound in imagination); repeat. Training = next-step prediction on all generated groups against recorded values (the plain WAM objective) + action loss + the auto-derived ACC auxiliaries; **no manual event tags exist anywhere in the pipeline.**
 
-### Stage 1 diagram (teacher PHANTOM)
+### Stage 1 diagram (teacher HapticWAM)
 
 ```mermaid
 flowchart TB
@@ -260,7 +265,7 @@ flowchart TB
     FT --> TCN
     ST --> SMLP
 
-    subgraph CORE["PHANTOM core"]
+    subgraph CORE["HapticWAM core"]
         DIT["Cosmos-Predict2.5-2B DiT trunk (LoRA r=8-16)"]
         ACC["ACC: anticipatory typed gate"]
     end
@@ -361,7 +366,7 @@ Anchor: Dream-Tac fine-tuned Cosmos-Predict2-2B with **100 episodes/task** (on 8
 
 | RQ | Claim | Headline evidence |
 |---|---|---|
-| RQ1 | Structured tactile (HHT) > tactile-as-image | PHANTOM beats its own VAE-only-tactile variant, largest gap on force-safety/slip tasks |
+| RQ1 | Structured tactile (HHT) > tactile-as-image | HapticWAM beats its own VAE-only-tactile variant, largest gap on force-safety/slip tasks |
 | RQ2 | ACC > reactive gating | Beats the in-framework CASA variant on transient events, with the gate-lead-time plot (fires *before* physical onset) |
 | RQ3 | HID removes the sensor cheaply — **the headline** | Student recovers most of the teacher-over-vision-only gap, *especially under occlusion*; the no-distillation control shows the gain is distillation, not just wrist F/T |
 
@@ -370,7 +375,7 @@ Anchor: Dream-Tac fine-tuned Cosmos-Predict2-2B with **100 episodes/task** (on 8
 ### Comparative systems — all five in-framework (no external reimplementations)
 
 1. **Vision-only WAM** — same backbone, no tactile ever: lower bound.
-2. **Teacher PHANTOM** — full tactile at test: upper bound.
+2. **Teacher HapticWAM** — full tactile at test: upper bound.
 3. **HID student (ours)** — vision + proprio + wrist F/T, no fingertip sensors.
 4. **No-distillation control** — *identical inputs to (3), trained from scratch without HID.* **The critical control**: without it, reviewers attribute everything to the wrist F/T.
 5. **Drop-tactile-add-nothing student** — distilled, but vision + proprio only: isolates the value of the F/T substitution.
@@ -404,5 +409,5 @@ each reported overall **and under occlusion**.
 2. **Confirm the arm generation** (likely a UR5-class arm; read the model plate): e-Series (built-in 500 Hz wrist F/T) vs CB3 (order a Robotiq FT-300S now — ACC depends on it).
 3. **5090 smoke test**: PyTorch ≥2.7 cu128 (Docker recommended), flash-attn source-built for sm_120 or SDPA fallback; load `Cosmos-Predict2.5-2B/robot/action-cond`, run one LoRA step at target resolution, **measure the actual VRAM footprint** (official numbers span 20–80 GB purely on resolution/sequence length).
 4. Check Hugging Face for a manipulation-domain Cosmos-Predict2.5 post-train newer than `robot/action-cond`/`robot/policy` at implementation time.
-5. Settle the model name (PHANTOM is a placeholder; "WHAM" is off the table — Microsoft collision).
+5. ~~Settle the model name~~ — **done 2026-09-19**: the project is **HapticWAM** (Haptic World-Action Model). The working name PHANTOM is retired from prose; the Python package and CLI keep `phantom`. ("WHAM" was off the table — Microsoft collision.)
 6. Calendar: ICRA deadline ~Sep 15 → data collection must start by week 3.

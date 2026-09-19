@@ -18,7 +18,7 @@ from huggingface_hub import HfApi
 
 DRIVE = Path("/media/nuc/kostya_drive/phantom_episodes")
 QUALITY_CSV = Path.home() / "phantom-icra-2027" / "episode_quality.csv"
-REPO = "armteam/phantom-episodes"
+REPO = "armteam/hapticwam-teleop-raw"
 EXPECTED = {"Carton": 180, "waffles": 180, "egg": 180, "whiteboard": 180,
             "Carton_fail": 20, "waffles_fail": 20, "egg_fail": 20,
             "whiteboard_fail": 10}
