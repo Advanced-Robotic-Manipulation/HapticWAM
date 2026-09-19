@@ -26,7 +26,7 @@ The full specification is [pipeline.md](pipeline.md); start reading the operatio
 ## Install
 
 ```bash
-git clone --recurse-submodules <this repo>
+git clone --recurse-submodules git@github.com:Advanced-Robotic-Manipulation/HapticWAM.git
 git submodule update --init cosmos-predict2.5   # the DiT code, imported as a library
 pip install -e .[dev,train,cosmos]
 ```
