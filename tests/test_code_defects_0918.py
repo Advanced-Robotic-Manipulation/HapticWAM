@@ -711,6 +711,7 @@ def unsupported_teacher(student_runs):
     return ck
 
 
+@pytest.mark.requires_cosmos_repo
 def test_distill_refuses_a_teacher_whose_denoise_flags_it_cannot_honour(
         unsupported_teacher, student_runs):
     """ENTRY POINT: the real CLI against a real teacher checkpoint. The refusal
@@ -733,6 +734,7 @@ def test_distill_refuses_a_teacher_whose_denoise_flags_it_cannot_honour(
     assert not (Path(student_runs) / "hid" / "cd0918_refuse_flags_r0").exists()
 
 
+@pytest.mark.requires_cosmos_repo
 def test_the_escape_hatch_warns_and_distils_anyway(unsupported_teacher,
                                                    student_runs):
     """ENTRY POINT, other path: with --allow-unsupported-teacher-flags the same
