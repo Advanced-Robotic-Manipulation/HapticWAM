@@ -20,7 +20,7 @@ distillation + force-safety fine-tune).
 The full specification is [pipeline.md](pipeline.md); start reading the operational state at
 [docs/STATUS.md](docs/STATUS.md).
 
-> HapticWAM was developed under the working name PHANTOM until 2026-09-19; the Python package and
+> HapticWAM was developed under the working name PHANTOM until 2026-09-14; the Python package and
 > CLI keep the name `phantom`.
 
 ## Install
