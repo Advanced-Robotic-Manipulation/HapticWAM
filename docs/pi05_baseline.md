@@ -251,8 +251,8 @@ Two scripts sit on compute2, and only one of them is running:
   It never touches the newest checkpoint or whatever `last` resolves to, and
   it exits when the training pid does.
 * `~/lerobot/prune_checkpoints.sh <run_dir> <keep_n> [--apply]` -- NOT armed,
-  and deliberately so. It genuinely deletes, which needs Mikhail's explicit
-  say-so; without `--apply` it only prints what it would remove. Same guards.
+  and deliberately so. It genuinely deletes, which needs the operator's
+  explicit say-so; without `--apply` it only prints what it would remove. Same guards.
 
 ### What the deploy adapter gets, and the one thing it must fix
 

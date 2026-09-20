@@ -15,7 +15,7 @@ an explicit precondition:
   3/7 postmortem episodes started while the gripper was still homing
   (OBJ==0 at frame 0) - a state that occurs mid-grasp in training data.
 
-Known limits (reviewed 2026-08-20): rotation sigma is per-axis on the
+Known limits (measured 2026-08-20): rotation sigma is per-axis on the
 axis-angle vector, canonicalized to the representation nearest the task mean
 (rotvec_nearest) - the task clusters sit at rotvec norm 2.55-2.65 rad, close
 enough to pi that live readings can flip to the antipodal representation. The homing moveL runs BEFORE the
@@ -229,10 +229,9 @@ def wait_gripper_settled(gripper, timeout_s: float = 10.0) -> bool:
 
 def clamp_start_target(tcp_target: np.ndarray, bounds: dict | None) -> np.ndarray:
     """Clamp the sampled start xyz into `bounds` = {"y_max": -0.28, "z_min": 0.31, ...}
-    (metres; keys <axis>_min / <axis>_max, axis in x y z). Rig 09-12 (Ilya,
-    docs/results/rig_pick_patterns_20260912): starts at y <= -0.28 and z in
-    0.31-0.36 reached the box at mean stage 1.96 vs 0.27 for box-side / low
-    starts, for every model. Deterministic, so a paired cell (same seed on
+    (metres; keys <axis>_min / <axis>_max, axis in x y z). Rig 09-12: starts
+    at y <= -0.28 and z in 0.31-0.36 reached the box at mean stage 1.96 vs
+    0.27 for box-side / low starts, for every model. Deterministic, so a paired cell (same seed on
     both arms) still gets the same start. None / empty = unchanged."""
     if not bounds:
         return tcp_target

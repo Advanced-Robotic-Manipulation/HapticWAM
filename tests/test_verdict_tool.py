@@ -15,7 +15,7 @@ def _ep(root: Path, name: str, *, seed: int, ckpt: str, task="Carton"):
     d.mkdir(parents=True)
     meta = {"task": task, "status": "aborted", "success": None, "notes": "",
             "tags": ["nfe1", f"seed:{seed}", f"ckpt:{ckpt}", "unlabeled"],
-            "operator": "mikhail", "damage": None, "weight": 1.0}
+            "operator": "op", "damage": None, "weight": 1.0}
     (d / "meta.json").write_text(json.dumps(meta))
     return d
 

@@ -1,4 +1,4 @@
-"""F17 (VALIDATION_0830 P0 #7): every number in start_poses.yaml comes from the
+"""F17 (2026-08-30 P0 #7): every number in start_poses.yaml comes from the
 SAME episode set, and the loader refuses a file where it does not.
 
 The 2026-08-28 file carried q_n = 17..37 against n = 250: the STOP hitbox, the

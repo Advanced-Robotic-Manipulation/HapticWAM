@@ -3,7 +3,7 @@
     python tools/rederive_rollout_actions.py <episode-or-root> [--hardware configs/hardware.yaml]
     python tools/rederive_rollout_actions.py data/episodes/deploy --dry-run
 
-Why (P9, docs/review_20260828/REVIEW_SYNTHESIS.md, last paragraph):
+Why (P9):
 
   A TELEOP demo's `actions` stream is the MEASURED delta-EE pose, derived from
   two consecutive measured TCP poses on the `control.action_rate_hz` (10 Hz)

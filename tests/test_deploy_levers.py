@@ -1,4 +1,4 @@
-"""Deploy levers from the 2026-08-28 review (docs/review_20260828), all behind
+"""Deploy levers from 2026-08-28, all behind
 flags that default OFF so the rig A/B can attribute each effect:
 
 P2 `--parity-fixes` — prev_chunk built from the MEASURED arm history + the

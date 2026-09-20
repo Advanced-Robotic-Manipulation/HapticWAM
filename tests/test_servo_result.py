@@ -1,4 +1,4 @@
-"""Issue #7 (review 09-05): the executor anchors on what the arm RECEIVED.
+"""Issue #7 (09-05): the executor anchors on what the arm RECEIVED.
 Real URArm + fake RTDE responses; real ChunkExecutor + a stub arm."""
 from __future__ import annotations
 
@@ -318,7 +318,7 @@ def test_elbow_escape_never_streams_a_joint_whip():
 
 
 def test_grip_latch_reads_and_clears_are_serialized_by_the_executor_lock():
-    """Ultrareview 09-05: the planner's clear and the executor's read-modify-
+    """09-05: the planner's clear and the executor's read-modify-
     write of `_grip_latch` must be mutually exclusive under `_lock` (a
     timing stress test cannot show the single-bytecode race; the lock
     discipline can be shown deterministically)."""

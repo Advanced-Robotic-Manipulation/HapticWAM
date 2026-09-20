@@ -112,7 +112,7 @@ def test_trip_names_the_sensor(hw):
 
 def test_stale_stream_trips(hw):
     """A dead/hung tactile worker must TRIP, not silently blind the guard
-    behind its last benign sample (review finding)."""
+    behind its last benign sample."""
     rings = _rings(hw, force=0.0)                 # benign values...
     name = hw.tactile.sensors[0].name
     r = rings[f"tactile_{name}"]

@@ -1,7 +1,6 @@
-"""MUST-FIX batch from docs review REVALIDATION_0831 §2 (2026-08-31).
+"""MUST-FIX batch §2 (2026-08-31).
 
-Each test first REPRODUCES what the revalidation measured on this tree, then
-pins the fix.
+Each test first REPRODUCES what was measured on this tree, then pins the fix.
 
 #1 `--max-episode-s` was dead: `PlannerLoop.run` checks the replan COUNT
    before the wall clock and `--max-replans` defaulted to 40, so the
@@ -347,7 +346,7 @@ def test_the_hid_programs_carry_the_data_recipe_too():
 def test_resume_restores_every_recipe_key_the_cli_did_not_name(recipe_ckpt,
                                                               runs_root,
                                                               monkeypatch):
-    """Reproduction (revalidation §2 #8): resuming with only the model flags
+    """Reproduction (2026-08-31 §2 #8): resuming with only the model flags
     gave `ema_decay 0.999` (checkpoint 0.995), `photo_aug 0.0`,
     `commit_band_weight 1.0` — and the NEW checkpoint recorded the reverted
     values as if they had held for the whole run."""

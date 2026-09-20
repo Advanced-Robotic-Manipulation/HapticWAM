@@ -1,4 +1,4 @@
-"""Issue #8 (review 09-05): a busy policy server must be distinguishable
+"""Issue #8 (09-05): a busy policy server must be distinguishable
 from an absent one over the REAL localhost protocol, a second client must
 not be able to drive the policy, and one host gets one robot owner."""
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Tactile grasp-success labeling (REVIEW_SYNTHESIS.md P8).
+"""Tactile grasp-success labeling (finding P8).
 
 WHY THIS EXISTS
 ---------------
@@ -116,13 +116,13 @@ from phantom.train.common import close_index
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# thresholds (REVIEW_SYNTHESIS P8) — every one of these is overridable
+# thresholds (finding P8) — every one of these is overridable
 # ---------------------------------------------------------------------------
 
 #: Per-task ceiling on the TCP z at the moment of close, millimetres.
 #: PROVENANCE: the p95 of z_close over the successful teleop demos of that task
 #: plus a 15 mm margin, measured 2026-08-28 over all 1115 v5 episodes
-#: (REVIEW_SYNTHESIS.md P8). It is a per-task *table height* proxy, so it is
+#: (finding P8). It is a per-task *table height* proxy, so it is
 #: only valid for the rig geometry those demos were recorded on: re-derive it
 #: (tools/rig_trace_decompose.py demos <task_dir>) after any table/TCP-offset
 #: change. Keys are the raw task names; a `*_fail` suffix is stripped.

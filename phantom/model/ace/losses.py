@@ -58,7 +58,7 @@ def _nll_term(d_B_Tc: torch.Tensor, log_var: torch.Tensor,
     Default (beta=None, detach_weight=False) is exactly the historical
     `d / sigma^2 + log sigma^2` — bit-identical, no extra ops.
 
-    P5 knobs (review 2026-08-28), both aimed at the same thing: the trunk's
+    P5 knobs (2026-08-28), both aimed at the same thing: the trunk's
     gradient through `x0_pred` is `2r/sigma^2`, and the logged regime is
     `log sigma ~ -2.35` (`1/sigma^2 ~ 110`), so the contact residual owns the
     LoRA while the action objective trains at ~1/10-1/50 rate.
@@ -172,7 +172,7 @@ def event_band_mse(x0_pred: torch.Tensor, x0_target: torch.Tensor, layout,
     `cpk.event` from it at sampling and flatten_summary() feeds those
     probabilities to ACC (two-pass training AND deploy). Plain MSE, weighted
     like the EventReadout CE, keeps the head shapes and checkpoint format
-    unchanged (Codex review 2026-08-26)."""
+    unchanged (2026-08-26)."""
     sl = layout.frame_slice(FrameGroup.CONTACT)
     d = (x0_pred[:, event_channel, sl].float() - x0_target[:, event_channel, sl].float()) ** 2
     return _weighted_mean(d, weights)

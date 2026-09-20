@@ -227,7 +227,7 @@ def test_run_deploy_parser_defaults():
                                             resolve_max_replans)
     a = build_parser().parse_args(["--system", "teacher", "--task", "waffles"])
     # --max-replans parses to None so main can tell "40" from "unspoken"
-    # (revalidation 2026-08-31 #1); 40 is still the cap with no wall clock.
+    # (2026-08-31 #1); 40 is still the cap with no wall clock.
     assert a.max_replans is None and DEFAULT_MAX_REPLANS == 40
     a.max_episode_s = 0
     assert resolve_max_replans(a) == 40
@@ -247,7 +247,7 @@ def test_gripper_ctl_open_close_status_on_mock():
 
 
 def test_floor_is_a_clamp_even_with_the_hitbox_armed():
-    """Review 2026-08-28: with the hitbox intersected against the already-raised
+    """2026-08-28: with the hitbox intersected against the already-raised
     floor, a target below the floor tripped hitbox_exit (STOP) instead of being
     clamped. A deep descent must be pinned at the floor, never stopped."""
     from phantom.scripts.run_deploy import build_parser, resolve_z_floor

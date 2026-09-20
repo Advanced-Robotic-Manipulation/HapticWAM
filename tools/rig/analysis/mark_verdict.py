@@ -1,4 +1,4 @@
-"""Re-file a take's verdict after the fact on Mikhail's word.
+"""Re-file a take's verdict after the fact on the operator's word.
 usage: mark_verdict.py <episode dir name> <s|f|c> "<note>" [tag_to_add ...]"""
 import json
 import os

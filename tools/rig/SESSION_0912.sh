@@ -8,7 +8,7 @@
 #   ./SESSION_0912.sh blockc     Block C: stop 2 4 5 6 (keeps 1 v6), warm 3 stu_v6_r2
 #   ./SESSION_0912.sh monday     09-14: warm 9 (v6_simft2k, --flex --compile) + 2 (stu_ftA_r2), then 1 (v6) if it fits
 #   ./SESSION_0912.sh rows 9 17 14   09-15: warm exactly these menu rows, in this order, each only if it fits
-#   (09-15: EXPERIMENT.sh drives this per block — RUN_SHEET_0915.md)
+#   (09-15: EXPERIMENT.sh drives this per block)
 # Never kills another user's process: if the GPU is held by someone else it says so and exits.
 cd "$(dirname "$(readlink -f "$0")")"
 TSV=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}/MODELS.tsv
@@ -54,7 +54,7 @@ case "${1:-warm}" in
     if [ $((F + O)) -lt 15000 ]; then
       echo "!! less than 15 GB available even counting our own servers: another job holds the 5090. Do NOT kill it — wait for it or ask."; exit 3
     fi
-    warm 9 2          # Block P: Ilya's sim-expert teacher vs the pad-free student (RUN_SHEET_0914.md)
+    warm 9 2          # Block P: the sim-expert teacher vs the pad-free student
     warm 1            # base v6, only if it fits (three Cosmos servers is the ceiling)
     ./serve_bg.sh status; echo "GPU free now: $(free_mib) MiB";;
   blockc) ./serve_bg.sh stop 2; ./serve_bg.sh stop 4; ./serve_bg.sh stop 5; ./serve_bg.sh stop 6; warm 3; ./serve_bg.sh status;;

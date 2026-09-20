@@ -75,7 +75,7 @@ class TeacherTrainConfig(CommonTrainConfig):
     # ... and the rest of the recipe, for exactly the same reason: these four
     # were read straight off `args` and reached NO part of the checkpoint, so
     # a resume reverted them to the defaults below AND recorded the reverted
-    # values as if they had governed the whole run (revalidation 2026-08-31 #8).
+    # values as if they had governed the whole run (2026-08-31 #8).
     split: str = "train"                 # manifest subset the run trains on
     grasp_frac: float = 0.0              # windows anchored in the pre-close band
     photo_aug: float = 0.0               # scene-camera photometric jitter strength
@@ -95,20 +95,20 @@ class HIDConfig(CommonTrainConfig):
     w_ground: float = 0.5                        # GT RF grounding (actions/video/wrist)
     saliency_kappa: float = 4.0                  # s_tau = 1 + kappa * (1 - p_evt[none])
     confidence_temp: float = 1.0                 # c_tau = exp(-sigma_T / temp)
-    # round-2 knobs (review 09-05, PR #6): both default to the round-1 behaviour
+    # round-2 knobs (09-05, PR #6): both default to the round-1 behaviour
     teacher_nfe: int = 0            # teacher imagination NFE: 0 = legacy nfe//2, -1 = the teacher's own nfe, N = N
     w_sigma: float = 0.0            # student sigma head supervised vs GT (contact_hetero_nll + sigma_reg); 0 = untrained (round 1)
     feature_align: bool = False                  # ablation row
     w_feature_align: float = 0.1
     dagger_round: int = 0                        # 0 = offline; 1,2 = DAgger rounds
     max_steps: int = 30_000
-    # traj_distill target space (code-defect review 2026-09-18):
+    # traj_distill target space (code defect, 2026-09-18):
     #   "roundtrip"    — pack(unpack(teacher CONTACT frames)), what every
     #                    shipped checkpoint was distilled against;
     #   "raw_latents"  — the teacher's raw CONTACT latents, which carry no
     #                    re-packed CoP bump on no-contact steps.
     traj_target: Literal["roundtrip", "raw_latents"] = "roundtrip"
-    # action grounding on on-policy DAgger rollouts (code-defect review
+    # action grounding on on-policy DAgger rollouts (code defect,
     # 2026-09-18): "failure_demo" = the shipped rule (a `success is False`
     # verdict zeroes the action weight, so a judged rollout grounds nothing);
     # "judged_rollouts" = a verdict-judged POLICY rollout keeps its
@@ -121,10 +121,10 @@ class HIDConfig(CommonTrainConfig):
     # (rental workspaces move) and refuse a different one.
     teacher_ckpt_sha12: str = ""
     # ... and the data recipe, for the same reason the teacher carries it
-    # (revalidation 2026-08-31 #8): these four were read straight off `args`
+    # (2026-08-31 #8): these four were read straight off `args`
     # and reached NO part of the student checkpoint, so a --resume that
     # forgot them silently reverted the window recipe to train/0.0/0.0/1.0
-    # (code-defect review 2026-09-18 (c)).
+    # (code defect, 2026-09-18 (c)).
     split: str = "train"                 # manifest subset the run trains on
     grasp_frac: float = 0.0              # windows anchored in the pre-close band
     photo_aug: float = 0.0               # scene-camera photometric jitter strength

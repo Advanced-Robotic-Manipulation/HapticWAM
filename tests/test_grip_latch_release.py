@@ -130,7 +130,7 @@ def test_gripper_channel_is_capped_while_the_pose_plays_the_tail(monkeypatch):
 
 def test_per_episode_reset_clears_control_loss_and_limiter_counters(monkeypatch):
     """The arm driver is shared across the episodes of one process: the
-    control-loss snapshot (audit 09-10) AND the servo-limiter hit/hold counters
+    control-loss snapshot (09-10) AND the servo-limiter hit/hold counters
     (09-11: every later stop.json carried the launch-to-date totals) must be
     cleared when an episode starts."""
     ex, _clock = _ex(monkeypatch)

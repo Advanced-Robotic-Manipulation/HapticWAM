@@ -223,7 +223,7 @@ def test_episode_discard_verdict_after_stop(env):
 
 def test_gripper_not_fed_by_the_loop(env):
     """The pilot pulls the leader at device rate — the 10 Hz session loop
-    must NOT be in the gripper path (review finding: +100 ms latency)."""
+    must NOT be in the gripper path (+100 ms latency)."""
     env.echo.gripper = 0.66
     time.sleep(0.2)
     assert env.pilot.targets == []

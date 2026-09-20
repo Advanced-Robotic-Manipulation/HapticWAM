@@ -204,7 +204,7 @@ print("manifest: bijection onto disk, unique, disjoint splits OK", flush=True)
 PYEOF
 
 echo "== FT-A init checkpoint: v5_6 (teacher_v5_batch0822/teacher_003000.pt)"
-# the plan of record is "FT-A: 3k steps FROM v5_6" (REVIEW_SYNTHESIS.md:478).
+# the plan of record is "FT-A: 3k steps FROM v5_6".
 # v5_6 is byte-identical to compute3's DEMO.pt and is what the rig ran.
 hfget $HUB teacher_v5_batch0822/teacher_003000.pt "$W/dl" >/dev/null
 mkdir -p "$W/runs/teacher/teacher_v5_batch0822"
@@ -300,7 +300,7 @@ rm -rf "$W/dl"
 EPS=$(find -L "$W/data/phantom-episodes/tasks" -maxdepth 2 -mindepth 2 -type d -name "ep_*" | wc -l)
 echo "episodes on disk: $EPS (expect 1115); nproc $(nproc) -> --num-workers $NW"
 
-# COST (review 2026-09-05): a HID step is ~10-12 full 2B-DiT forwards (teacher
+# COST (2026-09-05): a HID step is ~10-12 full 2B-DiT forwards (teacher
 # sample + two-pass anticipation samples + student fwd/bwd) ~= 20 s/step at
 # effective batch 8 on an H100 — NOT a teacher step. 6000 steps x 2 teachers
 # would be ~67 h / ~$150. Defaults below fit the $39 credit; override with

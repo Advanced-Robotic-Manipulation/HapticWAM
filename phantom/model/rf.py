@@ -265,8 +265,8 @@ class PhantomRectifiedFlow(nn.Module):
         corrupts the later frames' latents. The conditioning null happens in
         LATENT space instead (build_x0(null_video_cond=True)). text IS nulled
         here: the ACC two-pass inner sample reads batch text directly, so
-        leaving it leaked task conditioning into dropout samples (codex
-        clearance review 2026-08-15)."""
+        leaving it leaked task conditioning into dropout samples
+        (clearance check 2026-08-15)."""
         out = dict(batch)
         if "text" in out and isinstance(out["text"], (list, tuple)):
             out["text"] = [""] * len(out["text"])

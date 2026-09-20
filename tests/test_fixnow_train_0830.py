@@ -1,4 +1,4 @@
-"""FIX-NOW batch from docs/review_20260828/VALIDATION_0830.md (training side).
+"""FIX-NOW batch from 2026-08-30 (training side).
 
 F1   `--init-weights` + the FT-A bundle died inside `load_phantom_checkpoint`'s
      P10B assert, nine lines before the finetune-tolerant drift check. The
@@ -258,7 +258,7 @@ class _CapturedDataset:
 
     def __init__(self, root, sampler, *a, episodes=None, **kw):
         # the FIRST construction is the training set; distill_hid now also
-        # builds a val set right after it (review 2026-09-05), which must not
+        # builds a val set right after it (2026-09-05), which must not
         # overwrite what the train-split assertions look at
         if not _CapturedDataset.seen or _CapturedDataset.seen.get("_n", 0) == 0:
             _CapturedDataset.seen = {"root": Path(root), "episodes": episodes, "_n": 1}
@@ -636,7 +636,7 @@ def test_the_smoke_runs_the_whole_ft_a_bundle():
                  "--action-noise-per-strip", "--no-action-t-max-of-two",
                  "--cond-dropout 0", "--event-band-weight 0", '"$FTA_INIT"'):
         assert flag in smoke, f"{flag} missing from the provisioning smoke"
-    # retracted 2026-08-31 (E9_premise_test.md:88-93): the smoke must not spend the
+    # retracted 2026-08-31 (E9 premise test): the smoke must not spend the
     # bundle on --contact-self-forcing; it stays only as a commented ablation line.
     cmd = smoke.split("\n# ablation only")[0]
     assert "--contact-self-forcing" not in cmd, (

@@ -1,6 +1,6 @@
 """Opt-in descend-then-release supervisor for the placement phase (placement_descent_v1).
 
-Motivation (sim zoo 2026-09-12, docs/results/sim_zoo_20260912/README.md): once the
+Motivation (sim zoo 2026-09-12): once the
 safety-layer stops are removed (boundary projection v3 + apex cap), the v6 policy
 still opens the gripper 0.35-0.39 m above the box floor, where the demonstrations
 release at 0.18-0.22 m. This supervisor does not create release intent and does

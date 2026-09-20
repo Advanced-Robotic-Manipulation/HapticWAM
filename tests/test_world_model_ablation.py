@@ -1,4 +1,4 @@
-"""The two world-model ablation switches (docs/ARCH_EXPLAINER_0912.md §6.2).
+"""The two world-model ablation switches (architecture note 09-12, §6.2).
 
 `--loss-video <float>`  — lambda_v override, 0 = video objective skipped while
                           the VIDEO_GEN frames stay in the layout.

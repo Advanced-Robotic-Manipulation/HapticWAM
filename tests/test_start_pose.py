@@ -57,8 +57,8 @@ def test_sigma_report_flags_postmortem_start():
 
 
 def test_gripper_participates_in_gate():
-    """Perfect TCP + wildly wrong gripper must still gate out (codex review:
-    the gripper sigma was print-only and never reached the max)."""
+    """Perfect TCP + wildly wrong gripper must still gate out (the gripper
+    sigma was print-only and never reached the max)."""
     st = sp.load_start_stats()["Carton"]
     sig, _ = sp.start_sigma_report(st, st.tcp_mean.copy(), gripper_pos=1.0)
     assert sig.shape == (7,)

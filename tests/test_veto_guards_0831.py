@@ -1,4 +1,4 @@
-"""Revalidation 2026-08-31 §2 #3/#5/#7 guards.
+"""2026-08-31 §2 #3/#5/#7 guards.
 
 #3  the veto must not self-cancel: a MASKED close must never arm the
     phantom-grasp recovery, and a close allowed ONLY by the at_floor hatch

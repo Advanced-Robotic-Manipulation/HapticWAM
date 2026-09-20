@@ -4,7 +4,7 @@ Synthetic zarr episodes (real EpisodeWriter, real streams) exercise the four
 cases the rig actually produces — a clean grasp, an under-grasp that closes on
 air and lifts anyway, an over-squeeze that grasps AND stalls, and a correct
 close with no lift — plus the invariant that Robotiq OBJ never enters
-`grasp_ok` (REVIEW_SYNTHESIS.md P8: OBJ==2 flags over-squeeze, not grasp).
+`grasp_ok` (finding P8: OBJ==2 flags over-squeeze, not grasp).
 """
 
 from __future__ import annotations

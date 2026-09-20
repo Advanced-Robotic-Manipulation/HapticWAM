@@ -1,4 +1,4 @@
-"""Codex review 2026-08-26 fixes: CoP NaN sentinel survives to the packer,
+"""2026-08-26 fixes: CoP NaN sentinel survives to the packer,
 event band is supervised, ACC probabilities are fp32, manifest_split is a
 bijection check, intake skips non-finalized takes."""
 from __future__ import annotations

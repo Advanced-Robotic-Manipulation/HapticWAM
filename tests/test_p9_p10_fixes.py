@@ -1,4 +1,4 @@
-"""P9 + P10 of the 2026-08-28 review (docs/review_20260828/REVIEW_SYNTHESIS.md).
+"""P9 + P10 findings of 2026-08-28.
 
 P9  — unlabeled / contaminated rollouts must never reach the optimizer at
       action weight 1: the deploy no-verdict guard, is_trainable_episode(),

@@ -233,7 +233,7 @@ def test_make_lift_complete_closure_thresholds():
 
 
 def test_servo_l_rejects_ik_branch_flip():
-    """Rig 2026-09-01 root cause (Opus analysis): host-side IK with no qnear
+    """Rig 2026-09-01 root cause: host-side IK with no qnear
     seed returned a different solution branch at the elbow-straight boundary
     and servoJ swept a ballistic arc to it. servo_l must (a) seed IK with the
     previous solution, (b) refuse to stream a flipped solution, (c) give up

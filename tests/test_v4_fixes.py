@@ -154,7 +154,7 @@ def test_frame_contact_requires_area_not_single_pixel():
 
 def test_label_sanity_gate_is_loud():
     """Degenerate labels must hard-fail training startup (issue #1 follow-up:
-    Ilya's build-time assert suggestion)."""
+    a build-time assert)."""
     import logging
     import pytest as _pt
     import torch as _t
@@ -221,7 +221,7 @@ def _count_sample_calls(pm, batch, monkeypatch, **kw):
 def test_two_pass_inner_sample_skipped_when_prev_cpk_given(tiny_two_pass, monkeypatch):
     """Deploy passes the TRUE previous-replan package; the ACC inner sample
     that build_x0 would run to predict it is overwritten anyway. It cost
-    ~0.35 s/replan on the rig (review find 2026-08-20)."""
+    ~0.35 s/replan on the rig (2026-08-20)."""
     pm, batch = tiny_two_pass
     pm.rf.eval()
     n_first, pred = _count_sample_calls(pm, batch, monkeypatch)

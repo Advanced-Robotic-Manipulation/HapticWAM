@@ -94,7 +94,7 @@ def test_every_flag_the_rental_launches_exists_in_the_parser(monkeypatch):
 def test_the_launch_line_is_the_playbook_bundle_and_nothing_it_retracted():
     """`docs/training_playbook.md`'s FT-A code block is the bundle of record.
     The script must carry all of it and none of the flags the playbook marks
-    as NOT in the bundle (E9_premise_test.md retracted --contact-self-forcing;
+    as NOT in the bundle (E9 premise test retracted --contact-self-forcing;
     --contact-nll-detach-weight and --no-wrist-region-mse were never in it)."""
     book = PLAYBOOK.read_text(encoding="utf-8")
     bundle = book.split("### FT-A — the recommended objective bundle")[1]
@@ -116,7 +116,7 @@ def test_the_launch_line_is_the_playbook_bundle_and_nothing_it_retracted():
     # ... and the retraction must be traceable from the script itself
     src = PROVISION.read_text(encoding="utf-8")
     assert "--contact-self-forcing" in src, "keep it as a commented ablation line"
-    assert "E9_premise_test.md" in src, "cite the evidence for the retraction"
+    assert "E9 premise test" in src, "cite the evidence for the retraction"
 
 
 def test_the_launch_line_carries_the_playbook_values_not_just_the_flags():
@@ -202,7 +202,7 @@ def test_every_documented_extra_line_parses_through_run_deploy():
 
 
 def test_arm_b_reaches_the_wall_clock_budget_it_documents():
-    """C1 / VALIDATION_0830 P0 #4. `PlannerLoop.run` checks the replan COUNT
+    """C1 / 2026-08-30 P0 #4. `PlannerLoop.run` checks the replan COUNT
     before the wall clock, so `--max-episode-s 35` is dead at the default 40
     replans: at --nfe 1 (172 ms) the episode ends at `replan_cap` after 7.2 s
     against the documented budget (150 s since 2026-09-01: the 35 s cap ended

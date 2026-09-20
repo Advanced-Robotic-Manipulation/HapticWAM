@@ -1,4 +1,4 @@
-"""Round-2 HID knobs (review 09-05): teacher imagination at the teacher's own
+"""Round-2 HID knobs (09-05): teacher imagination at the teacher's own
 NFE and a supervised student sigma head. Both default to the round-1
 behaviour (nfe//2, untrained head). Real tiny models, one real batch."""
 from __future__ import annotations

@@ -69,7 +69,7 @@ lead-time evaluation switch `AccConfig.self_anticipation="two_pass"`.
 
 ### FT-A — the recommended objective bundle for the next teacher fine-tune
 
-Findings P5, P6 and P7 of `docs/review_20260828/REVIEW_SYNTHESIS.md` are all
+The P5, P6 and P7 findings of 2026-08-28 are all
 *objective* defects: the model is fine, what it is asked to minimise is not.
 Each is a flag, each defaults OFF, and with all of them off the run is
 bit-identical to v4/v5 — so the shipped checkpoints stay reproducible.
@@ -86,7 +86,7 @@ bit-identical to v4/v5 — so the shipped checkpoints stay reproducible.
 | `--contact-nll-beta B` | P5 | β-NLL (Seitzer 2022): the contact term is multiplied by `sigma^(2B)` **detached**. The trunk's contact gradient is `2r/sigma^2`, and the v4/v5 logs pin `log sigma ≈ −2.35` (`1/sigma^2 ≈ 110`), so the LoRA — the only capacity that can route observations into ACTION tokens — is optimised as a contact-field forecaster and the action objective trains at ~1/10–1/50 rate. β=1 hands the trunk exactly the plain-MSE gradient; β=0.5 halves the exponent and keeps some heteroscedastic weighting. σ stays calibrated for the speed governor either way. |
 | `--contact-nll-detach-weight` | P5 | The *alternative* to β-NLL, not a companion: σ head on the detached residual, trunk on plain MSE. Pick one. |
 | `--no-wrist-region-mse` | P5 | Drops the `λ_w` term. Packed channel 15 is also the NLL's `wrist` sigma group, i.e. supervised twice. Not in the bundle — it changes the loss *scale* as well as the balance; enable it only in an explicit ablation. |
-| `--contact-self-forcing` *(NOT in the recommended bundle — see below)* | P7 | The ACTION frames are denoised alongside the model's **own** predicted contact package (the `--acc-two-pass` inner sample, already computed — zero extra forward passes) instead of the co-noised GT future, which is 98% decodable at the ACTION head's median training `t=0.90`. GT remains the CONTACT loss target, so only the network *input* changes. Needs `--acc-two-pass`; the run hard-fails without it. **Removed from the recommended FT-A bundle 2026-08-30**: the corrected E9 (docs/review_20260828/E9_premise_test.md) shows the "98% decodable GT" measurement conflated pinning with content — pinning the CONTACT frames to *zeros* hurts commit as much as pinning to GT (0.58 vs 0.65, real 0.94), so E9 provides no exposure-bias gap and no offline evidence that self-forcing helps. The flag remains available for a controlled ablation; do not spend the primary FT-A run on it. |
+| `--contact-self-forcing` *(NOT in the recommended bundle — see below)* | P7 | The ACTION frames are denoised alongside the model's **own** predicted contact package (the `--acc-two-pass` inner sample, already computed — zero extra forward passes) instead of the co-noised GT future, which is 98% decodable at the ACTION head's median training `t=0.90`. GT remains the CONTACT loss target, so only the network *input* changes. Needs `--acc-two-pass`; the run hard-fails without it. **Removed from the recommended FT-A bundle 2026-08-30**: the corrected E9 premise test shows the "98% decodable GT" measurement conflated pinning with content — pinning the CONTACT frames to *zeros* hurts commit as much as pinning to GT (0.58 vs 0.65, real 0.94), so E9 provides no exposure-bias gap and no offline evidence that self-forcing helps. The flag remains available for a controlled ablation; do not spend the primary FT-A run on it. |
 | `--action-noise-per-strip` | P6 | `eps_action = ActionPacker.pack(randn(B,H,A))`: one noise draw per action *value* instead of 160–192 i.i.d. latent cells whose strip mean is a structured 0.072–0.079σ offset. Honoured by `training_step` **and** `sample()` — deploy must draw the noise the model was trained to denoise. The checkpoint records the flag and `run_deploy`/`replay` rebuild from it. |
 | `--no-action-t-max-of-two` | P6 | Drops the max-of-two ACTION timestep. Under max-of-two the ACTION frames see median `t=0.896` and `P(t<0.556)=0.7%`, while the two Euler steps that actually resolve the chunk run at `t≤0.556` — the head is barely trained where it is read. |
 | `--ema-decay 0.995` | — | At 0.999 the EMA averages over ~1000 steps, i.e. a third of a 3000-step fine-tune, so the deployed artifact lags the fine-tune it paid for. |
@@ -121,7 +121,7 @@ per-term norms should land within ~10× of each other instead of the current
 
 ### The world-model ablation — `--loss-video` and `--video-attend`
 
-`docs/ARCH_EXPLAINER_0912.md` §6 item 2: today the 3 imagined VIDEO_GEN frames
+Architecture note (09-12) §6 item 2: today the 3 imagined VIDEO_GEN frames
 buy shared LoRA weights and nothing at inference — `0.1·video_v_mse` shapes the
 adapter, the structural mask forbids ACTION/CONTACT from attending them, and
 `drop_video` is off at deploy. Two flags make that measurable, both default to
@@ -158,7 +158,7 @@ print(json.dumps({"model": c["model"], "train": c.get("train")},
 PY
 
 # 1) the shared block: v6's recipe (fill the objective knobs from the dump
-#    above; wrench_baseline_rows=8 is v6's, docs/audit/PREFLIGHT_0912.md:20)
+#    above; wrench_baseline_rows=8 is v6's)
 V6=runs/teacher_v6/teacher_020000.pt
 COMMON="--data $DATA --hardware configs/hardware.nuc.yaml --allow-config-drift \
   --init-weights $V6 --max-steps 5000 --split train \
@@ -185,9 +185,8 @@ itself — a 5k fine-tune moves the model on its own). B must be evaluated
 **without** `--drop-video`; A and C may be run both ways, and A's
 `--drop-video` delta is the direct measurement of what the video loss was
 buying. On one H100 at effective batch 8 a teacher step is ~7 s
-(`docs/review_20260828/research/CONTEXT.md:25`), so each arm is ≈ 9.7 GPU-h and
-the trio ≈ 29 GPU-h; `docs/review_20260828/lenses/paper-claims.md:263-267`
-prices the same ablation from scratch at ≈ 35 h per arm.
+(measured), so each arm is ≈ 9.7 GPU-h and the trio ≈ 29 GPU-h; the same
+ablation from scratch prices at ≈ 35 h per arm.
 
 ## (3) `phantom.train.distill_hid` — HID distillation
 

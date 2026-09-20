@@ -1,5 +1,5 @@
 # label<TAB>ckpt<TAB>note<TAB>system(teacher|student|vision_only|lerobot|lerobot:<type>, optional; lerobot = pi05)
-# 09-12 16:30: menu REBUILT in today's launch order (RUN_SHEET_0912.md). Rows 1-6 = today (A: 1 vs 2 · B: 4 5 6 · C: 3);
+# 09-12 16:30: menu REBUILT in today's launch order. Rows 1-6 = today (A: 1 vs 2 · B: 4 5 6 · C: 3);
 # rows 7-8 = tomorrow. Dropped: ftA (closes 25-70 mm high on the rig), stu_v6 (superseded by stu_v6_r2). Ports = 7776 + row.
 # Row 9 (sensor-free wrist-masked student) is added when it lands from the H100 (~01:00 09-13).
 v6	runs/teacher_v6/teacher_020000.pt	TEACHER v6 (camera + DM-Tac pads + wrist F/T; all 1115 demos, wrench-zero fix; 20k steps): 20.0/13.9 offline (floor 28.2) - ARM A of Block A and C	
@@ -17,4 +17,4 @@ stu_nowrist_4k	runs/student_ftA_r2_nowrist_4k/student_004000.pt	SENSOR-FREE stud
 v6_video1p0	runs/teacher_v6_ft_video1p0/teacher_002000.pt	WORLD-MODEL ARM D teacher (v6 fine-tuned 2000 steps with video loss weight 1.0; pads + wrist): 18.48 offline, best teacher number; optional rig curiosity only (offline it ties the matched control)	teacher
 v6_simft_mt1500	runs/teacher_v6_simft_multitask/teacher_001500.pt	v6 FINE-TUNED multi-task (259 sim expert episodes waffles/egg/Carton + 230 real teleop, 3000 steps from v6, 09-15; step 1500 = best val: sampled MSE 0.32 / cos 0.61) with --flex --compile	teacher	--flex --compile
 v6_simft_mt2000	runs/teacher_v6_simft_multitask/teacher_002000.pt	same run, step 2000 (val 0.33 / 0.58, magnitude 1.01) with --flex --compile	teacher	--flex --compile
-mt_1500	runs/teacher_v6_simft_multitask/teacher_001500.pt	MULTITASK SIM-EXPERT TEACHER (v6 fine-tuned 3000 steps on 259 sim expert + 230 real episodes, 09-15; Ilya picks step 1500 = lowest sampled action MSE on his 78-ep val; val124 number pending on compute): candidate row 9 replacement, run vs 9 on cells 1-6 first	teacher	--flex --compile
+mt_1500	runs/teacher_v6_simft_multitask/teacher_001500.pt	MULTITASK SIM-EXPERT TEACHER (v6 fine-tuned 3000 steps on 259 sim expert + 230 real episodes, 09-15; step 1500 picked as the lowest sampled action MSE on the 78-ep val; val124 number pending on compute): candidate row 9 replacement, run vs 9 on cells 1-6 first	teacher	--flex --compile

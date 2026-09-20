@@ -1,5 +1,4 @@
 Read-only analysis of real deploy episodes (compute3, `phantom/.venv/bin/python <script>`).
-See `docs/rig_apex_analysis_0911.md` for the 09-11 findings.
 
 - `apex_analysis.py <episodes_root> <out.json>` — per-episode apex/reach/stop table grouped by task and checkpoint (writes the JSON the other scripts read from `/tmp/apex_0911.json`).
 - `apex_detail.py` — post-closure (t, z, r_h, wd) samples for lifted waffles episodes.

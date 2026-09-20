@@ -6,7 +6,7 @@
 >   of a cell (Enter at the cell prompt = the other arm, same placement). Never type `--seed`.
 > - **LEVERS preset** = nfe 1, k-seeds 4, veto, parity, pose plays the whole 16-step chunk, gripper
 >   plays only the first 10 steps (chunk-tail openings flapped the fingers), 150 s, 200 replans.
->   Nothing to append. Preset 5 (Ilya's joint limiter) is for teacher-only trials, never in a pair.
+>   Nothing to append. Preset 5 (the joint limiter) is for teacher-only trials, never in a pair.
 > - **Clamps, not stops**: z ceiling 0.40 m and TCP reach clamp 0.60 m (rig yaml). Carries used to
 >   climb to 0.44 m and die at the 0.468 m wrist stop before turning to the box; now the lift saturates
 >   and the turn executes (seed 110 carried to the box).
@@ -27,7 +27,7 @@
 > Order: ftA (2) vs stu_ftA_r1 (7) x 10 cells (6 waffles, 4 Carton); then stu_ftA_r1 vs ctl_ftA (5)
 > x 8; then **v6 (8) vs stu_v6 (9)** x 8 (v6 is the clean retrain: offline waffles 20.1 mm vs ftA 24.4,
 > but its student is weaker offline, 29.5 vs 22.7 — the rig decides); then v5_6 (1) vs stu_v5_6 (4)
-> if time. Warm servers with `./SERVE.sh` (or ask Claude). Slot 10 = ctl_v6 (ablation only).
+> if time. Warm servers with `./SERVE.sh`. Slot 10 = ctl_v6 (ablation only).
 
 > **8 September teacher-only update:** fixed ftA1500 inference needs the bounded
 > hold and minimal_v5 release explicitly enabled. The multi-model session recipes
@@ -185,7 +185,7 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   move, 3 s countdown — e-stop if the path is not clear) and re-checks, twice, before
   ever asking the operator. Same on the re-gate after "place the object". A wrapped
   wrist unwinds itself.
-- **`lift_complete` success auto-stop — OFF by default since 09-04** (Ilya's call from
+- **`lift_complete` success auto-stop — OFF by default since 09-04** (decided in
   the second half of session 5: at z 0.32 m it fired below the demo apex and cut every
   good grasp before the carry; the operator ends carries with Enter). Opt in with
   `--lift-complete-z 0.32`: both pads loaded (trailing 0.6 s max of |fz| > 4.0 N over
@@ -201,7 +201,7 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   replan and all four whips began there); (4) measured joint speed > 1.2 rad/s stop
   (last-ditch — max whip-free qd all session was 0.73). The 0.62 m TCP-radius clamp is
   RETIRED (0/4 whips; it fought one lift) — the mechanism remains, default off.
-  (5) **servo-level limiter** (Ilya, 09-04 evening — written AFTER the last episode of
+  (5) **servo-level limiter** (09-04 evening — written AFTER the last episode of
   the day, never ran on the arm; **OFF by default** pending the fixes listed in
   the servo-limiter review, enable via `elbow_min_rad` /
   `servo_joint_speed_max_rad_s` in the NUC yaml): per 8 ms tick, if the IK solution would fold the
@@ -212,7 +212,7 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   RTDE round trip (~8 ms), so expect a visible slow-down near the boundary. The NUC
   yaml raises `wrist_extension_stop_m` to 0.468 as the net behind it. Counters land in
   `stop.json` (`servo_limiter`); `null` for both fields = off.
-- **`stop.json` per episode** (Ilya, 09-04): reason, every safety event, arm state at the
+- **`stop.json` per episode** (09-04): reason, every safety event, arm state at the
   stop (q, wrist-centre distance, qd), limiter/IK-guard counters — diagnose from disk.
 - **Aperture latch + tactile recovery** (09-04 analysis): once both pads carry >2.5 N
   the commanded closure can only increase (4/5 objects "lost" were policy-commanded
@@ -307,7 +307,7 @@ EXTRA="--nfe 1 --terminal-veto --parity-fixes --k-seeds 4 --max-episode-s 150 --
 **Do NOT pass `--seed` to a single-episode process.** `episode_seed(base, i) = base + i` uses the *within-process*
 episode index, so `EXTRA="--seed 4242" ./GO_v5_waffles.sh 1` repeated ten times gives seed 4242 ten times — with
 `--persistent-noise` that is one identical noise tensor for the whole arm, i.e. exactly the constant-seed bug this
-session exists to escape (VALIDATION_0830 P0 #6). If a seeded arm is wanted, run the whole block in ONE process; the
+session exists to escape (2026-08-30 P0 #6). If a seeded arm is wanted, run the whole block in ONE process; the
 unseeded path already records `seed:<n>` per episode (and since 08-30 the homing jitter is drawn from that same
 per-episode seed, with the realised start pose tagged `start:<x,y,z>mm/g<aperture>`).
 

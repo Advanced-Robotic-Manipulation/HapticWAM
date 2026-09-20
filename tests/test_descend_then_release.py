@@ -604,7 +604,7 @@ def test_the_episode_tag_names_the_supervisor(monkeypatch, tmp_path):
 
 
 def test_recorded_grip_follows_the_supervisor_override():
-    """S1 (deep preflight 09-13): STREAM_ACTIONS must carry the aperture that went out."""
+    """S1 (rig 09-13): STREAM_ACTIONS must carry the aperture that went out."""
     from phantom.deploy.executor import ChunkExecutor
     ex = ChunkExecutor.__new__(ChunkExecutor)
     assert ex._recorded_grip(0.62) == 0.62                 # no supervisor override -> plan value

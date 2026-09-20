@@ -1,4 +1,4 @@
-"""Deploy-path parity + fail-closed regressions (Codex static review 2026-08-27).
+"""Deploy-path parity + fail-closed regressions (static analysis, 2026-08-27).
 
 Five defects on the real-robot path, none of which a mock dry run surfaces:
 

@@ -2,7 +2,7 @@
 
 `terminal_eval` conditions every input on a demo that is already descending at
 a demo-placed object, so it measures the terminal PRIOR, not perception-driven
-commit (REVIEW_SYNTHESIS P1). This tool instead rebuilds, for every accepted
+commit (finding P1). This tool instead rebuilds, for every accepted
 replan of a recorded deploy episode, the exact `ObsSnapshot` that
 `SnapshotBuilder.build()` saw at that instant (`t = trace[i]["t"] +
 meta.clock_calibration["offset"]`, the alignment tools/rig_trace_decompose.py

@@ -1,7 +1,7 @@
 """tools/replay_rig.py — offline replay of recorded deploy episodes.
 
-Two things have to hold for the replay to be worth anything (REVIEW_SYNTHESIS
-P1 / GATE G0):
+Two things have to hold for the replay to be worth anything (finding P1 /
+GATE G0):
 
 1. the snapshot it rebuilds from the zarr streams at a replan's time must be
    the snapshot `SnapshotBuilder.build()` actually handed the policy on the

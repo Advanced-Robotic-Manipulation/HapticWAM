@@ -248,7 +248,7 @@ class WindowSampler:
         replay one frozen set of windows."""
         items: list[WindowItem] = []
         for ep in (list_episodes(root) if episodes is None else episodes):
-            # P9 (review 2026-08-28): the LAST gate before windows exist. The
+            # P9 (2026-08-28): the LAST gate before windows exist. The
             # DAgger path reaches here directly — dagger_driver hands a rollout
             # root to distill_hid --extra-data, which calls build_index with no
             # manifest at all — so an unjudged or contaminated rollout would
@@ -378,7 +378,7 @@ class WindowSampler:
         # ContactPacker keys the CoP-bump amplitude on that NaN; zeroing it
         # here packed every no-contact timestep as a full-amplitude bump at
         # the canvas centre — a fictitious CoP target in contact_nll, worst on
-        # under-grasp failure demos (Codex review 2026-08-26). Observation
+        # under-grasp failure demos (2026-08-26). Observation
         # features below still use nan_to_num (they must be finite inputs).
         cop = np.full((Tc + 1, F, 2), np.nan, dtype=np.float32)
         slip = np.zeros((Tc + 1, F), dtype=np.float32)

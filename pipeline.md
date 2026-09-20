@@ -5,7 +5,7 @@
 > **HapticWAM** on 2026-09-19. The Python package and the CLI keep the name
 > `phantom`; module paths, config keys, checkpoint names and tags are unchanged.
 
-Target: ICRA 2027 (submission ~Sep 15, 2026). Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 (or 8×A100) cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption — now a config flip: `configs/compute.yaml`.
+Hardware: UR arm + Robotiq parallel gripper + 2× DM-Tac W2L optical-tactile sensors. Backbone: Cosmos-Predict2.5-2B (`robot/action-cond`). Compute: **single RTX 5090 for training (LoRA, 256–480p) AND deployment** — an 8×H100 (or 8×A100) cloud run is a possible later upgrade (would enable the full-FT Cosmos-Policy recipe), not an assumption — now a config flip: `configs/compute.yaml`.
 
 Module names used throughout:
 
@@ -393,7 +393,7 @@ All ablations run on 2 tasks, not the full suite (~8 configs × 2 tasks).
 
 ### Protocol and metrics
 
-Real robot mandatory; sim only for augmentation. Every task run **teacher vs. student** (retention is a paired measurement). Fragility instrumented (pre-scored eggshells, force film), **≥3 seeds, 20 physical trials/task/condition**. Task suite (5): fragile grasp · textured/slippery grasp-and-place · insertion · surface wipe with force regulation · in-hand regrasp — **two of them additionally run under visual occlusion (curtain/lights)**, the regime where the tactile teacher's advantage is largest and the student's hallucination is most tested. Full matrix: 5 systems × 5 tasks (+2 occluded variants) × 20 × 3 ≈ 2,100 trials + ~960 ablation trials — sized to fit the ICRA calendar.
+Real robot mandatory; sim only for augmentation. Every task run **teacher vs. student** (retention is a paired measurement). Fragility instrumented (pre-scored eggshells, force film), **≥3 seeds, 20 physical trials/task/condition**. Task suite (5): fragile grasp · textured/slippery grasp-and-place · insertion · surface wipe with force regulation · in-hand regrasp — **two of them additionally run under visual occlusion (curtain/lights)**, the regime where the tactile teacher's advantage is largest and the student's hallucination is most tested. Full matrix: 5 systems × 5 tasks (+2 occluded variants) × 20 × 3 ≈ 2,100 trials + ~960 ablation trials.
 
 Metrics: success %, breakage/damage %, peak force + threshold violations, slip-recovery rate, ACC lead time (ms) + event F1, latency / control Hz / NFE — and the two headline numbers:
 
@@ -403,11 +403,10 @@ each reported overall **and under occlusion**.
 
 ---
 
-## Verification checklist before building (week 1 — these are blockers, not pre-submission items)
+## Verification checklist before building (blockers, not pre-submission items)
 
 1. **DM-Tac W2L SDK bench — reduced further (SDK source + manuals fully read 2026-07-06; docs/sensor_sdk.md).** `getForce` units CONFIRMED (N / 1e-2 N·m → config 1.0/0.01); raw image confirmed grayscale; offline replay confirmed documented (vendor `gen_feat_hdf5.py`). Remaining half-day items: (a) `getDistributeForce` units only — decides whether HID-S runs on calibrated force or the deformation fallback; (b) `getInferImg` size/channels + true per-stream rates under concurrent dual-sensor polling; (c) numpy (H, W) ordering of the 384×288 grid; (d) sustained multi-stream disk throughput; (e) offline-recompute bit-parity on the rig (then flip `recording.archive_raw_img` + `offline_recompute_ok`).
 2. **Confirm the arm generation** (likely a UR5-class arm; read the model plate): e-Series (built-in 500 Hz wrist F/T) vs CB3 (order a Robotiq FT-300S now — ACC depends on it).
 3. **5090 smoke test**: PyTorch ≥2.7 cu128 (Docker recommended), flash-attn source-built for sm_120 or SDPA fallback; load `Cosmos-Predict2.5-2B/robot/action-cond`, run one LoRA step at target resolution, **measure the actual VRAM footprint** (official numbers span 20–80 GB purely on resolution/sequence length).
 4. Check Hugging Face for a manipulation-domain Cosmos-Predict2.5 post-train newer than `robot/action-cond`/`robot/policy` at implementation time.
 5. ~~Settle the model name~~ — **done 2026-09-19**: the project is **HapticWAM** (Haptic World-Action Model). The working name PHANTOM is retired from prose; the Python package and CLI keep `phantom`. ("WHAM" was off the table — Microsoft collision.)
-6. Calendar: ICRA deadline ~Sep 15 → data collection must start by week 3.

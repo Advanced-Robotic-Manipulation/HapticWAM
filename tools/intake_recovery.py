@@ -143,7 +143,7 @@ def manifest(tasks_root: Path, manifest_path: Path, val_min_eps: int = 0) -> int
         if m.get("status", "finalized") != "finalized":
             print(f"manifest: skipping {ep.name} (status={m.get('status')!r})")
             continue                       # crashed/in-flight/aborted takes never train
-        # P9 (review 2026-08-28): the ONE gate between a deploy rollout and
+        # P9 (2026-08-28): the ONE gate between a deploy rollout and
         # the optimizer. `unlabeled`/`contaminated` takes and unjudged policy
         # rollouts (success is None on a non-teleop episode) are refused a
         # manifest row entirely — admitting them trains the model's own

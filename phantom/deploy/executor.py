@@ -56,7 +56,7 @@ log = logging.getLogger(__name__)
 #: tactile guards exist to protect the gel fingertips, and leaving the fingers
 #: squeezing at the pad ceiling through the label prompt and the "clear the
 #: arm's path" prompt — minutes, unattended — is the opposite of that
-#: (validation_0830/safety-final.md §4).
+#: (2026-08-30 safety §4).
 # Re-export the shared safety classifier above for existing executor callers.
 
 
@@ -130,7 +130,7 @@ class ChunkExecutor:
         # single lock over ALL gripper.move calls (worker + release): the
         # ordering swap in _halt alone leaves a window where a latched close
         # lands AFTER the release (measured 1/30..23/70 depending on socket
-        # RTT — revalidation 2026-08-31 §2 #5); the lock is the load-bearing
+        # RTT — 2026-08-31 §2 #5); the lock is the load-bearing
         # half of the fix
         self._grip_io_lock = threading.Lock()
         self._last_grip_poll = 0.0
@@ -150,7 +150,7 @@ class ChunkExecutor:
         self._last_tick = 0.0
         self._last_cmd: np.ndarray | None = None   # last pose the ARM RECEIVED (driver result)
         self._held_ticks = 0                       # consecutive driver holds (telemetry)
-        self.halt_state: dict = {}                 # arm state captured AT the halt (review item 7)
+        self.halt_state: dict = {}                 # arm state captured AT the halt (item 7)
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -216,7 +216,7 @@ class ChunkExecutor:
             # the SAME origin the lead check above uses. Anchoring at t_created
             # (obs.t) skipped `latency*rate` actions of EVERY chunk: at the
             # rig's ~1.4 s replans that discarded ~14 of 16 actions, so the arm
-            # only ever played chunk tails (review find 2026-08-20; the
+            # only ever played chunk tails (2026-08-20; the
             # postmortem's 35 executed actions / 17 replans).
             u_hi = (min(H, self.max_play_steps)
                     if self.max_play_steps else H) - 1e-6
@@ -253,7 +253,7 @@ class ChunkExecutor:
         """Stop BOTH threads and invalidate the gripper mailbox. Safety stops
         used to only break the servo loop — the gripper worker could still
         consume the previous tick's target (possibly a close) on an arm that
-        had already stopped (review 2026-08-20).
+        had already stopped (2026-08-20).
 
         On a stop that means "let go" (`is_letgo_reason` over the reason and
         over the safety events behind a generic `safety_stop`) the gripper is
@@ -302,7 +302,7 @@ class ChunkExecutor:
     def _snapshot_arm(self, reason: str) -> dict:
         """Arm state AT the halt (before stopJ settles it): stop.json used to
         sample after teardown, so qd read ~0 and the pose was post-stop
-        (review 09-05 item 7). Best effort, never raises."""
+        (09-05 item 7). Best effort, never raises."""
         try:
             st = self.arm.get_state()
             q = np.asarray(st.q, dtype=float).reshape(-1)
@@ -364,7 +364,7 @@ class ChunkExecutor:
 
         The terminal veto latches its phantom-grasp recovery on this, not on
         plan acceptance: an accepted chunk whose close lives in a tail the
-        playback never reached was never commanded (VALIDATION_0830 P0 #3)."""
+        playback never reached was never commanded (2026-08-30 P0 #3)."""
         with self._lock:
             return [(ts, g) for ts, g in self._grip_hist if ts > t]
 
@@ -499,7 +499,7 @@ class ChunkExecutor:
                 # a hard press into the table raises tactile_fz AND the UR
                 # protective stop in the same tick; PROTECTIVE_STOP outranks
                 # STOP_EPISODE, so without the events the letgo release never
-                # ran on exactly that coincidence (revalidation §2 #5)
+                # ran on exactly that coincidence (2026-08-31 §2 #5)
                 self._halt("protective_stop", events=verdict.events,
                            safety_target=(t0, target))
                 break
@@ -570,7 +570,7 @@ class ChunkExecutor:
             # servoJ's time parameter = the interval the controller is asked
             # to reach the setpoint in; give it the interval the setpoint was
             # actually sized for, so a delayed tick never doubles the
-            # commanded speed (review 2026-08-20)
+            # commanded speed (2026-08-20)
             boundary = getattr(self.safety, "boundary_projection", None)
             servo_kwargs = {} if boundary is None else {"target_guard": boundary}
             res = self.arm.servo_l(target, dt_eff, hw.arm.servoj.lookahead_time_s,
@@ -711,7 +711,7 @@ class ChunkExecutor:
         """The gripper value written to STREAM_ACTIONS / _grip_hist: while the
         descend-then-release supervisor overrides the aperture (forced open,
         retract), the command that GOES OUT is the supervisor's, not the plan's
-        (deep preflight 09-13 S1: the plan's closed value was recorded for the
+        (rig 09-13 S1: the plan's closed value was recorded for the
         11-23 rows of every supervised release)."""
         g = self._descent_grip_sent
         return g_sent if g is None else float(g)
@@ -797,7 +797,7 @@ class ChunkExecutor:
         # one locked read-modify-write: the planner thread clears the latch
         # (veto recovery / halt) at replan cadence while this runs at 125 Hz
         # — a check-then-use on the bare attribute raced into `grip > None`
-        # (ultrareview 09-05)
+        # (09-05)
         latched_now = released = False
         released_from = 0.0
         with self._latch_lock():
@@ -1134,7 +1134,7 @@ class ChunkExecutor:
         # a control-loss snapshot belongs to the episode that lost control:
         # the driver object is reused across the episodes of one process, so
         # without this every later stop.json in the process carried the FIRST
-        # E-stop's bits (audit 09-10: 16 of 46 "E-stop" records were stale)
+        # E-stop's bits (09-10: 16 of 46 "E-stop" records were stale)
         self._reset_arm_episode_state()
         self._grip_target = None
         self._last_grip_command = None
@@ -1166,7 +1166,7 @@ class ChunkExecutor:
                 continue
             th.join(budget)
             if th.is_alive():
-                # FATAL for the deployment session (Codex review 2026-08-27):
+                # FATAL for the deployment session (2026-08-27):
                 # a stale gripper worker still owns the one Robotiq socket and
                 # a stale servo thread still owns the servo session, so
                 # starting a second executor here races both. recover_control()

@@ -204,7 +204,7 @@ def file_sha12(path: Path | str) -> str:
     workspace layout of the box it was trained on; a rental that mounts the
     same checkpoint elsewhere then cannot resume. The hash lets a resume
     accept a RELOCATED teacher and still refuse a DIFFERENT one
-    (code-defect review 2026-09-18 (d))."""
+    (code defect, 2026-09-18 (d))."""
     import hashlib
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -253,7 +253,7 @@ def save_phantom_checkpoint(path: Path, model: torch.nn.Module, *,
 def assert_model_config_matches(payload: dict, model: torch.nn.Module, *,
                                 tolerate: frozenset[str] | Iterable[str] = frozenset()) -> None:
     """Refuse a checkpoint whose saved PhantomModelConfig differs from the one
-    the model was BUILT with (P10B, review 2026-08-28).
+    the model was BUILT with (P10B, 2026-08-28).
 
     Behavioral knobs live in `mc`, not in the weights: `rope_time_mode`
     decides the ACTION frames' RoPE positions (recomputed at runtime from mc
@@ -373,7 +373,7 @@ def _norm_shape(v):
 #: while the rig — and every v5/v6 checkpoint — is configs/hardware.nuc.yaml at
 #: 125 Hz (window 31). Loading a rig checkpoint without `--hardware
 #: configs/hardware.nuc.yaml` therefore refuses on a field nobody set by hand
-#: (code-defect review 2026-09-18 (e)).
+#: (code defect, 2026-09-18 (e)).
 _SHAPE_FIELD_SOURCE = {
     "wrist_window_len": "wrist_ft.rate_hz x wrist_ft.window_s",
     "wrist_ft_dim": "wrist_ft.dim",
@@ -454,7 +454,7 @@ def manifest_split(data_root: Path, split: str) -> list[Path] | None:
     # the manifest is the ONLY thing standing between the data and the
     # optimizer on this path (list_episodes() is bypassed), so it must be a
     # bijection onto finalized episodes: no duplicate rows, no path in two
-    # splits, no missing directories (Codex review 2026-08-26)
+    # splits, no missing directories (2026-08-26)
     by_path: dict[str, str] = {}
     for r in rows:
         prev = by_path.get(r["path"])
@@ -476,7 +476,7 @@ def manifest_split(data_root: Path, split: str) -> list[Path] | None:
             missing.append(r["path"])
             continue
         meta_d = json.loads((p / "meta.json").read_text())
-        # P9 (review 2026-08-28): tags disqualify BEFORE the status check —
+        # P9 (2026-08-28): tags disqualify BEFORE the status check —
         # 'unlabeled' episodes are deliberately status='aborted' (that is how
         # the no-verdict guard files them), so the hard error below would turn
         # a correctly-excluded episode into a crashed run.

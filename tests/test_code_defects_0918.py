@@ -1,5 +1,5 @@
-"""Code defects found by the 2026-09-18 distillation audit (docs/history/
-CODE_DEFECTS_20260918.md). Every behavioural change is OPT-IN: each item gets
+"""Code defects found in the distillation path on 2026-09-18.
+Every behavioural change is OPT-IN: each item gets
 an entry-point test for the new flag AND a regression test that the DEFAULT
 path is byte-identical to what produced the paper's checkpoints.
 

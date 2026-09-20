@@ -17,11 +17,11 @@ gripper close, sampled exactly like deploy, and reports:
         --hardware configs/hardware.nuc.yaml [--nfe 5] [--guidance 1.0]
 Bars (from demos): endpoint < 15 mm, |z_end_err| < 10 mm, commit_ratio ~ 1.
 
-Conditioning ablations (REVIEW_SYNTHESIS P1.2 / experiment E9) — `--null`.
+Conditioning ablations (finding P1.2 / experiment E9) — `--null`.
 
 THE GT CONTACT PACKAGE IS ZEROED IN EVERY MODE BUT `contact_gt`, INCLUDING THE
-DEFAULT. This is the one thing the E9 table was read backwards on (validation
-2026-08-30): `--null none` is not "the model gets everything", it is the DEPLOY
+DEFAULT. This is the one thing the E9 table was read backwards on
+(2026-08-30): `--null none` is not "the model gets everything", it is the DEPLOY
 condition — `events` and every `cpk_*` batch key zeroed, so the CONTACT frames
 are co-denoised from noise like every other generated frame. Two orthogonal
 switches describe every mode:
@@ -57,7 +57,7 @@ switches describe every mode:
                                        isolates PINNING; vs `contact_gt` it
                                        isolates the package's CONTENT — the
                                        "cond-pinned to GT **vs zeros**" pair
-                                       REVIEW_SYNTHESIS P7 actually asked for.
+                                       finding P7 actually asked for.
   contact_gt    KEPT     PINNED        the OPPOSITE of a null and the P7 probe:
                                        privileged future contact, held through
                                        every denoise step. Deploy NEVER has
@@ -70,7 +70,7 @@ switches describe every mode:
 Every run records its own semantics in the JSON (`summary["null_semantics"]`),
 so a table built from these files can never be relabelled by hand again.
 
-Interpretation (REVIEW_SYNTHESIS §2 E9, gate G1b): if tactile-null lands on
+Interpretation (E9, gate G1b): if tactile-null lands on
 top of the real run (|Δ endpoint| < 3 mm and |Δ close_step| < 1 step), the
 tactile-teacher premise does not survive and the paper pivots.
 """
@@ -155,7 +155,7 @@ def close_steps(gt_grip: np.ndarray, pr_grip: np.ndarray) -> tuple[int | None, i
     judged against the ABSOLUTE aperture the GT reached at its close (minus
     a 0.05 margin) — applying close_index's max-relative fallback to a
     16-step predicted chunk credited any >0.10 aperture rise as "closed"
-    (delta review 2026-08-27). A prediction that never reaches that aperture
+    (2026-08-27). A prediction that never reaches that aperture
     scores len(chunk) (= "did not close in the chunk")."""
     from phantom.train.common import close_index
     gi = close_index(gt_grip)
@@ -362,7 +362,7 @@ def resolve_episodes(data_root: Path, split: str) -> list[Path] | None:
 
     `manifest_split` falls back to EVERY episode when the manifest is missing
     (common.py:370) — silently turning "val" into "train + val". A checkpoint
-    decision made on that number is worthless, so refuse (REVIEW_SYNTHESIS
+    decision made on that number is worthless, so refuse (finding
     P1). `--split all` is the deliberate opt-in."""
     if split == "all":
         return None

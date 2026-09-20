@@ -1,4 +1,4 @@
-"""tools/terminal_eval.py hardening — REVIEW_SYNTHESIS P1 part 2 / E9.
+"""tools/terminal_eval.py hardening — finding P1 part 2 / E9.
 
 The offline metric that blessed v5_6 teacher-forces every demo-consistent
 input, so it cannot see a closed-loop failure. This covers the hardening:

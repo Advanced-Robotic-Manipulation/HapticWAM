@@ -151,7 +151,7 @@ if [[ "$EXTRA" != *"--policy-server"* ]]; then
     # basename: eight menu rows share three basenames (student_001200.pt x3,
     # teacher_001200.pt x3, teacher_006000.pt x2), so a basename match would
     # attach stu_v5_6's launch to a warm stu_ftA_r1 server and record the
-    # wrong model under the right label (audit 09-10).
+    # wrong model under the right label (09-10).
     if [ -d "$BASE/phantom/$CKPT" ]; then
       WANT_SHA=$(cd $BASE/phantom && .venv/bin/python -c "from phantom.scripts.lerobot_server import dir_digest; print(dir_digest('$CKPT') or '')" 2>/dev/null)
     else

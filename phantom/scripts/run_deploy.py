@@ -241,7 +241,7 @@ def recover_control(arm, reason: str) -> bool:
 
 #: the count cap that stands in for a time budget when no wall clock is set.
 #: `--max-replans` parses to None so `main` can tell "the operator chose 40"
-#: from "nobody said anything" (revalidation 2026-08-31 #1).
+#: from "nobody said anything" (2026-08-31 #1).
 DEFAULT_MAX_REPLANS = 40
 
 #: Jitter (in demo sigma) for successive homing attempts of ONE episode:
@@ -367,7 +367,7 @@ def build_parser() -> argparse.ArgumentParser:
                     default=None, help="Experimental epoch; omission preserves historical playback")
     ap.add_argument("--nfe", type=int, default=None,
                     help="Euler steps per replan (default: the checkpoint's mc.nfe, 5). "
-                         "LATENCY LEVER (review P4): the loop is compute-bound and "
+                         "LATENCY LEVER (P4): the loop is compute-bound and "
                          "latency == replan interval == 0.97 s on 08-28, so only steps "
                          "0-9 of every 16-step chunk ever execute. --nfe 3 is the "
                          "first thing to try for L <= 0.5 s; --nfe 1 emits "
@@ -383,7 +383,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--compile", action="store_true",
                     help="torch.compile the DiT blocks (adds ~1-2 min warmup, taken "
                          "OUTSIDE the episode by the unconditional warmup replan). "
-                         "LATENCY LEVER (review P4), also unused by GO_ANY.sh: pair it "
+                         "LATENCY LEVER (P4), also unused by GO_ANY.sh: pair it "
                          "with --nfe 3 and, on a card with the kernels, --flex. "
                          "--compile-mode reduce-overhead adds cudagraphs. Status: the "
                          "wiring is intact (backbone/loader.compile_blocks wraps each "
@@ -402,8 +402,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "action parity vs SDPA verified to ~6e-4)")
     # EMA weights are the deploy artifact and what run_eval loads for every
     # campaign policy — deploying raw last-step weights ran the rig on a
-    # DIFFERENT artifact than the eval numbers came from (Codex review
-    # 2026-08-27). `--ema` is kept (a no-op now) so the existing GO scripts
+    # DIFFERENT artifact than the eval numbers came from
+    # (2026-08-27). `--ema` is kept (a no-op now) so the existing GO scripts
     # and docs/inference.md commands still parse.
     ema = ap.add_mutually_exclusive_group()
     ema.add_argument("--ema", dest="ema", action="store_true", default=True,
@@ -486,8 +486,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "never raises it (sim zoo 2026-09-12: students over-squeeze to 0.66-0.71, teacher ~0.60)")
     ap.add_argument("--servo-reach-profile", choices=["bounded_v1", "none"], default="bounded_v1",
                     help="UR3 command limiter, ON by default since 09-11 (real lifts ended with a "
-                         "straight elbow at the far point over the box; see "
-                         "docs/rig_apex_analysis_0911.md). 'none' disables it: 0.40 rad minimum elbow, "
+                         "straight elbow at the far point over the box, measured "
+                         "09-11). 'none' disables it: 0.40 rad minimum elbow, "
                          "1.0 rad/s joint command cap, 2.5 s verified constraint "
                          "hold budget; preserves measured safety stops and "
                          "does not enable placement/release")
@@ -533,8 +533,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--home-bounds", default="",
                     help="clamp the sampled demo-start target, e.g. 'y_max=-0.28,z_min=0.31,z_max=0.36' "
                          "(metres, base frame). Rig 09-12: starts at y <= -0.28 and z 0.31-0.36 reached "
-                         "the box at mean stage 1.96 vs 0.27 for box-side / low starts, every model "
-                         "(docs/results/rig_pick_patterns_20260912). Recorded in deploy_overrides.")
+                         "the box at mean stage 1.96 vs 0.27 for box-side / low starts, every "
+                         "model. Recorded in deploy_overrides.")
     ap.add_argument("--no-home-joints", action="store_true",
                     help="suppress the moveJ-to-demo-q step of the FIRST homing of each "
                          "episode (pre-2026-09-11 behaviour: moveL only). The auto-home "
@@ -683,7 +683,7 @@ def veto_z_margin(args, stats) -> float:
     LOWERED safety floor with a hard-coded 15 mm the hatch topped out at
     57-81 mm, i.e. 30-90 mm below every demo close and ~50 mm below the
     model's own predicted close height (110.8 mm, E9), so it never fired and
-    every close hung on an uncalibrated `p_contact` (VALIDATION_0830 P0 #5)."""
+    every close hung on an uncalibrated `p_contact` (2026-08-30 P0 #5)."""
     if getattr(args, "veto_z_margin", None) is not None:
         return float(args.veto_z_margin)
     from phantom.eval.grasp_label import Z_MAX_MM
@@ -733,7 +733,7 @@ def envelope_conflict(hw) -> str | None:
     calls that same target an exit, so every deep descent ends the episode
     (`STOP ['workspace_clamp','hitbox_exit']`). Both knobs are advertised in
     docs/rig_session_v5.md, and nothing asserted the invariant
-    (validation_0830/safety-final.md §5)."""
+    (2026-08-30 safety §5)."""
     hb = hw.safety.hitbox_m
     if hb is None:
         return None
@@ -991,7 +991,7 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
         return ""
     note = f"operator: {ans}" + (" DAMAGE" if damage else "")
     if c == "r":
-        # REDO (rig 09-15, Mikhail): the operator rejects the take — wrong
+        # REDO (rig 09-15): the operator rejects the take — wrong
         # placement, a false start, a hand in the way. The take must not
         # exist: the recorder DELETES the episode directory (discard=True,
         # confined to its out_root), so no lister, pairing or upload can
@@ -1010,7 +1010,7 @@ def label_episode(recorder, ep_path: Path, ans: str) -> str:
                              notes=f"{note} REDO (delete failed)")
         return c
     if c == "c":
-        # CRUSHED (rig 09-15, Mikhail): the take did the task correctly but
+        # CRUSHED (rig 09-15): the take did the task correctly but
         # squeezed the object too hard. It IS a success for the closed-loop
         # ordinal (placed) and carries the `crushed` tag so the haptic
         # benchmark can correlate the operator's eye with the pad forces;
@@ -1429,7 +1429,7 @@ def main(argv=None) -> int:
                  (f"descent:{round(placement_descent.release_z_m * 1000)}mm"
                   if placement_descent is not None else "descent:off"),
                  *(["padfree:on"] if getattr(args, "pad_free", False) else []),
-                 # deploy levers (review 2026-08-28) — ALWAYS tagged, on or off,
+                 # deploy levers (2026-08-28) — ALWAYS tagged, on or off,
                  # so an A/B arm can never be reconstructed from memory alone
                  f"parity:{'on' if args.parity_fixes else 'off'}",
                  (f"veto:pc{args.veto_p_close:.2f}/pn{args.veto_p_none:.2f}/"

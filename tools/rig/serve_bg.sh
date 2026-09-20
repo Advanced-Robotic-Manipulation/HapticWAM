@@ -54,7 +54,7 @@ for m in "$@"; do
     # overlay on pi05venv with a torchao that diffusers can import (09-12). Same wire/probe contract.
     PT=${S#lerobot}; PT=${PT#:}; PT=${PT:-pi05}
     if [ "$PT" = pi05 ]; then PY=$BASE/pi05venv/bin/python; else PY=$BASE/baselines_venv/bin/python; fi
-    [ -x "$PY" ] || { echo "missing $PY (venv for $PT) — see docs/pi05_baseline.md / docs/rig_baselines.md"; continue; }
+    [ -x "$PY" ] || { echo "missing $PY (venv for $PT) — see docs/pi05_baseline.md"; continue; }
     nohup "$PY" -m phantom.scripts.lerobot_server --ckpt "$C" --port $PORT --hardware configs/hardware.nuc.yaml \
         --policy-type "$PT" --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
   else

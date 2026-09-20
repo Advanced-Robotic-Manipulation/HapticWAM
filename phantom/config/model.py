@@ -115,7 +115,7 @@ class PhantomModelConfig:
     # their supervision toward the high-noise band that few-NFE sampling
     # actually visits first (informative band ~t in [0.87,1] under tiling)
     action_t_max_of_two: bool = False
-    # --- FT-A objective knobs (review 2026-08-28, P5/P6/P7). All default to
+    # --- FT-A objective knobs (2026-08-28, P5/P6/P7). All default to
     # the shipped v4/v5 behaviour: a checkpoint trained before they existed
     # trains and evaluates bit-identically with every one of them off.
     #
@@ -151,7 +151,7 @@ class PhantomModelConfig:
     # identical to `student` (both fuse [WristTCN(wrist) || URStateMLP] into
     # OBS_PROPRIO), so the recovery_ratio denominator in eval/aggregate.py has
     # no producible arm and a reviewer attributes any student gain to the
-    # surviving wrist F/T signal (P10A, review 2026-08-28). The window is
+    # surviving wrist F/T signal (P10A, 2026-08-28). The window is
     # still RECORDED in every mode — only the model stops reading it.
     mask_wrist: bool = False
     use_action_adaln_intent: bool = True   # feed prev chunk through pretrained AdaLN path

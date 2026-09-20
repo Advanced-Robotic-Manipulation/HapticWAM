@@ -71,7 +71,7 @@ def arm_stale_s(hw: HardwareConfig) -> float:
     window and the protective-stop flag. If the RTDE-receive worker dies or
     its stream stalls, the ring keeps serving the pre-stall sample and the
     policy replans, the governor scales and the wrench guard all run on a
-    frozen robot state with nothing detecting it (Codex review 2026-08-27) —
+    frozen robot state with nothing detecting it (2026-08-27) —
     the same failure the camera guard above was written for.
 
     Same shape as camera_stale_s: a generous floor over a rate-derived bound.
@@ -311,8 +311,8 @@ class SafetyMonitor:
         # and continue from — the policy is already lost; stop the episode
         # Evaluated on the CLAMPED target: the z floor is a clamp, not a stop —
         # a policy that finally descends deep enough must be pinned at the
-        # floor and allowed to close there, never stopped for it (review
-        # 2026-08-28: floor == hitbox lower edge turned every deep descent
+        # floor and allowed to close there, never stopped for it
+        # (2026-08-28: floor == hitbox lower edge turned every deep descent
         # into a STOP and would have biased the A/B against the better arm)
         hb = hw.safety.hitbox_m
         if hb is not None:

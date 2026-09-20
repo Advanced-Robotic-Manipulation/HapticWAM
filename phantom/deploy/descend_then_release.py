@@ -1,7 +1,7 @@
 """Descend-then-release supervisor for the placement phase (rig lineage, 09-12).
 
-Measured problem (rig 2026-09-12, 31 latched carries, `docs/results/sim_zoo_20260912/README.md`
-plus the forensics follow-up): once the gripper latch holds an object over the crate the
+Measured problem (rig 2026-09-12, 31 latched carries, plus the forensics
+follow-up): once the gripper latch holds an object over the crate the
 policies keep commanding descent at 32-68 mm/s straight through the demonstrated release
 band (waffles release z median 105 mm, p10 81; Carton median 128, p10 118) down to
 83-133 mm, where the 45 N wrench guard ends the episode. 19 of 31 carries never released.

@@ -181,7 +181,7 @@ CONTACT_HOLD_N = 5.0
 
 #: Crush threshold.  THE CRUSH LABEL IS DECIDED BY THIS THRESHOLD ALONE, from
 #: the pad-force data, applied uniformly to every arm; the operator's eye is
-#: not the crush label (Mikhail, 2026-09-15 20:05 MSK).  An `op_crushed` tag is
+#: not the crush label (decided 2026-09-15 20:05 MSK).  An `op_crushed` tag is
 #: advisory and is reported in its own column, never used to classify — and it
 #: does not shape the band either, since letting the eye drop takes from the
 #: sample would let it shape the threshold it is later compared against.

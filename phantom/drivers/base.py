@@ -201,7 +201,7 @@ class Arm(ABC):
                 gain: int) -> "ServoResult | None":
         """Cartesian servo (pose target); implementations may IK + servo_j.
 
-        Returns what was ACTUALLY streamed (issue #7, review 09-05): a
+        Returns what was ACTUALLY streamed (issue #7, 09-05): a
         `ServoResult` with `sent=True` and the streamed pose (possibly
         shortened by a driver-side limiter), or `sent=False` + reason when
         the driver held the previous setpoint (IK branch reject, invalid IK,

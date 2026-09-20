@@ -82,8 +82,7 @@ def apply_overrides(cfg, args, compute=None):
     #
     # Every one of these parses to None when absent, so "the operator chose
     # the default" and "nobody said anything" stay distinguishable — that is
-    # what `--resume` needs to decide restore-vs-refuse (revalidation
-    # 2026-08-31 #8). `hasattr` because distill_hid/finetune_hids share this
+    # what `--resume` needs to decide restore-vs-refuse (2026-08-31 #8). `hasattr` because distill_hid/finetune_hids share this
     # helper with configs that have no data-recipe fields.
     for name in ("lr", "lr_new_modules", "warmup_steps", "ckpt_every",
                  "eval_every", "ema_decay", "event_band_weight",
@@ -138,7 +137,7 @@ def restore_train_config_on_resume(cfg, saved_train: dict, args, *, log=log,
     EMA from `cfg.ema_decay`), so a resume with only the model flags re-passed
     reverted the whole recipe to the dataclass defaults and then wrote those
     defaults into the next checkpoint as if they had governed the run
-    (revalidation 2026-08-31 #8).
+    (2026-08-31 #8).
 
     `override` (the `--override-recipe` flag) turns the refusal into a warning
     and keeps the CLI value — for the one case where the operator KNOWS the
@@ -229,7 +228,7 @@ def main(argv=None) -> int:
                          "on the rig)")
     # The four data-recipe knobs default to None so `--resume` can tell an
     # explicit value from an unspoken one; the dataclass carries the real
-    # default (train / 0.0 / 1.0 / 0.0) — revalidation 2026-08-31 #8.
+    # default (train / 0.0 / 1.0 / 0.0) — 2026-08-31 #8.
     ap.add_argument("--split", default=None, choices=["train", "val", "all"],
                     help="episode subset from manifests/all.jsonl (default train; "
                          "'all' reproduces the pre-split behaviour)")
@@ -308,7 +307,7 @@ def main(argv=None) -> int:
                          "visits first). --no-action-t-max-of-two disables.")
     ap.add_argument("--no-action-t-max-of-two", dest="action_t_max_of_two",
                     action="store_false")
-    # --- FT-A objective knobs (review 2026-08-28: P5, P6, P7). Every one of
+    # --- FT-A objective knobs (2026-08-28: P5, P6, P7). Every one of
     # them defaults to the shipped v4/v5 behaviour.
     ap.add_argument("--contact-nll-beta", type=float, default=None,
                     help="beta-NLL (Seitzer 2022) on the contact "
@@ -341,7 +340,7 @@ def main(argv=None) -> int:
                          "sampling. i.i.d. cells leave a structured strip-mean "
                          "offset that --persistent-noise freezes into a fixed "
                          "per-episode velocity bias.")
-    # --- world-model ablation (§6 item 2 of docs/ARCH_EXPLAINER_0912.md).
+    # --- world-model ablation (architecture note 09-12, §6 item 2).
     # Both default to the shipped v6 behaviour.
     ap.add_argument("--loss-video", type=float, default=None,
                     help="override lambda_v, the video_v_mse weight (config "
@@ -511,7 +510,7 @@ def main(argv=None) -> int:
         # They ride in configs.train, so a resume restores what the checkpoint
         # recorded unless the CLI explicitly says otherwise — and refuses when
         # it says something different (validation 2026-08-30 F11, generalized
-        # to the whole recipe by revalidation 2026-08-31 #8).
+        # to the whole recipe on 2026-08-31 #8).
         saved_train = resume_payload["configs"].get("train") or {}
         cfg = restore_train_config_on_resume(cfg, saved_train, args)
         log.info("resuming from %s at step %d", args.resume, resume_payload["step"])
@@ -564,7 +563,7 @@ def main(argv=None) -> int:
     if train_eps is not None:
         # WindowSampler.build_index drops episodes with insufficient stream
         # overlap with only a log line; a fine-tune whose new episodes were
-        # silently dropped would look healthy (Codex premortem 2026-08-26)
+        # silently dropped would look healthy (2026-08-26)
         indexed = {wi.episode for wi in ds.index}
         dropped = [p.name for p in train_eps if p not in indexed]
         if dropped and not args.allow_skipped_episodes:

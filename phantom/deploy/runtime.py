@@ -209,7 +209,7 @@ class DeploymentRuntime:
                                  "controller: it completes a release on pad unload")
             self.deploy_overrides["pad_mode"] = "padfree"   # absent = pads read (every earlier episode)
         self.out_root = Path(out_root)
-        # deploy levers (review 2026-08-28), both default OFF so the rig A/B
+        # deploy levers (2026-08-28), both default OFF so the rig A/B
         # can attribute each one; run_deploy tags every episode with the state
         self.parity_fixes = bool(parity_fixes)
         self.veto = veto
@@ -380,7 +380,7 @@ class DeploymentRuntime:
             try:
                 saved = self.recorder.stop(success=None)
                 if saved is not None:
-                    # PROVISIONAL verdict (P9, review 2026-08-28): a deploy
+                    # PROVISIONAL verdict (P9, 2026-08-28): a deploy
                     # episode is finalized with success=None, which every
                     # lister reads as an ordinary full-weight demo — so a
                     # session where the operator hits Enter, runs with

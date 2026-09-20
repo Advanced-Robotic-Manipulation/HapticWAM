@@ -17,7 +17,7 @@
 set -u
 cd "$(dirname "$(readlink -f "$0")")"   # works through the ~/phantom-icra-2027/EXPERIMENT.sh symlink too
 BASE=${PHANTOM_RIG_BASE:-$HOME/phantom-icra-2027}; TSV=$BASE/MODELS.tsv
-ANCHOR=${EXP_ANCHOR:-v6_simft_mt1500}   # the teacher every arm pairs against (16:40: Ilya's multitask teacher; EXP_ANCHOR=v6_simft2k for the 09-13 one)
+ANCHOR=${EXP_ANCHOR:-v6_simft_mt1500}   # the teacher every arm pairs against (16:40: the multitask teacher; EXP_ANCHOR=v6_simft2k for the 09-13 one)
 listening() { ss -ltn 2>/dev/null | grep -q ":$((7776 + $1)) "; }
 warm_student() {  # the Block P student: a stu_simft_* row that is already warm wins (never switch arms mid-block), else the newest
   local r=0 label rest
@@ -54,7 +54,7 @@ stop_ours_except() {  # stop OUR servers (menu ports only) whose row is not in t
 disk_check() {
   local free; free=$(df -BG --output=avail "$BASE" 2>/dev/null | tail -1 | tr -d ' G')
   echo ">> disk free on the box: ${free:-?} GB (a rig episode is ~0.25 GB; 120 launches ~ 30 GB)"
-  [ -n "$free" ] && [ "$free" -lt 30 ] && echo "!! under 30 GB free — the sim campaign is filling the disk; ask Ilya before launching"; return 0; }
+  [ -n "$free" ] && [ "$free" -lt 30 ] && echo "!! under 30 GB free — the sim campaign is filling the disk; check before launching"; return 0; }
 show() { echo; ./serve_bg.sh status; echo ">> PICK.sh rows for this block: $*"; }
 snap() {  # scene screenshot (training reference vs live camera) saved next to the takes and shown on the box screen
   local label=$1 c0=$2 c1=$3 dir="$OUT/screenshots" f
@@ -73,7 +73,7 @@ case "${1:-}" in
   M)     T=$(need "$ANCHOR") || exit 1; warm_rows "$T"; show "anchor teacher $ANCHOR = $T (the arm every other arm pairs against)";;
   S9)    T=$(need "$ANCHOR") || exit 1; S9=$(need v6_simft2k) || exit 1
          stop_ours_except "$T" "$S9"; warm_rows "$T" "$S9"; show "09-13 sim-expert teacher v6_simft2k = $S9 (optional, one launch per cell, pairs against $ANCHOR)";;
-  SV)    T=$(need "$ANCHOR") || exit 1; warm_rows "$T"; show "row $T with preset 4 + the flags in RUN_SHEET_0915.md (S: --select-by video_agreement; V: + --agreement-veto THR; N: no --terminal-veto)";;
+  SV)    T=$(need "$ANCHOR") || exit 1; warm_rows "$T"; show "row $T with preset 4 + the recorded 09-15 flags (S: --select-by video_agreement; V: + --agreement-veto THR; N: no --terminal-veto)";;
   PB)    MT=$(need v6_simft_mt1500) || exit 1; MS=${MT_STUDENT:-$(newest stu_mt_)}; [ -n "$MS" ] || { echo "!! no stu_mt_* row yet — fetch_student.sh hid_mt 000500 first"; exit 1; }
          MSR=$(need "$MS") || exit 1; T=$(row_of "$ANCHOR")
          stop_ours_except "$T" "$MT" "$MSR"; warm_rows "$MT" "$MSR"; show "multitask teacher = $MT   its student $MS = $MSR";;

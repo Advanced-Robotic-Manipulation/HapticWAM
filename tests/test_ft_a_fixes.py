@@ -1,4 +1,4 @@
-"""FT-A objective knobs (review 2026-08-28: P5, P6, P7).
+"""FT-A objective knobs (2026-08-28: P5, P6, P7).
 
 Every flag defaults to the shipped v4/v5 behaviour, so the first thing each
 group of tests asserts is that OFF is bit-identical to the pre-flag code.
@@ -297,13 +297,13 @@ def test_provision_launch_line_carries_the_ft_a_bundle():
                  "--action-noise-per-strip", "--no-action-t-max-of-two",
                  "--ema-decay 0.995", "--cond-dropout 0"):
         assert flag in launch, f"{flag} missing from the printed FT-A launch line"
-    # --contact-self-forcing was retracted from the bundle (E9_premise_test.md:88-93
+    # --contact-self-forcing was retracted from the bundle (E9 premise test
     # provides no exposure-bias gap); it survives only as a commented ablation note.
     cmd = launch.split('echo "  #')[0]
     assert "--contact-self-forcing" not in cmd, (
         "--contact-self-forcing is back in the printed FT-A launch command")
-    assert "E9_premise_test.md" in launch, (
-        "the launch block must cite E9_premise_test.md for the retraction")
+    assert "E9 premise test" in launch, (
+        "the launch block must cite the E9 premise test for the retraction")
 
 
 # ---------------------------------------------------------------- tiny model

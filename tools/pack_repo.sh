@@ -9,7 +9,7 @@
 #
 # The tarball carries a COMMIT file; the pinned script refuses any tarball
 # whose COMMIT differs, so a rental can never silently run code other than
-# the audited commit (Codex review 2026-08-26).
+# the audited commit (2026-08-26).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 [ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "FATAL: tracked changes not committed"; exit 1; }

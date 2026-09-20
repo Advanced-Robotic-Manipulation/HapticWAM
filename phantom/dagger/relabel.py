@@ -60,7 +60,7 @@ def relabel_root(root: Path, teacher_ckpt: Path, hw: HardwareConfig,
                  paths: PathsConfig, *, device: str = "cuda",
                  tiny: bool = False) -> int:
     dtype = torch.bfloat16 if (device == "cuda" and not tiny) else torch.float32
-    # build with the checkpoint's OWN model config (P10B, review 2026-08-28):
+    # build with the checkpoint's OWN model config (P10B, 2026-08-28):
     # every relabel this teacher writes is a training target, so a
     # default-built teacher (rope 'aligned', acc 'gt_noised') would poison the
     # whole DAgger round with differently-phased action chunks and nothing

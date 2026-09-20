@@ -98,7 +98,7 @@ def test_disabled_limiter_never_engages_even_on_empty_ik():
 
 
 def test_enabled_limiter_survives_empty_ik(arm):
-    """Review 09-05 finding 1: the throttled log line indexed q[2] of an
+    """09-05 finding 1: the throttled log line indexed q[2] of an
     empty solution and crashed the executor on exactly the tick the limiter
     exists for."""
     prime(arm, pose_at_reach(0.400))

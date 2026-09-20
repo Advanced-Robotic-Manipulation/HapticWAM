@@ -246,7 +246,7 @@ def contact_pinned_layout(layout: SequenceLayout) -> SequenceLayout:
     i.e. held at their x0 through every denoise step instead of being
     co-denoised from noise.
 
-    The one mechanism behind BOTH pinned arms of REVIEW_SYNTHESIS P7 — offline
+    The one mechanism behind BOTH pinned arms of finding P7 — offline
     (`tools/terminal_eval.py --null contact_zero|contact_gt`) and at deploy
     (`run_deploy --null-imagination contact_zero`, via `rf.sample(
     pin_contact_x0=True)`). What the frames are pinned TO is whatever the

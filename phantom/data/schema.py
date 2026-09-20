@@ -205,7 +205,7 @@ def is_deliberate_failure_demo(meta: "EpisodeMeta") -> bool:
     apart from "the policy tried and missed", so an on-policy DAgger rollout
     the operator judged unsuccessful lands in `is_failure_demo` and grounds no
     actions at all — which is why round 2's 99 rollouts were inert
-    (code-defect review 2026-09-18 (b))."""
+    (code defect, 2026-09-18 (b))."""
     if any("deliberate_failure" in str(t) for t in (meta.tags or [])):
         return True
     return str(meta.task or "").endswith("_fail")
@@ -255,7 +255,7 @@ def needs_rederive(ep_dir, meta: "EpisodeMeta") -> bool:
 def is_trainable_episode(meta: "EpisodeMeta") -> bool:
     """False for any episode that must never enter a training index.
 
-    Three independent disqualifiers (P9, review 2026-08-28):
+    Three independent disqualifiers (P9, 2026-08-28):
       * a NON_TRAINING_TAGS tag (`unlabeled` / `contaminated`);
       * status != 'finalized' (crashed, in flight, or aborted);
       * a POLICY ROLLOUT with no verdict — `policy` set to anything but the

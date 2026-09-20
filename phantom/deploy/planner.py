@@ -75,7 +75,7 @@ def snapshot_stop_reason(exc: BaseException) -> str:
 class SnapshotBuilder:
     """Builds one ObsSnapshot per replan.
 
-    `parity_fixes` (P2, review 2026-08-28) switches three deploy-vs-training
+    `parity_fixes` (P2, 2026-08-28) switches three deploy-vs-training
     mismatches to the training construction. Default OFF so the rig A/B can
     attribute the effect; every one of them is a *verified* difference between
     what `WindowSampler.sample()` writes and what this builder used to read:
@@ -237,7 +237,7 @@ class SnapshotBuilder:
                 "the RTDE receive stream is dead; the policy must not replan on a "
                 "frozen robot state")
 
-        # Wrist F/T window, TRAINING PARITY (Codex review 2026-08-27):
+        # Wrist F/T window, TRAINING PARITY (2026-08-27):
         # WindowSampler.sample() resamples the recorded F/T stream onto
         # np.linspace(t0 - window_s, t0, window_len) with np.interp
         # (phantom/data/windows.py). Taking the last window_len ROWS instead
@@ -269,7 +269,7 @@ class SnapshotBuilder:
         # row newer than ts_a[-1] (125 Hz sample landing between the reads),
         # leaving ur_state inconsistent with its own wrist window — the race
         # behind the flaky snapshot-parity test AND a real deploy-side skew
-        # (revalidation 2026-08-31 §2 #7)
+        # (2026-08-31 §2 #7)
         arm1 = {k: v[-1:] for k, v in arm.items()}
         _, grip = rings["gripper"].latest(1)
         # HARD requirement, not a fallback: a zeros(2) substitute is a frozen
@@ -335,7 +335,7 @@ class SnapshotBuilder:
 
 @dataclass
 class TerminalVeto:
-    """Deploy-time terminal commitment guard (review P3, 2026-08-28).
+    """Deploy-time terminal commitment guard (P3, 2026-08-28).
 
     The ACC gate is read-only at deploy — `plan.gate` / `plan.p_evt` are logged
     and nothing in `phantom/deploy/` lets them modify a chunk — while the rig
@@ -355,7 +355,7 @@ class TerminalVeto:
                  Measuring it from the already-lowered SAFETY floor with a
                  15 mm margin put the hatch 30-90 mm below every demo close and
                  ~50 mm below the model's own predicted close height, so it
-                 never fired (VALIDATION_0830 P0 #5).
+                 never fired (2026-08-30 P0 #5).
     recovery     if a close was EXECUTED and this or the very next replan
                  reports p_evt[none] > p_none, the grasp is phantom: command
                  the task open aperture and forbid any upward z in the chunk,
@@ -456,7 +456,7 @@ class PlannerLoop:
     # how many replans after an EXECUTED close the phantom-grasp recovery may
     # still fire (the docstring's "the very next replan"). Before 2026-08-30
     # the latch was unbounded and reopened a real grasp any time later in the
-    # episode (VALIDATION_0830 P0 #3).
+    # episode (2026-08-30 P0 #3).
     VETO_RECOVERY_REPLANS = 1
     # pad-free deploy (rig 09-18): no pad ring exists, so the p_none recovery
     # below would run WITHOUT its pad-load veto and reopen real grasps on the
@@ -497,7 +497,7 @@ class PlannerLoop:
                 # open-loop ramp the MEASURED aperture can rise anyway and
                 # this read it back as an executed close, arming the
                 # phantom-grasp recovery on a close the veto itself prevented
-                # (revalidation 2026-08-31 §2 #3).
+                # (2026-08-31 §2 #3).
                 if state.get("close_permitted"):
                     state["closed_idx"] = n
                     # a close allowed ONLY by the at_floor hatch carries no
@@ -575,7 +575,7 @@ class PlannerLoop:
                 rec["action"] = "retry_cap"
                 return rec
             a[:, 6] = v.open_aperture
-            # no lift. NB: REVIEW_SYNTHESIS P3 writes "clamp the next chunk to
+            # no lift. NB: finding P3 writes "clamp the next chunk to
             # z >= z_now (no lift)"; taken literally that clamp PERMITS exactly
             # the upward motion its own parenthesis forbids, so the intent —
             # never command a z above where we are, i.e. re-descend or hold —
@@ -700,7 +700,7 @@ class PlannerLoop:
         `plan.cpk` is the model's IMAGINED contact for the chunk it proposed,
         and the next replan feeds it back as `prev_cpk` (policy.py:244). After
         a rewrite it describes motion the arm was never asked to make, so it
-        must not condition the next chunk (Codex, 2026-08-30).
+        must not condition the next chunk (2026-08-30).
 
         With a policy server the package lives SERVER-side, addressed by
         `_cpk_token` — clearing only `cpk` (always None on the remote path)
@@ -719,7 +719,7 @@ class PlannerLoop:
         `max_episode_s` is the budget the replan COUNT was standing in for:
         episode wall-time is `max_replans x latency`, so the same cap of 40 is
         a 35 s episode at the NFE-5 cadence (865 ms) and a 7 s one at `--nfe 1`
-        (172 ms) — against demos that run 16-31 s (VALIDATION_0830 P0 #4)."""
+        (172 ms) — against demos that run 16-31 s (2026-08-30 P0 #4)."""
         if hasattr(self.snapshots, "reset_baseline"):
             self.snapshots.reset_baseline()      # new episode: new wrench zero offset
         n = 0
@@ -914,7 +914,7 @@ class PlannerLoop:
                 # A rejected plan (too late to cover replan_min_lead_s) is
                 # never commanded, so carrying it into the next replan's
                 # prev_chunk / prev_cpk conditions the policy on motion that
-                # never happened (Codex review 2026-08-27).
+                # never happened (2026-08-27).
                 # NOTE: this fallback is only what runs WITHOUT --parity-fixes.
                 # prev_chunk should be the last H EXECUTED action-grid samples,
                 # the way WindowSampler.sample() builds it from recorded
@@ -1011,7 +1011,7 @@ class PlannerLoop:
 
     def _log_gate_calibration(self) -> None:
         """One line per episode: the p_none distribution the veto thresholds
-        were never fitted on (revalidation 2026-08-31 §2 #3 — Session 4 must
+        were never fitted on (2026-08-31 §2 #3 — Session 4 must
         produce this calibration whether or not the veto fires)."""
         try:
             pn = [float(r["p_evt"][0]) for r in self.trace if r.get("p_evt")]

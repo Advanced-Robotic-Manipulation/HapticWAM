@@ -111,7 +111,7 @@ def traj_distill_target(student_rf, teacher_rf, t_pred, cfg: HIDConfig,
     "raw_latents" distils against the teacher's raw CONTACT latents, which is
     the space `x0_pred_s` already lives in: no CoP fiction, no event squash, no
     resample. Opt-in, because it changes the objective and therefore the
-    numbers (code-defect review 2026-09-18 (a))."""
+    numbers (code defect, 2026-09-18 (a))."""
     mode = str(getattr(cfg, "traj_target", "roundtrip") or "roundtrip")
     if mode == "roundtrip":
         return student_rf.c_pack.pack(
@@ -130,7 +130,7 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
 
     # teacher imagination (no grad): the future the student must learn to feel
     # teacher NFE: round 1 sampled at nfe//2 (cost); -1 = the teacher's own
-    # configured nfe (review 09-05: half-NFE targets are a distillation defect)
+    # configured nfe (09-05: half-NFE targets are a distillation defect)
     tn = int(getattr(cfg, "teacher_nfe", 0) or 0)
     if tn < -1 or tn > 50:
         raise ValueError(f"teacher_nfe={tn}: use 0 (nfe//2), -1 (the teacher's nfe) or 1..50")
@@ -207,7 +207,7 @@ def distill_step(student_rf, teacher_rf, batch: dict, cfg: HIDConfig,
         parts.update(L.acc_losses(out_s.acc, batch["gate_label"],
                                   batch["events"][:, 0]))
 
-    # (v) student sigma head (review 09-05: round 1 left it at the teacher's
+    # (v) student sigma head (09-05: round 1 left it at the teacher's
     # init with no gradient, so the deploy governor ran on an untrained head)
     # — the teacher's own heteroscedastic NLL vs the GT contact package
     if float(getattr(cfg, "w_sigma", 0.0) or 0.0) > 0:
@@ -263,7 +263,7 @@ def reconcile_teacher_ckpt(saved_train: dict, cfg: HIDConfig, args, *,
     a rental that mounts the identical checkpoint elsewhere. From 2026-09-18
     the recipe also records `teacher_ckpt_sha12`; when the hash matches, the
     relocated path is accepted with a warning. A DIFFERENT hash is a different
-    teacher and still refuses (review 2026-09-18 (d))."""
+    teacher and still refuses (2026-09-18 (d))."""
     saved_path = saved_train.get("teacher_ckpt")
     if saved_path is None or saved_path == cfg.teacher_ckpt:
         return saved_train
@@ -314,8 +314,7 @@ def refuse_unsupported_teacher_flags(mc, *, allow: bool = False, log=log) -> Non
     back as inert.
 
     Dormant for the paper: all three checked-in `saved_model_config` dumps of
-    `runs/teacher_v6/teacher_020000.pt` (sha256 4812cfbf0127..., under
-    docs/results/teacher_{followthrough_20260909,recovery_20260910}/) record
+    `runs/teacher_v6/teacher_020000.pt` (sha256 4812cfbf0127...) record
     BOTH flags as False, matching the shipped launch recipe
     (`tools/provision_v5.sh` / `tools/provision_distill_v6.sh` pass
     `--no-action-t-max-of-two`; `--contact-self-forcing` was dropped from the
@@ -380,14 +379,14 @@ def build_parser(ap: argparse.ArgumentParser | None = None) -> argparse.Argument
                     help="student checkpoint to resume from (restores weights, "
                          "optimizer, schedule, EMA and step — the runner's "
                          "incremental hub egress makes a preempted rental "
-                         "resumable; review 2026-09-05)")
+                         "resumable; 2026-09-05)")
     # the teachers were trained with --grasp-frac 0.3 --photo-aug 1.0; the
-    # student must see the same window recipe (review 2026-09-05: uniform t0
+    # student must see the same window recipe (2026-09-05: uniform t0
     # gave the pre-close commit band ~5-10% of windows instead of 30%+ and
     # collection lighting only).
     # All four default to None so `--resume` can tell "the operator chose the
     # default" from "nobody said anything"; the dataclass carries the real
-    # default (0.0 / 0.0 / 1.0 / train), unchanged (review 2026-09-18 (c)).
+    # default (0.0 / 0.0 / 1.0 / train), unchanged (2026-09-18 (c)).
     ap.add_argument("--grasp-frac", type=float, default=None,
                     help="fraction of windows anchored in the 1.5 s before the "
                          "first gripper close (default 0 = uniform). Persisted "
@@ -480,7 +479,7 @@ def main(argv=None) -> int:
     cfg = apply_overrides(HIDConfig(), args, compute=comp)
     # the teacher is recorded by PATH *and* by content hash: the path is what
     # the operator typed, the hash is what a --resume can match after the
-    # rental workspace moved (review 2026-09-18 (d))
+    # rental workspace moved (2026-09-18 (d))
     teacher_sha = (C.file_sha12(args.teacher_ckpt) if args.teacher_ckpt
                    and Path(args.teacher_ckpt).exists() else "")
     cfg = dataclasses.replace(cfg, teacher_ckpt=args.teacher_ckpt,
@@ -491,7 +490,7 @@ def main(argv=None) -> int:
 
     # teacher (frozen) + student (trainable), student initialized from teacher.
     # Both are built with the TEACHER CHECKPOINT'S OWN model config (P10B,
-    # review 2026-08-28): building code defaults gave the teacher
+    # 2026-08-28): building code defaults gave the teacher
     # rope_time_mode='aligned' + acc='gt_noised' while v4/v5 were trained
     # 'time_true' + 'two_pass', so the distillation target came from a
     # differently-phased model and nothing raised.
@@ -531,7 +530,7 @@ def main(argv=None) -> int:
         # EMA is the DEPLOY/EVAL artifact (run_deploy --ema default, replay_rig,
         # terminal_eval): the teachers were SELECTED on their EMA weights, so
         # the imagination target and the student's starting point must be
-        # those weights, not the raw last step (review 2026-09-05 must-fix).
+        # those weights, not the raw last step (2026-09-05 must-fix).
         has_ema = bool((payload or {}).get("ema"))
         log.info("teacher weights: %s", "EMA" if has_ema else
                  "RAW (checkpoint carries no EMA)")
@@ -556,7 +555,7 @@ def main(argv=None) -> int:
         # a resume continues ONE run: every recipe key (w_sigma, teacher_nfe,
         # grasp_frac, ...) comes back from the checkpoint unless the CLI names
         # it, and a DIFFERENT CLI value refuses the resume — the teacher's
-        # rule (revalidation 2026-08-31 #8), which this program skipped
+        # rule (2026-08-31 #8), which this program skipped
         # (verify 09-05 #2)
         from phantom.train.train_teacher import restore_train_config_on_resume
         saved_train = reconcile_teacher_ckpt(
@@ -580,9 +579,9 @@ def main(argv=None) -> int:
     # tactile inputs — its layout has no OBS_GEL/OBS_MECH frames.
     # the manifest split, exactly as train_teacher does it: without
     # `episodes=` WindowDataset falls through to list_episodes(root) and the
-    # student trains on its own validation set (validation 2026-08-30 F10)
+    # student trains on its own validation set (2026-08-30 F10)
     # the window recipe comes off CFG, not off args: that is what a --resume
-    # restores from the checkpoint (review 2026-09-18 (c))
+    # restores from the checkpoint (2026-09-18 (c))
     train_eps = C.manifest_split(data_root, cfg.split)
     ds = C.WindowDataset(data_root, sampler_s, episodes=train_eps,
                          grasp_frac=cfg.grasp_frac, photo_aug=cfg.photo_aug,

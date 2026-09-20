@@ -182,7 +182,7 @@ class HistoricalV5VetoMixin:
                 rec["action"] = "retry_cap"
                 return rec
             a[:, 6] = v.open_aperture
-            # no lift. NB: REVIEW_SYNTHESIS P3 writes "clamp the next chunk to
+            # no lift. NB: finding P3 writes "clamp the next chunk to
             # z >= z_now (no lift)"; taken literally that clamp PERMITS exactly
             # the upward motion its own parenthesis forbids, so the intent —
             # never command a z above where we are, i.e. re-descend or hold —

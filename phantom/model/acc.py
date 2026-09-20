@@ -87,7 +87,7 @@ class AccGate(nn.Module):
         # probabilities are formed in fp32: a bf16 sigmoid already rounds to
         # exactly 1.0 at logit ~6.9, so casting AFTER it (losses.py clamps
         # `.float()`) cannot restore precision and the BCE gradient on a
-        # saturated false-positive gate is dead (Codex review 2026-08-26)
+        # saturated false-positive gate is dead (2026-08-26)
         event_logits = self.W_e(e).float()
         p_evt = F.softmax(event_logits, dim=-1)
         g_ant = torch.sigmoid(self.W_g(e).float()).squeeze(-1)

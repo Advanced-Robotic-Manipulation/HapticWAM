@@ -19,7 +19,7 @@ Protocol (multiprocessing.connection, localhost, authkey PHANTOM_AUTHKEY):
     ("err", "busy: ...")             -> a non-info request from a second client
                                         while the first is still attached
 
-Ownership (review 09-05, issue #8): the first connection that sends a
+Ownership (09-05, issue #8): the first connection that sends a
 non-`info` request owns the policy until it disconnects; every other
 connection can still ask `info` (so a launcher can tell BUSY from ABSENT
 in milliseconds instead of timing out and loading a competing model) but
@@ -236,7 +236,7 @@ class PolicyServer:
                 "wrench_baseline_rows": int(getattr(self.policy, "wrench_baseline_rows", 0) or 0),
                 # "phantom" (Cosmos teacher/student, has an ACC head) or
                 # "lerobot" (π0.5 adapter: no ACC head — --terminal-veto is
-                # a silent no-op and must be refused at attach; audit 09-10)
+                # a silent no-op and must be refused at attach; 09-10)
                 "policy_kind": str(getattr(self.policy, "policy_kind", "phantom")),
                 "inference_levers": dict(self.levers),
                 # the deploy imagination probe (--null-imagination), owned by
@@ -375,7 +375,7 @@ class PolicyServer:
                     # warm server down with it (rig 2026-09-04 19:47).
                     # A broken LISTENER raises the same way every time:
                     # back off, and give up after a run of failures instead
-                    # of spinning at 100% CPU (review 09-05).
+                    # of spinning at 100% CPU (09-05).
                     accept_failures += 1
                     log.warning("client dropped during accept (%s) — "
                                 "serving on (%d in a row)", type(e).__name__,

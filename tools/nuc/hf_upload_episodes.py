@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Auto-upload PHANTOM episode sessions to hf.co/datasets/armteam/hapticwam-teleop-raw.
 
-v3 — hardened after the 2026-08-01 system review (Codex + Opus workflow):
+v3 — hardened 2026-08-01:
  - single-instance flock (concurrent timer + manual runs cannot clobber the
    manifest or double-upload);
  - manifest keyed by session NAME with the uploaded episode list per session:

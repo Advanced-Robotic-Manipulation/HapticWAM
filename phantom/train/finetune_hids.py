@@ -145,7 +145,7 @@ def main(argv=None) -> int:
     out_dir = paths.runs_root / "hids" / cfg.run_name
     dtype = C.pick_dtype(args.device, args.tiny, comp)
 
-    # the student checkpoint's OWN model config (P10B, review 2026-08-28) —
+    # the student checkpoint's OWN model config (P10B, 2026-08-28) —
     # a default-built student silently changes rope_time_mode and the ACC
     # self-anticipation mode out from under the trained weights, and the KL
     # leash would then be to a DIFFERENT model than the one being fine-tuned

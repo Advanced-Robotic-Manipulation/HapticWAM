@@ -1,7 +1,7 @@
-"""FIX-NOW batch F2-F9 (docs/review_20260828/VALIDATION_0830.md §3.1, 2026-08-30).
+"""FIX-NOW batch F2-F9 (§3.1, 2026-08-30).
 
-Every test here first REPRODUCES a defect the validation round executed on this
-tree, then pins the fix:
+Every test here first REPRODUCES a defect found on this tree, then pins the
+fix:
 
 F2  the terminal veto's close detector was a per-replan RATE test, so the rig's
     own aperture ramp (0.31 -> 0.52 over five replans) never armed it;
@@ -153,7 +153,7 @@ RAMP_CMD = tuple(round(g + 0.04, 2) for g in RAMP)
 
 
 def test_the_close_mask_fires_on_the_recorded_aperture_ramp():
-    """Reproduction (validation_0830/deploy-recipe.md §2.1): with the per-replan
+    """Reproduction (2026-08-30 deploy recipe §2.1): with the per-replan
     rate test every replan of the recorded ramp logged `none`, so `closed_at`
     was never armed and the recovery could never run. Against the running
     minimum the ramp is one close, and the mask fires while p_contact is 0.01."""
@@ -195,7 +195,7 @@ def test_the_recovery_still_fires_on_the_replan_after_an_executed_close():
 
 
 def test_a_real_grasp_is_not_reopened_four_replans_later():
-    """Reproduction (VALIDATION_0830 P0 #3): `p_none = [.2,.05,.05,.05,.95]`
+    """Reproduction (2026-08-30 P0 #3): `p_none = [.2,.05,.05,.05,.95]`
     produced `recovery_open` FOUR replans after the close — the gripper forced
     to the open aperture and every z delta zeroed on a grasp that held."""
     hw = make_small_hw()
@@ -222,7 +222,7 @@ def test_the_latch_is_cleared_unconditionally_after_its_window():
 
 
 def test_a_close_that_was_never_EXECUTED_does_not_arm_the_recovery():
-    """Codex's state bug: a close living only in the unexecuted chunk tail
+    """State bug: a close living only in the unexecuted chunk tail
     armed the latch through plan acceptance alone."""
     hw = make_small_hw()
     ex = _Ex(enter=False)               # accepted, but no step is ever entered
@@ -373,7 +373,7 @@ def test_only_the_letgo_stops_command_the_gripper_open(reason, events, released)
 
 
 def test_a_fingertip_stop_leaves_the_gripper_commanded_OPEN_end_to_end():
-    """Reproduction (validation_0830/safety-final.md §4): with a chunk
+    """Reproduction (2026-08-30 safety §4): with a chunk
     commanding a 0.90 close and a tactile STOP at tick ~40, the gripper's LAST
     commanded target was 0.90 — squeezing the gels through the label prompt."""
     hw = make_small_hw()

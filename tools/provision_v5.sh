@@ -202,7 +202,7 @@ print("manifest: bijection onto disk, unique, disjoint splits OK", flush=True)
 PYEOF
 
 echo "== FT-A init checkpoint: v5_6 (teacher_v5_batch0822/teacher_003000.pt)"
-# the plan of record is "FT-A: 3k steps FROM v5_6" (REVIEW_SYNTHESIS.md:478).
+# the plan of record is "FT-A: 3k steps FROM v5_6".
 # v5_6 is byte-identical to compute3's DEMO.pt and is what the rig ran.
 hfget $HUB teacher_v5_batch0822/teacher_003000.pt "$W/dl" >/dev/null
 mkdir -p "$W/runs/teacher/teacher_v5_batch0822"
@@ -277,7 +277,7 @@ python -m phantom.train.train_teacher \
     --batch-size $BS --grad-accum $GA --num-workers $NW \
     --device cuda 2>&1 | tail -3
 # ablation only (NOT in the FT-A bundle): append --contact-self-forcing to the line
-# above to smoke the P7 arm. E9_premise_test.md provides no evidence for it; do not
+# above to smoke the P7 arm. The E9 premise test provides no evidence for it; do not
 # spend the primary FT-A run on it.
 rm -rf "$W/runs/teacher/provision_smoke"
 rm -rf "$W/dl"
@@ -302,12 +302,12 @@ echo "    --device cuda > train_ftA.log 2>&1 &"
 echo "  # --run-name teacher_v5_ftA, NEVER teacher_v5_batch0822: that run dir AND that hub"
 echo "  #   folder hold the six SHIPPED v5 checkpoints (v5_6 = the deployed model), and"
 echo "  #   train_teacher does not refuse a populated run dir — an egress would overwrite them."
-echo "  # fine-tune LR = 1/5 of the from-scratch peak (audit 2026-08-26: full peak = 2.7x LoRA-B"
+echo "  # fine-tune LR = 1/5 of the from-scratch peak (2026-08-26: full peak = 2.7x LoRA-B"
 echo "  #   weight-scale displacement budget); --init-ema (default) starts from the deployed EMA weights;"
 echo "  #   --event-band-weight 0: the 20k ckpt never learned the packed event band (probe: that MSE ~0.9 vs"
 echo "  #   action ~0.1 at weight 0.5 = 4x the action gradient) — keep the fine-tune on the action objective"
 echo "  #   ckpt/eval every 500 -> SELECT the best checkpoint on REPLAY, not terminal_eval"
-echo "  #     (REVIEW_SYNTHESIS.md:482 — terminal_eval teacher-forces GT video/ur_state/prev_chunk and"
+echo "  #     (terminal_eval teacher-forces GT video/ur_state/prev_chunk and"
 echo "  #      structurally cannot see the rig failure; v5_6 was blessed that way and then went 0/26):"
 echo "  #        scp the 08-28 rig session to \$W/data/rig_0828/ BEFORE the run ends, then per checkpoint,"
 echo "  #        RAW and EMA:  python tools/replay_rig.py --ckpt <ckpt> --hardware configs/hardware.nuc.yaml \\"
@@ -316,14 +316,14 @@ echo "  #     terminal_eval stays a per-task val diagnostic only. Do not ship st
 echo "  #   EGRESS after every checkpoint (a destroyed rental loses the run):"
 echo "  #        HF_TOKEN=hf_... python tools/upload_run_ckpts.py $W/runs/teacher/teacher_v5_ftA"
 echo "  #     (idempotent: re-run it as checkpoints land; it skips what is already on the hub)"
-echo "  #   FT-A bundle (review 2026-08-28, docs/training_playbook.md 'FT-A'): --contact-nll-beta 0.5 rebalances"
+echo "  #   FT-A bundle (2026-08-28, docs/training_playbook.md 'FT-A'): --contact-nll-beta 0.5 rebalances"
 echo "  #     the trunk gradient off the contact NLL (P5); --action-noise-per-strip +"
 echo "  #     --no-action-t-max-of-two fix the ACTION noise/timestep mismatch with 5-step sampling (P6);"
 echo "  #     --ema-decay 0.995 (0.999 averages ~1/3 of a 3000-step run); --cond-dropout 0 keeps the short"
 echo "  #     fine-tune's gradient on conditioned windows. Drop the whole bundle to reproduce v5 exactly."
 echo "  #     The 2-step smoke above already runs this exact bundle — nothing to re-run by hand."
 echo "  #   NOT in the bundle: --contact-self-forcing (P7). The corrected E9"
-echo "  #     (docs/review_20260828/E9_premise_test.md:88-93) measures the deploy condition as the BEST"
+echo "  #     (the corrected E9 premise test) measures the deploy condition as the BEST"
 echo "  #     of the three arms — there is no GT-vs-imagined gap of the P7 shape to close, so E9 cannot"
 echo "  #     be quoted as its justification. Append it (with --acc-two-pass, already on) only as a"
 echo "  #     controlled ablation arm; do not spend the primary FT-A run on it."
