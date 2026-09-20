@@ -40,7 +40,21 @@ from pathlib import Path
 
 log = logging.getLogger("upload_run_ckpts")
 
-DEFAULT_REPO = "armteam/phantom-checkpoints"
+# The 2026-09 armteam restructure gave each run family its own PUBLIC model repo,
+# and this script uploads whatever run dir it is handed — so the destination is a
+# variable, not a guess. Callers (the ckpt_watch_*.sh watchers the provision
+# scripts write) always pass --repo explicitly; the map is:
+#     armteam/hapticwam-teacher     teacher_v6/, teacher_v6_simft/
+#     armteam/hapticwam-student     hid_simft/, hid_ftA_r2_nowrist*/
+#     armteam/hapticwam-baselines   diffusion_100k/, xvla_20k/, pi05_phantom_expert_v1/
+#     armteam/hapticwam-ablations   every other teacher_*/hid_*/ctrl_*/cosmos_* run
+#     armteam/hapticwam-ablations   also the superseded rounds (hid_r0_*, hid_r1_*, ctrl_r0_*,
+#                                   teacher_v2..v5): those were never copied off the old repo,
+#                                   so a NEW one goes here rather than back to it
+# The default below is the ablations repo: an ad-hoc run with no --repo is an
+# experiment, and a run that belongs in teacher/student/baselines must say so.
+# PHANTOM_CKPT_REPO overrides it without touching the launch lines.
+DEFAULT_REPO = os.environ.get("PHANTOM_CKPT_REPO", "armteam/hapticwam-ablations")
 CKPT_GLOBS = ("teacher_*.pt", "student_*.pt", "student_hids_*.pt")
 
 

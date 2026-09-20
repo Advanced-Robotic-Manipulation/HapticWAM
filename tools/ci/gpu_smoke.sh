@@ -47,7 +47,7 @@ fi
 "$PY" -m venv "$VENV"
 "$VENV/bin/pip" install -q -U pip
 "$VENV/bin/pip" install -r "$REQ"
-"$VENV/bin/pip" install -e .
+"$VENV/bin/pip" install -e . scipy   # scipy: test-time dependency of the sim modules (CI installs it too)
 
 # --- 2. the pins resolved, the GPU is visible, and the WHEEL was built for
 #        this card's compute capability (the whole point of the cu-index pin)
@@ -63,9 +63,13 @@ print("torch", torch.__version__, "| cuda", torch.version.cuda,
       "| torchvision", torchvision.__version__)
 print("gpu  ", torch.cuda.get_device_name(0), sm)
 print("wheel arch list:", archs)
-assert sm in archs, (
-    f"this torch wheel was NOT built for {sm} — wrong --extra-index-url? "
+# exact match, or a same-major arch the card can run (a 4090 = sm_89 executes the
+# sm_86 binaries of a cu12x wheel; only a missing MAJOR means the wrong index)
+assert sm in archs or any(a.startswith(f"sm_{cc[0]}") for a in archs), (
+    f"this torch wheel was NOT built for {sm} or any sm_{cc[0]}x — wrong --extra-index-url? "
     f"(built for {archs})")
+if sm not in archs:
+    print(f"note: {sm} not in the wheel, running same-major kernels")
 x = torch.randn(1024, 1024, device="cuda", dtype=torch.bfloat16)
 assert torch.isfinite(x @ x).all(), "bf16 matmul produced non-finite values"
 print("bf16 matmul on", sm, "OK")

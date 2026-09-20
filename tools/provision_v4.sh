@@ -3,10 +3,12 @@
 #
 #   HF_TOKEN=hf_xxx bash provision_v4.sh [/workspace/phantom-v4]
 #
-# Needs ONLY the HF token (read access to armteam/phantom-checkpoints + the
-# license-accepted nvidia/Cosmos-Predict2.5-2B): the repo rides in the same
-# private HF folder as the packed dataset, so no GitHub credentials ever
-# touch the rented machine. ~15 min on a datacenter pipe, most of it the
+# Needs ONLY the HF token (read access to armteam/hapticwam-teleop-dataset,
+# armteam/hapticwam-teacher + the
+# license-accepted nvidia/Cosmos-Predict2.5-2B). The CODE is cloned from the
+# PUBLIC GitHub repo Advanced-Robotic-Manipulation/HapticWAM, so no GitHub
+# credentials touch the rented machine either; the python package inside that
+# repo is still named `phantom`. ~15 min on a datacenter pipe, most of it the
 # 68G dataset pull.
 #
 # Produces: repo + venv + cosmos code&weights + dataset + paths.local.yaml,
@@ -14,8 +16,12 @@
 set -euo pipefail
 
 W=${1:-/workspace/phantom-v4}
-HUB=armteam/phantom-checkpoints
-PACK=dataset_v3_packed
+# hub repos after the 2026-09 armteam restructure (one repo per artifact kind):
+HUB_TELEOP=armteam/hapticwam-teleop-dataset   # DATASET repo: packed task tarballs,
+                                              # manifests*.tar, norm_stats.json, batch_*.tar.zst — FLAT (no dataset_v3_packed/ prefix)
+HUB_TEACHER=armteam/hapticwam-teacher         # text_embeddings.pt: the Cosmos text-embedding
+                                              # cache for the task prompts, a training INPUT rather
+                                              # than a checkpoint, kept beside the teacher it feeds
 : "${HF_TOKEN:?set HF_TOKEN}"
 
 (apt-get update -qq && apt-get install -y -qq zstd git python3-venv python3-pip) 2>/dev/null || true
@@ -34,21 +40,38 @@ pip install -q -U pip huggingface_hub
 export HF_XET_HIGH_PERFORMANCE=1     # hub 1.x: xet turbo (hf_transfer extra is gone)
 export PIP_NO_CACHE_DIR=1
 
-hfget() {  # hfget <repo> <path-in-repo> [dest-dir]
-  python - "$1" "$2" "${3:-.}" <<'EOF'
+hfget() {  # hfget <repo> <path-in-repo> [dest-dir] [repo-type: model|dataset]
+  python - "$1" "$2" "${3:-.}" "${4:-model}" <<'EOF'
 import sys
 from huggingface_hub import hf_hub_download
-p = hf_hub_download(sys.argv[1], sys.argv[2], repo_type="model",
+p = hf_hub_download(sys.argv[1], sys.argv[2], repo_type=sys.argv[4],
                     local_dir=sys.argv[3])
 print(p)
 EOF
 }
 
-echo "== repo"
+echo "== repo (public GitHub clone)"
 mkdir -p "$W/dl"
-hfget $HUB $PACK/phantom_repo_latest.tar.gz "$W/dl" >/dev/null
-mkdir -p phantom && tar -xzf "$W/dl/$PACK/phantom_repo_latest.tar.gz" -C phantom
+REPO_URL=${REPO_URL:-https://github.com/Advanced-Robotic-Manipulation/HapticWAM.git}
+REPO_REF=${REPO_REF:-}                        # optional branch, tag or FULL commit sha
+clone_repo() {   # clone_repo <url> <ref-or-empty> <dir>
+  if [ -d "$3/.git" ]; then return 0; fi
+  if [ -z "$2" ]; then
+    git clone -q --depth 1 "$1" "$3"
+    return 0
+  fi
+  # a branch or tag clones directly; a raw commit sha needs a shallow fetch
+  if git clone -q --depth 1 --branch "$2" "$1" "$3" 2>/dev/null; then
+    return 0
+  fi
+  git init -q "$3"
+  git -C "$3" remote add origin "$1" 2>/dev/null || git -C "$3" remote set-url origin "$1"
+  git -C "$3" fetch -q --depth 1 origin "$2"
+  git -C "$3" checkout -q FETCH_HEAD
+}
+clone_repo "$REPO_URL" "$REPO_REF" phantom
 cd phantom
+echo "repo commit $(git rev-parse HEAD) from $REPO_URL"
 
 echo "== cosmos repo (public, pinned to the submodule commit)"
 [ -d cosmos-predict2.5/.git ] || git clone -q https://github.com/nvidia-cosmos/cosmos-predict2.5.git
@@ -74,10 +97,10 @@ EOF
 
 echo "== dataset (packed tarballs -> tasks/ + manifests/)"
 mkdir -p "$W/data/phantom-episodes/tasks" "$W/data/phantom-episodes/manifests"
-python - "$W" <<'EOF'
+python - "$W" "$HUB_TELEOP" "$HUB_TEACHER" <<'EOF'
 import subprocess, sys
 from huggingface_hub import hf_hub_download
-W = sys.argv[1]
+W, HUB_TELEOP, HUB_TEACHER = sys.argv[1], sys.argv[2], sys.argv[3]
 tasks = ["Carton", "Carton_fail", "waffles", "waffles_fail",
          "egg", "egg_fail", "whiteboard", "whiteboard_fail"]
 import os
@@ -86,9 +109,8 @@ for t in tasks:
         print("skip (present)", t, flush=True); continue
     for ext in ("tar.zst", "tar"):
         try:
-            p = hf_hub_download("armteam/phantom-checkpoints",
-                                f"dataset_v3_packed/{t}.{ext}",
-                                repo_type="model", local_dir=W + "/dl")
+            p = hf_hub_download(HUB_TELEOP, f"{t}.{ext}",
+                                repo_type="dataset", local_dir=W + "/dl")
             break
         except Exception:
             p = None
@@ -98,12 +120,13 @@ for t in tasks:
                    shell=True, check=True)
     subprocess.run(["rm", p])
     print("unpacked", t, flush=True)
-for extra, dest in (("manifests.tar", W + "/data/phantom-episodes"),
-                    ("norm_stats.json", W + "/data/phantom-episodes/tasks"),
-                    ("text_embeddings.pt", W + "/data/phantom-episodes/tasks")):
-    p = hf_hub_download("armteam/phantom-checkpoints",
-                        f"dataset_v3_packed/{extra}", repo_type="model",
-                        local_dir=W + "/dl")
+# (file, dest, repo, repo_type, path-in-repo). text_embeddings.pt is the Cosmos
+# text-embedding cache and lives at the ROOT of the teacher repo.
+for extra, dest, repo, rtype, inrepo in (
+        ("manifests.tar", W + "/data/phantom-episodes", HUB_TELEOP, "dataset", "manifests.tar"),
+        ("norm_stats.json", W + "/data/phantom-episodes/tasks", HUB_TELEOP, "dataset", "norm_stats.json"),
+        ("text_embeddings.pt", W + "/data/phantom-episodes/tasks", HUB_TEACHER, "model", "text_embeddings.pt")):
+    p = hf_hub_download(repo, inrepo, repo_type=rtype, local_dir=W + "/dl")
     if extra.endswith(".tar"):
         subprocess.run(["tar", "-xf", p, "-C", dest], check=True)
     else:

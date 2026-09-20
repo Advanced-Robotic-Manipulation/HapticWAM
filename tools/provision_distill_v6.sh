@@ -20,23 +20,33 @@
 # terminal_evals ~ 0.5 h. ~9 h ~ $22 all in. STEPS/CTRL_STEPS override.
 set -euo pipefail
 W=${1:-/workspace/phantom-hid}
-HUB=armteam/phantom-checkpoints
+# hub repos after the 2026-09 armteam restructure:
+HUB_TEACHER=armteam/hapticwam-teacher         # teacher_v6/, teacher_v6_simft/
+HUB_ABL=armteam/hapticwam-ablations           # teacher_v6_ftA/, ctrl_v6/, eval_v6/, ...
+HUB_TELEOP=armteam/hapticwam-teleop-dataset   # DATASET repo, FLAT: manifests_v6.tar
 : "${HF_TOKEN:?set HF_TOKEN inline}"
 : "${V6_CKPT:?set V6_CKPT=teacher_v6/<file>.pt (hub path of the chosen v6 checkpoint)}"
 cd "$W/phantom"
 PY=$W/.venv/bin/python
 
-hfget() {  # hfget <path-in-repo> [dest-dir]
-  $PY - "$1" "${2:-$W/dl}" <<'EOF'
+hfget() {  # hfget <repo> <path-in-repo> [dest-dir] [repo-type: model|dataset]
+  $PY - "$1" "$2" "${3:-$W/dl}" "${4:-model}" <<'EOF'
 import sys
 from huggingface_hub import hf_hub_download
-print(hf_hub_download("armteam/phantom-checkpoints", sys.argv[1], repo_type="model", local_dir=sys.argv[2]))
+print(hf_hub_download(sys.argv[1], sys.argv[2], repo_type=sys.argv[4], local_dir=sys.argv[3]))
 EOF
 }
 
+# which repo owns the requested v6 teacher: the shipped v6 runs live in the
+# teacher repo, every v6 variant (ftA / video1p0 / simft_multitask) in ablations
+case "$V6_CKPT" in
+  teacher_v6/*|teacher_v6_simft/*) V6_HUB=$HUB_TEACHER ;;
+  *)                               V6_HUB=$HUB_ABL ;;
+esac
+
 echo "== v6 teacher: $V6_CKPT"
 mkdir -p "$W/runs/teacher/teacher_v6"
-hfget "$V6_CKPT" "$W/dl" >/dev/null
+hfget "$V6_HUB" "$V6_CKPT" "$W/dl" >/dev/null
 cp "$W/dl/$V6_CKPT" "$W/runs/teacher/teacher_v6/"
 TEACHER_V6="$W/runs/teacher/teacher_v6/$(basename "$V6_CKPT")"
 ls -la "$TEACHER_V6"
@@ -44,11 +54,11 @@ ls -la "$TEACHER_V6"
 echo "== manifests: pin to compute's split"
 MAN=$W/data/phantom-episodes/manifests
 mkdir -p "$MAN"
-if hfget dataset_v3_packed/manifests_v6.tar "$W/dl" >/dev/null 2>&1; then
-  tar -xf "$W/dl/dataset_v3_packed/manifests_v6.tar" -C "$MAN"
+if hfget "$HUB_TELEOP" manifests_v6.tar "$W/dl" dataset >/dev/null 2>&1; then
+  tar -xf "$W/dl/manifests_v6.tar" -C "$MAN"
   echo "placed manifests_v6.tar (all.jsonl + all_r2.jsonl)"
 else
-  echo "WARNING: dataset_v3_packed/manifests_v6.tar not on hub — using the manifest intake_recovery generated; verifying its counts instead"
+  echo "WARNING: $HUB_TELEOP/manifests_v6.tar not on hub — using the manifest intake_recovery generated; verifying its counts instead"
 fi
 $PY - "$MAN/all.jsonl" <<'EOF'
 import collections, json, sys
@@ -132,17 +142,19 @@ cat > "$W/ckpt_watch_v6.sh" <<EOF
 : "\${HF_TOKEN:?set HF_TOKEN inline for the watcher}"
 export HF_HUB_DISABLE_XET=1
 while true; do
-  for pair in "$W/runs/hid/hid_r1_v6_r0:hid_r1_v6" "$W/runs/teacher/ctrl_v6:ctrl_v6"; do
-    D=\${pair%%:*}; N=\${pair##*:}
+  # dir:run-name:repo — hid_r1_v6 is a superseded round that was not copied forward; a NEW one
+  # egresses to the ablations repo, never to the retiring one. ctrl_v6 is an ablation.
+  for triple in "$W/runs/hid/hid_r1_v6_r0:hid_r1_v6:$HUB_ABL" "$W/runs/teacher/ctrl_v6:ctrl_v6:$HUB_ABL"; do
+    D=\${triple%%:*}; R=\${triple##*:}; N=\${triple%:*}; N=\${N##*:}
     [ -d "\$D" ] || continue
-    $PY $W/phantom/tools/upload_run_ckpts.py "\$D" --repo $HUB --run-name \$N --log $W/distill_v6.log 2>&1 | tail -1
+    $PY $W/phantom/tools/upload_run_ckpts.py "\$D" --repo \$R --run-name \$N --log $W/distill_v6.log 2>&1 | tail -1
   done
   ls $W/eval/*.json >/dev/null 2>&1 && $PY - <<'PY'
 import glob, os
 from huggingface_hub import HfApi
 api = HfApi()
 for f in glob.glob("$W/eval/*.json") + glob.glob("$W/eval/*.log"):
-    api.upload_file(path_or_fileobj=f, path_in_repo="eval_v6/" + os.path.basename(f), repo_id="$HUB", repo_type="model")
+    api.upload_file(path_or_fileobj=f, path_in_repo="eval_v6/" + os.path.basename(f), repo_id="$HUB_ABL", repo_type="model")
 PY
   grep -q "ALL V6 DONE" $W/distill_v6.log 2>/dev/null && { sleep 120; echo "ALL UPLOADS DONE"; exit 0; }
   sleep 600

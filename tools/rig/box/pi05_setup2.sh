@@ -25,7 +25,8 @@ cd "$P"
 HF_HUB_DISABLE_XET=1 "$V/bin/python" - <<'PY'
 import os
 from huggingface_hub import snapshot_download
-p = snapshot_download("armteam/phantom-checkpoints", repo_type="model",
+# pi05_phantom_expert_v1/ moved to the baselines repo (2026-09 restructure); paths unchanged
+p = snapshot_download("armteam/hapticwam-baselines", repo_type="model",
                       allow_patterns=["pi05_phantom_expert_v1/020000/pretrained_model/*",
                                       "pi05_phantom_expert_v1/paligemma_tokenizer/*"],
                       local_dir=os.path.expanduser("~/phantom-icra-2027/phantom/runs/pi05_20k/hub"))

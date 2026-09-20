@@ -105,7 +105,7 @@ class _FakeQueuePolicy:
 
 
 def _pi05_config():
-    """The REAL pi05 checkpoint config (armteam/phantom-checkpoints,
+    """The REAL pi05 checkpoint config (armteam/hapticwam-baselines,
     pi05_20k/pretrained_model/config.json), so the "pi05 path unchanged"
     claim is a test and not an assertion."""
     return SimpleNamespace(

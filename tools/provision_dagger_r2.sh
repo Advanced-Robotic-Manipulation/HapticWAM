@@ -7,30 +7,32 @@
 #   HF_TOKEN=hf_xxx bash tools/provision_dagger_r2.sh [/workspace/phantom-hid]
 set -euo pipefail
 W=${1:-/workspace/phantom-hid}
-HUB=armteam/phantom-checkpoints
+# hub repos after the 2026-09 armteam restructure:
+HUB_ROLLOUTS=armteam/hapticwam-rollouts   # DATASET repo, FLAT: rollouts_*.tar.zst, manifests_r3.tar, deploy_*.tar.zst
+HUB_ABL=armteam/hapticwam-ablations       # teacher_v5_ftA/, hid_r2_ftA/, hid_2k_ftA/, eval_r2/
 : "${HF_TOKEN:?set HF_TOKEN inline}"
 D=$W/data/phantom-episodes; export D
 PY=$W/.venv/bin/python
 cd "$W/phantom"
 
-hfget() { $PY - "$1" "${2:-$W/dl}" <<'EOF2'
+hfget() { $PY - "$1" "$2" "${3:-$W/dl}" "${4:-model}" <<'EOF2'
 import sys
 from huggingface_hub import hf_hub_download
-print(hf_hub_download("armteam/phantom-checkpoints", sys.argv[1], repo_type="model", local_dir=sys.argv[2]))
+print(hf_hub_download(sys.argv[1], sys.argv[2], repo_type=sys.argv[4], local_dir=sys.argv[3]))
 EOF2
 }
 
 echo "== teacher ftA"
 mkdir -p "$W/runs/teacher/teacher_v5_ftA"
-[ -f "$W/runs/teacher/teacher_v5_ftA/teacher_001500.pt" ] || { hfget teacher_v5_ftA/teacher_001500.pt >/dev/null; cp "$W/dl/teacher_v5_ftA/teacher_001500.pt" "$W/runs/teacher/teacher_v5_ftA/"; }
+[ -f "$W/runs/teacher/teacher_v5_ftA/teacher_001500.pt" ] || { hfget "$HUB_ABL" teacher_v5_ftA/teacher_001500.pt >/dev/null; cp "$W/dl/teacher_v5_ftA/teacher_001500.pt" "$W/runs/teacher/teacher_v5_ftA/"; }
 T=$W/runs/teacher/teacher_v5_ftA/teacher_001500.pt
 
 echo "== rollouts 09-08/09-09 (re-derived + labelled, tasks/<task>_rollout layout)"
-hfget dataset_v3_packed/rollouts_0908_0909.tar.zst >/dev/null
-tar --zstd -xf "$W/dl/dataset_v3_packed/rollouts_0908_0909.tar.zst" -C "$D"
+hfget "$HUB_ROLLOUTS" rollouts_0908_0909.tar.zst "$W/dl" dataset >/dev/null
+tar --zstd -xf "$W/dl/rollouts_0908_0909.tar.zst" -C "$D"
 echo "== rollouts 09-01/09-04 (session layout -> symlinks, rederive, label)"
-hfget rollouts/rollouts_0901_0904.tar.zst >/dev/null
-mkdir -p "$D/rollouts_0901_0904" && tar --zstd -xf "$W/dl/rollouts/rollouts_0901_0904.tar.zst" -C "$D/rollouts_0901_0904"
+hfget "$HUB_ROLLOUTS" rollouts_0901_0904.tar.zst "$W/dl" dataset >/dev/null
+mkdir -p "$D/rollouts_0901_0904" && tar --zstd -xf "$W/dl/rollouts_0901_0904.tar.zst" -C "$D/rollouts_0901_0904"
 $PY - <<'EOF2'
 import json, os
 from pathlib import Path
@@ -47,8 +49,8 @@ $PY tools/label_grasps.py "$D/rollouts_0901_0904" --include-unfinalized --json-o
 $PY tools/apply_grasp_labels.py /tmp/labels_0901_0904.json "$D/rollouts_0901_0904"
 
 echo "== manifest r3 AS all.jsonl"
-hfget dataset_v3_packed/manifests_r3.tar >/dev/null
-mkdir -p /tmp/r3 && tar -xf "$W/dl/dataset_v3_packed/manifests_r3.tar" -C /tmp/r3
+hfget "$HUB_ROLLOUTS" manifests_r3.tar "$W/dl" dataset >/dev/null
+mkdir -p /tmp/r3 && tar -xf "$W/dl/manifests_r3.tar" -C /tmp/r3
 [ -f "$D/manifests/all_base.jsonl" ] || cp "$D/manifests/all.jsonl" "$D/manifests/all_base.jsonl"
 cp /tmp/r3/all_r3_windows.jsonl "$D/manifests/all.jsonl"
 $PY - "$D/manifests/all.jsonl" <<'EOF2'
@@ -97,14 +99,14 @@ cat > "$W/ckpt_watch_r2.sh" <<EOF3
 while true; do
   for pair in "$W/runs/hid/hid_r2_ftA_r2:hid_r2_ftA" "$W/runs/hid/hid_2k_ftA_r0:hid_2k_ftA"; do
     DIR=\${pair%%:*}; N=\${pair##*:}; [ -d "\$DIR" ] || continue
-    $PY $W/phantom/tools/upload_run_ckpts.py "\$DIR" --repo $HUB --run-name \$N --log $W/distill_r2.log 2>&1 | tail -1
+    $PY $W/phantom/tools/upload_run_ckpts.py "\$DIR" --repo $HUB_ABL --run-name \$N --log $W/distill_r2.log 2>&1 | tail -1
   done
   ls $W/eval/*.json >/dev/null 2>&1 && $PY - <<'PY'
 import glob, os
 from huggingface_hub import HfApi
 api = HfApi()
 for f in glob.glob("$W/eval/*.json") + glob.glob("$W/eval/*.log"):
-    api.upload_file(path_or_fileobj=f, path_in_repo="eval_r2/" + os.path.basename(f), repo_id="$HUB", repo_type="model")
+    api.upload_file(path_or_fileobj=f, path_in_repo="eval_r2/" + os.path.basename(f), repo_id="$HUB_ABL", repo_type="model")
 PY
   grep -q "ALL R2 DONE" $W/distill_r2.log 2>/dev/null && { sleep 120; echo "ALL UPLOADS DONE"; exit 0; }
   sleep 600
