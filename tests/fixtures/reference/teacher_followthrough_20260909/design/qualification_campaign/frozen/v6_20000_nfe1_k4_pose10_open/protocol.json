@@ -1,0 +1,307 @@
+{
+  "scene_sha256": "bff8f713302d49041ef08b8dc7c95c47d3bb678e5f46787dc22ac15cfad5e58d",
+  "qualification": {
+    "passed": true,
+    "scope": "Bounded numerical evidence plus explicit decision permit prospective qualification; no convergence, policy reliability or full-task success implied.",
+    "readiness_sha256": "31a62ad724ef1316eb14e7bc8155c4ea58f5468f4a2ed5ec9fdc08465c9fbcb5",
+    "candidate_scene_sha256": "bff8f713302d49041ef08b8dc7c95c47d3bb678e5f46787dc22ac15cfad5e58d"
+  },
+  "report_each_trial": [
+    "Technical validity and guard status; actual duration and first plan activation.",
+    "Reach error before closure; active pad contact and grasp acquisition.",
+    "Sustained lift; retention through carry; release and supported settling inside the box.",
+    "Independent full-task outcome and clean/sustained supported placement through the 60 s horizon.",
+    "Drops, collisions, stop reason, rejected/held commands and inference/RPC/delivery latency.",
+    "All timestamped measured states, proposed actions, accepted commands, policy observations, tactile/contact data and video."
+  ],
+  "scoring_rules": [
+    "Keep every planned row, failure, technical stop and missing outcome; never replace a failed trial.",
+    "Use independent packet state/support and the unchanged thresholds; controller FINISH is not task success.",
+    "Current runtime observes a stopped command for up to 2 s, capped by 60 s. If observation ends earlier, through-horizon outcomes remain unobserved/censored; never count the unobserved interval as a pass.",
+    "Keep all40planned identities, technical invalidities and unrun cases. No replacements, cherry-picked videos, or silent retry. Through60s placement remains unobserved when recording ends early."
+  ],
+  "comparison_limit": "Report all40planned identities and four5-start strata separately. Pooled rate represents equal stratum weights. Group two seeds by start for uncertainty; do not treat40runs as40independent arm starts. Height co-varies with q/orientation/source/wrist bias.",
+  "status": "frozen_v6_qualification40",
+  "launch_authorized": true,
+  "frozen_at_utc": "2026-09-10T01:29:27.847663+00:00",
+  "campaign_sha256": "d4f653efaeee99d737738328b8d92e4bf20b3399be57c37d41248ac4e9efabb5",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_native_v11_boundary_hold_20260909",
+  "source_manifest_sha256": "93a158b8c43b3b67ce70e1304678a5ac86bd9be1e788ed7ca1b9d12db3135b34",
+  "development": {
+    "execution_order": [
+      {
+        "condition": "ep_waffles_1785594294_001_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594503_010_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393283_000_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787394107_011_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785593867_004_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594563_013_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393534_007_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393887_004_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594329_003_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594230_021_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393625_009_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787394144_012_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594044_014_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594169_018_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393576_008_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787394038_009_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594205_020_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1785594728_021_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393693_011_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393798_000_open",
+        "seed": 910301
+      },
+      {
+        "condition": "ep_waffles_1787393798_000_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393693_011_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594728_021_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594205_020_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787394038_009_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393576_008_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594169_018_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594044_014_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787394144_012_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393625_009_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594230_021_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594329_003_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393887_004_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393534_007_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594563_013_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785593867_004_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787394107_011_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1787393283_000_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594503_010_open",
+        "seed": 910302
+      },
+      {
+        "condition": "ep_waffles_1785594294_001_open",
+        "seed": 910302
+      }
+    ]
+  },
+  "stage": "qualification",
+  "contact_qualification_sha256": "0416586053fe3862f6fec60624b49b9ea07f667642f99bfd78ebfb791c725302",
+  "treatment": {
+    "checkpoint": "v6_20000",
+    "nfe": 1,
+    "k_seeds": 4,
+    "pose_play_steps": 10,
+    "grip_play_steps": 10,
+    "reset": "open"
+  },
+  "technical_invalid_stop": "Preserve invalid attempt and stop remaining rows for diagnosis; do not silently retry or relax any existing guard.",
+  "server_contract": {
+    "dedicated_simulation_server": true,
+    "repo": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_native_v11_inference_20260909",
+    "status": "ready",
+    "system": "teacher",
+    "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
+    "weights": "EMA",
+    "dtype": "torch.bfloat16",
+    "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+    "backbone_checkpoint": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt",
+    "backbone_sha256": "b2e993cea3e242bc72288612488fe91770a1c073c98c3fec6d610411ffc30646",
+    "text_cache": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v3_790eps/text_embeddings.pt",
+    "text_cache_sha256": "bef6ad98d2925799c2768084cb5886c8770627f861924088a8a721316883453b",
+    "inference_source_sha256": {
+      "phantom/inference/policy.py": "e4d4c0797896f72bddb0d3c7383a1ebe6c8aeca02848b4456675c4bf7c35f435",
+      "phantom/inference/remote.py": "6b72a5758817600520cc6a1025f6d83ab22b1394af13b65aca8e13dca418a557",
+      "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8",
+      "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04"
+    },
+    "loaded_task_cache_keys": [
+      "Carton",
+      "Carton_fail",
+      "egg",
+      "egg_fail",
+      "waffles",
+      "waffles_fail",
+      "whiteboard",
+      "whiteboard_fail"
+    ],
+    "warmed": true,
+    "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v6/teacher_020000.pt",
+    "checkpoint_sha256": "4812cfbf012781f0e2e2f96d3b4e4b5b228806912418ce0127269bcdb5390fa2",
+    "checkpoint_size_bytes": 393116245,
+    "saved_model_config": {
+      "student": false,
+      "drop_video_at_inference": false,
+      "rope_time_mode": "time_true",
+      "cond_dropout_p": 0.1,
+      "action_t_max_of_two": false,
+      "contact_nll_beta": 0.5,
+      "contact_nll_detach_weight": false,
+      "wrist_region_mse": true,
+      "contact_self_forcing": false,
+      "action_noise_per_strip": true,
+      "mask_wrist": false,
+      "use_action_adaln_intent": true,
+      "hht_dim": 256,
+      "contact_obs_frames": 1,
+      "nfe": 5,
+      "loss": {
+        "action": 1.0,
+        "video": 0.1,
+        "contact": 1.0,
+        "wrist": 0.5,
+        "event": 0.5,
+        "gate_bce": 0.2,
+        "sigma_reg": 0.01
+      },
+      "lora": {
+        "rank": 16,
+        "alpha": 16,
+        "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2",
+        "dropout": 0.0
+      },
+      "acc": {
+        "d_acc": 256,
+        "d_e": 256,
+        "hidden": 512,
+        "react_hidden": 32,
+        "lambda_bias_init": 0.0,
+        "beta_init": 1.0,
+        "self_anticipation": "two_pass",
+        "gt_noise_scale": 0.1,
+        "alpha_entropy_weight": 0.0
+      },
+      "feature_align": false
+    },
+    "wrench_baseline_rows": 8,
+    "effective": {
+      "nfe": 1,
+      "guidance": 1.0,
+      "k_seeds": 4,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "drop_video": false,
+      "task_text": "waffles",
+      "close_p": 0.5
+    }
+  },
+  "ready_contracts_sha256": "8829cf9ceecaaa9e384c972aaf54cfd6f72abe61faf0608335dd9d74b35e527f",
+  "checkpoint_baseline_disclosure": "Native checkpoint-owned wrench_baseline_rows=8; reset per trial and verify actual unloaded startup. No teacher baseline harmonization or fabricated zero observations.",
+  "historical_contact_qualification": {
+    "passed": true,
+    "validation_sha256": "54eedcee36960da6529cc61f22122118b5dbff2efa398ee397f7b3e4631100bd",
+    "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_native_v11_20260909/equal_split_7073_qualification/rollouts/equal_split_7073_dynamics/validation.json"
+  },
+  "qualification_pool_manifest_sha256": "5f78e784490701fcb8ca657c909317a1e5e62bf99d5e8c35d6ac395b1e6b5943",
+  "schedule_sha256": "2cbf6e202370b49039db0cc82f6b88acba9dd4278096f4f5208d4d3455c1159c",
+  "numerical_readiness_required": true,
+  "numerical_readiness_sha256": "31a62ad724ef1316eb14e7bc8155c4ea58f5468f4a2ed5ec9fdc08465c9fbcb5"
+}

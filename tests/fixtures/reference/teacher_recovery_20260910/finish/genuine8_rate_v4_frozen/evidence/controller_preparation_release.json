@@ -1,0 +1,51 @@
+{
+  "schema": "combined_v3_runtime_preparation_release_v1",
+  "created_utc": "2026-09-10T18:55:39.726810+00:00",
+  "status": "passed",
+  "runtime_preparation_authorized": true,
+  "models_or_physics_authorized": false,
+  "qualification_ready": false,
+  "thresholds_relaxed": false,
+  "relative_runtime_manifest_sha256": "16450666261ebde618a7857b9142d6ebdff5fb69b6c980ca89fb585ee7ab9b65",
+  "terminal_hold_runtime_manifest_sha256": "861867f2511a156b3df9f7f2c520a6f2df55e2eda9e2c77762a3ff3d7bb49f19",
+  "combined_source_inventory_sha256": "9887c0b900219f0e5a83b07ebc0b08652deba8c81eff06ba52c8baab20c484fe",
+  "controller_positive_hold_passed": true,
+  "controller_negative_no_false_finish_passed": true,
+  "strict_negative_physics_passed": false,
+  "independent_positive_fulltask": false,
+  "scope": "Source assembly and CPU validation authorization only after reviewed causal FINISH/hold positive and no-false-FINISH negative. This does not pass the full negative physical audit, authorize inference/physics, or release qualification.",
+  "retained_failures": [
+    "Positive original first-unload packet footprint miss; actual supported landing observed.",
+    "Negative wrench stop invokes achieved-state safety recovery hold 0.815721mm beyond inward accepted-command reserve; hard workspace remains unviolated."
+  ],
+  "evidence": {
+    "mechanics": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/mechanics_v2.json",
+      "sha256": "bb08b45b010ab8ed548674070933e6bf98157bc0748ee5110983c6a244c503ef"
+    },
+    "positive_hold": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/terminal_report_v1.json",
+      "sha256": "4f89fe3ec67a633be5b1d37f705e15c1c48a425d528956c03b092e8d551306d0"
+    },
+    "positive_exact_audit": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/audits_v1/declared_last_ack_mode_audit.json",
+      "sha256": "25dd2974400a6d025d61b72b871c4a23ad99525c55d445565ed65a85ce132130"
+    },
+    "negative_behavior": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/negative_behavior_diagnostic_v1.json",
+      "sha256": "0cbf69f944e75fdafdc22929470b268fd4aad0610fa33e90bdc9c80ccc923233"
+    },
+    "negative_original_strict_failure": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/declared_last_ack_mode_audit.json",
+      "sha256": "b595ad18ccef2471d2a6fc451cf6ff8787814283a209a91680232dd25f6a641e"
+    },
+    "prefix_old_on": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/audits_v1/prefix_against_on_v2.json",
+      "sha256": "f141700742b45df5178849a833e9ac202b58f3c4addcc56fef95235c3de0a99d"
+    },
+    "prefix_old_off": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/audits_v1/prefix_against_off_v2.json",
+      "sha256": "37d89531325c91039829d8628a0bba16eea55f311ec9ace7553bd551870af81d"
+    }
+  }
+}

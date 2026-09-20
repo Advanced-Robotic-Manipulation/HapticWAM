@@ -1,0 +1,88 @@
+{
+  "schema": "genuine8_rate_v4_diagnostic_release_v1",
+  "created_utc": "2026-09-11T07:54:07.654860+00:00",
+  "status": "passed",
+  "diagnostic_launch_authorized": true,
+  "qualification_ready": false,
+  "thresholds_relaxed": false,
+  "runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "parent_runtime_manifest_sha256": "c7d548bb87ddb68e16fb979c5304586bce4f06a6f7c69935a0ff9f0a69adf27e",
+  "parent_inputs_manifest_sha256": "e0d37e0f2d5c00f4d4c7ddf8c36e58d6ced3afccb2a829290452c88d780c5c75",
+  "scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+  "scope": "Authorize eight genuine teacher diagnostic trials on runtime v10 (v9 + default-off FK-aware interior rate retry, enabled by rate_solver_backoff=fk_rate_interior_v1) with the sealed v3 scene, starts, seeds, recipe and scoring, paired identity-for-identity with the v3 diagnostic. No qualification readiness or simulated-success claim.",
+  "treatment_under_test": "rate_solver_backoff=fk_rate_interior_v1 (targets the two v3 OFF010 command-rate rejections at 8.67225 s / 7.87225 s); emergency receipts from v9 are carried unchanged",
+  "not_addressed": [
+    "close-guard unusable-tail veto (CPU prototype only, not integrated)",
+    "16.8-20.8 mm active-gel underdescent",
+    "start000 measured joint-speed violations"
+  ],
+  "emergency_scope": "v9 emergency submission path physically identical to v8 control in the paired v2 fixture; authority audit passed; original 0.816 mm inward-reserve failure preserved",
+  "known_failures_preserved": [
+    "v3 genuine eight: 0 acquisitions, 0 placements, 0 FINISH; four start000 joint-speed integrity failures",
+    "Safety-stop achieved hold exceeds inward command reserve 0.816 mm while hard workspace is preserved",
+    "Positive fixture first-unload footprint 8.07 mm vs 2 mm"
+  ],
+  "runtime_cpu_scope": "v10: 33 rate tests + 1847-pair comparison, 88 v10 own boundary/servo-hold tests, 111/112 emergency controls (the single failure is the v8 identity pin)",
+  "evidence": {
+    "mechanics": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/mechanics_v2.json",
+      "sha256": "bb08b45b010ab8ed548674070933e6bf98157bc0748ee5110983c6a244c503ef"
+    },
+    "hold_positive": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/terminal_report_v1.json",
+      "sha256": "4f89fe3ec67a633be5b1d37f705e15c1c48a425d528956c03b092e8d551306d0"
+    },
+    "hold_negative": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/declared_last_ack_mode_audit.json",
+      "sha256": "b595ad18ccef2471d2a6fc451cf6ff8787814283a209a91680232dd25f6a641e"
+    },
+    "negative_behavior": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/negative_behavior_diagnostic_v1.json",
+      "sha256": "0cbf69f944e75fdafdc22929470b268fd4aad0610fa33e90bdc9c80ccc923233"
+    },
+    "runtime_cpu": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/cpu_gate_v1/cpu_gate_terminal_receipt.json",
+      "sha256": "188812e31f4040f72cd0e879092be79baf9e67b5edb0d1daaafc723c6ee06795"
+    },
+    "collector": {
+      "path": "docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/actual_isaac_cpu_v2/results/receipt.json",
+      "sha256": "40c248c48f6e2ac979984e44990c7912d0c62bdf504975a65227dacb3e3fa0fb"
+    },
+    "latency": {
+      "path": "docs/results/teacher_recovery_20260910/finish/endpoint_profile_v2_cost_analysis.json",
+      "sha256": "56a3d63b4d925e845ee2c07f36b077692fae944a0d77976cc14e5c17b3b9979c"
+    },
+    "source_transfer": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json",
+      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f"
+    },
+    "runtime_v10_transfer": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json",
+      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f"
+    },
+    "controller_preparation_release": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/combined_v3_runtime_preparation_release_v1.json",
+      "sha256": "de423649ff105b5d6871c061ae60cd261a1726af293bc69c18bd783083b38566"
+    },
+    "emergency_fixture_pair": {
+      "path": "docs/results/teacher_recovery_20260910/finish/emergency_stop_fixture_draft_v2/terminal_v2/t15_withheld_v8_emergency_candidate_v2/audits/paired_control_candidate_comparison.json",
+      "sha256": "11dcd45fcc723f7f9c39942b5f7f9e2c90828b7d09b71484ae2c5b254c637d37"
+    },
+    "emergency_authority_audit": {
+      "path": "docs/results/teacher_recovery_20260910/finish/emergency_stop_fixture_draft_v2/terminal_v2/t15_withheld_v8_emergency_candidate_v2/audits/prospective_emergency_authority_audit.json",
+      "sha256": "a6ac5aa58ae4d1b07685f4485495dfa7b53a5cc71a2bfcdf1033c1cf95928ff1"
+    },
+    "rate_isaac_cpu": {
+      "path": "docs/results/teacher_recovery_20260910/finish/rate_solver_interior_candidate_v1/actual_isaac_cpu_v2/results/receipt.json",
+      "sha256": "3654cb2febca121a2c9311d9315261b57037e6308d49cdc64d52116495f73839"
+    },
+    "v3_diagnostic_release": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/genuine8_combined_v3_diagnostic_release_v1.json",
+      "sha256": "724b6693780c9a33197476ec3a635a68d076d73695c3977e088803dfb07f8246"
+    },
+    "v3_all8_readout": {
+      "path": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/all8_readout_v1.json",
+      "sha256": "4b4948193924c3b7c7d457b50f160b06cd4a9bcf8e925f2b075bb8d8f91763a6"
+    }
+  }
+}

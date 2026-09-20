@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_candidate_mechanics_runs",
+  "frozen_at_utc": "2026-09-08T21:39:41.156624+00:00",
+  "scope": "Read-only validation of candidate gripper mechanics and measured pick/carry reproduction; no policy ranking or hardware qualification",
+  "kinematics": {
+    "joint_coupling_max_abs_rad": 0.005,
+    "pad_fk_max_translation_m": 0.001,
+    "tool_tcp_offset_m": [
+      0,
+      0,
+      0.18
+    ],
+    "direct_joint_rmse_rad": 0.0001,
+    "direct_tcp_rmse_m": 0.003,
+    "direct_rotation_rmse_deg": 1.0,
+    "dynamics_joint_rmse_rad": 0.05,
+    "dynamics_tcp_rmse_m": 0.02,
+    "physics_clock_max_abs_error_s": 0.0005,
+    "coverage_start_tolerance_s": 0.1,
+    "coverage_end_tolerance_s": 0.1,
+    "max_sample_gap_s": 0.2
+  },
+  "pick": {
+    "bilateral_active_gel_force_n": 0.05,
+    "bilateral_acquisition_hold_s": 0.2,
+    "lift_onset_m": 0.02,
+    "lift_hold_s": 0.15,
+    "minimum_peak_lift_m": 0.1,
+    "initial_height_definition": "first saved physics sample; no post-hoc median or resetting to a lifted state"
+  },
+  "carry_7073": {
+    "interval_export_s": [
+      15.969803405925632,
+      18.71980340592563
+    ],
+    "bilateral_active_fraction_min": 0.85,
+    "maximum_bilateral_gap_s": 0.3,
+    "tcp_relative_slip_p95_m": 0.02,
+    "tcp_relative_slip_max_m": 0.05,
+    "reference_anchor": "median of first up to5 measured object positions in TCP frame within frozen carry interval"
+  },
+  "synthetic_probe": {
+    "duration_s": 10.0,
+    "hold_interval_s": [
+      3.0,
+      6.8
+    ],
+    "minimum_hold_median_lift_m": 0.08,
+    "bilateral_active_hold_fraction_min": 0.85,
+    "release_interval_s": [
+      7.5,
+      10.0
+    ],
+    "release_requires_all_sampled_states_not_bilateral": true,
+    "minimum_world_vertical_object_fall_relative_to_tcp_m": 0.02,
+    "release_fall_reference": "median object_z-minus-tcp_z during hold interval; fall at final saved sample"
+  },
+  "integrity": {
+    "require_free_dynamic_object": true,
+    "require_no_attachments": true,
+    "require_zero_pose_writes_after_initialization": true,
+    "camera_readback_required": true,
+    "completed_trace_coverage_required": true,
+    "all_actual_finger_and_pad_states_required": true
+  },
+  "interpretation": {
+    "direct_replay_is_physics_validation": false,
+    "synthetic_probe_is_real_recording_validation": false,
+    "candidate_can_be_validated_by_direct_or_probe_alone": false,
+    "dynamic_fixture_failure_fails_aggregate": true,
+    "active_gel_and_pad_body_contact_must_be_reported_separately": true,
+    "registration_and_hardware_model_assumptions_remain_until_independently_confirmed": true
+  }
+}

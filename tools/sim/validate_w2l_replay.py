@@ -25,7 +25,7 @@ from phantom.sim.gripper_visual import _origin, _rotation
 from tools.sim.compare_replay import physics_clock_metrics, state_metrics, validate_trace
 from tools.sim.evaluate_pick_place import sustained_onset
 
-DEFAULT_PROTOCOL = REPO/'docs/results/w2l_gripper_build_20260908/validation_protocol.json'
+DEFAULT_PROTOCOL = REPO/'tests/fixtures/reference/w2l_gripper_build_20260908/validation_protocol.json'
 
 
 def sha(path):

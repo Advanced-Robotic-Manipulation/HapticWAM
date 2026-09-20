@@ -10,7 +10,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
     "teacher_v5_transition",
-    ROOT / "docs/results/teacher_success_anchor_v5/transition_to_confirmation.py",
+    ROOT / "tests/fixtures/reference/teacher_success_anchor_v5/transition_to_confirmation.py",
 )
 m = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)

@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "protocol_id": "teacher_success_anchor_v3",
+  "status": "frozen_before_new_screen_or_confirmation_outcomes",
+  "created_at_utc": "2026-09-07T07:55:47.664872+00:00",
+  "purpose": "Recover and benchmark the exact previously successful simulator task cell, without treating changed starts/appearance/controllers as its reproduction.",
+  "anchor_reference": {
+    "case": "teacher__placement_xm10_ym10mm__seed4242",
+    "campaign_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+    "historical_physical_full_task_s": 25.2,
+    "later_wrist_extension_stop_s": 31.38,
+    "current_evaluator_recheck": "valid strict support-verified placement retained, thresholds identical",
+    "positive_control_seed": 4242,
+    "historical_negative_control_seed": 4243
+  },
+  "planned_counts": {
+    "historical_reproduction_diagnostics": 4,
+    "one_component_diagnostics": 12,
+    "teacher_screen": 24,
+    "reserved_confirmation": 24,
+    "maximum_core_total": 64,
+    "arm_robustness": 0
+  },
+  "common_inputs": {
+    "fixed_scene": {
+      "schema_version": 1,
+      "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+      "physics": {
+        "dt": 0.004,
+        "render_hz": 15,
+        "solver_position_iterations": 16,
+        "solver_velocity_iterations": 4,
+        "joint_stiffness": 3500,
+        "joint_damping": 180,
+        "finger_stiffness": 1800,
+        "finger_damping": 25,
+        "finger_force_N": 15,
+        "forearm_collision_approximation": "convexDecomposition"
+      },
+      "table": {
+        "center": [
+          -0.23,
+          0.0,
+          0.027999999999999997
+        ],
+        "size": [
+          1.7,
+          0.9,
+          0.05
+        ],
+        "hole_pitch": 0.04,
+        "hole_radius": 0.0055,
+        "top_z": 0.053,
+        "friction": 0.55
+      },
+      "mat": {
+        "center": [
+          -0.345,
+          -0.245,
+          0.05449999999999999
+        ],
+        "size": [
+          0.33,
+          0.38,
+          0.003
+        ],
+        "grid_pitch": 0.05,
+        "friction": 0.7
+      },
+      "bin": {
+        "center": [
+          -0.3915669783296538,
+          0.0366996283858784,
+          0.05399999999999999
+        ],
+        "size": [
+          0.3267210754691179,
+          0.2344750815856634,
+          0.14
+        ],
+        "wall": 0.004,
+        "friction": 0.4
+      },
+      "waffle": {
+        "center": [
+          -0.3937067184864266,
+          -0.2930692769792478,
+          0.07000000000000008
+        ],
+        "size": [
+          0.15449525360329625,
+          0.027214019144296827,
+          0.028
+        ],
+        "yaw": 0.31656601407527596,
+        "mass": 0.035,
+        "static_friction": 0.65,
+        "dynamic_friction": 0.5,
+        "restitution": 0.015
+      },
+      "gripper": {
+        "stroke": 0.07,
+        "pad_touch_command": 0.9,
+        "pad_size": [
+          0.012,
+          0.026,
+          0.055
+        ],
+        "pad_center_z": 0.16556,
+        "pad_friction": 1.0,
+        "housing_size": [
+          0.065,
+          0.048,
+          0.07
+        ],
+        "compliant_stiffness": 12000,
+        "compliant_damping": 30,
+        "yaw": -0.377,
+        "geometry_source": "Rounded pad/backing contact hulls and70mm effective custom-pad aperture fitted against measured grasp; nominal bare Robotiqstroke remains85mm. Contact/material parameters are uncalibrated estimates.",
+        "contact_shape": "ellipse"
+      },
+      "camera": {
+        "resolution": [
+          640,
+          480
+        ],
+        "fx": 742.893223660066,
+        "fy": 742.893223660066,
+        "cx": 320.0,
+        "cy": 240.0,
+        "position": [
+          -0.32484269191527715,
+          -0.4753704304569985,
+          1.0424263097960098
+        ],
+        "target": [
+          -0.37168218390632835,
+          -0.058827533207274685,
+          0.13451768182685875
+        ],
+        "world_from_cv": [
+          [
+            0.9980094660544067,
+            0.04222756985451613,
+            -0.04683949199105121,
+            -0.32484269191527715
+          ],
+          [
+            0.05793770782169203,
+            -0.9072680071308444,
+            0.4165428972497238,
+            -0.4753704304569985
+          ],
+          [
+            -0.024906378262726937,
+            -0.4184275272744465,
+            -0.9079086279691511,
+            1.0424263097960098
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "source": "artifacts/isaac_waffles/evidence/camera_refinement_frozen_physics.json; balancedC, September4 fitting only, no hardware optical calibration."
+      },
+      "lighting": {
+        "dome_intensity": 650,
+        "key_intensity": 1800,
+        "key_position": [
+          -0.1,
+          -0.5,
+          1.8
+        ]
+      },
+      "uncertainty": {
+        "geometry": "Table, bin, mat, packet and custom pad sizes are visual estimates; no ruler or calibrated extrinsics recovered.",
+        "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+        "camera": "Camera fit is episode-specific; do not pool sessions with changed camera mounting."
+      },
+      "calibration": {
+        "revision": "recorded_pick_place_v2",
+        "episode_role": "August22 complete pick-place fit",
+        "physical_fit": "Two fixed fit episodes; table plane, rounded contact hulls, effective aperture and per-episode initial packet pose estimated from images/contact events. No object attachment or pose replay.",
+        "hardware_bare_gripper_stroke_m": 0.085,
+        "table_plane_shift_from_v1_m": 0.075,
+        "validation": "Recorded-motion reproduction; does not establish calibrated force/tactile transfer or policy success."
+      }
+    },
+    "initial_state": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    "tactile_baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    },
+    "runtime_hardware": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+      "sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3"
+    },
+    "prepared_episode": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000",
+    "robot_usd": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/validation_v2/pick_place/robot_asset/waffles/waffles.usda",
+      "exists": true,
+      "sha256": "f2ef4c23016aa26129982001ea67037f05e9f8b8e2009f5645f663af65c08637"
+    },
+    "thresholds": {
+      "contact_force_n": 0.1,
+      "acquisition_hold_s": 0.15,
+      "lift_height_m": 0.03,
+      "lift_hold_s": 0.5,
+      "carry_distance_m": 0.05,
+      "carry_hold_s": 0.25,
+      "contact_gap_s": 0.15,
+      "settle_hold_s": 0.5,
+      "settle_speed_m_s": 0.03,
+      "settle_angular_speed_rad_s": 0.5,
+      "bin_tolerance_m": 0.002,
+      "reach_distance_m": 0.02,
+      "reach_max_closure": 0.25,
+      "drop_height_m": 0.02,
+      "drop_hold_s": 0.1,
+      "clock_tolerance_s": 0.001,
+      "max_sample_gap_s": 0.2,
+      "require_support_verified_release": true,
+      "support_robot_force_max_n": 0.1,
+      "support_bin_force_min_n": 0.1
+    },
+    "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+    "inference_action_horizon": 16,
+    "max_play_steps": 10,
+    "control_rate_hz": 125,
+    "nominal_horizon_s": 60,
+    "observation_delay_s": 0,
+    "inference_delay_add_s": 0,
+    "latency_mode": "native measured inference and actual delivery; no latency override",
+    "original_adapter_profile": {
+      "tactile_model": "measured_baseline_proxy",
+      "gel_contact_coverage": "manifold_patch",
+      "terminal_veto": {
+        "implementation": "fd4a032",
+        "config": {
+          "z_ref": 0.0415,
+          "z_floor": 0.0315,
+          "z_margin": 0.0615,
+          "open_aperture": 0.232,
+          "p_close": 0.5,
+          "p_none": 0.9,
+          "max_retries": 3
+        },
+        "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+      },
+      "placement_release": {
+        "tcp_min_m": [
+          -0.5429275160642127,
+          -0.06853791240695331,
+          0.057999999999999996
+        ],
+        "tcp_max_m": [
+          -0.24020644059509488,
+          0.14193716917871008,
+          0.274
+        ],
+        "open_command_max": 0.45,
+        "opening_hold_s": 0.2,
+        "unloaded_force_max_n": 0.5,
+        "unloaded_hold_s": 0.2,
+        "rearm_close_command_min": 0.5
+      },
+      "record_packet_support": true,
+      "save_policy_observations": true,
+      "initial_state": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+        "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+      },
+      "tactile_baseline": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      }
+    },
+    "fixed_waffle_policy": "No object offsets or appearance changes after anchor freeze; varied arm starts only in a separate later study."
+  },
+  "candidates": [
+    {
+      "id": "fta1500_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "architecture": "teacher",
+      "weights": "EMA",
+      "nfe": 1,
+      "k_seeds": 4,
+      "guidance": 1.0,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "task_text": "waffles"
+    },
+    {
+      "id": "fta3000_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/sim/waffles/checkpoints/teacher_v5_ftA/teacher_003000.pt",
+      "checkpoint_sha256": "ee0a448c00da2fe047b4bcba5036a8b79e9ae33e3a6ec47ea69d27466b4ff1dc",
+      "architecture": "teacher",
+      "weights": "EMA",
+      "nfe": 1,
+      "k_seeds": 4,
+      "guidance": 1.0,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "task_text": "waffles"
+    },
+    {
+      "id": "v5_6_nfe1_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_6.pt",
+      "checkpoint_sha256": "7edcb8335681e19bead5ad39a2a80fe3fd8c5893b1761d2dd812c304881fe65c",
+      "architecture": "teacher",
+      "weights": "EMA",
+      "nfe": 1,
+      "k_seeds": 4,
+      "guidance": 1.0,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "task_text": "waffles"
+    },
+    {
+      "id": "fta1500_nfe5_k4",
+      "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "architecture": "teacher",
+      "weights": "EMA",
+      "nfe": 5,
+      "k_seeds": 4,
+      "guidance": 1.0,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "task_text": "waffles"
+    }
+  ],
+  "stages": {
+    "reproduction": {
+      "repeats": [
+        1,
+        2
+      ],
+      "sampling_seeds": [
+        4242,
+        4243
+      ],
+      "candidate": "fta1500_nfe1_k4",
+      "profile": "anchor_v1",
+      "trials": 4,
+      "selection_eligible": false,
+      "meaning": "Original historical positive/negative seed controls; all repeats retained. Same seed is not a bitwise closed-loop guarantee. No claim from single positive repeat."
+    },
+    "one_component_diagnostics": {
+      "sampling_seeds": [
+        904301,
+        904302
+      ],
+      "profiles": [
+        {
+          "id": "anchor_v1",
+          "change": "none",
+          "meaning": "Original full successful profile, historical mapper/veto and pad-only wrist, no FINISH."
+        },
+        {
+          "id": "gel_only",
+          "change": "gel_contact_coverage=manifold_patch_v2",
+          "meaning": "Only active-patch mapper correction; original veto/wrist/release retained."
+        },
+        {
+          "id": "wrist_only",
+          "change": "wrist_model=gripper_contact_proxy",
+          "meaning": "Only declared3-body external-normal force/moment wrist model plus unchanged bias; original mapper/veto/release retained."
+        },
+        {
+          "id": "veto_only",
+          "change": "terminal_veto.implementation=live; feedback remains historical request snapshot",
+          "meaning": "Only veto algorithm changes; preserve historical request-time input to avoid combining algorithm and delivery-feedback effects."
+        },
+        {
+          "id": "finish_only",
+          "change": "finish_after_release=true, finish_observation_s=2",
+          "meaning": "Only post-release terminal lifecycle; no controller flag substitutes for strict physical placement."
+        },
+        {
+          "id": "delivery_feedback_only",
+          "change": "terminal veto consumes current-delivery feedback; implementation remains fd4a032",
+          "meaning": "Only temporal feedback source changes; historical veto algorithm, mapper, wrist and release lifecycle retained."
+        }
+      ],
+      "candidate": "fta1500_nfe1_k4",
+      "trials": 12,
+      "selection_eligible": false,
+      "execution_order": [
+        "anchor_v1",
+        "gel_only",
+        "wrist_only",
+        "veto_only",
+        "finish_only",
+        "delivery_feedback_only"
+      ],
+      "meaning": "Paired diagnostic changes from the exact same anchor; not a statistical winner search or a ranked selection of the most successful correction.",
+      "source_rule": "Each diagnostic uses an isolated original-v1 source copy with only the declared component changed; record all source hashes and preserve historical defaults for every other component. Never launch corrected-v2 core wholesale as a one-component ablation."
+    },
+    "teacher_screen": {
+      "sampling_seeds": [
+        904401,
+        904402,
+        904403,
+        904404,
+        904405,
+        904406
+      ],
+      "candidates": [
+        "fta1500_nfe1_k4",
+        "fta3000_nfe1_k4",
+        "v5_6_nfe1_k4",
+        "fta1500_nfe5_k4"
+      ],
+      "profile": "anchor_v1, exact original legacy profile for all candidates; FINISH is diagnostic only",
+      "trials": 24,
+      "execution_blocks": [
+        {
+          "sampling_seed": 904401,
+          "candidate_order": [
+            "fta1500_nfe1_k4",
+            "fta3000_nfe1_k4",
+            "v5_6_nfe1_k4",
+            "fta1500_nfe5_k4"
+          ]
+        },
+        {
+          "sampling_seed": 904402,
+          "candidate_order": [
+            "fta3000_nfe1_k4",
+            "v5_6_nfe1_k4",
+            "fta1500_nfe5_k4",
+            "fta1500_nfe1_k4"
+          ]
+        },
+        {
+          "sampling_seed": 904403,
+          "candidate_order": [
+            "v5_6_nfe1_k4",
+            "fta1500_nfe5_k4",
+            "fta1500_nfe1_k4",
+            "fta3000_nfe1_k4"
+          ]
+        },
+        {
+          "sampling_seed": 904404,
+          "candidate_order": [
+            "fta1500_nfe5_k4",
+            "fta1500_nfe1_k4",
+            "fta3000_nfe1_k4",
+            "v5_6_nfe1_k4"
+          ]
+        },
+        {
+          "sampling_seed": 904405,
+          "candidate_order": [
+            "fta1500_nfe5_k4",
+            "v5_6_nfe1_k4",
+            "fta3000_nfe1_k4",
+            "fta1500_nfe1_k4"
+          ]
+        },
+        {
+          "sampling_seed": 904406,
+          "candidate_order": [
+            "fta1500_nfe1_k4",
+            "fta1500_nfe5_k4",
+            "v5_6_nfe1_k4",
+            "fta3000_nfe1_k4"
+          ]
+        }
+      ],
+      "advances": 2,
+      "ranking": [
+        "strict_physical_full_task_count descending",
+        "final_bin_contained_robot_unloaded_bin_supported_count descending",
+        "clean_finish_count descending",
+        "sustained_lift_count descending",
+        "acquisition_count descending",
+        "pre_placement_actual_safety_stop_count ascending",
+        "frozen_candidate_order ascending"
+      ]
+    },
+    "confirmation": {
+      "sampling_seeds": [
+        904501,
+        904502,
+        904503,
+        904504,
+        904505,
+        904506,
+        904507,
+        904508,
+        904509,
+        904510,
+        904511,
+        904512
+      ],
+      "candidates": "Exactly the two complete valid matched-screen leaders, no substitutions",
+      "trials": 24,
+      "per_candidate": 12,
+      "execution_blocks": [
+        {
+          "sampling_seeds": [
+            904501,
+            904502
+          ],
+          "candidate_order": "AB"
+        },
+        {
+          "sampling_seeds": [
+            904503,
+            904504
+          ],
+          "candidate_order": "BA"
+        },
+        {
+          "sampling_seeds": [
+            904505,
+            904506
+          ],
+          "candidate_order": "AB"
+        },
+        {
+          "sampling_seeds": [
+            904507,
+            904508
+          ],
+          "candidate_order": "BA"
+        },
+        {
+          "sampling_seeds": [
+            904509,
+            904510
+          ],
+          "candidate_order": "AB"
+        },
+        {
+          "sampling_seeds": [
+            904511,
+            904512
+          ],
+          "candidate_order": "BA"
+        }
+      ],
+      "primary_outcome": "strict_physical_full_task",
+      "statistical_unit": "Matched sampling seed at one fixed physical start; this is not across-arm-start or hardware robustness evidence."
+    }
+  },
+  "outcome_definitions": {
+    "strict_physical_full_task": "Existing evaluator outcomes.full_task with require_support_verified_release=true: ordered acquisition/lift/carry, released/settled oriented packet inside bin, positive bin support and robot unloading. Later stops are separately retained and do not erase prior physical completion.",
+    "clean_finish": "Physical full task plus final bin containment/unloading/positive support and completed_reason=placement_release_finished with no actual stop; secondary outcome only.",
+    "pre_placement_safety_stop": "Actual safety stop before first physical full_task time, or any actual safety stop if no physical full_task occurs.",
+    "post_placement_safety_stop": "Actual safety stop after independently verified physical full_task; report timing and final object state.",
+    "release_flags": "Release commits, Robotiq OBJ/latch, planner events or FINISH alone never establish physical success."
+  },
+  "profile_freeze_rule": {
+    "main_comparison": "Exact anchor_v1 profile for every candidate using preserved frozen old source/core; external current orchestration may set checkpoint/NFE but cannot replace runtime imports or task inputs. No diagnostic profile is selected by its measured success.",
+    "finish_only_diagnostic": [
+      "Only FINISH lifecycle changes; all scene/start/sensor/mapper/veto parameters remain anchor_v1.",
+      "Audit commanded replay before completion for unchanged accepted commands and physics/sensor inputs.",
+      "After completion no new inference/actions; hold accepted drives and observe physics2s without object writes or attachments.",
+      "FINISH is not adopted into this main comparison. Any later adoption requires a separately pinned protocol; strict physical placement remains independently scored."
+    ]
+  },
+  "confirmation_rule": {
+    "status": "frozen",
+    "minimum_physical_full_tasks": 8,
+    "denominator": 12,
+    "paired_difference": "Leader minus runner-up strict physical placement rate",
+    "confidence_level": 0.95,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260907,
+    "bootstrap_unit": "Resample12 paired seed rows, preserving candidate pairing.",
+    "require_positive_two_sided_95pct_lower_bound": true,
+    "require_no_increase_in_drops": true,
+    "require_no_increase_in_pre_placement_wrench_or_tactile_force_depth_stops": true,
+    "otherwise": "conditional ranked leader / pickup candidate / inconclusive as supported; no forced winner, no threshold changes, no adaptive extra seeds to reach significance.",
+    "require_exact_two_sided_discordant_pair_p_le_0_05": true,
+    "small_sample_guard": {
+      "method": "Exact two-sided discordant-pair binomial test (McNemar exact), p=min(1,2*BinomialCDF(min(n10,n01);n10+n01,.5)); no discordance p=1",
+      "alpha": 0.05,
+      "rationale": "Small paired binary samples can give overconfident percentile-bootstrap intervals with few one-direction discordant pairs; exact conditional test is frozen alongside the descriptive interval.",
+      "status": "accepted_pre_outcome_guard"
+    },
+    "winner_label": "Clear physical-placement winner at this fixed simulator anchor only; normal-finish and arm-start robustness remain separate claims."
+  },
+  "invalid_trial_rule": "Require all planned matched rows valid before selection. Retain failures and timeouts caused by the actual policy/controller. Missing/truncated/provenance-mismatched infrastructure records remain invalid, never silently omitted or relabeled; any exact-cell rerun must be explicitly recorded as a new attempt with reason, without replacing original outputs.",
+  "secondary_arm_start_rule": "Not part of the64-trial core. Only after anchor reproduction and checkpoint confirmation, freeze a separate fixed-waffle measured-arm-start robustness design; no reuse of these counts as across-start success evidence.",
+  "dependency_audit": {
+    "path": "dependency_audit.json",
+    "sha256": "90e991419f067b4b7ae9b462a90b7d8056a37fa803f23e496313ce611295f62b",
+    "status": "passed",
+    "checks": 120
+  },
+  "known_limitations": [
+    "Historical cell selected because it succeeded, so reproduction is conditioned on that discovery; only new reserved seeds evaluate prospective performance at the anchor.",
+    "One fixed physical scene/start does not establish unseen-start, session or hardware performance.",
+    "RGB, rigid contacts, tactile/wrist transfer and material parameters remain estimated; source/input equality does not guarantee deterministic closed-loop physics or latency.",
+    "NFE5/K4 is supported but may incur higher native latency; this remains part of that declared recipe performance and cannot trigger silent exclusion.",
+    "A no-winner conclusion remains possible; report observed physical performance and uncertainty plainly."
+  ],
+  "frozen_at_utc": "2026-09-07T07:57:38.817496+00:00",
+  "freeze_authorization": "Parent explicitly accepted exact McNemar guard, fresh seeds, fixed legacy-v1 comparison profile and isolated component diagnostics before model outcomes."
+}

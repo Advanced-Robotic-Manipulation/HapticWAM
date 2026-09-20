@@ -1,0 +1,617 @@
+{
+  "schema_version": 1,
+  "purpose": "Independent held-out episode image labels for evaluation only; no camera or layout fit performed",
+  "annotation_method": "Direct visual inspection of original 640x480 RGB first, midpoint, and final sampled frames; landmark type definitions from existing CAD correspondence, no evaluated camera projections were viewed",
+  "coordinate_convention": "Image x right, y down, pixels in original uncropped 640x480 frame",
+  "selection": "All three existing heldout episodes; first, middle and last available sampled frame per episode",
+  "q_source": "replay.npz camera_q at camera_t for source camera_index, not q at replay-grid t; camera_q is interpolated measured joint state",
+  "uncertainty_caveat": "Pixel uncertainties are conservative manual annotation estimates, not measured statistical confidence intervals. CAD points are nominal mesh correspondences, not surveyed fiducials.",
+  "landmark_definitions": {
+    "wrist1_cap_px": {
+      "link": "wrist_1_link",
+      "local_homogeneous_m": [
+        0,
+        0.0464,
+        -0.00177,
+        1
+      ],
+      "description": "Center of visible circular cyan wrist1 cap face, excluding gray shoulder and cable shadows",
+      "uncertainty_px": 4,
+      "final_motion_frame_uncertainty_px": 6
+    },
+    "forearm_cap_px": {
+      "link": "forearm_link",
+      "local_homogeneous_m": [
+        -0.21317,
+        0,
+        -0.00528,
+        1
+      ],
+      "description": "Approximate center of visible cyan forearm end-cap band/crescent. Surface-center-to-visible-band correspondence is ambiguous and should receive lower weight.",
+      "uncertainty_px": 10
+    },
+    "box_outer_rim_corners_px": {
+      "order": [
+        "rear_left",
+        "rear_right",
+        "front_right",
+        "front_left"
+      ],
+      "description": "Approximate straight-edge intersection on outer upper rim, rounded corners extrapolated; no world correspondence fixed here",
+      "uncertainty_px": 4
+    },
+    "table_hole_centers_px": {
+      "description": "Three corresponding dark table hole centers in upper-left static patch; centroid from grayscale<40 connected component after visually identifying the same holes; no metric coordinates assigned",
+      "uncertainty_px": 1.5
+    }
+  },
+  "setup_continuity": {
+    "reference_episode": "ep_teacher_waffles_1788535066_006",
+    "method": "cv2.matchTemplate TM_CCOEFF_NORMED of unscaled grayscale reference table ROI x60:400,y20:80 inside each first-frame search ROI x50:410,y10:90; integer translation diagnostic only",
+    "conclusion": "Table appears stable within roughly 1-2 pixels across Sept1 and both Sept4 heldout first frames. Box rim in ep1788535066 is approximately 8-10 pixels right of the other episodes despite table stability. Treat box XY as episode dependent; do not attribute this alone to changed camera extrinsics.",
+    "limitations": "Image-only matching of one static table patch does not prove identical camera pose, intrinsics, table plane, or setup on Sept8. No registration transforms applied to source images or labels."
+  },
+  "episodes": [
+    {
+      "episode": "ep_teacher_waffles_1788262056_000",
+      "date": "2026-09-01",
+      "recording_episode_path": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260901/ep_teacher_waffles_1788262056_000",
+      "manifest_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788262056_000/manifest.json",
+      "manifest_sha256": "a2ecfa69f9c395b31be1709e9eb11e70d1b5496331c1d682ec26a070acf9cabd",
+      "replay_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788262056_000/replay.npz",
+      "replay_sha256": "80e103ecfd3af7039d80a3810b068f13c7a89856e5eb090e0cb268b91aa388c3",
+      "joint_names": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "first_frame_layout": {
+        "table_translation_px": [
+          -1,
+          0
+        ],
+        "table_template_ncc": 0.9473083019256592,
+        "box_outer_rim_corners_px": [
+          [
+            184,
+            93
+          ],
+          [
+            425,
+            94
+          ],
+          [
+            441,
+            258
+          ],
+          [
+            167,
+            258
+          ]
+        ],
+        "table_hole_centers_px": [
+          [
+            179.2,
+            71.6
+          ],
+          [
+            203.4,
+            72.2
+          ],
+          [
+            255.9,
+            73.5
+          ]
+        ]
+      },
+      "frames": [
+        {
+          "frame_file": "frame_00000.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788262056_000/frame_00000.png",
+          "frame_sha256": "8ac8ccfafcc043ced058b3fc1d0246f7137d8d267d22a9ee45e91fa8a8abd0da",
+          "grid_index": 0,
+          "source_camera_index": 0,
+          "replay_grid_t_s": 0.0,
+          "camera_t_s": 0.0,
+          "t0_master_s": 4034.259496551007,
+          "camera_snap_error_s": 0.0,
+          "q_radians": [
+            0.11742830960312903,
+            -1.3955319822644208,
+            1.0010999130165594,
+            0.7719773054122925,
+            1.071793794631958,
+            -3.1410799662219446
+          ],
+          "wrist1_cap_px": [
+            466,
+            148
+          ],
+          "forearm_cap_px": [
+            443,
+            59
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.24174372084351628,
+              -0.13986558444804206,
+              0.5168981041534464
+            ],
+            "forearm_cap_px": [
+              -0.2382572852244624,
+              -0.022790849963157955,
+              0.4737352040139687
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788262056_000_00000_annotated.png"
+        },
+        {
+          "frame_file": "frame_00133.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788262056_000/frame_00133.png",
+          "frame_sha256": "7aabf5706706cff8c628527175484452ef2bf7da10a3fde2704f851244d5b28f",
+          "grid_index": 133,
+          "source_camera_index": 133,
+          "replay_grid_t_s": 8.866666666666788,
+          "camera_t_s": 8.873080827994272,
+          "t0_master_s": 4034.259496551007,
+          "camera_snap_error_s": 0.00641416132748418,
+          "q_radians": [
+            0.18455466770999915,
+            -1.2082965809590354,
+            1.730614330622104,
+            -0.0072056728918636105,
+            1.174528029462352,
+            -3.0562819817544735
+          ],
+          "wrist1_cap_px": [
+            413,
+            262
+          ],
+          "forearm_cap_px": [
+            398,
+            183
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.26878948948052384,
+              -0.16266764231109293,
+              0.313706679498262
+            ],
+            "forearm_cap_px": [
+              -0.2675126938445507,
+              -0.04456777547703693,
+              0.273367570035737
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788262056_000_00133_annotated.png"
+        },
+        {
+          "frame_file": "frame_00266.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788262056_000/frame_00266.png",
+          "frame_sha256": "2d77b4c9c6f67584eb3f975dca62e3479faa8a8d8646f838c63877b08638d325",
+          "grid_index": 266,
+          "source_camera_index": 266,
+          "replay_grid_t_s": 17.73333333333312,
+          "camera_t_s": 17.746061712969095,
+          "t0_master_s": 4034.259496551007,
+          "camera_snap_error_s": 0.012728379635973397,
+          "q_radians": [
+            0.40554642156281134,
+            -1.1756811950130062,
+            0.3208309628019719,
+            0.7206056528995958,
+            1.850751690003157,
+            -3.365524147055559
+          ],
+          "wrist1_cap_px": [
+            579,
+            157
+          ],
+          "forearm_cap_px": [
+            485,
+            71
+          ],
+          "wrist1_uncertainty_px": 6,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.16545451682509,
+              -0.1913785654050192,
+              0.5836511308193869
+            ],
+            "forearm_cap_px": [
+              -0.21682198623840235,
+              -0.08734568325915026,
+              0.5376082467894153
+            ]
+          },
+          "notes": "Final sampled frame has motion/possible rolling-shutter effects; larger wrist uncertainty.",
+          "annotated_png": "heldout_1788262056_000_00266_annotated.png"
+        }
+      ]
+    },
+    {
+      "episode": "ep_teacher_waffles_1788535066_006",
+      "date": "2026-09-04",
+      "recording_episode_path": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788535066_006",
+      "manifest_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788535066_006/manifest.json",
+      "manifest_sha256": "c1353ed3f4af4602a1cdda9ade5eb6bc1569624be1fc5fb7f25c523cd5e909a2",
+      "replay_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788535066_006/replay.npz",
+      "replay_sha256": "fcb916c865355070e9e3d0cc644d3b2058ee0416bdf5adf54c9b7beb2dc6ce27",
+      "joint_names": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "first_frame_layout": {
+        "table_translation_px": [
+          0,
+          0
+        ],
+        "table_template_ncc": 1.0,
+        "box_outer_rim_corners_px": [
+          [
+            194,
+            92
+          ],
+          [
+            430,
+            92
+          ],
+          [
+            446,
+            256
+          ],
+          [
+            175,
+            256
+          ]
+        ],
+        "table_hole_centers_px": [
+          [
+            180.6,
+            71.7
+          ],
+          [
+            205.4,
+            72.2
+          ],
+          [
+            256.3,
+            73.5
+          ]
+        ]
+      },
+      "frames": [
+        {
+          "frame_file": "frame_00000.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788535066_006/frame_00000.png",
+          "frame_sha256": "6b0e7722f7cdd98a3ad816304a978a01a952f61a0bb047d758474d782deaa576",
+          "grid_index": 0,
+          "source_camera_index": 0,
+          "replay_grid_t_s": 0.0,
+          "camera_t_s": 0.0,
+          "t0_master_s": 5635.824534769985,
+          "camera_snap_error_s": 0.0,
+          "q_radians": [
+            0.26305973529815674,
+            -1.6516855398761194,
+            1.3568098920879474,
+            0.5670732259750366,
+            1.255659483915477,
+            -3.1511249802161503
+          ],
+          "wrist1_cap_px": [
+            552,
+            174
+          ],
+          "forearm_cap_px": [
+            501,
+            86
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.16130708220319334,
+              -0.15795968097316854,
+              0.5014198892776122
+            ],
+            "forearm_cap_px": [
+              -0.17931552512921198,
+              -0.04282164890060845,
+              0.4567049759723232
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788535066_006_00000_annotated.png"
+        },
+        {
+          "frame_file": "frame_00124.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788535066_006/frame_00124.png",
+          "frame_sha256": "9d28a5bac7d270d32ea1834c4805e0a1775f65951a49ab9d1a716332a3232b1f",
+          "grid_index": 124,
+          "source_camera_index": 124,
+          "replay_grid_t_s": 8.266666666666424,
+          "camera_t_s": 8.272603738005273,
+          "t0_master_s": 5635.824534769985,
+          "camera_snap_error_s": 0.005937071338848909,
+          "q_radians": [
+            0.3912510987428621,
+            -1.392065155773426,
+            1.9417526927754498,
+            -0.026424932686354694,
+            1.592663023267206,
+            -3.0023046058573053
+          ],
+          "wrist1_cap_px": [
+            486,
+            283
+          ],
+          "forearm_cap_px": [
+            445,
+            211
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.1874030924289191,
+              -0.19692648935658422,
+              0.32045380532409956
+            ],
+            "forearm_cap_px": [
+              -0.2100883459259214,
+              -0.0809536469010586,
+              0.2803042233749347
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788535066_006_00124_annotated.png"
+        },
+        {
+          "frame_file": "frame_00249.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788535066_006/frame_00249.png",
+          "frame_sha256": "3f762e1d9121ce91747a5a64f870c570e0c7726476531e1436b4d395559ac55a",
+          "grid_index": 249,
+          "source_camera_index": 249,
+          "replay_grid_t_s": 16.600000000000364,
+          "camera_t_s": 16.612118209945038,
+          "t0_master_s": 5635.824534769985,
+          "camera_snap_error_s": 0.012118209944674163,
+          "q_radians": [
+            0.3339386162843666,
+            -1.3750239461434863,
+            0.7120569882644886,
+            0.8076618428808213,
+            2.0411814821653054,
+            -3.4651684278895103
+          ],
+          "wrist1_cap_px": [
+            566,
+            153
+          ],
+          "forearm_cap_px": [
+            496,
+            62
+          ],
+          "wrist1_uncertainty_px": 6,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.1736464243733013,
+              -0.1772891785105099,
+              0.5680572693985669
+            ],
+            "forearm_cap_px": [
+              -0.20524104134292037,
+              -0.06561586275617215,
+              0.5220929152572705
+            ]
+          },
+          "notes": "Final sampled frame has motion/possible rolling-shutter effects; larger wrist uncertainty.",
+          "annotated_png": "heldout_1788535066_006_00249_annotated.png"
+        }
+      ]
+    },
+    {
+      "episode": "ep_teacher_waffles_1788538100_000",
+      "date": "2026-09-04",
+      "recording_episode_path": "/home/physicalai/phantom-icra-2027/data/episodes/deploy/20260904/ep_teacher_waffles_1788538100_000",
+      "manifest_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788538100_000/manifest.json",
+      "manifest_sha256": "8d75114b51e59b2cdd1b678be8ae42f256cb2c227ef289442572c88f5b23b195",
+      "replay_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788538100_000/replay.npz",
+      "replay_sha256": "b3bfeea82ae28e75a7985ba0d960b45e50868d397341a380cb928b34426798a3",
+      "joint_names": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "first_frame_layout": {
+        "table_translation_px": [
+          -1,
+          0
+        ],
+        "table_template_ncc": 0.974229633808136,
+        "box_outer_rim_corners_px": [
+          [
+            185,
+            90
+          ],
+          [
+            425,
+            90
+          ],
+          [
+            438,
+            251
+          ],
+          [
+            165,
+            251
+          ]
+        ],
+        "table_hole_centers_px": [
+          [
+            179.4,
+            71.8
+          ],
+          [
+            204.6,
+            72.0
+          ],
+          [
+            255.9,
+            73.3
+          ]
+        ]
+      },
+      "frames": [
+        {
+          "frame_file": "frame_00000.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788538100_000/frame_00000.png",
+          "frame_sha256": "7f20df1c4c1ce72880adb68fe95edf3619c6cf618a84b67939346c8f1b29aeed",
+          "grid_index": 0,
+          "source_camera_index": 0,
+          "replay_grid_t_s": 0.0,
+          "camera_t_s": 0.0,
+          "t0_master_s": 8669.79638415284,
+          "camera_snap_error_s": 0.0,
+          "q_radians": [
+            0.17060406506061554,
+            -1.5525974342908668,
+            1.298642635345459,
+            0.431514561488364,
+            1.1696219772359484,
+            -3.1839255402173805
+          ],
+          "wrist1_cap_px": [
+            505,
+            168
+          ],
+          "forearm_cap_px": [
+            471,
+            80
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.19708582375428133,
+              -0.1461627062716759,
+              0.4947557575038783
+            ],
+            "forearm_cap_px": [
+              -0.20860338518331506,
+              -0.030580148567963542,
+              0.4490651764265271
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788538100_000_00000_annotated.png"
+        },
+        {
+          "frame_file": "frame_00137.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788538100_000/frame_00137.png",
+          "frame_sha256": "d9bc2b4bf16c66bc5fa33e79009339b1e9f65da2ccf520ef830f4be16b898ac6",
+          "grid_index": 137,
+          "source_camera_index": 137,
+          "replay_grid_t_s": 9.133333333333212,
+          "camera_t_s": 9.140002861968242,
+          "t0_master_s": 8669.79638415284,
+          "camera_snap_error_s": 0.006669528635029565,
+          "q_radians": [
+            0.36117461776413473,
+            -1.2810250854435026,
+            1.8210520208742877,
+            -0.07248677107845464,
+            1.6320278336435619,
+            -3.022759916656022
+          ],
+          "wrist1_cap_px": [
+            459,
+            289
+          ],
+          "forearm_cap_px": [
+            422,
+            212
+          ],
+          "wrist1_uncertainty_px": 4,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.21671701828585738,
+              -0.20007005180646378,
+              0.31716795958833016
+            ],
+            "forearm_cap_px": [
+              -0.23803176032257667,
+              -0.08427103716519006,
+              0.27578875817785686
+            ]
+          },
+          "notes": "Cap face visible; forearm cyan band oblique/partial.",
+          "annotated_png": "heldout_1788538100_000_00137_annotated.png"
+        },
+        {
+          "frame_file": "frame_00274.png",
+          "frame_path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/heldout/ep_teacher_waffles_1788538100_000/frame_00274.png",
+          "frame_sha256": "e66252a68881c8c5bdc47115509dc989e53331950c723d63b2790c77d1601c44",
+          "grid_index": 274,
+          "source_camera_index": 274,
+          "replay_grid_t_s": 18.266666666666424,
+          "camera_t_s": 18.279813164961524,
+          "t0_master_s": 8669.79638415284,
+          "camera_snap_error_s": 0.013146498295100173,
+          "q_radians": [
+            0.40024024455035373,
+            -1.2246394873378932,
+            0.34625778790531364,
+            1.0255545853084034,
+            1.915788610765969,
+            -3.453928242711949
+          ],
+          "wrist1_cap_px": [
+            586,
+            147
+          ],
+          "forearm_cap_px": [
+            503,
+            57
+          ],
+          "wrist1_uncertainty_px": 6,
+          "forearm_uncertainty_px": 10,
+          "cad_world_points_ur_base_m": {
+            "wrist1_cap_px": [
+              -0.16469246911882465,
+              -0.1897468981503011,
+              0.5911359210920683
+            ],
+            "forearm_cap_px": [
+              -0.2035226355501904,
+              -0.08037252965635851,
+              0.5451759469201236
+            ]
+          },
+          "notes": "Final sampled frame has motion/possible rolling-shutter effects; larger wrist uncertainty.",
+          "annotated_png": "heldout_1788538100_000_00274_annotated.png"
+        }
+      ]
+    }
+  ]
+}

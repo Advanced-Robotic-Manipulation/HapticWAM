@@ -5,7 +5,7 @@
 #   bash tools/sim/rebuild_expert_campaign_env.sh [<commit-or-branch>=main]
 #
 # Produces: runtime tree (git archive + paths.local.yaml), zoo inputs (from
-# docs/results/sim_zoo_20260912/inputs + the js4 hardware variant), driver dir (score_trial.py
+# tests/fixtures/reference/sim_zoo_20260912/inputs + the js4 hardware variant), driver dir (score_trial.py
 # + campaign launchers), start_pool.json (real start poses from deploy rollouts + val demos).
 set -euo pipefail
 REV=${1:-main}
@@ -19,7 +19,7 @@ mkdir -p "$RT" "$IN" "$DRV" "$RAW"
 cd "$REPO"
 git archive "$REV" | tar -x -C "$RT"
 cp configs/paths.local.yaml "$RT/configs/"
-cp -r docs/results/sim_zoo_20260912/inputs/. "$IN/"
+cp -r tests/fixtures/reference/sim_zoo_20260912/inputs/. "$IN/"
 sed "s/joint_speed_stop_rad_s: .*/joint_speed_stop_rad_s: 4.0/" "$IN/hardware_input.yaml" > "$IN/hardware_input_expert_js4.yaml"
 cp tools/sim/zoo/score_trial.py "$DRV/"
 # start pool: first rows of every waffle deploy rollout + the val demos

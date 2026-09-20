@@ -1,0 +1,224 @@
+{
+  "status": "bounded_numerical_probe_complete",
+  "results": {
+    "dt0p5ms": {
+      "exit_code": 1,
+      "mechanics_failure": {
+        "passed": false,
+        "gates": {
+          "joint_coupling": false,
+          "joint_limits": true,
+          "adaptive_loop_closure": true
+        },
+        "thresholds": {
+          "coupling_max_abs_rad": 0.005,
+          "joint_limit_violation_max_rad": 0.002,
+          "loop_closure_max_m": 0.001
+        },
+        "joint_state_finite": true,
+        "joint_positions_rad": [
+          0.5181289911270142,
+          0.5152550935745239,
+          -0.5033997297286987,
+          0.5128837823867798,
+          0.49366456270217896,
+          -0.4471244215965271,
+          -2.2473491299024317e-06,
+          -0.025244830176234245
+        ],
+        "coupling_max_abs_rad": 0.005245208740234375,
+        "joint_limit_violation_max_rad": 0.0,
+        "joint_limit_violation_per_joint_rad": {
+          "finger_joint": 0.0,
+          "left_inner_knuckle_joint": 0.0,
+          "left_inner_finger_joint": 0.0,
+          "right_outer_knuckle_joint": 0.0,
+          "right_inner_knuckle_joint": 0.0,
+          "right_inner_finger_joint": 0.0,
+          "left_outer_finger_joint": 0.0,
+          "right_outer_finger_joint": 0.0
+        },
+        "loop_closure_per_side_m": {
+          "left_distal_loop": 0.00019112828220496953,
+          "right_distal_loop": 0.00018372568366501824
+        },
+        "loop_closure_max_m": 0.00019112828220496953
+      },
+      "mechanics_failure_t_s": 16.240000000000002,
+      "native_monitor": {
+        "enabled": true,
+        "checks": 36482,
+        "last_phase": "execution",
+        "last_t_s": 16.240000000000002,
+        "observed_maxima": {
+          "coupling_max_abs_rad": 0.005245208740234375,
+          "joint_limit_violation_max_rad": 1.4529678082908504e-06,
+          "loop_closure_max_m": 0.00019112828220496953
+        },
+        "last_diagnostic": {
+          "passed": true,
+          "gates": {
+            "joint_coupling": true,
+            "joint_limits": true,
+            "adaptive_loop_closure": true
+          },
+          "thresholds": {
+            "coupling_max_abs_rad": 0.005,
+            "joint_limit_violation_max_rad": 0.002,
+            "loop_closure_max_m": 0.001
+          },
+          "joint_state_finite": true,
+          "joint_positions_rad": [
+            0.5172234773635864,
+            0.5144442319869995,
+            -0.5022583603858948,
+            0.5123339295387268,
+            0.49312126636505127,
+            -0.44612497091293335,
+            -1.4207040521796443e-06,
+            -0.02535102888941765
+          ],
+          "coupling_max_abs_rad": 0.004889547824859619,
+          "joint_limit_violation_max_rad": 0.0,
+          "joint_limit_violation_per_joint_rad": {
+            "finger_joint": 0.0,
+            "left_inner_knuckle_joint": 0.0,
+            "left_inner_finger_joint": 0.0,
+            "right_outer_knuckle_joint": 0.0,
+            "right_inner_knuckle_joint": 0.0,
+            "right_inner_finger_joint": 0.0,
+            "left_outer_finger_joint": 0.0,
+            "right_outer_finger_joint": 0.0
+          },
+          "loop_closure_per_side_m": {
+            "left_distal_loop": 0.00018296831969849065,
+            "right_distal_loop": 0.00017610427992197834
+          },
+          "loop_closure_max_m": 0.00018296831969849065
+        }
+      },
+      "original_shared_state_comparison": {
+        "shared_samples": 244,
+        "original_samples": 244,
+        "all_original_samples_shared": true,
+        "first_shared_s": 0.0,
+        "last_shared_s": 16.2,
+        "fields": {
+          "q": {
+            "bit_identical": true,
+            "max_abs_difference": 0.0
+          },
+          "finger_q": {
+            "bit_identical": true,
+            "max_abs_difference": 0.0
+          },
+          "tcp": {
+            "bit_identical": true,
+            "max_abs_difference": 0.0
+          },
+          "waffle_position": {
+            "bit_identical": true,
+            "max_abs_difference": 0.0
+          },
+          "waffle_orientation_wxyz": {
+            "bit_identical": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "bit_identical": true
+      },
+      "control_reproduction_passed": true
+    },
+    "dt0p25ms": {
+      "exit_code": 0,
+      "mechanics_failure": null,
+      "mechanics_failure_t_s": null,
+      "native_monitor": {
+        "enabled": true,
+        "checks": 72962,
+        "last_phase": "execution",
+        "last_t_s": 16.240000000000002,
+        "observed_maxima": {
+          "coupling_max_abs_rad": 2.8192996978759766e-05,
+          "joint_limit_violation_max_rad": 3.2030334295996e-07,
+          "loop_closure_max_m": 2.2733185853555204e-06
+        },
+        "last_diagnostic": {
+          "passed": true,
+          "gates": {
+            "joint_coupling": true,
+            "joint_limits": true,
+            "adaptive_loop_closure": true
+          },
+          "thresholds": {
+            "coupling_max_abs_rad": 0.005,
+            "joint_limit_violation_max_rad": 0.002,
+            "loop_closure_max_m": 0.001
+          },
+          "joint_state_finite": true,
+          "joint_positions_rad": [
+            0.5020481944084167,
+            0.5012811422348022,
+            -0.48144716024398804,
+            0.5020413398742676,
+            0.4866180121898651,
+            -0.436361700296402,
+            3.2897251145413975e-08,
+            -0.022371342405676842
+          ],
+          "coupling_max_abs_rad": 6.854534149169922e-06,
+          "joint_limit_violation_max_rad": 3.2897251145413975e-08,
+          "joint_limit_violation_per_joint_rad": {
+            "finger_joint": 0.0,
+            "left_inner_knuckle_joint": 0.0,
+            "left_inner_finger_joint": 0.0,
+            "right_outer_knuckle_joint": 0.0,
+            "right_inner_knuckle_joint": 0.0,
+            "right_inner_finger_joint": 0.0,
+            "left_outer_finger_joint": 3.2897251145413975e-08,
+            "right_outer_finger_joint": 0.0
+          },
+          "loop_closure_per_side_m": {
+            "left_distal_loop": 7.848481340364865e-07,
+            "right_distal_loop": 1.106599791659752e-07
+          },
+          "loop_closure_max_m": 7.848481340364865e-07
+        }
+      },
+      "original_shared_state_comparison": {
+        "shared_samples": 163,
+        "original_samples": 244,
+        "all_original_samples_shared": false,
+        "first_shared_s": 0.0,
+        "last_shared_s": 16.2,
+        "fields": {
+          "q": {
+            "bit_identical": false,
+            "max_abs_difference": 0.0007982254028320312
+          },
+          "finger_q": {
+            "bit_identical": false,
+            "max_abs_difference": 0.006637126207351685
+          },
+          "tcp": {
+            "bit_identical": false,
+            "max_abs_difference": 0.001606983896494052
+          },
+          "waffle_position": {
+            "bit_identical": false,
+            "max_abs_difference": 0.002928435802459717
+          },
+          "waffle_orientation_wxyz": {
+            "bit_identical": false,
+            "max_abs_difference": 0.015187297016382217
+          }
+        },
+        "bit_identical": false
+      },
+      "bounded_native_gates_passed": true
+    }
+  },
+  "original_attempt_still_invalid": true,
+  "no_task_score": true,
+  "finished_unix_s": 1789003379.752257
+}

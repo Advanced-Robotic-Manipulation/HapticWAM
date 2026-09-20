@@ -1,0 +1,1723 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-06T23:20:28.228235+00:00",
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1",
+  "canonical_scene_sha256": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe",
+  "thresholds": {
+    "joint_error_max_rad": 0.02,
+    "joint_speed_max_rad_s": 0.05,
+    "packet_displacement_max_m": 0.002,
+    "packet_robot_force_max_n": 0.1,
+    "gripper_geometry_clearance_min_m": 0.002
+  },
+  "threshold_status": "q/qd limits already enforced by runtime; tighter packet/clearance checks proposed before policy outcome inspection, requiring parent freeze decision",
+  "records": [
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787395928_000.json",
+      "initial_state_sha256": "2bc7be8398a9ef042ded010853bbb88ab52af50bab3b1f24be8317493696cbfc",
+      "episode": "ep_waffles_1787395928_000",
+      "measured_q": [
+        0.24457107484340668,
+        -1.5101473967181605,
+        0.9251918792724609,
+        0.8998333215713501,
+        1.1859229803085327,
+        -3.203757349644796
+      ],
+      "measured_gripper": 0.4274509847164154,
+      "measured_tcp_m_rad": [
+        -0.33538232877569196,
+        -0.29982738757331384,
+        0.3563458840073126,
+        -1.0311287816544337,
+        -1.92408416645898,
+        1.47232898332707
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014604539227668976,
+      "nominal_fk_rotation_error_rad": 0.0038111216537499936,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.03675381229983436,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3530905289918004,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.26909052899180036,
+              "bin": 0.15909052899180037,
+              "table": 0.3000905289918004,
+              "mat": 0.2970905289918004
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.3519380214879466,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2679380214879466,
+              "bin": 0.1579380214879466,
+              "table": 0.2989380214879466,
+              "mat": 0.2959380214879466
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.35330984692994516,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.26930984692994514,
+              "bin": 0.15930984692994515,
+              "table": 0.30030984692994517,
+              "mat": 0.29730984692994517
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3737096495125705,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2897096495125705,
+              "bin": 0.1797096495125705,
+              "table": 0.3207096495125705,
+              "mat": 0.3177096495125705
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.33735876477854215,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.25335876477854213,
+              "bin": 0.14335876477854215,
+              "table": 0.28435876477854216,
+              "mat": 0.28135876477854216
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.33394597756469585,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.24994597756469583,
+              "bin": 0.13994597756469584,
+              "table": 0.28094597756469586,
+              "mat": 0.27794597756469586
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.35195347381939873,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2679534738193987,
+              "bin": 0.15795347381939873,
+              "table": 0.29895347381939874,
+              "mat": 0.29595347381939874
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.13994597756469584
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787395928_000",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036702791797083023,
+          "qd_max_rad_s": 0.029147157445549965,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04275232180953026,
+            "maximum_q_speed_last_0_25s_rad_s": 0.029147876426577568,
+            "maximum_q_error_last_0_25s_rad": 0.003670398388997853,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "40e2c9d27fa118aae2136599a8a5144ea2ddca30654adb1fcbc8291f88d70121",
+          "robot_settling.npz": "6007a03e786913a51689d4e6c7fe88539aabedd3481fee96d5f359ca458bae1d",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787395963_001.json",
+      "initial_state_sha256": "4004a76291d57ab57fc83921bdd3094ef27872ed3e16a67f060fc3fc57ed0172",
+      "episode": "ep_waffles_1787395963_001",
+      "measured_q": [
+        0.14518064260482788,
+        -1.5508273283587855,
+        1.0001111030578613,
+        0.8747776746749878,
+        1.1362910270690918,
+        -3.161736075078146
+      ],
+      "measured_gripper": 0.3137255012989044,
+      "measured_tcp_m_rad": [
+        -0.3495555759785932,
+        -0.27512946790625037,
+        0.35035050920628125,
+        -1.136475954428743,
+        -1.8711905948184857,
+        1.4784136435633781
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014369819063182034,
+      "nominal_fk_rotation_error_rad": 0.003669761167855376,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.04559912767675189,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3487243756339565,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.26472437563395645,
+              "bin": 0.15472437563395647,
+              "table": 0.2957243756339565,
+              "mat": 0.2927243756339565
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.3458317779967534,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2618317779967534,
+              "bin": 0.1518317779967534,
+              "table": 0.2928317779967534,
+              "mat": 0.2898317779967534
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.3465564088076256,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2625564088076256,
+              "bin": 0.1525564088076256,
+              "table": 0.2935564088076256,
+              "mat": 0.2905564088076256
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.36698718207769904,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.282987182077699,
+              "bin": 0.17298718207769903,
+              "table": 0.31398718207769905,
+              "mat": 0.31098718207769904
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.3318326709567355,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2478326709567355,
+              "bin": 0.13783267095673551,
+              "table": 0.27883267095673553,
+              "mat": 0.2758326709567355
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3286686020307419,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.24466860203074187,
+              "bin": 0.13466860203074188,
+              "table": 0.2756686020307419,
+              "mat": 0.2726686020307419
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3471550254323824,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2631550254323824,
+              "bin": 0.1531550254323824,
+              "table": 0.2941550254323824,
+              "mat": 0.2911550254323824
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.13466860203074188
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787395963_001",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.003452364598409474,
+          "qd_max_rad_s": 0.029805388301610947,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04006113111972809,
+            "maximum_q_speed_last_0_25s_rad_s": 0.02980542555451393,
+            "maximum_q_error_last_0_25s_rad": 0.003452364598409474,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "5ddb3100e5816ccf6937c6155e58d6914cc9efafdbf86a8c90fb829c07fccda7",
+          "robot_settling.npz": "9427fa783c711cbb3ec534fc12d1b1b5543527ca9ddab3dd3e30c86d7fc47d58",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396028_003.json",
+      "initial_state_sha256": "ee71fb3711d789682271ad25c2c5e6b4dbeac272bf837f22eb7c9fdab1d0140b",
+      "episode": "ep_waffles_1787396028_003",
+      "measured_q": [
+        0.24646683037281036,
+        -1.541903320943014,
+        1.1035356521606445,
+        0.7348610162734985,
+        1.1002368927001953,
+        -3.0855892340289515
+      ],
+      "measured_gripper": 0.3450980484485626,
+      "measured_tcp_m_rad": [
+        -0.331271794061223,
+        -0.3206862559838003,
+        0.33590352669063406,
+        -1.0971474202467968,
+        -1.9389271057965896,
+        1.6164470773148114
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014249977853948608,
+      "nominal_fk_rotation_error_rad": 0.0035633568695233844,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.043159040676222914,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3331520723614794,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2491520723614794,
+              "bin": 0.13915207236147942,
+              "table": 0.28015207236147943,
+              "mat": 0.27715207236147943
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.32942750017687067,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.24542750017687065,
+              "bin": 0.13542750017687066,
+              "table": 0.2764275001768707,
+              "mat": 0.2734275001768707
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.3293904184307948,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2453904184307948,
+              "bin": 0.1353904184307948,
+              "table": 0.2763904184307948,
+              "mat": 0.2733904184307948
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3485462377975247,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2645462377975247,
+              "bin": 0.1545462377975247,
+              "table": 0.2955462377975247,
+              "mat": 0.2925462377975247
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.319716918395068,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23571691839506798,
+              "bin": 0.125716918395068,
+              "table": 0.266716918395068,
+              "mat": 0.263716918395068
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3168630851862384,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23286308518623838,
+              "bin": 0.1228630851862384,
+              "table": 0.2638630851862384,
+              "mat": 0.2608630851862384
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3346105288215914,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2506105288215914,
+              "bin": 0.14061052882159142,
+              "table": 0.28161052882159143,
+              "mat": 0.27861052882159143
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.1228630851862384
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396028_003",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.003577295933858693,
+          "qd_max_rad_s": 0.029959358274936676,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.0408555306494236,
+            "maximum_q_speed_last_0_25s_rad_s": 0.029959367588162422,
+            "maximum_q_error_last_0_25s_rad": 0.003577295933858693,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "0088c487a9f2a7764984633f8ed1133266344d0f1e09b63e41ea6cc345d7961f",
+          "robot_settling.npz": "3c33ff9e010792ba7d50c8c3b80b26d26b46aa780b40c75839bf697c7f3e4bab",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396060_004.json",
+      "initial_state_sha256": "68984d95d361177ccd8df8dd2412d0e324ad9767bb40c59f79bbd6978912ddf9",
+      "episode": "ep_waffles_1787396060_004",
+      "measured_q": [
+        0.20768961310386658,
+        -1.5362733046161097,
+        1.0329737663269043,
+        0.7646476030349731,
+        1.094473958015442,
+        -3.1706131140338343
+      ],
+      "measured_gripper": 0.3137255012989044,
+      "measured_tcp_m_rad": [
+        -0.34277963668580624,
+        -0.308841994404968,
+        0.3554547508270639,
+        -0.9987376773577588,
+        -1.903617597273998,
+        1.5706860066580144
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014364855358476587,
+      "nominal_fk_rotation_error_rad": 0.0036545740714376412,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.04559912767675189,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.34688655834980664,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2628865583498066,
+              "bin": 0.15288655834980663,
+              "table": 0.29388655834980665,
+              "mat": 0.29088655834980665
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.3515136238879682,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2675136238879682,
+              "bin": 0.1575136238879682,
+              "table": 0.2985136238879682,
+              "mat": 0.2955136238879682
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.3525866762530384,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2685866762530384,
+              "bin": 0.1585866762530384,
+              "table": 0.2995866762530384,
+              "mat": 0.2965866762530384
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3705668109595112,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2865668109595112,
+              "bin": 0.1765668109595112,
+              "table": 0.3175668109595112,
+              "mat": 0.3145668109595112
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.335806094321799,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.25180609432179896,
+              "bin": 0.14180609432179897,
+              "table": 0.282806094321799,
+              "mat": 0.279806094321799
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3325158779500729,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2485158779500729,
+              "bin": 0.13851587795007292,
+              "table": 0.27951587795007293,
+              "mat": 0.27651587795007293
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3483143782881476,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2643143782881476,
+              "bin": 0.1543143782881476,
+              "table": 0.2953143782881476,
+              "mat": 0.2923143782881476
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.13851587795007292
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396060_004",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036003033267419937,
+          "qd_max_rad_s": 0.029972417280077934,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.041799645870923996,
+            "maximum_q_speed_last_0_25s_rad_s": 0.02997245453298092,
+            "maximum_q_error_last_0_25s_rad": 0.0036003033267419937,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "778668ced18618aed89e581f71d14c8e835f8b49f279aad3b61d1c785a80eb1a",
+          "robot_settling.npz": "675b1e82d8926ce5eaa6da195ec3fa64e5ffb1703364844d5255781f181e94f5",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396094_005.json",
+      "initial_state_sha256": "3cbc27cc2670c9fef55bbfc71319454d80d83483d9d92c943d933783a0fc9051",
+      "episode": "ep_waffles_1787396094_005",
+      "measured_q": [
+        0.2344927191734314,
+        -1.526773754750387,
+        1.1830620765686035,
+        0.6896277666091919,
+        1.105855941772461,
+        -3.1012068430529993
+      ],
+      "measured_gripper": 0.42352941632270813,
+      "measured_tcp_m_rad": [
+        -0.3395998491671627,
+        -0.316407081370372,
+        0.3072359196553298,
+        -1.135845337105267,
+        -1.9662555560312667,
+        1.5718792678141151
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014180131033809243,
+      "nominal_fk_rotation_error_rad": 0.0034804147249080735,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.03705882317490048,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.30925726799583025,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.22525726799583023,
+              "bin": 0.11525726799583025,
+              "table": 0.25625726799583026,
+              "mat": 0.25325726799583026
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.30021130065196555,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.21621130065196553,
+              "bin": 0.10621130065196555,
+              "table": 0.24721130065196556,
+              "mat": 0.24421130065196556
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.3000686333741822,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2160686333741822,
+              "bin": 0.10606863337418221,
+              "table": 0.24706863337418222,
+              "mat": 0.24406863337418222
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.32099136309330417,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23699136309330415,
+              "bin": 0.12699136309330417,
+              "table": 0.2679913630933042,
+              "mat": 0.2649913630933042
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.29200686948183924,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.20800686948183922,
+              "bin": 0.09800686948183923,
+              "table": 0.23900686948183925,
+              "mat": 0.23600686948183924
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.28918841647935506,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.20518841647935504,
+              "bin": 0.09518841647935505,
+              "table": 0.23618841647935507,
+              "mat": 0.23318841647935507
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.30877325333612654,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.22477325333612652,
+              "bin": 0.11477325333612654,
+              "table": 0.25577325333612655,
+              "mat": 0.25277325333612655
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.09518841647935505
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396094_005",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036414305316370132,
+          "qd_max_rad_s": 0.029328089207410812,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04044675827026367,
+            "maximum_q_speed_last_0_25s_rad_s": 0.02932809107005596,
+            "maximum_q_error_last_0_25s_rad": 0.0036414305316370132,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "66d52f937f373c1b2737ced1c615e5c306e969723736bc10c4bf59c3c57e5297",
+          "robot_settling.npz": "296c92c0aaeab7df0d63ad135280967c001b7c9961577b5a344a16bc9908e53a",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396128_006.json",
+      "initial_state_sha256": "554a80e5e5cd0b12f3e49d6c868d2576f134f514055c7bad0c24c6679d34b657",
+      "episode": "ep_waffles_1787396128_006",
+      "measured_q": [
+        0.21729984879493713,
+        -1.5454734007464808,
+        1.1461524963378906,
+        0.6903711557388306,
+        1.1115949153900146,
+        -3.1324790159808558
+      ],
+      "measured_gripper": 0.4274509847164154,
+      "measured_tcp_m_rad": [
+        -0.34553959891096603,
+        -0.3092751088664797,
+        0.32902270496445724,
+        -1.069263396597869,
+        -1.914371325018002,
+        1.5695785690078452
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014164217505363086,
+      "nominal_fk_rotation_error_rad": 0.0035120374528633397,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.03675381229983436,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3245713283400053,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.24057132834000527,
+              "bin": 0.1305713283400053,
+              "table": 0.2715713283400053,
+              "mat": 0.2685713283400053
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.32300207211440946,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23900207211440944,
+              "bin": 0.12900207211440945,
+              "table": 0.27000207211440946,
+              "mat": 0.26700207211440946
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.3235332427520879,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23953324275208787,
+              "bin": 0.12953324275208788,
+              "table": 0.2705332427520879,
+              "mat": 0.2675332427520879
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.34262503080880935,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.25862503080880933,
+              "bin": 0.14862503080880934,
+              "table": 0.28962503080880936,
+              "mat": 0.28662503080880936
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.311991536189767,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.22799153618976697,
+              "bin": 0.11799153618976699,
+              "table": 0.258991536189767,
+              "mat": 0.255991536189767
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3089092750467501,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.22490927504675007,
+              "bin": 0.11490927504675008,
+              "table": 0.2559092750467501,
+              "mat": 0.2529092750467501
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.32619434721312385,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.24219434721312383,
+              "bin": 0.13219434721312384,
+              "table": 0.27319434721312386,
+              "mat": 0.27019434721312385
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.11490927504675008
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396128_006",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.003581587468282521,
+          "qd_max_rad_s": 0.029914459213614464,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04069730266928673,
+            "maximum_q_speed_last_0_25s_rad_s": 0.029914535582065582,
+            "maximum_q_error_last_0_25s_rad": 0.003581587468282521,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "8f696b08afd60603b322a5fac440e743276b9ed8122c6c4657da524f55b45063",
+          "robot_settling.npz": "eaa94cd7ba10eb084a720c3381c1419b21988a58b2d8eaa477435412fffe53b3",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396273_010.json",
+      "initial_state_sha256": "21fd912e3026ac991d0a7335317c2c07b7f709025f617a1f241ab28440fff6b6",
+      "episode": "ep_waffles_1787396273_010",
+      "measured_q": [
+        0.3042255640029907,
+        -1.5296967665301722,
+        1.175276756286621,
+        0.7342854738235474,
+        1.2763934135437012,
+        -3.1310036818133753
+      ],
+      "measured_gripper": 0.37254902720451355,
+      "measured_tcp_m_rad": [
+        -0.3370493634399271,
+        -0.30213036323570486,
+        0.29697775211803923,
+        -1.1624367861118623,
+        -1.9447234218056493,
+        1.4297003194997182
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014299931101217991,
+      "nominal_fk_rotation_error_rad": 0.003513647052603543,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.04102396455076006,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.30264377595588915,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.21864377595588913,
+              "bin": 0.10864377595588914,
+              "table": 0.24964377595588916,
+              "mat": 0.24664377595588916
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.2917499930596289,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.20774999305962888,
+              "bin": 0.09774999305962889,
+              "table": 0.2387499930596289,
+              "mat": 0.2357499930596289
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.2923379677982051,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.20833796779820507,
+              "bin": 0.09833796779820508,
+              "table": 0.2393379677982051,
+              "mat": 0.2363379677982051
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3155134059824467,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23151340598244669,
+              "bin": 0.1215134059824467,
+              "table": 0.2625134059824467,
+              "mat": 0.2595134059824467
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.27943376034227757,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.19543376034227755,
+              "bin": 0.08543376034227756,
+              "table": 0.22643376034227758,
+              "mat": 0.22343376034227758
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.2763053075155597,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.1923053075155597,
+              "bin": 0.0823053075155597,
+              "table": 0.22330530751555971,
+              "mat": 0.2203053075155597
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.2976225319171542,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2136225319171542,
+              "bin": 0.1036225319171542,
+              "table": 0.24462253191715422,
+              "mat": 0.24162253191715422
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.0823053075155597
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396273_010",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036396423922937515,
+          "qd_max_rad_s": 0.029090197756886482,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04057789593935013,
+            "maximum_q_speed_last_0_25s_rad_s": 0.02909022569656372,
+            "maximum_q_error_last_0_25s_rad": 0.0036396423922937515,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "081e12e28e46301b922c9e20265c196010ddacfe6a4c62f75c361e6e7c82096f",
+          "robot_settling.npz": "af49391ba60ac86258f9bb546e2ece63728ba2895518975836b9248d21ea5643",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396314_011.json",
+      "initial_state_sha256": "041426da9adaddfb6c973896a3dfae14b5f1ecb0266ea9f4f2fd10a5d0f13488",
+      "episode": "ep_waffles_1787396314_011",
+      "measured_q": [
+        0.1815100759267807,
+        -1.5060985724078577,
+        0.8773550987243652,
+        0.9838899374008179,
+        1.1499178409576416,
+        -3.13219124475588
+      ],
+      "measured_gripper": 0.3333333432674408,
+      "measured_tcp_m_rad": [
+        -0.33803408897113024,
+        -0.2840890620556038,
+        0.35711110430632903,
+        -1.1751308452449378,
+        -1.9065604901095898,
+        1.4866785492827805
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.001462505701127909,
+      "nominal_fk_rotation_error_rad": 0.0038503775218325363,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.04407407330142128,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.35954971645925343,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2755497164592534,
+              "bin": 0.16554971645925343,
+              "table": 0.30654971645925344,
+              "mat": 0.30354971645925344
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.35153016961025674,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2675301696102567,
+              "bin": 0.15753016961025673,
+              "table": 0.29853016961025675,
+              "mat": 0.29553016961025674
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.35180723882656884,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2678072388265688,
+              "bin": 0.15780723882656883,
+              "table": 0.29880723882656884,
+              "mat": 0.29580723882656884
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3733832021805984,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2893832021805984,
+              "bin": 0.1793832021805984,
+              "table": 0.3203832021805984,
+              "mat": 0.3173832021805984
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.3400702237713966,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2560702237713966,
+              "bin": 0.1460702237713966,
+              "table": 0.2870702237713966,
+              "mat": 0.2840702237713966
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3370773480269399,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2530773480269399,
+              "bin": 0.1430773480269399,
+              "table": 0.2840773480269399,
+              "mat": 0.2810773480269399
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3570183389005851,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2730183389005851,
+              "bin": 0.1630183389005851,
+              "table": 0.3040183389005851,
+              "mat": 0.3010183389005851
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.1430773480269399
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396314_011",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036053101169031265,
+          "qd_max_rad_s": 0.028697500005364418,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04188258573412895,
+            "maximum_q_speed_last_0_25s_rad_s": 0.028697559610009193,
+            "maximum_q_error_last_0_25s_rad": 0.0036053101169031265,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "41637c5dc9a4d2fab991b970b097f5c0311daeac4f067cae4d25097d6124b1ef",
+          "robot_settling.npz": "7ef5fb68c368fbd24f14479d61988c05b268c157a4a15aeb51f9207fa275cb2d",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396346_012.json",
+      "initial_state_sha256": "950b8cbbda7c78413e060326938a0239cfdb4d34e7f2cbeb7792f3d6dafee505",
+      "episode": "ep_waffles_1787396346_012",
+      "measured_q": [
+        0.196615070104599,
+        -1.5250847975360315,
+        0.9849758148193359,
+        0.8925610780715942,
+        1.1517064571380615,
+        -3.171572987233297
+      ],
+      "measured_gripper": 0.3490196168422699,
+      "measured_tcp_m_rad": [
+        -0.34006356944709104,
+        -0.2899842235197968,
+        0.34205801605514824,
+        -1.1175080894164415,
+        -1.9281465235853064,
+        1.473909761241727
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014492019968566471,
+      "nominal_fk_rotation_error_rad": 0.003716774860221521,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.04285402980115679,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3432685813267121,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2592685813267121,
+              "bin": 0.1492685813267121,
+              "table": 0.2902685813267121,
+              "mat": 0.2872685813267121
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.3372707311575257,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2532707311575257,
+              "bin": 0.1432707311575257,
+              "table": 0.2842707311575257,
+              "mat": 0.2812707311575257
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.33798475246987186,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.25398475246987184,
+              "bin": 0.14398475246987186,
+              "table": 0.28498475246987187,
+              "mat": 0.28198475246987187
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.3595204153663573,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2755204153663573,
+              "bin": 0.1655204153663573,
+              "table": 0.3065204153663573,
+              "mat": 0.3035204153663573
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.32396823222346904,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23996823222346902,
+              "bin": 0.12996823222346904,
+              "table": 0.27096823222346905,
+              "mat": 0.26796823222346905
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.3208021378229598,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23680213782295978,
+              "bin": 0.1268021378229598,
+              "table": 0.2678021378229598,
+              "mat": 0.2648021378229598
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3403977428630176,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2563977428630176,
+              "bin": 0.1463977428630176,
+              "table": 0.2873977428630176,
+              "mat": 0.2843977428630176
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.1268021378229598
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396346_012",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0035714546786707047,
+          "qd_max_rad_s": 0.029277896508574486,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.041135936975479126,
+            "maximum_q_speed_last_0_25s_rad_s": 0.029277941212058067,
+            "maximum_q_error_last_0_25s_rad": 0.0035714546786707047,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "65d694d72be31d343cb67d0122de3337cb0565c28a134a1027fec5275b3b8fc8",
+          "robot_settling.npz": "2f85db0ead6a0cb979f369253f18b462de35c9515c68b1f57329c9ad78a86ff6",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    },
+    {
+      "initial_state_file": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_mechanics1/configs/sim/initial_states/waffles_aug22_1787396461_000.json",
+      "initial_state_sha256": "e4c1972bc0d42212e0138aa4c0474601520699575c640c4004a9bbde5b5d6a8d",
+      "episode": "ep_waffles_1787396461_000",
+      "measured_q": [
+        0.30573704838752747,
+        -1.5146878401385706,
+        1.0304789543151855,
+        0.8531790971755981,
+        1.263884425163269,
+        -3.1646154562579554
+      ],
+      "measured_gripper": 0.2549019753932953,
+      "measured_tcp_m_rad": [
+        -0.32934843403965874,
+        -0.3036396676083807,
+        0.3246262599854344,
+        -1.1088251740594433,
+        -1.9557082618900303,
+        1.4303413354594965
+      ],
+      "native_field_equality": {
+        "q": true,
+        "gripper": true,
+        "wrist_ft": true
+      },
+      "nominal_fk_error_m": 0.0014529816385888542,
+      "nominal_fk_rotation_error_rad": 0.0036981733169502025,
+      "gripper_geometry": {
+        "modeled_inner_aperture_m": 0.05017429080274371,
+        "components": [
+          {
+            "body": "housing",
+            "minimum_z_m": 0.3283018891218065,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2443018891218065,
+              "bin": 0.13430188912180652,
+              "table": 0.27530188912180653,
+              "mat": 0.27230188912180653
+            }
+          },
+          {
+            "body": "left_pad",
+            "minimum_z_m": 0.32129007627950085,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23729007627950083,
+              "bin": 0.12729007627950084,
+              "table": 0.26829007627950086,
+              "mat": 0.26529007627950085
+            }
+          },
+          {
+            "body": "left_backing",
+            "minimum_z_m": 0.32223241162508687,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23823241162508685,
+              "bin": 0.12823241162508686,
+              "table": 0.2692324116250869,
+              "mat": 0.2662324116250869
+            }
+          },
+          {
+            "body": "left_linkage",
+            "minimum_z_m": 0.34497649384822754,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2609764938482275,
+              "bin": 0.15097649384822753,
+              "table": 0.29197649384822755,
+              "mat": 0.28897649384822754
+            }
+          },
+          {
+            "body": "right_pad",
+            "minimum_z_m": 0.3049461877839703,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.2209461877839703,
+              "bin": 0.11094618778397031,
+              "table": 0.2519461877839703,
+              "mat": 0.24894618778397032
+            }
+          },
+          {
+            "body": "right_backing",
+            "minimum_z_m": 0.30168256898754386,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.21768256898754385,
+              "bin": 0.10768256898754386,
+              "table": 0.24868256898754387,
+              "mat": 0.24568256898754387
+            }
+          },
+          {
+            "body": "right_linkage",
+            "minimum_z_m": 0.3223236741396783,
+            "vertical_clearance_lower_bound_m": {
+              "packet": 0.23832367413967825,
+              "bin": 0.12832367413967827,
+              "table": 0.2693236741396783,
+              "mat": 0.2663236741396783
+            }
+          }
+        ],
+        "minimum_environment_vertical_clearance_m": 0.10768256898754386
+      },
+      "gripper_clearance_pass": true,
+      "simulation_preflight": {
+        "status": "passed_declared_observable_start_checks",
+        "failure_reasons": [],
+        "directory": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_v2_preflights/start_waffles_aug22_1787396461_000",
+        "observed": {
+          "all_finite": true,
+          "requested_native_q_exact": true,
+          "initial_state_sha_matches": true,
+          "canonical_packet_exact": true,
+          "packet_displacement_m": 1.432286259423473e-07,
+          "packet_speed_m_s": 0.00030531053392691986,
+          "q_error_max_rad": 0.0036749283420007828,
+          "qd_max_rad_s": 0.0290064737200737,
+          "settling_duration_s": 2.0,
+          "packet_robot_normal_force_n": 0.0,
+          "packet_bin_normal_force_n": 0.0,
+          "packet_support_contacts": {
+            "packet_robot_normal_force": 0.0,
+            "packet_bin_normal_force": 0.0,
+            "populated_unique_contact_count": 0,
+            "duplicate_filter_contact_indices": 0,
+            "per_filter_contacts": [],
+            "force_semantics": "sum of positive normal magnitudes; no net-vector cancellation",
+            "packet_path": "/World/Waffle",
+            "bin_paths": [
+              "/World/Bin/Bottom",
+              "/World/Bin/Left",
+              "/World/Bin/Right",
+              "/World/Bin/Front",
+              "/World/Bin/Back"
+            ],
+            "robot_paths": [
+              "/World/Robot/Geometry/world/base_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/left_pad",
+              "/World/Robot/Geometry/world/base_link/base_link_inertia/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/gripper_housing/right_pad"
+            ]
+          },
+          "settling_trace": {
+            "rows": 500,
+            "all_finite": true,
+            "maximum_q_speed_entire_settle_rad_s": 0.04203305020928383,
+            "maximum_q_speed_last_0_25s_rad_s": 0.029006529599428177,
+            "maximum_q_error_last_0_25s_rad": 0.0036749283420007828,
+            "tail_metrics_are_diagnostic_only": true
+          },
+          "no_rollout_trace_expected_for_save_stage_only": true
+        },
+        "input_sha256": {
+          "initialization.json": "c1fe877da0ef5f43c75135d486d679104fe235b2dd2fbcacebe00b2a79278bb2",
+          "robot_settling.npz": "a6f4ac0f864ab0c02a06ab0dc7a5db74604cffe831059401b5c7465358747f10",
+          "effective_config.json": "58ef867d5f9f74131a2f65e37e529c8b7c53a006679fe5072c898a58af86c7fe"
+        },
+        "whole_arm_environment_and_self_collision_clearance_certified": false
+      }
+    }
+  ],
+  "limitations": [
+    "Gripper vertical-clearance proof covers configured pad, backing, linkage and housing only, not UR3 self-collision or all arm/environment pairs.",
+    "The original renderer warmup assigns q repeatedly; the subsequent two-second free-hold equilibrium, unchanged packet and no robot-packet support must be checked independently.",
+    "Initialization telemetry samples packet only after settling; missing transient packet/contact history prevents proof of zero earlier collision.",
+    "Measured q/TCP use native UR controller order and rotvec; factory-calibrated vs nominal FK differences are diagnostics, not arbitrary joint-angle exclusions.",
+    "A failed start is an explicit geometry/initialization exclusion, not a policy failure or reason to substitute a later measured pose."
+  ]
+}

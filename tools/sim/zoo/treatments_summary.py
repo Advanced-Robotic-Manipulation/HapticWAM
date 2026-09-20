@@ -30,7 +30,7 @@ def key(start):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--docs", type=Path, default=Path("docs/results/sim_zoo_20260912"))
+    ap.add_argument("--docs", type=Path, default=Path("tests/fixtures/reference/sim_zoo_20260912"))
     ap.add_argument("--e3-raw", type=Path, default=Path("artifacts/isaac_waffles/sim_zoo_20260912/raw/E3"))
     ap.add_argument("--output", type=Path, default=None)
     args = ap.parse_args()

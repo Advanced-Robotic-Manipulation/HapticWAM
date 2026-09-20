@@ -15,6 +15,8 @@ from pathlib import Path
 
 import numpy as np
 
+from tools.sim.teacher_anchor_design import reference_path
+
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 _analysis = importlib.import_module("tools.sim.analyze_policy_campaign")
@@ -59,7 +61,7 @@ SHARED = (
 
 
 def read_checked(spec):
-    path = Path(spec["path"])
+    path = Path(reference_path(spec["path"]))
     if not path.is_absolute():
         path = REPO / path
     if digest(path) != spec["sha256"]:

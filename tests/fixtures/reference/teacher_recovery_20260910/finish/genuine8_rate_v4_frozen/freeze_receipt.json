@@ -1,0 +1,116 @@
+{
+  "schema": "genuine8_rate_v4_frozen_inputs_v1",
+  "status": "frozen",
+  "parent_input_manifest_sha256": "e0d37e0f2d5c00f4d4c7ddf8c36e58d6ced3afccb2a829290452c88d780c5c75",
+  "actual_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "evidence": {
+    "mechanics": {
+      "path": "evidence/mechanics.json",
+      "sha256": "bb08b45b010ab8ed548674070933e6bf98157bc0748ee5110983c6a244c503ef",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/mechanics_v2.json"
+    },
+    "hold_positive": {
+      "path": "evidence/hold_positive.json",
+      "sha256": "4f89fe3ec67a633be5b1d37f705e15c1c48a425d528956c03b092e8d551306d0",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/terminal_report_v1.json"
+    },
+    "hold_negative": {
+      "path": "evidence/hold_negative.json",
+      "sha256": "b595ad18ccef2471d2a6fc451cf6ff8787814283a209a91680232dd25f6a641e",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/declared_last_ack_mode_audit.json"
+    },
+    "negative_behavior": {
+      "path": "evidence/negative_behavior.json",
+      "sha256": "0cbf69f944e75fdafdc22929470b268fd4aad0610fa33e90bdc9c80ccc923233",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/negative_behavior_diagnostic_v1.json"
+    },
+    "runtime_cpu": {
+      "path": "evidence/runtime_cpu.json",
+      "sha256": "188812e31f4040f72cd0e879092be79baf9e67b5edb0d1daaafc723c6ee06795",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/cpu_gate_v1/cpu_gate_terminal_receipt.json"
+    },
+    "collector": {
+      "path": "evidence/collector.json",
+      "sha256": "40c248c48f6e2ac979984e44990c7912d0c62bdf504975a65227dacb3e3fa0fb",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/actual_isaac_cpu_v2/results/receipt.json"
+    },
+    "latency": {
+      "path": "evidence/latency.json",
+      "sha256": "56a3d63b4d925e845ee2c07f36b077692fae944a0d77976cc14e5c17b3b9979c",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/endpoint_profile_v2_cost_analysis.json"
+    },
+    "source_transfer": {
+      "path": "evidence/source_transfer.json",
+      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json"
+    },
+    "runtime_v10_transfer": {
+      "path": "evidence/runtime_v10_transfer.json",
+      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json"
+    },
+    "controller_preparation_release": {
+      "path": "evidence/controller_preparation_release.json",
+      "sha256": "de423649ff105b5d6871c061ae60cd261a1726af293bc69c18bd783083b38566",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/combined_v3_runtime_preparation_release_v1.json"
+    },
+    "emergency_fixture_pair": {
+      "path": "evidence/emergency_fixture_pair.json",
+      "sha256": "11dcd45fcc723f7f9c39942b5f7f9e2c90828b7d09b71484ae2c5b254c637d37",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/emergency_stop_fixture_draft_v2/terminal_v2/t15_withheld_v8_emergency_candidate_v2/audits/paired_control_candidate_comparison.json"
+    },
+    "emergency_authority_audit": {
+      "path": "evidence/emergency_authority_audit.json",
+      "sha256": "a6ac5aa58ae4d1b07685f4485495dfa7b53a5cc71a2bfcdf1033c1cf95928ff1",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/emergency_stop_fixture_draft_v2/terminal_v2/t15_withheld_v8_emergency_candidate_v2/audits/prospective_emergency_authority_audit.json"
+    },
+    "rate_isaac_cpu": {
+      "path": "evidence/rate_isaac_cpu.json",
+      "sha256": "3654cb2febca121a2c9311d9315261b57037e6308d49cdc64d52116495f73839",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/rate_solver_interior_candidate_v1/actual_isaac_cpu_v2/results/receipt.json"
+    },
+    "v3_diagnostic_release": {
+      "path": "evidence/v3_diagnostic_release.json",
+      "sha256": "724b6693780c9a33197476ec3a635a68d076d73695c3977e088803dfb07f8246",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_combined_v3_diagnostic_release_v1.json"
+    },
+    "v3_all8_readout": {
+      "path": "evidence/v3_all8_readout.json",
+      "sha256": "4b4948193924c3b7c7d457b50f160b06cd4a9bcf8e925f2b075bb8d8f91763a6",
+      "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/all8_readout_v1.json"
+    }
+  },
+  "gate_release": {
+    "path": "gate_release.json",
+    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
+  },
+  "block_mapping": {
+    "v6_relative_off_timing_v3": "v6_relative_off_rate_v4",
+    "v6_relative_on_timing_v3": "v6_relative_on_rate_v4"
+  },
+  "changed_files": [
+    "study.json",
+    "bindings.json",
+    "boundary_projection.json",
+    "trial_identities_draft.json",
+    "v6_relative_off_rate_v4/campaign.json",
+    "v6_relative_off_rate_v4/protocol.json",
+    "v6_relative_on_rate_v4/campaign.json",
+    "v6_relative_on_rate_v4/protocol.json"
+  ],
+  "allowed_changes": "Block/policy identities, runtime v10 routes and manifest, one added boundary field rate_solver_backoff, state/evidence fields",
+  "preserved": [
+    "scene",
+    "hardware",
+    "initial_states",
+    "seeds",
+    "inference recipe",
+    "thresholds",
+    "timers",
+    "scoring rules"
+  ],
+  "preserved_scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+  "thresholds_relaxed": false,
+  "qualification_ready": false
+}

@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "status": "frozen_native_phase2_before_first_qualification_launch",
+  "frozen_at_utc": "2026-09-09T08:55:04.482696+00:00",
+  "scope": "Exploratory native eight-joint physics and measured-motion validation; no policy inference, rankings or hardware/calibration qualification",
+  "kinematics": {
+    "joint_coupling_max_abs_rad": 0.005,
+    "pad_fk_max_translation_m": 0.001,
+    "tool_tcp_offset_m": [
+      0,
+      0,
+      0.18
+    ],
+    "direct_joint_rmse_rad": 0.0001,
+    "direct_tcp_rmse_m": 0.003,
+    "direct_rotation_rmse_deg": 1.0,
+    "dynamics_joint_rmse_rad": 0.05,
+    "dynamics_tcp_rmse_m": 0.02,
+    "physics_clock_max_abs_error_s": 0.0005,
+    "coverage_start_tolerance_s": 0.1,
+    "coverage_end_tolerance_s": 0.1,
+    "max_sample_gap_s": 0.2,
+    "adaptive_loop_max_translation_m": 0.001,
+    "adaptive_joint_limit_tolerance_rad": 0.002
+  },
+  "pick": {
+    "bilateral_active_gel_force_n": 0.05,
+    "bilateral_acquisition_hold_s": 0.2,
+    "lift_onset_m": 0.02,
+    "lift_hold_s": 0.15,
+    "minimum_peak_lift_m": 0.1,
+    "initial_height_definition": "first saved physics sample; no post-hoc median or resetting to a lifted state"
+  },
+  "carry_7073": {
+    "interval_export_s": [
+      15.969803405925632,
+      18.71980340592563
+    ],
+    "bilateral_active_fraction_min": 0.85,
+    "maximum_bilateral_gap_s": 0.3,
+    "tcp_relative_slip_p95_m": 0.02,
+    "tcp_relative_slip_max_m": 0.05,
+    "reference_anchor": "median of first up to5 measured object positions in TCP frame within frozen carry interval"
+  },
+  "synthetic_probe": {
+    "duration_s": 10.0,
+    "hold_interval_s": [
+      3.0,
+      6.8
+    ],
+    "minimum_hold_median_lift_m": 0.08,
+    "bilateral_active_hold_fraction_min": 0.85,
+    "release_interval_s": [
+      7.5,
+      10.0
+    ],
+    "release_requires_all_sampled_states_not_bilateral": true,
+    "minimum_world_vertical_object_fall_relative_to_tcp_m": 0.02,
+    "release_fall_reference": "median object_z-minus-tcp_z during hold interval; fall at final saved sample"
+  },
+  "integrity": {
+    "require_free_dynamic_object": true,
+    "require_no_attachments": true,
+    "require_zero_pose_writes_after_initialization": true,
+    "camera_readback_required": true,
+    "completed_trace_coverage_required": true,
+    "all_actual_finger_and_pad_states_required": true
+  },
+  "interpretation": {
+    "direct_replay_is_physics_validation": false,
+    "synthetic_probe_is_real_recording_validation": false,
+    "candidate_can_be_validated_by_direct_or_probe_alone": false,
+    "dynamic_fixture_failure_fails_aggregate": true,
+    "active_gel_and_pad_body_contact_must_be_reported_separately": true,
+    "registration_and_hardware_model_assumptions_remain_until_independently_confirmed": true
+  },
+  "experiment": {
+    "source_root": "/home/physicalai/phantom-icra-2027/sim/waffles/source_w2l_adaptive_20260909",
+    "previous_validation_protocol": {
+      "path": "docs/results/w2l_gripper_build_20260908/validation_protocol.json",
+      "sha256": "65b034a71fb9f1e6f14de78e13abe79a40f9ae41c73624058a5085069ac03a8a"
+    },
+    "references": {
+      "7073": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_scene_v10_20260908/latest_real7073_replay/reference",
+        "sha256": {
+          "replay.npz": "feae06b6cec8b6a6c9500c0a6930593e2ca899b39d3dc3c55b562da4ee7fb478",
+          "manifest.json": "6880162dd7356a1a5e2ee123f72c52a3a2e1fc1403fb69facddec623ffdad2f0",
+          "reference.mp4": "162ae5932ef2e2ac3b19f47af955e3408af1c95a4f023ffcae16a7d9b313f0a3"
+        }
+      },
+      "5066": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/heldout/ep_teacher_waffles_1788535066_006",
+        "sha256": {
+          "replay.npz": "fcb916c865355070e9e3d0cc644d3b2058ee0416bdf5adf54c9b7beb2dc6ce27",
+          "manifest.json": "c1353ed3f4af4602a1cdda9ade5eb6bc1569624be1fc5fb7f25c523cd5e909a2",
+          "reference.mp4": "bc48ec2ddc7f0c3478fd4f26797587ec2a90e41782748dfacda32bc60a445a9a"
+        }
+      }
+    },
+    "cases": [
+      {
+        "id": "native_probe35",
+        "episode": "7073",
+        "mode": "contact_probe",
+        "config": "configs/sim/waffles_w2l_adaptive_parallel_20260909.json",
+        "probe_start_time_s": 4.0,
+        "duration_s": 10.0,
+        "hypothesis": "Free35mm packet initialized once between nominal mounted native jaws; synthetic test, not real pickup validation"
+      },
+      {
+        "id": "native_parallel_7073_dynamics",
+        "episode": "7073",
+        "mode": "dynamics",
+        "config": "configs/sim/waffles_w2l_adaptive_parallel_20260909.json",
+        "hypothesis": "Native passive mechanism with prior +11mm parallel sensor-mount hypothesis"
+      },
+      {
+        "id": "native_splayed_7073_dynamics",
+        "episode": "7073",
+        "mode": "dynamics",
+        "config": "configs/sim/waffles_w2l_adaptive_splayed_20260909.json",
+        "hypothesis": "Native passive mechanism with prior fixed sensor-mount tilt hypothesis"
+      },
+      {
+        "id": "native_parallel_5066_dynamics",
+        "episode": "5066",
+        "mode": "dynamics",
+        "config": "configs/sim/waffles_w2l_adaptive_parallel_20260909.json",
+        "hypothesis": "Same native parallel-mount model on separate previously inspected5066 recording"
+      },
+      {
+        "id": "native_splayed_5066_dynamics",
+        "episode": "5066",
+        "mode": "dynamics",
+        "config": "configs/sim/waffles_w2l_adaptive_splayed_20260909.json",
+        "hypothesis": "Same native tilted-mount model on separate previously inspected5066 recording"
+      }
+    ],
+    "parent_configurations": {
+      "configs/sim/waffles_w2l_adaptive_parallel_20260909.json": "configs/sim/waffles_w2l_opening_corrected_20260909.json",
+      "configs/sim/waffles_w2l_adaptive_splayed_20260909.json": "configs/sim/waffles_w2l_splayed_diagnostic_20260909.json"
+    },
+    "fixed_parameters": {
+      "model": "robotiq_2f85_w2l_adaptive_v2",
+      "drive_stiffness_nm_rad": 12.0,
+      "drive_damping_nm_s_rad": 0.16,
+      "drive_max_torque_nm": 1.7,
+      "angle_at_touch_rad": 0.8,
+      "pad_touch_command": 0.9,
+      "native_passive": {
+        "spring_stiffness_nm_rad": 0.05,
+        "spring_damping_nm_s_rad": 0.00125,
+        "spring_reference_rad": 2.62
+      }
+    },
+    "initialization": {
+      "dynamics_passive_drive_settling_before_t0_s": 2.0,
+      "probe_passive_drive_settling_before_synthetic_placement_s": 0.0,
+      "probe_nominal_packet_width_m": 0.035,
+      "probe_initial_clearance_m": 0.0004,
+      "probe_target_overtravel_m": 0.002,
+      "no_object_attachments": true,
+      "recorded_replay_clock": "Measured arm trajectory starts at t0 after declared dynamics settling. No duration extension or retimed reference.",
+      "settling_note": "Native unloaded geometric seed is distinct from passive force equilibrium; source and actual saved initialization metadata are recorded."
+    },
+    "execution": {
+      "runtime_source_hashes": "At prelaunch snapshot all phantom/,tools/sim/,assets/sim/,configs/ plus runner/helper/protocol; recheck unchanged before/after each case",
+      "mode_choices": [
+        "contact_probe",
+        "dynamics"
+      ],
+      "attempts_per_case": 1,
+      "automatic_retries": false,
+      "overwrite_existing_case_directories": false,
+      "stop_on_runtime_or_integrity_failure": true,
+      "preserve_unstarted_case_rows": true,
+      "continue_after_valid_physical_failure": true,
+      "hardware_launch": false,
+      "policy_launch": false,
+      "development_smoke": "Any short import/smoke run is separately named and does not qualify this matrix"
+    },
+    "interpretation": {
+      "native_topology": "Eight physical revolute joints, equal motor drivers, passive spring/follower/coupler motion and two closing loop constraints; transfer dynamics remain uncalibrated",
+      "coupling_scope": "Only equal driver angles; passive deviation from parallel mimics is permitted if loop closure and joint limits pass",
+      "target_vs_state": "2.62rad spring drive reference is an actuator rest target, not an actual joint-limit violation; actual eight-joint state is checked separately",
+      "thresholds": "All prior object/camera/clock/coverage/TCP thresholds unchanged; only explicit .001m loop and .002rad joint-limit gates added",
+      "7073": "Must acquire/lift and retain through frozen15.969803..18.719803s carry interval",
+      "5066": "Acquisition and>=100mm lift only; no new carry interval or placement-success gate",
+      "tactile": "Frozen manifold_patch_v2 and inner-face filter retained; body/housing load reported separately; attribution limitation remains",
+      "comparison": "Five single diagnostic cases, not an estimated success probability or policy ranking; all failed/invalid/unstarted cases retained",
+      "no_post_outcome_tuning": true,
+      "no_real_setup_calibration_claim": true,
+      "no_policy_or_placement_success_claim": true
+    }
+  }
+}

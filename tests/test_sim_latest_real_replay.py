@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("latest_real_replay", ROOT / "docs/results/teacher_scene_v10_20260908/run_latest_real_replay.py")
+SPEC = importlib.util.spec_from_file_location("latest_real_replay", ROOT / "tests/fixtures/reference/teacher_scene_v10_20260908/run_latest_real_replay.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 

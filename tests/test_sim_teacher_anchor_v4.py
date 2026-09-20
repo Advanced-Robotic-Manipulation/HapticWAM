@@ -8,6 +8,7 @@ from tools.sim.audit_teacher_anchor_v4_bridge import evaluate_bridge
 from tools.sim.freeze_teacher_anchor_v4_confirmation import derive_confirmation
 from tools.sim.run_teacher_anchor_v4 import blocks, inference_config
 from tools.sim.select_teacher_anchor_v4 import COUNTS, evaluate_selection
+from tools.sim.teacher_anchor_design import reference_path
 from tools.sim.teacher_anchor_v4_design import (
     PROTOCOL_SHA,
     checked_json,
@@ -79,11 +80,11 @@ def test_v4_preserves_legacy_freeze_and_exact_physics_while_binding_combined_bri
     p = load_protocol()
     d = screen()
     assert (
-        digest(ROOT / p["supersedes"]["protocol_path"])
+        digest(ROOT / reference_path(p["supersedes"]["protocol_path"]))
         == p["supersedes"]["protocol_sha256"]
     )
     assert (
-        digest(ROOT / p["supersedes"]["legacy_screen_path"])
+        digest(ROOT / reference_path(p["supersedes"]["legacy_screen_path"]))
         == p["supersedes"]["legacy_screen_sha256"]
     )
     assert make_screen(p) == d

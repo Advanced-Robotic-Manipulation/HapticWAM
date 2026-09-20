@@ -1,0 +1,250 @@
+{
+  "status": "six_short_replay_previews_passed",
+  "remote_source": "compute3:/home/physicalai/phantom-icra-2027/sim/waffles/source_d435_camera_audit_20260908",
+  "remote_outputs": "compute3:/home/physicalai/phantom-icra-2027/sim/waffles/runs/d435_camera_audit_20260908",
+  "rows": [
+    {
+      "episode": "sept04",
+      "variant": "r2_original",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          742.8932495117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          742.8931884765625,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 46.607757420364074,
+        "vertical": 35.80726845787022
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "cdd3f4a5e2cade3bdcf3e320a9f58600123e4faec07dda573a66a50cefdba702",
+        "camera_projection.json": "14acb67443fc287d8110584af63aa1608a8b826dfa95fc569fc33e2cf89f001f",
+        "initialization.json": "2ea2c82c1bcb5fc06bb314fe7810d5e0bf427fad8767885f2f859ae2e8648c45",
+        "run.json": "880e95bd5624cf16738456d780578056530e57d019d9b79adcc8a5cba9bcb4a5",
+        "sim_first.png": "94612679fe15a6ab57ea41db3c34836c92722948d549115f439acbf446499444",
+        "sim.mp4": "0c6f8d1cf2aa5c4bd0a0fc9339c443065025fa22fa3cb60e6c12ddae1f57266c"
+      }
+    },
+    {
+      "episode": "sept04",
+      "variant": "rgb_fov_only",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          625.2213745117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          625.2213745117188,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 54.208432492562586,
+        "vertical": 42.000000062226796
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "31d114e4626aed4fc883adb778ffcf253bbe271948757048bdb06cd22decb7fc",
+        "camera_projection.json": "2ed0401f1e176e91231139d944c48301f2cc974a9e1576d38da8c0dae929dcc7",
+        "initialization.json": "2ea2c82c1bcb5fc06bb314fe7810d5e0bf427fad8767885f2f859ae2e8648c45",
+        "run.json": "05179e1eb8ce3b0fde797d2f31aa1e6ac3e86f424524e56d69bb30ea0d6817f8",
+        "sim_first.png": "56ea862b659eca487f26e5ab01c86cd45af6b68f1085e5a31e15ec6d37241474",
+        "sim.mp4": "983201c41f64ae38c0a3bd65f5e07eadbbff86ef91459f8f16aa47b0e84cbb2d"
+      }
+    },
+    {
+      "episode": "sept04",
+      "variant": "rgb_pose_fit",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          625.2213745117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          625.2213745117188,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 54.208432492562586,
+        "vertical": 42.000000062226796
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "f7543a8577b2eef92381cc6ad5ce495cf4b05f38d43c01a7aad35781c151ddb4",
+        "camera_projection.json": "2ed0401f1e176e91231139d944c48301f2cc974a9e1576d38da8c0dae929dcc7",
+        "initialization.json": "2ea2c82c1bcb5fc06bb314fe7810d5e0bf427fad8767885f2f859ae2e8648c45",
+        "run.json": "f04c42dc4b2990a8d9655624a8baf11607c0f586488889f74b7b0269333045a7",
+        "sim_first.png": "116927380864fa9abda9192ad123f1d0f6876c1d963bb3832ad1cdb76fcac5c1",
+        "sim.mp4": "d015a02e510f67310e9701cd9d6ae9f970abf702e592b718f82a1cc37012c36b"
+      }
+    },
+    {
+      "episode": "aug22",
+      "variant": "r2_original",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          742.8932495117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          742.8931884765625,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 46.607757420364074,
+        "vertical": 35.80726845787022
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "cdd3f4a5e2cade3bdcf3e320a9f58600123e4faec07dda573a66a50cefdba702",
+        "camera_projection.json": "14acb67443fc287d8110584af63aa1608a8b826dfa95fc569fc33e2cf89f001f",
+        "initialization.json": "684452fbc36927de03e81ab245805cdbb8f2eb171a1140dfff6e7f83707e0fac",
+        "run.json": "4f06a25a6b3896a6b5fb7f7b3f9e87ea44da176710cee93a533e189908472e16",
+        "sim_first.png": "79c2ddde6e39c7750b43773f4ae7e7d18acea3bc40be5cde104ad5d36b15a79d",
+        "sim.mp4": "d3bb5651f122b8f5287a31ef78dd706ced7f179c716572e64e1d815bb0627246"
+      }
+    },
+    {
+      "episode": "aug22",
+      "variant": "rgb_fov_only",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          625.2213745117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          625.2213745117188,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 54.208432492562586,
+        "vertical": 42.000000062226796
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "31d114e4626aed4fc883adb778ffcf253bbe271948757048bdb06cd22decb7fc",
+        "camera_projection.json": "2ed0401f1e176e91231139d944c48301f2cc974a9e1576d38da8c0dae929dcc7",
+        "initialization.json": "684452fbc36927de03e81ab245805cdbb8f2eb171a1140dfff6e7f83707e0fac",
+        "run.json": "f09a8cccd5eb3d752c55a86440bdc9f62545095dea95e2f6c778fd322de37d51",
+        "sim_first.png": "75e07f4834edd264de4b4e518ca02e980a08604130a09d7011989aa2b1adfcf3",
+        "sim.mp4": "591eaec212abf6e65309a75a312f616d0571409959efe8c683011ee8a62550eb"
+      }
+    },
+    {
+      "episode": "aug22",
+      "variant": "rgb_pose_fit",
+      "mode": "replay",
+      "duration_s": 0.196,
+      "frames": 4,
+      "intrinsics_px": [
+        [
+          625.2213745117188,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          625.2213745117188,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fov_degrees": {
+        "horizontal": 54.208432492562586,
+        "vertical": 42.000000062226796
+      },
+      "lens_readback_matches_config": true,
+      "effective_config_matches_frozen_input": true,
+      "packet_settling_displacement_m": 2.8385161779165412e-08,
+      "video_full_decode": "pass",
+      "hashes": {
+        "effective_config.json": "f7543a8577b2eef92381cc6ad5ce495cf4b05f38d43c01a7aad35781c151ddb4",
+        "camera_projection.json": "2ed0401f1e176e91231139d944c48301f2cc974a9e1576d38da8c0dae929dcc7",
+        "initialization.json": "684452fbc36927de03e81ab245805cdbb8f2eb171a1140dfff6e7f83707e0fac",
+        "run.json": "c77657036b1f2c8e0b77d9dd1dcfeec4f096ca92e6f54cbb82813bb8d613cc32",
+        "sim_first.png": "c4390d48dbf2b4a763abaa4ec5a7251516e7e36688cfe66dfed5c72b49b39a97",
+        "sim.mp4": "9f9b031c02c1c3d294af96118973fa62ceb90911db523d85a5a907a544ab7ed7"
+      }
+    }
+  ],
+  "teacher_inference_calls": 0,
+  "hardware_motion_commands": 0,
+  "optical_factory_calibration_verified": false
+}

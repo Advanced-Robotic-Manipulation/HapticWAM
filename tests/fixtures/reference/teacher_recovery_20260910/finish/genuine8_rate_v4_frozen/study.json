@@ -1,0 +1,69 @@
+{
+  "actual_frozen_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "blocks": [
+    {
+      "campaign": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_off_rate_v4/campaign.json",
+      "campaign_sha256": "05020c59f7c870f95dd517c0e4e24b4cf3db17df6cff491b689a3872419f6678",
+      "id": "v6_relative_off_rate_v4",
+      "observer_enabled": false,
+      "protocol": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_off_rate_v4/protocol.json",
+      "protocol_sha256": "5cd5bf0bebcb038f24510ffab4f3ae0363db3f5001475b8c6b4ae0c65268e259",
+      "trials": 4,
+      "paired_v3_block": "v6_relative_off_timing_v3"
+    },
+    {
+      "campaign": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_on_rate_v4/campaign.json",
+      "campaign_sha256": "8ac6b7d08216ed67fd04ff2511c5e8778dde91303b77c628c19bbb6ba11a5e6d",
+      "id": "v6_relative_on_rate_v4",
+      "observer_enabled": true,
+      "protocol": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_on_rate_v4/protocol.json",
+      "protocol_sha256": "03d87fc655cdb17be991b4c55b8de81191efd5f241af70acfc88d9a803296429",
+      "trials": 4,
+      "paired_v3_block": "v6_relative_on_timing_v3"
+    }
+  ],
+  "existing_collector_adaptation_required": false,
+  "inference_source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "launch_authorized": true,
+  "pending_prerequisites": [],
+  "physical_finish_validation_pending": true,
+  "planned_trials": 8,
+  "qualification40": {
+    "planned_trials": 40,
+    "ready": false,
+    "reason": "Requires separate qualification freeze after all physical/integrity gates pass",
+    "sampling_seeds": [
+      910401,
+      910402
+    ]
+  },
+  "qualification_ready": false,
+  "recipe": {
+    "action_time_origin": "observation",
+    "inference_delay_add_s": 0.0,
+    "k_seeds": 1,
+    "observation_delay_s": 0.0,
+    "timing_criteria_revision": "endpoint_v2"
+  },
+  "remote_inputs": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910",
+  "runtime_frozen": true,
+  "source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "source_inventory_draft_sha256": "9887c0b900219f0e5a83b07ebc0b08652deba8c81eff06ba52c8baab20c484fe",
+  "source_preparation_only": false,
+  "stage": "rate_interior_finish_diagnostic_v4",
+  "status": "frozen",
+  "source_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "inference_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "hardware": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/hardware_input.yaml",
+  "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
+  "frozen_at_utc": "2026-09-11T08:00:19.577694+00:00",
+  "diagnostic_gate_release": {
+    "path": "gate_release.json",
+    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
+  },
+  "bindings_sha256": "20284e751c997f59fb08a2a8106c836edd21892edd2d0689f1906209579b5567",
+  "parent_study_sha256": "e7996f67f8e2bb67d5221249691adc082e8ea2360fe7992e4b606cbd843c12fb",
+  "boundary_projection_sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
+  "rate_solver_backoff": "fk_rate_interior_v1"
+}

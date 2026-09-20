@@ -1,0 +1,30 @@
+{
+  "status": "diagnostic_detector_sensitivity_not_metrology_uncertainty",
+  "runs": [
+    {
+      "dark_threshold": 45,
+      "status": "converged",
+      "evidence": "grid_fit_threshold45.json",
+      "points": 158,
+      "height_above_table_m": 0.9603120190066453,
+      "inclination_deg": 25.759083550294278,
+      "rms_px": 1.007139053832126
+    },
+    {
+      "dark_threshold": 60,
+      "status": "converged",
+      "evidence": "grid_fit.json",
+      "points": 160,
+      "height_above_table_m": 0.9619688777350174,
+      "inclination_deg": 25.70882953858195,
+      "rms_px": 0.9557276997583852
+    },
+    {
+      "dark_threshold": 75,
+      "status": "failed_explicit_seed_validation",
+      "error": "Missing seed hole near (49.6, 18.0)",
+      "interpretation": "At this higher threshold the required dark component was not detected under the fixed component-shape filter; no geometry was fitted and no points were guessed."
+    }
+  ],
+  "interpretation": "Threshold45 and60 estimates differ by1.66mm height and0.0503deg inclination. This is diagnostic consistency, not a statistical confidence interval or an estimate of the user measurement uncertainty. Threshold75 failure demonstrates the image-specific detector limits."
+}

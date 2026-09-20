@@ -1,0 +1,20 @@
+{
+  "inherited_collector_executable_without_adaptation": false,
+  "launch_authorized": false,
+  "original_results_reinterpreted": false,
+  "parent_v5_inputs_manifest_sha256": "77e2cc7bb5a25cd9bc50a44e3249418f30e17347028ef496bf9edd93c0d2930a",
+  "physical_validation_claim": false,
+  "qualification_ready": false,
+  "source_inventory_draft_sha256": "9887c0b900219f0e5a83b07ebc0b08652deba8c81eff06ba52c8baab20c484fe",
+  "status": "draft",
+  "treatment": "Identical final relative permission and explicit last-ACK terminal reference in both arms; optional FINISH observer differs",
+  "unchanged": [
+    "v6/020000 checkpoint and EMA",
+    "NFE1 K1 guidance1 parity persistent-noise",
+    "observation epoch endpoint_v2 with zero added delays",
+    "pose10 grip10 minimum lead300ms",
+    "fixed waffle, authentic arm starts000/010 and explicit open reset",
+    "seeds910359/910360",
+    "scene/coupled mechanics/hardware/boundary limits/independent object predicates/two-second hold"
+  ]
+}

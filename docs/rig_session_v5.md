@@ -29,11 +29,10 @@
 > but its student is weaker offline, 29.5 vs 22.7 — the rig decides); then v5_6 (1) vs stu_v5_6 (4)
 > if time. Warm servers with `./SERVE.sh` (or ask Claude). Slot 10 = ctl_v6 (ablation only).
 
-> **8 September teacher-only update:** For the fixed ftA1500 inference requested
-> for the next lab session, use [the current main quickstart](rig_teacher_fixed_inference.md)
-> and [teacher handoff](isaac_lab_handoff_20260907.md). They explicitly enable the
-> bounded hold and minimal_v5 release. The multi-model session recipes below
-> remain separate; their menu defaults do not select that controller candidate.
+> **8 September teacher-only update:** fixed ftA1500 inference needs the bounded
+> hold and minimal_v5 release explicitly enabled. The multi-model session recipes
+> below remain separate; their menu defaults do not select that controller
+> candidate.
 
 ## 🎯 SESSION 6 (2026-09-07): teachers vs SENSOR-FREE students — read this first
 
@@ -204,7 +203,7 @@ be Ctrl-C'd and relaunched freely; the model never reloads.
   RETIRED (0/4 whips; it fought one lift) — the mechanism remains, default off.
   (5) **servo-level limiter** (Ilya, 09-04 evening — written AFTER the last episode of
   the day, never ran on the arm; **OFF by default** pending the fixes listed in
-  `docs/review_servo_limiter_0905.md`, enable via `elbow_min_rad` /
+  the servo-limiter review, enable via `elbow_min_rad` /
   `servo_joint_speed_max_rad_s` in the NUC yaml): per 8 ms tick, if the IK solution would fold the
   elbow below `elbow_min_rad` (0.40 rad = wrist centre 0.4616 m) or move a joint faster
   than `servo_joint_speed_max_rad_s` (1.0), the driver shortens the step (bisection,
@@ -400,7 +399,7 @@ Endpoint error v4 **20.82 mm -> v5_6 18.23 mm** (2.6 mm / 12%); z-at-end **+2.76
 episodes) **18.54 -> 13.78 mm**. The per-window across-seed std is 6-7 mm — larger than the whole v4->v5_6
 difference — so no per-episode claim follows from these, and most of the val124 gain is in-distribution to the
 new batch (on the frozen v4-only half it is 22.17 -> 20.86 mm). Full derivation, caveats and the retracted
-close-height statistic: **`docs/review_20260828/E13_rescore.md`**. Offline != rig: the rig decides.
+close-height statistic: **`E13_rescore.md`**. Offline != rig: the rig decides.
 
 ## Audit trail (2026-09-01)
 Every command execution and every file deletion/rename by ANY user (local or ssh)

@@ -1,0 +1,54 @@
+{
+  "actual_opening_ack_must_follow_relative_permission": true,
+  "all_eight_identities_valid": true,
+  "baseline_trials": 4,
+  "boundary_physics_required": "Every-step measured original-hitbox/workspace containment through active run and stop/FINISH tail; guard-selected and accepted-FK commands within the inward ceiling, exact config and complete contiguous coverage; fixed deadline/rearm/ack rules. All eight identities must pass this additional integrity gate; no hitbox-stop-suppression proxy and no relaxed original finish/object/hold thresholds.",
+  "boundary_projection_sha256": "45122b3a936f3620aecf194ab4bbbe9ba40b3921ba746958adcfd069c3bea491",
+  "candidate_trials": 4,
+  "caveat": "Controller only observes operational release. A release inside its region may still miss support. Object-based task scoring stays independent.",
+  "collector_adaptation_review_pending": true,
+  "comparison_receipt_required": [
+    "initialization equality and hashes",
+    "RGB first-frame hash and pixel error",
+    "matching observation tensor hashes where capture times match",
+    "first accepted-command/state divergence time and magnitude",
+    "first observer event/FINISH time",
+    "independent placement/collision/stop stages"
+  ],
+  "counterfactual_limit": "Actual new teacher inference uses RPC wall timings. Compare first rendered frame, settled q/TCP/aperture, first inference observation tensors/timestamps, delivered plans/accepted commands and first divergence before candidate FINISH. Same seed is not proof of an identical pre-effect trajectory.",
+  "every_observer_finish_required": "EVERY observed candidate observer FINISH must have valid causal acknowledged/measured opening and fresh post-ACK bilateral unloaded dwell, followed by the complete 2 s hold without new robot/environment collision, safety stop, renewed bilateral grip load, independently scored drop, mechanical invalidity or missing hold evidence. Any provenance or physical-hold failure blocks qualification even when another candidate produces a clean positive. Lack of independent supported placement alone remains a task failure; at least one independently supported candidate placement is required overall.",
+  "hardware_declaration_correction": [
+    {
+      "new_present": true,
+      "new_value": 0.0,
+      "old_present": false,
+      "path": "safety.wrench_arm_delay_s"
+    }
+  ],
+  "interpretation": "This is a small integration gate, not an estimated robust success rate. Report all8cases; any technical invalidity stops the remainder and blocks qualification. Physical failures continue.",
+  "negative_required": "No candidate observer FINISH without a preceding played acknowledged measured opening and fresh post-ACK bilateral unloaded dwell. A controller FINISH without independent placement is retained as failed task, never converted to success.",
+  "original_v4_status_reinterpreted": false,
+  "permission_event_is_not_opening_or_finish": true,
+  "planned_trials": 8,
+  "positive_required": "At least one candidate unlatched observer FINISH, independent supported placement, and a clean full2s post-FINISH hold without safety stop, robot/environment collision under frozen criteria, renewed bilateral grip load, drop or mechanical invalidity. Normal packet support contact is required by the independent scorer, not a collision failure.",
+  "prospective_study_scope": "Genuine teacher combined timing/relative integration diagnostic; no qualification estimate",
+  "qualification_seeds_reserved_and_not_used": [
+    910401,
+    910402
+  ],
+  "relative_event_name": "relative_release_finished",
+  "relative_permission_audit_required": true,
+  "required_actual_temporal_audits": true,
+  "shared_boundary_projection": {
+    "budget_s": 2.5,
+    "feedback_max_age_s": 0.016,
+    "inward_margin_m": 0.01,
+    "max_tick_s": 0.016,
+    "maximum_excursion_m": 0.002,
+    "rearm_dwell_s": 0.25,
+    "rearm_inward_m": 0.0122,
+    "solver_inset_m": 0.0002,
+    "variant": "upper_y_projection_v2"
+  },
+  "solver_input_required": "Continuation only: independent Euclidean projection onto the original sphere and workspace/hitbox intersection eroded by the existing200micrometre solver inset, retaining the existing upper-Y plane. Original raw/domain checks, upper-Y projected flag, timer/rearm, final measured/FK limits, command-rate checks, FINISH and exact terminal-hold authority stay unchanged. Post-selection limiter or rate-clipped IK intermediates may still approach original limits; strict final verification remains mandatory."
+}

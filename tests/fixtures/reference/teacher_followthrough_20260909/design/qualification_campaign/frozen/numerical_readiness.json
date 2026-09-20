@@ -1,0 +1,26 @@
+{
+  "status": "qualified_for_40trial_numerical_configuration",
+  "decision": "proceed_dt0p25ms",
+  "source_manifest_sha256": "93a158b8c43b3b67ce70e1304678a5ac86bd9be1e788ed7ca1b9d12db3135b34",
+  "candidate_scene_sha256": "bff8f713302d49041ef08b8dc7c95c47d3bb678e5f46787dc22ac15cfad5e58d",
+  "original_scene_sha256": "b1f6c7f1bbb69d7ad88c74391ac56def9eec8b9ea3225a1f4e65aefcc6262f03",
+  "pool_manifest_sha256": "5f78e784490701fcb8ca657c909317a1e5e62bf99d5e8c35d6ac395b1e6b5943",
+  "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
+  "evidence": {
+    "probe_protocol": {
+      "path": "docs/results/teacher_followthrough_20260909/native_mechanics_probe/frozen_inputs/protocol.json",
+      "sha256": "177058722153100d06d1703277db13cd20c5e8ee13b3840300d6b642ffbe5d7a"
+    },
+    "probe_readout": {
+      "path": "docs/results/teacher_followthrough_20260909/native_mechanics_probe/readout.json",
+      "sha256": "256b3dc95c597a01d512c36c059a1355f3290de97bd24bd9eaa9c0c125a7f0fe"
+    },
+    "probe_completion": {
+      "path": "docs/results/teacher_followthrough_20260909/native_mechanics_probe/completion.json",
+      "sha256": "e484deaa947d965b063d434314ee3a812efbb2152884880177602707d7a0e352"
+    }
+  },
+  "rationale": "The 0.5ms accepted-command control reproduces all 244 original shared states and the native failure diagnostic bit-identically. Halving dt alone passes unchanged native gates through the exact original failure endpoint; initial arm/finger changes are below 0.00044rad and maximum shared packet-center difference is 3.062mm. This bounded evidence is sufficient to prospectively test the numerical setting on forty fresh closed-loop identities, with all existing mechanical gates retained and stop-on-invalidity unchanged.",
+  "limitations": "This is permission to collect qualification evidence, not full numerical convergence, validated tactile/contact force transfer, policy reliability, or hardware readiness. BoxBack collision remains at both timesteps. The original failed policy attempt remains invalid and unscored. The new cohort changes dt and native-start distribution, so do not pool its rate with the original screen or infer paired superiority over other models. Starts are stratified convenience samples, not training-unseen or representative lab frequencies. Actual settled states and technical validity must be audited per trial; no retries or replacement of failed identities. Real hardware latch remains 2.5N; simulated 1N proxy is exploratory.",
+  "decided_at_utc": "2026-09-10T01:29:27.444981+00:00"
+}

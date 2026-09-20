@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-MODULE = Path(__file__).parents[1] / "docs/results/teacher_scene_v10_20260908/recover_startup_timeout.py"
+MODULE = Path(__file__).parents[1] / "tests/fixtures/reference/teacher_scene_v10_20260908/recover_startup_timeout.py"
 if not MODULE.is_file():  # frozen run evidence is not part of a slim checkout
     pytest.skip(f"missing run evidence: {MODULE.name}", allow_module_level=True)
 spec = importlib.util.spec_from_file_location("startup_recovery", MODULE)
@@ -27,7 +27,7 @@ class StartupRecovery(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name)
         source = self.base / "source"
-        self.runner = source / "docs/results/teacher_scene_v10_20260908/run_study.py"
+        self.runner = source / "tests/fixtures/reference/teacher_scene_v10_20260908/run_study.py"
         self.runner.parent.mkdir(parents=True)
         self.runner.write_text("# frozen runner\n")
         self.output = self.base / "campaign"

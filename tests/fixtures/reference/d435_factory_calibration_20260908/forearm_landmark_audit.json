@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "status": "landmark_semantics_mismatch_found_without_geometry_changes",
+  "sources": {
+    "assets/sim/ur3/meshes/visual/forearm.dae": "c059ae9d135dff9c2b6319d6d07c44f4470b84d61398a85a15262c9cde893393",
+    "assets/sim/ur3/ur3_cb3.urdf": "0d8cec58f04bce10b8829f2c95c51fae04464950cb48c316b6913d2b90a72fe0",
+    "docs/results/d435_factory_calibration_20260908/constrained_robot_fit.json": "286e05bea9108a9c53cd294a3b6763e10c7015b5dcfe5adbef3ddb4d18f8eb81",
+    "docs/results/d435_camera_audit_20260908/annotations.json": "7b8dabd054704280a8cda23ea9ff08516a3089145a595212097423fb223efbad",
+    "docs/results/d435_camera_audit_20260908/landmark_frames.json": "fae95037db1d48c9efc7c6619414bcbaba76f1ff7891102cadd35c8971363fb5"
+  },
+  "mesh_geometry_id": "Part__Feature032-mesh",
+  "material": "blau-material",
+  "units": "meters",
+  "vertex_count": 6361,
+  "visual_origin_rpy_rad": [
+    1.5707963267948966,
+    0.0,
+    -1.5707963267948966
+  ],
+  "visual_origin_xyz_m": [
+    0.0,
+    0.0,
+    0.0275
+  ],
+  "blue_mesh_raw_bbox": {
+    "min": [
+      -0.03220534,
+      -0.04644775,
+      0.1810195
+    ],
+    "max": [
+      0.03216624,
+      -0.0191099,
+      0.2453237
+    ]
+  },
+  "blue_mesh_forearm_link_bbox": {
+    "min": [
+      -0.2453237,
+      -0.03216624000000005,
+      -0.01894774999999996
+    ],
+    "max": [
+      -0.1810195,
+      0.03220533999999995,
+      0.008390100000000057
+    ]
+  },
+  "blue_mesh_forearm_link_bbox_center_m": [
+    -0.21317160000000002,
+    1.954999999995155e-05,
+    -0.005278824999999952
+  ],
+  "legacy_anchor_forearm_link_m": [
+    -0.21317,
+    0.0,
+    -0.00528
+  ],
+  "legacy_anchor_distance_from_bbox_center_m": 1.9650524802108366e-05,
+  "conclusions": [
+    "The legacy forearm anchor equals the transformed entire blue mesh bounding-box center to approximately20 micrometers; the URDF visual transform was applied consistently.",
+    "The annotations are named cap band in refine_camera_static.py. At frame0 the label lies near the projected blue upper edge; it is about24px from the mesh bounding-box center. A band or silhouette does not generally project to a fixed volumetric center.",
+    "Nearest projected blue vertices approach all eight labels, but their local positions differ across frames; these are post hoc diagnostics, not replacement correspondences or measured face centers.",
+    "Do not use these legacy labels as a precise fixed3D-point camera constraint. Retain metric table normal/scale constraints and use identifiable wrist landmarks or explicit occlusion-aware blue-surface/silhouette comparison.",
+    "No CAD geometry, annotation, camera pose, recording or controller was changed by this audit."
+  ],
+  "limits": [
+    "Projected vertex envelopes include hidden back faces and are not render-visible silhouettes.",
+    "Existing camera registration is partly based on the same robot landmarks; these values are diagnostic consistency checks, not independent validation.",
+    "The cap mesh is curved/tilted, so no unique optical cap center was derived."
+  ],
+  "frames": [
+    {
+      "frame": 0,
+      "annotation_px": [
+        494,
+        59
+      ],
+      "old_anchor_projection_px": [
+        498.66055463873164,
+        82.976825852496
+      ],
+      "old_anchor_error_px": 24.42557977820637,
+      "projected_blue_vertex_envelope_xyxy": [
+        466.69085433995747,
+        54.67593009202677,
+        531.6006946222209,
+        108.58279236264408
+      ],
+      "nearest_projected_vertex_px": [
+        494.28561355135406,
+        58.83883266243056
+      ],
+      "nearest_projected_vertex_distance_px": 0.327948184041778,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.2339512,
+        0.021542599999999947,
+        -0.011408769999999954
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 55,
+      "annotation_px": [
+        441,
+        126
+      ],
+      "old_anchor_projection_px": [
+        445.8269550425339,
+        144.86549894229705
+      ],
+      "old_anchor_error_px": 19.473226371725218,
+      "projected_blue_vertex_envelope_xyxy": [
+        418.0079106026689,
+        121.3694845727585,
+        473.97971220672827,
+        168.18160767243793
+      ],
+      "nearest_projected_vertex_px": [
+        441.59265705551144,
+        125.5267202363721
+      ],
+      "nearest_projected_vertex_distance_px": 0.7584432214128946,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.22145340000000002,
+        0.02914564999999995,
+        -0.011074809999999952
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 83,
+      "annotation_px": [
+        418,
+        175
+      ],
+      "old_anchor_projection_px": [
+        422.46193420059416,
+        192.54690982205457
+      ],
+      "old_anchor_error_px": 18.10532797586796,
+      "projected_blue_vertex_envelope_xyxy": [
+        397.56076853874794,
+        172.46960765039617,
+        447.44761965487123,
+        214.0804365421481
+      ],
+      "nearest_projected_vertex_px": [
+        418.16415998059034,
+        174.84499129420237
+      ],
+      "nearest_projected_vertex_distance_px": 0.22577909137135896,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.20846220000000001,
+        0.028337059999999956,
+        -0.01467301999999995
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 111,
+      "annotation_px": [
+        411,
+        188
+      ],
+      "old_anchor_projection_px": [
+        418.07033191609855,
+        203.46277965185286
+      ],
+      "old_anchor_error_px": 17.00256298225525,
+      "projected_blue_vertex_envelope_xyxy": [
+        394.0118685748875,
+        184.15990227155635,
+        442.3161804935456,
+        224.3985962046333
+      ],
+      "nearest_projected_vertex_px": [
+        411.01904388509206,
+        187.56040819051822
+      ],
+      "nearest_projected_vertex_distance_px": 0.4400041233021207,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.20846220000000001,
+        0.028337059999999956,
+        -0.01467301999999995
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 139,
+      "annotation_px": [
+        412,
+        190
+      ],
+      "old_anchor_projection_px": [
+        416.4313976297703,
+        205.90475383479847
+      ],
+      "old_anchor_error_px": 16.510556607778867,
+      "projected_blue_vertex_envelope_xyxy": [
+        392.5923477431225,
+        186.87270244857055,
+        440.4972242345021,
+        226.6070387247253
+      ],
+      "nearest_projected_vertex_px": [
+        411.95063579555494,
+        189.96378157056247
+      ],
+      "nearest_projected_vertex_distance_px": 0.06122580592702903,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.20415320000000003,
+        0.028181009999999954,
+        -0.01342120999999995
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 167,
+      "annotation_px": [
+        416,
+        188
+      ],
+      "old_anchor_projection_px": [
+        422.6281054805755,
+        202.7208258343195
+      ],
+      "old_anchor_error_px": 16.144178378164796,
+      "projected_blue_vertex_envelope_xyxy": [
+        398.64658182212935,
+        183.50985497409607,
+        446.82878685762046,
+        223.5798848233644
+      ],
+      "nearest_projected_vertex_px": [
+        416.89000514812045,
+        187.9304466416857
+      ],
+      "nearest_projected_vertex_distance_px": 0.8927187873757914,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.20647400000000002,
+        0.029493329999999957,
+        -0.01184591999999995
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 195,
+      "annotation_px": [
+        454,
+        125
+      ],
+      "old_anchor_projection_px": [
+        461.73144688363,
+        149.54432504965555
+      ],
+      "old_anchor_error_px": 25.733230715507545,
+      "projected_blue_vertex_envelope_xyxy": [
+        433.94897744174506,
+        126.00425336774374,
+        489.5701784899287,
+        173.2291995632843
+      ],
+      "nearest_projected_vertex_px": [
+        456.6796657162732,
+        129.12327113104422
+      ],
+      "nearest_projected_vertex_distance_px": 4.9175169721184,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.22032900000000002,
+        0.025887419999999953,
+        -0.015575199999999952
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    },
+    {
+      "frame": 223,
+      "annotation_px": [
+        505,
+        43
+      ],
+      "old_anchor_projection_px": [
+        507.5101554461277,
+        61.954529693642336
+      ],
+      "old_anchor_error_px": 19.12001768490013,
+      "projected_blue_vertex_envelope_xyxy": [
+        473.27957545599065,
+        31.102961171874203,
+        543.0225374083766,
+        88.9510872978852
+      ],
+      "nearest_projected_vertex_px": [
+        504.6007824555143,
+        40.18423288744523
+      ],
+      "nearest_projected_vertex_distance_px": 2.8439267008785905,
+      "nearest_vertex_forearm_link_xyz_m": [
+        -0.2271096,
+        0.011366899999999949,
+        -0.01553156999999995
+      ],
+      "note": "Nearest vertex is selected post hoc in image space; it is not a fixed landmark and visibility/occlusion is not tested."
+    }
+  ]
+}

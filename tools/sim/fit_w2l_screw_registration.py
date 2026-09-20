@@ -46,10 +46,10 @@ def pose(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--out', type=Path, default=ROOT/'docs/results/w2l_opening_width_20260909')
+    parser.add_argument('--out', type=Path, default=ROOT/'tests/fixtures/reference/w2l_opening_width_20260909')
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    evidence = ROOT/'docs/results/teacher_scene_v10_20260908/pickup_registration_evidence'
+    evidence = ROOT/'tests/fixtures/reference/teacher_scene_v10_20260908/pickup_registration_evidence'
     config_path = ROOT/'configs/sim/waffles_w2l_articulated_provisional_20260908.json'
     config = json.loads(config_path.read_text())
     frames = json.loads((evidence/'inputs.json').read_text())['frames'][:5]
@@ -165,7 +165,7 @@ def main():
         'input_sha256': {str(p.relative_to(ROOT)): sha(p) for p in [
             config_path, evidence/'inputs.json', Path(__file__),
             ROOT/'assets/sim/robotiq/robotiq_2f85.urdf',
-            ROOT/'docs/results/w2l_opening_width_20260909/nominal_face_features.json',
+            ROOT/'tests/fixtures/reference/w2l_opening_width_20260909/nominal_face_features.json',
             *[evidence/frame['image'] for frame in frames],
         ]},
         'feature_assumptions': 'Outer/distal cap centres from CAD face loops at abs(X)=13.5 mm; proximal cap X=19.5 mm uses link envelope and is checked separately by exclusion/depth sensitivity',

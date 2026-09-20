@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "source": {
+    "source_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903101/execution_trace.jsonl",
+    "source_sha256": "45149781082aab9bd27a0676a92ef0ecd97d0a3e2f527635d90690eff8da0884",
+    "rows": 2247,
+    "source_stop_time_s": 17.972,
+    "source_stop_reason": "safety_stop",
+    "extracted_npz_sha256": "b87b474619cac15ed31f5536d1c1fa2f0fe3d2c930848e6ddb7271c35b090dda"
+  },
+  "scope": "saved-input wrist subguard only; no policy/dynamics counterfactual",
+  "parameters": {
+    "force_limit_n": 60,
+    "torque_limit_nm": 15,
+    "rolling_tau_s": 2,
+    "debounce_s": 0.3
+  },
+  "rows": 2247,
+  "initial_wrist": [
+    -2.1097366286896255,
+    -18.10817328457381,
+    13.528334591648038,
+    4.1344895392337895,
+    -3.3642810417039106,
+    -4.023871174036208
+  ],
+  "modes": {
+    "rolling_calm": {
+      "first_instantaneous_crossing_s": 16.012,
+      "first_debounced_stop": {
+        "t_s": 17.972,
+        "decision": {
+          "mode": "rolling_calm",
+          "capture_t_s": 0.004,
+          "initial_reference": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "valid": true,
+          "checked_at_s": 17.972,
+          "sample_t_s": 17.972,
+          "measured_wrench": [
+            -2.161869108666208,
+            -18.033800726951643,
+            13.551050401593256,
+            4.135159707181954,
+            -3.363602524612797,
+            -4.024554642261875
+          ],
+          "reference_before": [
+            -4.8540468343093,
+            -13.68591153862102,
+            114.96161806120456,
+            3.9826169326694467,
+            -3.199835346114745,
+            -4.190848489107478
+          ],
+          "reference_after": [
+            -4.8540468343093,
+            -13.68591153862102,
+            114.96161806120456,
+            3.9826169326694467,
+            -3.199835346114745,
+            -4.190848489107478
+          ],
+          "deviation": [
+            2.6921777256430923,
+            -4.3478891883306225,
+            -101.4105676596113,
+            0.15254277451250697,
+            -0.1637671784980519,
+            0.166293846845603
+          ],
+          "force_deviation_n": 101.53942679740246,
+          "torque_deviation_nm": 0.2788236544984934,
+          "over_since_s": 17.668,
+          "baseline_adapted": false
+        }
+      },
+      "force_deviation_max_n": 101.57063893901345,
+      "torque_deviation_max_nm": 4.450396703585526,
+      "reference_force_drift_max_n": 103.85354240317034,
+      "at_recorded_stop": {
+        "mode": "rolling_calm",
+        "capture_t_s": 0.004,
+        "initial_reference": [
+          -2.1097366286896255,
+          -18.10817328457381,
+          13.528334591648038,
+          4.1344895392337895,
+          -3.3642810417039106,
+          -4.023871174036208
+        ],
+        "valid": true,
+        "checked_at_s": 17.972,
+        "sample_t_s": 17.972,
+        "measured_wrench": [
+          -2.161869108666208,
+          -18.033800726951643,
+          13.551050401593256,
+          4.135159707181954,
+          -3.363602524612797,
+          -4.024554642261875
+        ],
+        "reference_before": [
+          -4.8540468343093,
+          -13.68591153862102,
+          114.96161806120456,
+          3.9826169326694467,
+          -3.199835346114745,
+          -4.190848489107478
+        ],
+        "reference_after": [
+          -4.8540468343093,
+          -13.68591153862102,
+          114.96161806120456,
+          3.9826169326694467,
+          -3.199835346114745,
+          -4.190848489107478
+        ],
+        "deviation": [
+          2.6921777256430923,
+          -4.3478891883306225,
+          -101.4105676596113,
+          0.15254277451250697,
+          -0.1637671784980519,
+          0.166293846845603
+        ],
+        "force_deviation_n": 101.53942679740246,
+        "torque_deviation_nm": 0.2788236544984934,
+        "over_since_s": 17.668,
+        "baseline_adapted": false
+      }
+    },
+    "episode_fixed": {
+      "first_instantaneous_crossing_s": 10.036,
+      "first_debounced_stop": {
+        "t_s": 10.46,
+        "decision": {
+          "mode": "episode_fixed",
+          "capture_t_s": 0.004,
+          "initial_reference": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "valid": true,
+          "checked_at_s": 10.46,
+          "sample_t_s": 10.46,
+          "measured_wrench": [
+            -11.786785733800116,
+            -3.03335755433954,
+            78.94587680796774,
+            5.687586012997789,
+            -2.3199246876667274,
+            -4.268339174161312
+          ],
+          "reference_before": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "reference_after": [
+            -2.1097366286896255,
+            -18.10817328457381,
+            13.528334591648038,
+            4.1344895392337895,
+            -3.3642810417039106,
+            -4.023871174036208
+          ],
+          "deviation": [
+            -9.677049105110491,
+            15.074815730234269,
+            65.4175422163197,
+            1.5530964737639996,
+            1.0443563540371832,
+            -0.24446800012510383
+          ],
+          "force_deviation_n": 67.82588133085488,
+          "torque_deviation_nm": 1.8874727691071933,
+          "over_since_s": 10.156,
+          "baseline_adapted": false
+        }
+      },
+      "force_deviation_max_n": 128.5678349329976,
+      "torque_deviation_max_nm": 3.1459372719356624,
+      "reference_force_drift_max_n": 0.0,
+      "at_recorded_stop": {
+        "mode": "episode_fixed",
+        "capture_t_s": 0.004,
+        "initial_reference": [
+          -2.1097366286896255,
+          -18.10817328457381,
+          13.528334591648038,
+          4.1344895392337895,
+          -3.3642810417039106,
+          -4.023871174036208
+        ],
+        "valid": true,
+        "checked_at_s": 17.972,
+        "sample_t_s": 17.972,
+        "measured_wrench": [
+          -2.161869108666208,
+          -18.033800726951643,
+          13.551050401593256,
+          4.135159707181954,
+          -3.363602524612797,
+          -4.024554642261875
+        ],
+        "reference_before": [
+          -2.1097366286896255,
+          -18.10817328457381,
+          13.528334591648038,
+          4.1344895392337895,
+          -3.3642810417039106,
+          -4.023871174036208
+        ],
+        "reference_after": [
+          -2.1097366286896255,
+          -18.10817328457381,
+          13.528334591648038,
+          4.1344895392337895,
+          -3.3642810417039106,
+          -4.023871174036208
+        ],
+        "deviation": [
+          -0.052132479976582324,
+          0.07437255762216566,
+          0.022715809945218268,
+          0.0006701679481642131,
+          0.0006785170911136618,
+          -0.0006834682256666724
+        ],
+        "force_deviation_n": 0.09362201032470081,
+        "torque_deviation_nm": 0.0011733027474509408,
+        "over_since_s": null,
+        "baseline_adapted": false
+      }
+    }
+  },
+  "default_parity": {
+    "bitwise_numeric_equal_all_2247_rows": true,
+    "compared": [
+      "reference_before",
+      "reference_after",
+      "deviation",
+      "force_deviation_n",
+      "torque_deviation_nm",
+      "over_since_s",
+      "stop"
+    ],
+    "frozen_reference_commit": "16567f3"
+  },
+  "source_sha256": {
+    "phantom/config/hardware.py": "5a33b337dcad6b866832981ee3a827486790f97a3f6adc72e3521b535f297948",
+    "phantom/deploy/safety.py": "c4cae0699ff10473d5e0c00ea47d6d8fb83b98e0f72268dcbaccc5c7b8ad9c17",
+    "docs/results/wrist_baseline_20260907/replay_6273.py": "f291199f2192d810f6e374aa2135cd1e49493a3d9aeb267f6681fda2c535ba5a"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "genuine8_combined_v3_diagnostic_release_v1",
+  "created_utc": "2026-09-10T19:03:19.099166+00:00",
+  "status": "passed",
+  "diagnostic_launch_authorized": true,
+  "qualification_ready": false,
+  "thresholds_relaxed": false,
+  "runtime_manifest_sha256": "e9c5090264ef4577db0ebdb17d7bf3222b3b67be9613cf121c45d6b24f9a78e9",
+  "combined_source_inventory_sha256": "9887c0b900219f0e5a83b07ebc0b08652deba8c81eff06ba52c8baab20c484fe",
+  "scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+  "scope": "Authorize eight genuine teacher diagnostic trials under the frozen source and unchanged strict scoring, after exact final route/input review. No qualification readiness or simulated-success claim.",
+  "strict_negative_physics_passed": false,
+  "strict_fixture_task_passed": false,
+  "known_failures_preserved": [
+    "Safety-stop achieved hold exceeds inward command reserve0.816mm while hard workspace is preserved; separate source diagnosis ongoing.",
+    "Recorded positive physical landing exists but unchanged first-unload full-packet footprint criterion fails8.07mm vs2mm."
+  ],
+  "causal_controller_scope": "Relative opening/FINISH and actual last-ACK terminal hold validated physically; withheld opening gives nofalseFINISH before independent wrenchstop. Fullnegative boundary failure not relabeled.",
+  "latency_scope": "Previously measured cost-only endpoint-K1 profile transferred by unchanged inference source; new actual RPC/observation/capped endpoint timing remains measured and audited per trial.",
+  "evidence": {
+    "mechanics": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/mechanics_v2.json",
+      "sha256": "bb08b45b010ab8ed548674070933e6bf98157bc0748ee5110983c6a244c503ef"
+    },
+    "hold_positive": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_on_v1/terminal_report_v1.json",
+      "sha256": "4f89fe3ec67a633be5b1d37f705e15c1c48a425d528956c03b092e8d551306d0"
+    },
+    "hold_negative": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/declared_last_ack_mode_audit.json",
+      "sha256": "b595ad18ccef2471d2a6fc451cf6ff8787814283a209a91680232dd25f6a641e"
+    },
+    "negative_behavior": {
+      "path": "docs/results/teacher_recovery_20260910/finish/last_ack_terminal_hold_fixture_v1/terminal_negative_v1/audits_v1/negative_behavior_diagnostic_v1.json",
+      "sha256": "0cbf69f944e75fdafdc22929470b268fd4aad0610fa33e90bdc9c80ccc923233"
+    },
+    "runtime_cpu": {
+      "path": "docs/results/teacher_recovery_20260910/finish/combined_timing_relative_draft_v3/actual_cpu_v1/cpu_results_v1/cpu_terminal_receipt.json",
+      "sha256": "4c7f1819b3b90d5bf3c3fb28f260bbb4477a554ff153adf25141bd60a086f343"
+    },
+    "collector": {
+      "path": "docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/actual_isaac_cpu_v2/results/receipt.json",
+      "sha256": "40c248c48f6e2ac979984e44990c7912d0c62bdf504975a65227dacb3e3fa0fb"
+    },
+    "latency": {
+      "path": "docs/results/teacher_recovery_20260910/finish/endpoint_profile_v2_cost_analysis.json",
+      "sha256": "56a3d63b4d925e845ee2c07f36b077692fae944a0d77976cc14e5c17b3b9979c"
+    },
+    "source_transfer": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/combined_runtime_v3_execution/transfer.json",
+      "sha256": "e4ab752963bd3e7fb09005806a60da17eb0157ae523e7a2ab0928cb0497e859c"
+    },
+    "controller_preparation_release": {
+      "path": "docs/results/teacher_recovery_20260910/readiness/combined_v3_runtime_preparation_release_v1.json",
+      "sha256": "de423649ff105b5d6871c061ae60cd261a1726af293bc69c18bd783083b38566"
+    }
+  }
+}

@@ -26,7 +26,7 @@ def test_egg_is_closed_convex_asymmetric_shell_with_physical_volume():
 
 
 def test_scene_rig_is_identical_to_working_waffle_baseline():
-    baseline = json.loads((ROOT/'docs/results/sim_zoo_20260912/inputs/scene.json').read_text())
+    baseline = json.loads((ROOT/'tests/fixtures/reference/sim_zoo_20260912/inputs/scene.json').read_text())
     for task in ('carton','egg'):
         cfg = json.loads((ROOT/f'configs/sim/{task}.json').read_text())
         for key in ('camera','gripper','physics','robot_mount','table'):

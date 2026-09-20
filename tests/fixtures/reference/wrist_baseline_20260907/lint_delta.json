@@ -1,0 +1,37 @@
+{
+  "phantom/config/hardware.py": {
+    "baseline_findings": 7,
+    "current_findings": 7,
+    "introduced": []
+  },
+  "phantom/deploy/executor.py": {
+    "baseline_findings": 2,
+    "current_findings": 2,
+    "introduced": []
+  },
+  "phantom/deploy/planner.py": {
+    "baseline_findings": 6,
+    "current_findings": 6,
+    "introduced": []
+  },
+  "phantom/deploy/runtime.py": {
+    "baseline_findings": 3,
+    "current_findings": 3,
+    "introduced": []
+  },
+  "phantom/deploy/safety.py": {
+    "baseline_findings": 0,
+    "current_findings": 0,
+    "introduced": []
+  },
+  "phantom/scripts/run_deploy.py": {
+    "baseline_findings": 4,
+    "current_findings": 4,
+    "introduced": []
+  },
+  "phantom/sim/policy_adapter.py": {
+    "baseline_findings": 0,
+    "current_findings": 0,
+    "introduced": []
+  }
+}

@@ -1,0 +1,969 @@
+{
+  "pool_manifest_sha256": "5f78e784490701fcb8ca657c909317a1e5e62bf99d5e8c35d6ac395b1e6b5943",
+  "recorded_open_source": "docs/results/teacher_native_v11_20260909/inputs/initial_states/sept4_anchor.json",
+  "recorded_open_source_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+  "original_pool_unchanged": true,
+  "policy_seed_independent_reset": true,
+  "states": [
+    {
+      "condition": "ep_waffles_1785594294_001_open",
+      "episode": "ep_waffles_1785594294_001",
+      "stratum": "L_older_below_original_pool",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594294_001.json",
+        "sha256": "e0c2aaa40ca7792087e893952591cd0323d9bdecf870c949d1b1c893819caea7"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594294_001.json",
+      "preserved_native_sha256": "e0c2aaa40ca7792087e893952591cd0323d9bdecf870c949d1b1c893819caea7",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594294_001_open.json",
+        "sha256": "a4fb369ce8380f4ce1b7fc4fd3302b9adebfddac6643de233b688f9bceb85f2b"
+      },
+      "original_gripper": 0.37254902720451355,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.24809855222702026,
+        -1.5415557066546839,
+        1.36430025100708,
+        0.4968000650405884,
+        1.1180177927017212,
+        -3.0636618773089808
+      ],
+      "measured_tcp_pose": [
+        -0.3465813629417096,
+        -0.3209341184257149,
+        0.2777656608564555,
+        -1.1512661241420246,
+        -1.939929033902882,
+        1.6022456398902853
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 15020.58054524925,
+        "age_s": 0.0,
+        "value": [
+          0.007171360310167074,
+          -0.0026269422378391027,
+          0.0020852552261203527,
+          0.0014860439114272594,
+          0.0,
+          -0.0027563718613237143
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594503_010_open",
+      "episode": "ep_waffles_1785594503_010",
+      "stratum": "H_older_native_copies",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594503_010.json",
+        "sha256": "a1a119fe681f0a0739bc429e72cc9abc723445ae4c5ab862acf1868e4bb419e5"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594503_010.json",
+      "preserved_native_sha256": "a1a119fe681f0a0739bc429e72cc9abc723445ae4c5ab862acf1868e4bb419e5",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594503_010_open.json",
+        "sha256": "763e2faf181e4a9329a3866f7027b2f6be5712b3f64c9e4d6a8576a881972f1a"
+      },
+      "original_gripper": 0.3921568691730499,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.18695691227912903,
+        -1.5432689825641077,
+        1.1859889030456543,
+        0.6190458536148071,
+        1.116409182548523,
+        -3.0608907381640833
+      ],
+      "measured_tcp_pose": [
+        -0.36347685817618053,
+        -0.2991453825011688,
+        0.3264693803946953,
+        -1.148624224354167,
+        -1.8445333032476032,
+        1.6024140970281877
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 15228.90075608025,
+        "age_s": 0.0,
+        "value": [
+          -0.000862864195369184,
+          0.00851359311491251,
+          -0.00033555831760168076,
+          0.00028762139845639467,
+          0.00028762139845639467,
+          -0.0007190534961409867
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393283_000_open",
+      "episode": "ep_waffles_1787393283_000",
+      "stratum": "H_aug22_130412",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393283_000.json",
+        "sha256": "0247e009b8b438ad85654d0c5818461f968b64461e6e2adc87635d4e8af5e18b"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393283_000.json",
+      "preserved_native_sha256": "0247e009b8b438ad85654d0c5818461f968b64461e6e2adc87635d4e8af5e18b",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393283_000_open.json",
+        "sha256": "5da28092a1c7196585ffed4123cf226bdad425a5f35f17771579c3b3dd61510d"
+      },
+      "original_gripper": 0.20392157137393951,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.2844403386116028,
+        -1.5199702421771448,
+        1.0339574813842773,
+        0.8753057718276978,
+        1.1879037618637085,
+        -3.087616268788473
+      ],
+      "measured_tcp_pose": [
+        -0.3197784544572706,
+        -0.31145405572693347,
+        0.3234648747550779,
+        -1.1918869087223476,
+        -1.982335746338312,
+        1.50956481546509
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 2936.1335598116275,
+        "age_s": 0.0,
+        "value": [
+          0.015397332608699799,
+          -0.01890631392598152,
+          0.0008868326549418271,
+          0.0,
+          -0.005872270558029413,
+          0.00023968450841493905
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787394107_011_open",
+      "episode": "ep_waffles_1787394107_011",
+      "stratum": "H_aug22_131618",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787394107_011.json",
+        "sha256": "478af4eb18ae5cf34d44c8ee8f10f5a17620e3172d72d3fa6d40bc9ec6637f91"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787394107_011.json",
+      "preserved_native_sha256": "478af4eb18ae5cf34d44c8ee8f10f5a17620e3172d72d3fa6d40bc9ec6637f91",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787394107_011_open.json",
+        "sha256": "ed44184cf62c242c5a1b167473563b91a9bfc7fe7fd67cb7bf625fe1a49e019d"
+      },
+      "original_gripper": 0.3607843220233917,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.24621477723121643,
+        -1.5200660864459437,
+        0.9611220359802246,
+        0.9318269491195679,
+        1.2626242637634277,
+        -3.120064083729879
+      ],
+      "measured_tcp_pose": [
+        -0.3370597613018004,
+        -0.2813910589836683,
+        0.33777489704985947,
+        -1.2091890915947225,
+        -1.895291506065951,
+        1.4212122627265926
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 3760.559944627108,
+        "age_s": 0.0,
+        "value": [
+          0.0010162623366340995,
+          -0.00013422331539914012,
+          -0.0014141385909169912,
+          0.0008388957940042019,
+          0.0009587380336597562,
+          -0.02912166714668274
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785593867_004_open",
+      "episode": "ep_waffles_1785593867_004",
+      "stratum": "L_older_below_original_pool",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785593867_004.json",
+        "sha256": "ca36371fb846b99d846238cb531e217ffe288ba57bf56a3dfc16a61cb7d19669"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785593867_004.json",
+      "preserved_native_sha256": "ca36371fb846b99d846238cb531e217ffe288ba57bf56a3dfc16a61cb7d19669",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785593867_004_open.json",
+        "sha256": "2b253d2bfec98298a6b00ea8c70c849057f468dfda0b50b2e6f1e28c7af5b445"
+      },
+      "original_gripper": 0.501960813999176,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.16374121606349945,
+        -1.5262230078326624,
+        1.2290291786193848,
+        0.6000617742538452,
+        1.2414953708648682,
+        -3.0791357199298304
+      ],
+      "measured_tcp_pose": [
+        -0.3891491408325347,
+        -0.2629729780671097,
+        0.3021912033733137,
+        -1.2474279340303343,
+        -1.7719615576732748,
+        1.45709153865324
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 14593.054081580249,
+        "age_s": 0.0,
+        "value": [
+          -0.0005944175645709038,
+          0.0029912625905126333,
+          0.0009347695740871131,
+          0.0,
+          -0.0009108011145144701,
+          0.00011984225420746952
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594563_013_open",
+      "episode": "ep_waffles_1785594563_013",
+      "stratum": "H_older_native_copies",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594563_013.json",
+        "sha256": "af1806b06191a6db0016bd1e24dfc3439702fcee15758cea65b04434fd8cf056"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594563_013.json",
+      "preserved_native_sha256": "af1806b06191a6db0016bd1e24dfc3439702fcee15758cea65b04434fd8cf056",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594563_013_open.json",
+        "sha256": "32de664e229ee8efd8f1b51450b067596475cd4418c2e8e5639a53801363d76b"
+      },
+      "original_gripper": 0.2823529541492462,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.23280106484889984,
+        -1.5516417662249964,
+        0.9718437194824219,
+        0.9154578447341919,
+        1.1867634057998657,
+        -3.0813189188586634
+      ],
+      "measured_tcp_pose": [
+        -0.3265512345648447,
+        -0.29273911172488704,
+        0.3516057424702541,
+        -1.1945170230315112,
+        -1.8951152074250568,
+        1.519689399215451
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 15289.00522430725,
+        "age_s": 0.0,
+        "value": [
+          -0.011830827221274376,
+          -0.0015915051335468888,
+          0.0028762139845639467,
+          0.010785803198814392,
+          -0.0021092237439006567,
+          -0.026509106159210205
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393534_007_open",
+      "episode": "ep_waffles_1787393534_007",
+      "stratum": "H_aug22_130412",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393534_007.json",
+        "sha256": "cb876f690a69441b90eb338317a613c2b890ed37b88639d59b53f61d49ab2227"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393534_007.json",
+      "preserved_native_sha256": "cb876f690a69441b90eb338317a613c2b890ed37b88639d59b53f61d49ab2227",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393534_007_open.json",
+        "sha256": "3a8c2787f41b6b85d69991abb5bbcc65eb146aebcb74afb245d380e870032ab0"
+      },
+      "original_gripper": 0.3921568691730499,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.1880130171775818,
+        -1.5272772947894495,
+        1.0329375267028809,
+        0.8696540594100952,
+        1.1322448253631592,
+        -3.0892472902881067
+      ],
+      "measured_tcp_pose": [
+        -0.34024704479262546,
+        -0.29133979609609,
+        0.32993131593494857,
+        -1.227008932097611,
+        -1.9251421692275419,
+        1.5165124542141406
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3186.611029784661,
+        "age_s": 0.0,
+        "value": [
+          0.017736652866005898,
+          0.0005560680292546749,
+          0.0008149273344315588,
+          0.009635317139327526,
+          0.0,
+          -0.004793690051883459
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393887_004_open",
+      "episode": "ep_waffles_1787393887_004",
+      "stratum": "H_aug22_131618",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393887_004.json",
+        "sha256": "525a5bb370dd697c0a51ab1c696fb37a828e2ffd8f5c2a5e4f84d043f0aef1be"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393887_004.json",
+      "preserved_native_sha256": "525a5bb370dd697c0a51ab1c696fb37a828e2ffd8f5c2a5e4f84d043f0aef1be",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393887_004_open.json",
+        "sha256": "15699af58ea7404a76898be722957e83a07510c39be7a9df4f07be50733333c8"
+      },
+      "original_gripper": 0.22745098173618317,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.23584842681884766,
+        -1.5269296805011194,
+        1.0032296180725098,
+        0.8693779706954956,
+        1.1904971599578857,
+        -3.0515225569354456
+      ],
+      "measured_tcp_pose": [
+        -0.3365704333872799,
+        -0.2954019776869951,
+        0.3390714415470487,
+        -1.2360598706599064,
+        -1.892819939317212,
+        1.527653756355203
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3540.203019488137,
+        "age_s": 0.0,
+        "value": [
+          0.013230584561824799,
+          -0.00032597093377262354,
+          -0.0003115898580290377,
+          0.002684466540813446,
+          -0.012895026244223118,
+          -0.00023968450841493905
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594329_003_open",
+      "episode": "ep_waffles_1785594329_003",
+      "stratum": "L_older_below_original_pool",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594329_003.json",
+        "sha256": "7061c63755dab7db9ec0d73555be9b4befcd288f2514904c6e64578141a12c14"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594329_003.json",
+      "preserved_native_sha256": "7061c63755dab7db9ec0d73555be9b4befcd288f2514904c6e64578141a12c14",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594329_003_open.json",
+        "sha256": "7c2aa9b371cc3f328267dbd37e3abf52cdaa28f217de1fa8e6416e1b91e0c48c"
+      },
+      "original_gripper": 0.46666666865348816,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.22433046996593475,
+        -1.526534382496969,
+        1.164205551147461,
+        0.7029894590377808,
+        1.2061519622802734,
+        -3.087088410054342
+      ],
+      "measured_tcp_pose": [
+        -0.35737995042692927,
+        -0.2915468891273202,
+        0.30849629518660837,
+        -1.2084101278678874,
+        -1.8801236938932397,
+        1.4934586689919798
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 15055.700653755248,
+        "age_s": 0.0,
+        "value": [
+          0.000997087568975985,
+          -0.002205097349360585,
+          0.0008388957940042019,
+          0.0029241510201245546,
+          9.58738019107841e-05,
+          0.00011984225420746952
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594230_021_open",
+      "episode": "ep_waffles_1785594230_021",
+      "stratum": "H_older_native_copies",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594230_021.json",
+        "sha256": "859e065ad030950a757f8bfd2cb7300b1a722f43a6f2e2675ef59d9e5c4728da"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594230_021.json",
+      "preserved_native_sha256": "859e065ad030950a757f8bfd2cb7300b1a722f43a6f2e2675ef59d9e5c4728da",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594230_021_open.json",
+        "sha256": "2979ac10c3e0a38692283a592840a4694ec7683fccf0ebc47795878eb3267a55"
+      },
+      "original_gripper": 0.30588236451148987,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.1552586406469345,
+        -1.521731201802389,
+        0.9612298011779785,
+        0.872101902961731,
+        1.1046793460845947,
+        -3.135021750126974
+      ],
+      "measured_tcp_pose": [
+        -0.3500718514051571,
+        -0.28671433264171053,
+        0.35543333058802706,
+        -1.1296135821747963,
+        -1.883240778567627,
+        1.5305529727637743
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 14956.59448032525,
+        "age_s": 0.0,
+        "value": [
+          0.00026844663079828024,
+          -0.0054456316865980625,
+          -0.0006711166352033615,
+          -0.0029241510201245546,
+          -0.0076219672337174416,
+          0.003499393817037344
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393625_009_open",
+      "episode": "ep_waffles_1787393625_009",
+      "stratum": "H_aug22_130412",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393625_009.json",
+        "sha256": "73108898e4f676b8fbf424c86e7f1b16c3256368d305ac21a947ad0ec041879b"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393625_009.json",
+      "preserved_native_sha256": "73108898e4f676b8fbf424c86e7f1b16c3256368d305ac21a947ad0ec041879b",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393625_009_open.json",
+        "sha256": "e03e5f8fc72b6a47b02a1b5250877530dd1d9e71bf46da1e137379f1e0fe39f4"
+      },
+      "original_gripper": 0.45490196347236633,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.2701030969619751,
+        -1.509416405354635,
+        0.8961105346679688,
+        0.9904187917709351,
+        1.2739324569702148,
+        -3.159924570714132
+      ],
+      "measured_tcp_pose": [
+        -0.32741512807468287,
+        -0.2856421638347217,
+        0.3461240001966534,
+        -1.15465849876171,
+        -1.9244055781332228,
+        1.4007054315690066
+      ],
+      "native_joint_velocity": {
+        "index": 2,
+        "t_master": 3278.1676521035843,
+        "age_s": 0.0,
+        "value": [
+          -0.002837864449247718,
+          0.0002109223569277674,
+          -0.001342233270406723,
+          0.0010066749528050423,
+          0.00014381069922819734,
+          -0.004122573416680098
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787394144_012_open",
+      "episode": "ep_waffles_1787394144_012",
+      "stratum": "H_aug22_131618",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787394144_012.json",
+        "sha256": "cafe2697eac7132fe5f782e1daf257ff1f0ef17c6cf53e21de0d117d2cdc12aa"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787394144_012.json",
+      "preserved_native_sha256": "cafe2697eac7132fe5f782e1daf257ff1f0ef17c6cf53e21de0d117d2cdc12aa",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787394144_012_open.json",
+        "sha256": "9dab63030a73ce0f92a1b088de012c8a862586f51d6b8c716034c1b4bbe40054"
+      },
+      "original_gripper": 0.45098039507865906,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.2322254478931427,
+        -1.5182212034808558,
+        0.9715919494628906,
+        0.8744655847549438,
+        1.181264877319336,
+        -3.1697734037982386
+      ],
+      "measured_tcp_pose": [
+        -0.33872836211387547,
+        -0.2967476249439389,
+        0.3470598186146422,
+        -1.0866096834933567,
+        -1.9187084382068722,
+        1.4813657351625225
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3796.7839538652916,
+        "age_s": 0.0,
+        "value": [
+          0.000862864195369184,
+          -0.00015339808305725455,
+          -0.0,
+          0.0005992112564854324,
+          0.0,
+          0.0011984225129708648
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594044_014_open",
+      "episode": "ep_waffles_1785594044_014",
+      "stratum": "L_older_below_original_pool",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594044_014.json",
+        "sha256": "ee6ca11045098149a308fb6404937ca95bca6a7b9daab55a442d06befb25863d"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594044_014.json",
+      "preserved_native_sha256": "ee6ca11045098149a308fb6404937ca95bca6a7b9daab55a442d06befb25863d",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594044_014_open.json",
+        "sha256": "7f25eb8361ffbe279863c15a60d4c371a2422e99927d3924c6bd32dfc447af02"
+      },
+      "original_gripper": 0.23137255012989044,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.14497654139995575,
+        -1.542992893849508,
+        1.2616462707519531,
+        0.5574926137924194,
+        1.0139943361282349,
+        -3.236326042805807
+      ],
+      "measured_tcp_pose": [
+        -0.36299421706696944,
+        -0.30555308740520015,
+        0.3116262465259177,
+        -0.9393158753736848,
+        -1.9297468902982975,
+        1.5590588103880312
+      ],
+      "native_joint_velocity": {
+        "index": 2,
+        "t_master": 14770.66252751925,
+        "age_s": 0.0,
+        "value": [
+          0.0025310683995485306,
+          0.00026844663079828024,
+          0.0019414444686844945,
+          0.084225133061409,
+          0.0001917476038215682,
+          0.009683254174888134
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594169_018_open",
+      "episode": "ep_waffles_1785594169_018",
+      "stratum": "H_older_native_copies",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594169_018.json",
+        "sha256": "cf0ba1b775e46244832d1bf2349d30407e423f290f0f5ac796a3f2bba137519c"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594169_018.json",
+      "preserved_native_sha256": "cf0ba1b775e46244832d1bf2349d30407e423f290f0f5ac796a3f2bba137519c",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594169_018_open.json",
+        "sha256": "daab9801ad283362b81902e3d500b8af26ab644148afe1854421778a32bb7b2c"
+      },
+      "original_gripper": 0.3960784375667572,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.15144352614879608,
+        -1.5229771772967737,
+        0.9735345840454102,
+        0.8296500444412231,
+        1.0883986949920654,
+        -3.0826500097857874
+      ],
+      "measured_tcp_pose": [
+        -0.354325683022098,
+        -0.28970984328758986,
+        0.36022502365497516,
+        -1.152703523122075,
+        -1.8530498861845424,
+        1.5846353664498538
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 14895.35907441525,
+        "age_s": 0.0,
+        "value": [
+          -0.016758739948272705,
+          0.0023584954906255007,
+          -0.007981494069099426,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393576_008_open",
+      "episode": "ep_waffles_1787393576_008",
+      "stratum": "H_aug22_130412",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393576_008.json",
+        "sha256": "49a322fd14b4822f9d8cb51bb9698ce43ae7df4c46f2024509b482e8c1be4569"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393576_008.json",
+      "preserved_native_sha256": "49a322fd14b4822f9d8cb51bb9698ce43ae7df4c46f2024509b482e8c1be4569",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393576_008_open.json",
+        "sha256": "3c6d5e000e50355d643c462d7ff46f84f63974114d9a62aa36c67eb72a9ddbaf"
+      },
+      "original_gripper": 0.4313725531101227,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.15003950893878937,
+        -1.5207489172564905,
+        0.9428324699401855,
+        0.9181338548660278,
+        1.1692829132080078,
+        -3.176922861729757
+      ],
+      "measured_tcp_pose": [
+        -0.3543119641291399,
+        -0.26972699304248443,
+        0.35064907545343843,
+        -1.147700560366476,
+        -1.8705290334681344,
+        1.4370323344790592
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3228.773070233641,
+        "age_s": 0.0,
+        "value": [
+          0.0010929612908512354,
+          0.006711165886372328,
+          0.0018695391481742263,
+          -0.0006950850947760046,
+          -0.0014381069922819734,
+          -0.0003115898580290377
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787394038_009_open",
+      "episode": "ep_waffles_1787394038_009",
+      "stratum": "H_aug22_131618",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787394038_009.json",
+        "sha256": "065c7c69a88d590de5dd10b4a97fd055ea2ba24376525330fdd46edcfae8813e"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787394038_009.json",
+      "preserved_native_sha256": "065c7c69a88d590de5dd10b4a97fd055ea2ba24376525330fdd46edcfae8813e",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787394038_009_open.json",
+        "sha256": "de0b9efa6836f95851be1805eb650d652f061d616ae72c001ca256b6c39fd330"
+      },
+      "original_gripper": 0.3176470696926117,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.20598560571670532,
+        -1.5213597456561487,
+        0.928525447845459,
+        0.9429997205734253,
+        1.1549242734909058,
+        -3.138644520436422
+      ],
+      "measured_tcp_pose": [
+        -0.3331602532573582,
+        -0.2915033806750313,
+        0.35184314520586846,
+        -1.1468392891966435,
+        -1.922427951534401,
+        1.4944651072515096
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3691.5731695001014,
+        "age_s": 0.0,
+        "value": [
+          -0.002684466540813446,
+          7.669904152862728e-05,
+          -0.0017736653098836541,
+          -0.001342233270406723,
+          0.0006471481756307185,
+          9.58738019107841e-05
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594205_020_open",
+      "episode": "ep_waffles_1785594205_020",
+      "stratum": "L_older_below_original_pool",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594205_020.json",
+        "sha256": "3df551b86a8f17cc74531f1d8979ba195f6ea9486ebf97620916523fce4f5a1d"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594205_020.json",
+      "preserved_native_sha256": "3df551b86a8f17cc74531f1d8979ba195f6ea9486ebf97620916523fce4f5a1d",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594205_020_open.json",
+        "sha256": "b58f1816c668527e7af0022e114ecb3133802ad6d9c5d6e0ac1e0f71b1eeb07e"
+      },
+      "original_gripper": 0.32156863808631897,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.2615242600440979,
+        -1.524402920399801,
+        1.1884236335754395,
+        0.6161555051803589,
+        1.0432308912277222,
+        -3.0021751562701624
+      ],
+      "measured_tcp_pose": [
+        -0.3307827592027128,
+        -0.3404138587894854,
+        0.32070802441048696,
+        -1.1329094289406045,
+        -1.9602582100017416,
+        1.720529852487225
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 14930.87289914825,
+        "age_s": 0.0,
+        "value": [
+          -5.752428114647046e-05,
+          0.0003451456723269075,
+          0.005632585845887661,
+          0.0037151097785681486,
+          -0.0069029140286147594,
+          0.016178704798221588
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1785594728_021_open",
+      "episode": "ep_waffles_1785594728_021",
+      "stratum": "H_older_native_copies",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1785594728_021.json",
+        "sha256": "f34db0442d5aaf592ecf4d6573d5d54bc081fe4bf62e28b3904b275959096fdd"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1785594728_021.json",
+      "preserved_native_sha256": "f34db0442d5aaf592ecf4d6573d5d54bc081fe4bf62e28b3904b275959096fdd",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1785594728_021_open.json",
+        "sha256": "e4a67f7f9d2fb9fb99f393f35bfc65f012f80df19d456dfa3e806be86a243ff7"
+      },
+      "original_gripper": 0.27843138575553894,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.18656106293201447,
+        -1.5215514341937464,
+        0.9245800971984863,
+        0.8552669286727905,
+        1.059403657913208,
+        -3.1610522905932825
+      ],
+      "measured_tcp_pose": [
+        -0.3373220185936225,
+        -0.3075473686967111,
+        0.37405124580187415,
+        -1.001952937261309,
+        -1.9050013060798157,
+        1.5936897186803543
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 15454.639313412248,
+        "age_s": 0.0,
+        "value": [
+          -0.02448616921901703,
+          -0.001764077926054597,
+          -0.0,
+          -0.00033555831760168076,
+          0.010809771716594696,
+          0.00033555831760168076
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393693_011_open",
+      "episode": "ep_waffles_1787393693_011",
+      "stratum": "H_aug22_130412",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393693_011.json",
+        "sha256": "728014394a439dc98b38d0e3572d7469959131aed6e621ae7e5af5feb5f9f89b"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393693_011.json",
+      "preserved_native_sha256": "728014394a439dc98b38d0e3572d7469959131aed6e621ae7e5af5feb5f9f89b",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393693_011_open.json",
+        "sha256": "1fb1069c1e46ae4fbd86f3941ee4910b7fb3f6c76426e49da612f5fc8062b40d"
+      },
+      "original_gripper": 0.364705890417099,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.23698805272579193,
+        -1.5170233885394495,
+        0.9042291641235352,
+        0.9435158967971802,
+        1.2215306758880615,
+        -3.213989559804098
+      ],
+      "measured_tcp_pose": [
+        -0.3354434683270438,
+        -0.2877698864160668,
+        0.35706739091460177,
+        -1.0585527341134338,
+        -1.9108506254833986,
+        1.4245682946700997
+      ],
+      "native_joint_velocity": {
+        "index": 1,
+        "t_master": 3346.3795719866175,
+        "age_s": 0.0,
+        "value": [
+          -0.002454369328916073,
+          0.0018791265320032835,
+          0.002684466540813446,
+          -0.0006711166352033615,
+          -0.0003834952076431364,
+          -7.190534961409867e-05
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    },
+    {
+      "condition": "ep_waffles_1787393798_000_open",
+      "episode": "ep_waffles_1787393798_000",
+      "stratum": "H_aug22_131618",
+      "source_initial_state": {
+        "path": "docs/results/teacher_followthrough_20260909/design/qualification_pool_v2/initial_states/ep_waffles_1787393798_000.json",
+        "sha256": "19361dab2f8e38338d3d0ae47a4c6c9de775904fead233eac471195554f7cfbd"
+      },
+      "preserved_native_copy": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/native_initial_states/ep_waffles_1787393798_000.json",
+      "preserved_native_sha256": "19361dab2f8e38338d3d0ae47a4c6c9de775904fead233eac471195554f7cfbd",
+      "effective_initial_state": {
+        "path": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/initial_states/ep_waffles_1787393798_000_open.json",
+        "sha256": "1f40c79f65425dc9df5d91f5ca35a582231055401b7d8898c14da61a46459905"
+      },
+      "original_gripper": 0.45490196347236633,
+      "effective_requested_gripper": 0.0784313753247261,
+      "non_gripper_source_fields_preserved": true,
+      "q": [
+        0.16017815470695496,
+        -1.5129745642291468,
+        0.876671314239502,
+        0.9665828943252563,
+        1.1736409664154053,
+        -3.202006165181295
+      ],
+      "measured_tcp_pose": [
+        -0.3485794552335693,
+        -0.27176272660759,
+        0.3626264402939292,
+        -1.1065342837464243,
+        -1.8762168510875294,
+        1.429762418944161
+      ],
+      "native_joint_velocity": {
+        "index": 0,
+        "t_master": 3450.7315745232627,
+        "age_s": 0.0,
+        "value": [
+          0.014189322479069233,
+          0.0003067961661145091,
+          -0.001390170189552009,
+          -0.0024447820615023375,
+          0.002588592702522874,
+          -0.0004074636672157794
+        ]
+      },
+      "velocity_scope": "Recorded qd is provenance; simulator preserves q then uses its ordinary settling procedure, not recorded velocity replay."
+    }
+  ]
+}

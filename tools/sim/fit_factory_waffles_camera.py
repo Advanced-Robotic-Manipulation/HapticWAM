@@ -36,11 +36,11 @@ def rms(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--out', type=Path, default=ROOT/'docs/results/d435_factory_calibration_20260908')
+    parser.add_argument('--out', type=Path, default=ROOT/'tests/fixtures/reference/d435_factory_calibration_20260908')
     parser.add_argument('--config-out', type=Path, default=ROOT/'configs/sim/waffles_d435_factory_20260908_r4.json')
     args = parser.parse_args()
     out = args.out
-    audit = ROOT/'docs/results/d435_camera_audit_20260908'
+    audit = ROOT/'tests/fixtures/reference/d435_camera_audit_20260908'
     cfg = json.loads((ROOT/'configs/sim/waffles_measured_geometry_photo_frame_20260908_r2.json').read_text())
     profile_path = out/'d435_rgb_profile.json'
     profile = json.loads(profile_path.read_text())
@@ -159,7 +159,7 @@ def main():
     cfg['calibration'].update(revision='d435_factory_and_metric_grid_20260908_r4',status='factory_intrinsics_and_metric_image_registration_not_policy_qualified',
         frame_warning='MountX200/Y150mm, yaw aligned with table/mat by photo hypothesis; base centered on plate. TableZ−12.5mm and mat3mm retained estimates.',
         camera_warning='Factory K fixed. Camera tilt from metric table grid; noisy forearm volume-center correspondence excluded. No policy success claim.',
-        validation='docs/results/d435_factory_calibration_20260908/registration.json')
+        validation='tests/fixtures/reference/d435_factory_calibration_20260908/registration.json')
     report = {
         'input_sha256': {str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest()
             for path in [profile_path,out/'grid_fit.json',out/'layout_observations.json',

@@ -1,0 +1,404 @@
+{
+  "collection_sha256": "80aaa6808010a818d9ce8349858e8b8895f6d47355f74fcd33d9b2ab46c39377",
+  "planned": 8,
+  "producer_scored": 8,
+  "strict_integrity_valid": 4,
+  "strict_integrity_invalid": 4,
+  "observed_task_successes": 0,
+  "valid_task_successes": 0,
+  "qualification_passed": false,
+  "rows": [
+    {
+      "id": "v6_relative_off_timing_v3__aug22_1787395928_000_open__seed910359",
+      "strict_integrity_valid": false,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 19.00025,
+      "stop_reason": "safety_stop",
+      "safety_events": [
+        "joint_speed"
+      ],
+      "physics_violations": {
+        "measured_joint_speed": 45
+      },
+      "first_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 2.983918476104736,
+        "step": 65865,
+        "t_s": 16.46625,
+        "measured_tcp": [
+          -0.4033960402532112,
+          -0.10097048774090736,
+          0.21255173753728074,
+          -1.6038530080330637,
+          -1.363658329264009,
+          1.0856491643013273
+        ],
+        "accepted_fk_tcp": [
+          -0.4020389409351072,
+          -0.10178451714048516,
+          0.2059582562660986,
+          -1.6161962525282036,
+          -1.372895705973952,
+          1.078822288325553
+        ],
+        "phase": "active"
+      },
+      "worst_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.49798469543457,
+        "step": 75998,
+        "t_s": 18.9995,
+        "measured_tcp": [
+          -0.4262264024004956,
+          -0.08377105296406492,
+          0.20326563311749296,
+          -1.5770221589389661,
+          -1.1440185526413162,
+          1.2883660529159993
+        ],
+        "accepted_fk_tcp": [
+          -0.402750009537626,
+          -0.08762648228563215,
+          0.16353806571132007,
+          -1.722773428080871,
+          -1.2305036774674407,
+          1.2016551555263328
+        ],
+        "phase": "active"
+      },
+      "finish_observed": false,
+      "original_score_sha256": "5962e081930dfe4e6cffcf80f961f4be3b6961b862a1a106ca4bd053eeec18ec",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "8ed42c70fe1c51927071ab6743dbdb762ad1e3743c1dd4833a8935cb756fe1eb"
+    },
+    {
+      "id": "v6_relative_off_timing_v3__aug22_1787396273_010_open__seed910359",
+      "strict_integrity_valid": true,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 8.680250000000001,
+      "stop_reason": "boundary_projection_final_rate",
+      "safety_events": [
+        "boundary_projection_final_rate"
+      ],
+      "physics_violations": {},
+      "first_physics_violation": null,
+      "worst_physics_violation": null,
+      "finish_observed": false,
+      "original_score_sha256": "039978ca66066a487b37a82d972a684016dd9c62600c4e40ef1f165749853bae",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "8ed42c70fe1c51927071ab6743dbdb762ad1e3743c1dd4833a8935cb756fe1eb"
+    },
+    {
+      "id": "v6_relative_off_timing_v3__aug22_1787396273_010_open__seed910360",
+      "strict_integrity_valid": true,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 7.87225,
+      "stop_reason": "boundary_projection_final_rate",
+      "safety_events": [
+        "boundary_projection_final_rate"
+      ],
+      "physics_violations": {},
+      "first_physics_violation": null,
+      "worst_physics_violation": null,
+      "finish_observed": false,
+      "original_score_sha256": "2012d2db0076778eb685d8334c1944d95c41e46e12d24f12f28bfd43c2b1819b",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "8ed42c70fe1c51927071ab6743dbdb762ad1e3743c1dd4833a8935cb756fe1eb"
+    },
+    {
+      "id": "v6_relative_off_timing_v3__aug22_1787395928_000_open__seed910360",
+      "strict_integrity_valid": false,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 13.36825,
+      "stop_reason": "safety_stop",
+      "safety_events": [
+        "wrench_limit"
+      ],
+      "physics_violations": {
+        "measured_joint_speed": 4
+      },
+      "first_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.090862083435058,
+        "step": 53628,
+        "t_s": 13.407,
+        "measured_tcp": [
+          -0.37519987753655726,
+          -0.14266897982029786,
+          0.1921724546371267,
+          -1.7092092107427914,
+          -1.4613119174204132,
+          1.1337472177118761
+        ],
+        "accepted_fk_tcp": [
+          -0.3751611152715516,
+          -0.14231736727748673,
+          0.19189747626085543,
+          -1.709667443040694,
+          -1.461570129733548,
+          1.1319180918122511
+        ],
+        "phase": "stop_hold"
+      },
+      "worst_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.090862083435058,
+        "step": 53628,
+        "t_s": 13.407,
+        "measured_tcp": [
+          -0.37519987753655726,
+          -0.14266897982029786,
+          0.1921724546371267,
+          -1.7092092107427914,
+          -1.4613119174204132,
+          1.1337472177118761
+        ],
+        "accepted_fk_tcp": [
+          -0.3751611152715516,
+          -0.14231736727748673,
+          0.19189747626085543,
+          -1.709667443040694,
+          -1.461570129733548,
+          1.1319180918122511
+        ],
+        "phase": "stop_hold"
+      },
+      "finish_observed": false,
+      "original_score_sha256": "d3713e4291c7cc49086c971c41c943d7490b869f3b211a3b743b3ec4988e01d1",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/fourth_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "2296b0f21619cae5b186a8d073e59c908e802f6623273bdf204b578db0ea1d9e"
+    },
+    {
+      "id": "v6_relative_on_timing_v3__aug22_1787395928_000_open__seed910359",
+      "strict_integrity_valid": false,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 20.92025,
+      "stop_reason": "safety_stop",
+      "safety_events": [
+        "joint_speed"
+      ],
+      "physics_violations": {
+        "measured_joint_speed": 8
+      },
+      "first_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.073998260498047,
+        "step": 83207,
+        "t_s": 20.801750000000002,
+        "measured_tcp": [
+          -0.4139363658323295,
+          -0.08429503807971596,
+          0.20197091405809864,
+          -1.7308536207526257,
+          -1.192550336109876,
+          1.2438746768959081
+        ],
+        "accepted_fk_tcp": [
+          -0.41220715385131396,
+          -0.08453487960467812,
+          0.19784522012172526,
+          -1.7435902851950644,
+          -1.198503320778977,
+          1.2381277377887296
+        ],
+        "phase": "active"
+      },
+      "worst_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.090356159210205,
+        "step": 83680,
+        "t_s": 20.92,
+        "measured_tcp": [
+          -0.4134968958841705,
+          -0.0826206071129276,
+          0.20139029018946983,
+          -1.737817451601186,
+          -1.1880506151540338,
+          1.2458479194021634
+        ],
+        "accepted_fk_tcp": [
+          -0.4126267155915703,
+          -0.08265842185071878,
+          0.19887413137716847,
+          -1.7442591611699612,
+          -1.192293391721588,
+          1.242845696124687
+        ],
+        "phase": "active"
+      },
+      "finish_observed": false,
+      "original_score_sha256": "a9deb60ab0c45d4976fc790c6566c78ceddabea612137d0bd78ec2533851921f",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/on_first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "17a7d6c414a84f69fdcbc0f3a650276a71df97cd723b251ac15433dc8b4c4a5b"
+    },
+    {
+      "id": "v6_relative_on_timing_v3__aug22_1787396273_010_open__seed910359",
+      "strict_integrity_valid": true,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 8.39225,
+      "stop_reason": "boundary_projection_final_rate",
+      "safety_events": [
+        "boundary_projection_final_rate"
+      ],
+      "physics_violations": {},
+      "first_physics_violation": null,
+      "worst_physics_violation": null,
+      "finish_observed": false,
+      "original_score_sha256": "1cf8b0b0120b14b93629c3a191f40da97aef288e8c66a56ac63ae46baf5941d3",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/on_first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "17a7d6c414a84f69fdcbc0f3a650276a71df97cd723b251ac15433dc8b4c4a5b"
+    },
+    {
+      "id": "v6_relative_on_timing_v3__aug22_1787396273_010_open__seed910360",
+      "strict_integrity_valid": true,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 7.88025,
+      "stop_reason": "boundary_projection_final_rate",
+      "safety_events": [
+        "boundary_projection_final_rate"
+      ],
+      "physics_violations": {},
+      "first_physics_violation": null,
+      "worst_physics_violation": null,
+      "finish_observed": false,
+      "original_score_sha256": "bb6c8f997e9b2460551e6f8c6667cd0e6be1a1ecd206e37f4363fa779448702e",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/on_first3_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "17a7d6c414a84f69fdcbc0f3a650276a71df97cd723b251ac15433dc8b4c4a5b"
+    },
+    {
+      "id": "v6_relative_on_timing_v3__aug22_1787395928_000_open__seed910360",
+      "strict_integrity_valid": false,
+      "producer_scored": true,
+      "outcomes": {
+        "reach_before_closure": false,
+        "acquired": false,
+        "lifted": false,
+        "carried": false,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "stop_t_s": 12.63225,
+      "stop_reason": "safety_stop",
+      "safety_events": [
+        "joint_speed"
+      ],
+      "physics_violations": {
+        "measured_joint_speed": 57
+      },
+      "first_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 3.243540573120117,
+        "step": 50529,
+        "t_s": 12.63225,
+        "measured_tcp": [
+          -0.3766793593345994,
+          -0.12887667753890594,
+          0.20501980532211045,
+          -1.7241517836413283,
+          -1.4792288450501403,
+          1.05302102497065
+        ],
+        "accepted_fk_tcp": [
+          -0.376679330416596,
+          -0.1288766810578384,
+          0.20501986774781072,
+          -1.7241517558808557,
+          -1.4792284732887815,
+          1.0530210550751204
+        ],
+        "phase": "stop_hold"
+      },
+      "worst_physics_violation": {
+        "kind": "measured_joint_speed",
+        "excess": 5.095487880706787,
+        "step": 50792,
+        "t_s": 12.698,
+        "measured_tcp": [
+          -0.3767540019997736,
+          -0.12913029534557355,
+          0.20493823162226577,
+          -1.726839223612748,
+          -1.4771979800304103,
+          1.0556243160939511
+        ],
+        "accepted_fk_tcp": [
+          -0.376679330416596,
+          -0.1288766810578384,
+          0.20501986774781072,
+          -1.7241517558808557,
+          -1.4792284732887815,
+          1.0530210550751204
+        ],
+        "phase": "stop_hold"
+      },
+      "finish_observed": false,
+      "original_score_sha256": "8fb44bae147109ad5ccfa44956d5532751c2316c641998550a43d99150102836",
+      "causal_source": "docs/results/teacher_recovery_20260910/finish/genuine8_combined_v3_reviews/eighth_causal_diagnosis_v1/diagnosis.json",
+      "causal_sha256": "09560596a6b042dae95ced445fee02cda312d940aeb23bb35679a657bba0955f"
+    }
+  ]
+}

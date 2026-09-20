@@ -8,15 +8,18 @@ import tempfile
 from pathlib import Path
 
 from tools.sim.teacher_anchor_design import (
+    RECORDED_PREFIX,
+    REFERENCE_ROOT,
     SHARED_FIELDS,
     candidate_policy,
     digest,
     phases,
+    reference_path,
     shared_digest,
 )
 
 REPO = Path(__file__).resolve().parents[2]
-PROTOCOL = REPO / "docs/results/teacher_success_anchor_v4/protocol.json"
+PROTOCOL = REPO / (REFERENCE_ROOT + "teacher_success_anchor_v4/protocol.json")
 PROTOCOL_SHA = "29d921b476807e68e129472d4090f47920af52ce60b6dc999d00f7fef820fe36"
 
 
@@ -27,7 +30,7 @@ def load_protocol(path=PROTOCOL):
 
 
 def checked_json(relative_path, sha):
-    path = REPO / relative_path
+    path = REPO / reference_path(relative_path)
     if digest(path) != sha:
         raise ValueError(f"Frozen v4 derivation input changed: {relative_path}")
     return json.loads(path.read_text())
@@ -59,7 +62,7 @@ def make_screen(protocol):
         primary_policy_order=[p["id"] for p in policies],
         nominal_scene=copy.deepcopy(common["fixed_scene"]),
         protocol={
-            "path": "docs/results/teacher_success_anchor_v4/protocol.json",
+            "path": RECORDED_PREFIX + "teacher_success_anchor_v4/protocol.json",
             "sha256": PROTOCOL_SHA,
             "stage": "screen",
         },

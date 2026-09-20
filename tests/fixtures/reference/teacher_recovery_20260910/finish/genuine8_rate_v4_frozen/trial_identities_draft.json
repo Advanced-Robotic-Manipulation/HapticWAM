@@ -1,0 +1,66 @@
+[
+  {
+    "condition": "aug22_1787395928_000_open",
+    "existing_result": null,
+    "policy": "v6_relative_off_rate_v4",
+    "seed": 910359,
+    "status": "unrun_draft",
+    "trial": "v6_relative_off_rate_v4__aug22_1787395928_000_open__seed910359"
+  },
+  {
+    "condition": "aug22_1787395928_000_open",
+    "existing_result": null,
+    "policy": "v6_relative_off_rate_v4",
+    "seed": 910360,
+    "status": "unrun_draft",
+    "trial": "v6_relative_off_rate_v4__aug22_1787395928_000_open__seed910360"
+  },
+  {
+    "condition": "aug22_1787396273_010_open",
+    "existing_result": null,
+    "policy": "v6_relative_off_rate_v4",
+    "seed": 910359,
+    "status": "unrun_draft",
+    "trial": "v6_relative_off_rate_v4__aug22_1787396273_010_open__seed910359"
+  },
+  {
+    "condition": "aug22_1787396273_010_open",
+    "existing_result": null,
+    "policy": "v6_relative_off_rate_v4",
+    "seed": 910360,
+    "status": "unrun_draft",
+    "trial": "v6_relative_off_rate_v4__aug22_1787396273_010_open__seed910360"
+  },
+  {
+    "condition": "aug22_1787395928_000_open",
+    "existing_result": null,
+    "policy": "v6_relative_on_rate_v4",
+    "seed": 910359,
+    "status": "unrun_draft",
+    "trial": "v6_relative_on_rate_v4__aug22_1787395928_000_open__seed910359"
+  },
+  {
+    "condition": "aug22_1787395928_000_open",
+    "existing_result": null,
+    "policy": "v6_relative_on_rate_v4",
+    "seed": 910360,
+    "status": "unrun_draft",
+    "trial": "v6_relative_on_rate_v4__aug22_1787395928_000_open__seed910360"
+  },
+  {
+    "condition": "aug22_1787396273_010_open",
+    "existing_result": null,
+    "policy": "v6_relative_on_rate_v4",
+    "seed": 910359,
+    "status": "unrun_draft",
+    "trial": "v6_relative_on_rate_v4__aug22_1787396273_010_open__seed910359"
+  },
+  {
+    "condition": "aug22_1787396273_010_open",
+    "existing_result": null,
+    "policy": "v6_relative_on_rate_v4",
+    "seed": 910360,
+    "status": "unrun_draft",
+    "trial": "v6_relative_on_rate_v4__aug22_1787396273_010_open__seed910360"
+  }
+]

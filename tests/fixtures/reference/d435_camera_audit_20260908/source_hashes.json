@@ -1,0 +1,9 @@
+{
+  "phantom/sim/camera.py": "7a63e0c99bc1c9c4d6989dfe77253eaccd3ddd59294f53281ef1e8d63ba53ff2",
+  "tools/sim/run_waffles.py": "56935e3f2b74f528b75b28f4e29ac0ad73cd0feff95ca7a8513225dff85b8e7c",
+  "tools/sim/fit_d435_camera_audit.py": "bf484df26ffcbd728ac4f825d5749d9b5a91c9bd1240f98a992e1bd0c8a2e15d",
+  "tools/sim/export_realsense_rgb_profile.py": "c95ce7c804ff9b4fea74d6c40dc5d48fc814f9a444bd1ef09d2e87e2d369a2f4",
+  "tools/sim/check_camera_projection_isaac.py": "c04efe2687b35a7dfaf7bebcdce9fc518c8c931baef14752b57a5795ce2a8940",
+  "tools/sim/render_d435_camera_comparison.py": "367e6bf567339548522e12bca96605b2c37b3506f7f5e092a21daffdeab44afa",
+  "docs/results/d435_camera_audit_20260908/grid_spacing_audit.py": "4bad81f8c370a276b97f8874eb331f7dea75f4e3e3cf8d591a430a36a4865788"
+}

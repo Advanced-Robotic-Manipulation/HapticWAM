@@ -43,7 +43,7 @@ def main():
     ap.add_argument("--pair", nargs=2, action="append", default=[])
     args = ap.parse_args()
     rsync(args.stage, args.full)
-    out = args.report_out or REPO / "docs/results/sim_zoo_20260912/report" / args.stage
+    out = args.report_out or REPO / "tests/fixtures/reference/sim_zoo_20260912/report" / args.stage
     cmd = [sys.executable, str(REPO / "tools/sim/zoo/report.py"), "--study", str(args.study),
            "--raw", str(LOCAL_RAW / args.stage), "--output", str(out)]
     for a, b in args.pair:

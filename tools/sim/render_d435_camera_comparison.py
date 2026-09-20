@@ -15,7 +15,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--previews',type=Path,default=ROOT/'artifacts/isaac_waffles/d435_camera_audit_20260908/previews')
-    parser.add_argument('--out',type=Path,default=ROOT/'docs/results/d435_camera_audit_20260908/comparison.png')
+    parser.add_argument('--out',type=Path,default=ROOT/'tests/fixtures/reference/d435_camera_audit_20260908/comparison.png')
     args=parser.parse_args()
     episodes=[('sept04','September 4',args.evidence/'scene_0000.png'),
               ('aug22','August 22',args.evidence/'fit/ep_waffles_1787395928_000/frame_00000.png')]

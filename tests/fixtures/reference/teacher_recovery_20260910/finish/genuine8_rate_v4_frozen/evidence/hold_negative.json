@@ -1,0 +1,1096 @@
+{
+  "passed": false,
+  "status": "failed_declared_terminal_hold_supplement",
+  "fixture_kind": "recorded_policy_proposals",
+  "policy_inference_executed": false,
+  "teacher_qualification_pass": false,
+  "original_measured_target_supplement": {
+    "status": "failed_relative_fixture_supplement",
+    "passed": false,
+    "fixture_kind": "recorded_policy_proposals",
+    "policy_inference_executed": false,
+    "teacher_qualification_pass": false,
+    "case": {
+      "id": "t15_last_ack_withheld_observer_on_v1",
+      "observer_enabled": true,
+      "proposal_variant": "withheld_release",
+      "seed": 910101
+    },
+    "original_fixture_audit": {
+      "fixture_kind": "recorded_policy_proposals",
+      "policy_inference_executed": false,
+      "teacher_qualification_pass": false,
+      "case": {
+        "id": "t15_last_ack_withheld_observer_on_v1",
+        "observer_enabled": true,
+        "proposal_variant": "withheld_release",
+        "seed": 910101
+      },
+      "status": "invalid",
+      "errors": [
+        "boundary_integrity_failed"
+      ],
+      "input_sha256": {
+        "run_status.json": "5a26b7effd479333e671a8d32c0d9466843215a5d744b4fb4ab2da6d895d8258",
+        "run.json": "604ce44ae6c570325ad3b6e394f5873d188280d46af1ef62eba274f6eefe0a45",
+        "effective_config.json": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+        "sim_trace.npz": "73261af09e46e0cd82807da27aae7387ff610e2b08334652afaf0c8d6a4a56b0",
+        "execution_trace.jsonl": "41dbb0a6a682b36d0caf62391a739403f9200b15e95dd7e4c625102b7dfb6b24",
+        "planner_trace.json": "f112246a9026d4065da0101135cb22155398754c997cd7f71d9135a6b2c585dc",
+        "delivered_plans.jsonl": "a7d55ef8bae81dcbfbf53031e380940c9645f0aa4dfb5f4eca7ac6285c54550b",
+        "policy_info.json": "0800226818d1a9cd4a36288fa5261981f83d2f705bd76206d8ef498667f8adb0",
+        "initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+        "fixture_provenance.json": "d99a29ca22b122bcc09f83d64c5d45bb276053b095c24b6806ef95dfeb0c3d45",
+        "fixture_requests.jsonl": "414e197691159761d01df31ddf013ee6472f855e7e1bc22322bb97b8bcddf905",
+        "fixture_terminal.json": "bd1810c585c2906b1a36549db3100f1b9d9c619d59cb5224b5d033f7f9704a3d",
+        "policy_tactile.npz": "cea64bcf48eb32616ab5b7398b047c5903f27f3943970b956dc6f644df4e4cd9",
+        "native_mechanics_monitor.json": "74460f769b23360083c9d97eaa05eaea19c1e4abd6b5e13d189281119acc858a",
+        "boundary_physics_audit.json": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+        "wrist_contact_trace.jsonl": "e11f72e8a3f93e08dc13e90be4043e4bd0fb5b9e1dc19a8605b2342294ffa4b6",
+        "robot_environment_contact_trace.json": "2feaca4c65816977f24554b64a7e72979d7a0c12af0ec6e6f85b0033d34c7ca1"
+      },
+      "audit_leaves": {
+        "evaluate_policy_trace": {
+          "source": "/dev/shm/phantom_teacher_recovery_runtime_v7_last_ack_terminal_v1_20260910/phantom/sim/policy_metrics.py",
+          "sha256": "179e71908b41f980d438abb8f9da557840b6bbb09302be82476d033a5f7103f5",
+          "function": "evaluate_policy_trace"
+        },
+        "actual_finish": {
+          "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_recovery_20260910/finish/audit_physics_gate_v4.py",
+          "sha256": "38ad7748c1f52ef5f4c53c5dc147231e991461d7546be523b6b984ffc3a41f9b",
+          "function": "actual_finish"
+        },
+        "audit_boundary": {
+          "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_recovery_20260910/finish/audit_boundary_v4.py",
+          "sha256": "b4e070850cfd01648dc74a717ddbce97f47f2882c2b29933c4e79dbe40db11b6",
+          "function": "audit"
+        },
+        "native_monitor": {
+          "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_native_v11_20260909/run_trials.py",
+          "sha256": "96fd43ab2d9d89f106084ab3ec56debcfd10bdb8992345114ac6304cc8539fd6",
+          "function": "validate_native_monitor"
+        }
+      },
+      "proposals": {
+        "passed": true,
+        "errors": [],
+        "consumed_source_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "delivered_source_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "source_attempt_count": 18,
+        "activation_changes": [],
+        "scope": "Historical activation is provenance, never forced current acceptance. Complete original prefix is available; terminal guards may stop its consumption."
+      },
+      "mechanics": {
+        "passed": true
+      },
+      "metrics": {
+        "schema_version": 1,
+        "valid_for_scoring": true,
+        "invalid_reasons": [],
+        "thresholds": {
+          "contact_force_n": 0.1,
+          "acquisition_hold_s": 0.15,
+          "lift_height_m": 0.03,
+          "lift_hold_s": 0.5,
+          "carry_distance_m": 0.05,
+          "carry_hold_s": 0.25,
+          "contact_gap_s": 0.15,
+          "settle_hold_s": 0.5,
+          "settle_speed_m_s": 0.03,
+          "settle_angular_speed_rad_s": 0.5,
+          "bin_tolerance_m": 0.002,
+          "reach_distance_m": 0.02,
+          "reach_max_closure": 0.25,
+          "drop_height_m": 0.02,
+          "drop_hold_s": 0.1,
+          "clock_tolerance_s": 0.001,
+          "max_sample_gap_s": 0.2,
+          "require_support_verified_release": true,
+          "support_robot_force_max_n": 0.1,
+          "support_bin_force_min_n": 0.1
+        },
+        "outcomes": {
+          "reach_before_closure": true,
+          "acquired": true,
+          "lifted": true,
+          "carried": true,
+          "released_in_bin": false,
+          "full_task": false,
+          "dropped": false
+        },
+        "event_times_s": {
+          "reach": 4.86675,
+          "closure": 6.7335,
+          "acquisition": 8.1335,
+          "lift": 9.66675,
+          "carry": 11.9335,
+          "release_in_bin": null,
+          "full_task": null,
+          "first_drop": null
+        },
+        "object": {
+          "initial_center_m": [
+            -0.3987114429473877,
+            -0.273325115442276,
+            0.03550000488758087
+          ],
+          "final_center_m": [
+            -0.45676472783088684,
+            0.17811936140060425,
+            0.2219364494085312
+          ],
+          "max_lift_m": 0.3548007756471634,
+          "carry_distance_m": 0.48995018424890285,
+          "final_inside_bin": false,
+          "final_contacts_unloaded": false,
+          "final_speed_m_s": 2.349943164575964e-05,
+          "final_angular_speed_rad_s": 0.011284294999350956,
+          "minimum_pad_midpoint_to_object_m": 0.0,
+          "reach_error_before_first_closing_motion_m": 0.1930805626935484,
+          "bilateral_contact_duration_s": 7.533250000000001,
+          "pad_packet_normal_force_peak_n": 10.293771743774414
+        },
+        "placement_support": {
+          "required": true,
+          "telemetry_status": "available",
+          "verified_placement": false,
+          "confirmation_time_s": null,
+          "robot_contact_peak_n": 17.72413206100464,
+          "bin_contact_peak_n": 11.406431198120117,
+          "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+        },
+        "control": {
+          "stop_reason": "safety_stop",
+          "execution_rows": 1772,
+          "execution_clock_valid": true,
+          "ik_rejects": 0,
+          "ik_reject_reasons": {},
+          "hold_duration_s": 0.0,
+          "stale_plan_hold_rows": 0,
+          "replans": 18,
+          "inference_errors": 0,
+          "plans_activated": 17,
+          "effective_latency_s": {
+            "count": 18,
+            "mean": 0.8512315246112444,
+            "p95": 1.1726853731004665,
+            "max": 1.2212103380006738
+          },
+          "inference_wall_time_s": {
+            "count": 18,
+            "mean": 0.1720215238342967,
+            "p95": 0.22061507110411185,
+            "max": 0.223327807005262
+          },
+          "activation_delay_s": {
+            "count": 17,
+            "mean": 0.8423529411764705,
+            "p95": 1.1808,
+            "max": 1.2320000000000002
+          },
+          "lift_complete_is_task_success": false
+        },
+        "collisions": {
+          "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+          "reported_count": 0,
+          "pad_environment_force_peak_n": 0.0,
+          "reported_events": []
+        },
+        "trace_sampling": {
+          "rows": 266,
+          "duration_s": 17.65625,
+          "maximum_interval_s": 0.06675000000000253,
+          "physics_clock_max_error_s": 8.386268746107817e-07,
+          "event_time_uncertainty_s": 0.06675000000000253
+        },
+        "reach_diagnostic": {
+          "absolute_threshold_already_exceeded_at_start": false,
+          "initial_measured_closure": 0.1076370058581233,
+          "first_closing_motion_s": 1.88025,
+          "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+          "reach_error_before_first_closing_motion_m": 0.1930805626935484,
+          "sample_time_s": 1.8667500000000001,
+          "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+        },
+        "limitations": [
+          "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+          "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+          "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+          "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+          "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+        ]
+      },
+      "boundary": {
+        "passed": false,
+        "monitor": {
+          "passed": false,
+          "errors": [
+            "physical_boundary_or_safety_violation",
+            "monitor_maximum:accepted_fk_y_max_m"
+          ],
+          "samples": 70626,
+          "phase_counts": {
+            "active": 62625,
+            "stop_hold": 8001
+          },
+          "selected_reference_samples": 62624,
+          "selected_reference_scope": "Repeated per-physics references, not unique command submissions.",
+          "measured_y_max_m": 0.16663056604929355,
+          "accepted_fk_y_max_m": 0.16661572059811058,
+          "selected_y_max_m": 0.1656,
+          "expected_end_s": 17.65625
+        },
+        "commands": {
+          "passed": true,
+          "errors": [],
+          "unique_acknowledged_commands": 1771,
+          "budget_segments": [
+            {
+              "started_at_s": 15.18425,
+              "deadline_s": 17.68425
+            }
+          ],
+          "terminal_seals": [],
+          "scope": "Simulator clock/unique drive-submission audit. No native wall-clock equivalence or physical task success inferred."
+        },
+        "monitor_sha256": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+        "cadence_scope": "Guard-enabled runs include exact terminal-horizon readback; the prior disabled path ended one dt earlier. Spatial and task thresholds are unchanged."
+      },
+      "finish": {
+        "observed": false,
+        "positive_gate": false
+      },
+      "physical_fixture_positive": false,
+      "scope": "Recorded-proposal physical finish integration only. Original free-body task, actual ACK/observer hold, mechanics and boundary leaves are retained; current teacher competence and v4 outcome are unchanged."
+    },
+    "errors": [
+      "boundary_integrity_failed"
+    ],
+    "supplemental_source_sha256": "17414baebcf10b1d62b09a849da42d56e56c648cef214202a8738812a7801b0d",
+    "tactile_mapping": {
+      "samples": 126,
+      "exact_saved_gel_reproduced": true,
+      "normal_capture_and_contact_uv_source": "gel_contact_trace.json; normal_force crosschecked against policy_tactile.npz/gel_normal_force",
+      "mapped_force": "SDK wrench Z from exact frozen MeasuredBaselineTactileProxy.synthesize/as_sensor_dict",
+      "tangential_force_sdk_n": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "tangential_displacement_sdk_mm": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "baseline_subtraction": "Native float64 subtraction after actual float32 synthesized wrench construction",
+      "physical_body_force_scoring_unchanged": true,
+      "baseline": {
+        "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+        "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+      },
+      "proxy_source_sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+      "launcher_source_sha256": "d78adb27de8c74d4fc22b417d391bfa4356d303fbd0bd7d8f28774c8e75edfd0",
+      "parameters": {
+        "active_size_mm": [
+          36.0,
+          27.0
+        ],
+        "patch_sigma_mm": [
+          3.0,
+          3.0
+        ],
+        "depth_mm_per_n": [
+          0.04032048,
+          0.04958851
+        ],
+        "normal_radial_displacement_gain": 0.25,
+        "area_mm2_per_n_two_thirds": 1.0,
+        "torque_nm_to_sdk": 100.0
+      }
+    },
+    "reconstruction": {
+      "passed": true,
+      "errors": [],
+      "examined_rows": 1772,
+      "candidate_hypothetical_finished_at_s": null,
+      "phase_changes": [
+        {
+          "t": 1.48825,
+          "controller_phase": "unarmed",
+          "relative": {
+            "variant": "relative_policy_release_permission_v2_loaded_plateau",
+            "state": "tracking",
+            "reason": "awaiting_actual_loaded_close_reference",
+            "in_relative_volume": false,
+            "reference": null,
+            "permission_since_s": null,
+            "permission_event": null,
+            "last_event": null,
+            "suppress_latch": false,
+            "restore_latch": null,
+            "observer": null,
+            "release_evidence": null,
+            "events": []
+          }
+        },
+        {
+          "t": 8.88025,
+          "controller_phase": "holding",
+          "relative": {
+            "variant": "relative_policy_release_permission_v2_loaded_plateau",
+            "state": "tracking",
+            "reason": "awaiting_actual_loaded_close_reference",
+            "in_relative_volume": false,
+            "reference": null,
+            "permission_since_s": null,
+            "permission_event": null,
+            "last_event": null,
+            "suppress_latch": false,
+            "restore_latch": null,
+            "observer": null,
+            "release_evidence": null,
+            "events": []
+          }
+        },
+        {
+          "t": 9.25625,
+          "controller_phase": "holding",
+          "relative": {
+            "variant": "relative_policy_release_permission_v2_loaded_plateau",
+            "state": "holding",
+            "reason": "relative_policy_request_ineligible_or_outside_band",
+            "in_relative_volume": false,
+            "reference": {
+              "command": 0.58104008436203,
+              "measured": 0.5789538770914078,
+              "t": 9.25625,
+              "ack_generation": 58,
+              "accepted_t": 8.808250000000001
+            },
+            "permission_since_s": null,
+            "permission_event": null,
+            "last_event": {
+              "t": 9.25625,
+              "event": "relative_loaded_reference_observed",
+              "reference": {
+                "command": 0.58104008436203,
+                "measured": 0.5789538770914078,
+                "t": 9.25625,
+                "ack_generation": 58,
+                "accepted_t": 8.808250000000001
+              },
+              "capture_times": {
+                "gripper": 9.25625,
+                "tactile_right": 9.25625,
+                "tactile_left": 9.25625,
+                "arm": 9.25625
+              },
+              "loaded_force_min_n": 1.0,
+              "source_history_rows": 972,
+              "loaded_history_sha256": "7ec4ef45c84a8cc5285a093e1486c824efe88f481e75634457de354c632c2715"
+            },
+            "suppress_latch": false,
+            "restore_latch": null,
+            "observer": null,
+            "release_evidence": null,
+            "events": [
+              {
+                "t": 9.25625,
+                "event": "relative_loaded_reference_observed",
+                "reference": {
+                  "command": 0.58104008436203,
+                  "measured": 0.5789538770914078,
+                  "t": 9.25625,
+                  "ack_generation": 58,
+                  "accepted_t": 8.808250000000001
+                },
+                "capture_times": {
+                  "gripper": 9.25625,
+                  "tactile_right": 9.25625,
+                  "tactile_left": 9.25625,
+                  "arm": 9.25625
+                },
+                "loaded_force_min_n": 1.0,
+                "source_history_rows": 972,
+                "loaded_history_sha256": "7ec4ef45c84a8cc5285a093e1486c824efe88f481e75634457de354c632c2715"
+              }
+            ]
+          }
+        }
+      ],
+      "legacy_absolute_finished_at_s": null,
+      "gate_reason_counts": {
+        "awaiting_actual_loaded_close_reference": 971,
+        "relative_policy_request_ineligible_or_outside_band": 800
+      },
+      "permission_events": [],
+      "stop": {
+        "t": 15.65625,
+        "reason": "safety_stop"
+      },
+      "emitted_permission_count": 0,
+      "emitted_finish_count": 0,
+      "precommand_force_history_ticks_reconstructed": 77,
+      "initial_unacknowledged_accepted_inputs_ignored": 1,
+      "scope": "Reconstructed proposal selection, actual prior drive ACKs, measured feedback, native latch and shared controller; no object-state controller inputs.",
+      "input_sha256": {
+        "execution_trace.jsonl": "41dbb0a6a682b36d0caf62391a739403f9200b15e95dd7e4c625102b7dfb6b24",
+        "planner_trace.json": "f112246a9026d4065da0101135cb22155398754c997cd7f71d9135a6b2c585dc",
+        "delivered_plans.jsonl": "a7d55ef8bae81dcbfbf53031e380940c9645f0aa4dfb5f4eca7ac6285c54550b",
+        "policy_tactile.npz": "cea64bcf48eb32616ab5b7398b047c5903f27f3943970b956dc6f644df4e4cd9",
+        "gel_contact_trace.json": "1e13f44d7ed4baf396411dec28e99519dda41e0fd87205186e925738c581624a"
+      },
+      "source_proposal_sha256": "1fd29d3835d71d7fd5e4bd5f938ba55cb4fe72fa974f905110e16d336e58763c"
+    },
+    "original_physical_leaf_adaptation": {
+      "original_source_sha256": "38ad7748c1f52ef5f4c53c5dc147231e991461d7546be523b6b984ffc3a41f9b",
+      "changed_event_literals": 1,
+      "original_event": "unlatched_release_finished",
+      "candidate_event": "relative_release_finished",
+      "all_other_physical_ast_statements_unchanged": true,
+      "provenance_replay_replaced": true
+    },
+    "finish": {
+      "observed": false,
+      "positive_gate": false
+    },
+    "completion_branch": "none",
+    "legacy_absolute_does_not_validate_relative_observer": false,
+    "physical_fixture_positive": false,
+    "scope": "Separate relative-permission integration evidence. Original scene/mechanics/boundary/source/object/hold thresholds remain unchanged; no teacher competence or qualification estimate."
+  },
+  "case": {
+    "id": "t15_last_ack_withheld_observer_on_v1",
+    "observer_enabled": true,
+    "proposal_variant": "withheld_release",
+    "seed": 910101
+  },
+  "original_fixture_audit": {
+    "fixture_kind": "recorded_policy_proposals",
+    "policy_inference_executed": false,
+    "teacher_qualification_pass": false,
+    "case": {
+      "id": "t15_last_ack_withheld_observer_on_v1",
+      "observer_enabled": true,
+      "proposal_variant": "withheld_release",
+      "seed": 910101
+    },
+    "status": "invalid",
+    "errors": [
+      "boundary_integrity_failed"
+    ],
+    "input_sha256": {
+      "run_status.json": "5a26b7effd479333e671a8d32c0d9466843215a5d744b4fb4ab2da6d895d8258",
+      "run.json": "604ce44ae6c570325ad3b6e394f5873d188280d46af1ef62eba274f6eefe0a45",
+      "effective_config.json": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+      "sim_trace.npz": "73261af09e46e0cd82807da27aae7387ff610e2b08334652afaf0c8d6a4a56b0",
+      "execution_trace.jsonl": "41dbb0a6a682b36d0caf62391a739403f9200b15e95dd7e4c625102b7dfb6b24",
+      "planner_trace.json": "f112246a9026d4065da0101135cb22155398754c997cd7f71d9135a6b2c585dc",
+      "delivered_plans.jsonl": "a7d55ef8bae81dcbfbf53031e380940c9645f0aa4dfb5f4eca7ac6285c54550b",
+      "policy_info.json": "0800226818d1a9cd4a36288fa5261981f83d2f705bd76206d8ef498667f8adb0",
+      "initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+      "fixture_provenance.json": "d99a29ca22b122bcc09f83d64c5d45bb276053b095c24b6806ef95dfeb0c3d45",
+      "fixture_requests.jsonl": "414e197691159761d01df31ddf013ee6472f855e7e1bc22322bb97b8bcddf905",
+      "fixture_terminal.json": "bd1810c585c2906b1a36549db3100f1b9d9c619d59cb5224b5d033f7f9704a3d",
+      "policy_tactile.npz": "cea64bcf48eb32616ab5b7398b047c5903f27f3943970b956dc6f644df4e4cd9",
+      "native_mechanics_monitor.json": "74460f769b23360083c9d97eaa05eaea19c1e4abd6b5e13d189281119acc858a",
+      "boundary_physics_audit.json": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+      "wrist_contact_trace.jsonl": "e11f72e8a3f93e08dc13e90be4043e4bd0fb5b9e1dc19a8605b2342294ffa4b6",
+      "robot_environment_contact_trace.json": "2feaca4c65816977f24554b64a7e72979d7a0c12af0ec6e6f85b0033d34c7ca1"
+    },
+    "audit_leaves": {
+      "evaluate_policy_trace": {
+        "source": "/dev/shm/phantom_teacher_recovery_runtime_v7_last_ack_terminal_v1_20260910/phantom/sim/policy_metrics.py",
+        "sha256": "179e71908b41f980d438abb8f9da557840b6bbb09302be82476d033a5f7103f5",
+        "function": "evaluate_policy_trace"
+      },
+      "actual_finish": {
+        "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_recovery_20260910/finish/audit_physics_gate_v4.py",
+        "sha256": "38ad7748c1f52ef5f4c53c5dc147231e991461d7546be523b6b984ffc3a41f9b",
+        "function": "actual_finish"
+      },
+      "audit_boundary": {
+        "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_recovery_20260910/finish/audit_boundary_v4.py",
+        "sha256": "b4e070850cfd01648dc74a717ddbce97f47f2882c2b29933c4e79dbe40db11b6",
+        "function": "audit"
+      },
+      "native_monitor": {
+        "source": "/dev/shm/phantom_teacher_recovery_last_ack_fixture_source_v1_20260910/declaration/audit_sources/docs/results/teacher_native_v11_20260909/run_trials.py",
+        "sha256": "96fd43ab2d9d89f106084ab3ec56debcfd10bdb8992345114ac6304cc8539fd6",
+        "function": "validate_native_monitor"
+      }
+    },
+    "proposals": {
+      "passed": true,
+      "errors": [],
+      "consumed_source_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "delivered_source_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "source_attempt_count": 18,
+      "activation_changes": [],
+      "scope": "Historical activation is provenance, never forced current acceptance. Complete original prefix is available; terminal guards may stop its consumption."
+    },
+    "mechanics": {
+      "passed": true
+    },
+    "metrics": {
+      "schema_version": 1,
+      "valid_for_scoring": true,
+      "invalid_reasons": [],
+      "thresholds": {
+        "contact_force_n": 0.1,
+        "acquisition_hold_s": 0.15,
+        "lift_height_m": 0.03,
+        "lift_hold_s": 0.5,
+        "carry_distance_m": 0.05,
+        "carry_hold_s": 0.25,
+        "contact_gap_s": 0.15,
+        "settle_hold_s": 0.5,
+        "settle_speed_m_s": 0.03,
+        "settle_angular_speed_rad_s": 0.5,
+        "bin_tolerance_m": 0.002,
+        "reach_distance_m": 0.02,
+        "reach_max_closure": 0.25,
+        "drop_height_m": 0.02,
+        "drop_hold_s": 0.1,
+        "clock_tolerance_s": 0.001,
+        "max_sample_gap_s": 0.2,
+        "require_support_verified_release": true,
+        "support_robot_force_max_n": 0.1,
+        "support_bin_force_min_n": 0.1
+      },
+      "outcomes": {
+        "reach_before_closure": true,
+        "acquired": true,
+        "lifted": true,
+        "carried": true,
+        "released_in_bin": false,
+        "full_task": false,
+        "dropped": false
+      },
+      "event_times_s": {
+        "reach": 4.86675,
+        "closure": 6.7335,
+        "acquisition": 8.1335,
+        "lift": 9.66675,
+        "carry": 11.9335,
+        "release_in_bin": null,
+        "full_task": null,
+        "first_drop": null
+      },
+      "object": {
+        "initial_center_m": [
+          -0.3987114429473877,
+          -0.273325115442276,
+          0.03550000488758087
+        ],
+        "final_center_m": [
+          -0.45676472783088684,
+          0.17811936140060425,
+          0.2219364494085312
+        ],
+        "max_lift_m": 0.3548007756471634,
+        "carry_distance_m": 0.48995018424890285,
+        "final_inside_bin": false,
+        "final_contacts_unloaded": false,
+        "final_speed_m_s": 2.349943164575964e-05,
+        "final_angular_speed_rad_s": 0.011284294999350956,
+        "minimum_pad_midpoint_to_object_m": 0.0,
+        "reach_error_before_first_closing_motion_m": 0.1930805626935484,
+        "bilateral_contact_duration_s": 7.533250000000001,
+        "pad_packet_normal_force_peak_n": 10.293771743774414
+      },
+      "placement_support": {
+        "required": true,
+        "telemetry_status": "available",
+        "verified_placement": false,
+        "confirmation_time_s": null,
+        "robot_contact_peak_n": 17.72413206100464,
+        "bin_contact_peak_n": 11.406431198120117,
+        "semantics": "Positive normal contact magnitudes with ALL robot bodies, including both pads, and the five physical bin colliders; never cancellable net force"
+      },
+      "control": {
+        "stop_reason": "safety_stop",
+        "execution_rows": 1772,
+        "execution_clock_valid": true,
+        "ik_rejects": 0,
+        "ik_reject_reasons": {},
+        "hold_duration_s": 0.0,
+        "stale_plan_hold_rows": 0,
+        "replans": 18,
+        "inference_errors": 0,
+        "plans_activated": 17,
+        "effective_latency_s": {
+          "count": 18,
+          "mean": 0.8512315246112444,
+          "p95": 1.1726853731004665,
+          "max": 1.2212103380006738
+        },
+        "inference_wall_time_s": {
+          "count": 18,
+          "mean": 0.1720215238342967,
+          "p95": 0.22061507110411185,
+          "max": 0.223327807005262
+        },
+        "activation_delay_s": {
+          "count": 17,
+          "mean": 0.8423529411764705,
+          "p95": 1.1808,
+          "max": 1.2320000000000002
+        },
+        "lift_complete_is_task_success": false
+      },
+      "collisions": {
+        "observability": "partial: pad contacts and reported events; no whole-robot collision certification",
+        "reported_count": 0,
+        "pad_environment_force_peak_n": 0.0,
+        "reported_events": []
+      },
+      "trace_sampling": {
+        "rows": 266,
+        "duration_s": 17.65625,
+        "maximum_interval_s": 0.06675000000000253,
+        "physics_clock_max_error_s": 8.386268746107817e-07,
+        "event_time_uncertainty_s": 0.06675000000000253
+      },
+      "reach_diagnostic": {
+        "absolute_threshold_already_exceeded_at_start": false,
+        "initial_measured_closure": 0.1076370058581233,
+        "first_closing_motion_s": 1.88025,
+        "closing_motion_source": "execution gripper_command > initial measured closure + 2/255",
+        "reach_error_before_first_closing_motion_m": 0.1930805626935484,
+        "sample_time_s": 1.8667500000000001,
+        "definition": "Last sampled pad-midpoint distance to the object OBB before the first additional closing command; diagnostic only, no change to frozen full-task gates."
+      },
+      "limitations": [
+        "Reach uses the pad midpoint and estimated object OBB; it is diagnostic, not a full-task gate.",
+        "Events require observed elapsed time; sub-sample contact, collisions and drops are not certified.",
+        "A lift_complete stop or Robotiq OBJ flag cannot substitute for object-state success.",
+        "Contact-free force cancellation and robot-body collisions are not excluded by the pad-force diagnostic.",
+        "Without required support telemetry, zero pad load cannot exclude support by another robot part inside the bin."
+      ]
+    },
+    "boundary": {
+      "passed": false,
+      "monitor": {
+        "passed": false,
+        "errors": [
+          "physical_boundary_or_safety_violation",
+          "monitor_maximum:accepted_fk_y_max_m"
+        ],
+        "samples": 70626,
+        "phase_counts": {
+          "active": 62625,
+          "stop_hold": 8001
+        },
+        "selected_reference_samples": 62624,
+        "selected_reference_scope": "Repeated per-physics references, not unique command submissions.",
+        "measured_y_max_m": 0.16663056604929355,
+        "accepted_fk_y_max_m": 0.16661572059811058,
+        "selected_y_max_m": 0.1656,
+        "expected_end_s": 17.65625
+      },
+      "commands": {
+        "passed": true,
+        "errors": [],
+        "unique_acknowledged_commands": 1771,
+        "budget_segments": [
+          {
+            "started_at_s": 15.18425,
+            "deadline_s": 17.68425
+          }
+        ],
+        "terminal_seals": [],
+        "scope": "Simulator clock/unique drive-submission audit. No native wall-clock equivalence or physical task success inferred."
+      },
+      "monitor_sha256": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+      "cadence_scope": "Guard-enabled runs include exact terminal-horizon readback; the prior disabled path ended one dt earlier. Spatial and task thresholds are unchanged."
+    },
+    "finish": {
+      "observed": false,
+      "positive_gate": false
+    },
+    "physical_fixture_positive": false,
+    "scope": "Recorded-proposal physical finish integration only. Original free-body task, actual ACK/observer hold, mechanics and boundary leaves are retained; current teacher competence and v4 outcome are unchanged."
+  },
+  "errors": [
+    "declared_mode_boundary_integrity_failed"
+  ],
+  "completion_branch": "none",
+  "legacy_absolute_does_not_validate_relative_observer": false,
+  "boundary": {
+    "passed": false,
+    "monitor": {
+      "passed": false,
+      "errors": [
+        "physical_boundary_or_safety_violation",
+        "monitor_maximum:accepted_fk_y_max_m"
+      ],
+      "samples": 70626,
+      "phase_counts": {
+        "active": 62625,
+        "stop_hold": 8001
+      },
+      "selected_reference_samples": 62624,
+      "selected_reference_scope": "Repeated per-physics references, not unique command submissions.",
+      "measured_y_max_m": 0.16663056604929355,
+      "accepted_fk_y_max_m": 0.16661572059811058,
+      "selected_y_max_m": 0.1656,
+      "expected_end_s": 17.65625
+    },
+    "commands": {
+      "passed": true,
+      "errors": [],
+      "unique_acknowledged_commands": 1771,
+      "budget_segments": [
+        {
+          "started_at_s": 15.18425,
+          "deadline_s": 17.68425
+        }
+      ],
+      "terminal_seals": [],
+      "scope": "Simulator clock/unique drive-submission audit. No native wall-clock equivalence or physical task success inferred."
+    },
+    "monitor_sha256": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+    "cadence_scope": "Guard-enabled runs include exact terminal-horizon readback; the prior disabled path ended one dt earlier. Spatial and task thresholds are unchanged."
+  },
+  "finish": {
+    "observed": false,
+    "positive_gate": false
+  },
+  "reconstruction": {
+    "passed": true,
+    "errors": [],
+    "examined_rows": 1772,
+    "candidate_hypothetical_finished_at_s": null,
+    "phase_changes": [
+      {
+        "t": 1.48825,
+        "controller_phase": "unarmed",
+        "relative": {
+          "variant": "relative_policy_release_permission_v2_loaded_plateau",
+          "state": "tracking",
+          "reason": "awaiting_actual_loaded_close_reference",
+          "in_relative_volume": false,
+          "reference": null,
+          "permission_since_s": null,
+          "permission_event": null,
+          "last_event": null,
+          "suppress_latch": false,
+          "restore_latch": null,
+          "observer": null,
+          "release_evidence": null,
+          "events": []
+        }
+      },
+      {
+        "t": 8.88025,
+        "controller_phase": "holding",
+        "relative": {
+          "variant": "relative_policy_release_permission_v2_loaded_plateau",
+          "state": "tracking",
+          "reason": "awaiting_actual_loaded_close_reference",
+          "in_relative_volume": false,
+          "reference": null,
+          "permission_since_s": null,
+          "permission_event": null,
+          "last_event": null,
+          "suppress_latch": false,
+          "restore_latch": null,
+          "observer": null,
+          "release_evidence": null,
+          "events": []
+        }
+      },
+      {
+        "t": 9.25625,
+        "controller_phase": "holding",
+        "relative": {
+          "variant": "relative_policy_release_permission_v2_loaded_plateau",
+          "state": "holding",
+          "reason": "relative_policy_request_ineligible_or_outside_band",
+          "in_relative_volume": false,
+          "reference": {
+            "command": 0.58104008436203,
+            "measured": 0.5789538770914078,
+            "t": 9.25625,
+            "ack_generation": 58,
+            "accepted_t": 8.808250000000001
+          },
+          "permission_since_s": null,
+          "permission_event": null,
+          "last_event": {
+            "t": 9.25625,
+            "event": "relative_loaded_reference_observed",
+            "reference": {
+              "command": 0.58104008436203,
+              "measured": 0.5789538770914078,
+              "t": 9.25625,
+              "ack_generation": 58,
+              "accepted_t": 8.808250000000001
+            },
+            "capture_times": {
+              "gripper": 9.25625,
+              "tactile_right": 9.25625,
+              "tactile_left": 9.25625,
+              "arm": 9.25625
+            },
+            "loaded_force_min_n": 1.0,
+            "source_history_rows": 972,
+            "loaded_history_sha256": "7ec4ef45c84a8cc5285a093e1486c824efe88f481e75634457de354c632c2715"
+          },
+          "suppress_latch": false,
+          "restore_latch": null,
+          "observer": null,
+          "release_evidence": null,
+          "events": [
+            {
+              "t": 9.25625,
+              "event": "relative_loaded_reference_observed",
+              "reference": {
+                "command": 0.58104008436203,
+                "measured": 0.5789538770914078,
+                "t": 9.25625,
+                "ack_generation": 58,
+                "accepted_t": 8.808250000000001
+              },
+              "capture_times": {
+                "gripper": 9.25625,
+                "tactile_right": 9.25625,
+                "tactile_left": 9.25625,
+                "arm": 9.25625
+              },
+              "loaded_force_min_n": 1.0,
+              "source_history_rows": 972,
+              "loaded_history_sha256": "7ec4ef45c84a8cc5285a093e1486c824efe88f481e75634457de354c632c2715"
+            }
+          ]
+        }
+      }
+    ],
+    "legacy_absolute_finished_at_s": null,
+    "gate_reason_counts": {
+      "awaiting_actual_loaded_close_reference": 971,
+      "relative_policy_request_ineligible_or_outside_band": 800
+    },
+    "permission_events": [],
+    "stop": {
+      "t": 15.65625,
+      "reason": "safety_stop"
+    },
+    "emitted_permission_count": 0,
+    "emitted_finish_count": 0,
+    "precommand_force_history_ticks_reconstructed": 77,
+    "initial_unacknowledged_accepted_inputs_ignored": 1,
+    "scope": "Reconstructed proposal selection, actual prior drive ACKs, measured feedback, native latch and shared controller; no object-state controller inputs.",
+    "input_sha256": {
+      "execution_trace.jsonl": "41dbb0a6a682b36d0caf62391a739403f9200b15e95dd7e4c625102b7dfb6b24",
+      "planner_trace.json": "f112246a9026d4065da0101135cb22155398754c997cd7f71d9135a6b2c585dc",
+      "delivered_plans.jsonl": "a7d55ef8bae81dcbfbf53031e380940c9645f0aa4dfb5f4eca7ac6285c54550b",
+      "policy_tactile.npz": "cea64bcf48eb32616ab5b7398b047c5903f27f3943970b956dc6f644df4e4cd9",
+      "gel_contact_trace.json": "1e13f44d7ed4baf396411dec28e99519dda41e0fd87205186e925738c581624a"
+    },
+    "source_proposal_sha256": "1fd29d3835d71d7fd5e4bd5f938ba55cb4fe72fa974f905110e16d336e58763c"
+  },
+  "tactile_mapping": {
+    "samples": 126,
+    "exact_saved_gel_reproduced": true,
+    "normal_capture_and_contact_uv_source": "gel_contact_trace.json; normal_force crosschecked against policy_tactile.npz/gel_normal_force",
+    "mapped_force": "SDK wrench Z from exact frozen MeasuredBaselineTactileProxy.synthesize/as_sensor_dict",
+    "tangential_force_sdk_n": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "tangential_displacement_sdk_mm": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "baseline_subtraction": "Native float64 subtraction after actual float32 synthesized wrench construction",
+    "physical_body_force_scoring_unchanged": true,
+    "baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    },
+    "proxy_source_sha256": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+    "launcher_source_sha256": "d78adb27de8c74d4fc22b417d391bfa4356d303fbd0bd7d8f28774c8e75edfd0",
+    "parameters": {
+      "active_size_mm": [
+        36.0,
+        27.0
+      ],
+      "patch_sigma_mm": [
+        3.0,
+        3.0
+      ],
+      "depth_mm_per_n": [
+        0.04032048,
+        0.04958851
+      ],
+      "normal_radial_displacement_gain": 0.25,
+      "area_mm2_per_n_two_thirds": 1.0,
+      "torque_nm_to_sdk": 100.0
+    }
+  },
+  "explicit_origin_semantics_adaptation": {
+    "boundary": {
+      "original_boundary_sha256": "b4e070850cfd01648dc74a717ddbce97f47f2882c2b29933c4e79dbe40db11b6",
+      "changed_origin_predicates": 1,
+      "all_other_boundary_ast_statements_unchanged": true
+    },
+    "hold": {
+      "original_physics_sha256": "38ad7748c1f52ef5f4c53c5dc147231e991461d7546be523b6b984ffc3a41f9b",
+      "changed_target_selectors": 1,
+      "all_other_hold_ast_statements_unchanged": true,
+      "declared_reference": "last_acknowledged_target_v1"
+    },
+    "relative_event": {
+      "original_source_sha256": "38ad7748c1f52ef5f4c53c5dc147231e991461d7546be523b6b984ffc3a41f9b",
+      "changed_event_literals": 1,
+      "original_event": "unlatched_release_finished",
+      "candidate_event": "relative_release_finished",
+      "all_other_physical_ast_statements_unchanged": true,
+      "provenance_replay_replaced": true
+    },
+    "original_boundary_decision": {
+      "passed": false,
+      "monitor": {
+        "passed": false,
+        "errors": [
+          "physical_boundary_or_safety_violation",
+          "monitor_maximum:accepted_fk_y_max_m"
+        ],
+        "samples": 70626,
+        "phase_counts": {
+          "active": 62625,
+          "stop_hold": 8001
+        },
+        "selected_reference_samples": 62624,
+        "selected_reference_scope": "Repeated per-physics references, not unique command submissions.",
+        "measured_y_max_m": 0.16663056604929355,
+        "accepted_fk_y_max_m": 0.16661572059811058,
+        "selected_y_max_m": 0.1656,
+        "expected_end_s": 17.65625
+      },
+      "commands": {
+        "passed": true,
+        "errors": [],
+        "unique_acknowledged_commands": 1771,
+        "budget_segments": [
+          {
+            "started_at_s": 15.18425,
+            "deadline_s": 17.68425
+          }
+        ],
+        "terminal_seals": [],
+        "scope": "Simulator clock/unique drive-submission audit. No native wall-clock equivalence or physical task success inferred."
+      },
+      "monitor_sha256": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+      "cadence_scope": "Guard-enabled runs include exact terminal-horizon readback; the prior disabled path ended one dt earlier. Spatial and task thresholds are unchanged."
+    },
+    "original_finish_decision": {
+      "observed": false,
+      "positive_gate": false
+    },
+    "original_errors_retained_above": true,
+    "object_force_contact_and_full_hold_predicates_unchanged": true
+  },
+  "physical_fixture_positive": false,
+  "scope": "Declared last-prior-ACK target provenance and identical fresh hold receipt only. All original physical, force/contact, envelope, rate, timing and supported-placement predicates remain; no teacher inference or qualification claim.",
+  "supplement_source_sha256": "30f962e222c80c493d6f47a19d0761e7f2b76da5e7da28f75115ae201693c947",
+  "relative_supplement_source_sha256": "17414baebcf10b1d62b09a849da42d56e56c648cef214202a8738812a7801b0d"
+}

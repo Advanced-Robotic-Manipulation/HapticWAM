@@ -1,0 +1,50 @@
+{
+  "status": "cpu_controls_passed",
+  "source_manifest_sha256": "3f96b69ccd9262b11230a5dc66bc3a07d60ce3885755a5949cd8f10de2ec9692",
+  "parent_manifest_sha256": "e9c5090264ef4577db0ebdb17d7bf3222b3b67be9613cf121c45d6b24f9a78e9",
+  "source_and_parent_unchanged": true,
+  "counts": {
+    "tests": 121,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "pytest_returncode": 0,
+  "comparison_returncode": 0,
+  "commands": [
+    [
+      "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-c",
+      "/dev/null",
+      "-p",
+      "no:cacheprovider",
+      "/dev/shm/phantom_teacher_recovery_rate_interior_cpu_v1_20260910/staged/source/test_rate_interior.py",
+      "/dev/shm/phantom_teacher_recovery_runtime_v8_combined_timing_relative_last_ack_v3_20260910/tests/test_boundary_projection.py",
+      "/dev/shm/phantom_teacher_recovery_runtime_v8_combined_timing_relative_last_ack_v3_20260910/tests/test_servo_hold.py",
+      "--junitxml=/dev/shm/phantom_teacher_recovery_rate_interior_cpu_v1_20260910/results_v2/controls.xml",
+      "--basetemp=/dev/shm/phantom_teacher_recovery_rate_interior_cpu_v1_20260910/results_v2/pytest_tmp"
+    ],
+    [
+      "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+      "/dev/shm/phantom_teacher_recovery_rate_interior_cpu_v1_20260910/staged/source/compare_recorded_prefix.py"
+    ]
+  ],
+  "started_unix_s": 1789112582.960095,
+  "finished_unix_s": 1789112586.7257786,
+  "python": "3.12.13 (tags/v3.12.13-dirty:3bb231a, Mar  4 2026, 13:53:36) [GCC 11.4.0]",
+  "executable": "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+  "numpy": "2.3.1",
+  "scipy": "1.17.0",
+  "models_or_physics_launched": false,
+  "hardware_constructed": false,
+  "qualification_claim": false,
+  "output_sha256": {
+    "recorded_prefix_comparison_v2.json": "d9c24b29c957104454d32c4461ba0bbb11b6e648cfcef77db1ba9f3998f243ca",
+    "comparison.log": "6936ba2428430da9209ddc3ac274feccdd80d3199d2f5bf331d3eb128fb155e1",
+    "controls.xml": "0fdae5808bf832afcd3110251cfd79dc355c32739ce1e3a175b3ba7811b376fb",
+    "controls.log": "14511e2def7f26b81829f5273b0d60f2fd8f447c8f2ff4d5100bdbba81fc1d50"
+  }
+}

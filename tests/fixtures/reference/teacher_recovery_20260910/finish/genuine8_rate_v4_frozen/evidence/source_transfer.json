@@ -1,0 +1,54 @@
+{
+  "status": "all_source_files_and_modes_verified",
+  "remote": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "source_files": 520,
+  "overlay_sha256": {
+    "phantom/deploy/boundary_projection.py": "be36c0f142b3b05909b8f841026feb7f426f2606cdd26dd68e4e4114a8b531e4",
+    "phantom/drivers/real/ur.py": "201015216c32de9155d907be635385dbf04a9621e62959f579d734a8e2f8bf2a",
+    "phantom/drivers/servo_rate_interior.py": "b6abf61941c1f407197261e7065c2edbc145162a0f968ba65b7eb112a6d02b48",
+    "tools/sim/run_waffles.py": "1bd1590963c632a289d848f45abc96d81a131f78414c693991f5f08d554f3155"
+  },
+  "candidate_root": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_transfer_v1_20260910/candidate",
+  "candidate_files": {
+    "combined/boundary_projection_candidate.json": {
+      "sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
+      "mode": 420
+    },
+    "combined/prepare_combined.py": {
+      "sha256": "3ddd391e37300789d211dcc75e6eb1b4654a99cf451a4566afcdcedd4d1448d6",
+      "mode": 420
+    },
+    "combined/source_manifest_draft_v1.json": {
+      "sha256": "5a807c954225699e8d1f1b4af802000645a8883841233ff2d21a79d2c7bf6b3c",
+      "mode": 420
+    },
+    "rate/actual_isaac_cpu_v2_receipt.json": {
+      "sha256": "3654cb2febca121a2c9311d9315261b57037e6308d49cdc64d52116495f73839",
+      "mode": 420
+    },
+    "rate/boundary_projection_candidate.json": {
+      "sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
+      "mode": 420
+    },
+    "rate/source_manifest.json": {
+      "sha256": "3f96b69ccd9262b11230a5dc66bc3a07d60ce3885755a5949cd8f10de2ec9692",
+      "mode": 420
+    },
+    "rate/test_rate_interior.py": {
+      "sha256": "9feb47f2fcac263213395838712e405e376ca7ba818c804742e9aa44d4e8e562",
+      "mode": 420
+    }
+  },
+  "parent_unchanged": true,
+  "hardware_checkout_modified": false,
+  "models_or_physics_started": false,
+  "combined_donor_manifest_sha256": "5a807c954225699e8d1f1b4af802000645a8883841233ff2d21a79d2c7bf6b3c",
+  "rate_source_manifest_sha256": "3f96b69ccd9262b11230a5dc66bc3a07d60ce3885755a5949cd8f10de2ec9692",
+  "rate_isaac_cpu_receipt_sha256": "3654cb2febca121a2c9311d9315261b57037e6308d49cdc64d52116495f73839",
+  "archive_sha256": "0d65a193039456f61dc29bfd102197ef8c1d1c0a662376605cf6c74031713d2b",
+  "reused_transfer_helper_sha256": "bb19dafd45765b40ad3c881ec651dff005711f515a75d3311313a6490ed4f8ba",
+  "preparer_sha256": "0a7cfd8e03f16f8f9e77dec91e8a55db2dc9a7d88cd01fd72345b07ee5810ca1",
+  "runtime_cpu_gate_passed": false,
+  "qualification_authorized": false
+}

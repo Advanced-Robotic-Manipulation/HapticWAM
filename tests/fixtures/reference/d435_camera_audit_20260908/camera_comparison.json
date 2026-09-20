@@ -1,0 +1,760 @@
+{
+  "status": "provisional_RGB_mode_prior_and_image_registration_not_factory_calibration",
+  "exact_D435_intrinsics_available": false,
+  "sources": {
+    "rgb_spec": "https://www.realsenseai.com/products/stereo-depth-camera-d435/",
+    "mode_intrinsics_implementation": "https://github.com/realsenseai/librealsense/blob/master/src/ds/d400/d400-private.cpp"
+  },
+  "prior": {
+    "vfov_deg": 42.0,
+    "fx_fy_px": 625.2213755265124,
+    "principal_point_assumed": [
+      320,
+      240
+    ],
+    "nominal_4by3_fov_deg": [
+      54.20843241712849,
+      42.0
+    ],
+    "interpretation": "Mode-specific estimate, not69x42 full-HD transplanted into4:3.",
+    "distortion": "zero assumed; actual coefficients unavailable"
+  },
+  "fit_frames": [
+    0,
+    83,
+    167,
+    195
+  ],
+  "validation_frames": [
+    55,
+    111,
+    139,
+    223
+  ],
+  "validation_scope": "Withheld timepoints within previously observed fit episode; not independent held-out episode or unseen data",
+  "height_prior_sigma_m": 0.02,
+  "pose_fit_converged": true,
+  "unconstrained_pose_height_above_mat_m": 0.9503891427303544,
+  "variants": {
+    "r2_fitted_optics": {
+      "fov_deg": [
+        46.60775886920397,
+        35.8072668702883
+      ],
+      "camera_height_above_mat_m": 0.963,
+      "fit_landmark_rmse_px": 51.23765568570376,
+      "withheld_timepoint_landmark_rmse_px": 53.28570476266504,
+      "wrist1_all_rmse_px": 55.50769241046274,
+      "forearm_all_rmse_px": 48.82171418012779,
+      "fixed_bin_corner_rmse_px": 60.96704626160179,
+      "fixed_bin_projected_px": [
+        [
+          163.4945011637421,
+          23.534256659632177
+        ],
+        [
+          465.78833390940997,
+          32.27730491688217
+        ],
+        [
+          472.0569318985516,
+          240.5071538253297
+        ],
+        [
+          125.9625130657873,
+          225.99163048071037
+        ]
+      ],
+      "landmarks": [
+        {
+          "name": "0:wrist1_cap_px",
+          "observed_px": [
+            534,
+            157
+          ],
+          "predicted_px": [
+            564.4708986884382,
+            86.17927843995051
+          ],
+          "error_px": 77.09766707992611,
+          "used_in_fit": true
+        },
+        {
+          "name": "0:forearm_cap_px",
+          "observed_px": [
+            494,
+            59
+          ],
+          "predicted_px": [
+            519.7252600638137,
+            1.2648049220472615
+          ],
+          "error_px": 63.20713374327385,
+          "used_in_fit": true
+        },
+        {
+          "name": "55:wrist1_cap_px",
+          "observed_px": [
+            468,
+            219
+          ],
+          "predicted_px": [
+            476.02957795976647,
+            169.9383573474987
+          ],
+          "error_px": 49.71437319300829,
+          "used_in_fit": false
+        },
+        {
+          "name": "55:forearm_cap_px",
+          "observed_px": [
+            441,
+            126
+          ],
+          "predicted_px": [
+            457.5850026335008,
+            80.27359922443901
+          ],
+          "error_px": 48.64119694498124,
+          "used_in_fit": false
+        },
+        {
+          "name": "83:wrist1_cap_px",
+          "observed_px": [
+            440,
+            265
+          ],
+          "predicted_px": [
+            444.81203397671,
+            228.18590880910634
+          ],
+          "error_px": 37.127253887197824,
+          "used_in_fit": true
+        },
+        {
+          "name": "83:forearm_cap_px",
+          "observed_px": [
+            418,
+            175
+          ],
+          "predicted_px": [
+            430.9066516017687,
+            140.70894234516598
+          ],
+          "error_px": 36.63957274118504,
+          "used_in_fit": true
+        },
+        {
+          "name": "111:wrist1_cap_px",
+          "observed_px": [
+            434,
+            273
+          ],
+          "predicted_px": [
+            438.3683978471106,
+            240.60433579481588
+          ],
+          "error_px": 32.68886597980554,
+          "used_in_fit": false
+        },
+        {
+          "name": "111:forearm_cap_px",
+          "observed_px": [
+            411,
+            188
+          ],
+          "predicted_px": [
+            426.0292852975781,
+            154.63790433844645
+          ],
+          "error_px": 36.5911033379242,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:wrist1_cap_px",
+          "observed_px": [
+            432,
+            276
+          ],
+          "predicted_px": [
+            435.9060759462493,
+            242.95683077470954
+          ],
+          "error_px": 33.273239423732846,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:forearm_cap_px",
+          "observed_px": [
+            412,
+            190
+          ],
+          "predicted_px": [
+            424.17031537227615,
+            157.81901359609697
+          ],
+          "error_px": 34.40541326868278,
+          "used_in_fit": false
+        },
+        {
+          "name": "167:wrist1_cap_px",
+          "observed_px": [
+            438,
+            274
+          ],
+          "predicted_px": [
+            446.13536914369985,
+            238.26988741900036
+          ],
+          "error_px": 36.644579082794394,
+          "used_in_fit": true
+        },
+        {
+          "name": "167:forearm_cap_px",
+          "observed_px": [
+            416,
+            188
+          ],
+          "predicted_px": [
+            431.6013921960146,
+            153.74363657802587
+          ],
+          "error_px": 37.641757043903155,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:wrist1_cap_px",
+          "observed_px": [
+            491,
+            225
+          ],
+          "predicted_px": [
+            515.6176695548234,
+            171.14024572140468
+          ],
+          "error_px": 59.21910827816595,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:forearm_cap_px",
+          "observed_px": [
+            454,
+            125
+          ],
+          "predicted_px": [
+            477.00128262067574,
+            85.67307859365508
+          ],
+          "error_px": 45.5594748597592,
+          "used_in_fit": true
+        },
+        {
+          "name": "223:wrist1_cap_px",
+          "observed_px": [
+            559,
+            135
+          ],
+          "predicted_px": [
+            598.8556134126379,
+            56.000247602778046
+          ],
+          "error_px": 88.4840708790007,
+          "used_in_fit": false
+        },
+        {
+          "name": "223:forearm_cap_px",
+          "observed_px": [
+            505,
+            43
+          ],
+          "predicted_px": [
+            529.3850382531851,
+            -25.957038058616718
+          ],
+          "error_px": 73.14166520135304,
+          "used_in_fit": false
+        }
+      ]
+    },
+    "rgb_fov_only": {
+      "fov_deg": [
+        54.20843241712849,
+        42.0
+      ],
+      "camera_height_above_mat_m": 0.963,
+      "fit_landmark_rmse_px": 32.413998881662835,
+      "withheld_timepoint_landmark_rmse_px": 33.24585001541628,
+      "wrist1_all_rmse_px": 41.49106787410491,
+      "forearm_all_rmse_px": 20.843347941595514,
+      "fixed_bin_corner_rmse_px": 27.934384226145003,
+      "fixed_bin_projected_px": [
+        [
+          188.28445846123003,
+          57.8217198713306
+        ],
+        [
+          442.69594035800264,
+          65.17989798306664
+        ],
+        [
+          447.9716130018916,
+          240.42682232409388
+        ],
+        [
+          156.6974140819082,
+          228.21051023108865
+        ]
+      ],
+      "landmarks": [
+        {
+          "name": "0:wrist1_cap_px",
+          "observed_px": [
+            534,
+            157
+          ],
+          "predicted_px": [
+            525.7475107945371,
+            110.54397582947763
+          ],
+          "error_px": 47.18332077989467,
+          "used_in_fit": true
+        },
+        {
+          "name": "0:forearm_cap_px",
+          "observed_px": [
+            494,
+            59
+          ],
+          "predicted_px": [
+            488.08943445367504,
+            39.07967619108675
+          ],
+          "error_px": 20.778693070772277,
+          "used_in_fit": true
+        },
+        {
+          "name": "55:wrist1_cap_px",
+          "observed_px": [
+            468,
+            219
+          ],
+          "predicted_px": [
+            451.3150049669383,
+            181.03589157129298
+          ],
+          "error_px": 41.46881464474137,
+          "used_in_fit": false
+        },
+        {
+          "name": "55:forearm_cap_px",
+          "observed_px": [
+            441,
+            126
+          ],
+          "predicted_px": [
+            435.79198982934565,
+            105.5737368167309
+          ],
+          "error_px": 21.079743773817885,
+          "used_in_fit": false
+        },
+        {
+          "name": "83:wrist1_cap_px",
+          "observed_px": [
+            440,
+            265
+          ],
+          "predicted_px": [
+            425.04221748142885,
+            230.05722207482933
+          ],
+          "error_px": 38.009643342192355,
+          "used_in_fit": true
+        },
+        {
+          "name": "83:forearm_cap_px",
+          "observed_px": [
+            418,
+            175
+          ],
+          "predicted_px": [
+            413.33940203124905,
+            156.4363199618527
+          ],
+          "error_px": 19.139785526098102,
+          "used_in_fit": true
+        },
+        {
+          "name": "111:wrist1_cap_px",
+          "observed_px": [
+            434,
+            273
+          ],
+          "predicted_px": [
+            419.6192321639804,
+            240.50861098860634
+          ],
+          "error_px": 35.5316315899398,
+          "used_in_fit": false
+        },
+        {
+          "name": "111:forearm_cap_px",
+          "observed_px": [
+            411,
+            188
+          ],
+          "predicted_px": [
+            409.234594540034,
+            168.15898009622515
+          ],
+          "error_px": 19.919405795858157,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:wrist1_cap_px",
+          "observed_px": [
+            432,
+            276
+          ],
+          "predicted_px": [
+            417.54693396981895,
+            242.4884784855824
+          ],
+          "error_px": 36.49538589854953,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:forearm_cap_px",
+          "observed_px": [
+            412,
+            190
+          ],
+          "predicted_px": [
+            407.6700793489632,
+            170.83621208922887
+          ],
+          "error_px": 19.64685674435717,
+          "used_in_fit": false
+        },
+        {
+          "name": "167:wrist1_cap_px",
+          "observed_px": [
+            438,
+            274
+          ],
+          "predicted_px": [
+            426.15594070172114,
+            238.54393157285915
+          ],
+          "error_px": 37.38200809174435,
+          "used_in_fit": true
+        },
+        {
+          "name": "167:forearm_cap_px",
+          "observed_px": [
+            416,
+            188
+          ],
+          "predicted_px": [
+            413.924097995803,
+            167.40636141368486
+          ],
+          "error_px": 20.6980027866168,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:wrist1_cap_px",
+          "observed_px": [
+            491,
+            225
+          ],
+          "predicted_px": [
+            484.63247279843495,
+            182.0474047718854
+          ],
+          "error_px": 43.422008699424815,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:forearm_cap_px",
+          "observed_px": [
+            454,
+            125
+          ],
+          "predicted_px": [
+            452.132794799111,
+            110.11795637727039
+          ],
+          "error_px": 14.998722533971149,
+          "used_in_fit": true
+        },
+        {
+          "name": "223:wrist1_cap_px",
+          "observed_px": [
+            559,
+            135
+          ],
+          "predicted_px": [
+            554.6857995718058,
+            85.14520441638973
+          ],
+          "error_px": 50.041112777577176,
+          "used_in_fit": false
+        },
+        {
+          "name": "223:forearm_cap_px",
+          "observed_px": [
+            505,
+            43
+          ],
+          "predicted_px": [
+            496.2191354853853,
+            16.169683784795353
+          ],
+          "error_px": 28.23064735056376,
+          "used_in_fit": false
+        }
+      ]
+    },
+    "rgb_robot_pose_fit": {
+      "fov_deg": [
+        54.20843241712849,
+        42.0
+      ],
+      "camera_height_above_mat_m": 0.9546315576829247,
+      "fit_landmark_rmse_px": 4.756133937534901,
+      "withheld_timepoint_landmark_rmse_px": 6.796423482621976,
+      "wrist1_all_rmse_px": 5.329561776139431,
+      "forearm_all_rmse_px": 6.356725057859604,
+      "fixed_bin_corner_rmse_px": 30.420782577643937,
+      "fixed_bin_projected_px": [
+        [
+          175.76807057566774,
+          74.19792283469687
+        ],
+        [
+          447.86172619578963,
+          55.339630463405115
+        ],
+        [
+          465.6291293182585,
+          254.40840916375495
+        ],
+        [
+          159.08973040035605,
+          266.1287821253149
+        ]
+      ],
+      "landmarks": [
+        {
+          "name": "0:wrist1_cap_px",
+          "observed_px": [
+            534,
+            157
+          ],
+          "predicted_px": [
+            533.3362768786643,
+            157.55406686898215
+          ],
+          "error_px": 0.864591508805907,
+          "used_in_fit": true
+        },
+        {
+          "name": "0:forearm_cap_px",
+          "observed_px": [
+            494,
+            59
+          ],
+          "predicted_px": [
+            487.9784013653866,
+            60.58074901047493
+          ],
+          "error_px": 6.225625876206764,
+          "used_in_fit": true
+        },
+        {
+          "name": "55:wrist1_cap_px",
+          "observed_px": [
+            468,
+            219
+          ],
+          "predicted_px": [
+            457.78056842964577,
+            225.18575766200487
+          ],
+          "error_px": 11.945726410486921,
+          "used_in_fit": false
+        },
+        {
+          "name": "55:forearm_cap_px",
+          "observed_px": [
+            441,
+            126
+          ],
+          "predicted_px": [
+            437.28138862843787,
+            128.8421388100253
+          ],
+          "error_px": 4.6803657494007,
+          "used_in_fit": false
+        },
+        {
+          "name": "83:wrist1_cap_px",
+          "observed_px": [
+            440,
+            265
+          ],
+          "predicted_px": [
+            435.6972154066964,
+            266.97814846580405
+          ],
+          "error_px": 4.735718172477526,
+          "used_in_fit": true
+        },
+        {
+          "name": "83:forearm_cap_px",
+          "observed_px": [
+            418,
+            175
+          ],
+          "predicted_px": [
+            419.214161583158,
+            177.00258358727916
+          ],
+          "error_px": 2.3419072086777026,
+          "used_in_fit": true
+        },
+        {
+          "name": "111:wrist1_cap_px",
+          "observed_px": [
+            434,
+            273
+          ],
+          "predicted_px": [
+            431.47044908902546,
+            274.7871822657131
+          ],
+          "error_px": 3.0972000681408294,
+          "used_in_fit": false
+        },
+        {
+          "name": "111:forearm_cap_px",
+          "observed_px": [
+            411,
+            188
+          ],
+          "predicted_px": [
+            416.41819307905405,
+            187.23570545648553
+          ],
+          "error_px": 5.47183354929179,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:wrist1_cap_px",
+          "observed_px": [
+            432,
+            276
+          ],
+          "predicted_px": [
+            429.6338869419601,
+            275.9064914186902
+          ],
+          "error_px": 2.3679600626289066,
+          "used_in_fit": false
+        },
+        {
+          "name": "139:forearm_cap_px",
+          "observed_px": [
+            412,
+            190
+          ],
+          "predicted_px": [
+            415.15935148616643,
+            189.37828062251612
+          ],
+          "error_px": 3.2199436015994087,
+          "used_in_fit": false
+        },
+        {
+          "name": "167:wrist1_cap_px",
+          "observed_px": [
+            438,
+            274
+          ],
+          "predicted_px": [
+            438.48504586204456,
+            271.70428832955525
+          ],
+          "error_px": 2.34639330933728,
+          "used_in_fit": true
+        },
+        {
+          "name": "167:forearm_cap_px",
+          "observed_px": [
+            416,
+            188
+          ],
+          "predicted_px": [
+            421.5331781578123,
+            185.57078258546474
+          ],
+          "error_px": 6.042942807372291,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:wrist1_cap_px",
+          "observed_px": [
+            491,
+            225
+          ],
+          "predicted_px": [
+            494.97911541527793,
+            223.52470033667106
+          ],
+          "error_px": 4.243803551617458,
+          "used_in_fit": true
+        },
+        {
+          "name": "195:forearm_cap_px",
+          "observed_px": [
+            454,
+            125
+          ],
+          "predicted_px": [
+            455.8271211060427,
+            132.0836451624317
+          ],
+          "error_px": 7.315490436285784,
+          "used_in_fit": true
+        },
+        {
+          "name": "223:wrist1_cap_px",
+          "observed_px": [
+            559,
+            135
+          ],
+          "predicted_px": [
+            563.6532875308139,
+            135.99524224865343
+          ],
+          "error_px": 4.758528341612902,
+          "used_in_fit": false
+        },
+        {
+          "name": "223:forearm_cap_px",
+          "observed_px": [
+            505,
+            43
+          ],
+          "predicted_px": [
+            494.0992907991608,
+            40.18098619184133
+          ],
+          "error_px": 11.259320580383573,
+          "used_in_fit": false
+        }
+      ]
+    }
+  }
+}

@@ -17,8 +17,8 @@ coupling gate), **ACE head** (asymmetric generation + contact-event reparametriz
 (latent-frame action injection, Cosmos-Policy style), **HID / HID-S** (haptic-imagination
 distillation + force-safety fine-tune).
 
-The full specification is [pipeline.md](pipeline.md); start reading the operational state at
-[docs/STATUS.md](docs/STATUS.md).
+The full specification is [pipeline.md](pipeline.md); the module-by-module map is
+[docs/code_structure.md](docs/code_structure.md).
 
 > HapticWAM was developed under the working name PHANTOM until 2026-09-14; the Python package and
 > CLI keep the name `phantom`.
@@ -66,13 +66,11 @@ Everything heavy lives on the Hugging Face hub under `armteam`:
 | [`armteam/hapticwam-teleop-raw`](https://huggingface.co/datasets/armteam/hapticwam-teleop-raw) | raw teleop episode sessions + the packed `dataset_v3_packed` training tarballs |
 | [`armteam/hapticwam-sim-episodes`](https://huggingface.co/datasets/armteam/hapticwam-sim-episodes) | Isaac Sim episodes |
 | [`armteam/hapticwam-rig-episodes`](https://huggingface.co/datasets/armteam/hapticwam-rig-episodes) | closed-loop rig deployment episodes |
-| [`armteam/hapticwam-results`](https://huggingface.co/datasets/armteam/hapticwam-results) | the result media (videos, plots, frame dumps) archived out of `docs/results/` |
+| [`armteam/hapticwam-results`](https://huggingface.co/datasets/armteam/hapticwam-results) | experiment result media — videos, plots, frame dumps, per-trial evidence |
 | [`armteam/phantom-checkpoints`](https://huggingface.co/armteam/phantom-checkpoints) | teacher / student / baseline weights — **id not renamed** |
 
 `tools/provision_v5.sh` and `tools/provision_distill.sh` pull a training box's dataset and
-checkpoints from the hub with nothing but an `HF_TOKEN`. The Markdown reports stay in the repo
-under [docs/results/](docs/results/README.md); what moved to the hub and why is recorded in
-[docs/history/RESULTS_ARCHIVE_20260918.md](docs/history/RESULTS_ARCHIVE_20260918.md).
+checkpoints from the hub with nothing but an `HF_TOKEN`.
 
 ## Run it
 
@@ -153,8 +151,8 @@ phantom/
   eval/             trial runner (ledger), metrics, recovery/retention aggregation
   scripts/          all entry points (see the launch guide)
 tests/              cosmos-free unit tests + tiny-model integration tests
+  fixtures/         test fixtures and the frozen study inputs the sim tooling reads
 tools/              rig launchers, provisioning, hub upload, sim and analysis tooling
-papers/             the manuscript source (edited on Overleaf — do not rewrite in-repo)
 docs/               the documentation set below
 ```
 
@@ -162,19 +160,18 @@ docs/               the documentation set below
 
 | Doc | Read it when |
 |---|---|
-| [docs/STATUS.md](docs/STATUS.md) | **first** — what is done, what remains, exact next actions |
-| [docs/ARCH_EXPLAINER_0912.md](docs/ARCH_EXPLAINER_0912.md) | you want the "what do we actually train, and why should it work" argument |
 | [docs/code_structure.md](docs/code_structure.md) | you want the module-by-module map and the design rules |
 | [docs/launch_guide.md](docs/launch_guide.md) | you need the exact command for any stage, on any machine |
 | [docs/training_playbook.md](docs/training_playbook.md) | running pretrain → teacher → HID → DAgger → HID-S |
+| [docs/inference.md](docs/inference.md) | loading a trained teacher and running it, mocked or on the rig |
 | [docs/deployment_runtime.md](docs/deployment_runtime.md) | deploying on the robot; safety layer; latency budget |
+| [docs/tactile_prediction_error.md](docs/tactile_prediction_error.md) | you need the TPE metric definition and how it is computed |
 | [docs/sensor_sdk.md](docs/sensor_sdk.md) | anything touches the DM-Tac sensors or the `dmrobotics` SDK |
 | [docs/hardware_bench_day1.md](docs/hardware_bench_day1.md) | the sensors/arm arrive — fills the `BENCH:` fields |
 | [docs/data_collection_sop.md](docs/data_collection_sop.md) | collecting the teleop dataset |
-| [docs/isaac_sim.md](docs/isaac_sim.md) | the Isaac Sim reconstruction: measured-motion replay and policy rollouts |
+| [docs/data_collect_app.md](docs/data_collect_app.md) | running the `phantom.data_collect` operator app |
+| [docs/pi05_baseline.md](docs/pi05_baseline.md) | exporting, fine-tuning and deploying the pi0.5 baseline |
 | [docs/rig_session_v5.md](docs/rig_session_v5.md) | you are about to run the physical rig |
-| [docs/results/](docs/results/README.md) | the archived experiment reports (historical text, PHANTOM naming) |
-| [docs/history/README.md](docs/history/README.md) | resolving pre-2026-09-18 commit hashes |
 
 ## Tests and CI
 
