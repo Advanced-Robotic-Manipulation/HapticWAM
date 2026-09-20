@@ -381,6 +381,7 @@ def recipe_student(student_runs):
     return ck
 
 
+@pytest.mark.model_smoke          # distill_hid.main: tiny CPU run -> checkpoint
 @pytest.mark.requires_cosmos_repo
 def test_the_student_checkpoint_records_the_window_recipe(recipe_student):
     """REPRODUCTION (audit (c)): `configs.train` had no record of these at all,
@@ -393,6 +394,7 @@ def test_the_student_checkpoint_records_the_window_recipe(recipe_student):
     assert saved["rollout_action_weight"] == "failure_demo"
 
 
+@pytest.mark.model_smoke          # ... and the 2-step --resume off that checkpoint
 @pytest.mark.requires_cosmos_repo
 def test_resume_restores_the_window_recipe_the_cli_forgot(recipe_student,
                                                           student_runs):

@@ -15,6 +15,7 @@ def _tactile_keys(rings):
     return sorted(k for k in rings if k.startswith("tactile_"))
 
 
+@pytest.mark.model_smoke          # a whole mock deploy episode, end to end
 def test_padfree_episode_runs_with_no_pad_worker_ring_or_stream(tmp_path):
     hw = make_small_hw()
     with DeploymentRuntime(hw, _CrawlPolicy(hw), mode="student", out_root=tmp_path,

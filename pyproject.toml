@@ -26,7 +26,11 @@ sim = [
 ]
 # Model/training stack (needs a CUDA box for real runs; CPU ok for tiny smoke tests)
 train = [
-    "torch>=2.7",
+    # floor raised 2.7 -> 2.13 on 2026-09-19: four GitHub advisories cover
+    # torch <= 2.12.1. requirements/*.txt pin the exact GPU pair (2.13.0+cu129
+    # / torchvision 0.28.0); this floor only keeps a plain `pip install -e .`
+    # off the flagged releases.
+    "torch>=2.13",
     "peft>=0.11",
     "safetensors",
     "tensorboard",

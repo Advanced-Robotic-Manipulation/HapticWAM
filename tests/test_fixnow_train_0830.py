@@ -171,6 +171,7 @@ def ft_a_run(base_ckpt, runs_root):
     return ck, msgs
 
 
+@pytest.mark.model_smoke   # train_teacher.main: 1 tiny CPU step -> ckpt -> 2 more
 @needs_cosmos
 def test_the_documented_ft_a_launch_line_runs_through_main(base_ckpt, ft_a_run):
     import torch

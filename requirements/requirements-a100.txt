@@ -2,9 +2,10 @@
 # PHANTOM — 8x A100 training cluster (Linux)
 # All training/fine-tuning: tactile pretrain, teacher, HID distillation,
 # DAgger re-distillation, HID-S. No robot-hardware drivers here.
-# Identical pins to requirements-h100.txt — the same cu128 wheels cover
-# A100's sm_80 (native bf16); NVIDIA driver new enough for CUDA 12.8 wheels
-# (>= 525 minimum, >= 570 recommended, same as the other boxes).
+# Identical pins to requirements-h100.txt — the same cu129 wheels cover
+# A100's sm_80 (native bf16); NVIDIA driver new enough for CUDA 12.x wheels
+# (>= 525 minimum via CUDA minor-version compatibility, >= 570 recommended,
+# same as the other boxes).
 #
 # Install (fresh node, Python 3.10-3.12 venv recommended):
 #     python -m venv ~/venvs/phantom && source ~/venvs/phantom/bin/activate
@@ -32,11 +33,15 @@
 #         --synthetic --max-steps 5 --compute a100x8        # DDP smoke
 # ============================================================================
 
-# --- PyTorch (cu128 wheels cover sm_80/A100; same pair as the other boxes) ---
-# Known-good tested pair: torch 2.7.1 + torchvision 0.22.1
---extra-index-url https://download.pytorch.org/whl/cu128
-torch==2.7.1                # documented known-good pair; 2.8.x never exercised on this code
-torchvision==0.22.1
+# --- PyTorch (cu129 wheels cover sm_80/A100; same pair as the other boxes) ---
+# 2026-09-19: bumped 2.7.1 -> 2.13.0 to clear four GitHub advisories against
+# torch <= 2.12.1; the cu128 index stops at torch 2.11.0, so the index moves
+# to cu129 (still CUDA 12.x, so the >= 525/570 driver rule is unchanged).
+# The cu129 x86_64 wheels carry sm_{75,80,86,90,100,120}.
+# Matching pair: torch 2.13.0 + torchvision 0.28.0.
+--extra-index-url https://download.pytorch.org/whl/cu129
+torch==2.13.0
+torchvision==0.28.0
 
 # --- phantom core ------------------------------------------------------------
 numpy>=1.24

@@ -7,10 +7,14 @@
 | 8×A100 cloud cluster | [requirements-a100.txt](requirements-a100.txt) | all training / fine-tuning (H100 alternative) |
 | Windows/any dev box | `pip install -e .[dev,train]` from the repo root | code, tests, mock-mode smoke |
 
-All Linux files pin the same PyTorch cu128 pair (Blackwell sm_120 *requires*
-≥2.7/cu128; the same wheels cover H100's sm_90 and A100's sm_80), the phantom
-core, the pip-installable part of the cosmos-predict2.5 import chain, and the
-test stack. They differ only in the hardware drivers (5090) and the optional
+All Linux files pin the same PyTorch cu129 pair — `torch==2.13.0` +
+`torchvision==0.28.0` (2026-09-19 bump from 2.7.1/0.22.1, which four GitHub
+advisories flagged; the cu128 index stops at torch 2.11.0, and cu129 is still
+CUDA 12.x so the driver requirement is unchanged). Those wheels are built for
+sm_{75,80,86,90,100,120}, i.e. Blackwell's sm_120, H100's sm_90 and A100's
+sm_80 alike. They also pin the phantom core, the pip-installable part of the
+cosmos-predict2.5 import chain, and the test stack. They differ only in the
+hardware drivers (5090) and the optional
 transformer_engine note (H100/A100). After installing on a cluster, select
 the training compute target with one gitignored line —
 `echo "target: h100x8" > configs/compute.local.yaml` (or `a100x8`) — see

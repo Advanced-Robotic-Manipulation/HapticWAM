@@ -125,6 +125,15 @@ def pytest_configure(config: pytest.Config) -> None:
         "slow: minutes-long test (spawned ranks, real training loops). Runs by "
         "default; CI deselects it with -m 'not slow'.",
     )
+    config.addinivalue_line(
+        "markers",
+        "model_smoke: the end-to-end MODEL path on tiny CPU configs — build a "
+        "teacher/student, real training steps, a checkpoint, a distill + "
+        "resume, a served tiny policy and a mock deploy episode. CI's "
+        "model-smoke job selects it with -m model_smoke so a dependency bump "
+        "(torch, transformers, cosmos) that breaks the model fails loudly "
+        "instead of silently skipping.",
+    )
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items) -> None:

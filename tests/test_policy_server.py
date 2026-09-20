@@ -136,6 +136,7 @@ def test_wire_format_drops_cpk():
     assert back.cpk is None and back.actions.shape == (2, 7)
 
 
+@pytest.mark.model_smoke          # a REAL tiny policy answering over the wire
 @pytest.mark.requires_cosmos_repo
 def test_real_tiny_policy_over_the_wire():
     """The riskiest plumbing: a REAL PhantomPolicy (tiny, CPU) served over the

@@ -18,8 +18,12 @@ def _cosmos_available() -> bool:
         return False
 
 
-pytestmark = pytest.mark.skipif(not _cosmos_available(),
-                                reason="cosmos repo not importable")
+pytestmark = [
+    # the model-build + train-step + checkpoint core of CI's model-smoke job
+    pytest.mark.model_smoke,
+    pytest.mark.skipif(not _cosmos_available(),
+                       reason="cosmos repo not importable"),
+]
 
 
 @pytest.fixture(scope="module")
