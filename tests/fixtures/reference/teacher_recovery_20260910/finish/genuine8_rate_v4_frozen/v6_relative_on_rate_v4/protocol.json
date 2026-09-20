@@ -1,8 +1,8 @@
 {
-  "actual_frozen_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
-  "bindings_sha256": "20284e751c997f59fb08a2a8106c836edd21892edd2d0689f1906209579b5567",
+  "actual_frozen_runtime_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
+  "bindings_sha256": "bb9351fd941e2f394495bf85415e88770789a608df02939acd164fc670f0e047",
   "boundary_projection_sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
-  "campaign_sha256": "8ac6b7d08216ed67fd04ff2511c5e8778dde91303b77c628c19bbb6ba11a5e6d",
+  "campaign_sha256": "30a6902ec9557cdf338b8c204825f487ea38fc8b4c70ca695ea1912e27f8900e",
   "checkpoint_baseline_disclosure": "Native checkpoint-owned wrench_baseline_rows=8; reset per trial and verify actual unloaded startup. No teacher baseline harmonization or fabricated zero observations.",
   "collector_adaptation_review_pending": false,
   "comparison_limit": "Actual new teacher inference uses RPC wall timings. Compare first rendered frame, settled q/TCP/aperture, first inference observation tensors/timestamps, delivered plans/accepted commands and first divergence before candidate FINISH. Same seed is not proof of an identical pre-effect trajectory.",
@@ -84,7 +84,7 @@
     "rate_solver_backoff_declared": "fk_rate_interior_v1"
   },
   "frozen_at_utc": "2026-09-11T08:00:19.577694+00:00",
-  "inference_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "inference_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
   "inference_source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
   "launch_authorized": true,
   "pending_prerequisites": [],
@@ -205,7 +205,7 @@
   },
   "source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
   "source_manifest_kind": "frozen_runtime",
-  "source_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "source_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
   "stage": "finish_gate",
   "status": "frozen",
   "technical_invalid_stop": "Preserve invalid attempt and stop remaining rows for diagnosis; do not silently retry or relax any existing guard.",
@@ -278,7 +278,7 @@
   },
   "diagnostic_gate_release": {
     "path": "gate_release.json",
-    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "sha256": "2449ebbfbd0b16c86aed828392ddd44317ddc8e1669d8d34dc948b7f56f1396c",
     "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
   },
   "paired_parent_block": {

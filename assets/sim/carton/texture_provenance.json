@@ -53,7 +53,7 @@
       192,
       512
     ],
-    "notes": "Genuine local-Y visible panel from nuc:/media/nuc/kostya_drive/references/Carton.jpg, image top+Z. Unoccluded ground-plane base; foreshortened ~29x19 source pixels. Silver/cyan printed panel, scene illumination baked; no invented lettering."
+    "notes": "Genuine local-Y visible panel from nuc:/media/nuc/phantom_drive/references/Carton.jpg, image top+Z. Unoccluded ground-plane base; foreshortened ~29x19 source pixels. Silver/cyan printed panel, scene illumination baked; no invented lettering."
   },
   {
     "asset": "assets/sim/carton/left.png",
@@ -81,6 +81,6 @@
       192,
       512
     ],
-    "notes": "Narrow visible local-X panel from nuc:/media/nuc/kostya_drive/references/Carton.jpg, image top+Z. Far bottom corner is predicted by upright cuboid fit (not directly visible); low-confidence peripheral face. No fabricated unseen face printing."
+    "notes": "Narrow visible local-X panel from nuc:/media/nuc/phantom_drive/references/Carton.jpg, image top+Z. Far bottom corner is predicted by upright cuboid fit (not directly visible); low-confidence peripheral face. No fabricated unseen face printing."
   }
 ]

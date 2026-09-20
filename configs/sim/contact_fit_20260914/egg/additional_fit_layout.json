@@ -313,7 +313,7 @@
     "physics": "uncalibrated rigid-body mass/friction/compliance priors; no crushing/fracture",
     "teleop_replay": {
       "review_manifest": "docs/results/task_scene_replay_20260914/egg/teleop_review.json",
-      "source_episode": "/media/nuc/kostya_drive/phantom_episodes/20260803_194615_egg/ep_egg_1785775873_000",
+      "source_episode": "/media/nuc/phantom_drive/phantom_episodes/20260803_194615_egg/ep_egg_1785775873_000",
       "source_meta_sha256": "cb49fa8bcb07b0e55072a9c0d31a9cbbef7b824018c5d12d6fa31786ccb1a016",
       "split": "fit",
       "target_holder_index": 3,

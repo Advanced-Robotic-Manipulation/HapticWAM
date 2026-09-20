@@ -276,7 +276,7 @@
   "scene_provenance": {
     "revision": "loaded_calibration_release_20260914",
     "parent_config": "configs/sim/loaded_calibration_20260914/carton/bounded_k1000_fit.json",
-    "parent_sha256": "6f9f3186ca9edf8bab2e9a69ac9aec739656afc4ab2d1d40acf569e05af5f827",
+    "parent_sha256": "e5b9be8a0e47193771413395ada4d10bd7f0b11758a60fa9f76161683acf5acc",
     "reference_role": "development_fit",
     "physical_changes_from_parent": "None. Alias preserves tested geometry,material,mass/inertia,motor,commands and observer settings.",
     "report": "docs/results/task_scene_loaded_calibration_20260914/README.md",
@@ -347,7 +347,7 @@
   },
   "provenance": {
     "frozen_parent_config": "configs/sim/loaded_calibration_20260914/carton/bounded_k1000_fit.json",
-    "frozen_parent_sha256": "6f9f3186ca9edf8bab2e9a69ac9aec739656afc4ab2d1d40acf569e05af5f827",
+    "frozen_parent_sha256": "e5b9be8a0e47193771413395ada4d10bd7f0b11758a60fa9f76161683acf5acc",
     "campaign_report": "docs/results/task_scene_loaded_calibration_20260914/README.md"
   }
 }

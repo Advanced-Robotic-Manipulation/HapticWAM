@@ -285,7 +285,7 @@
   },
   "freeze_authorization": {
     "path": "gate_release.json",
-    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "sha256": "2449ebbfbd0b16c86aed828392ddd44317ddc8e1669d8d34dc948b7f56f1396c",
     "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
   },
   "frozen_at_utc": "2026-09-11T08:00:19.577694+00:00",

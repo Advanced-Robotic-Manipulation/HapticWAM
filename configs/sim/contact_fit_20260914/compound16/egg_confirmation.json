@@ -313,7 +313,7 @@
     "physics": "uncalibrated rigid-body mass/friction/compliance priors; no crushing/fracture",
     "teleop_replay": {
       "review_manifest": "docs/results/task_scene_replay_20260914/egg/teleop_review.json",
-      "source_episode": "/media/nuc/kostya_drive/phantom_episodes/20260803_200914_egg/ep_egg_1785777238_005",
+      "source_episode": "/media/nuc/phantom_drive/phantom_episodes/20260803_200914_egg/ep_egg_1785777238_005",
       "source_meta_sha256": "b3cc3a88facc4fd4b0d1607bd812cf1463502c372f897d3721cd9677aaf13f97",
       "split": "heldout",
       "target_holder_index": 3,
@@ -443,7 +443,7 @@
   "provenance": {
     "compound_collision": {
       "parent_config": "configs/sim/contact_fit_20260914/egg/confirmation_layout.json",
-      "parent_sha256": "e6c63d2ce80d3dabd1f3b30e82ab3e9af0a4534373d8c5a5c92077db2ad964ca",
+      "parent_sha256": "96be6b29a9c0852d6f81bd090de286eeb7785220891a5f651c0109cc82ac6a30",
       "changes": "Egg collider only; same dimensions, pose, mass, material, visible shell, fixture, rig and measured commands. Native-audited 16-piece inscribed union, reciprocal100 authoring, hull vertex limit64."
     }
   }

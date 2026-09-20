@@ -1,23 +1,23 @@
 {
-  "actual_frozen_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "actual_frozen_runtime_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
   "blocks": [
     {
       "campaign": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_off_rate_v4/campaign.json",
-      "campaign_sha256": "05020c59f7c870f95dd517c0e4e24b4cf3db17df6cff491b689a3872419f6678",
+      "campaign_sha256": "9254dab6660a486b99f05c164c05e6a7026fc14f3ed2c29f5b12d7808be8beef",
       "id": "v6_relative_off_rate_v4",
       "observer_enabled": false,
       "protocol": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_off_rate_v4/protocol.json",
-      "protocol_sha256": "5cd5bf0bebcb038f24510ffab4f3ae0363db3f5001475b8c6b4ae0c65268e259",
+      "protocol_sha256": "e95076553175cf6723ef7e47b9881f033f07ff0a198747b335542308029c3f7d",
       "trials": 4,
       "paired_v3_block": "v6_relative_off_timing_v3"
     },
     {
       "campaign": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_on_rate_v4/campaign.json",
-      "campaign_sha256": "8ac6b7d08216ed67fd04ff2511c5e8778dde91303b77c628c19bbb6ba11a5e6d",
+      "campaign_sha256": "30a6902ec9557cdf338b8c204825f487ea38fc8b4c70ca695ea1912e27f8900e",
       "id": "v6_relative_on_rate_v4",
       "observer_enabled": true,
       "protocol": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/v6_relative_on_rate_v4/protocol.json",
-      "protocol_sha256": "03d87fc655cdb17be991b4c55b8de81191efd5f241af70acfc88d9a803296429",
+      "protocol_sha256": "91649a820d053a7632fa58d4cbf30de0baa627c1d540de021e9d87850fe3bf7c",
       "trials": 4,
       "paired_v3_block": "v6_relative_on_timing_v3"
     }
@@ -52,17 +52,17 @@
   "source_preparation_only": false,
   "stage": "rate_interior_finish_diagnostic_v4",
   "status": "frozen",
-  "source_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
-  "inference_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "source_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
+  "inference_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
   "hardware": "/dev/shm/phantom_teacher_recovery_genuine8_rate_inputs_v4_20260910/hardware_input.yaml",
   "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
   "frozen_at_utc": "2026-09-11T08:00:19.577694+00:00",
   "diagnostic_gate_release": {
     "path": "gate_release.json",
-    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "sha256": "2449ebbfbd0b16c86aed828392ddd44317ddc8e1669d8d34dc948b7f56f1396c",
     "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
   },
-  "bindings_sha256": "20284e751c997f59fb08a2a8106c836edd21892edd2d0689f1906209579b5567",
+  "bindings_sha256": "bb9351fd941e2f394495bf85415e88770789a608df02939acd164fc670f0e047",
   "parent_study_sha256": "e7996f67f8e2bb67d5221249691adc082e8ea2360fe7992e4b606cbd843c12fb",
   "boundary_projection_sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
   "rate_solver_backoff": "fk_rate_interior_v1"

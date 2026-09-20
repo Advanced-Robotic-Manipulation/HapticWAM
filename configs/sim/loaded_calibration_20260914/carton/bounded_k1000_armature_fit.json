@@ -277,7 +277,7 @@
   "scene_provenance": {
     "revision": "loaded_contact_calibration_v1",
     "parent_config": "configs/sim/support_profile_20260914/carton/body_y6_fit.json",
-    "parent_sha256": "3f401a8534b7ec0c73277912b8da8fb3bbc7798c6fca1b53c978ff1c02d17597",
+    "parent_sha256": "eae8bda08f4889e7f2ff2849ff62a0e0a37400dae2da9b9f55ca972723ecdc18",
     "reference_role": "development_fit",
     "report": "docs/results/task_scene_loaded_calibration_20260914/README.md",
     "status": "Experimental. Native gates required before replay; retain Y6 successful defaults until matched selection passes."
@@ -347,7 +347,7 @@
   },
   "provenance": {
     "frozen_parent_config": "configs/sim/contact_fit_20260914/motor_tracking/carton_fit.json",
-    "frozen_parent_sha256": "5e058d5964628f607e2d2ae83e7b0c77dd9f4bd0eab395ec29c6fea955a5f526",
+    "frozen_parent_sha256": "f0864c3e80a163aa5eb00dc8890665ddbd50f32198e68666842f337193e6e424",
     "campaign_report": "docs/results/task_scene_contact_fit_20260914/README.md"
   }
 }

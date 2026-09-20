@@ -277,7 +277,7 @@
   "scene_provenance": {
     "revision": "loaded_contact_calibration_v1",
     "parent_config": "configs/sim/support_profile_20260914/carton/body_y6_additional8096.json",
-    "parent_sha256": "22da86deec2d6662710b837a8ca17ada15a440d86017976803874f78e9aa5254",
+    "parent_sha256": "d312fa24fceb771d5b6c2f237b36c25fb7e57a3451d95359cbcda0f453e88ba9",
     "reference_role": "development_additional8096",
     "report": "docs/results/task_scene_loaded_calibration_20260914/README.md",
     "status": "Experimental. Native gates required before replay; retain Y6 successful defaults until matched selection passes."

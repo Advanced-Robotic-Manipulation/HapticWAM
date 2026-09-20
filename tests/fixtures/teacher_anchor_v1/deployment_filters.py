@@ -93,7 +93,7 @@ HISTORICAL_VETO_SOURCE_SHA256 = (
 
 @dataclass
 class TerminalVetoConfig:
-    """Deploy-time terminal commitment guard (review P3, 2026-08-28).
+    """Deploy-time terminal commitment guard (P3, 2026-08-28).
 
     The ACC gate is read-only at deploy — `plan.gate` / `plan.p_evt` are logged
     and nothing in `phantom/deploy/` lets them modify a chunk — while the rig
@@ -600,7 +600,7 @@ class TerminalVetoFilter:
         `plan.cpk` is the model's IMAGINED contact for the chunk it proposed,
         and the next replan feeds it back as `prev_cpk` (policy.py:244). After
         a rewrite it describes motion the arm was never asked to make, so it
-        must not condition the next chunk (Codex, 2026-08-30).
+        must not condition the next chunk (2026-08-30).
 
         With a policy server the package lives SERVER-side, addressed by
         `_cpk_token` — clearing only `cpk` (always None on the remote path)

@@ -275,9 +275,9 @@
   "scene_provenance": {
     "revision": "carton_side_profile_20260914_additional8096",
     "parent_config": "configs/sim/contact_fit_20260914/motor_tracking/carton_8096.json",
-    "parent_sha256": "2ce3b6975e2a229349dc665a14d5c965881dc8eecc87ce16bf92e13d48c8c755",
+    "parent_sha256": "12f8357a64e767e51f78f32de8149497ff24691b93eef2aa3bb37cef93d2d42d",
     "shape_parent_config": "configs/sim/support_profile_20260914/carton/body_y6_fit.json",
-    "shape_parent_sha256": "3f401a8534b7ec0c73277912b8da8fb3bbc7798c6fca1b53c978ff1c02d17597",
+    "shape_parent_sha256": "eae8bda08f4889e7f2ff2849ff62a0e0a37400dae2da9b9f55ca972723ecdc18",
     "source_episode": "ep_carton_1787398096_003",
     "reference_role": "previously reviewed development transfer; not reserved confirmation",
     "gripper_registration": {

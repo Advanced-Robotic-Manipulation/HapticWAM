@@ -12,12 +12,13 @@ natively resumable.
 """
 import csv
 import json
+import os
 import shutil
 import sys
 import time
 from pathlib import Path
 
-DRIVE = Path("/media/nuc/kostya_drive/phantom_episodes")
+DRIVE = Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes"
 STAGE = Path.home() / "phantom-hf-stage"
 QUALITY_CSV = Path.home() / "phantom-icra-2027" / "episode_quality.csv"
 REPO = "armteam/hapticwam-teleop-raw"

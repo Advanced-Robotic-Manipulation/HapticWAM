@@ -11,13 +11,14 @@ Output: ~/phantom-icra-2027/episode_quality.csv + summary on stdout.
 """
 import csv
 import json
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 import zarr
 
-ROOT = Path("/media/nuc/kostya_drive/phantom_episodes")
+ROOT = Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes"
 OUT = Path.home() / "phantom-icra-2027" / "episode_quality.csv"
 TASKS = ("Carton", "waffles", "egg", "whiteboard", "Carton_fail", "waffles_fail", "egg_fail", "whiteboard_fail")
 

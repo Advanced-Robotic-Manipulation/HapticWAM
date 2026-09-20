@@ -281,7 +281,7 @@
       "split": "fit",
       "review": "All native RGB frames reviewed for hand/object correction; none observed. Both recordings visibly pick, carry and release upright into bin.",
       "initial_frame": 0,
-      "dimension_source": "nuc:/media/nuc/kostya_drive/references/Carton.jpg",
+      "dimension_source": "nuc:/media/nuc/phantom_drive/references/Carton.jpg",
       "fit_scope": "Only initial object XY/yaw and mat XY/yaw from image landmarks. Shared rig and independent object dimensions fixed; no outcome tuning.",
       "heldout_definition": "Held out from geometry/material/controller fitting; episode-specific initial pose is measured from its first RGB frame, not excluded from initialization observation. Policy-training overlap not audited."
     }

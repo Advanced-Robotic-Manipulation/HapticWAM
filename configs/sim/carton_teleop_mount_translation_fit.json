@@ -321,7 +321,7 @@
     },
     "gripper_registration": {
       "base_config": "configs/sim/carton_teleop_fit.json",
-      "base_config_sha256": "7994162a37dfd3d6580825d35dd9d37933b09a3ea90b2f82389885a7daead660",
+      "base_config_sha256": "cbd7966092f5c51deed5936e8d6ae2823a3831d4569a4d1f1c3c181fb1eb287a",
       "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
       "recommendation_sha256": "724fd04138fdea74a7d38be918d8ed2d7706eb862000ae21d5876d609317a8cd",
       "frame": "tool0 @ Rz(-pi/2+gripper.yaw) @ T(root_xyz,Rotation.from_rotvec(root_rotvec)) @ nominal_gripper_chain",
@@ -330,7 +330,7 @@
     },
     "image_height_candidate": {
       "parent_config": "configs/sim/carton_teleop_registered_fit.json",
-      "parent_config_sha256": "2e04ddaabd2de564b9bccefe59fb149e386f9a4661fd2ecc833e01a10a6f11b0",
+      "parent_config_sha256": "1bbfb3008f0b96ed0e2fb098ebbd9b5b3d46d3c8033003fb0adc096140fe5898",
       "audit": "docs/results/task_scene_replay_20260914/carton/initial_height_audit.json",
       "audit_sha256": "5bbed7565496b886cec4668282fa06e4bb5f64e1ba8888c23dce4fa8e36b230f",
       "height_source_split": "fit",
@@ -365,7 +365,7 @@
     "teleop_scene_revision": {
       "revision": "clean_teleop_reconstruction_v2",
       "parent_config": "configs/sim/carton_teleop_imageheight_fit.json",
-      "parent_sha256": "ae4afc9633f708dd99ab600a0d68f4b438cd141924132e653fff27b92b730d4f",
+      "parent_sha256": "28d28aa01805981a0fd6e4507bb8a84e02ca8ed430d66de625d1176ac8b5ec0b",
       "appearance_evidence": "docs/results/task_scene_replay_20260914/rig/proposed_w2l_visual_materials.json",
       "appearance_evidence_sha256": "a1024b892408df0a6b47f2280811fce079701382ed8a310c257875ee7a02a5fd",
       "changes": "Dark sensor cover/base/cable materials only; image-supported carton height/pose preserved.",
@@ -374,7 +374,7 @@
     },
     "mount_translation_diagnostic": {
       "parent": "configs/sim/carton_teleop_reconstruction_fit.json",
-      "parent_sha256": "a0cc774455bf1ead237180836d3b33c0ca0cf437ffbd33d56092f2df742a009d",
+      "parent_sha256": "bc38bebac096dafcdd5a99ff8011cfb2875b9bb00985f3f76148feff6d4dd39f",
       "patch": "docs/results/task_scene_replay_20260914/rig/sensor_translation_candidate_patch.json",
       "patch_sha256": "287582bd5a3640760a6699c102d1a02a25c43a8fb9fc6d5eff9503484ef9ab00",
       "scope": "Bounded sensitivity test of an independently fitted precontact sensor translation. Geometry, recorded motion and contact parameters unchanged. Reused episodes are diagnostic cases, not fresh qualification trials."

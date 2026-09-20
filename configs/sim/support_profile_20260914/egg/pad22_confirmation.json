@@ -277,7 +277,7 @@
     "revision": "source_support_20260914",
     "parent_config": "configs/sim/support_profile_20260914/egg/pad22_fit.json",
     "parent_sha256": "ccb3c8b06babd0df18944d2c55139d0a75fae8a5f36f3002fef7f611bc9d3aed",
-    "source_episode": "/media/nuc/kostya_drive/phantom_episodes/20260803_200914_egg/ep_egg_1785777238_005",
+    "source_episode": "/media/nuc/phantom_drive/phantom_episodes/20260803_200914_egg/ep_egg_1785777238_005",
     "reference_role": "reserved_confirmation_not_yet_run",
     "gripper_registration": {
       "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
@@ -290,7 +290,7 @@
     "contact_model": "K300N/m,D5Ns/mpercontact;5mmmaximumcompression implements unmeasured high-strainbottoming, not a measured buriedplate. Staticvisualmeshdoesnotdeform.",
     "report": "docs/results/task_scene_support_profile_20260914/README.md",
     "layout_parent_config": "configs/sim/contact_fit_20260914/compound16/egg_confirmation.json",
-    "layout_parent_sha256": "782f6560fe6210682e0ba855a56417f0c0c9bd16bfa95752581f8bed05a3310d"
+    "layout_parent_sha256": "fe5197513353ef348f23d68b192ca265aad8ef3271e69f00478265252f631837"
   },
   "object": {
     "kind": "egg",
@@ -408,7 +408,7 @@
     "frozen_parent_config": "configs/sim/support_profile_20260914/egg/pad22_fit.json",
     "frozen_parent_sha256": "ccb3c8b06babd0df18944d2c55139d0a75fae8a5f36f3002fef7f611bc9d3aed",
     "frozen_layout_config": "configs/sim/contact_fit_20260914/compound16/egg_confirmation.json",
-    "frozen_layout_sha256": "782f6560fe6210682e0ba855a56417f0c0c9bd16bfa95752581f8bed05a3310d",
+    "frozen_layout_sha256": "fe5197513353ef348f23d68b192ca265aad8ef3271e69f00478265252f631837",
     "campaign_report": "docs/results/task_scene_support_profile_20260914/README.md"
   }
 }

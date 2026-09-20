@@ -274,7 +274,7 @@
   "task": "carton",
   "scene_provenance": {
     "parent_config": "configs/sim/support_profile_20260914/carton/body_y4_fit.json",
-    "parent_sha256": "d181709f96d55debfb39f90239e05b38485723a101e06c027801523bfdb0faaf",
+    "parent_sha256": "876650b83e3fe17e8a36fbbe794581c5de4f7fa1307bcf88d0b8d27c69c0d567",
     "revision": "side_profile_y6_followup_20260914",
     "source_episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_150330_carton/ep_carton_1787400225_000",
     "reference_role": "development_fit",
@@ -345,7 +345,7 @@
   },
   "provenance": {
     "frozen_parent_config": "configs/sim/contact_fit_20260914/motor_tracking/carton_fit.json",
-    "frozen_parent_sha256": "5e058d5964628f607e2d2ae83e7b0c77dd9f4bd0eab395ec29c6fea955a5f526",
+    "frozen_parent_sha256": "f0864c3e80a163aa5eb00dc8890665ddbd50f32198e68666842f337193e6e424",
     "campaign_report": "docs/results/task_scene_contact_fit_20260914/README.md"
   }
 }

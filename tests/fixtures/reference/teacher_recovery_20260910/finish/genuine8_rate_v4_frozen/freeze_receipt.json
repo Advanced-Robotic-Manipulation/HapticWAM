@@ -2,7 +2,7 @@
   "schema": "genuine8_rate_v4_frozen_inputs_v1",
   "status": "frozen",
   "parent_input_manifest_sha256": "e0d37e0f2d5c00f4d4c7ddf8c36e58d6ced3afccb2a829290452c88d780c5c75",
-  "actual_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "actual_runtime_manifest_sha256": "29721a61981926e2d7788a9bae5f0c8b38f63157fda32d827d268a3a99497db3",
   "evidence": {
     "mechanics": {
       "path": "evidence/mechanics.json",
@@ -26,7 +26,7 @@
     },
     "runtime_cpu": {
       "path": "evidence/runtime_cpu.json",
-      "sha256": "188812e31f4040f72cd0e879092be79baf9e67b5edb0d1daaafc723c6ee06795",
+      "sha256": "bd3ba2b64eca85245626682d5982c20c58e851f4a79a8af03cf9729d3684235e",
       "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/cpu_gate_v1/cpu_gate_terminal_receipt.json"
     },
     "collector": {
@@ -41,12 +41,12 @@
     },
     "source_transfer": {
       "path": "evidence/source_transfer.json",
-      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f",
+      "sha256": "ddeefcfdfa2da8c576d79dff3c3a2f124d9dee20e8a62f99f278f5945e2825de",
       "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json"
     },
     "runtime_v10_transfer": {
       "path": "evidence/runtime_v10_transfer.json",
-      "sha256": "eebc17f27da30c6c0bc4edc9be34c382cebe994e714c3631832e7b3b5d49af6f",
+      "sha256": "ddeefcfdfa2da8c576d79dff3c3a2f124d9dee20e8a62f99f278f5945e2825de",
       "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/orchestration/rate_runtime_v10_execution/transfer.json"
     },
     "controller_preparation_release": {
@@ -82,7 +82,7 @@
   },
   "gate_release": {
     "path": "gate_release.json",
-    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "sha256": "2449ebbfbd0b16c86aed828392ddd44317ddc8e1669d8d34dc948b7f56f1396c",
     "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
   },
   "block_mapping": {

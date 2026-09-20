@@ -289,13 +289,13 @@
       "split": "fit",
       "review": "All native RGB frames reviewed for hand/object correction; none observed. Both recordings visibly pick, carry and release upright into bin.",
       "initial_frame": 0,
-      "dimension_source": "nuc:/media/nuc/kostya_drive/references/Carton.jpg",
+      "dimension_source": "nuc:/media/nuc/phantom_drive/references/Carton.jpg",
       "fit_scope": "Only initial object XY/yaw and mat XY/yaw from image landmarks. Shared rig and independent object dimensions fixed; no outcome tuning.",
       "heldout_definition": "Held out from geometry/material/controller fitting; episode-specific initial pose is measured from its first RGB frame, not excluded from initialization observation. Policy-training overlap not audited."
     },
     "gripper_registration": {
       "base_config": "configs/sim/carton_teleop_fit.json",
-      "base_config_sha256": "7994162a37dfd3d6580825d35dd9d37933b09a3ea90b2f82389885a7daead660",
+      "base_config_sha256": "cbd7966092f5c51deed5936e8d6ae2823a3831d4569a4d1f1c3c181fb1eb287a",
       "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
       "recommendation_sha256": "724fd04138fdea74a7d38be918d8ed2d7706eb862000ae21d5876d609317a8cd",
       "frame": "tool0 @ Rz(-pi/2+gripper.yaw) @ T(root_xyz,Rotation.from_rotvec(root_rotvec)) @ nominal_gripper_chain",

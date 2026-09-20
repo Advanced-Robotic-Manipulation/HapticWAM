@@ -11,12 +11,13 @@ Usage: sync_task_view.py [--only TASK] [--dry-run]
 import argparse
 import csv
 import json
+import os
 import time
 from pathlib import Path
 
 from huggingface_hub import HfApi
 
-DRIVE = Path("/media/nuc/kostya_drive/phantom_episodes")
+DRIVE = Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes"
 QUALITY_CSV = Path.home() / "phantom-icra-2027" / "episode_quality.csv"
 REPO = "armteam/hapticwam-teleop-raw"
 EXPECTED = {"Carton": 180, "waffles": 180, "egg": 180, "whiteboard": 180,

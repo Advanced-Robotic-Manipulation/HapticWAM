@@ -295,7 +295,7 @@
     },
     "gripper_registration": {
       "base_config": "configs/sim/carton_teleop_heldout.json",
-      "base_config_sha256": "86f21f55283dac30d1c81b0b3a1ecea853b3565379c4579fd719365c0f6615b2",
+      "base_config_sha256": "84ccba04f88e563505f10907709498cd1c8b8b0f91f37134b936bcadb5930328",
       "recommendation": "docs/results/task_scene_replay_20260914/rig/recommended_correction.json",
       "recommendation_sha256": "724fd04138fdea74a7d38be918d8ed2d7706eb862000ae21d5876d609317a8cd",
       "frame": "tool0 @ Rz(-pi/2+gripper.yaw) @ T(root_xyz,Rotation.from_rotvec(root_rotvec)) @ nominal_gripper_chain",
@@ -304,7 +304,7 @@
     },
     "image_height_candidate": {
       "parent_config": "configs/sim/carton_teleop_registered_heldout.json",
-      "parent_config_sha256": "99b00bf4ecabcdcebaad6c44774f3a065775d45ef500997ea9736bae6519b1b7",
+      "parent_config_sha256": "7f926bcdfab2e4be3b1cb8f979959722cd5e3d76fe5e6ed2e6c1426c1184e064",
       "audit": "docs/results/task_scene_replay_20260914/carton/initial_height_audit.json",
       "audit_sha256": "5bbed7565496b886cec4668282fa06e4bb5f64e1ba8888c23dce4fa8e36b230f",
       "height_source_split": "fit",

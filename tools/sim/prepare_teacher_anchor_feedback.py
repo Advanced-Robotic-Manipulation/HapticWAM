@@ -15,8 +15,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 MODULE = "tools/sim/deployment_filters.py"
-BASE_SHA = "2e399430dade3dd4f92cc1084801454bcae0512b44ddb5916e16dcc2199e9675"
-DONOR_SHA = "e2bbd88272eae4f84c0403becf3e066f0490041e82af1db7cefe8a541a65b0d2"
+BASE_SHA = "a8074266d7fe7e09e978298d119fe7dd3ad4f2fe37920870799023a7ac18cc82"
+DONOR_SHA = "b48664e2a52aa59113f3dc08b41602e1f6ceda0591ae453e61edf529e56d509e"
 
 
 def sha(value):

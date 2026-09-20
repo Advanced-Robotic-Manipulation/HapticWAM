@@ -6,13 +6,14 @@ this quantifies what actually differs — not just force, but speed, smoothness,
 contact behaviour, gripper load and how often the arm faulted.
 """
 import json
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 import zarr
 
-ROOT = Path("/media/nuc/kostya_drive/phantom_episodes")
+ROOT = Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes"
 FIRST_N, LAST_M = int(sys.argv[1]) if len(sys.argv) > 1 else 40, \
                   int(sys.argv[2]) if len(sys.argv) > 2 else 5
 

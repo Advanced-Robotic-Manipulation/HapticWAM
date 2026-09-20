@@ -6,11 +6,12 @@ counts per task and per session. Dedups by (session, episode) name across
 roots -- the external drive is canonical, local dirs are live staging.
 """
 import json
+import os
 from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOTS = [
-    Path("/media/nuc/kostya_drive/phantom_episodes"),   # canonical, first wins
+    Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes",   # canonical, first wins
     Path.home() / "phantom-data" / "collect",
     Path.home() / "phantom-data" / "episodes",
 ]

@@ -284,7 +284,7 @@
       "reference_episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_162344_egg/ep_egg_1787405044_000",
       "primary_reference_episode": "/home/physicalai/phantom-icra-2027/data/val_eval/tasks/egg/ep_egg_1785777201_004",
       "source_reference_photo": {
-        "path": "/media/nuc/kostya_drive/references/egg.jpg",
+        "path": "/media/nuc/phantom_drive/references/egg.jpg",
         "local_copy": "artifacts/isaac_objects/egg_evidence/nuc_reference_egg.jpg",
         "sha256": "5721a6815b351be8785364b77b126f865a7f582cc44bff842fb8ecf07e24cee2",
         "relationship": "Approximately same shifted layout as Aug22, not pixel-identical, photograph gripper partly hides egg"

@@ -36,7 +36,7 @@ os.environ.setdefault("HF_XET_HIGH_PERFORMANCE", "1")   # HF_HUB_ENABLE_HF_TRANS
 REPO = "armteam/hapticwam-teleop-raw"
 HUB_PREFIX = "archive"          # single canonical hub prefix for all copies
 ROOTS = [
-    Path("/media/nuc/kostya_drive/phantom_episodes"),   # canonical, scanned first
+    Path(os.environ.get("PHANTOM_NUC_DRIVE", "/media/nuc/phantom_drive")) / "phantom_episodes",   # canonical, scanned first
     Path.home() / "phantom-data" / "collect",
     Path.home() / "phantom-data" / "episodes",
 ]

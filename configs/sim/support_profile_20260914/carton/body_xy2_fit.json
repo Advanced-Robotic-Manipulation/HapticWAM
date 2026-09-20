@@ -274,7 +274,7 @@
   "task": "carton",
   "scene_provenance": {
     "parent_config": "configs/sim/carton_teleop_contact_fit.json",
-    "parent_sha256": "55ef3435ce102d58351616938710be4fcd7a8093c112b37b9f998ccfcb065221",
+    "parent_sha256": "6e09a6a5eceb08c59d1c5095f4ad9b52c5115a2cdf008620e61373d4036f26b8",
     "revision": "side_profile_20260914",
     "source_episode": "/home/physicalai/phantom-icra-2027/data/full/raw/archive/20260822_150330_carton/ep_carton_1787400225_000",
     "reference_role": "development_fit",
@@ -344,7 +344,7 @@
   },
   "provenance": {
     "frozen_parent_config": "configs/sim/contact_fit_20260914/motor_tracking/carton_fit.json",
-    "frozen_parent_sha256": "5e058d5964628f607e2d2ae83e7b0c77dd9f4bd0eab395ec29c6fea955a5f526",
+    "frozen_parent_sha256": "f0864c3e80a163aa5eb00dc8890665ddbd50f32198e68666842f337193e6e424",
     "campaign_report": "docs/results/task_scene_contact_fit_20260914/README.md"
   }
 }
