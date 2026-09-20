@@ -1,0 +1,11 @@
+{
+  "nfe": 10,
+  "guidance": 1.0,
+  "k_seeds": 1,
+  "parity_fixes": false,
+  "persistent_noise": false,
+  "task_text": "pick up the waffles",
+  "drop_video": false,
+  "close_p": 0.5,
+  "action_time_origin": "inference_ready"
+}

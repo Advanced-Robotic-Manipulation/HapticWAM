@@ -1,0 +1,249 @@
+{
+  "gate": "mechanics",
+  "status": "passed",
+  "passed": true,
+  "explicit_readiness_review": true,
+  "bindings": {
+    "source_manifest_sha256": "e6c8fb8ea4d3e6adb9a7fa2d9850e9bdfdb58e250a7d9ffa4fdd70da6dff1515",
+    "scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+    "finish_config_sha256": "f191377711effae559bfea341c6837a0616ae3b76e90788cbcaf9d6f6e18fa4d",
+    "boundary_projection_sha256": "a33cc9a3f5dbfc7b5bf71529caa530e2425538b3cffbaa9e5462b5e2a5499288"
+  },
+  "source_manifest_sha256": "e6c8fb8ea4d3e6adb9a7fa2d9850e9bdfdb58e250a7d9ffa4fdd70da6dff1515",
+  "scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+  "thresholds_relaxed": false,
+  "checks": {
+    "asymmetric_hard_contact_passed": true,
+    "historical_failure_replay_passed": true,
+    "original_thresholds_preserved": true,
+    "physical_source_equivalence_reviewed": true,
+    "runtime_changes_reviewed": true,
+    "measured_positive_pick_and_carry_preserved": true,
+    "every_physics_step_independently_audited": true,
+    "original_invalid_scores_preserved": true
+  },
+  "tested_source_manifest_sha256": "93a158b8c43b3b67ce70e1304678a5ac86bd9be1e788ed7ca1b9d12db3135b34",
+  "rationale": "Root reviewed the original passed13candidate fixtures/416000steps, both exact historical failure endpoints and measured7073pickup/carry control without changing any original threshold. Finalruntime515files preserve the same100physicalsourcefiles. Prior93a158-to-e9a744source review is composed with the independently reviewed14overlays from e9a744 to e6c8fb8 (11production and3testfiles). The default command-replay path retains the old mechanical implementation. This transfers only existing physical/default-replay evidence to the new runtime and clears the separate frozen boundary/finish physics experiment; no old experiment is claimed to have executed the new complete source.",
+  "limitations": "This is bounded simulation mechanics readiness, not calibrated hardware, policy placement or reliability. Identical historical commands produce different contact trajectories; Q2backing loads decrease substantially, so identical-load convergence under the original3kN samples is not established. Fixture forces and tactile transfer remain uncalibrated. Mechanics executed old fullsource93a158; full_new_source_tested remains false. Finalsourcee6c8fb8 must run in BOTH finish-physics arms, including shared periodic elbow guard and zero configured wrench delay. FINISH and independent placement remain separate; qualification still requires reviewed finish readiness. The new enabled policy treatment changes command selection/submission/terminal holds and adds full physics-step readback. Its enabled terminal path includes one additional0.25ms endpoint sample/step relative to the prior early endpoint. These differences are shared by both v3arms and require the new physical boundary/finish gate. No new physical trial or qualification has yet run.",
+  "evidence": {
+    "candidate_full_audit": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/position128_final_audit.json",
+      "sha256": "7d6a3a486758e0addeedfba87ea718aa27f8d483001a632dae8aa8be3d3f746d"
+    },
+    "candidate_hard_paths": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/position128_hard_path_audit.json",
+      "sha256": "06e6b7d4e34eb215655acecd00ad06160f2c3cd9578f4e64d58f8efa706cf97b"
+    },
+    "candidate_runtime_readback": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/position128_readback_audit.json",
+      "sha256": "bee749d197f49a9540ad0d0cb53413eea5741945460a0e7914dafd3f7d44e258"
+    },
+    "candidate_protocol": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/position128_protocol.json",
+      "sha256": "6016ffa880cd2ac731160a64082eb9cb9381c1ca53bfb408a9938621e2e740c8"
+    },
+    "hard_path_requirements": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/hard_path_requirements.json",
+      "sha256": "fdaf10c3d7270b6799ac81f244e662859dbab1195f560c530df884024905c541"
+    },
+    "historical_gates": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/historical_receipt.json",
+      "sha256": "83ab244e772bb545c7e1bdf94092d03f1fee4aabd74b8f87109acab24be500cc"
+    },
+    "historical_T16": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/T16_position128_audit.json",
+      "sha256": "b3f99720da4a28eef4180b6e395e80df2bddce4043392df980096fe9c0917b51"
+    },
+    "historical_Q2": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/Q2_position128_audit.json",
+      "sha256": "5dc77f3b0d4cc77ce90149be541f5c2a9a47b877fee2ce060e01369f15ec06f8"
+    },
+    "historical_positive7073": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/positive7073_position128_audit.json",
+      "sha256": "130ff2c760452e53ca3439cf414c53db79ebe58c80b1e94d8bb6e6683e1d44ad"
+    },
+    "baseline_full_audit": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/baseline_final_audit.json",
+      "sha256": "5c4af7902ef7dfc060e8bb66ba5100a8940e24d96481fc74e48fb6700a8c401d"
+    },
+    "baseline_hard_paths": {
+      "path": "docs/results/teacher_recovery_20260910/mechanics/baseline_hard_path_audit.json",
+      "sha256": "d3cdf0a4daa59f0ef58a657e477835018de3958a910b5ffc642ba07b00032e3e"
+    },
+    "runtime_review": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/runtime_v2_snapshot_transfer_independent_review.json",
+      "sha256": "4f8118a3f0ba50630dae1898520b0876fb958a346a199b8ae50657470333279b"
+    },
+    "runtime_cpu_transfer": {
+      "path": "docs/results/teacher_recovery_20260910/runtime_transfer/cpu_transfer_checks.json",
+      "sha256": "61d2e57b8ce27650cf7406f57fce21a5fec9deb0c9527c11228cac0e34b32a4a"
+    },
+    "runtime_preservation": {
+      "path": "docs/results/teacher_recovery_20260910/preservation/runtime_v1_preservation.json",
+      "sha256": "3434923cec9dd8615fb93dd105f71b30282be307697fbe6ff634d8c925d84678"
+    },
+    "history_preservation": {
+      "path": "docs/results/teacher_recovery_20260910/preservation/position128_histories.json",
+      "sha256": "912ea04bef3d610808b8e4202c92c2481ccdd8db42a797e3278c920a47a943b2"
+    },
+    "baseline_preservation": {
+      "path": "docs/results/teacher_recovery_20260910/preservation/mechanics_baseline_lossless_archive.json",
+      "sha256": "572c5849b4ccd73145ac2a6a5863807b1578d2dff61c9411a013cddc457b27bf"
+    },
+    "prior_runtime_review": {
+      "path": "docs/results/teacher_recovery_20260910/runtime_transfer/runtime_transfer_review.json",
+      "sha256": "487b05e0472f4f3daa4659edf68518a8088954039d93e544bffb35521c7a996f"
+    },
+    "boundary_runtime_review": {
+      "path": "docs/results/teacher_recovery_20260910/orchestration/boundary_runtime_independent_review_v1.json",
+      "sha256": "ff91995735c75abc466a8509d9812d0baf7d6aa17edfdc553ae5eb059f455f77"
+    },
+    "final_runtime_preservation": {
+      "path": "docs/results/teacher_recovery_20260910/preservation/runtime_v2_preservation.json",
+      "sha256": "ea3a8edd12ee0376087f9e735393ae56354896691e46b4f8b8b940bfc3a3132b"
+    }
+  },
+  "source_transfer": {
+    "kind": "physical_file_hash_equivalence",
+    "physical_file_sha256": {
+      "assets/sim/dmtac_w2l/PROVENANCE.json": "409132e645db4bd993d438006263c56c58a61634798abcbc7508bdd0e924841d",
+      "assets/sim/dmtac_w2l/README.md": "e2a0d2e5228f4525089d54b1bb6d29d4a09272df385cbf662f5b012539f2d36c",
+      "assets/sim/dmtac_w2l/geometry.json": "2ba764e97fd0f066d4c4641b16497dd42c3de8d41f967d49f5f5b850ce16832f",
+      "assets/sim/dmtac_w2l/meshes/bottom_cap_collision_00.stl": "3896181990374158487b29efe1af72cd62e21d72bde403a88718473cc84b963b",
+      "assets/sim/dmtac_w2l/meshes/bottom_cap_visual.stl": "747e9d0e49ab11df0106ee90598cdb95594afbd7b9b14263d92abe777c0b7048",
+      "assets/sim/dmtac_w2l/meshes/cable_stub_collision_00.stl": "cd73b6c43ab5fd325d372a01ee222332f04dcf1160509ca6a19e66fc781cbc3a",
+      "assets/sim/dmtac_w2l/meshes/cable_stub_visual.stl": "7c5cfd37bda26efc4a71ea9c7aa5fca8a76168237307b52e826358605334dc50",
+      "assets/sim/dmtac_w2l/meshes/connector_collision_00.stl": "89804f672fef16dde19379efe12ef43fb1aee8b41850d7d838823def38ae833f",
+      "assets/sim/dmtac_w2l/meshes/connector_visual.stl": "cc7bb80faf2100a557ce7da8b5f26d2354887ae735dc0b2a3645a59109f0f405",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_00.stl": "874624f555719048babb7907c582c8677ee79e4da0fe019d886a0d10626c1da3",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_01.stl": "21d67cbb577545a83f6cf27929f6f7d0b1838fb0ae584d6aec4abedfffffae08",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_02.stl": "62fefe667f18a4ad014953d82e20d3b6bf9b42cd2874d3584f2c04375ea3dbc0",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_03.stl": "3c7d10ab329c27eba1883a8df90787d9129fe600f4c9188f3d13a4cac9e0f395",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_04.stl": "9f1834394253efa1bae26922cf905aec01a44ea1eecc3026ac49fe86f48e4ab0",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_05.stl": "66bbe40e8993c02ded1bf7a3d7d09cdf860668f1497d72f3e53c39794cc13a40",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_06.stl": "1de4093d387d6a5f999dc2460311e733567df824b8ec9a0711bf36fbaed28bd9",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_07.stl": "01ca5aac884de043f86d4740493e6876d5236e15cf115db136d9e338f1bae3ca",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_08.stl": "649ff8274ddf9e610a44c330e0008858cc6f79db825a3c1c19363f2054b1aa71",
+      "assets/sim/dmtac_w2l/meshes/cover_collision_09.stl": "ad6e18365d57178b4534c7840478383816668a4259af2351accc5683249a6a76",
+      "assets/sim/dmtac_w2l/meshes/cover_visual.stl": "76eb34af268fc5e2b0b097fae8b88a4ec4448aae87a7421570d437faf32a1103",
+      "assets/sim/dmtac_w2l/meshes/gel_collision_00.stl": "6aae000479b0cdbba861b5014a4269f20a0f0d1719024a7798a0de613a399a3c",
+      "assets/sim/dmtac_w2l/meshes/gel_visual.stl": "e0c88c12e18520c8f606d86513173a1861bcdbbead296f23da396b4f54b020bd",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_00.stl": "04a643a118d7c868ab0bc44b8b8e610c2b4fbac1655f636a65a71b4d4dc78e68",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_01.stl": "a02a12303fb9787c66dc239c47a96f222fc82b6fc9e9c474aa51f84e4a3cafc6",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_02.stl": "97cbc22c31b40f38336edb04cbc5abf6852608229b83cca46b43a76182ee4a82",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_03.stl": "df798bf73d24018a46ba2bc55d7b4c47dbc27cbd8c93deeb3012058a66e308f7",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_04.stl": "df7f425fa5ea167648388f9799886d7ddc368575b1121bfe3abe1997955ed685",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_05.stl": "f9e3ab618f5bd2c2dc71332d2900a192cbccad4f0c6fda7292b85eeecd7a91ce",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_06.stl": "07ec7b8dded7a9eced0142ecfce4fdc12c2a56f3a2b9202c620befef6d5b307f",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_07.stl": "6ddfb9d954e089b832807c93b25b0680ad1f80c2ecdc6670fd2453f928be5994",
+      "assets/sim/dmtac_w2l/meshes/housing_collision_08.stl": "13105f7efeb0801e6362253706889a8af3d94a092780eb3eeb0751dd60891810",
+      "assets/sim/dmtac_w2l/meshes/housing_visual.stl": "521527668101efe4529fe0bf4810a717c52a227e4c59bec07948bb36d3ca66fd",
+      "assets/sim/dmtac_w2l/meshes/internals_and_fasteners_visual.stl": "5e7176a94f97e9243f18c004a09becff5e67974f19d497f4119073bc413396a8",
+      "assets/sim/dmtac_w2l/meshes/reference_adapter_collision_00.stl": "2d42e7d29d11589e9fde243fd9c9008e1a529e1059521245b9efaaf3db437fce",
+      "assets/sim/dmtac_w2l/meshes/reference_adapter_visual.stl": "82d165d34f8cab4058786305b56dba6c2e17fc5afce062cb2e2941611276a0c7",
+      "assets/sim/dmtac_w2l/meshes/reference_base_collision_00.stl": "9ecea6fcd8f2d5ae29e70f5d439d36edf249b427168f3bcc0031319cb70c1f2e",
+      "assets/sim/dmtac_w2l/meshes/reference_base_visual.stl": "c8962b2b48894612b5b432ae8b9cee30d2ebb887a26846fc96901af750319af3",
+      "assets/sim/dmtac_w2l/meshes/transparent_layer_collision_00.stl": "52d2c5ba5090ffc296e2c85188053a140c7d8efbcea1cba2e9827c2c8f8952b7",
+      "assets/sim/dmtac_w2l/meshes/transparent_layer_visual.stl": "e194339a64c988abda97694033f0c5bfe31ac57e5679654e554763487f172be3",
+      "assets/sim/pads/pad_elliptical_12x26x55mm.json": "1251d5657381cd64d971c53ef82b1db33e963c10b20e67b4fd7731ab8a73c910",
+      "assets/sim/pads/pad_elliptical_12x26x55mm.stl": "94fb43781819f64bc217028ad1a88982f34a7cb03eafea9a57e42869569edbc9",
+      "assets/sim/robotiq/LICENSE": "bfe9a4de3ec95dac1d2bf02df4d774ecfd6d492df1fa33476c3af5576bd08435",
+      "assets/sim/robotiq/PROVENANCE.json": "9be1ab1e142fd4ccbf9bb4222e6aceb7aa2abb3e29c2242fc7cf9652b1f1801c",
+      "assets/sim/robotiq/adaptive_reference/2f85.xml": "d48aca5f9151798ffd38111ce4e8b2081f3ec2d4f525161b33643451580010de",
+      "assets/sim/robotiq/adaptive_reference/CHANGELOG.md": "38082db6de93a95ef85a319c2a8cac8b1dbcff597a718d8cdf843c339e7b23a6",
+      "assets/sim/robotiq/adaptive_reference/LICENSE": "3d5edd18d1e22a17666e9bb84270171ed5ac90b192d24e0177fd171708ea2316",
+      "assets/sim/robotiq/adaptive_reference/PROVENANCE.json": "dce41be85f8571d12819460778e13eaf0616a18159d350a14bc4942de889a4a9",
+      "assets/sim/robotiq/adaptive_reference/README.md": "a10f34027d417f8f7b9102b74b42976031f0246f3090444728ab322bc4632aaf",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_base_link.stl": "d8844d7d09e05423b6edb56b354eef561ad6cf4787d8b7f980232cd4346f46bf",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_finger.dae": "807aff52c5a12ca5429cfb2eb19cc88dfaf0083bac6b69e24d49f6beb29aa2c8",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_inner_knuckle.dae": "a8e6bb0b3b5ef6ea1323aa698a16dc1ec1a878ed2c2bcd43547750a18e72d9b4",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_finger.dae": "5e45e7773260cc4b04bbae626af94bfdd49c38b3c69fc248cf0708e5fa65a39f",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_85_outer_knuckle.dae": "8c7ce8ee42044149f9a956d55f33f06e6b75e5e35080ee4bf1e8cb381535aeb7",
+      "assets/sim/robotiq/meshes/collision/robotiq_arg2f_base_link.stl": "111e37f13a664989dd54226f80f521b32ea0b71c975282a16696b14be7cc9249",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_base_link.dae": "d03d6e7395b0aa11ae7954b2f04a0a650448547d5d4f367238098ccd848b3eb5",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_finger.dae": "3172e8fe000fda75b9b29b48cd8cad4011d184a6df23eb2c3adb6c1f5a4eae93",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_inner_knuckle.dae": "19b12510eec739a1a4655ff633ce3f02ad3c2eda2cb8f451df900ddfa76c8f14",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_finger.dae": "32d842e51e0ddd25b3354af212131befa191c183cf4cdb61f82ecbe5c5276323",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_outer_knuckle.dae": "f1cc5198c9f3b06979af07d2944034b32acbb6130df5396dc2c7253cb656f587",
+      "assets/sim/robotiq/meshes/visual/robotiq_arg2f_85_pad.dae": "0f1d5b8403fed489fb40b389e3d9ec27882db324d77d20cc84cf8bb8901fee80",
+      "assets/sim/robotiq/meshes/visual/robotiq_gripper_coupling.stl": "4281e83002a25c20dc07c68b8d77da30a13e9a8401f157f6848ed8287d7cce44",
+      "assets/sim/robotiq/robotiq_2f85.urdf": "7993b6e349d9eddab0bcb293288c28200567b63c6d02f26e43cf200cc138224a",
+      "assets/sim/ur3/LICENSE": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8",
+      "assets/sim/ur3/PROVENANCE.json": "8bc925024dda6bb1a2a2e5016fb5b26aa146bbf13a2f244e04e0a7b03f00e883",
+      "assets/sim/ur3/config/default_kinematics.yaml": "62ccae1768678cfddaee8e2a1b621365d7ac8a58b4a7607aed680ed572c8a423",
+      "assets/sim/ur3/config/joint_limits.yaml": "3ca03a6b107fab1d20a18a4e3a967ed0f14de228208a95c4735a6c966ea18534",
+      "assets/sim/ur3/config/physical_parameters.yaml": "019c14da684526f8ff7f1ca37dcab62edb370859db4e18f6805ec3d5e29a1ceb",
+      "assets/sim/ur3/config/visual_parameters.yaml": "e51a4e2d59909a963ceee34c47c8fdf71810db5edbac90aed66705f4f7222deb",
+      "assets/sim/ur3/meshes/collision/base.stl": "a4632b7941b0a090c0817255d01a1b3e759b47291487c5742d621395a0a8df2e",
+      "assets/sim/ur3/meshes/collision/forearm.stl": "08a578aa50bba584f236591b25dfdf0a03a060f05946a7d1c450d800cae5cbb8",
+      "assets/sim/ur3/meshes/collision/shoulder.stl": "c6a66fc64afa98f694307014cb5ec9cd73a3c4a03730cdbee700a835292ce3d0",
+      "assets/sim/ur3/meshes/collision/upperarm.stl": "81ccc4d6ee7cac170ace494dc88cf2930f78a1d7edf3c38a96e6b1b90c540c60",
+      "assets/sim/ur3/meshes/collision/wrist1.stl": "fec8baaeffb31e3de92e62a5b5ce4dba1e3d36cf253ff2a0346c32a6c2b7ef6d",
+      "assets/sim/ur3/meshes/collision/wrist2.stl": "efb209b3659d4864d17bbdacb1820f9be45aa7b6418c42fda447d6ff7a1da220",
+      "assets/sim/ur3/meshes/collision/wrist3.stl": "27ad47ace7b5318c2259de92f340e13e25a119f91fb42e5c40d608850db06883",
+      "assets/sim/ur3/meshes/visual/base.dae": "cebc07433aa6be5d38efa7fd7f8bef5b886add457631caa194fa3d4de7b8d764",
+      "assets/sim/ur3/meshes/visual/forearm.dae": "c059ae9d135dff9c2b6319d6d07c44f4470b84d61398a85a15262c9cde893393",
+      "assets/sim/ur3/meshes/visual/shoulder.dae": "53bfe7808ad7bfe7260818022fdf18bf2c3640fa9cc7cb3b571d527ef0d53e5a",
+      "assets/sim/ur3/meshes/visual/upperarm.dae": "6b8c8a4d68ce0a964abd7c3f493728b3d0d10921ee378c857bcf15b8dd2f9869",
+      "assets/sim/ur3/meshes/visual/wrist1.dae": "0a9302c733b031d7b33aa3c0a8ea0d8c3180bc98c819fb6e7f0e0803a851d9c5",
+      "assets/sim/ur3/meshes/visual/wrist2.dae": "ff6a157c9dc6174082b7a595bbf8024051ceace6c34911b405b48ebf76b4523e",
+      "assets/sim/ur3/meshes/visual/wrist3.dae": "24f68bc002b640779d3632716e07867288f08c01cbd5f3351ce67b94290e44ce",
+      "assets/sim/ur3/ur3_cb3.urdf": "0d8cec58f04bce10b8829f2c95c51fae04464950cb48c316b6913d2b90a72fe0",
+      "assets/sim/waffles/packet_green_top.png": "ea10307a458e060f5f0c6cfa56ae365a228be604b544fb00b1df5cd7de38492d",
+      "assets/sim/waffles/packet_green_top.provenance.json": "752ad9e6afddd821638003634d832424132217192d7c969997737129c3aa45ae",
+      "assets/sim/waffles/packet_top.png": "79b297a0c6116726d9ef63391ea01f9ed695677ad3f8e63ff78a753d9260ab61",
+      "assets/sim/waffles/packet_top.provenance.json": "1247d22772e9db43a9afd109f24c7aa3223462b27da9791de0ce2aeaa71965bc",
+      "assets/sim/waffles_w2l_provisional_20260908.usdz": "9ad71d894948b8a4269f50d7a6348ce55e9a97250cc068fe40e2551f03cda0b7",
+      "phantom/sim/camera.py": "7a63e0c99bc1c9c4d6989dfe77253eaccd3ddd59294f53281ef1e8d63ba53ff2",
+      "phantom/sim/geometry.py": "5f0e8cb4b45024acc121c5fd1da9e8e58d064c21fc64486a95ab02ace74aa407",
+      "phantom/sim/gripper_adaptive.py": "879bd260e6b791b2fcef772fcc235d84a9c59e0f9598f69840e75d588572e335",
+      "phantom/sim/gripper_articulation.py": "90078cdb1740ae40ce0284f144b7fc8b6093ea474df6a723528838bc89b46eac",
+      "phantom/sim/gripper_visual.py": "0fda4d4a08678537c4428fceb933de67a44528cc847a6d1837abdd568be053d7",
+      "phantom/sim/kinematics.py": "120c6caadfeeb9112c1bbb292e76c0f07c76ef4326059756c372ad340ebf73b6",
+      "phantom/sim/scene.py": "cfb28a882b9076c9b6538339751367444b9b55b48cd5f8300515b5a59fb35afa",
+      "phantom/sim/tactile_proxy.py": "c68f52674f093006d4a83e9155315080d66ba3c6cec8109bce7d31bf69d05520",
+      "tools/sim/build_w2l_assets.py": "3dbf45a545a01f0d44882e491d7e9c448f7412ea3864111053d953cb57c5fb42",
+      "tools/sim/gel_contact.py": "d7f4cb1d4606aa0ced6d360be6073498e5505460248d75cf6d04c7cf52853d6e",
+      "tools/sim/gripper_wrist.py": "4f0bb048f38e5e11074293e79f4ab42630871dd2c7e293502abb2fde368640cd",
+      "tools/sim/make_pad_collision.py": "5399bf8d524d814910b5417e49797cb51f402f346fb4be0bbb81aa297a341510"
+    },
+    "full_source_tested": false,
+    "reviewed_changed_files": {
+      "docs/results/teacher_native_v11_20260909/run_trials.py": "96fd43ab2d9d89f106084ab3ec56debcfd10bdb8992345114ac6304cc8539fd6",
+      "phantom/config/hardware.py": "66bc57eeff77673164e2106ad59c9ead8604d7c51394b5be14b8c04bb849c2d7",
+      "phantom/deploy/boundary_projection.py": "ceb220013b3cf7c3802dc3125e9703cf2a575c0f08c5c304999048a34748ab86",
+      "phantom/deploy/executor.py": "2691a8ab4bc080300cc77de3d1144f18da91762e0b83a5db0cc98f0afc327150",
+      "phantom/deploy/release_controller.py": "1d3b0e51d4543e26d70ec332120912c4929e67ad49ac9f2f65937135f10fc401",
+      "phantom/deploy/runtime.py": "397c9ba7ad05260c7ffd1af8822445462523220c09149c732b0ed1480809ffde",
+      "phantom/deploy/safety.py": "6b4870f192e6e093945672310216ec72528850ca9ffd74028b993c0b47213c23",
+      "phantom/deploy/unlatched_finish.py": "986c1c8ba5c3e3791867072aedfc675e2463cc06b069d717ebe3f0063ed17440",
+      "phantom/drivers/real/ur.py": "d143ad8bd7ea428e8e19ea564dc13b39b1e6ac207c317a914d1007c0bf192145",
+      "phantom/drivers/servo_limiter.py": "af93cbc4631c7077aa9acce05b38c2a0a904f7063ffb73128bbc9a4ac88969c6",
+      "phantom/scripts/run_deploy.py": "f3471b8d2941134a582fb093914dd6c94e52cf199f4bf6863f32ff18d4bd78f5",
+      "phantom/sim/boundary_audit.py": "c620b87198c9e8f14149f13ad28a26c25810e1b2c63a56d1b579f0c36d25a5f4",
+      "phantom/sim/command_replay.py": "471759eb0169f9b41886f5c2eac00b30c9966b9eff1a5ca7b90929ccae21fdf8",
+      "phantom/sim/policy_adapter.py": "6e46bc4bb15f524d0af98fb711249079995bb81d1e4b409a2ae8f4101cef9107",
+      "tests/test_boundary_projection.py": "fa2fab3b8128e439232aeaaa41fadc71edd580ef8c139ce38f47df37d52efda7",
+      "tests/test_boundary_projection_integration.py": "b599e63ea2dfe3bef8884c1335a8f22150b53004495cf24ac6df54c4da8d96d7",
+      "tests/test_servo_result.py": "f87e9394c192ef3df26c9b72e3f6fc3159ea543c5df2b562e8c0953042f097c8",
+      "tools/sim/run_policy_campaign.py": "51fb79d3d84009e34535591beb145c8bfa8a9d2828f8ce48a9c10d7944e16be9",
+      "tools/sim/run_waffles.py": "d78adb27de8c74d4fc22b417d391bfa4356d303fbd0bd7d8f28774c8e75edfd0"
+    },
+    "intermediate_manifest_sha256": "e9a74463f6b543d9df3dbab3f384c41bb1248ab54e91838d9039588cfac6e1ec"
+  },
+  "reviewed_utc": "2026-09-10T12:26:43.078345+00:00",
+  "quantitative": {
+    "candidate_physics_steps": 416000,
+    "candidate_cases": 13,
+    "candidate_maxima": {
+      "coupling_max_abs_rad": 1.1980533599853516e-05,
+      "joint_limit_violation_max_rad": 2.46535347692145e-10,
+      "loop_closure_max_m": 6.836084307426033e-07
+    },
+    "unchanged_limits": {
+      "coupling_max_abs_rad": 0.005,
+      "joint_limit_violation_max_rad": 0.002,
+      "loop_closure_max_m": 0.001
+    }
+  }
+}

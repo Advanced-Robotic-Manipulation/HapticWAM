@@ -1,0 +1,244 @@
+{
+  "status": "terminal_hold_fault_fixed_original_task_gate_still_failed",
+  "created_utc": "2026-09-10T18:46:00.043876+00:00",
+  "case": {
+    "id": "t15_last_ack_observer_on_v1",
+    "observer_enabled": true,
+    "proposal_variant": "original",
+    "seed": 910101
+  },
+  "teacher_inference_executed": false,
+  "teacher_qualification_pass": false,
+  "overall_physical_positive": false,
+  "mode": "last_acknowledged_target_v1",
+  "actual_finish_t_s": 14.37625,
+  "boundary_integrity_passed": true,
+  "provenance_failures": [],
+  "hold_failures": [],
+  "task_failures": [
+    "independent_supported_placement_not_confirmed_within_hold",
+    "supported_placement_did_not_persist_after_confirmation"
+  ],
+  "hold": {
+    "passed": true,
+    "failures": [],
+    "finish_t_s": 14.37625,
+    "hold_required_s": 2.0,
+    "observed_until_s": 20.0,
+    "hold_pose": [
+      -0.4128895482897881,
+      0.13764127164147574,
+      0.3479766662614007,
+      -1.4876267192896782,
+      -1.0306844155564825,
+      0.6735953737227729
+    ],
+    "hold_gripper_command": 0.553393542766571,
+    "sampled_command_rows": 251,
+    "accepted_pose_error": {
+      "position_max_m": 0.0,
+      "rotation_max_rad": 0.0
+    },
+    "measured_pose_drift": {
+      "position_max_m": 0.003955294606065224,
+      "rotation_max_rad": 0.012202886187358165
+    },
+    "measured_closure_range": [
+      0.5749306306242943,
+      0.5759134590625763
+    ],
+    "scope": "Declared held target is audited separately from measured settling. Original coverage, command acceptance, grip, IK tolerance and safety checks remain exact.",
+    "target_provenance": {
+      "passed": true,
+      "errors": [],
+      "mode": "last_acknowledged_target_v1",
+      "prior_actual_row": 1610,
+      "prior_actual_ack_t_s": 14.36825,
+      "current_finish_t_s": 14.37625,
+      "prior_arm_ack_age_s": 0.008000000000000895
+    },
+    "measured_drift_from_finish_feedback": {
+      "position_max_m": 0.004121352327297746,
+      "rotation_max_rad": 0.011074234132927378
+    }
+  },
+  "tactile": {
+    "sampled_rows": 17,
+    "coverage": {
+      "passed": true,
+      "finite": true,
+      "strictly_monotonic": true,
+      "sampled_rows": 17,
+      "first_t_s": 14.37625,
+      "last_t_s": 16.37625,
+      "max_gap_s": 0.1280000000000001,
+      "allowed_sample_gap_s": 0.133,
+      "clock_tolerance_s": 0.001
+    },
+    "finite_force": true,
+    "both_pads_loaded_rows": 0,
+    "either_pad_loaded_rows": 0
+  },
+  "contacts": {
+    "robot_environment_contact": {
+      "contact_rows": 0,
+      "first_contact": null,
+      "finite_forces": true,
+      "largest_contact": null,
+      "coverage": {
+        "passed": true,
+        "finite": true,
+        "strictly_monotonic": true,
+        "sampled_rows": 251,
+        "first_t_s": 14.37625,
+        "last_t_s": 16.37625,
+        "max_gap_s": 0.008000000000002672,
+        "allowed_sample_gap_s": 0.008,
+        "clock_tolerance_s": 0.001
+      },
+      "scope": "Existing filtered robot/environment normal contacts, excluding packet contact/support. Wrist/gripper trace is 125 Hz; all-body diagnostic is scene-rate. Neither establishes continuous-time collision freedom."
+    },
+    "all_body_environment_contact": {
+      "contact_rows": 0,
+      "first_contact": null,
+      "finite_forces": true,
+      "largest_contact": null,
+      "coverage": {
+        "passed": true,
+        "finite": true,
+        "strictly_monotonic": true,
+        "sampled_rows": 30,
+        "first_t_s": 14.4,
+        "last_t_s": 16.3335,
+        "max_gap_s": 0.06675000000000253,
+        "allowed_sample_gap_s": 0.2,
+        "clock_tolerance_s": 0.001
+      },
+      "scope": "Existing filtered robot/environment normal contacts, excluding packet contact/support. Wrist/gripper trace is 125 Hz; all-body diagnostic is scene-rate. Neither establishes continuous-time collision freedom."
+    }
+  },
+  "original_outcomes": {
+    "reach_before_closure": true,
+    "acquired": true,
+    "lifted": true,
+    "carried": true,
+    "released_in_bin": false,
+    "full_task": false,
+    "dropped": false
+  },
+  "original_event_times_s": {
+    "reach": 4.86675,
+    "closure": 6.7335,
+    "acquisition": 8.1335,
+    "lift": 9.66675,
+    "carry": 11.9335,
+    "release_in_bin": null,
+    "full_task": null,
+    "first_drop": null
+  },
+  "original_measured_mode_errors": [
+    "boundary_integrity_failed"
+  ],
+  "prefix_comparisons": {
+    "prefix_against_off_v2": {
+      "passed": true,
+      "errors": [],
+      "package_contract": {
+        "passed": true,
+        "parent_package_sha256": "f3cebf92bb3256ca37b30612a0cf687162b83bce8c441ad8bb7939824e69872a",
+        "candidate_package_sha256": "e97488d31de36bf9e8bd31af574452367a72355c9894f848a0290142f90467fc",
+        "changed_runtime_sources": [
+          "phantom/deploy/boundary_projection.py"
+        ],
+        "changed_declared_inputs": [
+          "boundary_projection.json",
+          "last_ack_candidate_manifest.json",
+          "runtime_source_manifest.json",
+          "scoring_design.json"
+        ]
+      },
+      "comparison_tolerance_absolute": 1e-09,
+      "first_actual_finish_s": 14.37625,
+      "pre_finish_row_counts": [
+        1611,
+        1611
+      ],
+      "first_command_feedback_difference": null,
+      "first_physical_difference": null,
+      "teacher_qualification_pass": false,
+      "scope": "Cross-package prefix isolation only; original same-package pair, failed holds and task scores remain unchanged.",
+      "input_sha256": {
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_off_v2/fixture_provenance.json": "12878bad6756bd48af74a4713ef7700955d48e4ce4a8398f16a9c60440ee14f1",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_off_v2/initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_off_v2/execution_trace.jsonl": "b4b90fcf48b306b9ce6443e6a6a3223bc260f35d7067e4ef6408ab936daf7b4c",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_off_v2/sim_trace.npz": "ce6f18a9403fdc9e2741ba103e0e19b98e2ce9e68909715c499fc75409e3be81",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/fixture_provenance.json": "c9d7936b723719ef1fc76a41b4e160289165ee6abfddc46b1fb446114289c472",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/execution_trace.jsonl": "8284d19c2ab3692cfec1b3d6e96cc0274e806bed019e52384d380eb3f0310b01",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/sim_trace.npz": "486f19c5629b82062cc36e52a3a240e03bc6c552893a1755b3eaf7dee9764d21"
+      },
+      "audits_sha256": {
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_v2_audit_results_v1_20260910/original_fixture_audit_v2.json": "ca1b96e8489d0ca114b46e0af365e63f25acf863e2f8bbf263dd0dcb7fd3e41d",
+        "/dev/shm/phantom_teacher_recovery_last_ack_terminal_audit_results_v1_20260910/declared_last_ack_mode_audit.json": "25dd2974400a6d025d61b72b871c4a23ad99525c55d445565ed65a85ce132130"
+      },
+      "comparison_source_sha256": "3bbbed92c0a562af2d97fdcf852fdb1c674c1369d1004be8a1a044ea5ca32c0b"
+    },
+    "prefix_against_on_v2": {
+      "passed": true,
+      "errors": [],
+      "package_contract": {
+        "passed": true,
+        "parent_package_sha256": "f3cebf92bb3256ca37b30612a0cf687162b83bce8c441ad8bb7939824e69872a",
+        "candidate_package_sha256": "e97488d31de36bf9e8bd31af574452367a72355c9894f848a0290142f90467fc",
+        "changed_runtime_sources": [
+          "phantom/deploy/boundary_projection.py"
+        ],
+        "changed_declared_inputs": [
+          "boundary_projection.json",
+          "last_ack_candidate_manifest.json",
+          "runtime_source_manifest.json",
+          "scoring_design.json"
+        ]
+      },
+      "comparison_tolerance_absolute": 1e-09,
+      "first_actual_finish_s": 14.37625,
+      "pre_finish_row_counts": [
+        1611,
+        1611
+      ],
+      "first_command_feedback_difference": null,
+      "first_physical_difference": null,
+      "teacher_qualification_pass": false,
+      "scope": "Cross-package prefix isolation only; original same-package pair, failed holds and task scores remain unchanged.",
+      "input_sha256": {
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_on_v2/fixture_provenance.json": "d0eefdf4977bf2a4f5746a08e7a92d27dc3632e26429ed4ee5e54fe398a80f83",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_on_v2/initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_on_v2/execution_trace.jsonl": "bab09348c7a80602c2740b95e6d02cc21b9d0aff3f8697b68b5df909bb5ed208",
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_raw_v2_20260910/t15_relative_observer_on_v2/sim_trace.npz": "fa1ba4cfa183e0c90b2a9ef014b592518cd54a946c430dac2bffbac58027cb88",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/fixture_provenance.json": "c9d7936b723719ef1fc76a41b4e160289165ee6abfddc46b1fb446114289c472",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/initialization.json": "28b557b28e8537eb3cbe5e3a7b55e9808ab30ab09e5ef408db40afe556474cc5",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/execution_trace.jsonl": "8284d19c2ab3692cfec1b3d6e96cc0274e806bed019e52384d380eb3f0310b01",
+        "/dev/shm/phantom_teacher_recovery_last_ack_fixture_raw_v1_20260910/t15_last_ack_observer_on_v1/sim_trace.npz": "486f19c5629b82062cc36e52a3a240e03bc6c552893a1755b3eaf7dee9764d21"
+      },
+      "audits_sha256": {
+        "/dev/shm/phantom_teacher_recovery_relative_fixture_on_v2_audit_results_v1_20260910/original_fixture_audit_on_v2.json": "e41f84411c174cba7d7a963f23652ebbba73e29df5c258d18330c9287b344da5",
+        "/dev/shm/phantom_teacher_recovery_last_ack_terminal_audit_results_v1_20260910/declared_last_ack_mode_audit.json": "25dd2974400a6d025d61b72b871c4a23ad99525c55d445565ed65a85ce132130"
+      },
+      "comparison_source_sha256": "3bbbed92c0a562af2d97fdcf852fdb1c674c1369d1004be8a1a044ea5ca32c0b"
+    }
+  },
+  "audits_sha256": {
+    "original_measured_target_audit_invocation.json": "1d76fcfc8572e3e8cbd088781eaa4844b600e8e248e4785196deb19918d4511a",
+    "prefix_against_on_v2_invocation.json": "283559e8628e46031006fb71c19e0056a567f31a3578c4b7d44dd8befe041c02",
+    "invocations.json": "ed45ebec4bc85bc81e44b52dce91c2ec240deca6410cfc53143ccb40f4258e58",
+    "prefix_against_on_v2.json": "f141700742b45df5178849a833e9ac202b58f3c4addcc56fef95235c3de0a99d",
+    "prefix_against_off_v2_invocation.json": "5e6abb6bc8f3acabf39c2fe8ad59e3e61fe2943c6a541b364d0380c7b5541959",
+    "declared_last_ack_mode_audit.json": "25dd2974400a6d025d61b72b871c4a23ad99525c55d445565ed65a85ce132130",
+    "declared_last_ack_mode_audit_invocation.json": "a8807393eeff30cec73e20b47eb9ab68b55768577c182c7c72bf3fefcf4c3e68",
+    "original_measured_target_audit.json": "424b0d9f52e9e46a3c57e1b53d19b7dc3d5aeaf484c0c8ae04535d4b610205c5",
+    "prefix_against_off_v2.json": "37d89531325c91039829d8628a0bba16eea55f311ec9ace7553bd551870af81d"
+  },
+  "task_failure_explanation": "The first unloaded post-grasp packet footprint crosses the opening low-X edge8.072mm vs existing2mm tolerance at13.4s. This pre-FINISH geometry is unchanged by the hold fix, independently confirmed by both full physical/control prefixes. Later landing does not override the original retained-release scoring predicate.",
+  "source_recordings_modified": false,
+  "thresholds_relaxed": false
+}

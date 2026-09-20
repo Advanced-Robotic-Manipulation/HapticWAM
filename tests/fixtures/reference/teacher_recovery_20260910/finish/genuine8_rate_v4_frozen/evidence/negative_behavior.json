@@ -1,0 +1,329 @@
+{
+  "status": "negative_release_behavior_read_only_diagnostic",
+  "original_positive_finish_t_s": 14.37625,
+  "active_observation_last_t_s": 15.64825,
+  "executor_last_t_s": 15.65625,
+  "physics_observed_until_s": 17.65625,
+  "active_rows_after_positive_finish": 160,
+  "active_duration_beyond_positive_finish_s": 1.2720000000000002,
+  "permission_records": 0,
+  "observer_opening_records": 0,
+  "finish_records": [],
+  "unique_relative_events": [
+    {
+      "t": 9.25625,
+      "event": "relative_loaded_reference_observed",
+      "reference": {
+        "command": 0.58104008436203,
+        "measured": 0.5789538770914078,
+        "t": 9.25625,
+        "ack_generation": 58,
+        "accepted_t": 8.808250000000001
+      },
+      "capture_times": {
+        "gripper": 9.25625,
+        "tactile_left": 9.25625,
+        "tactile_right": 9.25625,
+        "arm": 9.25625
+      },
+      "loaded_force_min_n": 1.0,
+      "source_history_rows": 972,
+      "loaded_history_sha256": "7ec4ef45c84a8cc5285a093e1486c824efe88f481e75634457de354c632c2715"
+    },
+    {
+      "t": 10.25625,
+      "event": "relative_loaded_reference_advanced",
+      "previous_reference": {
+        "command": 0.58104008436203,
+        "measured": 0.5789538770914078,
+        "t": 9.25625,
+        "ack_generation": 58,
+        "accepted_t": 8.808250000000001
+      },
+      "reference": {
+        "command": 0.5968542695045471,
+        "measured": 0.5789538770914078,
+        "t": 10.25625,
+        "ack_generation": 61,
+        "accepted_t": 9.98425
+      },
+      "capture_times": {
+        "gripper": 10.25625,
+        "tactile_left": 10.25625,
+        "tactile_right": 10.25625,
+        "arm": 10.25625
+      },
+      "loaded_force_min_n": 1.0,
+      "source_history_rows": 1098,
+      "loaded_history_sha256": "cf370e3eceb76a0801d15333eb3c35bd8491e3e0e038ad9149917de38ecb914f",
+      "measured_reference_preserved": true,
+      "reference_source": "sustained_actual_acknowledged_loaded_plateau"
+    },
+    {
+      "t": 10.63225,
+      "event": "relative_loaded_reference_advanced",
+      "previous_reference": {
+        "command": 0.5968542695045471,
+        "measured": 0.5789538770914078,
+        "t": 10.25625,
+        "ack_generation": 61,
+        "accepted_t": 9.98425
+      },
+      "reference": {
+        "command": 0.6070617437362671,
+        "measured": 0.5789538770914078,
+        "t": 10.63225,
+        "ack_generation": 62,
+        "accepted_t": 10.36025
+      },
+      "capture_times": {
+        "gripper": 10.63225,
+        "tactile_left": 10.63225,
+        "tactile_right": 10.63225,
+        "arm": 10.63225
+      },
+      "loaded_force_min_n": 1.0,
+      "source_history_rows": 1145,
+      "loaded_history_sha256": "7d230543ec500f95e01b5a5df32a2100fdec3eaf1b73ef6220734f7641830e6c",
+      "measured_reference_preserved": true,
+      "reference_source": "sustained_actual_acknowledged_loaded_plateau"
+    },
+    {
+      "t": 12.50425,
+      "event": "relative_loaded_reference_advanced",
+      "previous_reference": {
+        "command": 0.6070617437362671,
+        "measured": 0.5789538770914078,
+        "t": 10.63225,
+        "ack_generation": 62,
+        "accepted_t": 10.36025
+      },
+      "reference": {
+        "command": 0.65,
+        "measured": 0.5789538770914078,
+        "t": 12.50425,
+        "ack_generation": 64,
+        "accepted_t": 12.15225
+      },
+      "capture_times": {
+        "gripper": 12.50425,
+        "tactile_left": 12.50425,
+        "tactile_right": 12.50425,
+        "arm": 12.50425
+      },
+      "loaded_force_min_n": 1.0,
+      "source_history_rows": 1379,
+      "loaded_history_sha256": "6bf95f921082898b7351faf0f55353d44aefdb5dc751817caa099a2affe9d057",
+      "measured_reference_preserved": true,
+      "reference_source": "sustained_actual_acknowledged_loaded_plateau"
+    }
+  ],
+  "post_positive_active_grip_range": [
+    0.65,
+    0.65
+  ],
+  "final_rows": [
+    {
+      "t": 15.64025,
+      "gripper_command": 0.65,
+      "measured_gripper": [
+        0.5492667853832245,
+        2
+      ],
+      "status": "drive_submitted",
+      "stopped": false,
+      "stop_reason": null,
+      "accepted_tcp": [
+        -0.39030101845786613,
+        0.16559937069217698,
+        0.19886585985961058,
+        -1.866412700916675,
+        -0.9802751886012553,
+        0.6017839449602855
+      ],
+      "target_q": [
+        -0.7676376037830943,
+        -1.5960600073052007,
+        1.595648894963986,
+        0.48798283349285076,
+        1.4192739701708121,
+        -3.2144002849182782
+      ],
+      "safety_events": [],
+      "boundary_stopped": false,
+      "boundary_reason": "projected",
+      "actual_boundary_submission": {
+        "sequence": 1770,
+        "submitted_at_s": 15.64025,
+        "tcp_pose": [
+          -0.39030101845786613,
+          0.16559937069217698,
+          0.19886585985961058,
+          -1.866412700916675,
+          -0.9802751886012553,
+          0.6017839449602855
+        ],
+        "q": [
+          -0.7676376037830943,
+          -1.5960600073052007,
+          1.595648894963986,
+          0.48798283349285076,
+          1.4192739701708121,
+          -3.2144002849182782
+        ],
+        "mechanism": "isaac_apply_action"
+      },
+      "gripper_eligible": false,
+      "release_phase": "holding"
+    },
+    {
+      "t": 15.64825,
+      "gripper_command": 0.65,
+      "measured_gripper": [
+        0.5452191643416882,
+        2
+      ],
+      "status": "drive_submitted",
+      "stopped": false,
+      "stop_reason": null,
+      "accepted_tcp": [
+        -0.3902003303260694,
+        0.16559938959541876,
+        0.1980391915531423,
+        -1.867816691571864,
+        -0.980113339278773,
+        0.6018026549233394
+      ],
+      "target_q": [
+        -0.7679198951144169,
+        -1.5956058734522227,
+        1.5981111038442015,
+        0.4861825325311107,
+        1.4191125899259458,
+        -3.2139454990156153
+      ],
+      "safety_events": [],
+      "boundary_stopped": false,
+      "boundary_reason": "projected",
+      "actual_boundary_submission": {
+        "sequence": 1771,
+        "submitted_at_s": 15.64825,
+        "tcp_pose": [
+          -0.3902003303260694,
+          0.16559938959541876,
+          0.1980391915531423,
+          -1.867816691571864,
+          -0.980113339278773,
+          0.6018026549233394
+        ],
+        "q": [
+          -0.7679198951144169,
+          -1.5956058734522227,
+          1.5981111038442015,
+          0.4861825325311107,
+          1.4191125899259458,
+          -3.2139454990156153
+        ],
+        "mechanism": "isaac_apply_action"
+      },
+      "gripper_eligible": false,
+      "release_phase": "holding"
+    },
+    {
+      "t": 15.65625,
+      "gripper_command": 0.232,
+      "measured_gripper": [
+        0.5414479784667492,
+        2
+      ],
+      "status": "drive_submitted",
+      "stopped": true,
+      "stop_reason": "safety_stop",
+      "accepted_tcp": [
+        -0.39274912669626727,
+        0.16661574761026973,
+        0.2124175011136562,
+        -1.83452704918254,
+        -0.9735121933531807,
+        0.6075751456526414
+      ],
+      "target_q": [
+        -0.7644371390342712,
+        -1.6080693006515503,
+        1.5713337659835815,
+        0.4934372901916504,
+        1.4204590320587158,
+        -3.2172374725341797
+      ],
+      "safety_events": [
+        "wrench_limit"
+      ],
+      "boundary_stopped": false,
+      "boundary_reason": "physical_safety_preempted",
+      "actual_boundary_submission": null,
+      "gripper_eligible": false,
+      "release_phase": "unarmed"
+    }
+  ],
+  "runtime_terminal": {
+    "fixture_kind": "recorded_policy_proposals",
+    "policy_inference_executed": false,
+    "runtime_terminal_state_captured": true,
+    "finalization_phase": "before_simulation_app_close",
+    "source_attempt_count": 18,
+    "consumed_source_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "pending_source_id": null,
+    "delivered_source_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "exhausted": true,
+    "completed_reason": null,
+    "stopped_reason": "safety_stop",
+    "exception": null,
+    "completed_at_s": null,
+    "last_observed_t": 15.65625
+  },
+  "policy_stop_reason": "safety_stop",
+  "input_sha256": {
+    "execution_trace.jsonl": "41dbb0a6a682b36d0caf62391a739403f9200b15e95dd7e4c625102b7dfb6b24",
+    "run.json": "604ce44ae6c570325ad3b6e394f5873d188280d46af1ef62eba274f6eefe0a45",
+    "fixture_terminal.json": "bd1810c585c2906b1a36549db3100f1b9d9c619d59cb5224b5d033f7f9704a3d"
+  },
+  "interpretation": "No observer release opening or FINISH is distinct from safety recovery gripper opening. Final recovery command must not be attributed to original policy or relative permission.",
+  "teacher_inference_executed": false
+}

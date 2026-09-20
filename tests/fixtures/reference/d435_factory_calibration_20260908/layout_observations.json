@@ -1,0 +1,601 @@
+{
+  "schema_version": 1,
+  "status": "image_and_photo_constraints_for_joint_layout_fit_not_final_calibration",
+  "images": [
+    {
+      "path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/scene_0000.png",
+      "sha256": "3303203bcd73a1e1ec2f9a91dd93fc826ed9afd7f3236b2451f09e387f6d8e22",
+      "resolution": [
+        640,
+        480
+      ]
+    },
+    {
+      "path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/scene_0223.png",
+      "sha256": "a93bef6eeded8cca69631c6cda370b545020420a314162415f8873ad0a09e73e",
+      "resolution": [
+        640,
+        480
+      ]
+    }
+  ],
+  "pixel_uncertainty_note": "Use1px observation judgement for mat edges/grid and3px for manual box/packet corners. Subpixel line-fit residuals reflect fit precision, not absolute calibration uncertainty. Multiple points on one fitted line are correlated.",
+  "mat": {
+    "reported_grid_pitch_m": 0.085,
+    "right_edge": {
+      "frame": "scene_0223.png",
+      "pixels": [
+        [
+          462.58693602668944,
+          390
+        ],
+        [
+          465.33436475395064,
+          420
+        ],
+        [
+          468.5396982690887,
+          455
+        ],
+        [
+          470.3713174205962,
+          475
+        ]
+      ],
+      "fit_x_from_y": [
+        0.0915809576,
+        426.870363
+      ],
+      "within_line_fit_std_px": 0.1011
+    },
+    "left_edge": {
+      "frame": "scene_0223.png",
+      "pixels": [
+        [
+          210.98821025705809,
+          390
+        ],
+        [
+          207.89417017124066,
+          420
+        ],
+        [
+          204.28445673778697,
+          455
+        ],
+        [
+          202.22176334724202,
+          475
+        ]
+      ],
+      "fit_x_from_y": [
+        -0.10313467,
+        251.210731
+      ],
+      "within_line_fit_std_px": 0.1205
+    },
+    "photo_aligned_horizontal_grid_line": {
+      "frame": "scene_0000.png",
+      "pixels": [
+        [
+          230,
+          291.262050958288
+        ],
+        [
+          245,
+          291.22268263993936
+        ],
+        [
+          255,
+          291.1964370943736
+        ]
+      ],
+      "fit_y_from_x": [
+        -0.00262455456,
+        291.865699
+      ],
+      "within_line_fit_std_px": 0.0791,
+      "caveat": "Only25px span supplied; do not use this short segment alone to infer line orientation."
+    },
+    "grid_intersections": {
+      "frame": "scene_0223.png",
+      "pixels": [
+        [
+          258.95690259044346,
+          386.7781950913897
+        ],
+        [
+          311.38110143006406,
+          387.2857783386983
+        ],
+        [
+          363.7362765477884,
+          387.7926932823289
+        ],
+        [
+          416.1364203932383,
+          388.300043623607
+        ],
+        [
+          255.2177013062562,
+          440.8312235550541
+        ],
+        [
+          309.8543988132241,
+          441.36717584968517
+        ],
+        [
+          364.41723319606234,
+          441.90240359263805
+        ],
+        [
+          418.9955232851094,
+          442.43778294653356
+        ]
+      ],
+      "grid_indices_uv": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "local_origin": "leftmost observed intersection at y~387; +u toward image right,+v toward image top; grid indices are arbitrary, not a UR origin"
+    },
+    "observation_method": "For edges, signed horizontal Sobel maxima with quadratic subpixel refinement over y388:475, excluding horizontal grid near442; robust linear refit. For grid lines, grayscale contrast-weighted centroid in a\u00b14px corridor, fit on unobscured lower portions and intersect lines. Top horizontal line measured separately on frame0000 overx225:258.",
+    "table_pose_crosscheck": {
+      "pose_source": "grid_fit.json:fits.measured_height_all_points",
+      "mat_z_above_table_m": 0.003,
+      "mat_thickness_status": "inherited estimate",
+      "widths_m": [
+        0.3968672206298758,
+        0.3976577598408784,
+        0.3985395867146343,
+        0.3990250282370854
+      ],
+      "horizontal_pitches_m": [
+        0.08287247890718745,
+        0.0827319094534493,
+        0.08277151106197714,
+        0.08318797917209832,
+        0.08304303778255892,
+        0.08303410822273206
+      ],
+      "vertical_pitches_m": [
+        0.08247323888250353,
+        0.08246700872799227,
+        0.08246197976479402,
+        0.08245778593305067
+      ],
+      "points_in_arbitrary_table_grid_frame_m": [
+        [
+          0.5017749261587362,
+          -0.7405998923085321,
+          0.0030000000000000027
+        ],
+        [
+          0.5846474010710901,
+          -0.7405741605481146,
+          0.0030000000000000027
+        ],
+        [
+          0.667379306536482,
+          -0.7405484724342679,
+          0.0030000000000000027
+        ],
+        [
+          0.7501508136084928,
+          -0.7405227720241907,
+          0.0030000000000000027
+        ],
+        [
+          0.501463835604413,
+          -0.8230725444693393,
+          0.0030000000000000027
+        ],
+        [
+          0.5846518088597299,
+          -0.8230411691583107,
+          0.0030000000000000027
+        ],
+        [
+          0.6676948407358164,
+          -0.8230098485136079,
+          0.0030000000000000027
+        ],
+        [
+          0.7507289430527112,
+          -0.8229785312367923,
+          0.0030000000000000027
+        ]
+      ],
+      "interpretation": "Width supports approximately400mm versus inherited330mm. Observed grid pitch under table-derivedpose is\u224883mm, leaving2\u20133% discrepancy with reported85mm; preserve measured85mm and disclose residual. Full mat length remains unknown: upper end is hidden bybox and lower end cropped."
+    },
+    "middle_horizontal_grid_line": {
+      "frame": "scene_0000.png",
+      "pixels": [
+        [
+          230,
+          336.9987893527155
+        ],
+        [
+          245,
+          337.0368738561525
+        ],
+        [
+          255,
+          337.0622635251105
+        ]
+      ],
+      "fit_y_from_x": [
+        0.0025389669,
+        336.414827
+      ],
+      "within_line_fit_std_px": 0.0285
+    },
+    "grid_phase_fit": {
+      "status": "phase_only_fit_with_measured85mm_pitch_and_root_joint_pose_fixed",
+      "reference_config": "configs/sim/waffles_d435_factory_20260908_r4.json",
+      "reference_config_sha256_at_fit": "37029dde6e7cf1aeb32327a93139accf2b07f27f73cdab28f21964ce27fc976b",
+      "reference_camera_world_from_cv": [
+        [
+          0.9999720414746357,
+          -0.005669109656577374,
+          0.00487621418213748,
+          -0.35399058583569004
+        ],
+        [
+          -0.007215535335001398,
+          -0.9026929426481264,
+          0.4302248102365732,
+          -0.44643379477503714
+        ],
+        [
+          0.0019627325028448834,
+          -0.4302479662810364,
+          -0.9027086103456388,
+          0.9535
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reference_mat_center_xyz_m": [
+        -0.3540619100398728,
+        -0.23909237515846665,
+        -0.011000000000000001
+      ],
+      "reference_mat_yaw_rad": -0.016781155522956927,
+      "recommended_grid_origin_xy_m": [
+        -0.03949566789022469,
+        0.007552335104922521
+      ],
+      "pitch_m": 0.085,
+      "fit_method": "X offset from four column lines at two lower rows; Y offset averages four horizontal line offsets equally. Offsets are defined modulo85mm in the mat local frame. No scale/rotation/camera fit.",
+      "individual_horizontal_row_phase_m": [
+        0.0017751163000754022,
+        0.0061816704962860585,
+        0.00985837631953241,
+        0.012394177303796213
+      ],
+      "phase_residual_range_mm": [
+        -5.777218804847118,
+        4.841842198873692
+      ],
+      "limitation": "This compromise retains the user-reported85mm pitch despite2\u20133% table/mat pixel-spacing disagreement. Residual should be reported, not hidden by rescaling measured pitch."
+    }
+  },
+  "plate_to_mat": {
+    "photo_sources": [
+      "IMG_2038.heic",
+      "IMG_2043.heic",
+      "IMG_2037.jpeg"
+    ],
+    "ruler_reading_mm": {
+      "mat_edge": 0,
+      "near_plate_edge": 50,
+      "far_plate_edge": 250
+    },
+    "reported_plate_to_mat_gap_m": 0.05,
+    "plate_estimate_m": {
+      "perpendicular_to_nearest_mat_edge": 0.2,
+      "parallel_to_nearest_mat_edge": 0.15,
+      "thickness": 0.0125,
+      "thickness_range": [
+        0.01,
+        0.015
+      ]
+    },
+    "centered_base_assumption": true,
+    "plate_local_frame": "s across150mm side toward photo-right,t along200mm side toward mat; centered UR base is assumedplatecenter",
+    "plate_local_constraints_m": {
+      "mat_edge_t": 0.15,
+      "aligned_grid_line_s": -0.075
+    },
+    "likely_ur_mapping": {
+      "mount_size_xy_m": [
+        0.2,
+        0.15
+      ],
+      "mat_right_edge_in_plate_axes_x_m": -0.15,
+      "aligned_mat_grid_line_in_plate_axes_y_m": -0.075,
+      "plate_yaw": "approximately table yaw, to be fit jointly",
+      "status": "axis/sign inference supported by recordedimagecamera registration, not a directly supplied UR-axis measurement"
+    },
+    "fit_residuals_if_axes_confirmed": [
+      "dot(Rz(yaw).X, world_mat_right_edge)+0.150",
+      "dot(Rz(yaw).Y, world_aligned_grid_line)+0.075"
+    ],
+    "suggested_datum_judgement_scale_m": 0.005,
+    "ambiguities": [
+      "Robotcenteronplate inferred, not directlymeasured.",
+      "Plate/tableaxisalignment approximate; photosprovide relativegeometry ratherthan URframe fiducial.",
+      "If camera/rigconfigurationchanged since recording, photoalignment needsepisode-specificverification."
+    ]
+  },
+  "box": {
+    "reported_outer_size_m": [
+      0.4,
+      0.3,
+      0.19
+    ],
+    "reported_opening_size_m": [
+      0.36,
+      0.26
+    ],
+    "opening_corners_px": [
+      [
+        201,
+        98
+      ],
+      [
+        424,
+        99
+      ],
+      [
+        431,
+        240
+      ],
+      [
+        184,
+        240
+      ]
+    ],
+    "opening_corner_order": [
+      "rear_left",
+      "rear_right",
+      "front_right",
+      "front_left"
+    ],
+    "opening_annotation_sigma_px": 3.0,
+    "legacy_outer_rim_corners_px": [
+      [
+        194,
+        92
+      ],
+      [
+        430,
+        92
+      ],
+      [
+        439,
+        249
+      ],
+      [
+        178,
+        249
+      ]
+    ],
+    "opening_table_pose_crosscheck": {
+      "grid_points_m": [
+        [
+          0.40394547364862976,
+          -0.3232946506209715,
+          0.19299999999999995
+        ],
+        [
+          0.7594382853862077,
+          -0.321327211409573,
+          0.19299999999999995
+        ],
+        [
+          0.7564589707993971,
+          -0.572746027551911,
+          0.19299999999999995
+        ],
+        [
+          0.4067630519328319,
+          -0.576431796496311,
+          0.19299999999999995
+        ]
+      ],
+      "opposite_edge_lengths_m": [
+        0.3554982559931055,
+        0.25143646797117936,
+        0.3497153421922504,
+        0.2531528261135959
+      ],
+      "centroid_grid_m": [
+        0.5816514454417666,
+        -0.44844992151969165,
+        0.19299999999999995
+      ]
+    },
+    "legacy_outer_rim_table_pose_crosscheck": {
+      "grid_points_m": [
+        [
+          0.39144857347568807,
+          -0.3113217901692803,
+          0.19299999999999995
+        ],
+        [
+          0.7697912956445948,
+          -0.3070790875797529,
+          0.19299999999999995
+        ],
+        [
+          0.7669190163829143,
+          -0.5867946119488433,
+          0.19299999999999995
+        ],
+        [
+          0.4000067385393599,
+          -0.5906486532988546,
+          0.19299999999999995
+        ]
+      ],
+      "opposite_edge_lengths_m": [
+        0.37836651007117655,
+        0.27973027108490117,
+        0.36693251868303145,
+        0.2794579371838721
+      ],
+      "centroid_grid_m": [
+        0.5820414060106393,
+        -0.4489610357491828,
+        0.19299999999999995
+      ]
+    },
+    "support_plane_assumption": "box undersideonmat, mat3mmthick, rim190mmaboveunderside",
+    "caveat": "Rounded corners, moldedrim/handles and differently elevatedlipedges mean neither visiblequad is an exact measuredouter-envelope rectangle. FitXY/yaw with uncertainty; prioritize opening dimension and centroid. Do not change measured400x300x190 to force pixel agreement."
+  },
+  "packet": {
+    "reported_size_m": [
+      0.17,
+      0.09,
+      0.035
+    ],
+    "upright_scene_size_xyz_m": [
+      0.17,
+      0.035,
+      0.09
+    ],
+    "recorded_top_quad_px": [
+      [
+        242,
+        409
+      ],
+      [
+        359,
+        377
+      ],
+      [
+        367,
+        400
+      ],
+      [
+        246,
+        433
+      ]
+    ],
+    "top_quad_source": "existing fit annotations in tools/sim/refine_camera_static.py; manualbodycorners partlyoccluded",
+    "upright90mm_top_table_pose_crosscheck": {
+      "grid_points_m": [
+        [
+          0.4915784502681927,
+          -0.792527050121133,
+          0.09299999999999997
+        ],
+        [
+          0.6568690453766368,
+          -0.7453123945612323,
+          0.09299999999999997
+        ],
+        [
+          0.6680520384175653,
+          -0.7781622106758769,
+          0.09299999999999997
+        ],
+        [
+          0.4996625994605691,
+          -0.8253021227802793,
+          0.09299999999999997
+        ]
+      ],
+      "opposite_edge_lengths_m": [
+        0.17190172928433173,
+        0.03470114914695789,
+        0.1748633022262325,
+        0.033757352620976025
+      ],
+      "centroid_grid_m": [
+        0.579040533380741,
+        -0.7853259445346303,
+        0.09299999999999997
+      ]
+    },
+    "alternative35mm_top_table_pose_crosscheck": {
+      "grid_points_m": [
+        [
+          0.48307145085826275,
+          -0.7821190290717188,
+          0.038000000000000034
+        ],
+        [
+          0.6587755427948448,
+          -0.7319297961283193,
+          0.038000000000000034
+        ],
+        [
+          0.670663077207195,
+          -0.7668491882868417,
+          0.038000000000000034
+        ],
+        [
+          0.4916649107099528,
+          -0.8169589688514298,
+          0.038000000000000034
+        ]
+      ],
+      "opposite_edge_lengths_m": [
+        0.18273173513844196,
+        0.036887361292527836,
+        0.18587989056809134,
+        0.03588410450431357
+      ],
+      "centroid_grid_m": [
+        0.5760437453925639,
+        -0.7744642455845774,
+        0.038000000000000034
+      ]
+    },
+    "conclusion": "At90mmaboveMAT, recordedquad has\u2248171\u2013174mm longedges and34mm shortedges, supporting upright170x35 footprint/90mmheight. This is a consistencycheck with uncertainbodylandmarks."
+  },
+  "not_changed": [
+    "scene source",
+    "camera/geometry configs",
+    "source images",
+    "policy/controller",
+    "hardware"
+  ]
+}

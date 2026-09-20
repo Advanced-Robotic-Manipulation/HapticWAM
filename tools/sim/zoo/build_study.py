@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the frozen inputs and a stage study for the sim zoo evaluation (design: docs/results/sim_zoo_20260912/DESIGN.md).
+"""Build the frozen inputs and a stage study for the sim zoo evaluation.
 
 Inputs are copied byte-for-byte from the audited genuine-eight v4 campaign
 (scene, hardware, thresholds, controller configs with the rate backoff) and the
@@ -14,8 +14,8 @@ import shutil
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-CAMPAIGN = REPO / "docs/results/teacher_recovery_20260910/finish/genuine8_rate_v4_frozen"
-POOL = REPO / "docs/results/teacher_followthrough_20260909/design/qualification_campaign/frozen"
+CAMPAIGN = REPO / "tests/fixtures/reference/teacher_recovery_20260910/finish/genuine8_rate_v4_frozen"
+POOL = REPO / "tests/fixtures/reference/teacher_followthrough_20260909/design/qualification_campaign/frozen"
 REMOTE_ROOT = "/dev/shm/phantom_sim_zoo_"
 BOX = "/home/physicalai/phantom-icra-2027/phantom/"
 PREPARED_EPISODE = "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000"
@@ -45,7 +45,7 @@ RECIPES = {
     "K4_obs": dict(BASE_RECIPE, k_seeds=4, action_time_origin="observation"),
     "K1_obs": dict(BASE_RECIPE, k_seeds=1, action_time_origin="observation"),
     # placement-phase controller treatments (sim zoo follow-up 2026-09-12): same K4_ir recipe,
-    # different boundary-projection config (see docs/results/sim_zoo_20260912/README.md, "next steps")
+    # different boundary-projection config
     "K4_ir_D1": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",
                      boundary_projection_config="boundary_projection__D1.json"),
     "K4_ir_D2": dict(BASE_RECIPE, k_seeds=4, action_time_origin="inference_ready",

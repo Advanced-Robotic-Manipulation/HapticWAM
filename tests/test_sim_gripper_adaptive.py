@@ -230,7 +230,7 @@ def test_instantaneous_mechanics_rejects_malformed_or_nonfinite_input(bad):
 
 
 def test_instantaneous_guard_thresholds_match_frozen_qualification_protocol():
-    protocol = json.loads((REPO / 'docs/results/w2l_native_linkage_20260909/adaptive_protocol.json').read_text())
+    protocol = json.loads((REPO / 'tests/fixtures/reference/w2l_native_linkage_20260909/adaptive_protocol.json').read_text())
     result = native.mechanical_diagnostics(np.zeros(8))
     assert result['thresholds'] == {
         'coupling_max_abs_rad': protocol['kinematics']['joint_coupling_max_abs_rad'],

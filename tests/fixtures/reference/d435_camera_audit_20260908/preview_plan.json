@@ -1,0 +1,21 @@
+{
+  "source": "compute3:/home/physicalai/phantom-icra-2027/sim/waffles/source_d435_camera_audit_20260908",
+  "mode": "replay",
+  "duration_s": 0.2,
+  "purpose": "Matched recorded initial-arm-pose camera previews; no policy inference or full motion scoring",
+  "variants": [
+    "r2_original",
+    "rgb_fov_only",
+    "rgb_pose_fit"
+  ],
+  "episodes": {
+    "sept04": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_teacher_waffles_1788535016_005",
+    "aug22": "/home/physicalai/phantom-icra-2027/sim/waffles/evidence/fit/ep_waffles_1787395928_000"
+  },
+  "separation": "Only camera and provenance change across variants. Both episodes were previously used for scene development; August22 is a cross-recording visual check, not unseen held-out evaluation.",
+  "config_sha256": {
+    "r2_original": "cdd3f4a5e2cade3bdcf3e320a9f58600123e4faec07dda573a66a50cefdba702",
+    "rgb_fov_only": "31d114e4626aed4fc883adb778ffcf253bbe271948757048bdb06cd22decb7fc",
+    "rgb_pose_fit": "f7543a8577b2eef92381cc6ad5ce495cf4b05f38d43c01a7aad35781c151ddb4"
+  }
+}

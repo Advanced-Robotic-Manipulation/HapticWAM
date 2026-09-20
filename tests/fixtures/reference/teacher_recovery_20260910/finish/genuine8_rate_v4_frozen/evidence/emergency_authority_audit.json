@@ -1,0 +1,243 @@
+{
+  "status": "prospective_emergency_authority_assessed",
+  "prospective_emergency_authority_pass": true,
+  "errors": [],
+  "original_reserve_contract_pass": false,
+  "original_report": {
+    "schema": "boundary_physics_audit_v1",
+    "enabled": true,
+    "finalized": true,
+    "config": {
+      "variant": "upper_y_projection_v2",
+      "inward_margin_m": 0.01,
+      "maximum_excursion_m": 0.002,
+      "rearm_inward_m": 0.0122,
+      "feedback_max_age_s": 0.016,
+      "solver_inset_m": 0.0002,
+      "max_tick_s": 0.016,
+      "rearm_dwell_s": 0.25,
+      "budget_s": 2.5,
+      "terminal_hold_reference": "last_acknowledged_target_v1"
+    },
+    "config_sha256": "3561d6eb2227cd06a68e2090ea0405d9f8c28a94d5004fc64581a694a040ff50",
+    "hardware_effective_sha256": "f50abb452f648ae010d170d83cbf1f032d7bf8f5d48eec2d5f65e8352ea89a1a",
+    "thresholds": {
+      "hitbox_m": {
+        "x": [
+          -0.49850000000000005,
+          -0.2206
+        ],
+        "y": [
+          -0.4065,
+          0.1758
+        ],
+        "z": [
+          0.03,
+          0.4
+        ]
+      },
+      "workspace_m": {
+        "x": [
+          -0.7,
+          0.15
+        ],
+        "y": [
+          -0.5,
+          0.3
+        ],
+        "z": [
+          0.0315,
+          0.4
+        ]
+      },
+      "reach_clamp_m": 0.6,
+      "wrist_extension_stop_m": 0.468,
+      "joint_speed_stop_rad_s": 1.2,
+      "selected_ceiling_y_m": 0.1656,
+      "accepted_ceiling_y_m": 0.1658
+    },
+    "physics_dt_s": 0.00025,
+    "samples": 70626,
+    "first_step": 0,
+    "last_step": 70625,
+    "first_t_s": 0.0,
+    "last_t_s": 17.65625,
+    "max_gap_s": 0.0002500000000011937,
+    "contiguous": true,
+    "phase_counts": {
+      "active": 62625,
+      "stop_hold": 8001
+    },
+    "violations": {
+      "accepted_fk_y": 8001
+    },
+    "first_violation": {
+      "kind": "accepted_fk_y",
+      "excess": 0.0008157205981105808,
+      "step": 62625,
+      "t_s": 15.65625,
+      "measured_tcp": [
+        -0.39274912669626727,
+        0.16661574761026973,
+        0.2124175011136562,
+        -1.83452704918254,
+        -0.9735121933531807,
+        0.6075751456526414
+      ],
+      "accepted_fk_tcp": [
+        -0.39274908679738174,
+        0.16661572059811058,
+        0.21241758149736129,
+        -1.83452714126413,
+        -0.9735117020114611,
+        0.6075751287692482
+      ],
+      "phase": "stop_hold"
+    },
+    "worst_violation": {
+      "kind": "accepted_fk_y",
+      "excess": 0.0008157205981105808,
+      "step": 62625,
+      "t_s": 15.65625,
+      "measured_tcp": [
+        -0.39274912669626727,
+        0.16661574761026973,
+        0.2124175011136562,
+        -1.83452704918254,
+        -0.9735121933531807,
+        0.6075751456526414
+      ],
+      "accepted_fk_tcp": [
+        -0.39274908679738174,
+        0.16661572059811058,
+        0.21241758149736129,
+        -1.83452714126413,
+        -0.9735117020114611,
+        0.6075751287692482
+      ],
+      "phase": "stop_hold"
+    },
+    "nonfinite_samples": 0,
+    "per_face": {
+      "hitbox_x_low": {
+        "min_clearance_m": 0.08004214251548825,
+        "max_violation_m": 0.0
+      },
+      "hitbox_x_high": {
+        "min_clearance_m": 0.11335019432252194,
+        "max_violation_m": 0.0
+      },
+      "hitbox_y_low": {
+        "min_clearance_m": 0.10362727163596985,
+        "max_violation_m": 0.0
+      },
+      "hitbox_y_high": {
+        "min_clearance_m": 0.009169433950706463,
+        "max_violation_m": 0.0
+      },
+      "hitbox_z_low": {
+        "min_clearance_m": 0.04081143145303602,
+        "max_violation_m": 0.0
+      },
+      "hitbox_z_high": {
+        "min_clearance_m": 0.0015505610213384369,
+        "max_violation_m": 0.0
+      },
+      "workspace_x_low": {
+        "min_clearance_m": 0.28154214251548815,
+        "max_violation_m": 0.0
+      },
+      "workspace_x_high": {
+        "min_clearance_m": 0.48395019432252195,
+        "max_violation_m": 0.0
+      },
+      "workspace_y_low": {
+        "min_clearance_m": 0.19712727163596988,
+        "max_violation_m": 0.0
+      },
+      "workspace_y_high": {
+        "min_clearance_m": 0.13336943395070644,
+        "max_violation_m": 0.0
+      },
+      "workspace_z_low": {
+        "min_clearance_m": 0.03931143145303602,
+        "max_violation_m": 0.0
+      },
+      "workspace_z_high": {
+        "min_clearance_m": 0.0015505610213384369,
+        "max_violation_m": 0.0
+      }
+    },
+    "measured_y_min_m": -0.3028727283640301,
+    "measured_y_max_m": 0.16663056604929355,
+    "accepted_fk_y_max_m": 0.16661572059811058,
+    "selected_y_max_m": 0.1656,
+    "selected_continuing_y_max_m": 0.1656,
+    "selected_terminal_y_max_m": null,
+    "selected_by_kind": {
+      "continuation": {
+        "samples": 62624,
+        "y_max_m": 0.1656,
+        "ceiling_y_m": 0.1656
+      }
+    },
+    "selected_samples": 62624,
+    "tracking_y_max_positive_m": 0.001011849013641486,
+    "tracking_y_max_abs_m": 0.011346493146241268,
+    "tracking_xyz_max_m": 0.014726315176780752,
+    "measured_outward_y_speed_max_m_s": 0.22179504657120552,
+    "meaning": "Read-only measured/FK envelope evidence at every physics tick including terminal hold; no success inference",
+    "expected_end_s": 17.65625,
+    "stopped_reason": "safety_stop",
+    "completed_reason": null,
+    "completed_at_s": null
+  },
+  "emergency_reserve_violating_samples": 8001,
+  "remaining_original_violations": {},
+  "hard_violations": {},
+  "emergency_receipt_samples": 8001,
+  "expected_tail_end_s": 17.65625,
+  "interpretation": "Authority-scope correction only; no claim of physical improvement or task success",
+  "task_success_assessed": false,
+  "teacher_qualification": false,
+  "tactile_unload_assessed": false,
+  "hardware_stopJ_braking_validated": false,
+  "tail_sensor_coverage": {
+    "errors": [],
+    "tactile_unload_assessed": false,
+    "wrist": {
+      "coverage_pass": true,
+      "samples": 251,
+      "first_t_s": 15.65625,
+      "last_t_s": 17.65625,
+      "declared_sample_period_s": 0.008,
+      "scope": "Recorded normal-contact proxy, no unloading or force-transfer inference"
+    },
+    "all_body_environment": {
+      "coverage_pass": true,
+      "samples": 31,
+      "first_t_s": 15.66675,
+      "last_t_s": 17.65625,
+      "declared_sample_period_s": 0.06666666666666667,
+      "scope": "Recorded normal-contact proxy, no unloading or force-transfer inference"
+    },
+    "tactile": {
+      "last_actual_capture_t_s": 15.63225,
+      "age_at_tail_end_s": 2.023999999999999,
+      "samples_after_stop": 0,
+      "scope": "Coverage disclosure only; missing/stale samples never mean unloaded tactile"
+    }
+  },
+  "auditor_sha256": "f149d655bd4add452d166c67b1b97a14663101cc3ad67763c7187300b71c1efa",
+  "declaration_sha256": "0177c63d4537d4f57c4a0e92ba7eb8d0082f455fddacb57caa8fe7641aee928a",
+  "per_trial_provenance_sha256": "2af6b948d46b2a2b6fa1af0db5e15fd0825c2e606e4aa8ed950606fa29bd151b",
+  "runtime_manifest_sha256": "c7d548bb87ddb68e16fb979c5304586bce4f06a6f7c69935a0ff9f0a69adf27e",
+  "raw_source_sha256": {
+    "boundary_physics_audit.json": "cb5a7979db45e7032a93a51c0ab9cb3563441a6e35c4294df8cc6fc92accabc7",
+    "execution_trace.jsonl": "b6d6003aac8318224258991deab1d2c8531affaab48e9968cd1533254e5604f0",
+    "emergency_stop_trace.jsonl": "79b43ef3f22fefaa57a2cd0a98cea368710099b0e5b3cde5dfb95eeac744588e",
+    "wrist_contact_trace.jsonl": "e11f72e8a3f93e08dc13e90be4043e4bd0fb5b9e1dc19a8605b2342294ffa4b6",
+    "robot_environment_contact_trace.json": "2feaca4c65816977f24554b64a7e72979d7a0c12af0ec6e6f85b0033d34c7ca1",
+    "policy_tactile.npz": "cea64bcf48eb32616ab5b7398b047c5903f27f3943970b956dc6f644df4e4cd9"
+  }
+}

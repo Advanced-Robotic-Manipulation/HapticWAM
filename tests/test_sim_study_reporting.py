@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from docs.results.teacher_scene_v10_20260908 import plot_study as plot
-from docs.results.teacher_scene_v10_20260908 import summarize_study as summary
-from docs.results.teacher_scene_v10_20260908 import verify_completion as audit
+from tests.fixtures.reference.teacher_scene_v10_20260908 import plot_study as plot
+from tests.fixtures.reference.teacher_scene_v10_20260908 import summarize_study as summary
+from tests.fixtures.reference.teacher_scene_v10_20260908 import verify_completion as audit
 
 
 def write(path, value):
@@ -136,7 +136,7 @@ def recovery_fixture(tmp_path):
     (original / "isaac.log").touch()
     proof = {"kind": "explicit_startup_infrastructure_retry", "study_sha256": audit.fingerprint(study_path),
              "runner_sha256": audit.fingerprint(audit.run_study.__file__),
-             "recovery_helper_sha256": audit.fingerprint(args.source / "docs/results/teacher_scene_v10_20260908/recover_startup_timeout.py"),
+             "recovery_helper_sha256": audit.fingerprint(args.source / "tests/fixtures/reference/teacher_scene_v10_20260908/recover_startup_timeout.py"),
              "archive_verified": True, "completed_trials_preserved": 27, "planned_trials_unchanged": 60,
              "schedule_index": 27, "archived_attempt": 1, "next_infrastructure_attempt": 2,
              "archive": str(archive), "trial": name(27), "canonical_retry_directory": str(directories[27]),

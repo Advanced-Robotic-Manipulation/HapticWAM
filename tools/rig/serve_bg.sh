@@ -59,7 +59,7 @@ for m in "$@"; do
         --policy-type "$PT" --device cuda --action-space delta --image-size 224 > "$LOG" 2>&1 &
   else
   # optional 5th MODELS.tsv column: extra policy_server flags (e.g. "--flex --compile" for the
-  # ~2x inference levers, docs/results/inference_levers_20260912); recorded in the server's info
+  # ~2x inference levers); recorded in the server's info
   nohup .venv/bin/python -m phantom.scripts.policy_server --ckpt "$C" --system "$S" \
       --hardware configs/hardware.nuc.yaml --port $PORT $X > "$LOG" 2>&1 &
   fi

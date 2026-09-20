@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "errors": [],
+  "comparison_tolerance_absolute": 1e-09,
+  "stop": {
+    "t_s": 15.65625,
+    "reason": "safety_stop",
+    "row_index": 1771
+  },
+  "pre_stop_row_counts": [
+    1771,
+    1771
+  ],
+  "first_command_feedback_difference": null,
+  "first_physical_difference": null,
+  "stop_row_equality": {
+    "measured_q": true,
+    "measured_qd": true,
+    "measured_tcp": true,
+    "target_q": true,
+    "target_finger_q": true,
+    "gripper_command": true,
+    "measured_gripper": true,
+    "control_status": "drive_submitted",
+    "candidate_status": "emergency_stop_submitted"
+  },
+  "post_stop_tail": {
+    "samples": [
+      31,
+      31
+    ],
+    "control_target_q_constant": true,
+    "candidate_target_q_constant": true,
+    "held_target_q_equal": true,
+    "held_target_finger_q_equal": true,
+    "tail_measured_q_max_abs_diff_rad": 0.0,
+    "tail_measured_tcp_max_abs_diff_m": 0.0,
+    "tail_waffle_position_max_abs_diff_m": 0.0
+  },
+  "candidate_emergency_receipts": {
+    "count": 8001,
+    "first_t": 15.65625,
+    "last_t": 17.65625,
+    "all_successful": true,
+    "phases": {
+      "stop_hold": 8000,
+      "stop_transition": 1
+    },
+    "sequence_contiguous": true,
+    "stop_t_consistent": true,
+    "keys": [
+      "api_return_type",
+      "api_return_value",
+      "apply_called",
+      "apply_finished_monotonic_s",
+      "apply_started_monotonic_s",
+      "arm_joint_indices",
+      "authority",
+      "boundary_ack_created",
+      "candidate_joint_positions",
+      "capture_t_s",
+      "feedback_age_s",
+      "feedback_max_age_s",
+      "gripper_command",
+      "hard_violations",
+      "measured_q",
+      "measured_qd",
+      "measured_tcp",
+      "measurement_source",
+      "model_finish_authority",
+      "original_safety_events",
+      "original_stop_reason",
+      "phase",
+      "physical_achievement_claimed",
+      "physics_dt_s",
+      "schema",
+      "sequence",
+      "step",
+      "stop_t_s",
+      "submission_accepted",
+      "submission_result",
+      "submitted_fk_tcp",
+      "t_s",
+      "tactile_capture_t_s",
+      "tactile_tail_scope",
+      "wrist_capture_t_s"
+    ],
+    "all_submitted_arm_equal_stop_target": true,
+    "all_submitted_full_vectors_identical": true,
+    "first_receipt_measured_q_equals_stop_row": true
+  },
+  "task_success_assessed": false,
+  "physical_improvement_claimed": false,
+  "teacher_qualification_pass": false,
+  "scope": "Paired isolation of the emergency-submission change under identical recorded proposals; the original inward-reserve failure and task score remain separate.",
+  "provenance_sha256": {
+    "/dev/shm/phantom_teacher_recovery_emergency_fixture_audit_results_v2_20260910/t15_withheld_v8_control_v2/trial_provenance.json": "de1894ff274e49f3df842f545d5497ea2995c25040e673a6385db9de7651f3ef",
+    "/dev/shm/phantom_teacher_recovery_emergency_fixture_audit_results_v2_20260910/t15_withheld_v8_emergency_candidate_v2/trial_provenance.json": "2af6b948d46b2a2b6fa1af0db5e15fd0825c2e606e4aa8ed950606fa29bd151b"
+  },
+  "comparison_source_sha256": "10dd911229e9e6fe3a3640fdcb48ceb8accd4ba881e9fe6e160cbe365f9f5154"
+}

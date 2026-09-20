@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "exported_at_utc": "2026-09-08T09:48:26.417298+00:00",
+  "host": "physicalai",
+  "sdk_version": "2.58.3",
+  "provenance": {
+    "status": "available_profile_query_not_proof_of_actively_negotiated_running_stream",
+    "intrinsics_source": "connected_device_video_stream_profile.get_intrinsics",
+    "options_source": "sensor.get_option_at_query_time_not_recording_time_or_factory_defaults",
+    "streams_started": false,
+    "sensor_options_changed": false
+  },
+  "device": {
+    "name": "RealSense D435",
+    "serial_number": "944622074411",
+    "firmware_version": "5.16.0.1",
+    "product_id": "0B07",
+    "usb_type_descriptor": "3.2"
+  },
+  "sensor_name": "RGB Camera",
+  "profile": {
+    "stream": "color",
+    "format": "RGB8",
+    "width": 640,
+    "height": 480,
+    "fps": 15,
+    "stream_index": 0
+  },
+  "intrinsics": {
+    "width": 640,
+    "height": 480,
+    "fx": 609.28173828125,
+    "fy": 608.1331176757812,
+    "ppx": 337.8138732910156,
+    "ppy": 249.65126037597656,
+    "K": [
+      [
+        609.28173828125,
+        0,
+        337.8138732910156
+      ],
+      [
+        0,
+        608.1331176757812,
+        249.65126037597656
+      ],
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    "distortion_model": "distortion.inverse_brown_conrady",
+    "distortion_coefficients": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "fov_degrees": {
+    "horizontal": 55.3842887878418,
+    "vertical": 43.0639533996582,
+    "method": "pyrealsense2.rs2_fov",
+    "distortion_applied": false
+  },
+  "options": {
+    "enable_auto_exposure": {
+      "value": 1.0,
+      "supported": true
+    },
+    "enable_auto_white_balance": {
+      "value": 1.0,
+      "supported": true
+    },
+    "exposure": {
+      "value": 166.0,
+      "supported": true
+    },
+    "gain": {
+      "value": 64.0,
+      "supported": true
+    },
+    "white_balance": {
+      "value": 4600.0,
+      "supported": true
+    },
+    "brightness": {
+      "value": 0.0,
+      "supported": true
+    },
+    "contrast": {
+      "value": 50.0,
+      "supported": true
+    },
+    "gamma": {
+      "value": 300.0,
+      "supported": true
+    },
+    "hue": {
+      "value": 0.0,
+      "supported": true
+    },
+    "saturation": {
+      "value": 64.0,
+      "supported": true
+    },
+    "sharpness": {
+      "value": 50.0,
+      "supported": true
+    },
+    "backlight_compensation": {
+      "value": 0.0,
+      "supported": true
+    },
+    "power_line_frequency": {
+      "value": 3.0,
+      "supported": true
+    },
+    "auto_exposure_priority": {
+      "value": 0.0,
+      "supported": true
+    }
+  }
+}

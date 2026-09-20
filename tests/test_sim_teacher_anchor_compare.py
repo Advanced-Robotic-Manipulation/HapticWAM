@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def inputs():
-    p = ROOT / "docs/results/teacher_success_anchor_v5/protocol.json"
+    p = ROOT / "tests/fixtures/reference/teacher_success_anchor_v5/protocol.json"
     d = ROOT / "configs/sim/teacher_success_anchor_v5_screen.json"
     return json.loads(p.read_text()), digest(p), json.loads(d.read_text())
 

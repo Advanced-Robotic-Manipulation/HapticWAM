@@ -11,7 +11,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "native_teacher_runner", REPO / "docs/results/teacher_native_v11_20260909/run_trials.py"
+    "native_teacher_runner", REPO / "tests/fixtures/reference/teacher_native_v11_20260909/run_trials.py"
 )
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)

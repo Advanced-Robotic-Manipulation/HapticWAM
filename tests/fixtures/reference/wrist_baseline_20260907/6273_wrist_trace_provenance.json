@@ -1,0 +1,8 @@
+{
+  "source_path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_robustness_v2_delivery/screen/rollouts/v5_6_nfe1_k4__start_1787396273__seed903101/execution_trace.jsonl",
+  "source_sha256": "45149781082aab9bd27a0676a92ef0ecd97d0a3e2f527635d90690eff8da0884",
+  "rows": 2247,
+  "source_stop_time_s": 17.972,
+  "source_stop_reason": "safety_stop",
+  "extracted_npz_sha256": "b87b474619cac15ed31f5536d1c1fa2f0fe3d2c930848e6ddb7271c35b090dda"
+}

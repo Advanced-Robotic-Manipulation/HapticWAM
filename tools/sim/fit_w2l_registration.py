@@ -111,7 +111,7 @@ def boundary_distance(points, poly):
 def run(out, surface):
     out.mkdir(parents=True, exist_ok=True)
     evidence = (
-        ROOT / "docs/results/teacher_scene_v10_20260908/pickup_registration_evidence"
+        ROOT / "tests/fixtures/reference/teacher_scene_v10_20260908/pickup_registration_evidence"
     )
     input_path = evidence / "inputs.json"
     inputs = json.loads(input_path.read_text())
@@ -122,7 +122,7 @@ def run(out, surface):
     K = np.array([[c["fx"], 0, c["cx"]], [0, c["fy"], c["cy"]], [0, 0, 1]])
     yaw = Rotation.from_euler("z", cfg["gripper"]["yaw"]).as_matrix()
     data_path = (
-        ROOT / "docs/results/w2l_gripper_build_20260908/registration_cad_faces.npz"
+        ROOT / "tests/fixtures/reference/w2l_gripper_build_20260908/registration_cad_faces.npz"
     )
     cad = np.load(data_path)
     native = [
@@ -384,7 +384,7 @@ def check_candidate(out, config_path, pose_correction=False):
     mesh_path = ROOT / "assets/sim/dmtac_w2l/meshes/housing_visual.stl"
     points = stl_vertices(mesh_path)
     evidence = (
-        ROOT / "docs/results/teacher_scene_v10_20260908/pickup_registration_evidence"
+        ROOT / "tests/fixtures/reference/teacher_scene_v10_20260908/pickup_registration_evidence"
     )
     ip = evidence / "inputs.json"
     source = json.loads(ip.read_text())
@@ -593,7 +593,7 @@ def check_candidate(out, config_path, pose_correction=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--out", type=Path, default=ROOT / "docs/results/w2l_gripper_build_20260908"
+        "--out", type=Path, default=ROOT / "tests/fixtures/reference/w2l_gripper_build_20260908"
     )
     parser.add_argument(
         "--surface", choices=["flat", "rounded", "housing"], default="rounded"

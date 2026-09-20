@@ -53,7 +53,7 @@ def camera_pose(camera, parameters):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config',type=Path,default=ROOT/'configs/sim/waffles_measured_geometry_photo_frame_20260908_r2.json')
-    parser.add_argument('--out',type=Path,default=ROOT/'docs/results/d435_camera_audit_20260908')
+    parser.add_argument('--out',type=Path,default=ROOT/'tests/fixtures/reference/d435_camera_audit_20260908')
     args=parser.parse_args()
     args.out.mkdir(parents=True,exist_ok=True)
     cfg=json.loads(args.config.read_text())
@@ -137,7 +137,7 @@ def main():
             candidate=copy.deepcopy(cfg);candidate['camera']=camera
             candidate['calibration']['revision']=f'd435_{name}_20260908_r3'
             candidate['calibration']['status']='camera_diagnostic_not_factory_calibrated_or_policy_qualified'
-            candidate['calibration']['validation']='See docs/results/d435_camera_audit_20260908/camera_comparison.json; no policy success claim.'
+            candidate['calibration']['validation']='See tests/fixtures/reference/d435_camera_audit_20260908/camera_comparison.json; no policy success claim.'
             candidate['calibration']['camera_warning']='FactoryRGBintrinsics absent; principal point/distortion and nominalFOV remain assumptions. Pose fit is episode-specific; verify setup continuity.'
             (args.out/f'{name}.json').write_text(json.dumps(candidate,indent=2)+'\n')
     (args.out/'camera_comparison.json').write_text(json.dumps(report,indent=2)+'\n')

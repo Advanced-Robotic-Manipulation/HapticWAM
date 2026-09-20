@@ -4,11 +4,9 @@ Tracked copies of the box-local scripts that live in `~/phantom-icra-2027/` on c
 (the box that drives the UR3). The box copies are the live ones; keep them in sync with
 this directory when either side changes.
 
-For the **fixed ftA1500 teacher pick/place qualification**, follow
-[the explicit main-based quickstart](../../docs/rig_teacher_fixed_inference.md).
-It prepares the full hardware file with the 2.5 s verified hold and enables
-minimal_v5 release. The ordinary LEVERS menu is a different recipe: 12 played
-steps, without those opt-ins; the tested simulator candidate used 10.
+The ordinary LEVERS menu plays 12 steps with no hold/release opt-ins. A teacher
+pick/place qualification instead needs the full hardware file with the 2.5 s
+verified hold and minimal_v5 release enabled, and 10 played steps.
 
 - `PICK.sh` — interactive launcher: model menu (from `MODELS.tsv`) x inference preset
   (LEVERS / PLAIN / VETO / CUSTOM) -> confirm -> exec `GO_ANY.sh`.

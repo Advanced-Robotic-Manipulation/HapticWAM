@@ -1,0 +1,174 @@
+{
+  "status": "selection_and_schedule_frozen_before_qualification_outcomes",
+  "frozen_at_utc": "2026-09-10T01:25:36.429716+00:00",
+  "pool_manifest_sha256": "5f78e784490701fcb8ca657c909317a1e5e62bf99d5e8c35d6ac395b1e6b5943",
+  "strata_order": [
+    "L_older_below_original_pool",
+    "H_older_native_copies",
+    "H_aug22_130412",
+    "H_aug22_131618"
+  ],
+  "rule": "Interleave L,H-old,H-Aug22a,H-Aug22b for each of their five frozen height ranks with seed910301. Reverse that exact20-condition order for seed910302. Never replace starts or retry a failed identity.",
+  "execution_order": [
+    {
+      "condition": "ep_waffles_1785594294_001_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594503_010_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393283_000_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787394107_011_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785593867_004_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594563_013_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393534_007_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393887_004_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594329_003_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594230_021_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393625_009_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787394144_012_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594044_014_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594169_018_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393576_008_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787394038_009_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594205_020_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1785594728_021_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393693_011_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393798_000_open",
+      "seed": 910301
+    },
+    {
+      "condition": "ep_waffles_1787393798_000_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393693_011_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594728_021_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594205_020_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787394038_009_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393576_008_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594169_018_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594044_014_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787394144_012_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393625_009_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594230_021_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594329_003_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393887_004_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393534_007_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594563_013_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785593867_004_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787394107_011_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1787393283_000_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594503_010_open",
+      "seed": 910302
+    },
+    {
+      "condition": "ep_waffles_1785594294_001_open",
+      "seed": 910302
+    }
+  ]
+}

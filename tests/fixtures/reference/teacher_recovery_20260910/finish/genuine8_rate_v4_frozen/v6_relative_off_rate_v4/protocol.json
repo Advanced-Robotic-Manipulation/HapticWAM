@@ -1,0 +1,272 @@
+{
+  "actual_frozen_runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "bindings_sha256": "20284e751c997f59fb08a2a8106c836edd21892edd2d0689f1906209579b5567",
+  "boundary_projection_sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
+  "campaign_sha256": "05020c59f7c870f95dd517c0e4e24b4cf3db17df6cff491b689a3872419f6678",
+  "checkpoint_baseline_disclosure": "Native checkpoint-owned wrench_baseline_rows=8; reset per trial and verify actual unloaded startup. No teacher baseline harmonization or fabricated zero observations.",
+  "collector_adaptation_review_pending": false,
+  "comparison_limit": "Actual new teacher inference uses RPC wall timings. Compare first rendered frame, settled q/TCP/aperture, first inference observation tensors/timestamps, delivered plans/accepted commands and first divergence before candidate FINISH. Same seed is not proof of an identical pre-effect trajectory.",
+  "development": {
+    "execution_order": [
+      {
+        "condition": "aug22_1787395928_000_open",
+        "seed": 910359
+      },
+      {
+        "condition": "aug22_1787396273_010_open",
+        "seed": 910359
+      },
+      {
+        "condition": "aug22_1787396273_010_open",
+        "seed": 910360
+      },
+      {
+        "condition": "aug22_1787395928_000_open",
+        "seed": 910360
+      }
+    ]
+  },
+  "finish_gate": {
+    "actual_opening_ack_must_follow_relative_permission": true,
+    "all_eight_identities_valid": true,
+    "baseline_trials": 4,
+    "boundary_physics_required": "Every-step measured original-hitbox/workspace containment through active run and stop/FINISH tail; guard-selected and accepted-FK commands within the inward ceiling, exact config and complete contiguous coverage; fixed deadline/rearm/ack rules. All eight identities must pass this additional integrity gate; no hitbox-stop-suppression proxy and no relaxed original finish/object/hold thresholds.",
+    "boundary_projection_sha256": "fa7ba39135a0510797a68c8adb47f130dbf40221ca7c68f4845e89a5ce801cd0",
+    "candidate_trials": 4,
+    "caveat": "Controller only observes operational release. A release inside its region may still miss support. Object-based task scoring stays independent.",
+    "collector_adaptation_review_pending": false,
+    "comparison_receipt_required": [
+      "initialization equality and hashes",
+      "RGB first-frame hash and pixel error",
+      "matching observation tensor hashes where capture times match",
+      "first accepted-command/state divergence time and magnitude",
+      "first observer event/FINISH time",
+      "independent placement/collision/stop stages"
+    ],
+    "counterfactual_limit": "Actual new teacher inference uses RPC wall timings. Compare first rendered frame, settled q/TCP/aperture, first inference observation tensors/timestamps, delivered plans/accepted commands and first divergence before candidate FINISH. Same seed is not proof of an identical pre-effect trajectory.",
+    "every_observer_finish_required": "EVERY observed candidate observer FINISH must have valid causal acknowledged/measured opening and fresh post-ACK bilateral unloaded dwell, followed by the complete 2 s hold without new robot/environment collision, safety stop, renewed bilateral grip load, independently scored drop, mechanical invalidity or missing hold evidence. Any provenance or physical-hold failure blocks qualification even when another candidate produces a clean positive. Lack of independent supported placement alone remains a task failure; at least one independently supported candidate placement is required overall.",
+    "hardware_declaration_correction": [
+      {
+        "new_present": true,
+        "new_value": 0.0,
+        "old_present": false,
+        "path": "safety.wrench_arm_delay_s"
+      }
+    ],
+    "interpretation": "This is a small integration gate, not an estimated robust success rate. Report all8cases; any technical invalidity stops the remainder and blocks qualification. Physical failures continue.",
+    "negative_required": "No candidate observer FINISH without a preceding played acknowledged measured opening and fresh post-ACK bilateral unloaded dwell. A controller FINISH without independent placement is retained as failed task, never converted to success.",
+    "original_v4_status_reinterpreted": false,
+    "permission_event_is_not_opening_or_finish": true,
+    "planned_trials": 8,
+    "positive_required": "At least one candidate unlatched observer FINISH, independent supported placement, and a clean full2s post-FINISH hold without safety stop, robot/environment collision under frozen criteria, renewed bilateral grip load, drop or mechanical invalidity. Normal packet support contact is required by the independent scorer, not a collision failure.",
+    "prospective_study_scope": "Genuine teacher combined timing/relative integration diagnostic; no qualification estimate",
+    "qualification_seeds_reserved_and_not_used": [
+      910401,
+      910402
+    ],
+    "relative_event_name": "relative_release_finished",
+    "relative_permission_audit_required": true,
+    "required_actual_temporal_audits": true,
+    "shared_boundary_projection": {
+      "budget_s": 2.5,
+      "feedback_max_age_s": 0.016,
+      "inward_margin_m": 0.01,
+      "max_tick_s": 0.016,
+      "maximum_excursion_m": 0.002,
+      "rearm_dwell_s": 0.25,
+      "rearm_inward_m": 0.0122,
+      "solver_inset_m": 0.0002,
+      "terminal_hold_reference": "last_acknowledged_target_v1",
+      "variant": "upper_y_projection_v2",
+      "rate_solver_backoff": "fk_rate_interior_v1"
+    },
+    "solver_input_required": "Continuation only: independent Euclidean projection onto the original sphere and workspace/hitbox intersection eroded by the existing200micrometre solver inset, retaining the existing upper-Y plane. Original raw/domain checks, upper-Y projected flag, timer/rearm, final measured/FK limits, command-rate checks, FINISH and exact terminal-hold authority stay unchanged. Post-selection limiter or rate-clipped IK intermediates may still approach original limits; strict final verification remains mandatory.",
+    "rate_solver_backoff_declared": "fk_rate_interior_v1"
+  },
+  "frozen_at_utc": "2026-09-11T08:00:19.577694+00:00",
+  "inference_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "inference_source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "launch_authorized": true,
+  "pending_prerequisites": [],
+  "physical_finish_validation_pending": true,
+  "prospective_revision_sha256": "a0025367a297eb0d5d2359cc88614fc9170bf4ab60a7df2ef7725af7ff50d4fa",
+  "qualification": {
+    "passed": false,
+    "readiness_path": null,
+    "scope": "Separate gates and qualification freeze remain mandatory"
+  },
+  "report_each_trial": [
+    "Technical validity and guard status; actual duration and first plan activation.",
+    "Reach error before closure; active pad contact and grasp acquisition.",
+    "Sustained lift; retention through carry; release and supported settling inside the box.",
+    "Independent full-task outcome and clean/sustained supported placement through the 60 s horizon.",
+    "Drops, collisions, stop reason, rejected/held commands and inference/RPC/delivery latency.",
+    "All timestamped measured states, proposed actions, accepted commands, policy observations, tactile/contact data and video."
+  ],
+  "scene_sha256": "eceeb9bf980cfc002963fb367a797f4b99bae2d63be7d49c2553672da21baf91",
+  "scoring_rules": [
+    "Keep every planned row, failure, technical stop and missing outcome; never replace a failed trial.",
+    "Use independent packet state/support and the unchanged thresholds; controller FINISH is not task success.",
+    "Current runtime observes a stopped command for up to 2 s, capped by 60 s. If observation ends earlier, through-horizon outcomes remain unobserved/censored; never count the unobserved interval as a pass.",
+    "Report all planned rows, including physical failures, technical invalidities and unrun cases; do not select videos or call4rows a reliable success rate."
+  ],
+  "server_contract": {
+    "backbone_checkpoint": "/home/physicalai/phantom-icra-2027/cosmos-predict2.5-2b/robot/action-cond/38c6c645-7d41-4560-8eeb-6f4ddc0e6574_ema_bf16.pt",
+    "backbone_sha256": "b2e993cea3e242bc72288612488fe91770a1c073c98c3fec6d610411ffc30646",
+    "checkpoint": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v6/teacher_020000.pt",
+    "checkpoint_sha256": "4812cfbf012781f0e2e2f96d3b4e4b5b228806912418ce0127269bcdb5390fa2",
+    "checkpoint_size_bytes": 393116245,
+    "dedicated_simulation_server": true,
+    "dtype": "torch.bfloat16",
+    "effective": {
+      "action_time_origin": "observation",
+      "close_p": 0.5,
+      "drop_video": false,
+      "guidance": 1.0,
+      "k_seeds": 1,
+      "nfe": 1,
+      "parity_fixes": true,
+      "persistent_noise": true,
+      "task_text": "waffles"
+    },
+    "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
+    "inference_source_sha256": {
+      "phantom/config/model.py": "6daaa0c4f73d0ac22a8e237f6b3c6790f9a48a5437fcd534fec6d23657ccfdb2",
+      "phantom/inference/action_timing.py": "c3cc63a7e185d9c3b47a51bb4deea7eeab2784e302e1139597079baab630da58",
+      "phantom/inference/policy.py": "d125538b4717d5339704b99e90fba6ee73c0c8dbe056b45174791ef8b027f58f",
+      "phantom/inference/remote.py": "df467962b0b3a411dd428dacbd18105dc786cb6212cbc7fb7f5ec06a43394a7f",
+      "phantom/model/rf.py": "674fcb35fc638de700d974ae1e97a068dafe6df01e509f4261e9a5a93ed49d04",
+      "phantom/train/builder.py": "7c7924e0f1900192f0c104f47c3d4ba9e226e242935d2dbfbe60c04fb8e8b2f1",
+      "phantom/train/common.py": "ed945bf5f161d188b02ede5f6e765b6d2002a2a37783efd74d232c4e43764dc8"
+    },
+    "loaded_task_cache_keys": [
+      "Carton",
+      "Carton_fail",
+      "egg",
+      "egg_fail",
+      "waffles",
+      "waffles_fail",
+      "whiteboard",
+      "whiteboard_fail"
+    ],
+    "normalizers_sha256": "42153b79ceb6a6c711296323c6b171e42929eb5dfe4018198d63d2cd3ace8c48",
+    "repo": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+    "saved_model_config": {
+      "acc": {
+        "alpha_entropy_weight": 0.0,
+        "beta_init": 1.0,
+        "d_acc": 256,
+        "d_e": 256,
+        "gt_noise_scale": 0.1,
+        "hidden": 512,
+        "lambda_bias_init": 0.0,
+        "react_hidden": 32,
+        "self_anticipation": "two_pass"
+      },
+      "action_noise_per_strip": true,
+      "action_t_max_of_two": false,
+      "cond_dropout_p": 0.1,
+      "contact_nll_beta": 0.5,
+      "contact_nll_detach_weight": false,
+      "contact_obs_frames": 1,
+      "contact_self_forcing": false,
+      "drop_video_at_inference": false,
+      "feature_align": false,
+      "hht_dim": 256,
+      "lora": {
+        "alpha": 16,
+        "dropout": 0.0,
+        "rank": 16,
+        "target_modules": "q_proj,k_proj,v_proj,output_proj,mlp.layer1,mlp.layer2"
+      },
+      "loss": {
+        "action": 1.0,
+        "contact": 1.0,
+        "event": 0.5,
+        "gate_bce": 0.2,
+        "sigma_reg": 0.01,
+        "video": 0.1,
+        "wrist": 0.5
+      },
+      "mask_wrist": false,
+      "nfe": 5,
+      "rope_time_mode": "time_true",
+      "student": false,
+      "use_action_adaln_intent": true,
+      "wrist_region_mse": true
+    },
+    "status": "ready",
+    "system": "teacher",
+    "text_cache": "/home/physicalai/phantom-icra-2027/phantom/runs/teacher_v3_790eps/text_embeddings.pt",
+    "text_cache_sha256": "bef6ad98d2925799c2768084cb5886c8770627f861924088a8a721316883453b",
+    "warmed": true,
+    "weights": "EMA",
+    "wrench_baseline_rows": 8
+  },
+  "source": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "source_manifest_kind": "frozen_runtime",
+  "source_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "stage": "finish_gate",
+  "status": "frozen",
+  "technical_invalid_stop": "Preserve invalid attempt and stop remaining rows for diagnosis; do not silently retry or relax any existing guard.",
+  "treatment": {
+    "action_time_origin": "observation",
+    "boundary_projection": {
+      "budget_s": 2.5,
+      "feedback_max_age_s": 0.016,
+      "inward_margin_m": 0.01,
+      "max_tick_s": 0.016,
+      "maximum_excursion_m": 0.002,
+      "rearm_dwell_s": 0.25,
+      "rearm_inward_m": 0.0122,
+      "solver_inset_m": 0.0002,
+      "terminal_hold_reference": "last_acknowledged_target_v1",
+      "variant": "upper_y_projection_v2",
+      "rate_solver_backoff": "fk_rate_interior_v1"
+    },
+    "checkpoint": "v6_20000",
+    "combined_runtime_draft": false,
+    "finish_observer": null,
+    "grip_play_steps": 10,
+    "inference_delay_add_s": 0.0,
+    "k_seeds": 1,
+    "nfe": 1,
+    "observation_delay_s": 0.0,
+    "pose_play_steps": 10,
+    "relative_observer_enabled": false,
+    "relative_release": {
+      "activity_hold_s": 0.2,
+      "command_delta_min": 0.047058823529411764,
+      "feedback_max_age_s": 0.25,
+      "history_timeout_s": 10.0,
+      "measured_delta_min": 0.023529411764705882,
+      "minimum_policy_samples": 2,
+      "permission_hold_s": 0.2,
+      "reclose_tolerance": 0.00784313725490196,
+      "tcp_max_m": [
+        -0.22139399008588873,
+        0.1758,
+        0.4
+      ],
+      "tcp_min_m": [
+        -0.4985,
+        -0.05505650214123048,
+        0.0315
+      ]
+    },
+    "reset": "open",
+    "terminal_hold_reference": "last_acknowledged_target_v1",
+    "timing_criteria_revision": "endpoint_v2",
+    "rate_solver_backoff": "fk_rate_interior_v1"
+  },
+  "diagnostic_gate_release": {
+    "path": "gate_release.json",
+    "sha256": "9f36d17b2d11b2001f0de46ba1e80028a94e5107042d8131342092a48ca7126b",
+    "source_path": "/home/agent/skoltech/research/docs/results/teacher_recovery_20260910/readiness/genuine8_rate_v4_diagnostic_release_v1.json"
+  },
+  "paired_parent_block": {
+    "id": "v6_relative_off_timing_v3",
+    "campaign_sha256": "06366fa276bba8681b8c46d73131f048ea73cc9fc0e1fffc59fc22603c88811d",
+    "protocol_sha256": "2be0a5accff78d10f80a6055a1a7957568572ae99bf63a84059f71b0a7bcb0ec"
+  }
+}

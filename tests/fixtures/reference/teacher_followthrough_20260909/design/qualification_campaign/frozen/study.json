@@ -1,0 +1,31 @@
+{
+  "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_native_v11_boundary_hold_20260909",
+  "source_manifest_sha256": "93a158b8c43b3b67ce70e1304678a5ac86bd9be1e788ed7ca1b9d12db3135b34",
+  "inference_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_native_v11_inference_20260909",
+  "hardware": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_native_v11_20260909/latch_threshold_ablation/inputs/hardware.yaml",
+  "hardware_sha256": "ff2ac4620c1f3e9db40695fa35bfc0de7f82c808037ff0fae98e7e24fef49a7a",
+  "checkpoint_inventory_sha256": "8e504537ad9f6345e8db7c8e4dc756ca00c086812034e025b8f493138f97eed2",
+  "ready_contracts_sha256": "8829cf9ceecaaa9e384c972aaf54cfd6f72abe61faf0608335dd9d74b35e527f",
+  "contact_qualification_sha256": "0416586053fe3862f6fec60624b49b9ea07f667642f99bfd78ebfb791c725302",
+  "status": "frozen",
+  "stage": "qualification",
+  "planned_trials": 40,
+  "remote_inputs": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs",
+  "blocks": [
+    {
+      "id": "v6_20000_nfe1_k4_pose10_open",
+      "campaign": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/v6_20000_nfe1_k4_pose10_open/campaign.json",
+      "campaign_sha256": "d4f653efaeee99d737738328b8d92e4bf20b3399be57c37d41248ac4e9efabb5",
+      "protocol": "/dev/shm/phantom_teacher_followthrough_qualification_campaign_20260910/inputs/v6_20000_nfe1_k4_pose10_open/protocol.json",
+      "protocol_sha256": "e3e2778cde30d490117c0a9842a81a0442ea3823b8eec799bf97305f6f824abf",
+      "trials": 40
+    }
+  ],
+  "base_campaign_sha256": "689ff1e827e733668c814cc99f036359a1436fbab4d476a7f4ba3617a0d653b8",
+  "builder_sha256": "feb9626b07e9f7dcb758e59028d38e26760e647d29986012d255b9b8de212c53",
+  "numerical_readiness_required": true,
+  "numerical_readiness_sha256": "31a62ad724ef1316eb14e7bc8155c4ea58f5468f4a2ed5ec9fdc08465c9fbcb5",
+  "qualification_pool_manifest_sha256": "5f78e784490701fcb8ca657c909317a1e5e62bf99d5e8c35d6ac395b1e6b5943",
+  "schedule_sha256": "2cbf6e202370b49039db0cc82f6b88acba9dd4278096f4f5208d4d3455c1159c",
+  "frozen_at_utc": "2026-09-10T01:29:27.847663+00:00"
+}

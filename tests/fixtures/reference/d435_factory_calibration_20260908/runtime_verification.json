@@ -1,0 +1,68 @@
+{
+  "config_sha256": "deeca9e635bf7b404d483ab3edb633e35960566783a6e1309f0fdad25f6ee3df",
+  "scope": "Native build/initialization previews; no policy or trajectory-controller qualification",
+  "previews": [
+    {
+      "name": "final_sept04",
+      "mode": "replay",
+      "frames": 4,
+      "duration_s": 0.196,
+      "full_video_decode_passed": true,
+      "exact_factory_K_readback": true,
+      "effective_config_matches_final": true,
+      "artifacts": {
+        "sim_first.png": "8a3ead20281172c313d3522565dd8d34f188603eb481fdcf4bc67b46449fd290",
+        "sim.mp4": "14fe833e9e49b1a19ccf1b2e3242a68cbd7be7ee3fb8c6f033b947ef017183c6",
+        "run.json": "9b976a2ffc14e0612092b7bb19b07e38a8e52e2ceaeb4014dee4a35a2f35b0dc",
+        "camera_projection.json": "779bd2e4ffa356f2fef109b040ae67442f79463db60ef126f4c622fd4ce52ac9",
+        "effective_config.json": "deeca9e635bf7b404d483ab3edb633e35960566783a6e1309f0fdad25f6ee3df",
+        "sim_trace.npz": "be8dc5951a22deab4a9a906545d08f4f107d84e54f352f4e74e6e90768688a0f"
+      }
+    },
+    {
+      "name": "final_sept01_heldout",
+      "mode": "replay",
+      "frames": 4,
+      "duration_s": 0.196,
+      "full_video_decode_passed": true,
+      "exact_factory_K_readback": true,
+      "effective_config_matches_final": true,
+      "artifacts": {
+        "sim_first.png": "b0213779c4757983855fc3026f29576f8859e1fca8d484980d6d4926cf976e79",
+        "sim.mp4": "76f667b9b8f856c461131bc55b8b70f4fac76ffbe638b5930792192dbd28e560",
+        "run.json": "0f8ff2820ae45489534f91f341e44538f9c485ddbfcabbe664737902cd23423e",
+        "camera_projection.json": "779bd2e4ffa356f2fef109b040ae67442f79463db60ef126f4c622fd4ce52ac9",
+        "effective_config.json": "deeca9e635bf7b404d483ab3edb633e35960566783a6e1309f0fdad25f6ee3df",
+        "sim_trace.npz": "92596250191a17aa02f5182b32e6c93d2f48225d66360b97ee2c13f1c6f1357f"
+      }
+    }
+  ],
+  "rendered_grid_alignment": {
+    "correspondences": 160,
+    "available_real_holes": 160,
+    "real_vs_rendered_centroid_rmse_px": 1.2097397366487062,
+    "max_error_px": 3.072894300192365,
+    "matching_gate_px": 4,
+    "dark_threshold": 60,
+    "scope": "Selected visible table region; thresholded dark centers, not photometric or whole-image fidelity"
+  },
+  "source_hashes": {
+    "/home/agent/skoltech/waffles-measurements-20260908/tools/sim/report_factory_camera_calibration.py": "82eb9b89d3acdfb3c2ebf96be930f58e8833dfefbdb79e46284c0f4fd5baf4f1",
+    "/home/agent/skoltech/waffles-measurements-20260908/configs/sim/waffles_d435_factory_20260908_r4.json": "deeca9e635bf7b404d483ab3edb633e35960566783a6e1309f0fdad25f6ee3df",
+    "/home/agent/skoltech/waffles-measurements-20260908/docs/results/d435_factory_calibration_20260908/registration.json": "cf91ab7ee62debf66fe0f534746d7ad061c15f6195277fcba834e6a3e4e6a868",
+    "/home/agent/skoltech/waffles-measurements-20260908/docs/results/d435_factory_calibration_20260908/grid_fit.json": "8ba47be3610e1923d3e1d52c5b1033299506d322f347b6e689a9f4f33c562cec"
+  },
+  "cpu_tests": {
+    "passed": 123,
+    "skipped": 2,
+    "reason_for_skips": "optional USD tests unavailable in CPU environment",
+    "command": "uv run --no-project --python 3.12 --with numpy --with scipy --with pydantic --with pyyaml --with pytest --with pytest-timeout python -m pytest -q tests/test_sim_table_registration.py tests/test_sim_bin_yaw.py tests/test_sim_scene_geometry.py tests/test_sim_camera.py tests/test_sim_realsense_rgb_profile.py tests/test_sim_policy_metrics.py tests/test_sim_pick_place_evaluation.py"
+  },
+  "runtime_source_sha256": {
+    "phantom/sim/scene.py": "ff5307f036e33a299857643eb3db023c2a3e1e32c9e59c8fd4ce79bfeb143b19",
+    "phantom/sim/geometry.py": "5f0e8cb4b45024acc121c5fd1da9e8e58d064c21fc64486a95ab02ace74aa407",
+    "phantom/sim/camera.py": "7a63e0c99bc1c9c4d6989dfe77253eaccd3ddd59294f53281ef1e8d63ba53ff2",
+    "tools/sim/run_waffles.py": "56935e3f2b74f528b75b28f4e29ac0ad73cd0feff95ca7a8513225dff85b8e7c"
+  },
+  "runtime_source_note": "Geometry.py documentation updated after native previews; executable geometry/scene/camera behavior unchanged."
+}

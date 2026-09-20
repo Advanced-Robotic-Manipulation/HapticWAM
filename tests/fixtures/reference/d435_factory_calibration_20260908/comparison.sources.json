@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Recorded D435 RGB",
+    "path": "/home/agent/skoltech/research/artifacts/isaac_waffles/evidence/scene_0000.png",
+    "sha256": "3303203bcd73a1e1ec2f9a91dd93fc826ed9afd7f3236b2451f09e387f6d8e22"
+  },
+  {
+    "title": "Previous estimated camera / layout\n46.61\u00b0 \u00d7 35.81\u00b0",
+    "path": "/home/agent/skoltech/waffles-measurements-20260908/artifacts/isaac_waffles/d435_camera_audit_20260908/previews/sept04/r2_original/sim_first.png",
+    "sha256": "94612679fe15a6ab57ea41db3c34836c92722948d549115f439acbf446499444"
+  },
+  {
+    "title": "Factory K + measured geometry\n55.38\u00b0 \u00d7 43.06\u00b0",
+    "path": "/home/agent/skoltech/waffles-measurements-20260908/artifacts/isaac_waffles/d435_factory_calibration_20260908/final_sept04/sim_first.png",
+    "sha256": "8a3ead20281172c313d3522565dd8d34f188603eb481fdcf4bc67b46449fd290"
+  }
+]

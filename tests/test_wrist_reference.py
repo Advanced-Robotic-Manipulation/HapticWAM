@@ -60,7 +60,7 @@ def test_legacy_hashes_and_explicit_default_round_trip():
         ("hardware.nuc.frozen.yaml", "7ecb586f6666f291"),
     ):
         original = load_hardware(
-            ROOT / "docs/results/wrist_baseline_20260907" / file, quiet=True
+            ROOT / "tests/fixtures/reference/wrist_baseline_20260907" / file, quiet=True
         )
         assert original.config_hash() == digest
         assert original.safety.wrench_baseline_mode == "rolling_calm"
@@ -345,7 +345,7 @@ def test_native_fixed_wrench_stop_preempts_finish_and_preserves_halt_decision(
 def test_saved_6273_wrist_trace_matches_frozen_default_and_fixed_counterfactual():
     import importlib.util
 
-    path = ROOT / "docs/results/wrist_baseline_20260907/replay_6273.py"
+    path = ROOT / "tests/fixtures/reference/wrist_baseline_20260907/replay_6273.py"
     spec = importlib.util.spec_from_file_location("replay_6273", path)
     replay = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(replay)

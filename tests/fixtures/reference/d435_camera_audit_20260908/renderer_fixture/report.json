@@ -1,0 +1,225 @@
+{
+  "status": "pass",
+  "fixture": "seven static emissive sphere centroids, asymmetric K, zero distortion",
+  "scope": "Native renderer projection check; not physical D435 calibration or scene alignment",
+  "config": {
+    "resolution": [
+      640,
+      480
+    ],
+    "fx": 617.2,
+    "fy": 611.8,
+    "cx": 318.6,
+    "cy": 242.1,
+    "camera_model": "opencv_pinhole",
+    "distortion_model": "none",
+    "distortion_coefficients": []
+  },
+  "camera_projection": {
+    "camera_model": "opencv_pinhole",
+    "resolution": [
+      640,
+      480
+    ],
+    "intrinsics_px": [
+      [
+        617.2000122070312,
+        0.0,
+        318.6000061035156
+      ],
+      [
+        0.0,
+        611.7999877929688,
+        242.10000610351562
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "distortion_coefficients_opencv": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "intrinsics_source": "Isaac OpenCV pinhole lens schema (generic K getter ignores principal point)",
+    "readback_matches_config": true,
+    "undistorted_pinhole_fov_degrees": {
+      "horizontal": 54.81062448796286,
+      "vertical": 42.838273702738704
+    },
+    "validation_scope": "Lens schema readback only; not device calibration or rendered landmark validation"
+  },
+  "thresholds_fixed_before_render": {
+    "mean_error_px_max": 1.0,
+    "maximum_error_px_max": 1.5
+  },
+  "mean_centroid_error_px": 0.14415052689419378,
+  "maximum_centroid_error_px": 0.19928225413861084,
+  "pixel_coordinate_convention": "Image boundary coordinates; pixel center is array index + 0.5",
+  "centroid_method": "Connected components of all RGB channels >100; unweighted pixel centroids",
+  "markers": [
+    {
+      "index": 0,
+      "point_cv_m": [
+        -0.475,
+        -0.337,
+        1.0
+      ],
+      "expected_pixel": [
+        25.430000000000007,
+        35.92339999999999
+      ],
+      "rendered_centroid_array_index": [
+        24.916666666666668,
+        35.5
+      ],
+      "rendered_pixel_center": [
+        25.416666666666668,
+        36.0
+      ],
+      "error_px": 0.07775177025495927
+    },
+    {
+      "index": 1,
+      "point_cv_m": [
+        0.49,
+        -0.355,
+        1.1
+      ],
+      "expected_pixel": [
+        593.5345454545454,
+        44.655454545454575
+      ],
+      "rendered_centroid_array_index": [
+        593.2295081967213,
+        44.19672131147541
+      ],
+      "rendered_pixel_center": [
+        593.7295081967213,
+        44.69672131147541
+      ],
+      "error_px": 0.19928225413861084
+    },
+    {
+      "index": 2,
+      "point_cv_m": [
+        0.0,
+        0.0,
+        1.2
+      ],
+      "expected_pixel": [
+        318.6,
+        242.1
+      ],
+      "rendered_centroid_array_index": [
+        318.26,
+        241.62
+      ],
+      "rendered_pixel_center": [
+        318.76,
+        242.12
+      ],
+      "error_px": 0.1612451549659407
+    },
+    {
+      "index": 3,
+      "point_cv_m": [
+        -0.625,
+        0.55,
+        1.6
+      ],
+      "expected_pixel": [
+        77.50625000000002,
+        452.40625
+      ],
+      "rendered_centroid_array_index": [
+        77.09677419354838,
+        451.9516129032258
+      ],
+      "rendered_pixel_center": [
+        77.59677419354838,
+        452.4516129032258
+      ],
+      "error_px": 0.10125424735118004
+    },
+    {
+      "index": 4,
+      "point_cv_m": [
+        0.75,
+        0.53,
+        1.6
+      ],
+      "expected_pixel": [
+        607.9125,
+        444.75874999999996
+      ],
+      "rendered_centroid_array_index": [
+        607.438596491228,
+        444.43859649122805
+      ],
+      "rendered_pixel_center": [
+        607.938596491228,
+        444.93859649122805
+      ],
+      "error_px": 0.18172998448651886
+    },
+    {
+      "index": 5,
+      "point_cv_m": [
+        -0.2,
+        0.13,
+        0.85
+      ],
+      "expected_pixel": [
+        173.3764705882353,
+        335.66941176470584
+      ],
+      "rendered_centroid_array_index": [
+        172.8653846153846,
+        335.3076923076923
+      ],
+      "rendered_pixel_center": [
+        173.3653846153846,
+        335.8076923076923
+      ],
+      "error_px": 0.13872421332514895
+    },
+    {
+      "index": 6,
+      "point_cv_m": [
+        0.3,
+        0.23,
+        1.0
+      ],
+      "expected_pixel": [
+        503.76,
+        382.81399999999996
+      ],
+      "rendered_centroid_array_index": [
+        503.3888888888889,
+        382.3888888888889
+      ],
+      "rendered_pixel_center": [
+        503.8888888888889,
+        382.8888888888889
+      ],
+      "error_px": 0.14906606373699766
+    }
+  ],
+  "source_sha256": {
+    "tools/sim/check_camera_projection_isaac.py": "c04efe2687b35a7dfaf7bebcdce9fc518c8c931baef14752b57a5795ce2a8940",
+    "phantom/sim/camera.py": "7a63e0c99bc1c9c4d6989dfe77253eaccd3ddd59294f53281ef1e8d63ba53ff2"
+  },
+  "no_policy_or_hardware": true
+}

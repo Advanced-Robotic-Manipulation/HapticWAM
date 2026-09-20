@@ -1,0 +1,22 @@
+{
+  "acquisition_hold_s": 0.15,
+  "bin_tolerance_m": 0.002,
+  "carry_distance_m": 0.05,
+  "carry_hold_s": 0.25,
+  "clock_tolerance_s": 0.001,
+  "contact_force_n": 0.1,
+  "contact_gap_s": 0.15,
+  "drop_height_m": 0.02,
+  "drop_hold_s": 0.1,
+  "lift_height_m": 0.03,
+  "lift_hold_s": 0.5,
+  "max_sample_gap_s": 0.2,
+  "reach_distance_m": 0.02,
+  "reach_max_closure": 0.25,
+  "require_support_verified_release": true,
+  "settle_angular_speed_rad_s": 0.5,
+  "settle_hold_s": 0.5,
+  "settle_speed_m_s": 0.03,
+  "support_bin_force_min_n": 0.1,
+  "support_robot_force_max_n": 0.1
+}

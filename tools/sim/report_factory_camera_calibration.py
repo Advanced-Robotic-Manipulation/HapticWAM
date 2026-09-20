@@ -24,7 +24,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--evidence',type=Path,required=True)
     p.add_argument('--previews',type=Path,default=ROOT/'artifacts/isaac_waffles/d435_factory_calibration_20260908')
-    p.add_argument('--out',type=Path,default=ROOT/'docs/results/d435_factory_calibration_20260908')
+    p.add_argument('--out',type=Path,default=ROOT/'tests/fixtures/reference/d435_factory_calibration_20260908')
     a=p.parse_args();d=a.out
     reg=json.loads((d/'registration.json').read_text());g=json.loads((d/'grid_fit.json').read_text())
     cfg_path=ROOT/'configs/sim/waffles_d435_factory_20260908_r4.json';cfg=json.loads(cfg_path.read_text())

@@ -1,0 +1,13 @@
+{
+  "budget_s": 2.5,
+  "feedback_max_age_s": 0.016,
+  "inward_margin_m": 0.01,
+  "max_tick_s": 0.016,
+  "maximum_excursion_m": 0.002,
+  "rearm_dwell_s": 0.25,
+  "rearm_inward_m": 0.0122,
+  "solver_inset_m": 0.002,
+  "terminal_hold_reference": "last_acknowledged_target_v1",
+  "variant": "upper_y_projection_v2",
+  "rate_solver_backoff": "fk_rate_interior_v1"
+}

@@ -1,0 +1,90 @@
+{
+  "source_repository": "compute3:/home/physicalai/phantom-icra-2027/phantom",
+  "source_repository_head": "0259ed3",
+  "camera_request": {
+    "model": "RealSense D435",
+    "serial": "944622074411",
+    "stream": "RGB8",
+    "resolution": [
+      640,
+      480
+    ],
+    "fps": 15,
+    "depth_enabled": false,
+    "sources": [
+      "configs/hardware.nuc.yaml:109",
+      "phantom/drivers/real/realsense.py:69"
+    ]
+  },
+  "recording_scan": {
+    "episode_metadata_files": 160,
+    "available_camera_streams": 159,
+    "all_camera_frame_shape": [
+      480,
+      640,
+      3
+    ],
+    "jpeg_quality": 92,
+    "optical_intrinsics_found": false,
+    "camera_serial_recorded": false,
+    "scan_scope": "compute3 project data/episodes metadata and camera Zarr attributes"
+  },
+  "measured_cadence_hz": {
+    "ep_teacher_waffles_1788535016_005": 14.9903,
+    "September1_checked_sample": 14.9872
+  },
+  "preprocessing": {
+    "source_rgb_shape": [
+      480,
+      640,
+      3
+    ],
+    "model_image_shape": [
+      256,
+      320
+    ],
+    "mode": "full-frame bilinear resize",
+    "crop": false,
+    "rgb_normalization": "value /127.5 -1",
+    "training_and_inference_match": true,
+    "source_files": [
+      "phantom/data/windows.py:273",
+      "phantom/inference/policy.py:109",
+      "phantom/data/jpeg_codec.py:48",
+      "phantom/sim/policy_adapter.py:269"
+    ]
+  },
+  "application_camera_processing": {
+    "crop": false,
+    "flip": false,
+    "digital_zoom": false,
+    "undistort": false,
+    "depth_color_alignment": false,
+    "sensor_options_set_by_driver": false
+  },
+  "unverified": [
+    "Per-unit factoryRGBintrinsics and distortion",
+    "Current/recording-time exposure/white-balance settings and device-persisted options",
+    "Camera mount continuity between historical recordings and September8 ruler measurements",
+    "Rolling-shutter and exposure/motion-blur transfer"
+  ],
+  "nuc_query": {
+    "direct_ssh": "connection timeout",
+    "via_compute3_ssh": "connection timeout",
+    "camera_device_opened": false,
+    "streams_started": false,
+    "status": "factory_profile_unavailable"
+  },
+  "correction_sources": [
+    {
+      "url": "https://www.realsenseai.com/products/stereo-depth-camera-d435/",
+      "claim": "PublishedRGBsensorFOV69x42deg and1920x1080 full-HD format; not depth sensorFOV."
+    },
+    {
+      "url": "https://github.com/realsenseai/librealsense/blob/master/src/ds/d400/d400-private.cpp",
+      "lines": "221-266",
+      "claim": "RGB intrinsics are derived per-resolution with aspect-ratio compensation; 4:3 has narrower horizontal coverage than16:9 for same calibratedsensor."
+    }
+  ],
+  "candidate_not_factory_calibrated": true
+}

@@ -140,7 +140,7 @@ def test_initialize_places_once_and_never_uses_spring_rest_as_measured_pose(monk
             self.angular.append(v)
 
     cfg = json.loads((REPO / 'configs/sim/waffles_w2l_adaptive_parallel_20260909.json').read_text())
-    inputs = json.loads((REPO / 'docs/results/teacher_scene_v10_20260908/pickup_registration_evidence/inputs.json').read_text())
+    inputs = json.loads((REPO / 'tests/fixtures/reference/teacher_scene_v10_20260908/pickup_registration_evidence/inputs.json').read_text())
     arm_q = np.asarray(inputs['frames'][0]['arm_q'])
     qfull = np.r_[arm_q, np.zeros(8)]
     unchanged = qfull.copy()

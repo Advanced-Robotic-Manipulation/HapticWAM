@@ -1,0 +1,117 @@
+{
+  "source": "Existing tools/sim/refine_camera_static.py ann/ann2; manual labels from September4 fit episode, not factory calibration",
+  "fit_frames": [
+    0,
+    83,
+    167,
+    195
+  ],
+  "validation_frames": [
+    55,
+    111,
+    139,
+    223
+  ],
+  "validation_scope": "Withheld timepoints within previously observed fit episode; not independent held-out episode or unseen data",
+  "observations": {
+    "0": {
+      "wrist1_cap_px": [
+        534,
+        157
+      ],
+      "forearm_cap_px": [
+        494,
+        59
+      ]
+    },
+    "55": {
+      "wrist1_cap_px": [
+        468,
+        219
+      ],
+      "forearm_cap_px": [
+        441,
+        126
+      ]
+    },
+    "83": {
+      "wrist1_cap_px": [
+        440,
+        265
+      ],
+      "forearm_cap_px": [
+        418,
+        175
+      ]
+    },
+    "111": {
+      "wrist1_cap_px": [
+        434,
+        273
+      ],
+      "forearm_cap_px": [
+        411,
+        188
+      ]
+    },
+    "139": {
+      "wrist1_cap_px": [
+        432,
+        276
+      ],
+      "forearm_cap_px": [
+        412,
+        190
+      ]
+    },
+    "167": {
+      "wrist1_cap_px": [
+        438,
+        274
+      ],
+      "forearm_cap_px": [
+        416,
+        188
+      ]
+    },
+    "195": {
+      "wrist1_cap_px": [
+        491,
+        225
+      ],
+      "forearm_cap_px": [
+        454,
+        125
+      ]
+    },
+    "223": {
+      "wrist1_cap_px": [
+        559,
+        135
+      ],
+      "forearm_cap_px": [
+        505,
+        43
+      ]
+    }
+  },
+  "box_outer_rim_corners_px": [
+    [
+      194,
+      92
+    ],
+    [
+      430,
+      92
+    ],
+    [
+      439,
+      249
+    ],
+    [
+      178,
+      249
+    ]
+  ],
+  "box_landmark_caveat": "Prior labels approximate rim corners; real rim rounded and may refer different body/rim edge than rectangular proxy."
+}

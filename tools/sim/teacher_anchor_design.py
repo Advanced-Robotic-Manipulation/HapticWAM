@@ -8,7 +8,23 @@ import json
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-PROTOCOL = REPO / "docs/results/teacher_success_anchor_v3/protocol.json"
+
+# The frozen study artefacts now live under tests/fixtures/reference/.  The frozen
+# records themselves must stay byte-identical, so they still carry the directory
+# name they were written with; resolve that name to where the files are today.
+RECORDED_PREFIX = "docs/results/"
+REFERENCE_ROOT = "tests/fixtures/reference/"
+
+
+def reference_path(recorded):
+    """Map a path recorded in a frozen artefact onto its current location."""
+    text = str(recorded)
+    if text.startswith(RECORDED_PREFIX):
+        return REFERENCE_ROOT + text[len(RECORDED_PREFIX):]
+    return text
+
+
+PROTOCOL = REPO / (REFERENCE_ROOT + "teacher_success_anchor_v3/protocol.json")
 PROTOCOL_SHA = "2e02af9dd1a5bf7b9059d1a71d1a8aec1f95618f491a35e50c455c70bf765cd9"
 TEMPLATE_SHA = "ce088ff3aefeccdb43a6597f51466060cdba1a8ab7cfdd685509e2b3ca0c191a"
 AMENDMENT_SHA = "c61f7d1b2d310686cb0e53aeb1101aba8864f09a388aff289e1534e5b0938312"
@@ -152,12 +168,12 @@ def make_screen(protocol, template, dependency, amendment, *, amendment_sha):
             "NFE5/K4 differs only in NFE from reference NFE1/K4; native inference latency is part of recipe performance.",
         ],
         protocol={
-            "path": "docs/results/teacher_success_anchor_v3/protocol.json",
+            "path": RECORDED_PREFIX + "teacher_success_anchor_v3/protocol.json",
             "sha256": PROTOCOL_SHA,
             "stage": "screen",
         },
         stage_gate={
-            "amendment_path": "docs/results/teacher_success_anchor_v3/stage_gate_amendment.json",
+            "amendment_path": RECORDED_PREFIX + "teacher_success_anchor_v3/stage_gate_amendment.json",
             "amendment_sha256": amendment_sha,
             "protocol_sha256": PROTOCOL_SHA,
             "required": True,

@@ -1,0 +1,124 @@
+{
+  "q": [
+    0.22433046996593475,
+    -1.526534382496969,
+    1.164205551147461,
+    0.7029894590377808,
+    1.2061519622802734,
+    -3.087088410054342
+  ],
+  "measured_tcp_pose": [
+    -0.35737995042692927,
+    -0.2915468891273202,
+    0.30849629518660837,
+    -1.2084101278678874,
+    -1.8801236938932397,
+    1.4934586689919798
+  ],
+  "gripper": 0.0784313753247261,
+  "wrist_ft": [
+    -23.755309215609184,
+    -20.119189211095332,
+    27.276417549660035,
+    6.176184023369144,
+    -8.601723923035776,
+    -0.8461092091618866
+  ],
+  "t_master": 15055.700653755248,
+  "source_samples": {
+    "arm_q": {
+      "index": 1,
+      "t_master": 15055.700653755248,
+      "age_s": 0.0,
+      "value": [
+        0.22433046996593475,
+        -1.526534382496969,
+        1.164205551147461,
+        0.7029894590377808,
+        1.2061519622802734,
+        -3.087088410054342
+      ]
+    },
+    "arm_tcp_pose": {
+      "index": 1,
+      "t_master": 15055.700653755248,
+      "age_s": 0.0,
+      "value": [
+        -0.35737995042692927,
+        -0.2915468891273202,
+        0.30849629518660837,
+        -1.2084101278678874,
+        -1.8801236938932397,
+        1.4934586689919798
+      ]
+    },
+    "gripper": {
+      "index": 0,
+      "t_master": 15055.69664010625,
+      "age_s": 0.004013648998807184,
+      "value": [
+        0.46666666865348816,
+        3.0
+      ]
+    },
+    "arm_ft": {
+      "index": 1,
+      "t_master": 15055.700653755248,
+      "age_s": 0.0,
+      "value": [
+        -23.755309215609184,
+        -20.119189211095332,
+        27.276417549660035,
+        6.176184023369144,
+        -8.601723923035776,
+        -0.8461092091618866
+      ]
+    },
+    "arm_qd": {
+      "index": 1,
+      "t_master": 15055.700653755248,
+      "age_s": 0.0,
+      "value": [
+        0.000997087568975985,
+        -0.002205097349360585,
+        0.0008388957940042019,
+        0.0029241510201245546,
+        9.58738019107841e-05,
+        0.00011984225420746952
+      ]
+    }
+  },
+  "offset_from_first_arm_sample_s": 0.008104081000055885,
+  "tcp_same_timestamp_as_q": true,
+  "provenance": {
+    "source_kind": "Original native teleoperation recording start",
+    "episode": "ep_waffles_1785594329_003",
+    "episode_path_compute3": "/home/physicalai/phantom-icra-2027/data/val124/tasks/waffles/ep_waffles_1785594329_003",
+    "resolved_path_compute3": "/home/physicalai/phantom-icra-2027/data/val_eval/tasks/waffles/ep_waffles_1785594329_003",
+    "meta_sha256": "b693cd40e9c9a6f1a32af8fb3e598dcf9059649f32fbeb645e59555367574a4f",
+    "session": "original_session_not_identified_in_path",
+    "clock": "Stored native MasterClock timestamps; metadata clock offset not reapplied",
+    "state_selection": "First q timestamp after all five required streams begin; latest causal samples; at most64 initial rows per stream read",
+    "outcome_selection": "No task outcome, action, image, learned output or later trajectory used",
+    "fixed_object_transfer": "Only native arm/gripper/wrist transferred into canonical fixed waffle scene",
+    "training_membership": "No training-unseen claim; simulator-development holdout only",
+    "raw_wrist_caveat": "Preserved measured wrist bias; not calibrated zero-contact force"
+  },
+  "initialization_override": {
+    "kind": "explicit_pretrial_gripper_reset_only",
+    "source_initial_state_sha256": "7061c63755dab7db9ec0d73555be9b4befcd288f2514904c6e64578141a12c14",
+    "original_gripper_closure": 0.46666666865348816,
+    "effective_gripper_closure": 0.0784313753247261,
+    "recorded_open_source_sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15",
+    "recorded_open_sample": {
+      "native_index": 3,
+      "relative_time_s": -0.0030142919858917594,
+      "master_time_s": 5586.386821097927,
+      "values": [
+        0.0784313753247261,
+        3.0
+      ]
+    },
+    "semantics": "Only top-level gripper initialization command changes. q, measured TCP, wrist and nested source samples retain their original measured values. Seed native geometry then force-drive settle before policy t0; observations come from actual settled physics."
+  }
+}

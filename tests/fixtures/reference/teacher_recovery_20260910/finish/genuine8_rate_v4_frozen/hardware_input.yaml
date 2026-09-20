@@ -1,0 +1,217 @@
+arm:
+  dof: 6
+  generation: e-series
+  ip: 192.168.88.56
+  limits:
+    joint_speed_rad_s: 1.0
+    tcp_accel_m_s2: 0.5
+    tcp_speed_m_s: 0.25
+  model: UR3
+  payload_kg: 1.2
+  rtde_control_hz: 125.0
+  rtde_receive_hz: 125.0
+  servoj:
+    gain: 300
+    lookahead_time_s: 0.1
+  tcp_offset_m:
+  - 0.0
+  - 0.0
+  - 0.18
+  - 0.0
+  - 0.0
+  - 0.0
+cameras:
+  scene:
+    color:
+      c: 3
+      h: 480
+      w: 640
+    depth_enabled: false
+    enabled: true
+    fps: 15.0
+    serial: '944622074411'
+  wrist:
+    color:
+      c: 3
+      h: 480
+      w: 640
+    depth_enabled: false
+    enabled: false
+    fps: 30.0
+    serial: ''
+control:
+  action_dim: 7
+  action_rate_hz: 10.0
+  chunk_blend_s: 0.1
+  chunk_horizon: 16
+  executor_rate_hz: 125.0
+  model_tick_hz: 4.0
+  replan_min_lead_s: 0.3
+derived:
+  area_crosscheck_tol: 0.3
+  contact_source: depth
+  cop_min_contact_cells: 10
+  cpk_downsample: 8
+  event_lookahead_s: 0.5
+  event_min_hold_ticks: 2
+  friction_cone_mu: 0.8
+  slip_flow_weight: 0.5
+  tau_contact_area: 0.025
+  tau_contact_depth: 0.05
+  tau_contact_fz: 0.1
+  tau_slip: 0.5
+gripper:
+  cmd_force_limit_N: 30.0
+  default_force: 0.04
+  default_speed: 0.5
+  feedback_rate_hz: 100.0
+  force_range_N:
+  - 20.0
+  - 235.0
+  interface: urcap_socket
+  max_close_cmd: 0.9
+  port: 63352
+  stroke_mm: 85.0
+  type: robotiq_2f85
+meta:
+  bench_verified: false
+  rig_name: skoltech-ur-rig
+  schema_version: 1
+mode:
+  drivers: real
+  overrides: {}
+recording:
+  archive_raw_img: false
+  drain_interval_s: 0.25
+  field_ds:
+    h: 72
+    w: 96
+  field_ds_rate_hz: 8.0
+  field_dtype: float16
+  infer_img_rate_hz: 8.0
+  keyframe_ds:
+    h: 144
+    w: 192
+  keyframe_rate_hz: 3.0
+  ring_seconds: 20.0
+  save_infer_img: true
+  scene_jpeg_quality: 92
+  zarr_chunk_frames: 120
+  zarr_chunk_mb: 8.0
+safety:
+  elbow_min_rad: 0.4
+  governor:
+    min_scale: 0.15
+    sigma_hi: 1.0
+    sigma_lo: 0.1
+  grip_latch_fz_n: 1.0
+  hitbox_m:
+    x:
+    - -0.49850000000000005
+    - -0.2206
+    y:
+    - -0.4065
+    - 0.1758
+    z:
+    - 0.03
+    - 0.4
+  joint_speed_stop_rad_s: 1.2
+  lift_complete_fz_n: 4.0
+  lift_complete_hold_s: 0.4
+  lift_complete_window_s: 0.6
+  lift_complete_z_m: 0.0
+  reach_clamp_m: 0.6
+  servo_constraint_hold_s: 2.5
+  servo_joint_speed_max_rad_s: 1.0
+  stale_plan_timeout_s: 1.0
+  tactile_depth_limit: 1.5
+  tactile_fz_limit_N: 5.0
+  ur_dh_a2_a3_d4_m:
+  - 0.24365
+  - 0.21325
+  - 0.11235
+  ur_dh_d1_m: 0.1519
+  workspace_m:
+    x:
+    - -0.7
+    - 0.15
+    y:
+    - -0.5
+    - 0.3
+    z:
+    - 0.0315
+    - 0.4
+  wrench_baseline_tau_s: 2.0
+  wrench_debounce_ticks: 1
+  wrench_limit_N: 45.0
+  wrench_limit_Nm: 12.0
+  wrist_extension_stop_m: 0.468
+tactile:
+  dist_force_unit_to_N: 0.0
+  field:
+    h: 288
+    w: 384
+  field_channels:
+    deformation2d: 2
+    depth: 1
+    dist_force: 3
+    shear: 2
+  force_unit_to_N: 1.0
+  hw_order: hw
+  infer_img:
+    c: 1
+    h: 288
+    w: 384
+  offline_recompute_ok: false
+  pc_host: null
+  rate_hz: 8.0
+  raw_img:
+    c: 1
+    h: 480
+    w: 640
+  sdk: dmrobotics
+  sdk_backend: cpu
+  sdk_mode: high
+  sensors:
+  - dev_id: L26050098
+    name: left
+    pc_port: null
+    remote_addr: null
+  - dev_id: L26190169
+    name: right
+    pc_port: null
+    remote_addr: null
+  torque_unit_to_Nm: 0.01
+  wrench_dim: 6
+teleop:
+  echo:
+    base_pose:
+    - 0.001427
+    - -1.5621
+    - 1.588
+    - 0.00954
+    - 1.5737
+    - -3.0957
+    baud: 115200
+    control_rate_hz: 125.0
+    filter_beta: 0.3
+    filter_d_cutoff: 1.0
+    filter_min_cutoff: 1.0
+    gripper_closed_tick: 223
+    gripper_deadband: 0.02
+    gripper_ema_alpha: 0.2
+    gripper_open_tick: 18
+    joint_accel_rad_s2: 4.0
+    pid: 1868
+    sensitivity_divisors:
+    - 1.0
+    - 1.25
+    - 1.75
+    vid: 1603
+wrist_ft:
+  bias_on_episode_start: true
+  bias_window_s: 0.5
+  dim: 6
+  rate_hz: 125.0
+  source: ur_internal
+  window_s: 0.25

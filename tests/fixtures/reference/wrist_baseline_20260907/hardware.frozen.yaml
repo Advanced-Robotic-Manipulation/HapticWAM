@@ -1,0 +1,186 @@
+# ============================================================================
+# PHANTOM hardware configuration — THE single source of truth for every
+# hardware-related hyperparameter in the codebase.
+#
+# Fields marked "# BENCH:" carry UNVERIFIED defaults that must be measured and
+# overwritten during the day-1 hardware bench (see docs/hardware_bench_day1.md,
+# which names the procedure for each field). The *rank* of every shape is fixed
+# by the schema (an image is always h/w[/c]); only the VALUES here may change.
+#
+# No shape, rate, unit scale, or threshold may be hardcoded anywhere in
+# phantom/ — everything derives from this file via phantom.config.hardware.
+# ============================================================================
+
+meta:
+  schema_version: 1
+  rig_name: skoltech-ur-rig
+  bench_verified: false        # flip to true after completing docs/hardware_bench_day1.md
+
+mode:
+  drivers: mock                # mock | real (global default)
+  overrides: {}                # per-device override, e.g. {arm: real, tactile: mock}
+
+arm:
+  model: UR3                   # BENCH: informational free string (UR3 / UR3e / ...)
+  generation: e-series         # BENCH: e-series | cb3 — THE hardware fork (pipeline.md §1).
+                               #   e-series: built-in 500 Hz wrist F/T. cb3: external FT-300S needed.
+  ip: 192.168.88.56            # RIGHT UR3 = ours (left is .40) — verified from the lab's
+                               #   working teleop stack (third_party/echo_teleop/PROVENANCE.md)
+                               #   and the Denmark-rig gripper scripts (incoming/DM-Tac-SDK)
+  rtde_receive_hz: 500.0       # BENCH: e-series up to 500; cb3 max 125 (validated)
+  rtde_control_hz: 500.0       # BENCH: same constraint
+  dof: 6
+  tcp_offset_m: [0.0, 0.0, 0.180, 0.0, 0.0, 0.0]   # BENCH: measure with gripper+sensors mounted
+  payload_kg: 1.2              # BENCH: gripper + 2x W2L
+  limits:
+    joint_speed_rad_s: 1.0
+    tcp_speed_m_s: 0.25
+    tcp_accel_m_s2: 0.5
+  servoj:
+    lookahead_time_s: 0.1
+    gain: 300
+
+wrist_ft:
+  source: ur_internal          # BENCH: ur_internal (e-series) | ft300s (cb3 + Robotiq FT-300S)
+  rate_hz: 500.0               # BENCH: 500 (e-series) / 100 (FT-300S)
+  dim: 6                       # rank-fixed
+  window_s: 0.25               # F/T window length fed to the WristTCN / ACC
+  bias_on_episode_start: true
+  bias_window_s: 0.5
+
+gripper:
+  type: robotiq_2f85           # BENCH: robotiq_2f85 | robotiq_2f140
+  interface: urcap_socket
+  port: 63352
+  stroke_mm: 85.0              # BENCH: 140.0 if 2F-140
+  feedback_rate_hz: 100.0
+  default_speed: 0.5           # normalized 0..1 at the API boundary
+  default_force: 0.04          # ≈ 28.6 N on the 2F-85 — UNDER the 30 N DM-Tac pad
+                               #   ceiling (was 0.3 ≈ 85 N — would crush the pads;
+                               #   validated against cmd_force_limit_N below)
+  force_range_N: [20.0, 235.0] # BENCH: FOR=0/255 grip force endpoints (2F-85 datasheet)
+  cmd_force_limit_N: 30.0      # DM-Tac pad ceiling — every move() force is clamped
+                               #   to this at the driver boundary (docs/sensor_sdk.md)
+
+tactile:
+  sdk: dmrobotics
+  sdk_backend: cuda            # SDK inference backend on the recording host: cpu | cuda | flux.
+                               #   120 Hz needs >=RTX4060-class GPU (vendor table); cpu ~30 Hz.
+  sdk_mode: high               # standard | high (high = more accurate, more compute; cuda only)
+  rate_hz: 120.0               # BENCH (b): true concurrent dual-sensor rate
+  raw_img:   {h: 480, w: 640, c: 1}   # getRawImg = uint8 GRAYSCALE (SDK-confirmed)
+  infer_img: {h: 480, w: 640, c: 1}   # BENCH (b): size unverified (getInferImg = sensing-area crop)
+  field:     {h: 288, w: 384}         # BENCH (c): which side numpy axis-0 is — see hw_order
+  hw_order: hw                 # BENCH (c): hw = numpy axis0 is field.h; wh = transposed by SDK.
+                               #   Real driver transposes at the boundary; downstream code
+                               #   always sees canonical (field.h, field.w).
+  field_channels:              # channel stack [D_t || F_t]; must sum to 8 (validated)
+    deformation2d: 2           # getDeformation2D (in-plane displacement xy)
+    depth: 1                   # getDepth (normal indentation z)
+    shear: 2                   # getShear
+    dist_force: 3              # getDistributeForce (fx, fy, fz)
+  wrench_dim: 6                # getForce, rank-fixed
+  force_unit_to_N: 1.0         # getForce Fx,Fy,Fz are in NEWTONS (dev manual v2.0, §1.2.2.8)
+  torque_unit_to_Nm: 0.01      # getForce Mx,My,Mz are in 1e-2 N*m (dev manual v2.0, §1.2.2.8)
+  dist_force_unit_to_N: 0.0    # BENCH (a): getDistributeForce units NOT documented -> UNCALIBRATED
+                               #   sentinel: keeps depth-based contact detection + deformation
+                               #   fallback for safety/HID-S until benched (pipeline.md §5).
+  offline_recompute_ok: false  # BENCH (e): sensor.process(raw,...) offline replay is documented
+                               #   (gen_feat_hdf5.py) — flip to true after verifying bit-parity on the rig.
+  pc_host: 192.168.127.100     # PC address the sensors stream to (SensorOptions pc_host —
+                               #   Denmark-rig value; sensor subnet 192.168.127.x, separate
+                               #   from the robot subnet 192.168.88.x)
+  sensors:                     # serials from the Denmark rig (incoming/DM-Tac-SDK scripts);
+                               #   BENCH: confirm which unit is mounted left vs right
+    - {name: left,  dev_id: "L26050098", remote_addr: "192.168.127.10:50051", pc_port: 60001}
+    - {name: right, dev_id: "L26190169", remote_addr: "192.168.127.10:50052", pc_port: 60002}
+
+cameras:
+  scene:
+    enabled: true
+    serial: ""                 # BENCH: RealSense serial (empty = first device)
+    color: {h: 480, w: 640, c: 3}
+    fps: 30.0
+    depth_enabled: false
+  wrist:
+    enabled: false
+    serial: ""
+    color: {h: 480, w: 640, c: 3}
+    fps: 30.0
+    depth_enabled: false
+
+derived:                       # thresholds for phantom/data/derived.py (pipeline.md §1)
+  tau_contact_depth: 0.05      # BENCH: contact mask threshold on |depth| (SDK depth units)
+  tau_contact_area: 0.025     # frame-level contact = this fraction of pixels > tau_contact_depth (empirical free/contact gap)
+  tau_contact_fz: 0.10         # BENCH: contact mask threshold on |fz| in N (used only when calibrated)
+  contact_source: depth        # depth | fz — which channel gates the contact mask
+  tau_slip: 0.5                # BENCH: slip-score threshold (blended statistic)
+  slip_flow_weight: 0.5        # blend: w*flow_stat + (1-w)*cone_ratio (cone term used only when calibrated)
+  friction_cone_mu: 0.8        # BENCH: stick-slip ratio ||(fx,fy)||/fz threshold
+  cop_min_contact_cells: 10    # CoP undefined below this many contact cells
+  area_crosscheck_tol: 0.30    # |ourArea - getContactArea| relative tolerance (bench sanity)
+  cpk_downsample: 8            # contact-package field res = field / this (default 36x48)
+  event_lookahead_s: 0.5       # Δ for the ACC gate BCE label "contact within (t, t+Δ)"
+  event_min_hold_ticks: 2      # debounce for onset/release transitions (field-rate ticks)
+
+recording:
+  field_ds: {h: 72, w: 96}     # downsampled field resolution stored at full rate
+                               #   (must divide field h,w exactly — validated)
+  field_ds_rate_hz: 120.0      # <= tactile.rate_hz
+  keyframe_rate_hz: 10.0       # full-res field keyframes
+  keyframe_ds: {h: 144, w: 192}  # downsampled keyframe resolution (must divide
+                               #   field h,w exactly — validated); TactileFieldEncoder
+                               #   crushes native res down anyway, so store it
+                               #   pre-downsampled (4x less bytes at half-res each axis)
+  field_dtype: float16         # float16 | float32 on disk
+  save_infer_img: true
+  infer_img_rate_hz: 30.0
+  archive_raw_img: false       # flip if bench (e) proves offline recompute works
+  ring_seconds: 5.0            # per-stream ring buffer capacity
+  zarr_chunk_frames: 120       # ~1 s per chunk at field rate
+  drain_interval_s: 0.25
+
+control:
+  model_tick_hz: 4.0           # Cosmos robot/action-cond native 4 fps
+  action_rate_hz: 10.0         # action-chunk grid AND teleop command rate
+  action_dim: 7                # Δ-EE pose (6) + gripper (1) — schema constant, rank-fixed
+  chunk_horizon: 16            # H, number of actions per generated chunk
+  executor_rate_hz: 500.0      # must equal arm.rtde_control_hz (validated)
+  replan_min_lead_s: 0.3       # executor must have >= this much chunk left at swap
+  chunk_blend_s: 0.1
+
+teleop:
+  echo:                        # Echo exoskeleton leader (right arm; facts from
+                               #   third_party/echo_teleop/PROVENANCE.md + main11.py)
+    vid: 1603                  # USB VID of the STM32 leader device
+    pid: 1868
+    baud: 115200
+    base_pose: [1.427e-03, -1.5621, 1.5880, 0.00954, 1.5737, -3.0957]
+                               # joint-space reference: q_target = base_pose + exo_offset/divisor
+    sensitivity_divisors: [1.0, 1.25, 1.75]   # indexed by the device sense_flag
+    gripper_open_tick: 5       # BENCH: calibrate raw exo gripper ticks at full open/close
+    gripper_closed_tick: 155   #   (defaults = the lab's binary-mode endpoint values)
+    # --- smoothing (teleop/filters.py + teleop/streamer.py) ---
+    control_rate_hz: 125.0     # high-rate servo streaming (CB3-safe), decoupled from
+                               #   control.action_rate_hz (recording stays on the grid)
+    filter_min_cutoff: 1.0     # one-euro: cutoff Hz at rest (lower = more tremor kill)
+    filter_beta: 0.3           # one-euro: + cutoff per rad/s (higher = less lag in motion)
+    joint_accel_rad_s2: 4.0    # tracker acceleration bound (vel bound = arm.limits)
+    gripper_ema_alpha: 0.2     # gripper tick EMA at device rate
+    gripper_deadband: 0.02     # min 0..1 change before a new socket command is sent
+
+safety:
+  wrench_limit_N: 40.0         # hard stop on wrist |F|
+  wrench_limit_Nm: 8.0         # hard stop on wrist |T|
+  tactile_fz_limit_N: 5.0      # BENCH: e-stop on peak fingertip normal force (teacher mode;
+                               #   only active when force units are calibrated)
+  tactile_depth_limit: 0.6     # BENCH: e-stop on peak indentation (uncalibrated fallback)
+  workspace_m:                 # BENCH: measure at the rig
+    x: [-0.4, 0.4]
+    y: [-0.7, -0.2]
+    z: [0.02, 0.5]
+  governor:
+    sigma_lo: 0.1              # sigma <= lo -> full speed
+    sigma_hi: 1.0              # sigma >= hi -> min_scale
+    min_scale: 0.15
+  stale_plan_timeout_s: 1.0    # decelerate + hold if no fresh chunk within this

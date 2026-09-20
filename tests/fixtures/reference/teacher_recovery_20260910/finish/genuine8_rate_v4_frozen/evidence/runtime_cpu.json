@@ -1,0 +1,62 @@
+{
+  "schema": "runtime_v10_rate_interior_cpu_gate_terminal_v1",
+  "created_utc": "2026-09-11T07:54:07.654860+00:00",
+  "status": "passed",
+  "runtime": "/dev/shm/phantom_teacher_recovery_runtime_v10_rate_interior_v1_20260910",
+  "runtime_manifest_sha256": "be2f355d20a575989a62197fd959c43c83b49353d76788d3fc9e9558f0798908",
+  "python": "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+  "remote_receipt_sha256": "dffc2a0ab03ba3afee52e63b656cf4cf10842ca0ffab4e406ab9f1a8e795b0b6",
+  "groups": {
+    "rate_interior_v10": {
+      "tests": 33,
+      "passed": 33,
+      "scope": "sealed rate candidate tests with PHANTOM_RATE_PARENT=v10; boundary_projection/servo_rate_interior bytes loaded from the sealed source are byte-identical to the v10 overlay"
+    },
+    "rate_recorded_prefix_v10": {
+      "passed": true,
+      "nominal_pairs": 1847,
+      "repaired": 2,
+      "comparison_sha256": "722d7a1cb83ffc039c8569ba50cfee26ee108637e8d50f95a55e03d22def6838"
+    },
+    "runtime_own_tests_v10": {
+      "tests": 88,
+      "passed": 88,
+      "files": [
+        "tests/test_boundary_projection.py",
+        "tests/test_servo_hold.py"
+      ],
+      "scope": "v10 runtime own tests importing v10 phantom package"
+    },
+    "emergency_v10": {
+      "tests": 112,
+      "passed": 111,
+      "failed": [
+        "test_parent_v8_all_source_bytes_pinned"
+      ],
+      "failure_scope": "identity pin asserting the parent manifest equals v8 (e9c50902...); v10 intentionally differs from v8 in phantom/sim/emergency_stop.py, tools/sim/run_waffles.py and the three rate files. All 111 behavioural controls passed with PHANTOM_EMERGENCY_PARENT_RUNTIME=v10."
+    }
+  },
+  "v10_changed_files_vs_v8": [
+    "phantom/deploy/boundary_projection.py",
+    "phantom/drivers/real/ur.py",
+    "phantom/drivers/servo_rate_interior.py",
+    "phantom/sim/emergency_stop.py",
+    "tools/sim/run_waffles.py"
+  ],
+  "unchanged_candidate_groups_not_rerun": {
+    "combined_exact_114_last_ack_20_independent_5": "load their own sealed source copies, of which only phantom/deploy/boundary_projection.py differs in v10 (rate overlay); covered by the 33 rate tests and the 88 v10 own tests"
+  },
+  "output_sha256": {
+    "emergency_v10.log": "e8b1d89dd5448ee11607f6da906f28a78a6db1d1a10cd537642da432e0b8c866",
+    "emergency_v10.xml": "f84d4cd86ace6276d131ae2dd24689ed4c00c177ede27edc00fc3f01fda9d178",
+    "rate_interior_v10.log": "cbfee9d21a691805aec65c003d058bff7ac41f2d7e5dfb0a669f22c3eaf91c64",
+    "rate_interior_v10.xml": "6087b487d8c2c1c8fba319b0aa575978048bd6fef69d46dca8b8955fc23fe347",
+    "rate_recorded_prefix_v10.log": "772ec61b39d780db6bd1b3d3e7091c2d5f91c189193ec6e04cd13dd49e8ff7f8",
+    "receipt.json": "dffc2a0ab03ba3afee52e63b656cf4cf10842ca0ffab4e406ab9f1a8e795b0b6",
+    "recorded_prefix_comparison_v2.json": "722d7a1cb83ffc039c8569ba50cfee26ee108637e8d50f95a55e03d22def6838",
+    "runtime_own_tests_v10.log": "aabb9e35cbe8061d02a315d88185a4063c24cfc0ea28b24387ad425a9fb321d5",
+    "runtime_own_tests_v10.xml": "3a6579207b311982d705b3669872dd5ed0930ffce6e8a627df7e914cc86059dc"
+  },
+  "models_or_physics_started": false,
+  "qualification_ready": false
+}

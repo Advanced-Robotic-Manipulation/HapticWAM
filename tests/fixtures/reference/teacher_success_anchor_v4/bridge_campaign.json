@@ -1,0 +1,689 @@
+{
+  "schema_version": 1,
+  "campaign_id": "teacher_success_anchor_v4_corrected_profile_bridge",
+  "status": "frozen",
+  "frozen_at_utc": "2026-09-07T08:39:04.352962+00:00",
+  "freeze_authorization": "Pre-score fixed two-seed bridge for the corrected common deployment profile; no resampling or threshold changes.",
+  "sampling_seeds": [
+    904301,
+    904302
+  ],
+  "conditions": [
+    {
+      "id": "fixed_anchor",
+      "family": "nominal",
+      "object_offset_m": [
+        -0.01,
+        -0.01
+      ],
+      "friction_scale": 1.0,
+      "camera_override": null,
+      "observation_delay_s": 0.0,
+      "inference_delay_add_s": 0.0,
+      "intended_parameters": {
+        "object_translation_world_xy_m": [
+          -0.01,
+          -0.01
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "id": "teacher",
+      "cohort": "primary_exploratory",
+      "architecture": "teacher",
+      "policy_mode": "teacher",
+      "checkpoint": "runs/teacher_v5_ftA/teacher_001500.pt",
+      "checkpoint_sha256": "67c93287123e447b85bf32385660f1a99d6a8b0ad5e995727ac92a680543893e",
+      "interpretation": "Exploratory because simulated tactile inputs are uncalibrated proxies."
+    }
+  ],
+  "primary_policy_order": [
+    "teacher"
+  ],
+  "secondary_policy_order": [],
+  "horizon_s": 60.0,
+  "early_termination": "Actual safety termination only; no early success termination.",
+  "planned_counts": {
+    "conditions": 1,
+    "seeds_per_condition": 2,
+    "per_policy": 2,
+    "primary": 2,
+    "secondary": 0,
+    "total": 2
+  },
+  "nominal_scene_source": "artifacts/isaac_waffles/teacher_pick_place_v1/runtime/waffles_teacher_post_hand.json",
+  "nominal_scene_source_sha256": "2adc80df63920a41c133fa6dd7bca7c27b2a3e05df1a23a6bbc44f6bc3872f08",
+  "nominal_scene": {
+    "schema_version": 1,
+    "units": "meters, kilograms, seconds, radians; UR controller base frame; Z up",
+    "physics": {
+      "dt": 0.004,
+      "render_hz": 15,
+      "solver_position_iterations": 16,
+      "solver_velocity_iterations": 4,
+      "joint_stiffness": 3500,
+      "joint_damping": 180,
+      "finger_stiffness": 1800,
+      "finger_damping": 25,
+      "finger_force_N": 15,
+      "forearm_collision_approximation": "convexDecomposition"
+    },
+    "table": {
+      "center": [
+        -0.23,
+        0.0,
+        0.027999999999999997
+      ],
+      "size": [
+        1.7,
+        0.9,
+        0.05
+      ],
+      "hole_pitch": 0.04,
+      "hole_radius": 0.0055,
+      "top_z": 0.053,
+      "friction": 0.55
+    },
+    "mat": {
+      "center": [
+        -0.345,
+        -0.245,
+        0.05449999999999999
+      ],
+      "size": [
+        0.33,
+        0.38,
+        0.003
+      ],
+      "grid_pitch": 0.05,
+      "friction": 0.7
+    },
+    "bin": {
+      "center": [
+        -0.3915669783296538,
+        0.0366996283858784,
+        0.05399999999999999
+      ],
+      "size": [
+        0.3267210754691179,
+        0.2344750815856634,
+        0.14
+      ],
+      "wall": 0.004,
+      "friction": 0.4
+    },
+    "waffle": {
+      "center": [
+        -0.38370671848642657,
+        -0.2830692769792478,
+        0.07000000000000008
+      ],
+      "size": [
+        0.15449525360329625,
+        0.027214019144296827,
+        0.028
+      ],
+      "yaw": 0.31656601407527596,
+      "mass": 0.035,
+      "static_friction": 0.65,
+      "dynamic_friction": 0.5,
+      "restitution": 0.015
+    },
+    "gripper": {
+      "stroke": 0.07,
+      "pad_touch_command": 0.9,
+      "pad_size": [
+        0.012,
+        0.026,
+        0.055
+      ],
+      "pad_center_z": 0.16556,
+      "pad_friction": 1.0,
+      "housing_size": [
+        0.065,
+        0.048,
+        0.07
+      ],
+      "compliant_stiffness": 12000,
+      "compliant_damping": 30,
+      "yaw": -0.377,
+      "geometry_source": "Rounded pad/backing contact hulls and70mm effective custom-pad aperture fitted against measured grasp; nominal bare Robotiqstroke remains85mm. Contact/material parameters are uncalibrated estimates.",
+      "contact_shape": "ellipse"
+    },
+    "camera": {
+      "resolution": [
+        640,
+        480
+      ],
+      "fx": 742.893223660066,
+      "fy": 742.893223660066,
+      "cx": 320.0,
+      "cy": 240.0,
+      "position": [
+        -0.32484269191527715,
+        -0.4753704304569985,
+        1.0424263097960098
+      ],
+      "target": [
+        -0.37168218390632835,
+        -0.058827533207274685,
+        0.13451768182685875
+      ],
+      "world_from_cv": [
+        [
+          0.9980094660544067,
+          0.04222756985451613,
+          -0.04683949199105121,
+          -0.32484269191527715
+        ],
+        [
+          0.05793770782169203,
+          -0.9072680071308444,
+          0.4165428972497238,
+          -0.4753704304569985
+        ],
+        [
+          -0.024906378262726937,
+          -0.4184275272744465,
+          -0.9079086279691511,
+          1.0424263097960098
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source": "artifacts/isaac_waffles/evidence/camera_refinement_frozen_physics.json; balancedC, September4 fitting only, no hardware optical calibration."
+    },
+    "lighting": {
+      "dome_intensity": 650,
+      "key_intensity": 1800,
+      "key_position": [
+        -0.1,
+        -0.5,
+        1.8
+      ]
+    },
+    "uncertainty": {
+      "geometry": "Table, bin, mat, packet and custom pad sizes are visual estimates; no ruler or calibrated extrinsics recovered.",
+      "physics": "Packet is a rigid collision body. Wrapper flex, wafer fracture, gel friction/compliance and motor response remain uncalibrated.",
+      "camera": "Camera fit is episode-specific; do not pool sessions with changed camera mounting."
+    },
+    "calibration": {
+      "revision": "recorded_pick_place_v2",
+      "episode_role": "August22 complete pick-place fit",
+      "physical_fit": "Two fixed fit episodes; table plane, rounded contact hulls, effective aperture and per-episode initial packet pose estimated from images/contact events. No object attachment or pose replay.",
+      "hardware_bare_gripper_stroke_m": 0.085,
+      "table_plane_shift_from_v1_m": 0.075,
+      "validation": "Recorded-motion reproduction; does not establish calibrated force/tactile transfer or policy success."
+    }
+  },
+  "prepared_episode": "evidence/fit/ep_waffles_1787395928_000",
+  "execution_order": "Two separately loaded teacher repetitions; each executes historical seeds4242 then4243 at the same exact successful physical cell. Allfour are diagnostic controls, excluded from freshseed teacher selection.",
+  "inference_settings": {
+    "use_ema": true,
+    "nfe": 1,
+    "guidance": 1.0,
+    "persistent_noise": true,
+    "parity": true,
+    "k_seeds": 4,
+    "max_play": 10,
+    "task_text": "waffles",
+    "latency": "Native measured model inference latency plus configured response delay; RPC serialization/postprocessing overhead recorded separately, not advanced on simulated clock. Same model for all trials; exploratory timing transfer.",
+    "drop_video": false,
+    "close_p": 0.5
+  },
+  "observation_delay_semantics": "Sensor-history transport delay for camera/state/tactile/wrist. snapshot.t and request/action grids remain current; locally known accepted-gripper-command history stays current, matching native SnapshotBuilder. Executor and safety feedback stay current. Causal sensor samples only.",
+  "comparability_requirements": [
+    "Frozen original ftA teacher EMA, native NFE1/K4, two seeds per same20 condition grid.",
+    "Explicit placement controller extension permits only teacher-commanded release with measured TCP inside predeclared bin volume; never reads object state.",
+    "Unchanged physical scene and safety limits from corrected teacher pickup.",
+    "Strict success requires oriented packet containment, unloaded pads, no robot support and positive bin support throughout settled0.5s after connected acquisition/lift/carry.",
+    "All completed outcomes retained; diagnostics and infrastructure failures separated.",
+    "Tactile transfer, geometry and latency remain uncalibrated; results exploratory."
+  ],
+  "thresholds": {
+    "contact_force_n": 0.1,
+    "acquisition_hold_s": 0.15,
+    "lift_height_m": 0.03,
+    "lift_hold_s": 0.5,
+    "carry_distance_m": 0.05,
+    "carry_hold_s": 0.25,
+    "contact_gap_s": 0.15,
+    "settle_hold_s": 0.5,
+    "settle_speed_m_s": 0.03,
+    "settle_angular_speed_rad_s": 0.5,
+    "bin_tolerance_m": 0.002,
+    "reach_distance_m": 0.02,
+    "reach_max_closure": 0.25,
+    "drop_height_m": 0.02,
+    "drop_hold_s": 0.1,
+    "clock_tolerance_s": 0.001,
+    "max_sample_gap_s": 0.2,
+    "require_support_verified_release": true,
+    "support_robot_force_max_n": 0.1,
+    "support_bin_force_min_n": 0.1
+  },
+  "analysis": {
+    "primary_outcome": "full_task",
+    "diagnostic_outcomes": [
+      "reach_before_closure",
+      "acquired",
+      "lifted",
+      "carried",
+      "released_in_bin",
+      "dropped"
+    ],
+    "primary_comparison": null,
+    "exploratory_comparisons": [],
+    "secondary_comparisons": [],
+    "weighting": "Two matched fresh sampling seeds on one exact fixed physical condition. Descriptive component diagnostic only.",
+    "confidence_level": 0.95,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260906,
+    "paired_interval_method": "Descriptive only; no independent configuration resampling from this single scene.",
+    "interval_interpretation": "Descriptive scenario-resampling intervals for this fixed sensitivity suite, not population-level hardware/generalization bounds. Two seeds provide limited sampling uncertainty. Degenerate bootstrap intervals do not establish equivalence.",
+    "missing_trials": "Report scheduled-denominator success bounds and all missing/invalid cases. Paired inference requires complete condition\u00d7seed matches; incomplete contrasts are explicitly partial.",
+    "safety_stop": "Preserve observed physical task outcome; report safety stops separately, including after achieved placement.",
+    "early_failure": "Do not discard or replace an executed policy failure. Retry only demonstrable infrastructure failure before any policy command, with explicit linked attempt metadata.",
+    "freeze_policy": "Do not tune thresholds, cases or comparisons after observing policy outcomes. Any amendment creates a new campaign id/hash.",
+    "reproduction_note": "Combined-correction bridge after separate component diagnostics; not model ranking or held-out confirmation."
+  },
+  "case_manifest": {
+    "filename": "case.json",
+    "required_fields": [
+      "campaign_sha256",
+      "policy_id",
+      "condition_id",
+      "sampling_seed"
+    ],
+    "recommended_fields": [
+      "checkpoint_sha256",
+      "intended_parameters",
+      "effective_parameters",
+      "attempt",
+      "infrastructure_failure_before_policy_command"
+    ],
+    "inputs": [
+      "run.json",
+      "effective_config.json",
+      "sim_trace.npz",
+      "execution_trace.jsonl",
+      "planner_trace.json",
+      "policy_info.json"
+    ],
+    "analysis_outputs": "Written separately from raw trial directories."
+  },
+  "execution_phases": [
+    {
+      "id": "corrected_profile_bridge",
+      "policy_ids": [
+        "teacher"
+      ],
+      "condition_ids": [
+        "fixed_anchor"
+      ]
+    }
+  ],
+  "amendments": [
+    {
+      "previous_campaign_id": "waffles_policy_matched_v4",
+      "previous_sha256": "a43bd24f73aaaaf5fd3dd1e1b02bca1f7fa4df311f34f1170a301da7b7d97c48",
+      "reason": "New teacher-only task: corrected teacher input/scene/tactile profile, explicit policy-commanded placement release,60s horizon and stricter support-verified metrics. Prior160trials remainfrozen and separate."
+    }
+  ],
+  "runtime_hardware": {
+    "source": "artifacts/isaac_waffles/teacher_pick_place_v1/runtime/hardware_campaign.yaml",
+    "sha256": "596363489a5259463674247faeff9a5993ff7c9c8d483e459cb3d027dcc525e3",
+    "recipe": "Unchanged force/speed/workspace configuration from teacher pickup; optional lift-complete stop disabled. Placement release is a separate explicit adapter profile.",
+    "effective_model": {
+      "meta": {
+        "schema_version": 1,
+        "rig_name": "skoltech-ur-rig",
+        "bench_verified": false
+      },
+      "mode": {
+        "drivers": "real",
+        "overrides": {}
+      },
+      "arm": {
+        "model": "UR3",
+        "generation": "e-series",
+        "ip": "192.168.88.56",
+        "rtde_receive_hz": 125.0,
+        "rtde_control_hz": 125.0,
+        "dof": 6,
+        "tcp_offset_m": [
+          0.0,
+          0.0,
+          0.18,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "payload_kg": 1.2,
+        "limits": {
+          "joint_speed_rad_s": 1.0,
+          "tcp_speed_m_s": 0.25,
+          "tcp_accel_m_s2": 0.5
+        },
+        "servoj": {
+          "lookahead_time_s": 0.1,
+          "gain": 300
+        }
+      },
+      "wrist_ft": {
+        "source": "ur_internal",
+        "rate_hz": 125.0,
+        "dim": 6,
+        "window_s": 0.25,
+        "bias_on_episode_start": true,
+        "bias_window_s": 0.5
+      },
+      "gripper": {
+        "type": "robotiq_2f85",
+        "interface": "urcap_socket",
+        "port": 63352,
+        "stroke_mm": 85.0,
+        "feedback_rate_hz": 100.0,
+        "default_speed": 0.5,
+        "default_force": 0.04,
+        "force_range_N": [
+          20.0,
+          235.0
+        ],
+        "cmd_force_limit_N": 30.0,
+        "max_close_cmd": 0.9
+      },
+      "tactile": {
+        "sdk": "dmrobotics",
+        "sdk_backend": "cpu",
+        "sdk_mode": "high",
+        "rate_hz": 8.0,
+        "raw_img": {
+          "h": 480,
+          "w": 640,
+          "c": 1
+        },
+        "infer_img": {
+          "h": 288,
+          "w": 384,
+          "c": 1
+        },
+        "field": {
+          "h": 288,
+          "w": 384
+        },
+        "hw_order": "hw",
+        "field_channels": {
+          "deformation2d": 2,
+          "depth": 1,
+          "shear": 2,
+          "dist_force": 3
+        },
+        "wrench_dim": 6,
+        "force_unit_to_N": 1.0,
+        "torque_unit_to_Nm": 0.01,
+        "dist_force_unit_to_N": 0.0,
+        "offline_recompute_ok": false,
+        "pc_host": null,
+        "sensors": [
+          {
+            "name": "left",
+            "dev_id": "L26050098",
+            "remote_addr": null,
+            "pc_port": null
+          },
+          {
+            "name": "right",
+            "dev_id": "L26190169",
+            "remote_addr": null,
+            "pc_port": null
+          }
+        ]
+      },
+      "cameras": {
+        "scene": {
+          "enabled": true,
+          "serial": "944622074411",
+          "color": {
+            "h": 480,
+            "w": 640,
+            "c": 3
+          },
+          "fps": 15.0,
+          "depth_enabled": false
+        },
+        "wrist": {
+          "enabled": false,
+          "serial": "",
+          "color": {
+            "h": 480,
+            "w": 640,
+            "c": 3
+          },
+          "fps": 30.0,
+          "depth_enabled": false
+        }
+      },
+      "derived": {
+        "tau_contact_depth": 0.05,
+        "tau_contact_area": 0.025,
+        "tau_contact_fz": 0.1,
+        "contact_source": "depth",
+        "tau_slip": 0.5,
+        "slip_flow_weight": 0.5,
+        "friction_cone_mu": 0.8,
+        "cop_min_contact_cells": 10,
+        "area_crosscheck_tol": 0.3,
+        "cpk_downsample": 8,
+        "event_lookahead_s": 0.5,
+        "event_min_hold_ticks": 2
+      },
+      "recording": {
+        "field_ds": {
+          "h": 72,
+          "w": 96
+        },
+        "field_ds_rate_hz": 8.0,
+        "keyframe_ds": {
+          "h": 144,
+          "w": 192
+        },
+        "keyframe_rate_hz": 3.0,
+        "field_dtype": "float16",
+        "save_infer_img": true,
+        "infer_img_rate_hz": 8.0,
+        "archive_raw_img": false,
+        "ring_seconds": 20.0,
+        "zarr_chunk_frames": 120,
+        "zarr_chunk_mb": 8.0,
+        "drain_interval_s": 0.25,
+        "scene_jpeg_quality": 92
+      },
+      "control": {
+        "model_tick_hz": 4.0,
+        "action_rate_hz": 10.0,
+        "action_dim": 7,
+        "chunk_horizon": 16,
+        "executor_rate_hz": 125.0,
+        "replan_min_lead_s": 0.3,
+        "chunk_blend_s": 0.1
+      },
+      "safety": {
+        "wrench_limit_N": 60.0,
+        "wrench_limit_Nm": 15.0,
+        "wrench_baseline_tau_s": 2.0,
+        "wrench_debounce_ticks": 3,
+        "joint_speed_stop_rad_s": 1.2,
+        "wrist_extension_stop_m": 0.468,
+        "lift_complete_z_m": 0.0,
+        "lift_complete_fz_n": 4.0,
+        "lift_complete_hold_s": 0.4,
+        "lift_complete_window_s": 0.6,
+        "grip_latch_fz_n": 2.5,
+        "ur_dh_a2_a3_d4_m": [
+          0.24365,
+          0.21325,
+          0.11235
+        ],
+        "ur_dh_d1_m": 0.1519,
+        "elbow_min_rad": null,
+        "servo_joint_speed_max_rad_s": null,
+        "reach_clamp_m": null,
+        "tactile_fz_limit_N": 5.0,
+        "tactile_depth_limit": 0.6,
+        "workspace_m": {
+          "x": [
+            -0.7,
+            0.15
+          ],
+          "y": [
+            -0.5,
+            0.3
+          ],
+          "z": [
+            0.0315,
+            0.8
+          ]
+        },
+        "hitbox_m": {
+          "x": [
+            -0.49850000000000005,
+            -0.2206
+          ],
+          "y": [
+            -0.4065,
+            0.1758
+          ],
+          "z": [
+            0.03,
+            0.5021
+          ]
+        },
+        "governor": {
+          "sigma_lo": 0.1,
+          "sigma_hi": 1.0,
+          "min_scale": 0.15
+        },
+        "stale_plan_timeout_s": 1.0
+      },
+      "teleop": {
+        "echo": {
+          "vid": 1603,
+          "pid": 1868,
+          "baud": 115200,
+          "base_pose": [
+            0.001427,
+            -1.5621,
+            1.588,
+            0.00954,
+            1.5737,
+            -3.0957
+          ],
+          "sensitivity_divisors": [
+            1.0,
+            1.25,
+            1.75
+          ],
+          "gripper_open_tick": 18,
+          "gripper_closed_tick": 223,
+          "control_rate_hz": 125.0,
+          "filter_min_cutoff": 1.0,
+          "filter_beta": 0.3,
+          "filter_d_cutoff": 1.0,
+          "joint_accel_rad_s2": 4.0,
+          "gripper_ema_alpha": 0.2,
+          "gripper_deadband": 0.02
+        }
+      }
+    },
+    "config_hash": "debf88a276b49db4"
+  },
+  "initialization_requirements": {
+    "free_hold_s": 2.0,
+    "max_joint_position_error_rad": 0.02,
+    "max_joint_speed_rad_s": 0.05
+  },
+  "post_stop_observation_s": 2.0,
+  "post_stop_observation_semantics": "After actual safety stop observe free physics up to2s, capped by60s horizon. No success-triggered earlystop.",
+  "adapter_profile": {
+    "tactile_model": "measured_baseline_proxy",
+    "gel_contact_coverage": "manifold_patch_v2",
+    "terminal_veto": {
+      "implementation": "live",
+      "config": {
+        "z_ref": 0.0415,
+        "z_floor": 0.0315,
+        "z_margin": 0.0615,
+        "open_aperture": 0.232,
+        "p_close": 0.5,
+        "p_none": 0.9,
+        "max_retries": 3
+      },
+      "provenance": "Episode teacher5016 direct p_close,p_none,retries,floor; remaining task defaults recovered from recorded git fd4a032. live selects newer native pad-based recovery logic."
+    },
+    "placement_release": {
+      "tcp_min_m": [
+        -0.5429275160642127,
+        -0.06853791240695331,
+        0.057999999999999996
+      ],
+      "tcp_max_m": [
+        -0.24020644059509488,
+        0.14193716917871008,
+        0.274
+      ],
+      "open_command_max": 0.45,
+      "opening_hold_s": 0.2,
+      "unloaded_force_max_n": 0.5,
+      "unloaded_hold_s": 0.2,
+      "rearm_close_command_min": 0.5,
+      "finish_after_release": true
+    },
+    "record_packet_support": true,
+    "save_policy_observations": true,
+    "initial_state": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_policy_initial_state.json",
+      "sha256": "a57397a69a925df17c3e9d4d290ccee3ea5af72f7ad468c246b6b09542caed15"
+    },
+    "tactile_baseline": {
+      "path": "/home/physicalai/phantom-icra-2027/sim/waffles/runs/teacher_pick_place_v1/sept4_no_contact_sensor_baseline.npz",
+      "sha256": "80be55220030d1c8b4b769ae205028b7f7f870c6fc1e4c3c7879d5e581afdfce"
+    },
+    "wrist_model": "gripper_contact_proxy",
+    "terminal_veto_feedback_source": "current_delivery"
+  },
+  "execution_order_seed": 20260907,
+  "development_split_note": "Both historical seeds are development controls, not new validation data. Sampling and native inference timing remain recorded; no guarantee of bitwise closedlooprepeat.",
+  "preflight_provenance": {
+    "measured_replay": "diagnostics/measured_dynamics_support: physical release/support confirmed14.268s, replayexcludedfrompolicyscores",
+    "native_controller": "diagnostics/native_pick_only_seed4242:60s,heldobjectinbin,norelease",
+    "release_controller": "diagnostics/placement_release_seed4242:strictfulltask30.268s,subsequentworkspace-stop55.884s;developmentdiagnosticonly"
+  },
+  "reference_case": {
+    "original_campaign_sha256": "325f6144bf605c14800bed56e7eed322632a00f3dba491d26b819abd79049f5c",
+    "case_id": "teacher__placement_xm10_ym10mm__seed4242",
+    "strict_placement_time_s": 25.2,
+    "later_wrist_extension_stop_s": 31.38,
+    "original_source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_pick_place_v1",
+    "physical_outcome": "Existing ordered full_task + bin_support, independent of later stop; clean finish separatelyreported."
+  },
+  "bridge": {
+    "source": "/home/physicalai/phantom-icra-2027/sim/waffles/source_teacher_v2_delivery",
+    "preserves": "Exact successful v1 scene/start/Sept4 sensor baseline, hardware thresholds, object-state metrics, ftA1500 EMA NFE1/K4",
+    "components": [
+      "gel_v2",
+      "full_gripper_wrist",
+      "live_veto",
+      "current_delivery_feedback",
+      "finish_after_release"
+    ],
+    "gate": "Both fixed development seeds must give valid physical full_task, final support/unloading, FINISH, no actual stop and continued observation through60s; no replacement trials",
+    "is_model_selection": false
+  }
+}

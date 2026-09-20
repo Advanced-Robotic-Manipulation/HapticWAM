@@ -1,0 +1,112 @@
+{
+  "status": "passed",
+  "runtime_manifest_sha256": "e9c5090264ef4577db0ebdb17d7bf3222b3b67be9613cf121c45d6b24f9a78e9",
+  "collector_manifest_sha256": "ce90eaa787a0f4dc64ce8dd9d571fc80d7c8b1da52c906d2fe8913f8de4a4b1b",
+  "combined_artifact_manifest_sha256": "38342074efdd0302e70d84b8da2c5d6084e5b041b01e837878fd5b7cc086c8d9",
+  "pytest_harness_manifest_sha256": "e56ed6dbdef7d7b147c1e532d107c2a3d7ee9864896438f1cdfd051c16036bd1",
+  "python": "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+  "python_version": "3.12.13 (tags/v3.12.13-dirty:3bb231a, Mar  4 2026, 13:53:36) [GCC 11.4.0]",
+  "dependency_versions": {
+    "numpy": "2.3.1",
+    "cv2": "4.13.0",
+    "pytest": "9.1.1"
+  },
+  "results": [
+    {
+      "name": "test_collector",
+      "command": [
+        "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/results/test_collector.xml",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/source/docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/test_collector.py"
+      ],
+      "returncode": 0,
+      "summary": {
+        "tests": 43,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "wall_s": 2.6230180810089223,
+      "passed": true
+    },
+    {
+      "name": "test_frozen_contract",
+      "command": [
+        "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/results/test_frozen_contract.xml",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/source/docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/test_frozen_contract.py"
+      ],
+      "returncode": 0,
+      "summary": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "wall_s": 1.0181105319934431,
+      "passed": true
+    },
+    {
+      "name": "test_physical_composition",
+      "command": [
+        "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/results/test_physical_composition.xml",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/source/docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2/test_physical_composition.py"
+      ],
+      "returncode": 0,
+      "summary": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "wall_s": 1.4179988670075545,
+      "passed": true
+    },
+    {
+      "name": "full_runtime_import_smoke",
+      "command": [
+        "/home/physicalai/AAAI_MultiAgenticSIM/isaac-sim-6.0/kit/python/bin/python3",
+        "-c",
+        "import sys,json;sys.path.insert(0,sys.argv[1]);from collect import collect;v=collect(sys.argv[2],sys.argv[3],sys.argv[4]);assert len(v['trials'])==8 and v['valid_scored']==0 and not v['passed'] and not v['qualification40_ready'];print(json.dumps({k:v[k] for k in ['passed','planned_trials','valid_scored','qualification40_ready']}))",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/source/docs/results/teacher_recovery_20260910/finish/genuine8_relative_diagnostic_collector_draft_v2",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/combined/inputs_draft",
+        "/dev/shm/phantom_teacher_recovery_collector_v2_isaac_cpu_archive_v2_20260910/absent_raw",
+        "/dev/shm/phantom_teacher_recovery_runtime_v8_combined_timing_relative_last_ack_v3_20260910"
+      ],
+      "returncode": 0,
+      "passed": true
+    }
+  ],
+  "source_inventories_unchanged": true,
+  "models_or_physics_launched": false,
+  "qualification_ready": false,
+  "output_sha256": {
+    "full_runtime_import_smoke.log": "7e0db9e90be54ac20d12a610ef392402f8aab1eb6d46468265cfd71e543b2848",
+    "test_physical_composition.xml": "62697a2945e3c63289ec79a149fcb902b4482aeb6703b6873df507ae38cdb1ed",
+    "test_physical_composition.log": "ee0a008709f8a80aecfa3f91058fc60aa69c529a65b603a54069f5a0d38f8d84",
+    "test_frozen_contract.xml": "20fd44fd8d4d71d928eb95f45fe4fa347e25c514f3db996e4aa6ac8c014f6ffc",
+    "test_frozen_contract.log": "3f1505414e6d9dc89b69a0c26354fcc138986d24518eddf8ebb6a66120fda8b1",
+    "test_collector.xml": "76ff7cbb8df10c93149d1654e49907c6a510d121787a6d614c905ab214fa0fe6",
+    "test_collector.log": "477e575ccb57c29354d6136ec82200590e97051154bf240e351c0389581df727",
+    "owned_cpu.json": "936dcd92285a072def865af90086c2ba0996a396a77333db88a3ae9563f44d41"
+  }
+}
