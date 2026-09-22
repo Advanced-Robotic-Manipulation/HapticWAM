@@ -3,6 +3,15 @@
 **Haptic World-Action Model** — a tactile world-action model that learns to *imagine* contact,
 then gives that imagination to a robot with no tactile sensors at all.
 
+> ### HapticWAM: Distilling Imagined Touch into a World-Action Model without Inference-Time Tactile Sensing
+>
+> Paper: **[arXiv:2609.23888](https://arxiv.org/abs/2609.23888)** ·
+> [PDF](https://arxiv.org/pdf/2609.23888) ·
+> Models and data: **[HapticWAM — ICRA 2027](https://huggingface.co/collections/armteam/hapticwam-icra-2027-6ab234bdfe24c383b5f9fb57)** on the Hugging Face hub
+>
+> Submitted to the **IEEE International Conference on Robotics and Automation (ICRA) 2027**.
+> If you use this code, the checkpoints or the datasets, please [cite the paper](#citation).
+
 HapticWAM fine-tunes the frozen **Cosmos-Predict2.5-2B `robot/action-cond`** video-diffusion
 transformer into a **teacher** that takes optical-tactile input and, at every replan, generates a
 structured *contact package* — per-finger displacement and normal-force deltas, contact mask,
@@ -59,15 +68,84 @@ the `# BENCH:` fields: [docs/hardware_bench_day1.md](docs/hardware_bench_day1.md
 
 ## Data and checkpoints
 
-Everything heavy lives on the Hugging Face hub under `armteam`:
+Every weight and every episode is public on the Hugging Face hub under
+[`armteam`](https://huggingface.co/armteam), collected in
+**[HapticWAM — ICRA 2027](https://huggingface.co/collections/armteam/hapticwam-icra-2027-6ab234bdfe24c383b5f9fb57)**.
 
-| Repo | What |
-|---|---|
-| [`armteam/hapticwam-teleop-raw`](https://huggingface.co/datasets/armteam/hapticwam-teleop-raw) | raw teleop episode sessions + the packed `dataset_v3_packed` training tarballs |
-| [`armteam/hapticwam-sim-episodes`](https://huggingface.co/datasets/armteam/hapticwam-sim-episodes) | Isaac Sim episodes |
-| [`armteam/hapticwam-rig-episodes`](https://huggingface.co/datasets/armteam/hapticwam-rig-episodes) | closed-loop rig deployment episodes |
-| [`armteam/hapticwam-results`](https://huggingface.co/datasets/armteam/hapticwam-results) | experiment result media — videos, plots, frame dumps, per-trial evidence |
-| [`armteam/phantom-checkpoints`](https://huggingface.co/armteam/phantom-checkpoints) | teacher / student / baseline weights — **id not renamed** |
+### Models
+
+Four model repos. Each carries an `index.jsonl` listing every file with its size and LFS
+sha256, and each is **Apache-2.0**.
+
+| Repo | Size | What it is |
+|---|---|---|
+| [`armteam/hapticwam-teacher`](https://huggingface.co/armteam/hapticwam-teacher) | 2.0 GB | the tactile-input **teacher** — the model that sees the fingertip pads and is distilled away. Also carries `text_embeddings.pt`, the Cosmos prompt-embedding cache the training and deploy scripts need. |
+| [`armteam/hapticwam-student`](https://huggingface.co/armteam/hapticwam-student) | 4.5 GB | the distilled **pad-free student** — the model that actually runs on the rig with no tactile sensor. Plus the `nowrist` sensor-free ablation arms. |
+| [`armteam/hapticwam-baselines`](https://huggingface.co/armteam/hapticwam-baselines) | 12.5 GB | the three comparison policies — pi0.5 expert fine-tune, Diffusion Policy, X-VLA — with the step-selection sweeps that chose their steps. |
+| [`armteam/hapticwam-ablations`](https://huggingface.co/armteam/hapticwam-ablations) | 26 GB | every training arm that is **not** deployed (world-model-loss study, multitask, no-distillation controls, the v5 lineage, the pi0.5 60k resume) and the complete, canonical evaluation sweeps. |
+
+#### Which checkpoint the paper deploys
+
+Each repo holds several rungs of each run. These are the exact files behind the reported
+numbers — pick anything else and you are not reproducing the paper:
+
+| Role | Repo | Path |
+|---|---|---|
+| **teacher** (the `teacher` arm in the rig tables) | `hapticwam-teacher` | `teacher_v6_simft/teacher_002000.pt` |
+| base teacher before the sim fine-tune (rig arm **A**) | `hapticwam-teacher` | `teacher_v6/teacher_020000.pt` |
+| **student** (pad-free, 1 000 distillation steps) | `hapticwam-student` | `hid_simft/student_001000.pt` |
+| **pi0.5** baseline | `hapticwam-baselines` | `pi05_phantom_expert_v1/020000/pretrained_model/` — step 20 000, **not** the 60k resume (that one is in `hapticwam-ablations/pi05_phantom_expert_v1_resume60k/`) |
+| **Diffusion Policy** baseline | `hapticwam-baselines` | `diffusion_100k/pretrained_model/` |
+| X-VLA baseline | `hapticwam-baselines` | `xvla_20k/pretrained_model/` |
+
+#### Get the deployed student in three lines
+
+```python
+from huggingface_hub import hf_hub_download
+ckpt = hf_hub_download("armteam/hapticwam-student", "hid_simft/student_001000.pt")
+print(ckpt)   # -> pass to: python -m phantom.scripts.run_deploy --system student --ckpt <ckpt>
+```
+
+```bash
+hf download armteam/hapticwam-student hid_simft/student_001000.pt --local-dir runs/hid_simft
+python -m phantom.scripts.run_deploy --system student \
+    --ckpt runs/hid_simft/hid_simft/student_001000.pt --task whiteboard \
+    --hardware configs/hardware.nuc.mock.yaml --episodes 1     # mocked, no hardware
+```
+
+#### …and the teacher
+
+```python
+from huggingface_hub import hf_hub_download
+ckpt = hf_hub_download("armteam/hapticwam-teacher", "teacher_v6_simft/teacher_002000.pt")
+text = hf_hub_download("armteam/hapticwam-teacher", "text_embeddings.pt")  # prompt cache, required
+```
+
+```bash
+hf download armteam/hapticwam-teacher teacher_v6_simft/teacher_002000.pt --local-dir runs/teacher_v6_simft
+hf download armteam/hapticwam-teacher text_embeddings.pt --local-dir data/phantom-episodes/tasks
+```
+
+(`hf` is the current Hugging Face CLI; on older installs the same commands are
+`huggingface-cli download …`.)
+
+### Datasets
+
+Six dataset repos, all **CC-BY-4.0**.
+
+| Repo | Size | What it is |
+|---|---|---|
+| [`armteam/hapticwam-teleop-dataset`](https://huggingface.co/datasets/armteam/hapticwam-teleop-dataset) | 102.7 GB | **the training corpus** — 1,115 teleoperated episodes with fingertip tactile, packed as one `.tar.zst` per task, plus the manifests and `norm_stats.json`. Start here. |
+| [`armteam/hapticwam-teleop-raw`](https://huggingface.co/datasets/armteam/hapticwam-teleop-raw) | ~112 GB | the same teleoperation as loose, as-recorded sessions (`tasks/`, `archive/`, `collect/`, `manifests/`) — provenance for the packed corpus above, and a superset that also holds pre-cleanup takes. |
+| [`armteam/hapticwam-sim-episodes`](https://huggingface.co/datasets/armteam/hapticwam-sim-episodes) | 82.7 GB | Isaac Sim expert episodes (`sim_expert_20260912/`, `sim_expert_20260914/`) as per-trial tars with an `index.jsonl`. These drive the sim fine-tune that produces the deployed teacher. |
+| [`armteam/hapticwam-rig-episodes`](https://huggingface.co/datasets/armteam/hapticwam-rig-episodes) | 24.3 GB | the **closed-loop rig takes the paper's numbers are computed from** — `20260915_experiment/` is the analysis set, with `_extra` and `_superseded` kept for provenance. |
+| [`armteam/hapticwam-rollouts`](https://huggingface.co/datasets/armteam/hapticwam-rollouts) | 50 GB | policy-driven (not teleoperated) rollouts: the DAgger rounds and the earlier deploy days, as per-day archives plus the round-3 manifest. |
+| [`armteam/hapticwam-results`](https://huggingface.co/datasets/armteam/hapticwam-results) | 1.05 GB | result media archived out of this repository — videos, plots, frame dumps, per-trial evidence — with a `MANIFEST.tsv` mapping each file back to its old `docs/results/` path. |
+
+How they fit together: the teacher trains on **teleop-dataset**, is sim-fine-tuned with
+**sim-episodes** and **rollouts**, is distilled into the student, and both are then evaluated
+on the rig into **rig-episodes**; **teleop-raw** is the provenance of the packed corpus and
+**results** holds the media.
 
 `tools/provision_v5.sh` and `tools/provision_distill.sh` pull a training box's dataset and
 checkpoints from the hub with nothing but an `HF_TOKEN`.
@@ -189,4 +267,21 @@ deliberately left uninitialised.
 
 ## Licence
 
-Apache-2.0 — see [LICENSE](LICENSE).
+Code and model weights: **Apache-2.0** — see [LICENSE](LICENSE).
+Datasets on the hub (`hapticwam-teleop-dataset`, `-teleop-raw`, `-sim-episodes`,
+`-rig-episodes`, `-rollouts`, `-results`): **CC-BY-4.0**.
+
+## Citation
+
+```bibtex
+@article{sannikov2026hapticwam,
+  title   = {{HapticWAM}: Distilling Imagined Touch into a World-Action Model
+             without Inference-Time Tactile Sensing},
+  author  = {Sannikov, Mikhail and Mikhalchuk, Ilya and Gubernatorov, Konstantin
+             and Kovalev, Petr and Oluwatobi, Ogunwoye Faith and Tsetserukou, Dzmitry},
+  journal = {arXiv preprint arXiv:2609.23888},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2609.23888}
+}
+```
+

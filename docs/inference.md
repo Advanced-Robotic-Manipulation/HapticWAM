@@ -9,7 +9,7 @@ Verified end-to-end with `teacher_v3_790eps` on the 5090 box, 2026-08-11.
 
 | Piece | Where | Notes |
 |---|---|---|
-| teacher ckpt (`teacher_020000.pt`) | hub `armteam/phantom-checkpoints` (private) → `runs/<run_name>/` | payload keys: `lora`, `phantom_modules`, `ema`, `norm_stats`, `configs` (incl. `text_conditioning` provenance), `optimizer`/`scheduler` (training-only) |
+| teacher ckpt (`teacher_020000.pt`) | hub [`armteam/hapticwam-teacher`](https://huggingface.co/armteam/hapticwam-teacher), `teacher_v6/teacher_020000.pt` → `runs/<run_name>/` | payload keys: `lora`, `phantom_modules`, `ema`, `norm_stats`, `configs` (incl. `text_conditioning` provenance), `optimizer`/`scheduler` (training-only) |
 | Cosmos base weights + tokenizer | `paths.local.yaml::cosmos_weights_root` | same files as training |
 | text-embedding cache | `paths.local.yaml::cosmos_text_embedding_cache` | **required for v3+** (trained text-conditioned); ships next to the ckpt on the hub. **Do NOT set it for v2** — v2 trained on the empty-string embedding and must run that way |
 | hardware yaml | `--hardware configs/hardware.nuc.yaml` | must be the config family the data was recorded with: shapes are hard-asserted at ckpt load; a VALUES-only drift logs a warning and proceeds |

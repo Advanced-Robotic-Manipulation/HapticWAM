@@ -38,8 +38,10 @@
 
 Seven models are on the box and on the `./PICK.sh` / `./SERVE.sh` menu. Ports follow
 the menu order (slot 1 → 7777, slot 2 → 7778, ... slot 7 → 7783); one SERVE.sh
-terminal per model you want warm. Everything is also on the hub
-(`armteam/phantom-checkpoints`), so nothing on the box is precious.
+terminal per model you want warm. Everything is also on the hub — the v5 arms below in
+[`armteam/hapticwam-ablations`](https://huggingface.co/armteam/hapticwam-ablations), the deployed v6
+teacher and student in [`armteam/hapticwam-teacher`](https://huggingface.co/armteam/hapticwam-teacher) and
+[`armteam/hapticwam-student`](https://huggingface.co/armteam/hapticwam-student) — so nothing on the box is precious.
 
 | menu | what it is | inputs | offline val124 (mean / median mm) | expect on the rig |
 |---|---|---|---|---|
@@ -129,8 +131,9 @@ State as of 2026-08-28. Everything below was verified live on compute3 (repo `b0
 ~/phantom-icra-2027/phantom/runs/teacher_v5_batch0822/v5_1.pt              # first v5 build (for ablation only)
 ~/phantom-icra-2027/phantom/runs/teacher_v4_790eps/DEMO.pt   -> teacher_020000.pt   # v4 CONTROL (unchanged)
 ```
-`v5_6` is byte-identical (sha256) to hub `armteam/phantom-checkpoints/teacher_v5_batch0822/teacher_003000.pt`.
-All six v5 builds, the training log and every offline eval JSON are on the hub in that folder.
+`v5_6` is byte-identical (sha256) to hub `armteam/hapticwam-ablations/teacher_v5_batch0822/teacher_003000.pt`.
+That single file is all that was carried forward to the public hub: the other five v5 builds,
+the training log and that folder’s offline eval JSONs were not copied over.
 Build labels on the box hide step numbers on purpose; the mapping is `runs/teacher_v5_batch0822/.stage_map`.
 
 ## Preflight (once per session)
@@ -272,10 +275,10 @@ Tracked copies of PICK.sh / MODELS.tsv / the GO family live in the repo at `tool
 # from the hub (any time):
 cd ~/phantom-icra-2027/phantom && .venv/bin/python - <<'PY'
 from huggingface_hub import hf_hub_download; import shutil
-p = hf_hub_download("armteam/phantom-checkpoints", "teacher_v5_batch0822/teacher_002500.pt", repo_type="model")
-shutil.copy(p, "runs/teacher_v5_batch0822/v5_5.pt")
+p = hf_hub_download("armteam/hapticwam-ablations", "teacher_v5_batch0822/teacher_003000.pt", repo_type="model")
+shutil.copy(p, "runs/teacher_v5_batch0822/v5_6.pt")
 PY
-ln -sfn v5_5.pt runs/teacher_v5_batch0822/DEMO.pt
+ln -sfn v5_6.pt runs/teacher_v5_batch0822/DEMO.pt
 ```
 
 ## Session 4 recipe (2026-08-29) — the sampler was seeded to a constant; every earlier session ran ONE noise draw
