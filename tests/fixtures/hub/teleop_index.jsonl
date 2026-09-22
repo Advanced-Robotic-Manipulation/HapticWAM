@@ -1,0 +1,11 @@
+{"path": ".gitattributes", "size": 2504, "sha256": null, "blob_id": "bed0738c7eeb449bca98b5d2f33c89a1ee56349a", "source": null}
+{"path": "Carton.tar.zst", "size": 14527139886, "sha256": "25a10873d0a43f4c857b1aaad8f6e91fcd7b73ab4d202c243ce625ed33540761", "blob_id": "4ab01dba2eb2a0850210f089ec4024ff8067a7c8", "source": "armteam/phantom-checkpoints/dataset_v3_packed/Carton.tar.zst"}
+{"path": "Carton_fail.tar.zst", "size": 1499933642, "sha256": "168bcdfc92cdb46b20885abbff87cf1bea50a3a051d31cfab7f52e01d360bb42", "blob_id": "2046ad34b56bb7af584727ac9323048bdf6d728c", "source": "armteam/phantom-checkpoints/dataset_v3_packed/Carton_fail.tar.zst"}
+{"path": "MANIFEST_OF_RECORD.md", "size": 1666, "sha256": null, "blob_id": "3db15b58a9a40ed83dc432830baa096d46b58745", "source": null}
+{"path": "batch_20260822.tar.zst", "size": 30649000000, "sha256": "aa10873d0a43f4c857b1aaad8f6e91fcd7b73ab4d202c243ce625ed3354aaaaa", "blob_id": "1ab01dba2eb2a0850210f089ec4024ff8067a7c1", "source": null}
+{"path": "egg.tar.zst", "size": 21586000000, "sha256": "35a10873d0a43f4c857b1aaad8f6e91fcd7b73ab4d202c243ce625ed33540762", "blob_id": "5ab01dba2eb2a0850210f089ec4024ff8067a7c9", "source": "armteam/phantom-checkpoints/dataset_v3_packed/egg.tar.zst"}
+{"path": "index.jsonl", "size": 3712, "sha256": null, "blob_id": "bed0738c7eeb449bca98b5d2f33c89a1ee56349b", "source": null}
+{"path": "manifests_v6.tar", "size": 1228800, "sha256": null, "blob_id": "aed0738c7eeb449bca98b5d2f33c89a1ee56349c", "source": null}
+{"path": "waffles.tar.zst", "size": 14922000000, "sha256": "45a10873d0a43f4c857b1aaad8f6e91fcd7b73ab4d202c243ce625ed33540763", "blob_id": "6ab01dba2eb2a0850210f089ec4024ff8067a7ca", "source": "armteam/phantom-checkpoints/dataset_v3_packed/waffles.tar.zst"}
+{"path": "waffles_fail.tar.zst", "size": 1804000000, "sha256": "55a10873d0a43f4c857b1aaad8f6e91fcd7b73ab4d202c243ce625ed33540764", "blob_id": "7ab01dba2eb2a0850210f089ec4024ff8067a7cb", "source": "armteam/phantom-checkpoints/dataset_v3_packed/waffles_fail.tar.zst"}
+{"path": "whiteboard.tar.zst", "size": 15325063443, "sha256": "2085e014065d2a554bdf0489d3b665f685842846b367068e7ec007d5474bb3d0", "blob_id": "a2fddbf1b6f45946b974b2a0e8126b9a620cc7d6", "source": "armteam/phantom-checkpoints/dataset_v3_packed/whiteboard.tar.zst"}

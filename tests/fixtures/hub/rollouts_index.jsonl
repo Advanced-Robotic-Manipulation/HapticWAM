@@ -1,0 +1,9 @@
+{"path": ".gitattributes", "size": 2504, "sha256": null, "blob_id": "bed0738c7eeb449bca98b5d2f33c89a1ee56349a", "source": null}
+{"path": "README.md", "size": 4326, "sha256": null, "blob_id": "1966b2754777e482bcf18166ac7a141c2c7e86fa", "source": null}
+{"path": "deploy_20260811.tar.zst", "size": 1953806789, "sha256": "7974f9f047433ae21b034b0687bcfbb208a5e2f0cb31b1b6d388b304133d0742", "blob_id": "2b619f3d05a43b06fa35667bb4e218c2e88be1e3", "source": "armteam/phantom-checkpoints/dataset_v3_packed/deploy_20260811.tar.zst"}
+{"path": "deploy_20260813.tar.zst", "size": 79230059, "sha256": "54aa79f5704ec1afefea182f9ea91f1bb4b93f50ab4ad2e4b97385ab604a62d7", "blob_id": "b6f3a6bbad8f2f9aa510ce450b32352b71afcf62", "source": "armteam/phantom-checkpoints/dataset_v3_packed/deploy_20260813.tar.zst"}
+{"path": "manifests_r3.tar", "size": 1228800, "sha256": null, "blob_id": "aed0738c7eeb449bca98b5d2f33c89a1ee56349c", "source": null}
+{"path": "rollouts_0908_0909.tar.zst", "size": 4294000000, "sha256": "64aa79f5704ec1afefea182f9ea91f1bb4b93f50ab4ad2e4b97385ab604a62d7", "blob_id": "c6f3a6bbad8f2f9aa510ce450b32352b71afcf63", "source": null}
+{"path": "zarr_rollouts/deploy_20260813.tar", "size": 79462400, "sha256": "74aa79f5704ec1afefea182f9ea91f1bb4b93f50ab4ad2e4b97385ab604a62d7", "blob_id": "d6f3a6bbad8f2f9aa510ce450b32352b71afcf64", "source": null}
+{"path": "zarr_rollouts/deploy_20260908.tar", "size": 1115801600, "sha256": "cef0108a15955b2dc662cd3a3c82af89199cb411cdfa07ee560ae0617b916b4d", "blob_id": "5aeada019aac3887872a0c719061ae383bd55546", "source": null}
+{"path": "zarr_rollouts/deploy_20260909.tar", "size": 3204864000, "sha256": "184e42f36ae51fd968d2723be19c9e5f4151d9f461e46d51b01a10e3ca96e1ad", "blob_id": "4153bc15bf3dd7d9a49e3a8062fb9c87ef34516f", "source": null}

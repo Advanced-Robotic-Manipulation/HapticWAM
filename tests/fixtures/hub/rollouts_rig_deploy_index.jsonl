@@ -1,0 +1,4 @@
+{"day": "20260828", "tar": "rig_deploy/deploy_20260828.tar", "bytes": 1287372800, "takes": 26, "members": 7112, "sha256": "3ec0fcf1f76e07bc22d13cacf2a0297e17db3cee16ce654f2f64e1543b312fa3"}
+{"day": "20260907", "tar": "rig_deploy/deploy_20260907.tar", "bytes": 2560020480, "takes": 43, "members": 13002, "sha256": "19cee0ac672b8c1e954bfeca10aa83aad3dd79570593f22efbda6c95c0efaa4b"}
+{"day": "20260911", "tar": "rig_deploy/deploy_20260911.tar", "bytes": 7849973760, "takes": 148, "members": 42230, "sha256": "cc45228a88133399c341348f4a965643a8573b5df704fad7268e8df4301dde8d"}
+{"day": "20260915", "tar": "rig_deploy/deploy_20260915.tar", "bytes": 2330030080, "takes": 22, "members": 9558, "sha256": "8b888a9773b05686c8bb879b020777b9f27e4728fb29ac255ce8999e0131c481"}
