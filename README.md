@@ -140,12 +140,12 @@ Six dataset repos, all **CC-BY-4.0**.
 | [`armteam/hapticwam-sim-episodes`](https://huggingface.co/datasets/armteam/hapticwam-sim-episodes) | 82.7 GB | Isaac Sim expert episodes (`sim_expert_20260912/`, `sim_expert_20260914/`) as per-trial tars with an `index.jsonl`. These drive the sim fine-tune that produces the deployed teacher. |
 | [`armteam/hapticwam-rig-episodes`](https://huggingface.co/datasets/armteam/hapticwam-rig-episodes) | 24.3 GB | the **closed-loop rig takes the paper's numbers are computed from** — `20260915_experiment/` is the analysis set, with `_extra` and `_superseded` kept for provenance. |
 | [`armteam/hapticwam-rollouts`](https://huggingface.co/datasets/armteam/hapticwam-rollouts) | 50 GB | policy-driven (not teleoperated) rollouts: the DAgger rounds and the earlier deploy days, as per-day archives plus the round-3 manifest. |
-| [`armteam/hapticwam-results`](https://huggingface.co/datasets/armteam/hapticwam-results) | 1.05 GB | result media archived out of this repository — videos, plots, frame dumps, per-trial evidence — with a `MANIFEST.tsv` mapping each file back to its old `docs/results/` path. |
+| [`armteam/hapticwam-evidence`](https://huggingface.co/datasets/armteam/hapticwam-evidence) | 1.9 MB | the per-take evidence behind the paper's tables — the scored per-trial CSVs, the offline-probe JSONs and the rig plotting script with its rendered figures — with a `MANIFEST.tsv` giving each file's size and `sha256`. |
 
 How they fit together: the teacher trains on **teleop-dataset**, is sim-fine-tuned with
 **sim-episodes** and **rollouts**, is distilled into the student, and both are then evaluated
 on the rig into **rig-episodes**; **teleop-raw** is the provenance of the packed corpus and
-**results** holds the media.
+**evidence** holds the scored per-take results behind the tables.
 
 `tools/provision_v5.sh` and `tools/provision_distill.sh` pull a training box's dataset and
 checkpoints from the hub with nothing but an `HF_TOKEN`.

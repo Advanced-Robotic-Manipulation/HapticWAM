@@ -13,7 +13,7 @@ disagrees with the paper, the disagreement is written down in
 **Conventions.** `hf` is the current Hugging Face CLI (`huggingface-cli` on older installs); no
 token is needed, all repos are public. Byte sizes and `sha256` are the values the hub itself
 reports: for model weights they are the **LFS sha256** listed in each model repo's
-`index.jsonl`; for files in `hapticwam-results` they are the `sha256` column of that repo's
+`index.jsonl`; for files in `hapticwam-evidence` they are the `sha256` column of that repo's
 `MANIFEST.tsv`. Only the first 16 hex characters are printed here — enough to pin a file,
 short enough to read. Verify a download with `shasum -a 256 <file>`.
 
@@ -118,7 +118,7 @@ PY
 | sim fine-tune: **99 scripted simulation episodes** (98 completed placements, 1 ending with the object still gripped) and **203 robot rollouts**, **2,088 windows** | `armteam/hapticwam-sim-episodes` (`sim_expert_20260912/`, `sim_expert_20260914/`), `armteam/hapticwam-rollouts` | both repos are published with per-trial `index.jsonl`, but neither exposes a 99-episode or 203-rollout selection list | **not verifiable from the release as it stands** — see §9 |
 | student dataset: **860 episodes** = 761 demonstrations + 99 rollouts (66 teacher, 33 student), 8 windows each → **6,880 windows** | `armteam/hapticwam-rollouts` (`rollouts_0901_0904.tar.zst`, `rollouts_0908_0909.tar.zst`, `manifests_r3.tar` = 1,238 rows = 1,115 teleop + 123 rollouts) | 860 × 8 = 6,880 is internally consistent; the 66/33 split is not tabulated in the release | arithmetic **match**, selection **not verifiable** |
 | rig evaluation: **200 robot trials** (20 waffle + 20 carton + 10 egg × 4 models) | `armteam/hapticwam-rig-episodes`, `20260915_experiment/` | **200** episode directories; 50 per arm (`label:` = `v6_simft2k`, `stu_simft_001000`, `pi05`, `dp`); 80 Carton, 80 waffles, 40 egg | **match** |
-| 94 held-out validation episodes used by the offline probe (§IV-F) | `armteam/hapticwam-results`, `repo_docs_results/rig_0916/probe/*.json` | each probe JSON reports `n_episodes = 124` over **four** tasks | **mismatch** — see §8.1 |
+| 94 held-out validation episodes used by the offline probe (§IV-F) | `armteam/hapticwam-evidence`, `rig_0916/probe/*.json` | each probe JSON reports `n_episodes = 124` over **four** tasks | **mismatch** — see §8.1 |
 
 ```bash
 # the settled split lists, published alongside the manifests
@@ -157,20 +157,26 @@ Arms are identified by the `label:` tag, cells by the `seed:` tag (`seed = 100 +
 ## 3. Tables II and III
 
 Both tables, and every descriptive count in §IV-D and §IV-G, come from three per-trial CSVs in
-`armteam/hapticwam-results`. They are the scored form of the 200 episodes above.
+`armteam/hapticwam-evidence`. They are the scored form of the 200 episodes above.
 
 | File | Bytes | sha256 (first 16) | Rows |
 |---|---|---|---|
-| `repo_docs_results/rig_0916/per_take_final.csv` | 47,401 | `ac552d65d9c9ccad` | 160 (waffles + Carton) |
-| `repo_docs_results/rig_0916/per_take_egg.csv` | 12,183 | `7a9b37ae51caa792` | 40 (Egg) |
-| `repo_docs_results/rig_0916/summary_by_arm.csv` | 1,319 | `bb0ba42264599245` | the per-arm rollup for waffles and Carton |
+| `rig_0916/per_take_final.csv` | 47,339 | `7ab6ab43a69748bb` | 160 (waffles + Carton) |
+| `rig_0916/per_take_egg.csv` | 12,183 | `7a9b37ae51caa792` | 40 (Egg) |
+| `rig_0916/summary_by_arm.csv` | 1,319 | `bb0ba42264599245` | the per-arm rollup for waffles and Carton |
 
 ```bash
-hf download armteam/hapticwam-results --repo-type dataset --local-dir . \
-    --include 'repo_docs_results/rig_0916/per_take_final.csv' \
-              'repo_docs_results/rig_0916/per_take_egg.csv' \
-              'repo_docs_results/rig_0916/summary_by_arm.csv'
+hf download armteam/hapticwam-evidence --repo-type dataset --local-dir . \
+    --include 'rig_0916/per_take_final.csv' \
+              'rig_0916/per_take_egg.csv' \
+              'rig_0916/summary_by_arm.csv'
 ```
+
+One field in `per_take_final.csv` was edited before publication: three rows carried a person's
+name in the free-text `notes` column, recording whose call a late verdict was entered on, and
+the name was removed. No measurement, verdict, class or count was changed, and the commands
+below reproduce the published numbers from the edited file. That edit is why the `sha256` above
+differs from the copy held in the project's internal archive.
 
 The scoring rules those columns encode live in
 [`tools/rig/analysis/final_stats.py`](../tools/rig/analysis/final_stats.py) (per-arm rollup,
@@ -184,7 +190,7 @@ intervals are [`phantom/eval/stats.py`](../phantom/eval/stats.py).
 ```bash
 python - <<'PY'
 import csv, statistics as st
-B = "repo_docs_results/rig_0916/"
+B = "rig_0916/"
 ARMS = [("v6_simft2k","Teacher"), ("stu_simft_001000","Student"), ("pi05","pi0.5"), ("dp","DP")]
 rows = []
 for f, fixed in (("per_take_final.csv", None), ("per_take_egg.csv", "Egg")):
@@ -295,7 +301,7 @@ its generated contact frames clamped to a zero contact package, on the first ten
 # the intact column, from the released trials
 python - <<'PY'
 import csv
-B = "repo_docs_results/rig_0916/"
+B = "rig_0916/"
 rows = []
 for f, fixed in (("per_take_final.csv", None), ("per_take_egg.csv", "Egg")):
     for r in csv.DictReader(open(B + f)):
@@ -340,20 +346,20 @@ null:contact_zero`.
 
 Four numbers, three of them in published JSONs and the fourth a column of the same rows.
 
-| Paper | Artifact in `armteam/hapticwam-results` | sha256 (first 16) | Re-derived |
+| Paper | Artifact in `armteam/hapticwam-evidence` | sha256 (first 16) | Re-derived |
 |---|---|---|---|
-| intact student **22.31 mm** | `repo_docs_results/rig_0916/probe/student_none.json` (`summary.null = "none"`, `is_deploy_condition: true`) | `45704557d13e7e4a` | **22.309** |
+| intact student **22.31 mm** | `rig_0916/probe/student_none.json` (`summary.null = "none"`, `is_deploy_condition: true`) | `45704557d13e7e4a` | **22.309** |
 | contact frames clamped to zero **28.31 mm** | `…/probe/student_contact_zero.json` | `92e054ac98b9dacd` | **28.311** |
 | ACC input zeroed **22.35 mm** | `…/probe/student_prev_cpk.json` | `40c089c91ec30e58` | **22.348** |
 | a policy that does not move **28.2 mm** | the `zero_endpoint_err_mm` column of the *same* rows — a per-window floor, not a separate run | — | **28.231** |
 | (not in the paper) contact pinned to the ground-truth package | `…/probe/student_contact_gt.json` | `48df420ee4f51aaf` | 24.827 |
 
 ```bash
-hf download armteam/hapticwam-results --repo-type dataset --local-dir . \
-    --include 'repo_docs_results/rig_0916/probe/*'
+hf download armteam/hapticwam-evidence --repo-type dataset --local-dir . \
+    --include 'rig_0916/probe/*'
 python - <<'PY'
 import json, statistics as st
-B = "repo_docs_results/rig_0916/probe/"
+B = "rig_0916/probe/"
 for n, what in [("student_none","intact (deploy condition)"),
                 ("student_contact_zero","contact frames clamped to zero"),
                 ("student_prev_cpk","ACC previous-package input zeroed"),
@@ -444,8 +450,8 @@ All four medians reproduce:
 No figure in the published v1 plots the rig numbers. The plotting script and its rendered
 outputs are archived anyway, and they read the same per-take CSVs as §3, so they are a second,
 independent check on Tables II and III:
-`repo_docs_results/rig_0916/figures/{make_figures_0916.py, fig_rig_outcomes.{png,pdf}, fig_rig_pinch.{png,pdf}}`
-in `armteam/hapticwam-results`.
+`rig_0916/figures/{make_figures_0916.py, fig_rig_outcomes.{png,pdf}, fig_rig_pinch.{png,pdf}}`
+in `armteam/hapticwam-evidence`.
 
 ### Provisioning scripts, and every hub id they touch
 
@@ -564,7 +570,7 @@ Being explicit about the gaps is part of the map.
 | The 66 teacher / 33 student split of the student's 99 rollout episodes | not tabulated | `manifests_r3.tar` in `hapticwam-rollouts` indexes all 123 rollout episodes with their policy provenance |
 | Raw per-replan medians as a committed script | only mean and p95 are aggregated by `phantom/eval/metrics.py` | the raw `latency_s` and `obs_dt_s` are in every released episode's `planner_trace.json`; the aggregation command is in §6 |
 | Teacher/student trainable-parameter counts as a printed artifact | they are properties of the instantiated model | build the model from the released checkpoint and config and count `requires_grad` parameters |
-| Operator identities, raw session video beyond what `hapticwam-results` archives, and the Overleaf source history | privacy and scope | the scored per-trial CSVs, the probe JSONs and the result media are published in full |
+| Operator identities, raw session video, and the paper's source history | privacy and scope | the scored per-trial CSVs, the probe JSONs and the plotting script are published in full |
 | The Cosmos-Predict2.5-2B backbone weights | third-party | `nvidia/Cosmos-Predict2.5-2B`, fetched by the provisioning scripts under NVIDIA's licence |
 
 Everything else the paper depends on — the four deployed checkpoints, the 1,115-episode
