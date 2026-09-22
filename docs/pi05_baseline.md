@@ -245,7 +245,7 @@ Two scripts sit on compute2, and only one of them is running:
 
 * `~/lerobot/archive_checkpoints.sh <train_pid> <min_free_GB>` -- ARMED. When
   `/` drops below 14 GB it RELOCATES the oldest checkpoint to the box's second
-  disk (`/media/isr-lab-4/Main/pi05_phantom_expert_v1_checkpoints`, 307 GB
+  disk (`<secondary-disk>/pi05_phantom_expert_v1_checkpoints`, 307 GB
   free) and nothing else. Nothing is deleted; `mv` unlinks the source only
   after the copy lands, so every checkpoint stays readable, just not on `/`.
   It never touches the newest checkpoint or whatever `last` resolves to, and
@@ -266,9 +266,9 @@ Read off the step-2500 checkpoint, so this is what it will see:
 | `chunk_size` / `n_action_steps` / `num_inference_steps` | 50 / 16 / 10 |
 | normalisation | `policy_preprocessor_step_2_normalizer_processor.safetensors` and the matching unnormalizer, both written from THIS dataset's stats |
 
-**The tokenizer path is absolute and local to compute2.** The saved
+**The tokenizer path is absolute and local to the training box.** The saved
 preprocessor carries
-`tokenizer_processor.tokenizer_name = /home/isr-lab-4/lerobot/paligemma_tokenizer`,
+`tokenizer_processor.tokenizer_name = <training-box>/lerobot/paligemma_tokenizer`,
 which will not exist on the deploy box. Either ship that directory to the same
 path beside the checkpoint, or override the step when the adapter builds its
 pipelines -- `make_pre_post_processors` already honours

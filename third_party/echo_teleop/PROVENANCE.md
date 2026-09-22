@@ -1,8 +1,8 @@
-# Echo right-arm teleop — vendored from compute2 (2026-07-10)
+# Echo right-arm teleop — vendored from the lab teleop box (2026-07-10)
 
 The lab's working teleop + dataset-collection stack for the RIGHT UR3 arm,
-extracted as the MINIMAL runtime closure of `main11.py` from
-`compute2:/media/isr-lab-4/Main/kngn_ws/Echo-Yolo/Echo/`.
+extracted as the MINIMAL runtime closure of `main11.py` from the `Echo-Yolo/Echo/`
+working tree on that box.
 
 **Why vendored:** `main11.py` was UNTRACKED in that repo (git remote
 `khang123452/ur_base`, 87 dirty paths) — it existed only on that disk, edited
@@ -34,7 +34,7 @@ leftovers and OMITS two needed libs)
 
     numpy, opencv-python, pyserial, pyrealsense2, ur_rtde   (py3.12 ok)
 
-On compute2 it runs in conda env `echo` (py3.12.11, ur_rtde 1.6.2):
+On the teleop box it runs in conda env `echo` (py3.12.11, ur_rtde 1.6.2):
 `conda activate echo && python main11.py`.
 
 ## Hardware facts learned
@@ -44,7 +44,7 @@ On compute2 it runs in conda env `echo` (py3.12.11, ur_rtde 1.6.2):
   the pendant/plate; decides `arm.generation` + wrist F/T source in
   `configs/hardware.yaml` (CB3 ⇒ external FT-300S needed for ACC).
 - Robotiq 2F-85; single RealSense; existing recordings: 169 episodes / 6.5 GB
-  in `Echo/dataCoRL/` on compute2 (left in place).
+  in `Echo/dataCoRL/` on the teleop box (left in place).
 
 ## Integration notes (for the PHANTOM recorder — not done yet, by design)
 
