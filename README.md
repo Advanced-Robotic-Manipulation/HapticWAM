@@ -154,6 +154,17 @@ Which artifact is behind which table, figure and number in the paper — with th
 the command that re-derives the value, and an honest list of what is not released:
 [docs/reproducibility.md](docs/reproducibility.md).
 
+The episode format those repositories hold — every stream's shape, dtype, rate, units and
+meaning, the `meta.json` fields, the time base, which repositories are loose and which are
+packed into tars — is [docs/dataset_schema.md](docs/dataset_schema.md). Each packed
+repository also carries a `samples/` folder with complete loose episodes, and one episode
+can be fetched without touching a shard:
+
+```bash
+python tools/hub/fetch_episode.py --dataset teleop --episode first --samples
+python tools/hub/fetch_episode.py --dataset teleop --episode ep_waffles_1785592739_002
+```
+
 ## Run it
 
 ### No hardware, no GPU
@@ -243,6 +254,7 @@ docs/               the documentation set below
 | Doc | Read it when |
 |---|---|
 | [docs/code_structure.md](docs/code_structure.md) | you want the module-by-module map and the design rules |
+| [docs/dataset_schema.md](docs/dataset_schema.md) | you are reading the published episodes: stream layout, units, `meta.json`, how the datasets are packed, and how to fetch one episode |
 | [docs/launch_guide.md](docs/launch_guide.md) | you need the exact command for any stage, on any machine |
 | [docs/training_playbook.md](docs/training_playbook.md) | running pretrain → teacher → HID → DAgger → HID-S |
 | [docs/inference.md](docs/inference.md) | loading a trained teacher and running it, mocked or on the rig |
