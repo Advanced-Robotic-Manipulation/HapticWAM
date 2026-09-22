@@ -150,6 +150,10 @@ on the rig into **rig-episodes**; **teleop-raw** is the provenance of the packed
 `tools/provision_v5.sh` and `tools/provision_distill.sh` pull a training box's dataset and
 checkpoints from the hub with nothing but an `HF_TOKEN`.
 
+Which artifact is behind which table, figure and number in the paper — with the fetch command,
+the command that re-derives the value, and an honest list of what is not released:
+[docs/reproducibility.md](docs/reproducibility.md).
+
 ## Run it
 
 ### No hardware, no GPU
