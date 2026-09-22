@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import json,glob,os,sys,math
 import numpy as np, zarr
 A2,A3,D4=0.24365,0.21325,0.11235

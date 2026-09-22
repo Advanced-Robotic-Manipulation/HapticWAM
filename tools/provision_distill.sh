@@ -231,7 +231,7 @@ PYEOF
 
 echo "== FT-A init checkpoint: v5_6 (teacher_v5_batch0822/teacher_003000.pt)"
 # the plan of record is "FT-A: 3k steps FROM v5_6".
-# v5_6 is byte-identical to compute3's DEMO.pt and is what the rig ran.
+# v5_6 is byte-identical to the rig box's DEMO.pt and is what the rig ran.
 # teacher_v5_batch0822/ was NOT migrated — it stays in the old repo
 hfget $HUB_ABL teacher_v5_batch0822/teacher_003000.pt "$W/dl" >/dev/null
 mkdir -p "$W/runs/teacher/teacher_v5_batch0822"

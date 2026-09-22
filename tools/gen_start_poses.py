@@ -3,7 +3,7 @@ start-pose distribution, START joint configuration, TCP envelope and z floor).
 
     python tools/gen_start_poses.py /path/to/phantom-episodes/tasks [--out FILE]
 
-Run on the box that holds the FULL dataset (compute3). Success tasks only —
+Run on the box that holds the FULL dataset. Success tasks only —
 `*_fail` episodes are never deployed, and any episode whose meta.json marks it
 a failure demo (``success is False`` / ``failure_demo`` / a ``_fail`` task) is
 dropped even if it was symlinked into a success task directory.
@@ -11,7 +11,7 @@ dropped even if it was symlinked into a success task directory.
 EVERY per-task block is computed over the SAME episode set: the run asserts
 len(tcp) == len(gripper) == len(q) == len(z) and emits ``q_n`` alongside ``n``
 so a consumer can prove it. The 2026-08-28 file had q_n = 17..37 while n = 250
-(the joint/envelope/floor stats came from a compute3 subset, the TCP mean/std
+(the joint/envelope/floor stats came from a subset, the TCP mean/std
 from the full 250) — a STOP hitbox and a z floor derived from 7% of the demos.
 ``phantom.deploy.start_pose.load_start_stats`` now refuses such a file.
 """

@@ -1,6 +1,6 @@
 # tools/rig/box — the scripts that only existed on the rig box
 
-Operator scripts that lived **only** in `~/phantom-icra-2027/` on compute3 (the 5090 box that
+Operator scripts that lived **only** in `~/phantom-icra-2027/` on the rig box (the RTX 5090 box that
 drives the UR3) and were never tracked. `../README.md` covers the launcher set that the box
 reaches through symlinks (`PICK.sh`, `GO_ANY.sh`, `MODELS.tsv`, `stage_v5.sh`, `SNAP_ANY.sh`,
 `GRIPPER_*.sh`, `screenshot_*.sh`, `probe_rig.py`); this directory is the rest — the scene
@@ -66,7 +66,7 @@ against the rig, safe to run while the arm is idle)
   deletes the local tar. Use this: the hub repo is at its 20k-file limit and rejects raw folders.
 - `upload_old_deploy.sh` — the older per-file variant (`rollouts/deploy_<day>/`). Superseded by
   the packed form above; kept for the days already mirrored that way.
-- `relay_and_upload.sh` — compute3-side relay: rsync the packed dataset from compute over the
+- `relay_and_upload.sh` — rig-box-side relay: rsync the packed dataset from the training box over the
   headscale tunnel into `packed_relay/`, then upload every file with per-file retries and a
   final missing-files check.
 - `pipeline_uploader.py` — the companion watcher: uploads each tarball as soon as rsync finishes

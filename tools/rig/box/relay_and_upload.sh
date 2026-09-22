@@ -1,11 +1,12 @@
 #!/bin/bash
-# compute3: pull packed dataset from compute over the headscale tunnel, then
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
+# Rig box: pull the packed dataset from the training box over the VPN tunnel, then
 # upload every file to the hub with per-file retries — each file to the repo
 # that owns it after the 2026-09 restructure (see route() below).
 # HF_TOKEN must be in the environment.
 set -u
 cd ~/phantom-icra-2027
-echo "== rsync from compute $(date)"
+echo "== rsync from the training box $(date)"
 rsync -a --partial anywherevla@100.64.0.2:phantom-icra-2027/packed/ packed_relay/
 echo "== rsync done $(date): $(ls packed_relay | wc -l) files, $(du -sh packed_relay | cut -f1)"
 

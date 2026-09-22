@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import sys, glob, io, os, numpy as np
 import imageio.v2 as iio
 task = sys.argv[1]

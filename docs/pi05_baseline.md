@@ -70,7 +70,7 @@ python tools/export_lerobot.py \
     --splits train val --recon-checks 5 --overwrite
 ```
 
-Run on `compute` (the episode store lives there), 36 min for both splits.
+Run on the training box that holds the episode store, 36 min for both splits.
 `--limit 10` gives a smoke export.
 
 ### What came out
@@ -129,7 +129,7 @@ few mm at the peak of a fast reach. The validator therefore gates on the mean
 
 ## Fine-tune
 
-Runs on `compute2` (RTX 4090, 24 GB). `compute`'s GPU is busy with another
+Runs on a second training box (RTX 4090, 24 GB). The first training box's GPU is busy with another
 training run and must not be touched.
 
 ### Three things the published checkpoint needs first
@@ -241,7 +241,7 @@ Measured at step 2500: **9.1 GB per checkpoint**. lerobot 0.4.4 prunes nothing
 and `/` had 45 GB free after that first one, so the eight checkpoints this run
 wants (73 GB) do not fit -- untouched, it hits ENOSPC around step 15000.
 
-Two scripts sit on compute2, and only one of them is running:
+Two scripts sit on that training box, and only one of them is running:
 
 * `~/lerobot/archive_checkpoints.sh <train_pid> <min_free_GB>` -- ARMED. When
   `/` drops below 14 GB it RELOCATES the oldest checkpoint to the box's second

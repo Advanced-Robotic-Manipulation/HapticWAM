@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One execution lane of a sim zoo study on compute3: owned servers, Isaac trials, scoring.
+"""One execution lane of a sim zoo study on the rig box: owned servers, Isaac trials, scoring.
 
 Runs its lane's trials in study order, grouped by (model, recipe): one owned
 policy server per group (PHANTOM ``tools/sim/policy_server.py`` or the LeRobot
@@ -7,6 +7,7 @@ policy server per group (PHANTOM ``tools/sim/policy_server.py`` or the LeRobot
 the frozen runtime's ``launch_waffles.sh``, then ``score_trial.py``. Every trial
 directory is preserved; a failed trial is recorded, never retried.
 """
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 from __future__ import annotations
 
 import argparse

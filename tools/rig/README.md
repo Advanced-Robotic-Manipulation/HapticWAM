@@ -1,6 +1,6 @@
-# tools/rig — the compute3 (5090) rig launcher scripts
+# tools/rig — the rig-box (RTX 5090) launcher scripts
 
-Tracked copies of the box-local scripts that live in `~/phantom-icra-2027/` on compute3
+Tracked copies of the box-local scripts that live in `~/phantom-icra-2027/` on the rig box
 (the box that drives the UR3). The box copies are the live ones; keep them in sync with
 this directory when either side changes.
 

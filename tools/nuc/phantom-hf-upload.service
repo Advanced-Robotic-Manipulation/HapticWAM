@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 [Unit]
 Description=PHANTOM episode auto-upload to HuggingFace
 

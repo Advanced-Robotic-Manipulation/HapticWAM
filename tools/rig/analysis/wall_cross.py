@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import json,glob,numpy as np,zarr,math
 def load(d):
     tcp=np.asarray(zarr.open_group(d+"/arm_tcp_pose.zarr",mode="r")["data"][:]); ts=np.asarray(zarr.open_group(d+"/arm_tcp_pose.zarr",mode="r")["ts"][:])

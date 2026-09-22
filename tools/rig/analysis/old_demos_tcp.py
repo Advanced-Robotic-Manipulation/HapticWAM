@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import json,glob,numpy as np,zarr,collections
 rows=[]
 for d in sorted(glob.glob("/home/physicalai/phantom-icra-2027/data/full/tasks/waffles/ep_*")):

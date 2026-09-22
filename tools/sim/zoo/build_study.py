@@ -5,6 +5,7 @@ Inputs are copied byte-for-byte from the audited genuine-eight v4 campaign
 (scene, hardware, thresholds, controller configs with the rate backoff) and the
 frozen 20-start pool; only the policy configs (recipes) are new. Nothing runs.
 """
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 from __future__ import annotations
 
 import argparse

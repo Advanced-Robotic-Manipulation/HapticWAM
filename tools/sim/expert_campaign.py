@@ -11,6 +11,7 @@ the trial (score_trial.py) and exports a PLACED trial with export_expert_episode
 A ledger (jsonl) records every episode; `--lane k --lanes L` handles indices i % L == k so
 L processes share one campaign. Nothing is deleted: failed trials stay under --raw-root.
 """
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 from __future__ import annotations
 
 import argparse

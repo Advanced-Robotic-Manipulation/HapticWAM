@@ -1,4 +1,4 @@
-# Rig session — how to run inference on compute3 (Session 6: teachers vs sensor-free students)
+# Rig session — how to run inference on the rig box, RTX 5090 (Session 6: teachers vs sensor-free students)
 
 > **STATE AFTER 09-08 (read this first).** Box code = `main` (b205be2 or later). What changed on
 > 09-08, all verified and on the box:
@@ -123,7 +123,7 @@ cd ~/phantom-icra-2027              cd ~/phantom-icra-2027
    v5_6 / ftA_1500 per cell, same config, let episodes terminate, >= 8 pairs.
 
 
-State as of 2026-08-28. Everything below was verified live on compute3 (repo `b0e87b5`, torch 2.13 + CUDA OK).
+State as of 2026-08-28. Everything below was verified live on the rig box (repo `b0e87b5`, torch 2.13 + CUDA OK).
 
 ## What is on the box
 ```
@@ -406,7 +406,7 @@ close-height statistic: **`E13_rescore.md`**. Offline != rig: the rig decides.
 
 ## Audit trail (2026-09-01)
 Every command execution and every file deletion/rename by ANY user (local or ssh)
-is logged by auditd on compute3 (kernel-level, cannot be bypassed from a shell).
+is logged by auditd on the rig box (kernel-level, cannot be bypassed from a shell).
 - `who-deleted [path-substring]` / `who-ran [string]` — helpers in /usr/local/bin
 - raw: `sudo ausearch -k delete -i` / `-k exec`, log at /var/log/audit/
 - rotation: hard 800 MB ring (8 x 100 MB), oldest overwritten — never bloats.

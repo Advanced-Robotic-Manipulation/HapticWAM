@@ -54,8 +54,8 @@ successful rollouts to date. Every label therefore carries the operator verdict
 (`tools/label_grasps.py --confusion`) and do not freeze the thresholds before
 >= 10 human-confirmed policy grasps exist.
 
-VALIDATION (compute3, 2026-08-29, defaults below, contact grid 10 Hz)
---------------------------------------------------------------------
+VALIDATION (2026-08-29, defaults below, contact grid 10 Hz)
+-----------------------------------------------------------
 Demos (operator `s`): 87/94 = 92.6% positive — Carton 20/20, whiteboard 21/21,
 egg 16/17, waffles 30/36. P8 expected >= 95%; the gap is entirely `c_hold`
 (7 episodes at 0.02/0.22/0.42/0.44/0.56/0.64/0.72, six of them waffles, where

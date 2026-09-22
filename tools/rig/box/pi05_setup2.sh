@@ -1,7 +1,7 @@
 #!/bin/bash
-# compute3: clean pi0.5 venv — python 3.11 (same ABI as the phantom venv), torch cu130 for the 5090,
+# Rig box: clean pi0.5 venv — python 3.11 (same ABI as the phantom venv), torch cu130 for the 5090,
 # lerobot 0.4.4 + transformers 4.53.2 + lerobot's patched transformers model files (tf_replace.tgz,
-# taken from compute2's working venv). Then the 20k checkpoint + tokenizer from the hub and the
+# taken from the training box's working venv). Then the 20k checkpoint + tokenizer from the hub and the
 # processor patch. CPU/disk only — no GPU use.
 #   HF_TOKEN=hf_xxx bash pi05_setup2.sh
 set -euo pipefail

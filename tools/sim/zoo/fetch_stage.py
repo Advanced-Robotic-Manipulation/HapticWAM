@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch a zoo stage's raw root from compute3 into the local (untracked) artifacts tree and run the report.
+"""Fetch a zoo stage's raw root from the rig box into the local (untracked) artifacts tree and run the report.
 
 Default fetch is the small per-trial summaries (run_status, trial_result, run,
 effective_config, planner_trace, lane logs, server receipts); ``--full`` also
@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-HOST = "compute3"
+# Site-specific ssh alias for the rig box; override with PHANTOM_BOX_HOST.
+HOST = os.environ.get("PHANTOM_BOX_HOST", "compute3")
 REMOTE_RAW = "/dev/shm/phantom_sim_zoo_raw_20260912"
 LOCAL_RAW = REPO / "artifacts/isaac_waffles/sim_zoo_20260912/raw"
 SMALL = ["run_status.json", "trial_result.json", "run.json", "effective_config.json", "planner_trace.json",

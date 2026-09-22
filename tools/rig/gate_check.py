@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import math, yaml
 import rtde_receive
 cfg = yaml.safe_load(open("/home/physicalai/phantom-icra-2027/phantom/configs/start_poses.yaml"))

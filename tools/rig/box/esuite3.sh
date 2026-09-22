@@ -1,5 +1,5 @@
 #!/bin/bash
-# after esuite2: replan-latency profile on the DEPLOY GPU (compute3 = the rig box) for the K-seed / NFE levers (P4/P6)
+# after esuite2: replan-latency profile on the DEPLOY GPU (the rig box, RTX 5090) for the K-seed / NFE levers (P4/P6)
 until grep -q "ALL DONE6" ~/phantom-icra-2027/esuite6.log; do sleep 60; done
 cd ~/phantom-icra-2027/phantom
 C5=runs/teacher_v5_batch0822/v5_6.pt; HW=configs/hardware.nuc.yaml

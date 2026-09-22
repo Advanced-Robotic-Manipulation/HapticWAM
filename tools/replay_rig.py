@@ -16,7 +16,7 @@ the trace's own values, and whether the trace falls inside the K-seed spread
 (E0 / GATE G0: if the replay cannot reproduce the rig, nothing downstream is
 interpretable).
 
-E0 on compute3 (5090), one day of rig episodes:
+E0 on the rig box (RTX 5090), one day of rig episodes:
 
     cd ~/phantom-icra-2027 && python tools/replay_rig.py \
         --ckpt runs/teacher_v5_batch0822/v5_6.pt \

@@ -65,7 +65,7 @@ Modes other than `teacher` pair with their own checkpoints
 - GPU footprint: single-digit GiB (ran alongside ~8 GiB of other jobs on a
   32 GiB card with ample headroom; exact peak not yet profiled)
 
-## Box setup used (compute3 reference)
+## Box setup used (the rig box, RTX 5090)
 
 ```
 ~/phantom-icra-2027/

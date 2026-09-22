@@ -1,5 +1,6 @@
 #!/bin/bash
-# compute3: restore the sim-generation working set after a reboot (/dev/shm is wiped) and restart the night supervisor.
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
+# Rig box: restore the sim-generation working set after a reboot (/dev/shm is wiped) and restart the night supervisor.
 # Backups live on the data disk: data/shm_backup_20260915/{phantom_sim_zoo_driver_20260912,phantom_sim_zoo_inputs_20260912}.
 set -euo pipefail
 B=/home/physicalai/phantom-icra-2027/data/shm_backup_20260915

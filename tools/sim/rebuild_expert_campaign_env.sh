@@ -1,5 +1,6 @@
 #!/bin/bash
-# Rebuild the /dev/shm working set of the scripted-expert campaign on compute3 after a reboot
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
+# Rebuild the /dev/shm working set of the scripted-expert campaign on the rig box after a reboot
 # (everything under /dev/shm is lost; exported episodes on the data disk survive).
 #
 #   bash tools/sim/rebuild_expert_campaign_env.sh [<commit-or-branch>=main]

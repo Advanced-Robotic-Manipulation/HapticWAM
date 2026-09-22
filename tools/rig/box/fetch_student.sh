@@ -1,4 +1,5 @@
 #!/bin/bash
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 # Pull a rental student checkpoint from the hub into the menu (09-15). Run with the token inline:
 #   HF_TOKEN=... ./fetch_student.sh <hid_simft|hid_mt> <000500|000750|001000> [row label]
 # Downloads straight into runs/<run>/student_<step>.pt (no duplicate copy), appends a MODELS.tsv row

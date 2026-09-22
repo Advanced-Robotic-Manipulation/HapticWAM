@@ -1,5 +1,6 @@
 #!/bin/bash
-# GPU-gated inference-lever benchmark on compute3 (v6 checkpoint, K=4, nfe=1). Never runs while a
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
+# GPU-gated inference-lever benchmark on the rig box (v6 checkpoint, K=4, nfe=1). Never runs while a
 # run_deploy process exists or with < 9 GB free; each config loads the model in its own process.
 cd /home/physicalai/phantom-icra-2027/phantom
 PY=.venv/bin/python; OUT=/home/physicalai/phantom-icra-2027/logs/bench_levers_20260912; mkdir -p $OUT

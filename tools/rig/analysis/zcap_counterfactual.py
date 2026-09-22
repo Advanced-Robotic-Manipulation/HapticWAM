@@ -1,3 +1,4 @@
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 import json,glob,numpy as np,zarr,math,sys
 sys.path.insert(0,"/home/physicalai/phantom-icra-2027/phantom")
 from phantom.sim.kinematics import forward_pose, inverse_kinematics

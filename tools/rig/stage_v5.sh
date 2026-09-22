@@ -1,4 +1,5 @@
 #!/bin/bash
+# Site-specific: host aliases and absolute paths below are our lab's -- adapt to your own setup.
 # Pull one v5 checkpoint from the rental and stage it under a TEAM LABEL (no step numbers).
 #   ssh -A compute3 ~/phantom-icra-2027/stage_v5.sh <step> <label>     e.g. 500 v5_1
 set -euo pipefail
