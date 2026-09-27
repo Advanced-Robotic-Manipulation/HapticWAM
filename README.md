@@ -289,13 +289,10 @@ Datasets on the hub (`hapticwam-teleop-dataset`, `-teleop-raw`, `-sim-episodes`,
 
 ```bibtex
 @article{sannikov2026hapticwam,
-  title   = {{HapticWAM}: Distilling Imagined Touch into a World-Action Model
-             without Inference-Time Tactile Sensing},
-  author  = {Sannikov, Mikhail and Mikhalchuk, Ilya and Gubernatorov, Konstantin
-             and Kovalev, Petr and Oluwatobi, Ogunwoye Faith and Tsetserukou, Dzmitry},
-  journal = {arXiv preprint arXiv:2609.23888},
-  year    = {2026},
-  url     = {https://arxiv.org/abs/2609.23888}
+  title={HapticWAM: Distilling Imagined Touch into a World-Action Model without Inference-Time Tactile Sensing},
+  author={Sannikov, Mikhail and Mikhalchuk, Ilya and Gubernatorov, Konstantin and Kovalev, Petr and Oluwatobi, Ogunwoye Faith and Tsetserukou, Dzmitry},
+  journal={arXiv preprint arXiv:2609.23888},
+  year={2026}
 }
 ```
 
