@@ -1,14 +1,12 @@
-# HapticWAM
+# HapticWAM: Distilling Imagined Touch into a World–Action Model without Inference-Time Tactile Sensing
 
-**Haptic World-Action Model** — a tactile world-action model that learns to *imagine* contact,
-then gives that imagination to a robot with no tactile sensors at all.
+[![arXiv](https://img.shields.io/badge/arXiv-2406.09246-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2609.23888)
+[![Model](https://img.shields.io/badge/🤗-Models%20%26%20Data-yellow?style=for-the-badge)](https://huggingface.co/armteam/hapticwam-student)
+[![Dataset](https://img.shields.io/badge/🤗-Models%20%26%20Data-yellow?style=for-the-badge)](https://huggingface.co/datasets/armteam/hapticwam-teleop-dataset)
 
-> ### HapticWAM: Distilling Imagined Touch into a World-Action Model without Inference-Time Tactile Sensing
->
-> Paper: **[arXiv:2609.23888](https://arxiv.org/abs/2609.23888)** ·
-> [PDF](https://arxiv.org/pdf/2609.23888) ·
-> Models and data: **[HapticWAM — ICRA 2027](https://huggingface.co/collections/armteam/hapticwam-icra-2027-6ab234bdfe24c383b5f9fb57)** on the Hugging Face hub
->
+
+<hr style="border: 2px solid gray;"></hr>
+
 > Submitted to the **IEEE International Conference on Robotics and Automation (ICRA) 2027**.
 > If you use this code, the checkpoints or the datasets, please [cite the paper](#citation).
 
