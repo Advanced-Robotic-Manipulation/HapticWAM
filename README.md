@@ -1,6 +1,6 @@
 # HapticWAM: Distilling Imagined Touch into a World–Action Model without Inference-Time Tactile Sensing
 
-[![arXiv](https://img.shields.io/badge/arXiv-2406.09246-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2609.23888)
+[![arXiv](https://img.shields.io/badge/arXiv-2609.23888-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2609.23888)
 [![Model](https://img.shields.io/badge/🤗-Models%20%26%20Data-yellow?style=for-the-badge)](https://huggingface.co/armteam)
 
 
